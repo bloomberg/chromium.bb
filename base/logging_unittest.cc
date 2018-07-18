@@ -325,8 +325,8 @@ void* CrashThread(void* arg) {
   int death_location = data->death_location;
 
   // Register the exception handler on the port.
-  status =
-      zx::thread::self().bind_exception_port(*data->port, kExceptionPortKey, 0);
+  status = zx::thread::self()->bind_exception_port(*data->port,
+                                                   kExceptionPortKey, 0);
   if (status != ZX_OK) {
     data->event->signal(0, ZX_USER_SIGNAL_0);
     return nullptr;
@@ -374,8 +374,8 @@ void SpawnCrashThread(int death_location, uintptr_t* child_crash_addr) {
 
   // Get the crash address.
   zx::thread zircon_thread;
-  status = zx::process::self().get_child(packet.exception.tid,
-                                         ZX_RIGHT_SAME_RIGHTS, &zircon_thread);
+  status = zx::process::self()->get_child(packet.exception.tid,
+                                          ZX_RIGHT_SAME_RIGHTS, &zircon_thread);
   ASSERT_EQ(status, ZX_OK);
   zx_thread_state_general_regs_t buffer;
   status = zircon_thread.read_state(ZX_THREAD_STATE_GENERAL_REGS, &buffer,

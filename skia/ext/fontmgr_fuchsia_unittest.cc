@@ -115,7 +115,7 @@ class MockFontProviderService {
 class FuchsiaFontManagerTest : public testing::Test {
  public:
   FuchsiaFontManagerTest() {
-    fuchsia::fonts::FontProviderSync2Ptr font_provider;
+    fuchsia::fonts::FontProviderSyncPtr font_provider;
     font_provider_service_.Bind(font_provider.NewRequest());
     font_manager_ = sk_make_sp<FuchsiaFontManager>(std::move(font_provider));
   }

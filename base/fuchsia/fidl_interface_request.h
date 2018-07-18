@@ -20,7 +20,7 @@ template <typename Interface>
 class InterfacePtr;
 
 template <typename Interface>
-class Synchronous2InterfacePtr;
+class SynchronousInterfacePtr;
 
 }  // namespace fidl
 
@@ -46,7 +46,7 @@ class BASE_EXPORT FidlInterfaceRequest {
       : FidlInterfaceRequest(stub->NewRequest()) {}
 
   template <typename Interface>
-  explicit FidlInterfaceRequest(fidl::Synchronous2InterfacePtr<Interface>* stub)
+  explicit FidlInterfaceRequest(fidl::SynchronousInterfacePtr<Interface>* stub)
       : FidlInterfaceRequest(stub->NewRequest()) {}
 
   FidlInterfaceRequest(FidlInterfaceRequest&&);

@@ -204,7 +204,7 @@ void FuchsiaFontManager::FontCache::OnTypefaceDeleted(zx_koid_t vmo_koid) {
 }
 
 FuchsiaFontManager::FuchsiaFontManager(
-    fuchsia::fonts::FontProviderSync2Ptr font_provider)
+    fuchsia::fonts::FontProviderSyncPtr font_provider)
     : font_provider_(std::move(font_provider)), font_cache_(new FontCache()) {
   for (auto& m : kFontMap) {
     font_map_[m.font_name_in] = m.font_name_out;
@@ -254,9 +254,9 @@ SkTypeface* FuchsiaFontManager::onMatchFamilyStyle(
   request.slant = ToFontSlant(style.slant());
 
   fuchsia::fonts::FontResponsePtr response;
-  auto status = font_provider_->GetFont(std::move(request), &response);
-  if (status.statvs != ZX_OK) {
-    ZX_DLOG(ERROR, status.statvs) << "Failed to query font provider.";
+  zx_status_t status = font_provider_->GetFont(std::move(request), &response);
+  if (status != ZX_OK) {
+    ZX_DLOG(ERROR, status) << "Failed to query font provider.";
   } else if (response) {
     sk_sp<SkTypeface> result =
         font_cache_->GetTypefaceFromFontData(std::move(response->data));

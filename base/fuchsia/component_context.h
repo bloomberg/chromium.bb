@@ -18,7 +18,7 @@ template <typename Interface>
 class InterfacePtr;
 
 template <typename Interface>
-class Synchronous2InterfacePtr;
+class SynchronousInterfacePtr;
 
 }  // namespace fidl
 
@@ -49,8 +49,8 @@ class BASE_EXPORT ComponentContext {
   // Connects to an environment service and returns synchronous interface
   // implementation.
   template <typename Interface>
-  fidl::Synchronous2InterfacePtr<Interface> ConnectToServiceSync() {
-    fidl::Synchronous2InterfacePtr<Interface> result;
+  fidl::SynchronousInterfacePtr<Interface> ConnectToServiceSync() {
+    fidl::SynchronousInterfacePtr<Interface> result;
     ConnectToService(FidlInterfaceRequest(&result));
     return result;
   }

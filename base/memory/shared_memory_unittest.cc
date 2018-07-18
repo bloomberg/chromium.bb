@@ -417,7 +417,7 @@ TEST_P(SharedMemoryTest, GetReadOnlyHandle) {
   (void)handle;
 #elif defined(OS_FUCHSIA)
   uintptr_t addr;
-  EXPECT_NE(ZX_OK, zx::vmar::root_self().map(
+  EXPECT_NE(ZX_OK, zx::vmar::root_self()->map(
                        0, *zx::unowned_vmo(handle.GetHandle()), 0,
                        contents.size(), ZX_VM_FLAG_PERM_WRITE, &addr))
       << "Shouldn't be able to map as writable.";
