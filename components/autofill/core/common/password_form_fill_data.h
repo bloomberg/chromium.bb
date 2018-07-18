@@ -64,6 +64,10 @@ struct PasswordFormFillData {
   FormFieldData username_field;
   FormFieldData password_field;
 
+  // True if the server-side classification believes that the field may be
+  // pre-filled with a placeholder in the value attribute.
+  bool username_may_use_prefilled_placeholder = false;
+
   // The signon realm of the preferred user/pass pair.
   std::string preferred_realm;
 
