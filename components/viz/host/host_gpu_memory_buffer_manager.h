@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_HOST_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
-#define COMPONENTS_VIZ_HOST_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef COMPONENTS_VIZ_HOST_HOST_GPU_MEMORY_BUFFER_MANAGER_H_
+#define COMPONENTS_VIZ_HOST_HOST_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
@@ -28,19 +28,19 @@ class GpuService;
 
 // This GpuMemoryBufferManager implementation is for [de]allocating GPU memory
 // from the GPU process over the mojom.GpuService api.
-class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
+class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
  public:
-  // All function of ServerGpuMemoryBufferManager must be called the thread
+  // All function of HostGpuMemoryBufferManager must be called the thread
   // associated with |task_runner|, other than the constructor and the
   // gpu::GpuMemoryBufferManager implementation (which can be called from any
   // thread).
-  ServerGpuMemoryBufferManager(
+  HostGpuMemoryBufferManager(
       int client_id,
       std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~ServerGpuMemoryBufferManager() override;
+  ~HostGpuMemoryBufferManager() override;
 
   // This is called whenever GPU service is started, or with nullptr value when
   // GPU service is shut down (e.g. GPU process crashes). It will invalidate any
@@ -134,12 +134,12 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
 
   const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtr<ServerGpuMemoryBufferManager> weak_ptr_;
-  base::WeakPtrFactory<ServerGpuMemoryBufferManager> weak_factory_;
+  base::WeakPtr<HostGpuMemoryBufferManager> weak_ptr_;
+  base::WeakPtrFactory<HostGpuMemoryBufferManager> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerGpuMemoryBufferManager);
+  DISALLOW_COPY_AND_ASSIGN(HostGpuMemoryBufferManager);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_HOST_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // COMPONENTS_VIZ_HOST_HOST_GPU_MEMORY_BUFFER_MANAGER_H_

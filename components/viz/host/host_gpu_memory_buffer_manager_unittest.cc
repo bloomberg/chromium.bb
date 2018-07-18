@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/host/server_gpu_memory_buffer_manager.h"
+#include "components/viz/host/host_gpu_memory_buffer_manager.h"
 
 #include <utility>
 
@@ -192,27 +192,27 @@ class FakeClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
 
 }  // namespace
 
-class ServerGpuMemoryBufferManagerTest : public ::testing::Test {
+class HostGpuMemoryBufferManagerTest : public ::testing::Test {
  public:
-  ServerGpuMemoryBufferManagerTest() = default;
-  ~ServerGpuMemoryBufferManagerTest() override = default;
+  HostGpuMemoryBufferManagerTest() = default;
+  ~HostGpuMemoryBufferManagerTest() override = default;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferSync(
-      ServerGpuMemoryBufferManager* manager) {
+      HostGpuMemoryBufferManager* manager) {
     base::Thread diff_thread("TestThread");
     diff_thread.Start();
     std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
     base::RunLoop run_loop;
     diff_thread.task_runner()->PostTask(
-        FROM_HERE, base::Bind(
-                       [](ServerGpuMemoryBufferManager* manager,
+        FROM_HERE, base::BindOnce(
+                       [](HostGpuMemoryBufferManager* manager,
                           std::unique_ptr<gfx::GpuMemoryBuffer>* out_buffer,
-                          const base::Closure& callback) {
+                          base::OnceClosure callback) {
                          *out_buffer = manager->CreateGpuMemoryBuffer(
                              gfx::Size(64, 64), gfx::BufferFormat::YVU_420,
                              gfx::BufferUsage::GPU_READ,
                              gpu::kNullSurfaceHandle);
-                         callback.Run();
+                         std::move(callback).Run();
                        },
                        manager, &buffer, run_loop.QuitClosure()));
     run_loop.Run();
@@ -220,7 +220,7 @@ class ServerGpuMemoryBufferManagerTest : public ::testing::Test {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ServerGpuMemoryBufferManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(HostGpuMemoryBufferManagerTest);
 };
 
 std::unique_ptr<gpu::GpuMemoryBufferSupport> MakeGpuMemoryBufferSupport(
@@ -235,7 +235,7 @@ std::unique_ptr<gpu::GpuMemoryBufferSupport> MakeGpuMemoryBufferSupport(
 
 // Tests that allocation requests from a client that goes away before allocation
 // completes are cleaned up correctly.
-TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
+TEST_F(HostGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
 #if !defined(USE_OZONE) && !defined(OS_MACOSX) && !defined(OS_WIN)
   // Not all platforms support native configurations (currently only ozone and
   // mac support it). Abort the test in those platforms.
@@ -243,14 +243,14 @@ TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
   DCHECK(gpu::GetNativeGpuMemoryBufferConfigurations(&support).empty());
   return;
 #else
-  // Note: ServerGpuMemoryBufferManager normally operates on a mojom::GpuService
+  // Note: HostGpuMemoryBufferManager normally operates on a mojom::GpuService
   // implementation over mojo. Which means the communication from SGMBManager to
   // GpuService is asynchronous. In this test, the mojom::GpuService is not
   // bound to a mojo pipe, which means those calls are all synchronous.
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(true);
-  ServerGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
-                                       base::ThreadTaskRunnerHandle::Get());
+  HostGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
+                                     base::ThreadTaskRunnerHandle::Get());
   manager.SetGpuService(&gpu_service);
 
   const auto buffer_id = static_cast<gfx::GpuMemoryBufferId>(1);
@@ -276,12 +276,11 @@ TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
 #endif
 }
 
-TEST_F(ServerGpuMemoryBufferManagerTest,
-       RequestsFromUntrustedClientsValidated) {
+TEST_F(HostGpuMemoryBufferManagerTest, RequestsFromUntrustedClientsValidated) {
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
-  ServerGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
-                                       base::ThreadTaskRunnerHandle::Get());
+  HostGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
+                                     base::ThreadTaskRunnerHandle::Get());
   manager.SetGpuService(&gpu_service);
   const auto buffer_id = static_cast<gfx::GpuMemoryBufferId>(1);
   const int client_id = 2;
@@ -305,10 +304,9 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
         gpu::kNullSurfaceHandle,
         base::BindOnce(
             [](gfx::GpuMemoryBufferHandle* allocated_handle,
-               const base::Closure& callback,
-               gfx::GpuMemoryBufferHandle handle) {
+               base::OnceClosure callback, gfx::GpuMemoryBufferHandle handle) {
               *allocated_handle = std::move(handle);
-              callback.Run();
+              std::move(callback).Run();
             },
             &allocated_handle, runloop.QuitClosure()));
     // Since native gpu memory buffers are not supported, the mojom.GpuService
@@ -325,23 +323,23 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
   }
 }
 
-TEST_F(ServerGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
+TEST_F(HostGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
-  ServerGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
-                                       base::ThreadTaskRunnerHandle::Get());
+  HostGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
+                                     base::ThreadTaskRunnerHandle::Get());
   manager.SetGpuService(&gpu_service);
   auto buffer = AllocateGpuMemoryBufferSync(&manager);
   EXPECT_TRUE(buffer);
   buffer.reset();
 }
 
-TEST_F(ServerGpuMemoryBufferManagerTest,
+TEST_F(HostGpuMemoryBufferManagerTest,
        GpuMemoryBufferDestroyedOnDifferentThread) {
   TestGpuService gpu_service;
   auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
-  ServerGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
-                                       base::ThreadTaskRunnerHandle::Get());
+  HostGpuMemoryBufferManager manager(1, std::move(gpu_memory_buffer_support),
+                                     base::ThreadTaskRunnerHandle::Get());
   manager.SetGpuService(&gpu_service);
   auto buffer = AllocateGpuMemoryBufferSync(&manager);
   EXPECT_TRUE(buffer);

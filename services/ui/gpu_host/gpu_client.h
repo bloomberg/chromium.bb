@@ -16,7 +16,7 @@ namespace mojom {
 class GpuService;
 }  // namespace mojom
 
-class ServerGpuMemoryBufferManager;
+class HostGpuMemoryBufferManager;
 }  // namespace viz
 
 namespace ui {
@@ -34,7 +34,7 @@ class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
   GpuClient(int client_id,
             gpu::GPUInfo* gpu_info,
             gpu::GpuFeatureInfo* gpu_feature_info,
-            viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
+            viz::HostGpuMemoryBufferManager* gpu_memory_buffer_manager,
             viz::mojom::GpuService* gpu_service);
   ~GpuClient() override;
 
@@ -72,7 +72,7 @@ class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
   // The objects these pointers refer to are owned by the GpuHost object.
   const gpu::GPUInfo* gpu_info_;
   const gpu::GpuFeatureInfo* gpu_feature_info_;
-  viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  viz::HostGpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::mojom::GpuService* gpu_service_;
   EstablishGpuChannelCallback establish_callback_;
 

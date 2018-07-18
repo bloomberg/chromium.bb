@@ -32,7 +32,7 @@ class Connector;
 }
 
 namespace viz {
-class ServerGpuMemoryBufferManager;
+class HostGpuMemoryBufferManager;
 }
 
 namespace ui {
@@ -127,7 +127,7 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   gpu::GPUInfo gpu_info_;
   gpu::GpuFeatureInfo gpu_feature_info_;
 
-  std::unique_ptr<viz::ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<viz::HostGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   viz::mojom::VizMainPtr viz_main_;
 

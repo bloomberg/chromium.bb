@@ -130,7 +130,7 @@ class ScreenMus;
 }
 
 namespace viz {
-class ServerGpuMemoryBufferManager;
+class HostGpuMemoryBufferManager;
 }
 
 namespace webrtc {
@@ -329,6 +329,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class shell_integration::LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
   friend class webrtc::DesktopConfigurationMonitor;
   friend class content::ServiceWorkerSubresourceLoader;
+  friend class viz::HostGpuMemoryBufferManager;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
@@ -500,7 +501,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
 #endif
   friend class views::ScreenMus;
-  friend class viz::ServerGpuMemoryBufferManager;
 // END USAGE THAT NEEDS TO BE FIXED.
 
 #if DCHECK_IS_ON()

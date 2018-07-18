@@ -19,10 +19,10 @@ viz_component("host") {
     "host_frame_sink_client.h",
     "host_frame_sink_manager.cc",
     "host_frame_sink_manager.h",
+    "host_gpu_memory_buffer_manager.cc",
+    "host_gpu_memory_buffer_manager.h",
     "renderer_settings_creation.cc",
     "renderer_settings_creation.h",
-    "server_gpu_memory_buffer_manager.cc",
-    "server_gpu_memory_buffer_manager.h",
     "viz_host_export.h",
   ]
 
@@ -66,7 +66,7 @@ viz_source_set("unit_tests") {
   sources = [
     "hit_test/hit_test_query_unittest.cc",
     "host_frame_sink_manager_unittest.cc",
-    "server_gpu_memory_buffer_manager_unittest.cc",
+    "host_gpu_memory_buffer_manager_unittest.cc",
   ]
 
   deps = [
