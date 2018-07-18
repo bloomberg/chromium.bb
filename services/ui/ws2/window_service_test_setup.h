@@ -55,8 +55,6 @@ class WindowServiceTestSetup {
 
   WindowService* service() { return service_.get(); }
 
-  aura::test::AuraTestHelper* aura_test_helper() { return &aura_test_helper_; }
-
  private:
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};

@@ -18,7 +18,6 @@ interface ScreenProviderObserver {
                     int64 internal_display_id);
 };
 
-// TODO(sky): remove this once ws has been removed. https://crbug.com/837713
 interface ScreenProvider {
   // Adding an observer triggers a notification with the initial values.
   AddObserver(ScreenProviderObserver observer);
