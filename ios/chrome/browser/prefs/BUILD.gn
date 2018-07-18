@@ -60,7 +60,6 @@ source_set("browser_prefs") {
     "//components/web_resource",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/consent_auditor",
     "//ios/chrome/browser/desktop_promotion",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/geolocation",
