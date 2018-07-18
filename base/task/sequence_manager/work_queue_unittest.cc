@@ -16,7 +16,9 @@
 namespace base {
 namespace sequence_manager {
 namespace internal {
+
 namespace {
+
 void NopTask() {}
 
 struct Cancelable {
@@ -26,6 +28,7 @@ struct Cancelable {
 
   WeakPtrFactory<Cancelable> weak_ptr_factory;
 };
+
 }  // namespace
 
 class WorkQueueTest : public testing::Test {

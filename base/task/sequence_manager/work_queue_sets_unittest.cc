@@ -12,6 +12,7 @@
 
 namespace base {
 namespace sequence_manager {
+
 class TimeDomain;
 
 namespace internal {

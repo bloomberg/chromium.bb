@@ -9,6 +9,7 @@
 namespace base {
 namespace sequence_manager {
 namespace internal {
+
 namespace {
 
 struct TestElement {
@@ -364,7 +365,8 @@ TEST_F(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
 TEST_F(IntrusiveHeapTest, CompareNodes) {
   TestElement five{5, nullptr}, six{6, nullptr};
 
-  // This is the stdlibc++ assertion that fails in http://crbug.com/661080
+  // Check that we have a strict comparator, otherwise std::is_heap()
+  // (used in DCHECK) may fail. See http://crbug.com/661080.
   EXPECT_FALSE(IntrusiveHeapTest::CompareNodes(six, six));
 
   EXPECT_FALSE(IntrusiveHeapTest::CompareNodes(five, six));
