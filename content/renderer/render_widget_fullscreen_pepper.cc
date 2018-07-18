@@ -253,19 +253,19 @@ class PepperWidget : public WebWidget {
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32_t routing_id,
-    const RenderWidget::ShowCallback& show_callback,
+    RenderWidget::ShowCallback show_callback,
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
     const ScreenInfo& screen_info,
     mojom::WidgetRequest widget_request) {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
-  DCHECK(!show_callback.is_null());
+  DCHECK(show_callback);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(routing_id, compositor_deps, plugin,
                                        active_url, screen_info,
                                        std::move(widget_request)));
-  widget->Init(show_callback, new PepperWidget(widget.get()));
+  widget->Init(std::move(show_callback), new PepperWidget(widget.get()));
   widget->AddRef();
   return widget.get();
 }

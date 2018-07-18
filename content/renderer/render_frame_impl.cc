@@ -1712,8 +1712,8 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
     return nullptr;
   }
   RenderWidget::ShowCallback show_callback =
-      base::Bind(&RenderViewImpl::ShowCreatedFullscreenWidget,
-                 render_view()->GetWeakPtr());
+      base::BindOnce(&RenderViewImpl::ShowCreatedFullscreenWidget,
+                     render_view()->GetWeakPtr());
 
   // TODO(fsamuel): It's not clear if we should be passing in the
   // web ScreenInfo or the original ScreenInfo here.

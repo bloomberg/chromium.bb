@@ -516,8 +516,8 @@ RenderWidget* RenderWidget::CreateForPopup(
   scoped_refptr<RenderWidget> widget(new RenderWidget(
       routing_id, compositor_deps, popup_type, screen_info, false, false, false,
       task_runner, std::move(widget_channel_request)));
-  ShowCallback opener_callback =
-      base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
+  ShowCallback opener_callback = base::BindOnce(
+      &RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
   widget->Init(std::move(opener_callback),
                RenderWidget::CreateWebWidget(widget.get()));
   DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
@@ -561,7 +561,7 @@ RenderWidget* RenderWidget::CreateForFrame(
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
-  widget->Init(RenderWidget::ShowCallback(),
+  widget->Init(base::NullCallback(),
                RenderWidget::CreateWebFrameWidget(widget.get(), frame));
   widget->UpdateWebViewWithDeviceScaleFactor();
 
@@ -608,8 +608,7 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
-void RenderWidget::Init(const ShowCallback& show_callback,
-                        WebWidget* web_widget) {
+void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
@@ -628,7 +627,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
       render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
                          : nullptr);
 
-  show_callback_ = show_callback;
+  show_callback_ = std::move(show_callback);
 
   webwidget_internal_ = web_widget;
   webwidget_mouse_lock_target_.reset(
@@ -1572,7 +1571,7 @@ void RenderWidget::AutoscrollEnd() {
 void RenderWidget::Show(WebNavigationPolicy policy) {
   DCHECK(!did_show_) << "received extraneous Show call";
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
-  DCHECK(!show_callback_.is_null());
+  DCHECK(show_callback_);
 
   if (did_show_)
     return;
@@ -1580,8 +1579,7 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
   did_show_ = true;
 
   // The opener is responsible for actually showing this widget.
-  show_callback_.Run(this, policy, initial_rect_);
-  show_callback_.Reset();
+  std::move(show_callback_).Run(this, policy, initial_rect_);
 
   // NOTE: initial_rect_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if as_popup is false, or the browser

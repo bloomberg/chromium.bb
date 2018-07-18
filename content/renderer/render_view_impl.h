@@ -114,7 +114,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   static RenderViewImpl* Create(
       CompositorDependencies* compositor_deps,
       mojom::CreateViewParamsPtr params,
-      const RenderWidget::ShowCallback& show_callback,
+      RenderWidget::ShowCallback show_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Used by content_layouttest_support to hook into the creation of
@@ -356,7 +356,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void Initialize(mojom::CreateViewParamsPtr params,
-                  const RenderWidget::ShowCallback& show_callback,
+                  RenderWidget::ShowCallback show_callback,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void SetScreenMetricsEmulationParameters(
       bool enabled,
