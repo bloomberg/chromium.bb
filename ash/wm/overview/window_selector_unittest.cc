@@ -949,6 +949,7 @@ TEST_F(WindowSelectorTest, SkipOverviewWindow) {
 // mode correctly applies the transformations to the window and correctly
 // updates the window bounds on exiting overview mode: http://crbug.com/401664.
 TEST_F(WindowSelectorTest, FullscreenWindowTabletMode) {
+  UpdateDisplay("800x600");
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -961,13 +962,24 @@ TEST_F(WindowSelectorTest, FullscreenWindowTabletMode) {
   gfx::Rect fullscreen_window_bounds(window1->bounds());
   EXPECT_NE(normal_window_bounds, fullscreen_window_bounds);
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
+
+  const gfx::Rect fullscreen(800, 600);
+  const gfx::Rect normal_work_area(800, 552);
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(gfx::Rect(800, 600),
+            screen->GetDisplayNearestWindow(window1.get()).work_area());
+
   ToggleOverview();
+  EXPECT_EQ(fullscreen,
+            screen->GetDisplayNearestWindow(window1.get()).work_area());
+
   // Window 2 would normally resize to normal window bounds on showing the shelf
   // for overview but this is deferred until overview is exited.
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
   ToggleOverview();
-
+  EXPECT_EQ(fullscreen,
+            screen->GetDisplayNearestWindow(window1.get()).work_area());
   // Since the fullscreen window is still active, window2 will still have the
   // larger bounds.
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
@@ -976,7 +988,19 @@ TEST_F(WindowSelectorTest, FullscreenWindowTabletMode) {
   // the shelf bringing window2 back to the normal bounds.
   ToggleOverview();
   ClickWindow(window2.get());
+  // Selecting non fullscreen window should set the work area back to normal.
+  EXPECT_EQ(normal_work_area,
+            screen->GetDisplayNearestWindow(window1.get()).work_area());
   EXPECT_EQ(normal_window_bounds, window2->GetTargetBounds());
+
+  ToggleOverview();
+  EXPECT_EQ(normal_work_area,
+            screen->GetDisplayNearestWindow(window1.get()).work_area());
+  ClickWindow(window1.get());
+  // Selecting fullscreen. The work area should be updated to fullscreen as
+  // well.
+  EXPECT_EQ(fullscreen,
+            screen->GetDisplayNearestWindow(window1.get()).work_area());
 }
 
 // Tests that beginning window selection hides the app list.
