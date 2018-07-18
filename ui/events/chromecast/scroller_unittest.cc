@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/chromecast/scroller.h"
+#include "ui/events/mobile_scroller.h"
 
 namespace ui {
 namespace {
@@ -19,8 +19,8 @@ const float kDefaultVelocityX = -350.f;
 const float kDefaultVelocityY = 220.f;
 const float kEpsilon = 1e-3f;
 
-Scroller::Config DefaultConfig() {
-  return Scroller::Config();
+MobileScroller::Config DefaultConfig() {
+  return MobileScroller::Config();
 }
 
 }  // namespace
@@ -28,7 +28,7 @@ Scroller::Config DefaultConfig() {
 class ScrollerTest : public testing::Test {};
 
 TEST_F(ScrollerTest, Scroll) {
-  Scroller scroller(DefaultConfig());
+  MobileScroller scroller(DefaultConfig());
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Start a scroll and verify initialized values.
@@ -99,7 +99,7 @@ TEST_F(ScrollerTest, Scroll) {
 }
 
 TEST_F(ScrollerTest, Fling) {
-  Scroller scroller(DefaultConfig());
+  MobileScroller scroller(DefaultConfig());
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Start a fling and verify initialized values.

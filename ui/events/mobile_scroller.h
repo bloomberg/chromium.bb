@@ -25,6 +25,10 @@ class EVENTS_BASE_EXPORT MobileScroller : public GestureCurve {
 
     // Controls fling accumulation. Defaults to disabled.
     bool flywheel_enabled;
+
+    // Controls whether to use chromecast optimized
+    // scrolling. Defaults to false, mimic normal Android scrolling.
+    bool chromecast_optimized;
   };
 
   explicit MobileScroller(const Config& config);
