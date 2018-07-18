@@ -4,7 +4,6 @@
 
 mojom = "//components/autofill/content/common/autofill_types.mojom"
 public_headers = [
-  "//components/autofill/core/common/filling_status.h",
   "//components/autofill/core/common/form_data.h",
   "//components/autofill/core/common/form_data_predictions.h",
   "//components/autofill/core/common/form_field_data.h",
@@ -30,7 +29,6 @@ deps = [
 
 type_mappings = [
   "autofill.mojom.CheckStatus=autofill::FormFieldData::CheckStatus",
-  "autofill.mojom.FillingStatus=autofill::FillingStatus",
   "autofill.mojom.FormData=autofill::FormData",
   "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
   "autofill.mojom.FormFieldData=autofill::FormFieldData",
@@ -45,10 +43,10 @@ type_mappings = [
   "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
   "autofill.mojom.PasswordFormLayout=autofill::PasswordForm::Layout",
   "autofill.mojom.PasswordFormScheme=autofill::PasswordForm::Scheme",
-  "autofill.mojom.PasswordFormSubmissionIndicatorEvent=autofill::PasswordForm::SubmissionIndicatorEvent",
   "autofill.mojom.PasswordFormType=autofill::PasswordForm::Type",
   "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",
   "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
-  "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
   "autofill.mojom.ValueElementPair=autofill::ValueElementPair",
+  "autofill.mojom.PasswordFormSubmissionIndicatorEvent=autofill::PasswordForm::SubmissionIndicatorEvent",
+  "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
 ]

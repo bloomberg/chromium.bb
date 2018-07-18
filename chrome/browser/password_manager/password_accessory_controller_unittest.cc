@@ -5,8 +5,6 @@
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -247,7 +245,6 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<StrictMock<MockPasswordAccessoryView>>(),
         mock_dialog_factory_.Get());
     NavigateAndCommit(GURL("https://example.com"));
-    FocusWebContentsOnMainFrame();
   }
 
   PasswordAccessoryController* controller() {
@@ -360,7 +357,7 @@ TEST_F(PasswordAccessoryControllerTest, ClearsSuggestionsOnFrameNavigation) {
           ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)),
                       IsDivider(), MatchesOption(manage_passwords_str()))));
 
-  controller()->ClearSuggestions();
+  controller()->DidNavigateMainFrame();
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
@@ -372,6 +369,13 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
                       IsDivider(), MatchesOption(manage_passwords_str()))));
 
   controller()->OnPasswordsAvailable({}, GURL(kExampleSite));
+}
+
+TEST_F(PasswordAccessoryControllerTest, IgnoresCrossOriginCalls) {
+  // Don't expect any call to |OnItemsAvailable|. (https://crbug.com/854150)
+  EXPECT_CALL(*view(), OnItemsAvailable(_, _)).Times(0);
+  controller()->OnPasswordsAvailable({CreateEntry("Ben", "S3cur3").first},
+                                     GURL("https://other-domain.com"));
 }
 
 TEST_F(PasswordAccessoryControllerTest, RelaysAutomaticGenerationAvailable) {

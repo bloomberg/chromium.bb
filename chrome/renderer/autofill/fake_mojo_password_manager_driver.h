@@ -130,14 +130,6 @@ class FakeMojoPasswordManagerDriver
     return called_show_manual_fallback_for_saving_count_;
   }
 
-  bool last_focused_input_was_password() const {
-    return last_focused_input_was_password_;
-  }
-
-  bool last_focused_element_was_fillable() const {
-    return last_focused_element_was_fillable_;
-  }
-
  private:
   // mojom::PasswordManagerDriver:
   void PasswordFormsParsed(
@@ -173,7 +165,6 @@ class FakeMojoPasswordManagerDriver
   void ShowManualFallbackForSaving(
       const autofill::PasswordForm& password_form) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
 
   // Records whether ShowPasswordSuggestions() gets called.
   bool called_show_pw_suggestions_ = false;
@@ -215,14 +206,6 @@ class FakeMojoPasswordManagerDriver
   // Records the number of request to show manual fallback for password saving.
   // If it is zero, the fallback is not available.
   int called_show_manual_fallback_for_saving_count_ = 0;
-
-  // Records wether a password field was the last input that InputChanged() was
-  // called for.
-  bool last_focused_input_was_password_ = false;
-
-  // Records wether the last input that InputChanged() was called for was
-  // fillable.
-  bool last_focused_element_was_fillable_ = false;
 
   mojo::AssociatedBinding<autofill::mojom::PasswordManagerDriver> binding_;
 };

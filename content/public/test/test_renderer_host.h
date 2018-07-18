@@ -242,10 +242,6 @@ class RenderViewHostTestHarness : public testing::Test {
   // WebContentsTester::NavigateAndCommit for details.
   void NavigateAndCommit(const GURL& url);
 
-  // Sets the focused frame to the main frame of the WebContents for tests that
-  // rely on the focused frame not being null.
-  void FocusWebContentsOnMainFrame();
-
  protected:
   // testing::Test
   void SetUp() override;

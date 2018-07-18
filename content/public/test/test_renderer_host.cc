@@ -248,12 +248,6 @@ RenderViewHostTestHarness::CreateTestWebContents() {
 
   return TestWebContents::Create(GetBrowserContext(), std::move(instance));
 }
-void RenderViewHostTestHarness::FocusWebContentsOnMainFrame() {
-  TestWebContents* contents = static_cast<TestWebContents*>(web_contents());
-  auto* root = contents->GetFrameTree()->root();
-  contents->GetFrameTree()->SetFocusedFrame(
-      root, root->current_frame_host()->GetSiteInstance());
-}
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
   static_cast<TestWebContents*>(web_contents())->NavigateAndCommit(url);
