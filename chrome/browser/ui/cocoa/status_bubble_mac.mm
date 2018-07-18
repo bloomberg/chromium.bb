@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
@@ -393,7 +394,9 @@ void StatusBubbleMac::SetFrameAvoidingMouse(
 
   corner_flags |= OSDependentCornerFlags(window_frame);
 
-  [[window_ contentView] setCornerFlags:corner_flags];
+  BubbleView* contentView =
+      base::mac::ObjCCast<BubbleView>([window_ contentView]);
+  [contentView setCornerFlags:corner_flags];
   [window_ setFrame:window_frame display:YES];
 }
 
@@ -713,10 +716,11 @@ void StatusBubbleMac::ExpandBubble() {
 
   // Get the current corner flags and see what needs to change based on the
   // expansion.
-  unsigned long corner_flags = [[window_ contentView] cornerFlags];
+  BubbleView* contentView =
+      base::mac::ObjCCast<BubbleView>([window_ contentView]);
+  unsigned long corner_flags = [contentView cornerFlags];
   corner_flags |= OSDependentCornerFlags(actual_window_frame);
-  [[window_ contentView] setCornerFlags:corner_flags];
-
+  [contentView setCornerFlags:corner_flags];
 
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:kExpansionDurationSeconds];
