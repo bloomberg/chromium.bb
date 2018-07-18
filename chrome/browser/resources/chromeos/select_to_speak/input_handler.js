@@ -72,9 +72,7 @@ let InputHandler = function(callbacks) {
     if (!this.trackingMouse_)
       return false;
 
-    // Uses RectUtils.
-    // TODO(katie): Move RectUtils functions into the RectUtils namespace.
-    var rect = rectFromPoints(
+    var rect = RectUtils.rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y, evt.screenX, evt.screenY);
     this.callbacks_.onSelectionChanged(rect);
     return false;
@@ -162,7 +160,7 @@ InputHandler.prototype = {
    * @public
    */
   getMouseRect: function() {
-    return rectFromPoints(
+    return RectUtils.rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
         this.mouseEnd_.y);
   },

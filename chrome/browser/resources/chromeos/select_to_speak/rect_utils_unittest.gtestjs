@@ -25,12 +25,12 @@ TEST_F('SelectToSpeakRectUtilsUnitTest', 'Overlaps', function() {
   var rect2 = {left: 80, top: 0, width: 100, height: 20};
   var rect3 = {left: 0, top: 80, width: 20, height: 100};
 
-  assertTrue(overlaps(rect1, rect1));
-  assertTrue(overlaps(rect2, rect2));
-  assertTrue(overlaps(rect3, rect3));
-  assertTrue(overlaps(rect1, rect2));
-  assertTrue(overlaps(rect1, rect3));
-  assertFalse(overlaps(rect2, rect3));
+  assertTrue(RectUtils.overlaps(rect1, rect1));
+  assertTrue(RectUtils.overlaps(rect2, rect2));
+  assertTrue(RectUtils.overlaps(rect3, rect3));
+  assertTrue(RectUtils.overlaps(rect1, rect2));
+  assertTrue(RectUtils.overlaps(rect1, rect3));
+  assertFalse(RectUtils.overlaps(rect2, rect3));
 });
 
 TEST_F('SelectToSpeakRectUtilsUnitTest', 'RectFromPoints', function() {
@@ -38,17 +38,17 @@ TEST_F('SelectToSpeakRectUtilsUnitTest', 'RectFromPoints', function() {
 
   assertNotEquals(
       JSON.stringify(rect),
-      JSON.stringify(rectFromPoints(0, 0, 10, 10)));
+      JSON.stringify(RectUtils.rectFromPoints(0, 0, 10, 10)));
   assertEquals(
       JSON.stringify(rect),
-      JSON.stringify(rectFromPoints(10, 20, 60, 80)));
+      JSON.stringify(RectUtils.rectFromPoints(10, 20, 60, 80)));
   assertEquals(
       JSON.stringify(rect),
-      JSON.stringify(rectFromPoints(60, 20, 10, 80)));
+      JSON.stringify(RectUtils.rectFromPoints(60, 20, 10, 80)));
   assertEquals(
       JSON.stringify(rect),
-      JSON.stringify(rectFromPoints(10, 80, 60, 20)));
+      JSON.stringify(RectUtils.rectFromPoints(10, 80, 60, 20)));
   assertEquals(
       JSON.stringify(rect),
-      JSON.stringify(rectFromPoints(60, 80, 10, 20)));
+      JSON.stringify(RectUtils.rectFromPoints(60, 80, 10, 20)));
 });

@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Utility functions for processing words within strings and nodes.
+// Utilities for processing words within strings and nodes.
+
+/**
+ * @constructor
+ */
+let WordUtils = function() {};
 
 /**
  * Regular expression to find the start of the next word after a word boundary.
@@ -10,7 +15,7 @@
  * unicode characters.
  * @type {RegExp}
  */
-const WORD_START_REGEXP = /\b\S/;
+WordUtils.WORD_START_REGEXP = /\b\S/;
 
 /**
  * Regular expression to find the end of the next word, which is followed by
@@ -18,7 +23,7 @@ const WORD_START_REGEXP = /\b\S/;
  * \w does not know about many unicode characters.
  * @type {RegExp}
  */
-const WORD_END_REGEXP = /\S\s/;
+WordUtils.WORD_END_REGEXP = /\S\s/;
 
 /**
  * Searches through text starting at an index to find the next word's
@@ -26,15 +31,15 @@ const WORD_END_REGEXP = /\S\s/;
  * @param {string|undefined} text The string to search through
  * @param {number} indexAfter The index into text at which to start
  *      searching.
- * @param {NodeGroupItem} nodeGroupItem The node whose name we are
- *      searching through.
+ * @param {ParagraphUtils.NodeGroupItem} nodeGroupItem The node whose name we
+ *      are searching through.
  * @return {number} The index of the next word's start
  */
-function getNextWordStart(text, indexAfter, nodeGroupItem) {
+WordUtils.getNextWordStart = function(text, indexAfter, nodeGroupItem) {
   if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
-    let node = findInlineTextNodeByCharacterIndex(
+    let node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
         nodeGroupItem.node, indexAfter - nodeGroupItem.startChar);
-    let startCharInParent = getStartCharIndexInParent(node);
+    let startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
     for (var i = 0; i < node.wordStarts.length; i++) {
       if (node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent <
           indexAfter) {
@@ -47,9 +52,10 @@ function getNextWordStart(text, indexAfter, nodeGroupItem) {
   } else {
     // Try to parse using a regex, which is imperfect.
     // Fall back to the given index if we can't find a match.
-    return nextWordHelper(text, indexAfter, WORD_START_REGEXP, indexAfter);
+    return WordUtils.nextWordHelper(
+        text, indexAfter, WordUtils.WORD_START_REGEXP, indexAfter);
   }
-}
+};
 
 /**
  * Searches through text starting at an index to find the next word's
@@ -57,15 +63,15 @@ function getNextWordStart(text, indexAfter, nodeGroupItem) {
  * @param {string|undefined} text The string to search through
  * @param {number} indexAfter The index into text at which to start
  *      searching.
- * @param {NodeGroupItem} nodeGroupItem The node whose name we are
- *      searching through.
+ * @param {ParagraphUtils.NodeGroupItem} nodeGroupItem The node whose name we
+ *      are searching through.
  * @return {number} The index of the next word's end
  */
-function getNextWordEnd(text, indexAfter, nodeGroupItem) {
+WordUtils.getNextWordEnd = function(text, indexAfter, nodeGroupItem) {
   if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
-    let node = findInlineTextNodeByCharacterIndex(
+    let node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
         nodeGroupItem.node, indexAfter - nodeGroupItem.startChar + 1);
-    let startCharInParent = getStartCharIndexInParent(node);
+    let startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
     for (var i = 0; i < node.wordEnds.length; i++) {
       if (node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent - 1 <
           indexAfter) {
@@ -80,10 +86,11 @@ function getNextWordEnd(text, indexAfter, nodeGroupItem) {
   } else {
     // Try to parse using a regex, which is imperfect.
     // Fall back to the full length of the text if we can't find a match.
-    return nextWordHelper(text, indexAfter, WORD_END_REGEXP, text.length - 1) +
+    return WordUtils.nextWordHelper(
+               text, indexAfter, WordUtils.WORD_END_REGEXP, text.length - 1) +
         1;
   }
-}
+};
 
 /**
  * Searches through text to find the first index of a regular expression
@@ -97,7 +104,7 @@ function getNextWordEnd(text, indexAfter, nodeGroupItem) {
  * @return {number} The index found by the regular expression, or -1
  *                    if none found.
  */
-function nextWordHelper(text, indexAfter, re, defaultValue) {
+WordUtils.nextWordHelper = function(text, indexAfter, re, defaultValue) {
   if (text === undefined) {
     return defaultValue;
   }
@@ -106,4 +113,4 @@ function nextWordHelper(text, indexAfter, re, defaultValue) {
     return indexAfter + result.index;
   }
   return defaultValue;
-}
+};
