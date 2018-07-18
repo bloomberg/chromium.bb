@@ -24,6 +24,9 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
+// The empty view's accessibility identifier.
++ (NSString*)accessibilityIdentifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_EMPTY_VIEW_H_

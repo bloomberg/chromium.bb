@@ -13,7 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
-#import "ios/chrome/browser/ui/reading_list/empty_reading_list_background_view.h"
+#import "ios/chrome/browser/ui/reading_list/empty_reading_list_message_util.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_updater.h"
@@ -30,6 +30,8 @@
 #endif
 
 namespace {
+// The image to use in the placeholder view while the table is empty.
+NSString* const kEmptyStateImage = @"reading_list_empty_state_new";
 // Types of ListItems used by the reading list UI.
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader = kItemTypeEnumZero,
@@ -72,8 +74,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // The action sheet used to confirm whether items should be marked as read or
 // unread.
 @property(nonatomic, strong) ActionSheetCoordinator* markConfirmationSheet;
-// The background to use when the table is empty.
-@property(nonatomic, strong) UIView* emptyStateBackgroundView;
 
 @end
 
@@ -87,7 +87,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 @synthesize selectedUnreadItemCount = _selectedUnreadItemCount;
 @synthesize selectedReadItemCount = _selectedReadItemCount;
 @synthesize markConfirmationSheet = _markConfirmationSheet;
-@synthesize emptyStateBackgroundView = _emptyStateBackgroundView;
 
 - (instancetype)init {
   self = [super initWithTableViewStyle:UITableViewStylePlain
@@ -95,7 +94,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (self) {
     _toolbarManager = [[ReadingListToolbarButtonManager alloc] init];
     _toolbarManager.commandHandler = self;
-    _emptyStateBackgroundView = [[EmptyReadingListBackgroundView alloc] init];
   }
   return self;
 }
@@ -835,10 +833,11 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
 // Called when the table is empty.
 - (void)tableIsEmpty {
-  if (self.tableView.backgroundView == self.emptyStateBackgroundView)
-    return;
+  [self
+      addEmptyTableViewWithAttributedMessage:GetReadingListEmptyMessage()
+                                       image:[UIImage
+                                                 imageNamed:kEmptyStateImage]];
   self.tableView.alwaysBounceVertical = NO;
-  self.tableView.backgroundView = self.emptyStateBackgroundView;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   [self.audience readingListHasItems:NO];
 }
