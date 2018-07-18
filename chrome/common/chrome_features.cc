@@ -149,6 +149,8 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // Enables the blocking of third-party modules.
+// Note: Due to a limitation in the implementation of this feature, it is
+// required to start the browser two times to fully enable or disable it.
 const base::Feature kThirdPartyModulesBlocking{
     "ThirdPartyModulesBlocking", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
