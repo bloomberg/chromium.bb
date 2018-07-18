@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -31,6 +30,11 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
+#endif
 
 using content::DevToolsAgentHost;
 
@@ -149,6 +153,12 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
 bool ChromeDevToolsManagerDelegate::AllowInspection(
     Profile* profile,
     const extensions::Extension* extension) {
+#if defined(OS_CHROMEOS)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kForceDevToolsAvailable))
+    return true;
+#endif
+
   using Availability = policy::DeveloperToolsPolicyHandler::Availability;
   Availability availability =
       policy::DeveloperToolsPolicyHandler::GetDevToolsAvailability(

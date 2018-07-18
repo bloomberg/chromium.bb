@@ -94,6 +94,10 @@
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using app_modal::JavaScriptAppModalDialog;
 using app_modal::NativeAppModalDialog;
 using content::BrowserThread;
@@ -1921,7 +1925,31 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, PolicyDisallowed) {
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
-using DevToolsSanityExtensionTest = extensions::ExtensionBrowserTest;
+class DevToolsSanityExtensionTest : public extensions::ExtensionBrowserTest {
+ public:
+  // Installs an extensions, emulating that it has been force-installed by
+  // policy.
+  // Contains assertions - callers should wrap calls of this method in
+  // |ASSERT_NO_FATAL_FAILURE|. Fills |*out_web_contents| with a |WebContents|
+  // that belongs to the force-installed extension.
+  void ForceInstallExtension(content::WebContents** out_web_contents) {
+    base::FilePath crx_path;
+    base::PathService::Get(chrome::DIR_TEST_DATA, &crx_path);
+    crx_path = crx_path.AppendASCII("devtools")
+                   .AppendASCII("extensions")
+                   .AppendASCII("options.crx");
+    const Extension* extension = InstallExtension(
+        crx_path, 1, extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+    ASSERT_TRUE(extension);
+
+    GURL url("chrome-extension://" + extension->id() + "/options.html");
+    ui_test_utils::NavigateToURL(browser(), url);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+    *out_web_contents = web_contents;
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(DevToolsSanityExtensionTest,
                        PolicyDisallowedForForceInstalledExtensions) {
   browser()->profile()->GetPrefs()->SetInteger(
@@ -1929,23 +1957,47 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityExtensionTest,
       static_cast<int>(policy::DeveloperToolsPolicyHandler::Availability::
                            kDisallowedForForceInstalledExtensions));
 
-  base::FilePath crx_path;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &crx_path);
-  crx_path = crx_path.AppendASCII("devtools")
-                 .AppendASCII("extensions")
-                 .AppendASCII("options.crx");
-  const Extension* extension = InstallExtension(
-      crx_path, 1, extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
-  ASSERT_TRUE(extension);
-
-  GURL url("chrome-extension://" + extension->id() + "/options.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* web_contents = nullptr;
+  ASSERT_NO_FATAL_FAILURE(ForceInstallExtension(&web_contents));
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
+}
+
+class DevToolsAllowedByCommandLineSwitch : public DevToolsSanityExtensionTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
+    // Same as |chromeos::switches::kForceDevToolsAvailable|, but used as a
+    // literal here so it's possible to verify that the switch does not apply on
+    // non-ChromeOS platforms.
+    const std::string kForceDevToolsAvailableBase = "force-devtools-available";
+#if defined(OS_CHROMEOS)
+    ASSERT_EQ(kForceDevToolsAvailableBase,
+              chromeos::switches::kForceDevToolsAvailable);
+#endif
+    command_line->AppendSwitch("--" + kForceDevToolsAvailableBase);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
+                       SwitchOverridesPolicyOnChromeOS) {
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDevToolsAvailability,
+      static_cast<int>(policy::DeveloperToolsPolicyHandler::Availability::
+                           kDisallowedForForceInstalledExtensions));
+
+  content::WebContents* web_contents = nullptr;
+  ASSERT_NO_FATAL_FAILURE(ForceInstallExtension(&web_contents));
+
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
+#else
+  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
+#endif
 }
 
 class DevToolsPixelOutputTests : public DevToolsSanityTest {
