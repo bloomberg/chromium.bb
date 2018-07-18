@@ -4,7 +4,6 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -36,6 +35,9 @@
 
 <!--
   Material design icon button with a special styling.
+
+  `gaia-icon-button` does not include any icon-set, so containing elements
+  should import the icon-set needed for the specified |icon|.
 
   Example:
     <gaia-icon-button icon="close"></gaia-icon>

@@ -142,7 +142,7 @@ Polymer({
         return 'settings:mouse';
       default:
         return device.connected ? 'settings:bluetooth-connected' :
-                                  'settings:bluetooth';
+                                  'cr:bluetooth';
     }
   },
 });

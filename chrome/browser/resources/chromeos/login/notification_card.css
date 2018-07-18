@@ -15,11 +15,11 @@
   width: 28px;
 }
 
-iron-icon[icon=warning] {
+iron-icon[icon='cr:warning'] {
   color: var(--google-yellow-500);
 }
 
-iron-icon[icon=done] {
+iron-icon[icon='notification-card:done'] {
   color: var(--google-green-500);
 }
 

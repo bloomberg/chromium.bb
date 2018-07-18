@@ -144,7 +144,7 @@ Polymer({
   getIcon_: function() {
     if (!this.bluetoothToggleState_)
       return 'settings:bluetooth-disabled';
-    return 'settings:bluetooth';
+    return 'cr:bluetooth';
   },
 
   /**
