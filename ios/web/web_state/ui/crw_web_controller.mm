@@ -4985,21 +4985,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)webViewSecurityFeaturesDidChange {
-  if (self.loadPhase == web::LOAD_REQUESTED || _webView.isLoading) {
+  if (self.loadPhase == web::LOAD_REQUESTED) {
     // Do not update SSL Status for pending load. It will be updated in
     // |webView:didCommitNavigation:| callback.
-    //
-    // The second condition is important because on a back/forward navigation,
-    // WKBackForwardList.currentItem is already updated to the pending item when
-    // _webView.isLoading becomes true, but WKBasedNavigationManager hasn't yet
-    // updated its pending item (since |webView:didStartProvisionalNavigation|
-    // is not yet triggered). In this small window, the navigation item returned
-    // by GetLastCommittedItem() is actually the pending item. Early return to
-    // avoid exposing this inconsistent state to users outside of //ios/web.
-    // See http://crbug.com/842151 for a bug caused by this scenario.
-    // |updateSSLStatusForCurrentNavigationItem| is called again in
-    // |webViewLoadingStateDidChange|, so the SSL status of the committed item
-    // will be eventually updated.
     return;
   }
   [self updateSSLStatusForCurrentNavigationItem];
