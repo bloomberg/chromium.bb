@@ -81,16 +81,20 @@ class DictationButtonTrayTest : public AshTestBase {
 // Ensures that creation doesn't cause any crashes and adds the image icon.
 // Also checks that the tray is visible.
 TEST_F(DictationButtonTrayTest, BasicConstruction) {
-  Shell::Get()->accessibility_controller()->SetDictationEnabled(true);
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetDictationAcceleratorDialogAccepted();
+  controller->SetDictationEnabled(true);
   EXPECT_TRUE(GetImageView(GetTray()));
   EXPECT_TRUE(GetTray()->visible());
 }
 
 // Test that clicking the button activates dictation.
 TEST_F(DictationButtonTrayTest, ButtonActivatesDictation) {
-  Shell::Get()->accessibility_controller()->SetDictationEnabled(true);
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
+  controller->SetDictationAcceleratorDialogAccepted();
+  controller->SetDictationEnabled(true);
   TestAccessibilityControllerClient client;
   controller->SetClient(client.CreateInterfacePtrAndBind());
 
@@ -107,7 +111,10 @@ TEST_F(DictationButtonTrayTest, ButtonActivatesDictation) {
 
 // Test that activating dictation causes the button to activate.
 TEST_F(DictationButtonTrayTest, ActivatingDictationActivatesButton) {
-  Shell::Get()->accessibility_controller()->SetDictationEnabled(true);
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetDictationAcceleratorDialogAccepted();
+  controller->SetDictationEnabled(true);
   Shell::Get()->OnDictationStarted();
   EXPECT_TRUE(GetTray()->is_active());
 
@@ -118,9 +125,10 @@ TEST_F(DictationButtonTrayTest, ActivatingDictationActivatesButton) {
 // Tests that the tray only renders as active while dictation is listening. Any
 // termination of dictation clears the active state.
 TEST_F(DictationButtonTrayTest, ActiveStateOnlyDuringDictation) {
-  Shell::Get()->accessibility_controller()->SetDictationEnabled(true);
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
+  controller->SetDictationAcceleratorDialogAccepted();
+  controller->SetDictationEnabled(true);
   TestAccessibilityControllerClient client;
   controller->SetClient(client.CreateInterfacePtrAndBind());
 

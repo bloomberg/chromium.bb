@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility/accessibility_highlight_controller.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
@@ -89,6 +90,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
+    prefs::kDictationAcceleratorDialogHasBeenAccepted,
 };
 
 // Returns true if |pref_service| is the one used for the signin screen.
@@ -278,6 +280,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
         prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, false);
     registry->RegisterBooleanPref(
         prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false);
+    registry->RegisterBooleanPref(
+        prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
     return;
   }
 
@@ -305,6 +309,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
       prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted);
   registry->RegisterForeignPref(
       prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
+  registry->RegisterForeignPref(
+      prefs::kDictationAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::SetHighContrastAcceleratorDialogAccepted() {
@@ -350,6 +356,21 @@ bool AccessibilityController::HasDockedMagnifierAcceleratorDialogBeenAccepted()
   return active_user_prefs_ &&
          active_user_prefs_->GetBoolean(
              prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
+}
+
+void AccessibilityController::SetDictationAcceleratorDialogAccepted() {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(
+      prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::HasDictationAcceleratorDialogBeenAccepted()
+    const {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(
+             prefs::kDictationAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::AddObserver(AccessibilityObserver* observer) {
@@ -405,9 +426,24 @@ void AccessibilityController::SetDictationEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
 
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  const bool dialog_ever_accepted = HasDictationAcceleratorDialogBeenAccepted();
+
+  if (enabled && !dialog_ever_accepted) {
+    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+        IDS_ASH_DICTATION_CONFIRMATION_TITLE,
+        IDS_ASH_DICTATION_CONFIRMATION_BODY, base::BindOnce([]() {
+          AccessibilityController* controller =
+              Shell::Get()->accessibility_controller();
+          controller->SetDictationAcceleratorDialogAccepted();
+          controller->active_user_prefs_->SetBoolean(
+              prefs::kAccessibilityDictationEnabled, true);
+          controller->active_user_prefs_->CommitPendingWrite();
+        }));
+  } else {
+    active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
+                                   enabled);
+    active_user_prefs_->CommitPendingWrite();
+  }
 }
 
 bool AccessibilityController::IsDictationEnabled() const {
