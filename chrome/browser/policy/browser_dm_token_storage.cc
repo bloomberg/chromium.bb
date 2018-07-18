@@ -30,7 +30,7 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::storage_for_testing_ = nullptr;
 
 // Static function that can't be overridden. Implementation is only compiled for
 // non-supported platforms.
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_LINUX)
 // static
 BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
   if (storage_for_testing_)
@@ -95,6 +95,8 @@ void BrowserDMTokenStorage::InitIfNeeded() {
     return;
 
   is_initialized_ = true;
+
+  // Only supported in official builds.
   client_id_ = InitClientId();
   DVLOG(1) << "Client ID = " << client_id_;
   if (client_id_.empty())
