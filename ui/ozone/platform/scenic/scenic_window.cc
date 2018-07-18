@@ -340,7 +340,7 @@ bool ScenicWindow::OnKeyboardEvent(
   if (event.code_point)
     dom_key = DomKey::FromCharacter(event.code_point);
 
-  KeyEvent key_event(ET_KEY_PRESSED, key_code, dom_code,
+  KeyEvent key_event(event_type, key_code, dom_code,
                      KeyModifiersToFlags(event.modifiers), dom_key,
                      base::TimeTicks::FromZxTime(event.event_time));
   delegate_->DispatchEvent(&key_event);
