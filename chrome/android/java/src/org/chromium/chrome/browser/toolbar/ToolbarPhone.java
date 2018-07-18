@@ -43,6 +43,7 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
@@ -317,6 +318,12 @@ public class ToolbarPhone extends ToolbarLayout
     private NewTabPage mVisibleNewTabPage;
     private float mPreTextureCaptureAlpha = 1f;
     private boolean mIsOverlayTabStackDrawableLight;
+
+    /**
+     * A global layout listener used to capture a new texture when the experimental toolbar button
+     * is added or removed.
+     */
+    private ViewTreeObserver.OnGlobalLayoutListener mExperimentalButtonLayoutListener;
 
     // The following are some properties used during animation.  We use explicit property classes
     // to avoid the cost of reflection for each animation setup.
@@ -2817,7 +2824,8 @@ public class ToolbarPhone extends ToolbarLayout
             mExperimentalButton.setVisibility(View.INVISIBLE);
         }
 
-        if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
+        mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
+        getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
     }
 
     @Override
@@ -2826,7 +2834,13 @@ public class ToolbarPhone extends ToolbarLayout
 
         mExperimentalButton.setVisibility(View.GONE);
         mBrowsingModeViews.remove(mExperimentalButton);
+
+        getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
+    }
+
+    private void requestLayoutHostUpdateForExperimentalButton() {
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
+        getViewTreeObserver().removeOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
     }
 
     @VisibleForTesting
