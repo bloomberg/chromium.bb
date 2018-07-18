@@ -60,6 +60,5 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   window->SetProperty(
       aura::client::kWindowIconKey,
       new gfx::ImageSkia(*rb.GetImageSkiaNamed(IDR_SETTINGS_LOGO_192)));
-  window->SetProperty(aura::client::kHasOverviewIcon, true);
   aura_window_tracker_->Add(window);
 }

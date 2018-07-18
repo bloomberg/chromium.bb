@@ -168,12 +168,9 @@ class BrowserNonClientFrameViewAsh
   friend class HostedAppNonClientFrameViewAshTest;
   friend class ImmersiveModeControllerAshHostedAppBrowserTest;
 
-  // Returns whether a caption item (such as window controls, window icons, and
-  // the back button) should be currently visible. They're split in two methods
-  // because the caption buttons's visibility has a special treatment when in
-  // tablet mode.
+  // Returns whether the caption buttons should be visible. They are hidden, for
+  // example, in overview mode and tablet mode.
   bool ShouldShowCaptionButtons() const;
-  bool ShouldShowIconAndBackButton() const;
 
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.
