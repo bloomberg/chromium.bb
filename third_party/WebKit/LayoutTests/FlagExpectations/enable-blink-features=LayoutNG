@@ -146,7 +146,6 @@ crbug.com/591099 external/wpt/css/css-position/position-relative-table-tfoot-lef
 crbug.com/591099 external/wpt/css/css-position/position-relative-table-thead-top.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-relative-table-tr-top-absolute-child.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-sticky-writing-modes.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-pseudo/first-letter-opacity-float-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-rhythm/ [ Skip ]
 crbug.com/591099 external/wpt/css/css-scroll-anchoring/clipped-scrollers-skipped.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-scroll-anchoring/opt-out.html [ Failure ]
