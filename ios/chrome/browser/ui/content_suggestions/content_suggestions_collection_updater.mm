@@ -340,6 +340,18 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
                    collectionView:self.collectionViewController.collectionView
       willDeleteItemsAtIndexPaths:oldItems];
 
+  // Reset collection model data for |sectionIdentifier|
+  [self.collectionViewController.collectionViewModel
+                     setFooter:nil
+      forSectionWithIdentifier:sectionIdentifier];
+  [self.collectionViewController.collectionViewModel
+                     setHeader:nil
+      forSectionWithIdentifier:sectionIdentifier];
+  [self.sectionIdentifiersFromContentSuggestions
+      removeObject:@(sectionIdentifier)];
+  [self.collectionViewController.collectionViewModel
+      removeSectionWithIdentifier:sectionIdentifier];
+  [self addSectionsForSectionInfoToModel:@[ sectionInfo ]];
   [self addSuggestionsToModel:[self.dataSource itemsForSectionInfo:sectionInfo]
               withSectionInfo:sectionInfo];
 
