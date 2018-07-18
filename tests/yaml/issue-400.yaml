@@ -68,24 +68,22 @@ tests:
   # "s" is not in numericnocontchars so does not require contractsign to cancel numeric mode
   - - "#abckabc"
     - "123kabc"
-    - {xfail: true}
   # whitespace cancels numeric mode
   - - "#abc abc"
     - "123 abc"
   # capsletter cancels numeric mode
   - - "#abc,abc"
     - "123Abc"
-    - {xfail: true}
   - - "#abc,kabc"
     - "123Kabc"
-    - {xfail: true}
 
   # FIXME: the following tests are only relevant if capsletter fails to cancel numeric mode
   # once stuck, numeric mode may not be canceled even by nocontractsign
   - - "#abc,abck;abc"
     - "123Abckabc" # FIXME: undefined behavior?
     - {xfail: true}
-    # Buevest: should work, even if capsletter should be enough.
+    # Received: '123Abck\56/abc'
+    # Buevest: Nocontractsign should be ignored if it has no effect.
 
   - - "#abc,abc#;abc"
     - "123Abcabc" # FIXME: undefined behavior?
@@ -96,14 +94,12 @@ tests:
   # ... but it may be canceled by a numcontractsign if it directly follows a numericnocontchar
   - - "#abc,abc#a;abc"
     - "123Abc1abc"
-    - {xfail: true} # capsletter fails, numcontractsign works
   - - "#abc,abc;abc"
     - "123Abcabc" # FIXME: undefined behavior?
     - {xfail: true} # capsletter fails, numcontractsign works
   # ... it may also be canceled by whitespace
   - - "#abc,abc abc"
     - "123Abc abc"
-    - {xfail: true} # capsletter fails, space works
 
   # numericmodechars do not cancel numeric mode
   - - "#abc-abc"
@@ -112,7 +108,6 @@ tests:
     - "123-abc"
   - - "#abc-,abc"
     - "123-Abc"
-    - xfail: true # capsletter does not work
 
 ### begcapsword and endcapsword
 
@@ -172,7 +167,6 @@ tests:
   # Number cancels a word in capitals
   - - ",abc#abc;abc"
     - "ABC123abc"
-    - {xfail: true}
   # capsmodechars do not cancel a capsword
   - - ",abc-.abc"
     - "ABC-abc"
