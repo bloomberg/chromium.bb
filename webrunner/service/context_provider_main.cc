@@ -7,12 +7,14 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "webrunner/service/context_provider_impl.h"
 
 namespace webrunner {
 
 int ContextProviderMain() {
+  base::MessageLoopForUI message_loop;
   base::fuchsia::ServiceDirectory* directory =
       base::fuchsia::ServiceDirectory::GetDefault();
   ContextProviderImpl context_provider;

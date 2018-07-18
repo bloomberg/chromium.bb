@@ -8,13 +8,17 @@
 
 namespace webrunner {
 
-WebRunnerContentBrowserClient::WebRunnerContentBrowserClient() = default;
+WebRunnerContentBrowserClient::WebRunnerContentBrowserClient(
+    zx::channel context_channel)
+    : context_channel_(std::move(context_channel)) {}
+
 WebRunnerContentBrowserClient::~WebRunnerContentBrowserClient() = default;
 
 content::BrowserMainParts*
 WebRunnerContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  return new WebRunnerBrowserMainParts();
+  DCHECK(context_channel_);
+  return new WebRunnerBrowserMainParts(std::move(context_channel_));
 }
 
 }  // namespace webrunner

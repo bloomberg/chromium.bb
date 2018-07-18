@@ -5,14 +5,14 @@
 #ifndef WEBRUNNER_SERVICE_CONTEXT_PROVIDER_MAIN_H_
 #define WEBRUNNER_SERVICE_CONTEXT_PROVIDER_MAIN_H_
 
-#include "webrunner/service/context_provider_main.h"
+#include "webrunner/common/webrunner_export.h"
 
 namespace webrunner {
 
 // Main function for the process that implements web::ContextProvider interface.
 // Called by WebRunnerMainDelegate when the process is started without --type
 // argument.
-int ContextProviderMain();
+WEBRUNNER_EXPORT int ContextProviderMain();
 
 }  // namespace webrunner
 

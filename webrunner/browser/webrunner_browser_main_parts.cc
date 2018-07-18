@@ -7,11 +7,13 @@
 #include "webrunner/browser/context_impl.h"
 #include "webrunner/browser/webrunner_browser_context.h"
 #include "webrunner/browser/webrunner_screen.h"
-#include "webrunner/service/common.h"
 
 namespace webrunner {
 
-WebRunnerBrowserMainParts::WebRunnerBrowserMainParts() = default;
+WebRunnerBrowserMainParts::WebRunnerBrowserMainParts(
+    zx::channel context_channel)
+    : context_channel_(std::move(context_channel)) {}
+
 WebRunnerBrowserMainParts::~WebRunnerBrowserMainParts() = default;
 
 void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
@@ -22,12 +24,8 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   DCHECK(!browser_context_);
   browser_context_ = std::make_unique<WebRunnerBrowserContext>();
 
-  // Get the Context InterfaceRequest which was passed to the process by
-  // the ContextProvider.
-  zx::channel context_handle{zx_take_startup_handle(kContextRequestHandleId)};
-  CHECK(context_handle) << "Could not find the Context request startup handle.";
   fidl::InterfaceRequest<chromium::web::Context> context_request(
-      std::move(context_handle));
+      std::move(context_channel_));
 
   context_impl_ = std::make_unique<ContextImpl>(browser_context_.get());
   context_binding_ = std::make_unique<fidl::Binding<chromium::web::Context>>(

@@ -53,6 +53,7 @@ executable("service_exe") {
     ":service_lib",
     "//base",
     "//content/public/app:both",
+    "//services/service_manager/embedder:embedder_switches",
   ]
   sources = [
     "service/web_content_service_main.cc",
@@ -75,7 +76,6 @@ component("service_lib") {
     "//content/public/common",
     "//content/public/renderer",
     "//services/network/public/cpp",
-    "//services/service_manager/embedder:embedder_switches",
     "//ui/aura",
     "//ui/display",
     "//ui/platform_window",
