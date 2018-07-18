@@ -2436,8 +2436,10 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   }
 
   if (auto* layout_view = GetLayoutView()) {
-    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-      frame_view.CheckDoesNotNeedLayout();
+    allows_layout_invalidation_after_layout_clean_ = false;
+    ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {
+      if (!frame_view.ShouldThrottleRendering())
+        frame_view.CheckDoesNotNeedLayout();
       frame_view.allows_layout_invalidation_after_layout_clean_ = false;
     });
 
@@ -2520,8 +2522,10 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
              Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
     }
 
-    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-      frame_view.CheckDoesNotNeedLayout();
+    allows_layout_invalidation_after_layout_clean_ = true;
+    ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {
+      if (!frame_view.ShouldThrottleRendering())
+        frame_view.CheckDoesNotNeedLayout();
       frame_view.allows_layout_invalidation_after_layout_clean_ = true;
     });
   }
