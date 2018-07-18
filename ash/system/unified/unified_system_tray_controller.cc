@@ -238,8 +238,8 @@ void UnifiedSystemTrayController::ShowUserChooserWidget() {
   unified_view_->SetDetailedView(new UserChooserView(this));
 }
 
-void UnifiedSystemTrayController::ShowNetworkDetailedView() {
-  if (!IsExpanded())
+void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
+  if (!force && !IsExpanded())
     return;
 
   Shell::Get()->metrics()->RecordUserMetricsAction(
@@ -286,9 +286,6 @@ void UnifiedSystemTrayController::ShowAudioDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowNotifierSettingsView() {
-  if (!IsExpanded())
-    return;
-
   DCHECK(Shell::Get()->session_controller()->ShouldShowNotificationTray());
   DCHECK(!Shell::Get()->session_controller()->IsScreenLocked());
   ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));

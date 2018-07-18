@@ -71,7 +71,7 @@ void UnifiedSystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
       break;
     case mojom::TrayItem::kNetwork:
       tray_->ShowBubble(false /* show_by_click */);
-      tray_->bubble_->controller_->ShowNetworkDetailedView();
+      tray_->bubble_->controller_->ShowNetworkDetailedView(true /* force */);
       break;
   }
   std::move(cb).Run();

@@ -71,9 +71,11 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
 
   // Show user selector popup widget. Called from the view.
   void ShowUserChooserWidget();
-  // Show the detailed view of network. Called from the view.
-  void ShowNetworkDetailedView();
-  // Show the detailed view of bluetooth. Called from the view.
+  // Show the detailed view of network. If |force| is true, it shows the
+  // detailed view even if it's collapsed. Called from the view.
+  void ShowNetworkDetailedView(bool force);
+  // Show the detailed view of bluetooth. If collapsed, it doesn't show the
+  // detailed view. Called from the view.
   void ShowBluetoothDetailedView();
   // Show the detailed view of cast. Called from the view.
   void ShowCastDetailedView();
