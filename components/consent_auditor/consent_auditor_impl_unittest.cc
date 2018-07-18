@@ -15,7 +15,6 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync/user_events/fake_user_event_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::UserConsentSpecifics;
@@ -108,7 +107,11 @@ class ConsentAuditorImplTest : public testing::Test {
  public:
   void SetUp() override {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
-    user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
+    if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
+      consent_sync_bridge_ = std::make_unique<FakeConsentSyncBridge>();
+    } else {
+      user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
+    }
     ConsentAuditorImpl::RegisterProfilePrefs(pref_service_->registry());
     app_version_ = kCurrentAppVersion;
     app_locale_ = kCurrentAppLocale;
@@ -138,16 +141,8 @@ class ConsentAuditorImplTest : public testing::Test {
   }
 
   void SetIsSeparateConsentTypeEnabledFeature(bool new_value) {
-    // VariationParamsManager supports only one
-    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
-    // previous settings first to make this explicit.
-    params_manager_.ClearAllVariationParams();
-    if (new_value) {
-      params_manager_.SetVariationParamsWithFeatureAssociations(
-          /*trial_name=*/switches::kSyncUserConsentSeparateType.name,
-          /*param_values=*/std::map<std::string, std::string>(),
-          {switches::kSyncUserConsentSeparateType.name});
-    }
+    feature_list_.InitWithFeatureState(switches::kSyncUserConsentSeparateType,
+                                       new_value);
   }
 
   ConsentAuditorImpl* consent_auditor() { return consent_auditor_.get(); }
@@ -165,12 +160,15 @@ class ConsentAuditorImplTest : public testing::Test {
   std::string app_locale_;
   std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
 
-  variations::testing::VariationParamsManager params_manager_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(ConsentAuditorImplTest, LocalConsentPrefRepresentation) {
+  SetIsSeparateConsentTypeEnabledFeature(true);
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
+  SetConsentSyncBridge(std::make_unique<FakeConsentSyncBridge>());
+  SetUserEventService(nullptr);
   BuildConsentAuditorImpl();
 
   // No consents are written at first.
@@ -221,6 +219,8 @@ TEST_F(ConsentAuditorImplTest, LocalConsentPrefRepresentation) {
   const std::string kFeature2NewAppLocale = "de";
   SetAppVersion(kFeature2NewAppVersion);
   SetAppLocale(kFeature2NewAppLocale);
+  SetConsentSyncBridge(std::make_unique<FakeConsentSyncBridge>());
+  SetUserEventService(nullptr);
   // We rebuild consent auditor to emulate restarting Chrome. This is the only
   // way to change app version or app locale.
   BuildConsentAuditorImpl();
@@ -240,6 +240,9 @@ TEST_F(ConsentAuditorImplTest, LocalConsentPrefRepresentation) {
 
 TEST_F(ConsentAuditorImplTest, RecordingEnabled) {
   SetIsSeparateConsentTypeEnabledFeature(false);
+  SetConsentSyncBridge(nullptr);
+  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
+  BuildConsentAuditorImpl();
 
   consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
                                        ConsentStatus::GIVEN);
@@ -249,6 +252,9 @@ TEST_F(ConsentAuditorImplTest, RecordingEnabled) {
 
 TEST_F(ConsentAuditorImplTest, RecordingDisabled) {
   SetIsSeparateConsentTypeEnabledFeature(false);
+  SetConsentSyncBridge(nullptr);
+  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
+  BuildConsentAuditorImpl();
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
@@ -261,6 +267,7 @@ TEST_F(ConsentAuditorImplTest, RecordingDisabled) {
 TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserEvent) {
   SetIsSeparateConsentTypeEnabledFeature(false);
   SetConsentSyncBridge(nullptr);
+  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
   BuildConsentAuditorImpl();
@@ -295,7 +302,6 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
   auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
   FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
 
-  SetIsSeparateConsentTypeEnabledFeature(true);
   SetConsentSyncBridge(std::move(wrapped_fake_bridge));
   SetUserEventService(nullptr);
   SetAppVersion(kCurrentAppVersion);
@@ -333,6 +339,7 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
 TEST_F(ConsentAuditorImplTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
   SetIsSeparateConsentTypeEnabledFeature(false);
   SetConsentSyncBridge(nullptr);
+  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
   BuildConsentAuditorImpl();
 
   // There is no bridge (i.e. separate sync type for consents is disabled),
