@@ -73,6 +73,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       std::unique_ptr<download::DownloadCreateInfo> download_create_info,
       download::mojom::DownloadStreamHandlePtr stream_handle) override;
   void OnReceiveRedirect() override;
+  void OnResponseCompleted() override;
 
  private:
   // Helper method to start the network request.
@@ -86,6 +87,12 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       std::vector<GURL> url_chain,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+
+  // UrlDownloadHandler implementations.
+  void CancelRequest() override;
+
+  // Ask the |delegate_| to destroy this object.
+  void Destroy();
 
   base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate_;
 

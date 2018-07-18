@@ -26,13 +26,14 @@ namespace download {
 class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
     : public network::mojom::URLLoaderClient {
  public:
-  // Class for handling the stream once response starts.
+  // Class for handling the stream response.
   class Delegate {
    public:
     virtual void OnResponseStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         mojom::DownloadStreamHandlePtr stream_handle) = 0;
     virtual void OnReceiveRedirect() = 0;
+    virtual void OnResponseCompleted() = 0;
   };
 
   DownloadResponseHandler(
