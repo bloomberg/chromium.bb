@@ -250,7 +250,13 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
                       &account_tracker_,
                       nullptr),
 #endif
-      identity_manager_(&signin_manager_, &auth_service_, &account_tracker_),
+      gaia_cookie_manager_service_(&auth_service_,
+                                   "profile_sync_service_bundle",
+                                   &signin_client_),
+      identity_manager_(&signin_manager_,
+                        &auth_service_,
+                        &account_tracker_,
+                        &gaia_cookie_manager_service_),
       url_request_context_(new net::TestURLRequestContextGetter(
           base::ThreadTaskRunnerHandle::Get())) {
   RegisterPrefsForProfileSyncService(pref_service_.registry());
