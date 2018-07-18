@@ -18,16 +18,14 @@ namespace sql {
 // we don't have to NULL-check the ref_ to see if the statement is valid: we
 // only have to check the ref's validity bit.
 Statement::Statement()
-    : ref_(new Connection::StatementRef(NULL, NULL, false)),
+    : ref_(base::MakeRefCounted<Connection::StatementRef>(nullptr,
+                                                          nullptr,
+                                                          false)),
       stepped_(false),
-      succeeded_(false) {
-}
+      succeeded_(false) {}
 
 Statement::Statement(scoped_refptr<Connection::StatementRef> ref)
-    : ref_(ref),
-      stepped_(false),
-      succeeded_(false) {
-}
+    : ref_(std::move(ref)), stepped_(false), succeeded_(false) {}
 
 Statement::~Statement() {
   // Free the resources associated with this statement. We assume there's only
@@ -38,11 +36,12 @@ Statement::~Statement() {
 
 void Statement::Assign(scoped_refptr<Connection::StatementRef> ref) {
   Reset(true);
-  ref_ = ref;
+  ref_ = std::move(ref);
 }
 
 void Statement::Clear() {
-  Assign(new Connection::StatementRef(NULL, NULL, false));
+  Assign(
+      base::MakeRefCounted<Connection::StatementRef>(nullptr, nullptr, false));
   succeeded_ = false;
 }
 
