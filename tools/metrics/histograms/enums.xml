@@ -16165,6 +16165,13 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="EXTERNAL_COMPONENT"/>
 </enum>
 
+<enum name="ExtensionMessagingIncludeChannelIdBehavior">
+  <int value="0" label="Not requested"/>
+  <int value="1" label="Requested but denied"/>
+  <int value="2" label="Requested but not found"/>
+  <int value="3" label="Requested and included"/>
+</enum>
+
 <enum name="ExtensionNotificationType">
   <int value="0" label="NOTIFICATION_TYPE_SIMPLE"/>
   <int value="1" label="NOTIFICATION_TYPE_BASE_FORMAT"/>
