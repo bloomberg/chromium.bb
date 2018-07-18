@@ -20,8 +20,7 @@ import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.vr.VrDaydreamApi;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
@@ -68,19 +67,19 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
         }
 
         private boolean isDaydreamReady() {
-            return VrShellDelegate.isDaydreamReadyDevice();
+            return VrModuleProvider.getDelegate().isDaydreamReadyDevice();
         }
 
         private boolean isDaydreamViewPaired() {
-            final VrDaydreamApi daydreamApi = VrShellDelegate.getVrDaydreamApi();
-            if (daydreamApi == null) {
+            if (!isDaydreamReady()) {
                 return false;
             }
 
             // isDaydreamCurrentViewer() creates a concrete instance of DaydreamApi,
             // which can only be done on the main thread
             try {
-                return ThreadUtils.runOnUiThreadBlocking(daydreamApi::isDaydreamCurrentViewer);
+                return ThreadUtils.runOnUiThreadBlocking(
+                        VrModuleProvider.getDelegate()::isDaydreamCurrentViewer);
             } catch (CancellationException | ExecutionException | IllegalArgumentException e) {
                 return false;
             }

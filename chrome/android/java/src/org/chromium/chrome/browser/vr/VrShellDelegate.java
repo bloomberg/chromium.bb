@@ -684,6 +684,11 @@ public class VrShellDelegate
         return getVrClassesWrapper() != null && getVrClassesWrapper().isDaydreamReadyDevice();
     }
 
+    public static boolean isDaydreamCurrentViewer() {
+        if (sInstance != null) return sInstance.isDaydreamCurrentViewerInternal();
+        return getVrDaydreamApi().isDaydreamCurrentViewer();
+    }
+
     /**
      * @return A helper class for creating VR-specific classes that may not be available at compile
      * time.
@@ -795,11 +800,6 @@ public class VrShellDelegate
      */
     /* package */ static boolean isVrBrowsingEnabled(ChromeActivity activity, int vrSupportLevel) {
         return isVrBrowsingSupported(activity) && vrSupportLevel == VrSupportLevel.VR_DAYDREAM;
-    }
-
-    /* package */ static boolean isDaydreamCurrentViewer() {
-        if (sInstance != null) return sInstance.isDaydreamCurrentViewerInternal();
-        return getVrDaydreamApi().isDaydreamCurrentViewer();
     }
 
     /* package */ static boolean isInVrSession() {
