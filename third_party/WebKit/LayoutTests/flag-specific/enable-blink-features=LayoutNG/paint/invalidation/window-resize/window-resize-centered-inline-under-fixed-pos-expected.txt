@@ -20,7 +20,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 600, 250],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
@@ -50,8 +50,12 @@
       "reason": "incremental"
     },
     {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
       "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
@@ -85,7 +89,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 400, 250],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
@@ -115,8 +119,12 @@
       "reason": "incremental"
     },
     {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
       "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
@@ -150,7 +158,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 400, 600],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "Scrolling Contents Layer",
@@ -190,8 +198,12 @@
       "reason": "incremental"
     },
     {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
       "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
@@ -225,7 +237,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 800, 600],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "Scrolling Contents Layer",
@@ -260,8 +272,12 @@
       "reason": "incremental"
     },
     {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
       "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",

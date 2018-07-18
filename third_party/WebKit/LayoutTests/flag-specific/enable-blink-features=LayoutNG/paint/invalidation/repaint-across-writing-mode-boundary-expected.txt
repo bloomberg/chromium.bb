@@ -18,8 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
-          "rect": [528, 79, 63, 219],
+          "object": "NGPhysicalTextFragment 'paragraph 1'",
+          "rect": [548, 165, 23, 97],
           "reason": "selection"
         }
       ]
@@ -27,7 +27,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPaintFragment",
+      "object": "NGPhysicalTextFragment 'paragraph 1'",
       "reason": "selection"
     }
   ]

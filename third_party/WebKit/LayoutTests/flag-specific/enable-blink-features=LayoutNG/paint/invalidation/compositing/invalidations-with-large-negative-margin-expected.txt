@@ -18,29 +18,25 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'PASS'",
-          "rect": [8, 58, 38, 19],
-          "reason": "appeared"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='chip'",
+          "rect": [408, 8, 50, 50],
+          "reason": "subtree"
         },
         {
-          "object": "NGPhysicalTextFragment 'FAIL'",
-          "rect": [8, 58, 35, 19],
-          "reason": "disappeared"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='chip'",
+          "rect": [8, 8, 50, 50],
+          "reason": "subtree"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV",
       "reason": "subtree"
     },
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'PASS'",
+      "object": "LayoutNGBlockFlow (positioned) DIV id='chip'",
       "reason": "subtree"
     }
   ]

@@ -15,23 +15,16 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [712, 8, 80, 20],
-          "reason": "chunk disappeared"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='item'",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV",
       "reason": "subtree"
     },
     {
-      "object": "LayoutNGBlockFlow (floating) DIV class='state'",
+      "object": "NGPhysicalTextFragment 'is invisible'",
       "reason": "subtree"
     }
   ]
