@@ -224,7 +224,7 @@ bool ShouldRunUserExperiment(const InstallerState& installer_state) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10)
     return false;
 
-  // Enterprise brand codes and domain joined machines are excluded.
+  // Installs originating from the MSI and domain joined machines are excluded.
   if (IsEnterpriseInstall(installer_state))
     return false;
 
