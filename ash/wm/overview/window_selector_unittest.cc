@@ -2801,10 +2801,9 @@ TEST_F(WindowSelectorTest, Backdrop) {
   ToggleOverview();
 }
 
-// crbug.com/864465
 // Verify that the mask that is applied to add rounded corners in overview mode
 // is removed during animations and drags.
-TEST_F(WindowSelectorTest, DISABLED_RoundedEdgeMaskVisibility) {
+TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
   UpdateDisplay("400x400");
   const gfx::Rect bounds(0, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
