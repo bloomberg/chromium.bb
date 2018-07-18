@@ -124,17 +124,6 @@ inline void NGLineBreaker::ComputeCanBreakAfter(
       auto_wrap_ && break_iterator_.IsBreakable(item_result->end_offset);
 }
 
-// True if |item| is trailing; i.e., |item| and all items after it are opaque to
-// whitespace collapsing.
-bool NGLineBreaker::IsTrailing(const NGInlineItem& item) const {
-  const Vector<NGInlineItem>& items = Items();
-  for (const NGInlineItem* it = &item; it != items.end(); ++it) {
-    if (it->EndCollapseType() != NGInlineItem::kOpaqueToCollapsing)
-      return false;
-  }
-  return true;
-}
-
 // Compute the base direction for bidi algorithm for this line.
 void NGLineBreaker::ComputeBaseDirection() {
   // If 'unicode-bidi' is not 'plaintext', use the base direction of the block.
@@ -247,6 +236,10 @@ void NGLineBreaker::BreakLine() {
       HandleControlItem(item);
       continue;
     }
+    if (item.Type() == NGInlineItem::kFloating) {
+      HandleFloat(item);
+      continue;
+    }
     if (item.Type() == NGInlineItem::kBidiControl) {
       HandleBidiControlItem(item);
       continue;
@@ -264,8 +257,6 @@ void NGLineBreaker::BreakLine() {
       HandleAtomicInline(item);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       HandleOpenTag(item);
-    } else if (item.Type() == NGInlineItem::kFloating) {
-      HandleFloat(item);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       DCHECK_EQ(item.Length(), 0u);
       AddItem(item);
@@ -480,15 +471,19 @@ scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
   return result;
 }
 
-// Truncate the end of |ShapeResult|. The |ShapeResult| is supposed to be at the
-// end of the line, and thus this function makes sure the end is safe-to-break.
-void NGLineBreaker::TruncateTextEnd(NGInlineItemResult* item_result) {
-  DCHECK(item_result);
-  DCHECK(item_result->item);
-  DCHECK(item_result->shape_result);
-  const ShapeResult& source_result = *item_result->shape_result;
-  const unsigned start_offset = item_result->start_offset;
-  const unsigned end_offset = item_result->end_offset;
+// Compute a new ShapeResult for the specified end offset.
+// The end is re-shaped if it is not safe-to-break.
+scoped_refptr<ShapeResult> NGLineBreaker::TruncateLineEndResult(
+    const NGInlineItemResult& item_result,
+    unsigned end_offset) {
+  DCHECK(item_result.item);
+  DCHECK(item_result.shape_result);
+  const ShapeResult& source_result = *item_result.shape_result;
+  const unsigned start_offset = item_result.start_offset;
+  DCHECK_GE(start_offset, source_result.StartIndexForResult());
+  DCHECK_LE(end_offset, source_result.EndIndexForResult());
+  DCHECK(start_offset > source_result.StartIndexForResult() ||
+         end_offset < source_result.EndIndexForResult());
 
   scoped_refptr<ShapeResult> new_result;
   unsigned last_safe = source_result.PreviousSafeToBreakOffset(end_offset);
@@ -497,15 +492,23 @@ void NGLineBreaker::TruncateTextEnd(NGInlineItemResult* item_result) {
     new_result = source_result.SubRange(start_offset, last_safe);
   if (last_safe < end_offset) {
     scoped_refptr<ShapeResult> end_result = ShapeText(
-        *item_result->item, std::max(last_safe, start_offset), end_offset);
+        *item_result.item, std::max(last_safe, start_offset), end_offset);
     if (new_result)
       end_result->CopyRange(0, end_offset, new_result.get());
     else
       new_result = std::move(end_result);
   }
-
   DCHECK(new_result);
-  item_result->shape_result = std::move(new_result);
+  return new_result;
+}
+
+// Update |ShapeResult| in |item_result| to match to its |start_offset| and
+// |end_offset|. The end is re-shaped if it is not safe-to-break.
+void NGLineBreaker::UpdateShapeResult(NGInlineItemResult* item_result) {
+  DCHECK(item_result);
+  item_result->shape_result =
+      TruncateLineEndResult(*item_result, item_result->end_offset);
+  DCHECK(item_result->shape_result);
   item_result->inline_size = item_result->shape_result->SnappedWidth();
 }
 
@@ -545,7 +548,11 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
     NGInlineItemResult* item_result = AddItem(item, end);
     item_result->has_only_trailing_spaces = true;
     item_result->shape_result = item.TextShapeResult();
-    TruncateTextEnd(item_result);
+    if (item_result->start_offset == item.StartOffset() &&
+        item_result->end_offset == item.EndOffset())
+      item_result->inline_size = item_result->shape_result->SnappedWidth();
+    else
+      UpdateShapeResult(item_result);
     position_ += item_result->inline_size;
     item_result->can_break_after =
         end < text.length() && !IsBreakableSpace(text[end]);
@@ -567,10 +574,51 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
 // https://drafts.csswg.org/css-text-3/#white-space-phase-2
 void NGLineBreaker::RemoveTrailingCollapsibleSpace() {
   DCHECK(!trailing_spaces_collapsed_);
-  trailing_spaces_collapsed_ = true;
 
-  if (item_results_->IsEmpty())
+  ComputeTrailingCollapsibleSpace();
+  trailing_spaces_collapsed_ = true;
+  if (!trailing_collapsible_space_.has_value())
     return;
+
+  // We have a trailing collapsible space. Remove it.
+  NGInlineItemResult* item_result = trailing_collapsible_space_->item_result;
+  position_ -= item_result->inline_size;
+  if (scoped_refptr<const ShapeResult>& collapsed_shape_result =
+          trailing_collapsible_space_->collapsed_shape_result) {
+    DCHECK_GE(item_result->end_offset, item_result->start_offset + 2);
+    --item_result->end_offset;
+    item_result->shape_result = std::move(collapsed_shape_result);
+    item_result->inline_size = item_result->shape_result->SnappedWidth();
+    position_ += item_result->inline_size;
+  } else {
+    item_results_->erase(item_result);
+  }
+  trailing_collapsible_space_.reset();
+}
+
+// Compute the width of trailing spaces without removing it.
+LayoutUnit NGLineBreaker::TrailingCollapsibleSpaceWidth() {
+  if (trailing_spaces_collapsed_)
+    return LayoutUnit();
+
+  ComputeTrailingCollapsibleSpace();
+  if (!trailing_collapsible_space_.has_value())
+    return LayoutUnit();
+
+  // Normally, the width of new_reuslt is smaller, but technically it can be
+  // larger. In such case, it means the trailing spaces has negative width.
+  NGInlineItemResult* item_result = trailing_collapsible_space_->item_result;
+  if (scoped_refptr<const ShapeResult>& collapsed_shape_result =
+          trailing_collapsible_space_->collapsed_shape_result) {
+    return item_result->inline_size - collapsed_shape_result->SnappedWidth();
+  }
+  return item_result->inline_size;
+}
+
+// Find trailing collapsible space if exists. The result is cached to
+// |trailing_collapsible_space_|.
+void NGLineBreaker::ComputeTrailingCollapsibleSpace() {
+  DCHECK(!trailing_spaces_collapsed_);
 
   for (auto it = item_results_->rbegin(); it != item_results_->rend(); ++it) {
     NGInlineItemResult& item_result = *it;
@@ -579,25 +627,29 @@ void NGLineBreaker::RemoveTrailingCollapsibleSpace() {
     if (item.EndCollapseType() == NGInlineItem::kOpaqueToCollapsing)
       continue;
     if (item.Type() != NGInlineItem::kText)
-      return;
-    const String& text = Text();
-    if (text[item_result.end_offset - 1] != kSpaceCharacter)
-      return;
+      break;
+    DCHECK_GT(item_result.end_offset, 0u);
     DCHECK(item.Style());
-    if (!item.Style()->CollapseWhiteSpace())
-      return;
+    if (Text()[item_result.end_offset - 1] != kSpaceCharacter ||
+        !item.Style()->CollapseWhiteSpace() ||
+        // |shape_result| is nullptr if this is an overflow because BreakText()
+        // uses kNoResultIfOverflow option.
+        !item_result.shape_result)
+      break;
 
-    // We have a trailing collapsible space. Remove it.
-    position_ -= item_result.inline_size;
-    --item_result.end_offset;
-    if (item_result.end_offset == item_result.start_offset) {
-      item_results_->erase(&item_result);
-    } else {
-      TruncateTextEnd(&item_result);
-      position_ += item_result.inline_size;
+    if (!trailing_collapsible_space_.has_value() ||
+        trailing_collapsible_space_->item_result != &item_result) {
+      trailing_collapsible_space_.emplace();
+      trailing_collapsible_space_->item_result = &item_result;
+      if (item_result.end_offset - 1 > item_result.start_offset) {
+        trailing_collapsible_space_->collapsed_shape_result =
+            TruncateLineEndResult(item_result, item_result.end_offset - 1);
+      }
     }
     return;
   }
+
+  trailing_collapsible_space_.reset();
 }
 
 void NGLineBreaker::AppendHyphen(const NGInlineItem& item) {
@@ -775,13 +827,6 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   if (item_index_ <= handled_floats_end_item_index_ || ignore_floats_)
     return;
 
-  // Floats need to know the current line width to determine whether to put it
-  // into the current line or to the next line. Remove trailing spaces if this
-  // float is trailing, because whitespace should be collapsed across floats,
-  // and this logic requires the width after trailing spaces are collapsed.
-  if (IsTrailing(item) && !trailing_spaces_collapsed_)
-    RemoveTrailingCollapsibleSpace();
-
   NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
 
   const ComputedStyle& float_style = node.Style();
@@ -809,6 +854,16 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   bool can_fit_float =
       position_ + inline_margin_size <=
       line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
+  if (!can_fit_float) {
+    // Floats need to know the current line width to determine whether to put it
+    // into the current line or to the next line. Trailing spaces will be
+    // removed if this line breaks here because they should be collapsed across
+    // floats, but they are still included in the current line position at this
+    // point. Exclude it when computing whether this float can fit or not.
+    can_fit_float =
+        position_ + inline_margin_size - TrailingCollapsibleSpaceWidth() <=
+        line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
+  }
 
   // The float should be positioned after the current line if:
   //  - It can't fit within the non-shape area. (Assuming the current position
@@ -1005,6 +1060,7 @@ void NGLineBreaker::HandleOverflow() {
 #if DCHECK_IS_ON()
       item_result->CheckConsistency(true);
 #endif
+      // If BreakText() changed this item small enough to fit, break here.
       if (item_result->inline_size <= item_available_width) {
         DCHECK(item_result->end_offset < item.EndOffset());
         DCHECK(item_result->can_break_after);
@@ -1073,6 +1129,27 @@ void NGLineBreaker::Rewind(unsigned new_end) {
     }
   }
 
+  // Because floats are added to |positioned_floats_| or |unpositioned_floats_|,
+  // rewinding them needs to remove from these lists too.
+  for (unsigned i = item_results.size(); i > new_end;) {
+    NGInlineItemResult& rewind = item_results[--i];
+    if (rewind.item->Type() == NGInlineItem::kFloating) {
+      NGBlockNode float_node(ToLayoutBox(rewind.item->GetLayoutObject()));
+      if (!RemoveUnpositionedFloat(unpositioned_floats_, float_node)) {
+        // TODO(kojii): We do not have mechanism to remove once positioned
+        // floats yet, and that rewinding them may lay it out twice. For now,
+        // prohibit rewinding positioned floats. This may results in incorrect
+        // layout, but still better than rewinding them.
+        new_end = i + 1;
+        if (new_end == item_results.size()) {
+          UpdatePosition();
+          return;
+        }
+        break;
+      }
+    }
+  }
+
   if (new_end) {
     // Use |results[new_end - 1].end_offset| because it may have been truncated
     // and may not be equal to |results[new_end].start_offset|.
@@ -1084,21 +1161,10 @@ void NGLineBreaker::Rewind(unsigned new_end) {
     offset_ = first_remove.start_offset;
   }
 
-  // Remove unpositioned floats that are to be rewound.
-  // Note, items before |handled_floats_end_item_index_| are inserted outside of
-  // the line breaker and that should not be removed when rewinding.
-  for (unsigned i = new_end; i < item_results.size(); i++) {
-    NGInlineItemResult& rewind = item_results[i];
-    if (rewind.item->Type() == NGInlineItem::kFloating) {
-      NGBlockNode float_node(ToLayoutBox(rewind.item->GetLayoutObject()));
-      RemoveUnpositionedFloat(unpositioned_floats_, float_node);
-      // TODO(kojii): Probably need to do something if this float was already
-      // positioned, but haven't got how to do this yet.
-    }
-  }
-
   item_results.Shrink(new_end);
 
+  trailing_spaces_collapsed_ = false;
+  trailing_collapsible_space_.reset();
   SetLineEndFragment(nullptr);
   UpdatePosition();
 }

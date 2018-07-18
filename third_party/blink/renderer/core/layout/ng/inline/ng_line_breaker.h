@@ -5,6 +5,7 @@
 #ifndef NGLineBreaker_h
 #define NGLineBreaker_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_line_layout_opportunity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
@@ -98,12 +99,20 @@ class CORE_EXPORT NGLineBreaker {
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
                  LayoutUnit available_width);
-  void TruncateTextEnd(NGInlineItemResult*);
+
+  scoped_refptr<ShapeResult> TruncateLineEndResult(
+      const NGInlineItemResult& item_result,
+      unsigned end_offset);
+  void UpdateShapeResult(NGInlineItemResult*);
   scoped_refptr<ShapeResult> ShapeText(const NGInlineItem& item,
                                        unsigned start,
                                        unsigned end);
+
   void HandleTrailingSpaces(const NGInlineItem&);
   void RemoveTrailingCollapsibleSpace();
+  LayoutUnit TrailingCollapsibleSpaceWidth();
+  void ComputeTrailingCollapsibleSpace();
+
   void AppendHyphen(const NGInlineItem& item);
 
   void HandleControlItem(const NGInlineItem&);
@@ -123,7 +132,6 @@ class CORE_EXPORT NGLineBreaker {
   void MoveToNextOf(const NGInlineItemResult&);
 
   void ComputeBaseDirection();
-  bool IsTrailing(const NGInlineItem&) const;
 
   LayoutUnit AvailableWidth() const {
     return line_opportunity_.AvailableInlineSize();
@@ -201,6 +209,14 @@ class CORE_EXPORT NGLineBreaker {
   ShapeResultSpacing<String> spacing_;
   bool previous_line_had_forced_break_ = false;
   const Hyphenation* hyphenation_ = nullptr;
+
+  // Cache the result of |ComputeTrailingCollapsibleSpace| to avoid shaping
+  // multiple times.
+  struct TrailingCollapsibleSpace {
+    NGInlineItemResult* item_result;
+    scoped_refptr<const ShapeResult> collapsed_shape_result;
+  };
+  base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
 
   // Keep track of handled float items. See HandleFloat().
   unsigned handled_floats_end_item_index_;
