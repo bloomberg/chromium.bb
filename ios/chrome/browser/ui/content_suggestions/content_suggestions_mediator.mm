@@ -378,8 +378,11 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       self.sectionInformationByCategory[wrapper];
   sectionInfo.expanded = [self.contentArticlesExpanded value];
 
-  // Reload the data model.
-  [self.dataSink reloadAllData];
+  // Reloading the section with animations looks bad because the section
+  // border with the new collapsed height draws before the elements collapse.
+  [UIView setAnimationsEnabled:NO];
+  [self.dataSink reloadSection:sectionInfo];
+  [UIView setAnimationsEnabled:YES];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver
