@@ -26,6 +26,8 @@ source_set("cells") {
     "table_view_text_item.mm",
     "table_view_text_link_item.h",
     "table_view_text_link_item.mm",
+    "table_view_url_cell_favicon_badge_view.h",
+    "table_view_url_cell_favicon_badge_view.mm",
     "table_view_url_item.h",
     "table_view_url_item.mm",
   ]
