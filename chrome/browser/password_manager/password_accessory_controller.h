@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -51,11 +52,11 @@ class PasswordAccessoryController
       PasswordGenerationDialogViewInterface>(PasswordAccessoryController*)>;
   ~PasswordAccessoryController() override;
 
-  // Notifies the view about credentials to be displayed.
-  void OnPasswordsAvailable(
+  // Saves credentials for an origin so that they can be used in the sheet.
+  void SavePasswordsForOrigin(
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
-      const GURL& origin);
+      const url::Origin& origin);
 
   // Notifies the view that automatic password generation status changed.
   void OnAutomaticGenerationStatusChanged(
@@ -93,9 +94,6 @@ class PasswordAccessoryController
   // focused field.
   void RefreshSuggestionsForField(bool is_fillable, bool is_password_field);
 
-  // Remove stale suggestions by sending empty or recent suggestions to the UI.
-  void ClearSuggestions();
-
   // The web page view containing the focused field.
   gfx::NativeView container_view() const;
 
@@ -118,6 +116,9 @@ class PasswordAccessoryController
   // their signatures and the maximum password size.
   struct GenerationElementData;
 
+  // Data for a credential pair that is transformed into a suggestion.
+  struct SuggestionElementData;
+
   // Required for construction via |CreateForWebContents|:
   explicit PasswordAccessoryController(content::WebContents* contents);
   friend class content::WebContentsUserData<PasswordAccessoryController>;
@@ -127,6 +128,14 @@ class PasswordAccessoryController
       content::WebContents* web_contents,
       std::unique_ptr<PasswordAccessoryViewInterface> view,
       CreateDialogFactory create_dialog_callback);
+
+  // Creates the view items based on the |origin_suggestions_| and sends them to
+  // the view. If |is_password_field| is false, password suggestions won't be
+  // interactive.
+  void SendViewItems(bool is_password_field);
+
+  // Contains the last set of credentials by origin.
+  std::map<url::Origin, std::vector<SuggestionElementData>> origin_suggestions_;
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
@@ -139,6 +148,10 @@ class PasswordAccessoryController
 
   // Modal dialog view meant to display the generated password.
   std::unique_ptr<PasswordGenerationDialogViewInterface> dialog_view_;
+
+  // Remembers whether the last focused field was a password field. That way,
+  // the reconstructed elements have the correct type.
+  bool last_focused_field_was_for_passwords_ = false;
 
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up

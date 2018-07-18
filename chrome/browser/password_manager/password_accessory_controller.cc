@@ -52,6 +52,22 @@ struct PasswordAccessoryController::GenerationElementData {
   uint32_t max_password_length;
 };
 
+struct PasswordAccessoryController::SuggestionElementData {
+  SuggestionElementData(base::string16 password,
+                        base::string16 username,
+                        Item::Type username_type)
+      : password(password), username(username), username_type(username_type) {}
+
+  // Password string to be used for this credential.
+  base::string16 password;
+
+  // Username string to be used for this credential.
+  base::string16 username;
+
+  // Decides whether the username is interactive (i.e. empty ones are not).
+  Item::Type username_type;
+};
+
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
@@ -85,46 +101,19 @@ void PasswordAccessoryController::CreateForWebContentsForTesting(
           web_contents, std::move(view), create_dialog_factory)));
 }
 
-void PasswordAccessoryController::OnPasswordsAvailable(
+void PasswordAccessoryController::SavePasswordsForOrigin(
     const std::map<base::string16, const PasswordForm*>& best_matches,
-    const GURL& origin) {
-  const url::Origin& frame_origin =
-      web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
-  url::Origin password_origin = url::Origin::Create(origin);
-  if (!frame_origin.IsSameOriginWith(password_origin)) {
-    // TODO(fhorschig): Support iframes: https://crbug.com/854150.
-    return;  // Don't make passwords available across origins.
-  }
-  DCHECK(view_);
-  std::vector<Item> items;
-  base::string16 passwords_title_str;
-  passwords_title_str = l10n_util::GetStringFUTF16(
-      best_matches.empty()
-          ? IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE
-          : IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE,
-      base::ASCIIToUTF16(origin.host()));
-  items.emplace_back(passwords_title_str, passwords_title_str,
-                     /*is_password=*/false, Item::Type::LABEL);
+    const url::Origin& origin) {
+  std::vector<SuggestionElementData>* suggestions =
+      &origin_suggestions_[origin];
+  suggestions->clear();
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
-    base::string16 username = GetDisplayUsername(*form);
-    items.emplace_back(username, username, /*is_password=*/false,
-                       form->username_value.empty()
-                           ? Item::Type::NON_INTERACTIVE_SUGGESTION
-                           : Item::Type::SUGGESTION);
-    items.emplace_back(
-        form->password_value,
-        l10n_util::GetStringFUTF16(
-            IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION, username),
-        /*is_password=*/true, Item::Type::SUGGESTION);
+    suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
+                              form->username_value.empty()
+                                  ? Item::Type::NON_INTERACTIVE_SUGGESTION
+                                  : Item::Type::SUGGESTION);
   }
-  items.emplace_back(base::string16(), base::string16(), false,
-                     Item::Type::DIVIDER);
-  base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
-      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
-  items.emplace_back(manage_passwords_title, manage_passwords_title, false,
-                     Item::Type::OPTION);
-  view_->OnItemsAvailable(origin, items);
 }
 
 void PasswordAccessoryController::OnAutomaticGenerationStatusChanged(
@@ -220,18 +209,11 @@ void PasswordAccessoryController::OnFilledIntoFocusedField(
   // TODO(fhorschig): Update UI by hiding the sheet or communicating the error.
 }
 
-void PasswordAccessoryController::ClearSuggestions() {
-  // TODO(fhorschig): This should drop suggestion for the given frame.
-  OnPasswordsAvailable(
-      /*best_matches=*/{},
-      web_contents_->GetFocusedFrame()->GetLastCommittedOrigin().GetURL());
-}
-
 void PasswordAccessoryController::RefreshSuggestionsForField(
     bool is_fillable,
     bool is_password_field) {
   // TODO(crbug/853766): Record CTR metric.
-  // TODO(fhorschig): Test and implement.
+  SendViewItems(is_password_field);
 }
 
 gfx::NativeView PasswordAccessoryController::container_view() const {
@@ -240,4 +222,51 @@ gfx::NativeView PasswordAccessoryController::container_view() const {
 
 gfx::NativeWindow PasswordAccessoryController::native_window() const {
   return web_contents_->GetTopLevelNativeWindow();
+}
+
+void PasswordAccessoryController::SendViewItems(bool is_password_field) {
+  DCHECK(view_);
+  last_focused_field_was_for_passwords_ = is_password_field;
+  const url::Origin& origin =
+      web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
+  const std::vector<SuggestionElementData>& suggestions =
+      origin_suggestions_[origin];
+  std::vector<Item> items;
+  base::string16 passwords_title_str;
+
+  // Create the title element
+  passwords_title_str = l10n_util::GetStringFUTF16(
+      suggestions.empty()
+          ? IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE
+          : IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE,
+      base::ASCIIToUTF16(origin.host()));
+  items.emplace_back(passwords_title_str, passwords_title_str,
+                     /*is_password=*/false, Item::Type::LABEL);
+
+  // Create a username and a password element for every suggestions
+  for (const SuggestionElementData& suggestion : suggestions) {
+    items.emplace_back(suggestion.username, suggestion.username,
+                       /*is_password=*/false, suggestion.username_type);
+    items.emplace_back(suggestion.password,
+                       l10n_util::GetStringFUTF16(
+                           IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION,
+                           suggestion.username),
+                       /*is_password=*/true,
+                       is_password_field
+                           ? Item::Type::SUGGESTION
+                           : Item::Type::NON_INTERACTIVE_SUGGESTION);
+  }
+
+  // Create a horizontal divider line before the options.
+  items.emplace_back(base::string16(), base::string16(), false,
+                     Item::Type::DIVIDER);
+
+  // Create the link to all passwords.
+  base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
+  items.emplace_back(manage_passwords_title, manage_passwords_title, false,
+                     Item::Type::OPTION);
+
+  // Notify the view about all just created elements.
+  view_->OnItemsAvailable(items);
 }

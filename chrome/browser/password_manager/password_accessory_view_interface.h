@@ -64,11 +64,8 @@ class PasswordAccessoryViewInterface {
   virtual ~PasswordAccessoryViewInterface() = default;
 
   // Called with items that should replace all existing items in the accessory
-  // sheet. The |origin| will be used to let the user know to which site the
-  // passwords belong and the |items| are the labels and actions that allow the
-  // filling.
-  virtual void OnItemsAvailable(const GURL& origin,
-                                const std::vector<AccessoryItem>& items) = 0;
+  // sheet. The |items| are the labels and actions that allow the filling.
+  virtual void OnItemsAvailable(const std::vector<AccessoryItem>& items) = 0;
 
   // Called when the generation action should be offered or rescinded
   // in the keyboard accessory.
