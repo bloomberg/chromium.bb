@@ -157,6 +157,7 @@ void OmniboxViewViews::Init() {
   set_controller(this);
   SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+  GetRenderText()->set_symmetric_selection_visual_bounds(true);
 
   if (popup_window_mode_)
     SetReadOnly(true);
