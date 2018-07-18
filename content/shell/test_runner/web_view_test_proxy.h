@@ -212,11 +212,13 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
 //    override RenderViewImpl's getter and call a getter from
 //    WebViewTestProxyBase instead. In addition, WebViewTestProxyBase will have
 //    a public setter that could be called from the TestRunner.
-template <class Base, typename... Args>
+template <class Base>
 class WebViewTestProxy : public Base, public WebViewTestProxyBase {
  public:
-  explicit WebViewTestProxy(Args... args)
-      : Base(args...), WebViewTestProxyBase(Base::WidgetClient()) {}
+  template <typename... Args>
+  explicit WebViewTestProxy(Args&&... args)
+      : Base(std::forward<Args>(args)...),
+        WebViewTestProxyBase(Base::WidgetClient()) {}
 
   // WebViewClient implementation.
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
