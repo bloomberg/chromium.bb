@@ -85,7 +85,6 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     // Error code returned when an Intent fails to start an Activity.
     public static final int START_INTENT_FAILURE = -1;
 
-    protected Context mApplicationContext;
     protected SparseArray<IntentCallback> mOutstandingIntents;
     // We use a weak reference here to prevent this from leaking in WebView.
     private WeakReference<Context> mContextRef;
@@ -226,7 +225,6 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      */
     @SuppressLint("UseSparseArrays")
     protected WindowAndroid(Context context, DisplayAndroid display) {
-        mApplicationContext = context.getApplicationContext();
         // context does not have the same lifetime guarantees as an application context so we can't
         // hold a strong reference to it.
         mContextRef = new WeakReference<>(context);
@@ -235,8 +233,9 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         // Temporary solution for flaky tests, see https://crbug.com/767624 for context
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
-            mAccessibilityManager = (AccessibilityManager) mApplicationContext.getSystemService(
-                    Context.ACCESSIBILITY_SERVICE);
+            mAccessibilityManager =
+                    (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.ACCESSIBILITY_SERVICE);
         }
         mDisplayAndroid = display;
         // Configuration.isDisplayServerWideColorGamut must be queried from the window's context.
@@ -374,8 +373,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     public final boolean hasPermission(String permission) {
         if (mPermissionDelegate != null) return mPermissionDelegate.hasPermission(permission);
 
-        return ApiCompatibilityUtils.checkPermission(
-                mApplicationContext, permission, Process.myPid(), Process.myUid())
+        return ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                       permission, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }
 
@@ -456,7 +455,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      */
     public void showError(String error) {
         if (error != null) {
-            Toast.makeText(mApplicationContext, error, Toast.LENGTH_SHORT).show();
+            Toast.makeText(ContextUtils.getApplicationContext(), error, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -465,7 +464,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      * @param resId The error message string's resource id.
      */
     public void showError(int resId) {
-        showError(mApplicationContext.getString(resId));
+        showError(ContextUtils.getApplicationContext().getString(resId));
     }
 
     /**
@@ -480,7 +479,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      * Broadcasts the given intent to all interested BroadcastReceivers.
      */
     public void sendBroadcast(Intent intent) {
-        mApplicationContext.sendBroadcast(intent);
+        ContextUtils.getApplicationContext().sendBroadcast(intent);
     }
 
     /**
@@ -503,7 +502,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      * @return The application context for this activity.
      */
     public Context getApplicationContext() {
-        return mApplicationContext;
+        return ContextUtils.getApplicationContext();
     }
 
     /**
@@ -621,7 +620,11 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      *         Context.startActivity will not throw ActivityNotFoundException.
      */
     public boolean canResolveActivity(Intent intent) {
-        return mApplicationContext.getPackageManager().queryIntentActivities(intent, 0).size() > 0;
+        return ContextUtils.getApplicationContext()
+                       .getPackageManager()
+                       .queryIntentActivities(intent, 0)
+                       .size()
+                > 0;
     }
 
     /**
