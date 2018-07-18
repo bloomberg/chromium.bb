@@ -28,6 +28,7 @@
         ]
       },
       "requires": {
+        "apps": [ "app_registry" ],
         "autoclick_app": [ "chromeos:autoclick" ],
         "ash": [ "system_ui", "test", "display" ],
         // Only used in classic ash case.

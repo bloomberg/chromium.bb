@@ -2802,6 +2802,7 @@ test("unit_tests") {
     "//chrome:child_dependencies",
     "//chrome:resources",
     "//chrome:strings",
+    "//chrome/browser/apps/foundation/app_service:unit_tests",
     "//chrome/browser/media/router:test_support",
     "//chrome/common:test_support",
     "//chrome/common/media_router:test_support",
