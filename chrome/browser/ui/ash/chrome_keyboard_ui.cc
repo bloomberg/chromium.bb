@@ -314,8 +314,17 @@ aura::Window* ChromeKeyboardUI::GetKeyboardWindow() {
     keyboard_contents_->GetNativeView()->set_owned_by_parent(false);
     content::RenderWidgetHostView* view =
         keyboard_contents_->GetMainFrame()->GetView();
-    view->SetBackgroundColor(SK_ColorTRANSPARENT);
-    view->GetNativeView()->SetTransparent(true);
+
+    // Only use transparent background when fullscreen handwriting or the new UI
+    // is enabled. The old UI sometimes reloads itself, which will cause the
+    // keyboard to be see-through.
+    // TODO(https://crbug.com/840731): Find a permanent fix for this on the
+    // keyboard extension side.
+    if (keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled() ||
+        keyboard::IsVirtualKeyboardMdUiEnabled()) {
+      view->SetBackgroundColor(SK_ColorTRANSPARENT);
+      view->GetNativeView()->SetTransparent(true);
+    }
 
     // By default, layers in WebContents are clipped at the window bounds,
     // but this causes the shadows to be clipped too, so clipping needs to
