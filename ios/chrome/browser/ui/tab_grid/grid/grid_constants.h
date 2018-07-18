@@ -74,6 +74,7 @@ extern const CGFloat kGridCellHeaderHeight;
 extern const CGFloat kGridCellHeaderLeadingInset;
 extern const CGFloat kGridCellCloseTapTargetWidthHeight;
 extern const CGFloat kGridCellCloseButtonContentInset;
+extern const CGFloat kGridCellTitleLabelContentInset;
 extern const CGFloat kGridCellIconDiameter;
 extern const CGFloat kGridCellSelectionRingGapWidth;
 extern const CGFloat kGridCellSelectionRingTintWidth;

@@ -71,6 +71,7 @@ const CGFloat kGridCellHeaderHeight = 32.0f;
 const CGFloat kGridCellHeaderLeadingInset = 5.0f;
 const CGFloat kGridCellCloseTapTargetWidthHeight = 44.0f;
 const CGFloat kGridCellCloseButtonContentInset = 8.5f;
+const CGFloat kGridCellTitleLabelContentInset = 4.0f;
 const CGFloat kGridCellIconDiameter = 22.0f;
 const CGFloat kGridCellSelectionRingGapWidth = 2.0f;
 const CGFloat kGridCellSelectionRingTintWidth = 5.0f;
