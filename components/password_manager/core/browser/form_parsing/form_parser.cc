@@ -12,9 +12,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -100,6 +105,21 @@ struct ProcessedField {
 
   Interactability interactability = Interactability::kUnlikely;
 };
+
+// Returns true if the |str| contains words related to CVC fields.
+bool StringMatchesCVC(const base::string16& str) {
+  static const base::NoDestructor<base::string16> kCardCvcReCached(
+      base::UTF8ToUTF16(autofill::kCardCvcRe));
+
+  return autofill::MatchesPattern(str, *kCardCvcReCached);
+}
+
+// TODO(crbug.com/860700): Remove once server-side provides hints for CVC
+// fields.
+// Returns true if the |field|'s name or id hint at the field being a CVC field.
+bool IsFieldCVC(const FormFieldData& field) {
+  return StringMatchesCVC(field.name) || StringMatchesCVC(field.id);
+}
 
 // Returns true iff |processed_field| matches the |interactability_bar|. That is
 // when either:
@@ -244,7 +264,8 @@ std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
 // Returns only relevant password fields from |processed_fields|. Namely, if
 // |mode| == SAVING return only non-empty fields (for saving empty fields are
 // useless). This ignores all passwords with Interactability below
-// |best_interactability|. Stores the iterator to the first relevant password in
+// |best_interactability| and also fields with names which sound like CVC
+// fields. Stores the iterator to the first relevant password in
 // |first_relevant_password|.
 std::vector<const FormFieldData*> GetRelevantPasswords(
     const std::vector<ProcessedField>& processed_fields,
@@ -277,6 +298,8 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
            FieldPropertiesFlags::AUTOFILLED))) {
       continue;
     }
+    if (IsFieldCVC(*processed_field.field))
+      continue;
     if (*first_relevant_password == processed_fields.end())
       *first_relevant_password = it;
     result.push_back(processed_field.field);
@@ -378,6 +401,8 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
     if (!MatchesInteractability(*it, best_interactability))
       continue;
     if (consider_only_non_empty && it->field->value.empty())
+      continue;
+    if (IsFieldCVC(*it->field))
       continue;
     if (!username)
       username = it->field;

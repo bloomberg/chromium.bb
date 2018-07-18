@@ -1254,6 +1254,22 @@ TEST(FormParserTest, ComplementingResults) {
   });
 }
 
+// Until autofill server learns to provide CVC-related hints, the parser should
+// try to get the hint from the field names.
+TEST(FormParserTest, CVC) {
+  CheckTestData({
+      {
+          "Name of 'verification_type' matches the CVC pattern.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.form_control_type = "text", .name = "verification_type"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+  });
+}
+
 }  // namespace
 
 }  // namespace password_manager
