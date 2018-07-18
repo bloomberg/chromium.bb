@@ -36,6 +36,9 @@ declare_args() {
 
   # If true, ffmpeg will be used for decoding audio.
   use_webaudio_ffmpeg = !is_mac && !is_android
+
+  # If true, webgl2-compute context will be supported.
+  support_webgl2_compute_context = !is_android
 }
 
 # Whether Android build uses OpenMAX DL FFT. Currently supported only on
@@ -60,6 +63,10 @@ if (use_low_quality_image_interpolation) {
 
 if (use_webaudio_ffmpeg) {
   feature_defines_list += [ "WTF_USE_WEBAUDIO_FFMPEG=1" ]
+}
+
+if (support_webgl2_compute_context) {
+  feature_defines_list += [ "SUPPORT_WEBGL2_COMPUTE_CONTEXT=1" ]
 }
 
 if (use_openmax_dl_fft) {

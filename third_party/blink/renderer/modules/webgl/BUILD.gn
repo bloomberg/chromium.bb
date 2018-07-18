@@ -41,10 +41,6 @@ blink_modules_sources("webgl") {
     "oes_texture_half_float_linear.h",
     "oes_vertex_array_object.cc",
     "oes_vertex_array_object.h",
-    "webgl2_compute_rendering_context.cc",
-    "webgl2_compute_rendering_context.h",
-    "webgl2_compute_rendering_context_base.cc",
-    "webgl2_compute_rendering_context_base.h",
     "webgl2_rendering_context.cc",
     "webgl2_rendering_context.h",
     "webgl2_rendering_context_base.cc",
@@ -130,6 +126,15 @@ blink_modules_sources("webgl") {
     "webgl_vertex_array_object_oes.cc",
     "webgl_vertex_array_object_oes.h",
   ]
+
+  if (support_webgl2_compute_context) {
+    sources += [
+      "webgl2_compute_rendering_context.cc",
+      "webgl2_compute_rendering_context.h",
+      "webgl2_compute_rendering_context_base.cc",
+      "webgl2_compute_rendering_context_base.h",
+    ]
+  }
 
   # The modules/webgl/ directly is a larger module, and
   # the implementation depends on a fair chunk of core/ --

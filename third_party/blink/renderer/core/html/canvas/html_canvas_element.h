@@ -75,10 +75,17 @@ class Image;
 class ImageBitmapOptions;
 class IntSize;
 
+#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 class
     CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext;
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext
     RenderingContext;
+#else
+class
+    CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext;
+typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext
+    RenderingContext;
+#endif
 
 class CORE_EXPORT HTMLCanvasElement final
     : public HTMLElement,
