@@ -4986,6 +4986,36 @@ TEST_P(RenderTextTest, InvalidFont) {
   DrawVisualText();
 }
 
+TEST_P(RenderTextTest, ExpandToBeVerticallySymmetric) {
+  Rect test_display_rect(0, 0, 400, 100);
+
+  // Basic case.
+  EXPECT_EQ(Rect(20, 20, 400, 60),
+            test::RenderTextTestApi::ExpandToBeVerticallySymmetric(
+                Rect(20, 20, 400, 40), test_display_rect));
+
+  // Expand upwards.
+  EXPECT_EQ(Rect(20, 20, 400, 60),
+            test::RenderTextTestApi::ExpandToBeVerticallySymmetric(
+                Rect(20, 40, 400, 40), test_display_rect));
+
+  // Original rect is entirely above the center point.
+  EXPECT_EQ(Rect(10, 30, 200, 40),
+            test::RenderTextTestApi::ExpandToBeVerticallySymmetric(
+                Rect(10, 30, 200, 10), test_display_rect));
+
+  // Original rect is below the display rect entirely.
+  EXPECT_EQ(Rect(10, -10, 200, 120),
+            test::RenderTextTestApi::ExpandToBeVerticallySymmetric(
+                Rect(10, 100, 200, 10), test_display_rect));
+
+  // Sanity check that we can handle a display rect with a non-zero origin.
+  test_display_rect.Offset(10, 10);
+  EXPECT_EQ(Rect(20, 20, 400, 80),
+            test::RenderTextTestApi::ExpandToBeVerticallySymmetric(
+                Rect(20, 20, 400, 40), test_display_rect));
+}
+
 TEST_P(RenderTextHarfBuzzTest, LinesInvalidationOnElideBehaviorChange) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetText(UTF8ToUTF16("This is an example"));

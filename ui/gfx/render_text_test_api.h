@@ -84,6 +84,12 @@ class RenderTextTestApi {
     render_text_->SetGlyphWidthForTest(test_width);
   }
 
+  static gfx::Rect ExpandToBeVerticallySymmetric(
+      const gfx::Rect& rect,
+      const gfx::Rect& display_rect) {
+    return RenderText::ExpandToBeVerticallySymmetric(rect, display_rect);
+  }
+
  private:
   RenderText* render_text_;
 
