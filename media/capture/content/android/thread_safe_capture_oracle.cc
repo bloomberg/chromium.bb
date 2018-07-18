@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/content/thread_safe_capture_oracle.h"
+#include "media/capture/content/android/thread_safe_capture_oracle.h"
 
 #include <stdint.h>
 
@@ -13,7 +13,6 @@
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
@@ -44,11 +43,8 @@ struct ThreadSafeCaptureOracle::InFlightFrameCapture {
 
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     std::unique_ptr<VideoCaptureDevice::Client> client,
-    const VideoCaptureParams& params,
-    bool enable_auto_throttling)
-    : client_(std::move(client)),
-      oracle_(enable_auto_throttling),
-      params_(params) {
+    const VideoCaptureParams& params)
+    : client_(std::move(client)), oracle_(false), params_(params) {
   DCHECK_GE(params.requested_format.frame_rate, 1e-6f);
   oracle_.SetMinCapturePeriod(base::TimeDelta::FromMicroseconds(
       static_cast<int64_t>(1000000.0 / params.requested_format.frame_rate +
@@ -168,8 +164,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     return false;
   }
 
-  *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
-                         base::Passed(&capture));
+  *callback = base::BindOnce(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
+                             base::Passed(&capture));
 
   return true;
 }
@@ -217,9 +213,6 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
   const bool should_deliver_frame =
       oracle_.CompleteCapture(capture->frame_number, success, &reference_time);
 
-  // The following is used by
-  // chrome/browser/extension/api/cast_streaming/performance_test.cc, in
-  // addition to the usual runtime tracing.
   TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", capture->buffer.id,
                          "success", should_deliver_frame, "timestamp",
                          (reference_time - base::TimeTicks()).InMicroseconds());

@@ -7,15 +7,17 @@
 
 #include <memory>
 
+#include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "media/capture/content/screen_capture_device_core.h"
+#include "media/capture/content/android/screen_capture_machine_android.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace content {
 
-// ScreenCaptureDeviceAndroid is a forwarder to media::ScreenCaptureDeviceCore
-// while keeping the Power Saving from kicking in between AllocateAndStart() and
-// StopAndDeAllocate().
+// ScreenCaptureDeviceAndroid is an adapter for using
+// media::ScreenCaptureMachineAndroid via the media::VideoCaptureDevice
+// interface.
 class CONTENT_EXPORT ScreenCaptureDeviceAndroid
     : public media::VideoCaptureDevice {
  public:
@@ -30,7 +32,10 @@ class CONTENT_EXPORT ScreenCaptureDeviceAndroid
   void OnUtilizationReport(int frame_feedback_id, double utilization) override;
 
  private:
-  media::ScreenCaptureDeviceCore core_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  media::ScreenCaptureMachineAndroid capture_machine_;
+  scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureDeviceAndroid);
 };

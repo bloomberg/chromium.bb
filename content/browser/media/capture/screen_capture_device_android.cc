@@ -4,36 +4,70 @@
 
 #include "content/browser/media/capture/screen_capture_device_android.h"
 
+#include <utility>
+
 #include "base/logging.h"
-#include "media/capture/content/android/screen_capture_machine_android.h"
+#include "media/capture/content/android/thread_safe_capture_oracle.h"
 
 namespace content {
 
-ScreenCaptureDeviceAndroid::ScreenCaptureDeviceAndroid()
-    : core_(std::make_unique<media::ScreenCaptureMachineAndroid>()) {}
+ScreenCaptureDeviceAndroid::ScreenCaptureDeviceAndroid() = default;
 
 ScreenCaptureDeviceAndroid::~ScreenCaptureDeviceAndroid() {
-  DVLOG(2) << "ScreenCaptureDeviceAndroid@" << this << " destroying.";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!oracle_proxy_);
 }
 
 void ScreenCaptureDeviceAndroid::AllocateAndStart(
     const media::VideoCaptureParams& params,
     std::unique_ptr<Client> client) {
-  DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
-  core_.AllocateAndStart(params, std::move(client));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (params.requested_format.pixel_format != media::PIXEL_FORMAT_I420) {
+    client->OnError(
+        FROM_HERE, "unsupported format: " + media::VideoCaptureFormat::ToString(
+                                                params.requested_format));
+    return;
+  }
+
+  DCHECK(!oracle_proxy_);
+  oracle_proxy_ = new media::ThreadSafeCaptureOracle(std::move(client), params);
+
+  if (!capture_machine_.Start(oracle_proxy_, params)) {
+    oracle_proxy_->ReportError(FROM_HERE, "Failed to start capture machine.");
+    StopAndDeAllocate();
+  } else {
+    // The |capture_machine_| will later report to the |oracle_proxy_| whether
+    // the device started successfully.
+  }
 }
 
 void ScreenCaptureDeviceAndroid::StopAndDeAllocate() {
-  core_.StopAndDeAllocate();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!oracle_proxy_) {
+    return;  // Device is already stopped.
+  }
+
+  oracle_proxy_->Stop();
+  oracle_proxy_ = nullptr;
+  capture_machine_.Stop();
 }
 
 void ScreenCaptureDeviceAndroid::RequestRefreshFrame() {
-  core_.RequestRefreshFrame();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!oracle_proxy_) {
+    return;  // Device is stopped.
+  }
+  capture_machine_.MaybeCaptureForRefresh();
 }
 
 void ScreenCaptureDeviceAndroid::OnUtilizationReport(int frame_feedback_id,
                                                      double utilization) {
-  core_.OnConsumerReportingUtilization(frame_feedback_id, utilization);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(oracle_proxy_);
+  oracle_proxy_->OnConsumerReportingUtilization(frame_feedback_id, utilization);
 }
 
 }  // namespace content

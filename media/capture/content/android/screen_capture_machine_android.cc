@@ -4,10 +4,15 @@
 
 #include "media/capture/content/android/screen_capture_machine_android.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ScreenCapture_jni.h"
+#include "media/base/video_frame.h"
+#include "media/capture/content/android/thread_safe_capture_oracle.h"
 #include "media/capture/content/video_capture_oracle.h"
+#include "media/capture/video_capture_types.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using base::android::AttachCurrentThread;
@@ -94,7 +99,7 @@ void ScreenCaptureMachineAndroid::OnRGBAFrameAvailable(
         frame->visible_rect().height(), libyuv::kFilterBilinear);
   }
 
-  capture_frame_cb.Run(frame, start_time, true);
+  std::move(capture_frame_cb).Run(frame, start_time, true);
 
   lastFrame_ = frame;
 }
@@ -177,7 +182,7 @@ void ScreenCaptureMachineAndroid::OnI420FrameAvailable(
         frame->visible_rect().height(), libyuv::kFilterBilinear);
   }
 
-  capture_frame_cb.Run(frame, start_time, true);
+  std::move(capture_frame_cb).Run(frame, start_time, true);
 
   lastFrame_ = frame;
 }
@@ -225,20 +230,18 @@ void ScreenCaptureMachineAndroid::OnOrientationChange(
   }
 }
 
-void ScreenCaptureMachineAndroid::Start(
-    const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-    const VideoCaptureParams& params,
-    const base::Callback<void(bool)> callback) {
+bool ScreenCaptureMachineAndroid::Start(
+    scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy,
+    const VideoCaptureParams& params) {
   DCHECK(oracle_proxy.get());
-  oracle_proxy_ = oracle_proxy;
+  oracle_proxy_ = std::move(oracle_proxy);
 
   j_capture_.Reset(
       createScreenCaptureMachineAndroid(reinterpret_cast<intptr_t>(this)));
 
   if (j_capture_.obj() == nullptr) {
     DLOG(ERROR) << "Failed to createScreenCaptureAndroid";
-    callback.Run(false);
-    return;
+    return false;
   }
 
   DCHECK(params.requested_format.frame_size.GetArea());
@@ -251,24 +254,19 @@ void ScreenCaptureMachineAndroid::Start(
                                   params.requested_format.frame_size.height());
   if (!ret) {
     DLOG(ERROR) << "Failed to init ScreenCaptureAndroid";
-    callback.Run(ret);
-    return;
+    return false;
   }
 
   ret = Java_ScreenCapture_startPrompt(AttachCurrentThread(), j_capture_);
-  // Must wait for user input to start capturing before we can report back
-  // device started state. However, if the user-prompt failed to show, report
-  // a failed start immediately.
-  if (!ret)
-    callback.Run(ret);
+  // NOTE: Result of user prompt will be delivered to OnActivityResult(), and
+  // this will report the device started/error state via the |oracle_proxy_|.
+  return !!ret;
 }
 
-void ScreenCaptureMachineAndroid::Stop(const base::Closure& callback) {
+void ScreenCaptureMachineAndroid::Stop() {
   if (j_capture_.obj() != nullptr) {
     Java_ScreenCapture_stopCapture(AttachCurrentThread(), j_capture_);
   }
-
-  callback.Run();
 }
 
 // ScreenCapture on Android works in a passive way and there are no captured
@@ -306,7 +304,7 @@ void ScreenCaptureMachineAndroid::MaybeCaptureForRefresh() {
       frame->stride(VideoFrame::kVPlane), frame->visible_rect().width(),
       frame->visible_rect().height(), libyuv::kFilterBilinear);
 
-  capture_frame_cb.Run(frame, start_time, true);
+  std::move(capture_frame_cb).Run(frame, start_time, true);
 }
 
 }  // namespace media
