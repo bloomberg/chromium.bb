@@ -350,26 +350,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'device_os_flavor': 'aosp',
       },
     },
-    'Win 10 High-DPI Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win10_highdpi_shard_map.json',
-              '--assert-gpu-compositing',
-          ],
-        }
-      ],
-      'platform': 'win',
-      'target_bits': 64,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-10',
-        'gpu': '8086:1616'
-      },
-    },
     'win-10-perf': {
       'tests': [
         {
