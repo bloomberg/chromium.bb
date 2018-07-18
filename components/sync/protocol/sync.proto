@@ -242,7 +242,7 @@ message SyncEntity {
   //
   // This group is deprecated; clients should use the bookmark EntitySpecifics
   // protocol buffer extension instead.
-  optional group BookmarkData = 11 {
+  optional group BookmarkData = 11 [deprecated = true] {
     // We use a required field to differentiate between a bookmark and a
     // bookmark folder.
     // Present in both GetUpdatesMessage and CommitMessage.
