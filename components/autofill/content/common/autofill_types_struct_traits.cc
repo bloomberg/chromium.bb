@@ -725,6 +725,8 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
   out->is_possible_change_password_form =
       data.is_possible_change_password_form();
   out->has_renderer_ids = data.has_renderer_ids();
+  out->username_may_use_prefilled_placeholder =
+      data.username_may_use_prefilled_placeholder();
 
   return true;
 }
