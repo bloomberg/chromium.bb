@@ -44,6 +44,14 @@ CHROMEOS_EXPORT std::string GetFirmware();
 // Extracts the firmware from the file.
 CHROMEOS_EXPORT std::string ParseFirmware(const std::string& contents);
 
+// Returns true if |new_version| is older than |current_version|.
+// Version numbers should be dot separated. The sections are compared as
+// numbers if possible, as strings otherwise. Earlier sections have
+// precedence. If one version is prefix of another, the shorter one is
+// considered older. (See test for examples.)
+CHROMEOS_EXPORT bool IsRollback(const std::string& current_version,
+                                const std::string& new_version);
+
 }  // namespace version_loader
 }  // namespace chromeos
 

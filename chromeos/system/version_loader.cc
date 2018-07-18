@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -118,6 +119,40 @@ std::string ParseFirmware(const std::string& contents) {
     }
   }
   return std::string();
+}
+
+bool IsRollback(const std::string& current_version,
+                const std::string& new_version) {
+  VLOG(1) << "Current version: " << current_version;
+  VLOG(1) << "New version: " << new_version;
+
+  if (new_version == "0.0.0.0") {
+    // No update available.
+    return false;
+  }
+
+  std::vector<std::string> current_version_parts = base::SplitString(
+      current_version, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> new_version_parts = base::SplitString(
+      new_version, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  for (size_t i = 0;
+       i < current_version_parts.size() && i < new_version_parts.size(); ++i) {
+    if (current_version_parts[i] == new_version_parts[i])
+      continue;
+
+    unsigned int current_part, new_part;
+    if (!base::StringToUint(current_version_parts[i], &current_part) ||
+        !base::StringToUint(new_version_parts[i], &new_part)) {
+      // One of the parts is not a number (e.g. date in test builds), compare
+      // strings.
+      return current_version_parts[i] > new_version_parts[i];
+    }
+    return current_part > new_part;
+  }
+
+  // Return true if new version is prefix of current version, false otherwise.
+  return new_version_parts.size() < current_version_parts.size();
 }
 
 }  // namespace version_loader

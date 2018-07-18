@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/system/version_loader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -47,6 +48,9 @@ const int kStateTransitionDownloadingDelayMs = 250;
 // Size of parts of a "new" image which are downloaded each
 // |kStateTransitionDownloadingDelayMs| during fake AU.
 const int64_t kDownloadSizeDelta = 1 << 19;
+
+// Version number of the image being installed during fake AU.
+const char kStubVersion[] = "1234.0.0.0";
 
 // Returns UPDATE_STATUS_ERROR on error.
 UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
@@ -497,6 +501,14 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     status.download_progress = progress;
     status.status = UpdateStatusFromString(current_operation);
     status.new_version = new_version;
+    // TODO(hunyadym, https://crbug.com/864672): Add a new DBus call to
+    // determine this based on the Omaha response, and not version comparison.
+    status.is_rollback = version_loader::IsRollback(
+        version_loader::GetVersion(version_loader::VERSION_SHORT),
+        status.new_version);
+    if (status.is_rollback)
+      VLOG(1) << "New image is a rollback.";
+
     status.new_size = new_size;
 
     last_status_ = status;
@@ -563,7 +575,9 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     last_status_.status = UPDATE_STATUS_CHECKING_FOR_UPDATE;
     last_status_.download_progress = 0.0;
     last_status_.last_checked_time = 0;
+    last_status_.new_version = "0.0.0.0";
     last_status_.new_size = 0;
+    last_status_.is_rollback = false;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&UpdateEngineClientStubImpl::StateTransition,
@@ -636,6 +650,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
         } else {
           next_status = UPDATE_STATUS_DOWNLOADING;
           last_status_.download_progress += 0.01;
+          last_status_.new_version = kStubVersion;
           last_status_.new_size = kDownloadSizeDelta;
           delay_ms = kStateTransitionDownloadingDelayMs;
         }
@@ -644,7 +659,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
         next_status = UPDATE_STATUS_FINALIZING;
         break;
       case UPDATE_STATUS_FINALIZING:
-        next_status = UPDATE_STATUS_IDLE;
+        next_status = UPDATE_STATUS_UPDATED_NEED_REBOOT;
         break;
     }
     last_status_.status = next_status;

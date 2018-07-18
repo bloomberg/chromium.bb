@@ -145,9 +145,15 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
     set_upgrade_detected_time(tick_clock()->NowTicks());
 
-    ChannelsRequester::Begin(
-        base::Bind(&UpgradeDetectorChromeos::OnChannelsReceived,
-                   weak_factory_.GetWeakPtr()));
+    if (status.is_rollback) {
+      set_is_factory_reset_required(true);
+      NotifyOnUpgrade();
+    } else {
+      // Determine whether powerwash is required based on the channel.
+      ChannelsRequester::Begin(
+          base::Bind(&UpgradeDetectorChromeos::OnChannelsReceived,
+                     weak_factory_.GetWeakPtr()));
+    }
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE) {
     // Update engine broadcasts this state only when update is available but
