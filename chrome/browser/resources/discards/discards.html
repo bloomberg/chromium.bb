@@ -85,9 +85,18 @@ general use and is not localized.
               </div>
             </div>
           </th>
-          <th data-sort-key="isMedia">
+          <th data-sort-key="canFreeze">
             <div class="header-cell-container">
-              Media
+              <div>
+                <div>Can freeze?</div>
+              </div>
+            </div>
+          </th>
+          <th data-sort-key="canDiscard">
+            <div class="header-cell-container">
+              <div>
+                <div>Can discard?</div>
+              </div>
             </div>
           </th>
           <th data-sort-key="discardCount">
@@ -136,7 +145,20 @@ general use and is not localized.
         <td class="visibility-cell"></td>
         <td class="loading-state-cell"></td>
         <td class="state-cell"></td>
-        <td class="is-media-cell boolean-cell"></td>
+        <td class="can-freeze-cell boolean-cell">
+          <div class="can-freeze-div"></div>
+          <div is="action-link" class="tooltip-container can-freeze-link">
+            [View Reason]
+            <div class="tooltip can-freeze-tooltip"></div>
+          </div>
+        </td>
+        <td class="can-discard-cell boolean-cell">
+          <div class="can-discard-div"></div>
+          <div is="action-link" class="tooltip-container can-discard-link">
+            [View Reason]
+            <div class="tooltip can-discard-tooltip"></div>
+          </div>
+        </td>
         <td class="discard-count-cell"></td>
         <td class="is-auto-discardable-cell boolean-cell">
           <div class="is-auto-discardable-div"></div>

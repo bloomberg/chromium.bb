@@ -64,7 +64,7 @@ cr.define('discards', function() {
     }
 
     // Compares boolean fields.
-    if (['isMedia', 'isAutoDiscardable'].includes(sortKey)) {
+    if (['canFreeze', 'canDiscard', 'isAutoDiscardable'].includes(sortKey)) {
       if (val1 == val2)
         return 0;
       return val1 ? 1 : -1;
@@ -185,7 +185,7 @@ cr.define('discards', function() {
    * @return {string} A string representing the bool.
    */
   function boolToString(bool) {
-    return bool ? '✔' : '\xa0';
+    return bool ? '✔' : '✘️';
   }
 
   /**
@@ -276,7 +276,6 @@ cr.define('discards', function() {
           .then(stableUpdateTabDiscardsInfoTable());
     });
 
-    // Set up the listeners for load links.
     let loadListener = function(e) {
       // Get the info backing this row.
       let info = infos[getRowIndex(e.target)];
@@ -348,8 +347,10 @@ cr.define('discards', function() {
         visibilityToString(info.visibility);
     row.querySelector('.loading-state-cell').textContent =
         loadingStateToString(info.loadingState);
-    row.querySelector('.is-media-cell').textContent =
-        boolToString(info.isMedia);
+    row.querySelector('.can-freeze-div').textContent =
+        boolToString(info.canFreeze);
+    row.querySelector('.can-discard-div').textContent =
+        boolToString(info.canDiscard);
     // The lifecycle state is meaningless for 'unloaded' tabs.
     row.querySelector('.state-cell').textContent =
         (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED) ?
@@ -362,7 +363,17 @@ cr.define('discards', function() {
     row.querySelector('.last-active-cell').textContent =
         lastActiveToString(info.lastActiveSeconds);
 
+    // Update the tooltips with 'Can Freeze/Discard?' reasons.
+    row.querySelector('.can-freeze-tooltip').innerHTML =
+        info.cannotFreezeReasons.join('<br />');
+    row.querySelector('.can-discard-tooltip').innerHTML =
+        info.cannotDiscardReasons.join('<br />');
+
     row.querySelector('.is-auto-discardable-link').removeAttribute('disabled');
+    setActionLinkEnabled(
+        row.querySelector('.can-freeze-link'), !info.canFreeze);
+    setActionLinkEnabled(
+        row.querySelector('.can-discard-link'), !info.canDiscard);
     let loadLink = row.querySelector('.load-link');
     let freezeLink = row.querySelector('.freeze-link');
     let discardLink = row.querySelector('.discard-link');
