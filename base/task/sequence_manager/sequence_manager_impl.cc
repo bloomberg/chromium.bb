@@ -293,6 +293,22 @@ void SequenceManagerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
 }
 
 Optional<PendingTask> SequenceManagerImpl::TakeTask() {
+  Optional<PendingTask> task = TakeTaskImpl();
+
+  ExecutingTask& executing_task =
+      *main_thread_only().task_execution_stack.rbegin();
+
+  // It's important that there are no active trace events here which will
+  // terminate before we finish executing the task.
+  TRACE_EVENT_BEGIN2(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                     "SequenceManager::RunTask", "queue_type",
+                     executing_task.task_queue->GetName(), "task_type",
+                     executing_task.task_type);
+
+  return task;
+}
+
+Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -357,6 +373,7 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
     ExecutingTask& executing_task =
         *main_thread_only().task_execution_stack.rbegin();
     NotifyWillProcessTask(&executing_task, &lazy_now);
+
     return std::move(executing_task.pending_task);
   }
 }
@@ -365,6 +382,10 @@ void SequenceManagerImpl::DidRunTask() {
   LazyNow lazy_now(controller_->GetClock());
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
+
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                   "SequenceManagerImpl::RunTask");
+
   NotifyDidProcessTask(&executing_task, &lazy_now);
   main_thread_only().task_execution_stack.pop_back();
 
