@@ -250,6 +250,7 @@ bool CARendererLayerTree::RootLayer::WantsFullcreenLowPowerBackdrop(
 
         // See if this is the video layer.
         if (content_layer.use_av_layer) {
+          background_rect->Union(gfx::RectF(content_layer.rect));
           found_video_layer = true;
           if (!transform_layer.transform.IsPositiveScaleOrTranslation())
             return false;
