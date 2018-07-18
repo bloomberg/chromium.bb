@@ -137,9 +137,7 @@ void DnsProbeRunner::CallCallback() {
   DCHECK(!transaction_.get());
 
   // Clear callback in case it starts a new probe immediately.
-  const base::Closure callback = callback_;
-  callback_.Reset();
-  callback.Run();
+  std::move(callback_).Run();
 }
 
 }  // namespace chrome_browser_net
