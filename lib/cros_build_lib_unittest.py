@@ -1787,10 +1787,10 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
 
   def testFailedOnceSoft(self):
     """Force a single retry for CreateTarball."""
-    self.tarResults = [1, 0]
+    self.tarResults = [1, 1, 0]
     cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 2)
+    self.assertEqual(self.mockRun.call_count, 3)
 
   def testFailedOnceHard(self):
     """Test unrecoverable error."""
@@ -1803,9 +1803,9 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
 
   def testFailedTwiceSoft(self):
     """Exhaust retries for recoverable errors."""
-    self.tarResults = [1, 1]
+    self.tarResults = [1, 0, 1]
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
       cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 3)
+    self.assertEqual(self.mockRun.call_count, 4)
     self.assertEqual(cm.exception.args[1].returncode, 1)

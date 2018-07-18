@@ -1046,11 +1046,19 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
                 except Exception:
                   logging.info('Exception running ps.', exc_info=True)
 
+        logging.info('Complete lsof output:\n%s', lsof_result.output)
+
       raise CreateTarballError('CreateTarball', result)
+
     assert result.returncode == 1 and try_count == 0
     logging.warning('CreateTarball: tar: source modification time changed ' +
                     '(see crbug.com/547055), retrying once')
     logging.PrintBuildbotStepWarnings()
+    try:
+      RunCommand(['lsof', '-n', '-d', '0-999', '-F', 'pn'],
+                 cwd=cwd, mute_output=False)
+    except Exception:
+      logging.info('Exception running lsof.', exc_info=True)
 
 
 def GroupByKey(input_iter, key):
