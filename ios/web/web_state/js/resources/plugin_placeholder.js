@@ -7,6 +7,8 @@
 //
 // Inserts placeholders into the DOM on top of unsupported plugins.
 
+goog.provide('__crWeb.pluginPlaceholder');
+
 /* Beginning of anonymous object. */
 (function() {
 

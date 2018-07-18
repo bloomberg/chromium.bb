@@ -96,6 +96,8 @@
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 #import "ios/web/web_state/ui/wk_navigation_action_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#import "ios/web/web_state/web_frame_impl.h"
+#import "ios/web/web_state/web_frames_manager_impl.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
@@ -144,6 +146,11 @@ NSString* const kIsMainFrame = @"isMainFrame";
 
 // URL scheme for messages sent from javascript for asynchronous processing.
 NSString* const kScriptMessageName = @"crwebinvoke";
+
+// Message command sent when a frame becomes available.
+NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
+// Message command sent when a frame is unloading.
+NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
 // Standard User Defaults key for "Log JS" debug setting.
 NSString* const kLogJavaScript = @"LogJavascript";
@@ -604,6 +611,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script;
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
+// Handles frame became available message.
+- (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message;
+// Handles frame became unavailable message.
+- (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message;
 // Registers load request with empty referrer and link or client redirect
 // transition based on user interaction state. Returns navigation context for
 // this request.
@@ -928,6 +939,7 @@ GURL URLEscapedForHistory(const GURL& url) {
     _certVerificationErrors =
         std::make_unique<CertVerificationErrorsCacheType>(kMaxCertErrorsCount);
     _navigationStates = [[CRWWKNavigationStates alloc] init];
+    web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(orientationDidChange)
@@ -1885,6 +1897,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DCHECK(!_isHalted);
   _webStateImpl->ClearTransientContent();
 
+  // Reset tracked frames because JavaScript unload handler will not be called.
+  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
   const bool isCurrentURLAppSpecific =
@@ -2391,6 +2406,37 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   NOTREACHED();
   return NO;
+}
+
+- (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
+  if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
+      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]]) {
+    // WebController is being destroyed or message is invalid.
+    return;
+  }
+
+  web::WebFramesManagerImpl* framesManager =
+      web::WebFramesManagerImpl::FromWebState([self webState]);
+
+  std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
+  if (!framesManager->GetFrameWithId(frameID)) {
+    GURL messageFrameOrigin =
+        web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
+    auto newFrame = std::make_unique<web::WebFrameImpl>(
+        frameID, message.frameInfo.mainFrame, messageFrameOrigin,
+        self.webState);
+    framesManager->AddFrame(std::move(newFrame));
+  }
+}
+
+- (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message {
+  if (_isBeingDestroyed || ![message.body isKindOfClass:[NSString class]]) {
+    // WebController is being destroyed or message is invalid.
+    return;
+  }
+  std::string frameID = base::SysNSStringToUTF8(message.body);
+  web::WebFramesManagerImpl::FromWebState(self.webState)
+      ->RemoveFrameWithId(frameID);
 }
 
 #pragma mark -
@@ -3850,6 +3896,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
                                       name:kScriptMessageName
                                    webView:webView];
+
+    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
+      [weakSelf frameBecameAvailableWithMessage:message];
+    }
+                                      name:kFrameBecameAvailableMessageName
+                                   webView:webView];
+    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
+      [weakSelf frameBecameUnavailableWithMessage:message];
+    }
+                                      name:kFrameBecameUnavailableMessageName
+                                   webView:webView];
+
     _windowIDJSManager = [[CRWJSWindowIDManager alloc] initWithWebView:webView];
   } else {
     _windowIDJSManager = nil;

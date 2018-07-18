@@ -7,6 +7,7 @@
 goog.provide('__crWeb.message');
 
 goog.require('__crWeb.common');
+goog.require('__crWeb.frameMessaging');
 
 /**
  * Namespace for this module.
@@ -77,6 +78,7 @@ function sendQueue_(queueObject) {
   queueObject.queue.forEach(function(command) {
     __gCrWeb.common.sendWebKitMessage(queueObject.scheme, {
       'crwCommand': command,
+      'crwFrameId': __gCrWeb.frameMessaging['getFrameId'](),
       'crwWindowId': window.top.__gCrWeb['windowId']
     });
   });

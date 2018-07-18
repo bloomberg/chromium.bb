@@ -28,7 +28,7 @@ __gCrWeb['frameMessaging'] = __gCrWeb.frameMessaging;
 * @type {string}
 * @private
 */
-var frameId_ = undefined;
+var frameId_ = "";
 
 /**
  * Returns the frameId associated with this frame. A new value will be created
@@ -36,8 +36,7 @@ var frameId_ = undefined;
  * @return {string} A string representing a unique identifier for this frame.
  */
 __gCrWeb.frameMessaging['getFrameId'] = function() {
-  if (!frameId_) {
-    frameId_ = "";
+  if (frameId_ === "") {
     // Generate 128 bit unique identifier.
     var components = new Uint32Array(4);
     window.crypto.getRandomValues(components);
