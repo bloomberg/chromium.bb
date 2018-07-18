@@ -1843,8 +1843,6 @@ jumbo_component("base") {
 buildflag_header("cfi_buildflags") {
   header = "cfi_buildflags.h"
 
-  # buildflag entries added to this header must also must be manually added to
-  # tools/gn/bootstrap/bootstrap.py
   flags = [
     # TODO(pcc): remove CFI_CAST_CHECK, see https://crbug.com/626794.
     "CFI_CAST_CHECK=$is_cfi && $use_cfi_cast",
@@ -1858,8 +1856,6 @@ buildflag_header("debugging_buildflags") {
   header = "debugging_buildflags.h"
   header_dir = "base/debug"
 
-  # buildflag entries added to this header must also must be manually added to
-  # tools/gn/bootstrap/bootstrap.py
   flags = [
     "ENABLE_LOCATION_SOURCE=$enable_location_source",
     "ENABLE_PROFILING=$enable_profiling",
@@ -1874,6 +1870,7 @@ buildflag_header("orderfile_buildflags") {
   header_dir = "base/android/orderfile"
   using_order_profiling = is_android && use_order_profiling
   using_devtools_dumping = is_android && devtools_instrumentation_dumping
+
   flags = [
     "DEVTOOLS_INSTRUMENTATION_DUMPING=$using_devtools_dumping",
     "ORDERFILE_INSTRUMENTATION=$using_order_profiling",
@@ -1886,8 +1883,6 @@ buildflag_header("protected_memory_buildflags") {
   header = "protected_memory_buildflags.h"
   header_dir = "base/memory"
 
-  # buildflag entries added to this header must also must be manually added to
-  # tools/gn/bootstrap/bootstrap.py
   flags = [ "USE_LLD=$use_lld" ]
 }
 
@@ -1904,8 +1899,6 @@ buildflag_header("anchor_functions_buildflags") {
   header_dir = "base/android/library_loader"
   _supports_code_ordering = current_cpu == "arm"
 
-  # buildflag entries added to this header must also must be manually added to
-  # tools/gn/bootstrap/bootstrap.py
   flags = [
     "USE_LLD=$use_lld",
     "SUPPORTS_CODE_ORDERING=$_supports_code_ordering",
