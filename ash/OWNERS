@@ -13,4 +13,7 @@ per-file BUILD.gn=*
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
 
+per-file ash_unittests_manifest.json=set noparent
+per-file ash_unittests_manifest.json=file://ipc/SECURITY_OWNERS
+
 # COMPONENT: UI>Shell

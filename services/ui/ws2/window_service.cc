@@ -5,11 +5,16 @@
 #include "services/ui/ws2/window_service.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/ui/common/switches.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/user_activity_monitor.h"
+#include "services/ui/ws2/window_server_test_impl.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_factory.h"
@@ -62,13 +67,14 @@ ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
 }
 
 std::unique_ptr<WindowTree> WindowService::CreateWindowTree(
-    mojom::WindowTreeClient* window_tree_client) {
+    mojom::WindowTreeClient* window_tree_client,
+    const std::string& client_name) {
   const ClientSpecificId client_id =
       decrement_client_ids_ ? next_client_id_-- : next_client_id_++;
   CHECK_NE(kInvalidClientId, next_client_id_);
   CHECK_NE(kWindowServerClientId, next_client_id_);
-  auto window_tree =
-      std::make_unique<WindowTree>(this, client_id, window_tree_client);
+  auto window_tree = std::make_unique<WindowTree>(
+      this, client_id, window_tree_client, client_name);
   window_trees_.insert(window_tree.get());
   return window_tree;
 }
@@ -83,6 +89,11 @@ void WindowService::SetFrameDecorationValues(
 // static
 bool WindowService::HasRemoteClient(const aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
+}
+
+void WindowService::OnFirstSurfaceActivation(const std::string& client_name) {
+  if (surface_activation_callback_)
+    std::move(surface_activation_callback_).Run(client_name);
 }
 
 void WindowService::OnWillDestroyWindowTree(WindowTree* tree) {
@@ -103,6 +114,9 @@ std::string WindowService::GetIdForDebugging(aura::Window* window) {
 }
 
 void WindowService::OnStart() {
+  test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseTestConfig);
+
   window_tree_factory_ = std::make_unique<WindowTreeFactory>(this);
 
   registry_.AddInterface(base::BindRepeating(
@@ -117,8 +131,10 @@ void WindowService::OnStart() {
       &WindowService::BindInputDeviceServerRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindUserActivityMonitorRequest, base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
-      &WindowService::BindWindowTreeFactoryRequest, base::Unretained(this)));
+
+  registry_with_source_info_.AddInterface<mojom::WindowTreeFactory>(
+      base::BindRepeating(&WindowService::BindWindowTreeFactoryRequest,
+                          base::Unretained(this)));
 
   // |gpu_interface_provider_| may be null in tests.
   if (gpu_interface_provider_) {
@@ -128,13 +144,29 @@ void WindowService::OnStart() {
     gpu_interface_provider_->RegisterOzoneGpuInterfaces(&registry_);
 #endif
   }
+
+  if (test_config_) {
+    registry_.AddInterface<mojom::WindowServerTest>(base::BindRepeating(
+        &WindowService::BindWindowServerTestRequest, base::Unretained(this)));
+  }
 }
 
 void WindowService::OnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle) {
-  registry_.BindInterface(interface_name, std::move(handle));
+  if (!registry_with_source_info_.TryBindInterface(interface_name, &handle,
+                                                   remote_info)) {
+    registry_.BindInterface(interface_name, std::move(handle));
+  }
+}
+
+void WindowService::SetSurfaceActivationCallback(
+    base::OnceCallback<void(const std::string&)> callback) {
+  // Surface activation callbacks are expensive, and allowed only in tests.
+  DCHECK(test_config_);
+  DCHECK(surface_activation_callback_.is_null() || callback.is_null());
+  surface_activation_callback_ = std::move(callback);
 }
 
 void WindowService::BindClipboardHostRequest(
@@ -168,9 +200,19 @@ void WindowService::BindUserActivityMonitorRequest(
   user_activity_monitor_->AddBinding(std::move(request));
 }
 
+void WindowService::BindWindowServerTestRequest(
+    mojom::WindowServerTestRequest request) {
+  if (!test_config_)
+    return;
+  mojo::MakeStrongBinding(std::make_unique<WindowServerTestImpl>(this),
+                          std::move(request));
+}
+
 void WindowService::BindWindowTreeFactoryRequest(
-    mojom::WindowTreeFactoryRequest request) {
-  window_tree_factory_->AddBinding(std::move(request));
+    mojom::WindowTreeFactoryRequest request,
+    const service_manager::BindSourceInfo& source_info) {
+  window_tree_factory_->AddBinding(std::move(request),
+                                   source_info.identity.name());
 }
 
 }  // namespace ws2

@@ -489,6 +489,7 @@ bool ServerWindow::IsTopLevel() const {
 void ServerWindow::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
     viz::mojom::CompositorFrameSinkClientPtr client) {
+  attached_compositor_frame_sink_ = true;
   viz::HostFrameSinkManager* host_frame_sink_manager =
       aura::Env::GetInstance()
           ->context_factory_private()

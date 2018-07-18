@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
@@ -1665,6 +1666,7 @@ test("ash_content_unittests") {
     "//device/bluetooth",
     "//mojo/core/embedder",
     "//net",
+    "//services/catalog:lib",
     "//skia",
     "//testing/gtest",
     "//ui/aura",
@@ -1685,6 +1687,7 @@ test("ash_content_unittests") {
   ]
 
   data_deps = [
+    ":ash_unittests_catalog_copy",
     "//ash/resources:ash_test_resources_with_content_100_percent",
   ]
 }
@@ -1707,6 +1710,7 @@ test("ash_unittests") {
     "accessibility/touch_accessibility_enabler_unittest.cc",
     "accessibility/touch_exploration_controller_unittest.cc",
     "accessibility/touch_exploration_manager_unittest.cc",
+    "app_launch_unittest.cc",
     "app_list/app_list_presenter_delegate_unittest.cc",
     "app_list/model/app_list_item_list_unittest.cc",
     "app_list/model/app_list_model_unittest.cc",
@@ -1987,6 +1991,7 @@ test("ash_unittests") {
 
   deps = [
     ":ash",
+    ":ash_service_resources",
     ":test_support_without_content",
     "//ash/app_list:test_support",
     "//ash/app_list/presenter",
@@ -1994,6 +1999,7 @@ test("ash_unittests") {
     "//ash/autoclick/common:autoclick",
     "//ash/components/fast_ink",
     "//ash/components/fast_ink:unit_tests",
+    "//ash/components/quick_launch/public/mojom:constants",
     "//ash/components/shortcut_viewer:unit_tests",
     "//ash/components/tap_visualizer:unit_tests",
     "//ash/public/cpp",
@@ -2027,6 +2033,8 @@ test("ash_unittests") {
     "//device/bluetooth",
     "//mojo/core/embedder",
     "//net:net",
+    "//services/catalog:lib",
+    "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/public/cpp/input_devices:test_support",
     "//services/ui/public/interfaces",
     "//services/ui/ws2:test_support",
@@ -2072,7 +2080,11 @@ test("ash_unittests") {
   ]
 
   data_deps = [
+    ":ash_unittests_catalog_copy",
+    ":ash_service_resources",
+    ":ash_service",
     "//ash/resources:ash_test_resources_100_percent",
+    "//ash/components/quick_launch:quick_launch_app",
   ]
 
   data = [
@@ -2447,7 +2459,6 @@ source_set("mash_unittests") {
   testonly = true
 
   sources = [
-    "app_launch_unittest.cc",
     "display/display_synchronizer_unittest.cc",
     "window_manager_unittest.cc",
     "wm/top_level_window_factory_mash_unittest.cc",
@@ -2490,5 +2501,32 @@ source_set("mash_unittests") {
     ":ash_service",
     "//ash/components/quick_launch:quick_launch_app",
     "//services/ui/ime/test_ime_driver",
+  ]
+}
+
+service_manifest("ash_unittests_manifest") {
+  name = "ash_unittests"
+  source = "ash_unittests_manifest.json"
+}
+
+catalog("ash_unittests_catalog") {
+  testonly = true
+
+  embedded_services = [ ":ash_unittests_manifest" ]
+
+  standalone_services = [
+    ":manifest",
+    "//ash/components/quick_launch:manifest",
+  ]
+}
+
+copy("ash_unittests_catalog_copy") {
+  testonly = true
+  sources = get_target_outputs(":ash_unittests_catalog")
+  outputs = [
+    "${root_out_dir}/ash_unittests_catalog.json",
+  ]
+  deps = [
+    ":ash_unittests_catalog",
   ]
 }

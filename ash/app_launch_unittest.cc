@@ -21,7 +21,7 @@ void RunCallback(bool* success, base::RepeatingClosure callback, bool result) {
 
 class AppLaunchTest : public service_manager::test::ServiceTest {
  public:
-  AppLaunchTest() : ServiceTest("mash_unittests") {}
+  AppLaunchTest() : ServiceTest("ash_unittests") {}
   ~AppLaunchTest() override = default;
 
  private:

@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS2_WINDOW_TREE_FACTORY_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"
@@ -28,7 +29,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeFactory
   explicit WindowTreeFactory(WindowService* window_service);
   ~WindowTreeFactory() override;
 
-  void AddBinding(mojom::WindowTreeFactoryRequest request);
+  // |client_name| is the name of the client requesting the factory.
+  void AddBinding(mojom::WindowTreeFactoryRequest request,
+                  const std::string& client_name);
 
   // mojom::WindowTreeFactory:
   void CreateWindowTree(mojom::WindowTreeRequest tree_request,
@@ -40,7 +43,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeFactory
   using WindowTreeBindings = std::vector<std::unique_ptr<WindowTreeBinding>>;
 
   WindowService* window_service_;
-  mojo::BindingSet<mojom::WindowTreeFactory> bindings_;
+
+  // The |string| parameter is the name of the client that created by binding.
+  mojo::BindingSet<mojom::WindowTreeFactory, std::string> bindings_;
+
   WindowTreeBindings window_tree_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);

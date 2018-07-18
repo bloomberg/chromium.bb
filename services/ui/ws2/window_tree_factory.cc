@@ -18,8 +18,9 @@ WindowTreeFactory::WindowTreeFactory(WindowService* window_service)
 
 WindowTreeFactory::~WindowTreeFactory() = default;
 
-void WindowTreeFactory::AddBinding(mojom::WindowTreeFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void WindowTreeFactory::AddBinding(mojom::WindowTreeFactoryRequest request,
+                                   const std::string& client_name) {
+  bindings_.AddBinding(this, std::move(request), client_name);
 }
 
 void WindowTreeFactory::CreateWindowTree(mojom::WindowTreeRequest tree_request,
@@ -27,7 +28,8 @@ void WindowTreeFactory::CreateWindowTree(mojom::WindowTreeRequest tree_request,
   std::unique_ptr<WindowTreeBinding> binding =
       std::make_unique<WindowTreeBinding>();
   binding->InitFromFactory(
-      window_service_, std::move(tree_request), std::move(client),
+      window_service_, bindings_.dispatch_context(), std::move(tree_request),
+      std::move(client),
       base::BindOnce(&WindowTreeFactory::OnLostConnectionToClient,
                      base::Unretained(this), binding.get()));
   window_tree_bindings_.push_back(std::move(binding));

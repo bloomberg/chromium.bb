@@ -75,9 +75,11 @@ struct WindowTree::InFlightKeyEvent {
 
 WindowTree::WindowTree(WindowService* window_service,
                        ClientSpecificId client_id,
-                       mojom::WindowTreeClient* client)
+                       mojom::WindowTreeClient* client,
+                       const std::string& client_name)
     : window_service_(window_service),
       client_id_(client_id),
+      client_name_(client_name),
       window_tree_client_(client),
       property_change_tracker_(std::make_unique<ClientChangeTracker>()) {
   wm::CaptureController::Get()->AddObserver(this);
@@ -184,6 +186,16 @@ void WindowTree::OnEmbeddingDestroyed(Embedding* embedding) {
   window_tree_client_->OnWindowDeleted(
       TransportIdForWindow(embedding->window()));
   DeleteClientRoot(iter->get(), DeleteClientRootReason::kDeleted);
+}
+
+bool WindowTree::HasAtLeastOneRootWithCompositorFrameSink() {
+  for (auto& client_root : client_roots_) {
+    if (ServerWindow::GetMayBeNull(client_root->window())
+            ->attached_compositor_frame_sink()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) {
