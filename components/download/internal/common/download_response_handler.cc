@@ -202,8 +202,10 @@ void DownloadResponseHandler::OnComplete(
         ConvertInterruptReasonToMojoNetworkRequestStatus(reason));
   }
 
-  if (started_)
+  if (started_) {
+    delegate_->OnResponseCompleted();
     return;
+  }
 
   // OnComplete() called without OnReceiveResponse(). This should only
   // happen when the request was aborted.
@@ -211,6 +213,7 @@ void DownloadResponseHandler::OnComplete(
   create_info_->result = reason;
 
   OnResponseStarted(mojom::DownloadStreamHandlePtr());
+  delegate_->OnResponseCompleted();
 }
 
 void DownloadResponseHandler::OnResponseStarted(
