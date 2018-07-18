@@ -23,9 +23,9 @@ class Profile;
 class ShortcutsBackend;
 class TemplateURLService;
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
 }
 
 // Monitors omnibox navigations in order to trigger behaviors that depend on
@@ -46,8 +46,7 @@ class URLRequestContextGetter;
 // about the memory management of this object.
 class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
                                         public content::NotificationObserver,
-                                        public content::WebContentsObserver,
-                                        public net::URLFetcherDelegate {
+                                        public content::WebContentsObserver {
  public:
   enum LoadState {
     LOAD_NOT_SEEN,
@@ -73,6 +72,11 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
   // search engine, delete the engine.  This will prevent the user from using
   // the broken engine again.
   void On404();
+
+  // Test-only method to override how loading happens. Normally this is
+  // extracted from the profile passed to the constructor.
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> testing_loader_factory);
 
  protected:
   // Creates/displays the alternate nav infobar.  Overridden in tests.
@@ -105,27 +109,32 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
       const content::LoadCommittedDetails& load_details) override;
   void WebContentsDestroyed() override;
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Used as callbacks from |loader_|.
+  void OnURLLoadComplete(std::unique_ptr<std::string> body);
+
+  // See SimpleURLLoader::OnRedirectCallback for info on the signature.
+  void OnURLRedirect(const net::RedirectInfo& redirect_info,
+                     const network::ResourceResponseHead& response_head,
+                     std::vector<std::string>* to_be_removed_headers);
+
+  // Called from either OnURLLoadComplete or OnURLRedirect.
+  void OnDoneWithURL(bool success);
 
   // Once the load has committed and any URL fetch has completed, this displays
   // the alternate nav infobar if necessary, and deletes |this|.
   void OnAllLoadingFinished();
 
-  // Creates a URL fetcher for |destination_url| and stores it in |fetcher_|.
-  // Does not start the fetcher.
-  void CreateFetcher(const GURL& destination_url);
+  // Creates a URL loader for |destination_url| and stores it in |loader_|.
+  // Does not start the loader.
+  void CreateLoader(const GURL& destination_url);
 
   const base::string16 text_;
   const AutocompleteMatch match_;
   const AutocompleteMatch alternate_nav_match_;
   TemplateURLService* template_url_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;  // NULL in incognito.
-  std::unique_ptr<net::URLFetcher> fetcher_;
-  // The request context used by |fetcher_|.  It's necessary to keep a reference
-  // to this because sometimes we need to create a follow-up fetcher with the
-  // same context and URLFetcher does not have a way to get the context out.
-  net::URLRequestContextGetter* request_context_;
+  std::unique_ptr<network::SimpleURLLoader> loader_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_for_testing_;
   LoadState load_state_;
   FetchState fetch_state_;
 

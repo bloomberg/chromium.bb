@@ -32,13 +32,20 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     ResourceRequest request;
   };
 
-  // Bitfield that is used with |SimulateResponseForPendingRequest()|.
-  enum SimulateResponseFlags : uint32_t {
-    kDefault = 0x0,
+  // Bitfield that is used with |SimulateResponseForPendingRequest()| to
+  // control which request is selected.
+  enum ResponseMatchFlags : uint32_t {
+    kMatchDefault = 0x0,
     kUrlMatchPrefix = 0x1,   // Whether URLs are a match if they start with the
                              // URL passed in to
                              // SimulateResponseForPendingRequest
     kMostRecentMatch = 0x2,  // Start with the most recent requests.
+  };
+
+  // Flags used with |AddResponse| to control how it produces a response.
+  enum ResponseProduceFlags : uint32_t {
+    kResponseDefault = 0,
+    kResponseOnlyRedirectsNoDestination = 0x1,
   };
 
   TestURLLoaderFactory();
@@ -56,7 +63,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                    const ResourceResponseHead& head,
                    const std::string& content,
                    const URLLoaderCompletionStatus& status,
-                   const Redirects& redirects = Redirects());
+                   const Redirects& redirects = Redirects(),
+                   ResponseProduceFlags rp_flags = kResponseDefault);
 
   // Simpler version of above for the common case of success or error page.
   void AddResponse(const std::string& url,
@@ -96,7 +104,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
       const network::URLLoaderCompletionStatus& completion_status,
       const ResourceResponseHead& response_head,
       const std::string& content,
-      SimulateResponseFlags flags = kDefault);
+      ResponseMatchFlags flags = kMatchDefault);
 
   // Sends a response for the given request |request|.
   //
@@ -133,7 +141,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                                Redirects redirects,
                                ResourceResponseHead head,
                                std::string content,
-                               URLLoaderCompletionStatus status);
+                               URLLoaderCompletionStatus status,
+                               ResponseProduceFlags response_flags);
 
   struct Response {
     Response();
@@ -144,6 +153,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     ResourceResponseHead head;
     std::string content;
     URLLoaderCompletionStatus status;
+    ResponseProduceFlags flags;
   };
   std::map<GURL, Response> responses_;
 

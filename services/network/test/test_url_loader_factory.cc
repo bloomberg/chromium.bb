@@ -34,13 +34,15 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
                                        const ResourceResponseHead& head,
                                        const std::string& content,
                                        const URLLoaderCompletionStatus& status,
-                                       const Redirects& redirects) {
+                                       const Redirects& redirects,
+                                       ResponseProduceFlags flags) {
   Response response;
   response.url = url;
   response.redirects = redirects;
   response.head = head;
   response.content = content;
   response.status = status;
+  response.flags = flags;
   responses_[url] = response;
 
   for (auto it = pending_requests_.begin(); it != pending_requests_.end();) {
@@ -125,7 +127,7 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
     return false;
 
   SimulateResponse(client, it->second.redirects, it->second.head,
-                   it->second.content, it->second.status);
+                   it->second.content, it->second.status, it->second.flags);
   return true;
 }
 
@@ -134,7 +136,7 @@ bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
     const network::URLLoaderCompletionStatus& completion_status,
     const ResourceResponseHead& response_head,
     const std::string& content,
-    SimulateResponseFlags flags) {
+    ResponseMatchFlags flags) {
   if (pending_requests_.empty())
     return false;
 
@@ -172,7 +174,7 @@ bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
   status.decoded_body_length = content.size();
 
   SimulateResponse(request.client.get(), TestURLLoaderFactory::Redirects(),
-                   response_head, content, status);
+                   response_head, content, status, kResponseDefault);
   base::RunLoop().RunUntilIdle();
 
   return true;
@@ -186,7 +188,7 @@ void TestURLLoaderFactory::SimulateResponseWithoutRemovingFromPendingList(
   URLLoaderCompletionStatus status(completion_status);
   status.decoded_body_length = content.size();
   SimulateResponse(request->client.get(), TestURLLoaderFactory::Redirects(),
-                   head, content, status);
+                   head, content, status, kResponseDefault);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -205,9 +207,13 @@ void TestURLLoaderFactory::SimulateResponse(
     TestURLLoaderFactory::Redirects redirects,
     ResourceResponseHead head,
     std::string content,
-    URLLoaderCompletionStatus status) {
+    URLLoaderCompletionStatus status,
+    ResponseProduceFlags response_flags) {
   for (const auto& redirect : redirects)
     client->OnReceiveRedirect(redirect.first, redirect.second);
+
+  if (response_flags & kResponseOnlyRedirectsNoDestination)
+    return;
 
   if (status.error_code == net::OK) {
     client->OnReceiveResponse(head);
