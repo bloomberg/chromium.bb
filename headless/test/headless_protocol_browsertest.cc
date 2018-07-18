@@ -297,10 +297,12 @@ class HeadlessProtocolCompositorBrowserTest
 #define MAYBE_CompositorBasicRaf DISABLED_CompositorBasicRaf
 #define MAYBE_CompositorImageAnimation DISABLED_CompositorImageAnimation
 #define MAYBE_CompositorCssAnimation DISABLED_CompositorCssAnimation
+#define MAYBE_VirtualTimeControllerTest DISABLED_VirtualTimeControllerTest
 #else
 #define MAYBE_CompositorBasicRaf CompositorBasicRaf
 #define MAYBE_CompositorImageAnimation CompositorImageAnimation
 #define MAYBE_CompositorCssAnimation CompositorCssAnimation
+#define MAYBE_VirtualTimeControllerTest VirtualTimeControllerTest
 #endif
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorBasicRaf,
                                   "emulation/compositor-basic-raf.js");
@@ -309,8 +311,11 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     "emulation/compositor-image-animation-test.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorCssAnimation,
                                   "emulation/compositor-css-animation-test.js");
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeControllerTest,
+                       "helpers/virtual-time-controller-test.js");
 #undef MAYBE_CompositorBasicRaf
 #undef MAYBE_CompositorImageAnimation
 #undef MAYBE_CompositorCssAnimation
+#undef MAYBE_VirtualTimeControllerTest
 
 }  // namespace headless
