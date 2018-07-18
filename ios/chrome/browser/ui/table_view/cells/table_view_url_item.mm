@@ -136,6 +136,14 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 
 #pragma mark - TableViewURLCell
 
+@interface TableViewURLCell ()
+// If the cell's accessibility label has not been manually set via
+// |-setAccessibilityLabel:|, this property will be YES, and
+// |-accessibilityLabel| will return a lazily created label based on the
+// text values of the UILabel subviews.
+@property(nonatomic, assign) BOOL shouldGenerateAccessibilityLabel;
+@end
+
 @implementation TableViewURLCell
 @synthesize faviconView = _faviconView;
 @synthesize faviconContainerView = _faviconContainerView;
@@ -144,6 +152,8 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 @synthesize titleLabel = _titleLabel;
 @synthesize URLLabel = _URLLabel;
 @synthesize cellUniqueIdentifier = _cellUniqueIdentifier;
+@synthesize shouldGenerateAccessibilityLabel =
+    _shouldGenerateAccessibilityLabel;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -252,18 +262,27 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   self.faviconBadgeView.image = nil;
 }
 
+- (void)setAccessibilityLabel:(NSString*)accessibilityLabel {
+  self.shouldGenerateAccessibilityLabel = !accessibilityLabel.length;
+  [super setAccessibilityLabel:accessibilityLabel];
+}
+
 - (NSString*)accessibilityLabel {
-  NSString* accessibilityLabel = self.titleLabel.text;
-  if (self.URLLabel.text.length > 0) {
-    accessibilityLabel = [NSString
-        stringWithFormat:@"%@, %@", accessibilityLabel, self.URLLabel.text];
+  if (self.shouldGenerateAccessibilityLabel) {
+    NSString* accessibilityLabel = self.titleLabel.text;
+    if (self.URLLabel.text.length > 0) {
+      accessibilityLabel = [NSString
+          stringWithFormat:@"%@, %@", accessibilityLabel, self.URLLabel.text];
+    }
+    if (self.metadataLabel.text.length > 0) {
+      accessibilityLabel =
+          [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
+                                     self.metadataLabel.text];
+    }
+    return accessibilityLabel;
+  } else {
+    return [super accessibilityLabel];
   }
-  if (self.metadataLabel.text.length > 0) {
-    accessibilityLabel =
-        [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
-                                   self.metadataLabel.text];
-  }
-  return accessibilityLabel;
 }
 
 - (NSString*)accessibilityIdentifier {
