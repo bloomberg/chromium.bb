@@ -438,7 +438,8 @@ class OrderfileGenerator(object):
       use_wpr = not options.no_wpr
       simulate_user = options.simulate_user
       self._profiler = profile_android_startup.AndroidProfileTool(
-          output_directory, host_profile_dir, use_wpr, urls, simulate_user)
+          output_directory, host_profile_dir, use_wpr, urls, simulate_user,
+          device=options.device)
 
     self._output_data = {}
     self._step_recorder = StepRecorder(options.buildbot)
@@ -698,6 +699,9 @@ def CreateArgumentParser():
   parser.add_argument(
       '--buildbot', action='store_true',
       help='If true, the script expects to be run on a buildbot')
+  parser.add_argument(
+      '--device', default=None, type=str,
+      help='Device serial number on which to run profiling.')
   parser.add_argument(
       '--verify', action='store_true',
       help='If true, the script only verifies the current orderfile')
