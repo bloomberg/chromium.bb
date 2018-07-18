@@ -1146,8 +1146,6 @@ jumbo_component("platform") {
     "json/json_values.cc",
     "json/json_values.h",
     "keyboard_codes.h",
-    "kill_ring.h",
-    "kill_ring_none.cc",
     "language.cc",
     "language.h",
     "layout_test_support.cc",
@@ -1173,7 +1171,6 @@ jumbo_component("platform") {
     "mac/color_mac.mm",
     "mac/graphics_context_canvas.h",
     "mac/graphics_context_canvas.mm",
-    "mac/kill_ring_mac.mm",
     "mac/local_current_graphics_context.h",
     "mac/local_current_graphics_context.mm",
     "mac/ns_scroller_imp_details.h",
@@ -1517,10 +1514,8 @@ jumbo_component("platform") {
 
   if (is_mac) {
     sources -= [
-      # Uses KillRingMac.mm instead.
       "fonts/skia/font_cache_skia.cc",
       "fonts/web_font_render_style.cc",
-      "kill_ring_none.cc",
       "scroll/scroll_animator.cc",
       "scroll/scroll_animator.h",
 

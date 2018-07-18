@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All Rights Reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,20 +23,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/kill_ring.h"
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_KILL_RING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_KILL_RING_H_
+
+#include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-void KillRing::Append(const String&) {}
+class CORE_EXPORT KillRing {
+  USING_FAST_MALLOC(KillRing);
 
-void KillRing::Prepend(const String&) {}
+ public:
+  KillRing() = default;
+  void Append(const String&);
+  void Prepend(const String&);
+  String Yank();
+  void StartNewSequence();
+  void SetToYankedState();
 
-String KillRing::Yank() {
-  return String();
-}
-
-void KillRing::StartNewSequence() {}
-
-void KillRing::SetToYankedState() {}
+  DISALLOW_COPY_AND_ASSIGN(KillRing);
+};
 
 }  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_KILL_RING_H_
