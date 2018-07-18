@@ -1919,6 +1919,10 @@ void RenderFrameHostImpl::SwapOut(
         proxy->frame_tree_node()->current_replication_state();
     Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID(), is_loading,
                               replication_state));
+
+    // Remember that a RenderFrameProxy was created as part of processing the
+    // SwapOut message above.
+    proxy->set_render_frame_proxy_created(true);
   }
 
   if (web_ui())
