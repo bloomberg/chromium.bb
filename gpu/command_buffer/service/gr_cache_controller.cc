@@ -46,10 +46,9 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
     return;
   }
 
-  // TODO(khushalsagar): Replace with purgeUnlockedResources which retains the
-  // text cache.
   context_state_->context->MakeCurrent(context_state_->surface.get());
-  context_state_->gr_context->freeGpuResources();
+  context_state_->gr_context->purgeUnlockedResources(
+      false /* scratchResourcesOnly */);
 }
 
 }  // namespace raster
