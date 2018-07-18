@@ -138,8 +138,7 @@ Bug(none) virtual/threaded/ [ Skip ]
 # These tests failed in normal mode but are fixed with BlinkGenPropertyTrees.
 Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
-# This test can be manually rebaselined.
-Bug(none) compositing/masks/mask-with-added-filters.html [ Failure ]
+crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 
 # These animation/transition tests should pass.
 Bug(none) animations/ [ Pass ]
