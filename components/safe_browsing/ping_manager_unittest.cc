@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 
-#include "components/safe_browsing/base_ping_manager.h"
+#include "components/safe_browsing/ping_manager.h"
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -25,9 +25,9 @@ static const char kAppVer[] = "1.0";
 
 namespace safe_browsing {
 
-class BasePingManagerTest : public testing::Test {
+class PingManagerTest : public testing::Test {
  public:
-  BasePingManagerTest() {}
+  PingManagerTest() {}
 
  protected:
   void SetUp() override {
@@ -40,17 +40,17 @@ class BasePingManagerTest : public testing::Test {
     SafeBrowsingProtocolConfig config;
     config.client_name = kClient;
     config.url_prefix = kUrlPrefix;
-    ping_manager_.reset(new BasePingManager(nullptr, config));
+    ping_manager_.reset(new PingManager(nullptr, config));
     ping_manager_->version_ = kAppVer;
   }
 
-  BasePingManager* ping_manager() { return ping_manager_.get(); }
+  PingManager* ping_manager() { return ping_manager_.get(); }
 
   std::string key_param_;
-  std::unique_ptr<BasePingManager> ping_manager_;
+  std::unique_ptr<PingManager> ping_manager_;
 };
 
-TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
+TEST_F(PingManagerTest, TestSafeBrowsingHitUrl) {
   HitReport base_hp;
   base_hp.malicious_url = GURL("http://malicious.url.com");
   base_hp.page_url = GURL("http://page.url.com");
@@ -185,7 +185,7 @@ TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
   }
 }
 
-TEST_F(BasePingManagerTest, TestThreatDetailsUrl) {
+TEST_F(PingManagerTest, TestThreatDetailsUrl) {
   EXPECT_EQ(
       "https://prefix.com/foo/clientreport/malware?"
       "client=unittest&appver=1.0&pver=1.0" +

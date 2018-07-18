@@ -60,6 +60,7 @@ class TrackedPreferenceValidationDelegate;
 }  // namespace prefs
 
 namespace safe_browsing {
+class PingManager;
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class PasswordProtectionService;
@@ -68,7 +69,6 @@ struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingNetworkContext;
-class SafeBrowsingPingManager;
 class SafeBrowsingProtocolManager;
 class SafeBrowsingProtocolManagerDelegate;
 class SafeBrowsingServiceFactory;
@@ -176,7 +176,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   SafeBrowsingProtocolManager* protocol_manager() const;
 
   // Called on UI thread.
-  SafeBrowsingPingManager* ping_manager() const;
+  PingManager* ping_manager() const;
 
   // This may be NULL if v4 is not enabled by experiment.
   const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
@@ -332,7 +332,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 #endif
 
   // Provides phishing and malware statistics. Accessed on UI thread.
-  std::unique_ptr<SafeBrowsingPingManager> ping_manager_;
+  std::unique_ptr<PingManager> ping_manager_;
 
   // Whether SafeBrowsing Extended Reporting is enabled by the current set of
   // profiles. Updated on the UI thread.

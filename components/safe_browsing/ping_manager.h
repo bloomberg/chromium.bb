@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_BROWSING_BASE_PING_MANAGER_H_
-#define COMPONENTS_SAFE_BROWSING_BASE_PING_MANAGER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_PING_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_PING_MANAGER_H_
 
 // A class that reports basic safebrowsing statistics to Google's SafeBrowsing
 // servers.
@@ -27,12 +27,12 @@ class SimpleURLLoader;
 
 namespace safe_browsing {
 
-class BasePingManager {
+class PingManager {
  public:
-  virtual ~BasePingManager();
+  virtual ~PingManager();
 
   // Create an instance of the safe browsing ping manager.
-  static std::unique_ptr<BasePingManager> Create(
+  static std::unique_ptr<PingManager> Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config);
 
@@ -49,18 +49,17 @@ class BasePingManager {
   void ReportThreatDetails(const std::string& report);
 
  protected:
-  friend class BasePingManagerTest;
-  // Constructs a BasePingManager that issues network requests
+  friend class PingManagerTest;
+  // Constructs a PingManager that issues network requests
   // using |url_loader_factory|.
-  BasePingManager(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const SafeBrowsingProtocolConfig& config);
+  PingManager(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+              const SafeBrowsingProtocolConfig& config);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestSafeBrowsingHitUrl);
-  FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestThreatDetailsUrl);
-  FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestReportThreatDetails);
-  FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestReportSafeBrowsingHit);
+  FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestSafeBrowsingHitUrl);
+  FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestThreatDetailsUrl);
+  FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestReportThreatDetails);
+  FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestReportSafeBrowsingHit);
 
   typedef std::set<std::unique_ptr<network::SimpleURLLoader>> Reports;
 
@@ -87,9 +86,9 @@ class BasePingManager {
   // We add both "hit" and "detail" fetchers in this set.
   Reports safebrowsing_reports_;
 
-  DISALLOW_COPY_AND_ASSIGN(BasePingManager);
+  DISALLOW_COPY_AND_ASSIGN(PingManager);
 };
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_BASE_PING_MANAGER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_PING_MANAGER_H_

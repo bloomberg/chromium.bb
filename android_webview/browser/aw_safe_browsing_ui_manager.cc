@@ -12,11 +12,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/base_ping_manager.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
+#include "components/safe_browsing/ping_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -139,7 +139,7 @@ void AwSafeBrowsingUIManager::SendSerializedThreatDetails(
         ::safe_browsing::kSbBackupHttpErrorURLPrefix;
     config.backup_network_error_url_prefix =
         ::safe_browsing::kSbBackupNetworkErrorURLPrefix;
-    ping_manager_ = ::safe_browsing::BasePingManager::Create(
+    ping_manager_ = ::safe_browsing::PingManager::Create(
         network_context_->GetURLLoaderFactory(), config);
   }
 

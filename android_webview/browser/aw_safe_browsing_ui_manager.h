@@ -20,7 +20,7 @@ class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
-class BasePingManager;
+class PingManager;
 class SafeBrowsingNetworkContext;
 class SafeBrowsingURLRequestContextGetter;
 }  // namespace
@@ -75,7 +75,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
       network::mojom::URLLoaderFactoryRequest request);
 
   // Provides phishing and malware statistics. Accessed on IO thread.
-  std::unique_ptr<safe_browsing::BasePingManager> ping_manager_;
+  std::unique_ptr<safe_browsing::PingManager> ping_manager_;
 
   // The SafeBrowsingURLRequestContextGetter used to access
   // |url_request_context_|. Accessed on UI thread.

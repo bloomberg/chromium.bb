@@ -27,7 +27,6 @@
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -43,6 +42,7 @@
 #include "components/safe_browsing/db/v4_feature_list.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
+#include "components/safe_browsing/ping_manager.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -304,7 +304,7 @@ SafeBrowsingProtocolManager* SafeBrowsingService::protocol_manager() const {
 #endif
 }
 
-SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
+PingManager* SafeBrowsingService::ping_manager() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ping_manager_.get();
 }
@@ -501,8 +501,8 @@ void SafeBrowsingService::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!ping_manager_) {
-    ping_manager_ = SafeBrowsingPingManager::Create(GetURLLoaderFactory(),
-                                                    GetProtocolConfig());
+    ping_manager_ =
+        PingManager::Create(GetURLLoaderFactory(), GetProtocolConfig());
   }
 
   BrowserThread::PostTask(
