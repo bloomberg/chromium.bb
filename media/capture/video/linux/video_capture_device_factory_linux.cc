@@ -118,6 +118,14 @@ VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
 
 VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() = default;
 
+void VideoCaptureDeviceFactoryLinux::SetV4L2EnvironmentForTesting(
+    scoped_refptr<V4L2CaptureDevice> v4l2,
+    std::unique_ptr<VideoCaptureDeviceFactoryLinux::DeviceProvider>
+        device_provider) {
+  v4l2_ = std::move(v4l2);
+  device_provider_ = std::move(device_provider);
+}
+
 std::unique_ptr<VideoCaptureDevice>
 VideoCaptureDeviceFactoryLinux::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {

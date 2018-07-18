@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "media/capture/video/linux/v4l2_capture_device_impl.h"
+#include "media/capture/video/linux/v4l2_capture_device.h"
 #include "media/capture/video_capture_types.h"
 
 namespace media {
@@ -32,6 +32,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryLinux
   explicit VideoCaptureDeviceFactoryLinux(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~VideoCaptureDeviceFactoryLinux() override;
+
+  void SetV4L2EnvironmentForTesting(
+      scoped_refptr<V4L2CaptureDevice> v4l2,
+      std::unique_ptr<DeviceProvider> device_provider);
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
