@@ -18,6 +18,9 @@ namespace {
 const size_t kTotalCacheLimitInBytesLowEnd = 1 * 1024 * 1024;
 const size_t kTotalCacheLimitInBytes = 5 * 1024 * 1024;
 
+const constexpr int64_t kDOMStorageObjectPrefix = 0x0001020304050607;
+const constexpr int64_t kDOMStorageObjectPostfix = 0x08090a0b0c0d0e0f;
+
 // An empty namespace is the local storage namespace.
 constexpr const char kLocalStorageNamespaceId[] = "";
 }  // namespace
@@ -111,6 +114,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     metric = CacheMetrics::kMiss;
   } else {
     dom_namespace = &namespace_it->second;
+    dom_namespace->CheckPrefixes();
     auto cache_it = dom_namespace->cached_areas.find(origin);
     if (cache_it == dom_namespace->cached_areas.end()) {
       metric = CacheMetrics::kMiss;
@@ -133,6 +137,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     if (!dom_namespace) {
       dom_namespace = &cached_namespaces_[namespace_id];
     }
+    dom_namespace->CheckPrefixes();
     if (namespace_id == kLocalStorageNamespaceId) {
       result = base::MakeRefCounted<LocalStorageCachedArea>(
           origin, storage_partition_service_, this, scheduler);
@@ -152,12 +157,21 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
   return result;
 }
 
-LocalStorageCachedAreas::DOMStorageNamespace::DOMStorageNamespace() {}
-LocalStorageCachedAreas::DOMStorageNamespace::~DOMStorageNamespace() {}
+LocalStorageCachedAreas::DOMStorageNamespace::DOMStorageNamespace()
+    : prefix(kDOMStorageObjectPrefix), postfix(kDOMStorageObjectPostfix) {}
+LocalStorageCachedAreas::DOMStorageNamespace::~DOMStorageNamespace() {
+  CheckPrefixes();
+}
 LocalStorageCachedAreas::DOMStorageNamespace::DOMStorageNamespace(
     LocalStorageCachedAreas::DOMStorageNamespace&& other) = default;
 
+void LocalStorageCachedAreas::DOMStorageNamespace::CheckPrefixes() const {
+  CHECK_EQ(kDOMStorageObjectPrefix, prefix) << "Memory corruption?";
+  CHECK_EQ(kDOMStorageObjectPostfix, postfix) << "Memory corruption?";
+}
+
 size_t LocalStorageCachedAreas::DOMStorageNamespace::TotalCacheSize() const {
+  CheckPrefixes();
   size_t total = 0;
   for (const auto& it : cached_areas)
     total += it.second.get()->memory_used();
@@ -165,6 +179,7 @@ size_t LocalStorageCachedAreas::DOMStorageNamespace::TotalCacheSize() const {
 }
 
 bool LocalStorageCachedAreas::DOMStorageNamespace::CleanUpUnusedAreas() {
+  CheckPrefixes();
   base::EraseIf(cached_areas,
                 [](auto& pair) { return pair.second->HasOneRef(); });
   return cached_areas.empty();
