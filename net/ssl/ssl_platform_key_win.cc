@@ -42,8 +42,8 @@ class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
     // Prioritize SHA-1, but if the server doesn't advertise it, leave the other
     // algorithms enabled to try.
     return {
-        SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512,
-        SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256,
+        SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA256,
+        SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA512,
     };
   }
 
@@ -140,10 +140,10 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
     // enabled to try.
     if (type_ == EVP_PKEY_RSA && max_length_ <= 1024 / 8) {
       return {
-          SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512,
-          SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256,
+          SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA256,
+          SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA512,
           // 1024-bit keys are too small for SSL_SIGN_RSA_PSS_SHA512.
-          SSL_SIGN_RSA_PSS_SHA384, SSL_SIGN_RSA_PSS_SHA256,
+          SSL_SIGN_RSA_PSS_SHA256, SSL_SIGN_RSA_PSS_SHA384,
       };
     }
     return SSLPrivateKey::DefaultAlgorithmPreferences(type_,
