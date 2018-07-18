@@ -145,6 +145,7 @@ public class SiteSettingsCategory {
      */
     public static SiteSettingsCategory createFromType(@Type int type) {
         if (type == Type.DEVICE_LOCATION) return new LocationCategory();
+        if (type == Type.NOTIFICATIONS) return new NotificationCategory();
 
         final String permission;
         if (type == Type.CAMERA) {
