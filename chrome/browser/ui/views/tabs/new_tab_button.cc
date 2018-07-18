@@ -161,10 +161,8 @@ void NewTabButton::CloseBubble() {
 }
 
 void NewTabButton::FrameColorsChanged() {
-  if (MD::IsRefreshUi()) {
-    InitButtonIcons();
+  if (MD::IsRefreshUi())
     UpdateInkDropBaseColor();
-  }
 }
 
 void NewTabButton::AnimateInkDropToStateForTesting(views::InkDropState state) {
@@ -276,17 +274,18 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   }
 
   if (MD::IsNewerMaterialUi()) {
+    const int plus_icon_size = MD::IsTouchOptimizedUiEnabled() ? 14 : 12;
+    const int plus_icon_offset = GetCornerRadius() - (plus_icon_size / 2);
+
+    PaintPlusIcon(canvas, plus_icon_offset, plus_icon_size);
+
     cc::PaintFlags paint_flags;
     paint_flags.setAntiAlias(true);
-
-    const int plus_icon_offset = GetCornerRadius() - (plus_icon_.width() / 2);
-    canvas->DrawImageInt(plus_icon_, plus_icon_offset, plus_icon_offset,
-                         paint_flags);
     if (ShouldDrawIncognitoIcon()) {
       DCHECK(!incognito_icon_.isNull());
       canvas->DrawImageInt(
           incognito_icon_,
-          plus_icon_offset + plus_icon_.width() + kDistanceBetweenIcons,
+          plus_icon_offset + plus_icon_size + kDistanceBetweenIcons,
           plus_icon_offset, paint_flags);
     }
 
@@ -333,10 +332,8 @@ void NewTabButton::Layout() {
   ImageButton::Layout();
 
   if (MD::IsNewerMaterialUi()) {
-    // If icons are not initialized, initialize them now. Icons are always
-    // initialized together so it's enough to check the |plus_icon_|.
-    if (plus_icon_.isNull())
-      InitButtonIcons();
+    if (ShouldDrawIncognitoIcon() && incognito_icon_.isNull())
+      InitIncognitoIcon();
 
     // TODO(pkasting): Instead of setting this bounds rect, maybe have the
     // container match the view bounds, then undo the coordinate transforms in
@@ -356,7 +353,8 @@ void NewTabButton::OnThemeChanged() {
   if (!MD::IsNewerMaterialUi())
     return;
 
-  InitButtonIcons();
+  if (ShouldDrawIncognitoIcon())
+    InitIncognitoIcon();
   UpdateInkDropBaseColor();
 }
 
@@ -513,6 +511,30 @@ void NewTabButton::PaintFill(bool pressed,
   }
 }
 
+void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas, int offset, int size) {
+  constexpr int kStrokeWidth = 2;
+  constexpr int kCapRadius = kStrokeWidth / 2;
+
+  cc::PaintFlags paint_flags;
+  paint_flags.setAntiAlias(true);
+  paint_flags.setColor(GetIconColor());
+  paint_flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
+  paint_flags.setStrokeWidth(kStrokeWidth);
+
+  // With a round end-cap, the apparent line length will extend past the end
+  // points by one radius of the cap. Reduce the specified length to take this
+  // into account.
+  const int start = offset + kCapRadius;
+  const int end = offset + size - kCapRadius;
+  const int center = offset + size / 2;
+  // Draw the horizontal leg of the plus (+) icon
+  canvas->DrawLine(gfx::PointF(start, center), gfx::PointF(end, center),
+                   paint_flags);
+  // Draw the vertical leg of the plus (+) icon
+  canvas->DrawLine(gfx::PointF(center, start), gfx::PointF(center, end),
+                   paint_flags);
+}
+
 SkColor NewTabButton::GetButtonFillColor() const {
   if (new_tab_promo_observer_.IsObservingSources()) {
     return GetNativeTheme()->GetSystemColor(
@@ -522,19 +544,16 @@ SkColor NewTabButton::GetButtonFillColor() const {
   return tab_strip_->GetTabBackgroundColor(TAB_INACTIVE);
 }
 
-void NewTabButton::InitButtonIcons() {
-  DCHECK(MD::IsNewerMaterialUi());
-  const SkColor icon_color =
-      color_utils::IsDark(tab_strip_->GetTabForegroundColor(TAB_INACTIVE))
-          ? gfx::kChromeIconGrey
-          : SK_ColorWHITE;
-  // TODO(b/851041): is there a better source for these icon sizes?
-  const int size = MD::IsTouchOptimizedUiEnabled() ? 14 : 12;
-  plus_icon_ = gfx::CreateVectorIcon(kNewTabButtonPlusIcon, size, icon_color);
-  if (ShouldDrawIncognitoIcon()) {
-    incognito_icon_ =
-        gfx::CreateVectorIcon(kNewTabButtonIncognitoIcon, icon_color);
-  }
+SkColor NewTabButton::GetIconColor() const {
+  return color_utils::IsDark(tab_strip_->GetTabForegroundColor(TAB_INACTIVE))
+             ? gfx::kChromeIconGrey
+             : SK_ColorWHITE;
+}
+
+void NewTabButton::InitIncognitoIcon() {
+  DCHECK(ShouldDrawIncognitoIcon());
+  incognito_icon_ =
+      gfx::CreateVectorIcon(kNewTabButtonIncognitoIcon, GetIconColor());
 }
 
 SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
