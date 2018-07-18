@@ -218,7 +218,7 @@ void MessagePopupCollection::UpdateWidgets() {
     else
       base -= view_height + kToastMarginY;
 
-    if (views::ViewsDelegate::GetInstance()) {
+    if (views::ViewsDelegate::GetInstance() && a11y_feedback_for_updates) {
       views::ViewsDelegate::GetInstance()->NotifyAccessibilityEvent(
           toast, ax::mojom::Event::kAlert);
     }

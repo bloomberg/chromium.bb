@@ -232,9 +232,12 @@ AccessibilityController::AccessibilityController(
     : connector_(connector),
       autoclick_delay_(AutoclickController::GetDefaultAutoclickDelay()) {
   Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 AccessibilityController::~AccessibilityController() {
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -729,6 +732,16 @@ void AccessibilityController::OnActiveUserPrefServiceChanged(
 
 void AccessibilityController::FlushMojoForTest() {
   client_.FlushForTesting();
+}
+
+void AccessibilityController::OnTabletModeStarted() {
+  if (IsSpokenFeedbackEnabled())
+    ShowAccessibilityNotification(A11yNotificationType::kSpokenFeedbackEnabled);
+}
+
+void AccessibilityController::OnTabletModeEnded() {
+  if (IsSpokenFeedbackEnabled())
+    ShowAccessibilityNotification(A11yNotificationType::kSpokenFeedbackEnabled);
 }
 
 void AccessibilityController::ObservePrefs(PrefService* prefs) {
