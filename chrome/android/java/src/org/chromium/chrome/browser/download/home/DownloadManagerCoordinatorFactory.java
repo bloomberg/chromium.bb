@@ -28,8 +28,8 @@ public class DownloadManagerCoordinatorFactory {
             SnackbarManager snackbarManager, ComponentName parentComponent,
             boolean isSeparateActivity) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_HOME_V2)) {
-            return new DownloadManagerCoordinatorImpl(
-                    Profile.getLastUsedProfile(), activity, isOffTheRecord, snackbarManager);
+            return new DownloadManagerCoordinatorImpl(Profile.getLastUsedProfile(), activity,
+                    isOffTheRecord, isSeparateActivity, snackbarManager);
         } else {
             return new DownloadManagerUi(
                     activity, isOffTheRecord, parentComponent, isSeparateActivity, snackbarManager);

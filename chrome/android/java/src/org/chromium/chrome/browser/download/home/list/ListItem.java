@@ -13,7 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /** An abstract class that represents a variety of possible list items to show in downloads home. */
-abstract class ListItem {
+public abstract class ListItem {
     public final long stableId;
 
     /** Creates a {@link ListItem} instance. */
