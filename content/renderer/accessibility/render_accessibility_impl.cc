@@ -449,6 +449,18 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     bundle.events.push_back(event);
 
+    // Whenever there's a change to an inline node, it's important to
+    // invalidate the whole surrounding block so that we have the full
+    // information about the line layout.
+    auto block = obj;
+    while (!block.IsDetached() && (block.ComputedStyleDisplay() != "block" ||
+                                   block.AccessibilityIsIgnored())) {
+      block = block.ParentObject();
+    }
+    if (!block.IsDetached() && !block.Equals(obj)) {
+      serializer_.DeleteClientSubtree(block);
+    }
+
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
             << " on node id " << event.id;
 

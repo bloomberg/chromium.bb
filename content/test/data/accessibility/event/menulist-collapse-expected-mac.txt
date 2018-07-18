@@ -1,1 +1,2 @@
+AXFocusedUIElementChanged on AXPopUpButton
 AXValueChanged on AXPopUpButton
