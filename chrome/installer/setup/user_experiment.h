@@ -47,9 +47,6 @@ void RunUserExperiment(const base::CommandLine& command_line,
 void WriteInitialState(ExperimentStorage* storage,
                        ExperimentMetrics::State state);
 
-// Returns true if the install is associated with an enterprise brand code.
-bool IsEnterpriseBrand();
-
 // Returns true if the machine is joined to a Windows domain.
 bool IsDomainJoined();
 
