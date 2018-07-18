@@ -37,6 +37,7 @@
         "chrome": [ "input_device_controller" ],
         "chrome_printing": [ "converter" ],
         "content_browser": [ "profiling_client" ],
+        "cups_ipp_validator": [ "ipp_validator" ],
         "device": [
           "device:fingerprint",
           "device:geolocation_config",

@@ -174,6 +174,13 @@ static_library("utility") {
       "//components/services/pdf_compositor/public/cpp:factory",
       "//components/services/pdf_compositor/public/interfaces",
     ]
+
+    if (is_chromeos) {
+      deps += [
+        "//chrome/services/cups_ipp_validator:lib",
+        "//chrome/services/cups_ipp_validator/public/mojom:mojom",
+      ]
+    }
   }
 
   if (enable_print_preview) {

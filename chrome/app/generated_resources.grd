@@ -3190,6 +3190,11 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME" desc="The name of the utility process used for out-of-process V8 proxy resolution.">
         V8 Proxy Resolver
       </message>
+      <if expr="chromeos">
+        <message name="IDS_UTILITY_PROCESS_CUPS_IPP_VALIDATOR_SERVICE_NAME" desc="The name of the utility process used for validating IPP requests out-of-process.">
+          CUPS IPP Validator
+        </message>
+      </if>
       <message name="IDS_UTILITY_PROCESS_FILE_UTILITY_NAME" desc="The name of the utility process used for various Chrome specific file operations.">
           Chrome File Utilities
       </message>
