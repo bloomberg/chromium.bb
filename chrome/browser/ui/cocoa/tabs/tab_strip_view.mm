@@ -36,8 +36,8 @@
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    newTabButton_.reset([[NewTabButton alloc] initWithFrame:
-        NSMakeRect(295, 0, 40, 27)]);
+    newTabButton_.reset(
+        [[NewTabButtonCocoa alloc] initWithFrame:NSMakeRect(295, 0, 40, 27)]);
     [newTabButton_ setToolTip:l10n_util::GetNSString(IDS_TOOLTIP_NEW_TAB)];
 
     // Set lastMouseUp_ = -1000.0 so that timestamp-lastMouseUp_ is big unless
@@ -347,11 +347,11 @@
   return VIEW_ID_TAB_STRIP;
 }
 
-- (NewTabButton*)getNewTabButton {
+- (NewTabButtonCocoa*)getNewTabButton {
   return newTabButton_;
 }
 
-- (void)setNewTabButton:(NewTabButton*)button {
+- (void)setNewTabButton:(NewTabButtonCocoa*)button {
   newTabButton_.reset([button retain]);
 }
 
@@ -360,7 +360,7 @@
       browserWindowControllerForWindow:[self window]] visualEffectView];
 }
 
-- (void)setController:(TabStripController*)controller {
+- (void)setController:(TabStripControllerCocoa*)controller {
   controller_ = controller;
   // If tearing down the browser window, there's nothing more to do.
   if (!controller_) {

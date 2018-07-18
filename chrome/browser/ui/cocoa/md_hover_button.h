@@ -14,7 +14,7 @@
 // MDHoverButton has a gray background with rounded corners. The background is
 // only visible on hover and gets darker on click. It's friendly to subviews.
 
-@interface MDHoverButton : HoverButton<ThemedWindowDrawing>
+@interface MDHoverButton : HoverButtonCocoa<ThemedWindowDrawing>
 
 // An icon that's displayed in the middle of the button.
 @property(nonatomic) const gfx::VectorIcon* icon;

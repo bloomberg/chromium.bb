@@ -156,9 +156,9 @@ const CGFloat kMDCloseButtonSize = 24;
 
 - (void)loadView {
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
-    base::scoped_nsobject<NSView> scopedView([[DownloadShelfView alloc]
+    base::scoped_nsobject<NSView> scopedView([[DownloadShelfViewCocoa alloc]
         initWithFrame:NSMakeRect(0, 0, kMDShelfInitialWidth,
-                                 [DownloadShelfView shelfHeight])]);
+                                 [DownloadShelfViewCocoa shelfHeight])]);
     NSView* view = scopedView.get();
     view.autoresizingMask = [NSView
         cr_localizedAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
@@ -381,7 +381,7 @@ const CGFloat kMDCloseButtonSize = 24;
 
 - (float)height {
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
-    return [DownloadShelfView shelfHeight] + [self.view cr_lineWidth];
+    return [DownloadShelfViewCocoa shelfHeight] + [self.view cr_lineWidth];
   } else {
     return maxShelfHeight_;
   }
@@ -652,8 +652,8 @@ const CGFloat kMDCloseButtonSize = 24;
   }
 
   // Set the tracking off to create a new tracking area for the control.
-  // When changing the bounds/frame on a HoverButton, the tracking isn't updated
-  // correctly, it needs to be turned off and back on.
+  // When changing the bounds/frame on a HoverButtonCocoa, the tracking isn't
+  // updated correctly, it needs to be turned off and back on.
   [hoverCloseButton_ setTrackingEnabled:NO];
   [hoverCloseButton_ setFrame:bounds];
   [hoverCloseButton_ setTrackingEnabled:YES];

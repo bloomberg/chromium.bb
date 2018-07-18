@@ -14,7 +14,7 @@
 
 // The standard close button for our Mac UI which is the "x" that changes to a
 // dark circle with the "x" when you hover over it. Used to close tabs.
-@interface HoverCloseButton : HoverButton<NSAnimationDelegate> {
+@interface HoverCloseButton : HoverButtonCocoa<NSAnimationDelegate> {
  @private
   GTMKeyValueAnimation* fadeOutAnimation_;
   HoverState previousState_;

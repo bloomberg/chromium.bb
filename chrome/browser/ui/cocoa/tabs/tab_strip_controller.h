@@ -19,9 +19,9 @@
 
 @class CrTrackingArea;
 @class CustomWindowControlsView;
-@class NewTabButton;
+@class NewTabButtonCocoa;
 @class TabContentsController;
-@class TabView;
+@class TabViewCocoa;
 @class TabStripDragController;
 @class TabStripView;
 
@@ -34,7 +34,7 @@ class WebContents;
 
 // The interface for the tab strip controller's delegate.
 // Delegating TabStripModelObserverBridge's events (in lieu of directly
-// subscribing to TabStripModelObserverBridge events, as TabStripController
+// subscribing to TabStripModelObserverBridge events, as TabStripControllerCocoa
 // does) is necessary to guarantee a proper order of subviews layout updates,
 // otherwise it might trigger unnecessary content relayout, UI flickering etc.
 @protocol TabStripControllerDelegate
@@ -63,16 +63,16 @@ class WebContents;
 //
 // For a full description of the design, see
 // http://www.chromium.org/developers/design-documents/tab-strip-mac
-@interface TabStripController : NSObject<TabControllerTarget,
-                                         URLDropTargetController,
-                                         HasWeakBrowserPointer,
-                                         TabStripModelBridge> {
+@interface TabStripControllerCocoa : NSObject<TabControllerTarget,
+                                              URLDropTargetController,
+                                              HasWeakBrowserPointer,
+                                              TabStripModelBridge> {
  @private
   base::scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak
   base::scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server
                                                     // drags
-  NewTabButton* newTabButton_;  // weak, obtained from the nib.
+  NewTabButtonCocoa* newTabButton_;  // weak, obtained from the nib.
 
   // The controller that manages all the interactions of dragging tabs.
   base::scoped_nsobject<TabStripDragController> dragController_;
@@ -107,7 +107,7 @@ class WebContents;
   base::scoped_nsobject<NSMutableSet> closingControllers_;
 
   // These values are only used during a drag, and override tab positioning.
-  TabView* placeholderTab_;  // weak. Tab being dragged
+  TabViewCocoa* placeholderTab_;  // weak. Tab being dragged
   NSRect placeholderFrame_;  // Frame to use
   NSRect droppedTabFrame_;  // Initial frame of a dropped tab, for animation.
   // Frame targets for all the current views.
@@ -130,7 +130,7 @@ class WebContents;
   // A tracking area that's the size of the tab strip used to be notified
   // when the mouse moves in the tab strip
   base::scoped_nsobject<CrTrackingArea> trackingArea_;
-  TabView* hoveredTab_;  // weak. Tab that the mouse is hovering over
+  TabViewCocoa* hoveredTab_;  // weak. Tab that the mouse is hovering over
 
   // A transparent subview of |tabStripView_| used to show the hovered tab's
   // tooltip text.
@@ -166,7 +166,7 @@ class WebContents;
 @property(nonatomic) CGFloat leadingIndentForControls;
 @property(nonatomic) CGFloat trailingIndentForControls;
 
-@property(assign, nonatomic) TabView* hoveredTab;
+@property(assign, nonatomic) TabViewCocoa* hoveredTab;
 
 // Time (in seconds) in which tabs animate to their final position.
 + (CGFloat)tabAnimationDuration;
@@ -238,7 +238,7 @@ class WebContents;
 
 // Set the placeholder for a dragged tab, allowing the |frame| to be specified.
 // This causes this tab to be rendered in an arbitrary position.
-- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame;
+- (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame;
 
 // Returns whether a tab is being dragged within the tab strip.
 - (BOOL)isDragSessionActive;
@@ -247,7 +247,7 @@ class WebContents;
 // its current position would cause it be obscured by things such as the edge
 // of the window or the window decorations. Returns YES only if the entire tab
 // is visible.
-- (BOOL)isTabFullyVisible:(TabView*)tab;
+- (BOOL)isTabFullyVisible:(TabViewCocoa*)tab;
 
 // Returns the right edge of the tab strip's tab area (i.e. the width of the
 // tab strip, less the right indent for controls).
@@ -307,8 +307,8 @@ class WebContents;
 - (void)setVisualEffectsDisabledForFullscreen:(BOOL)disabled;
 @end
 
-@interface TabStripController(TestingAPI)
-- (void)setTabTitle:(TabController*)tab
+@interface TabStripControllerCocoa (TestingAPI)
+- (void)setTabTitle:(TabControllerCocoa*)tab
        withContents:(content::WebContents*)contents;
 @end
 

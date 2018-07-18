@@ -23,9 +23,9 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
-@class AlertIndicatorButton;
+@class AlertIndicatorButtonCocoa;
 @class MenuControllerCocoa;
-@class TabView;
+@class TabViewCocoa;
 @protocol TabControllerTarget;
 
 // A class that manages a single tab in the tab strip. Set its target/action
@@ -39,7 +39,7 @@ enum TabLoadingState {
 // progress. The default in the nib is an image view so nothing special is
 // required if that's all you need.
 
-@interface TabController : NSViewController<TabDraggingEventTarget>
+@interface TabControllerCocoa : NSViewController<TabDraggingEventTarget>
 
 @property(readonly, nonatomic) TabLoadingState loadingState;
 
@@ -59,7 +59,7 @@ enum TabLoadingState {
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
-@property(readonly, nonatomic) AlertIndicatorButton* alertIndicatorButton;
+@property(readonly, nonatomic) AlertIndicatorButtonCocoa* alertIndicatorButton;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Default height for tabs.
@@ -73,8 +73,8 @@ enum TabLoadingState {
 + (CGFloat)minActiveTabWidth;
 + (CGFloat)pinnedTabWidth;
 
-// The view associated with this controller, pre-casted as a TabView
-- (TabView*)tabView;
+// The view associated with this controller, pre-casted as a TabViewCocoa
+- (TabViewCocoa*)tabView;
 
 // Sets the tab's icon image.
 // |image| must be 16x16 in size.
@@ -89,11 +89,11 @@ enum TabLoadingState {
 // Sets the tab to display that it needs attention from the user.
 - (void)setNeedsAttention:(bool)attention;
 
-// Closes the associated TabView by relaying the message to |target_| to
+// Closes the associated TabViewCocoa by relaying the message to |target_| to
 // perform the close.
 - (void)closeTab:(id)sender;
 
-// Selects the associated TabView by sending |action_| to |target_|.
+// Selects the associated TabViewCocoa by sending |action_| to |target_|.
 - (void)selectTab:(id)sender;
 
 // Called by the tabs to determine whether we are in rapid (tab) closure mode.
@@ -116,12 +116,12 @@ enum TabLoadingState {
 - (void)performClick:(id)sender;
 @end
 
-@interface TabController(TestingAPI)
+@interface TabControllerCocoa (TestingAPI)
 - (NSView*)iconView;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
 - (BOOL)shouldShowAlertIndicator;
 - (BOOL)shouldShowCloseButton;
-@end  // TabController(TestingAPI)
+@end  // TabControllerCocoa(TestingAPI)
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_CONTROLLER_H_

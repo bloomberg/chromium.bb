@@ -111,7 +111,7 @@ NSColor* GetActiveColor(BOOL dark_theme) {
                       completionHandler:nil];
 }
 
-// HoverButton overrides.
+// HoverButtonCocoa overrides.
 
 - (void)setHoverState:(HoverState)state {
   if (state == hoverState_)

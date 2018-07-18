@@ -32,7 +32,7 @@ const int kOuterVerticalMargin = 15;
 const int kInnerVerticalMargin = 10;
 
 // An offset we apply to position the point of the bubble's arrow pointing at
-// the NewTabButton.
+// the NewTabButtonCocoa.
 const int kAppsBubbleArrowOffset = 4;
 
 // We use a different kind of notification for each of these extension types.

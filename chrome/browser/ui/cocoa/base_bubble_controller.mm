@@ -112,7 +112,7 @@
   BrowserWindowController* bwc =
       [BrowserWindowController browserWindowControllerForWindow:parentWindow_];
   if (bwc) {
-    TabStripController* tabStripController = [bwc tabStripController];
+    TabStripControllerCocoa* tabStripController = [bwc tabStripController];
     TabStripModel* tabStripModel = [tabStripController tabStripModel];
     tabStripObserverBridge_.reset(new TabStripModelObserverBridge(tabStripModel,
                                                                   self));

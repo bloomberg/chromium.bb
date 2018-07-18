@@ -30,7 +30,7 @@
 using content::SiteInstance;
 using content::WebContents;
 
-@interface TabStripControllerForAlertTesting : TabStripController {
+@interface TabStripControllerForAlertTesting : TabStripControllerCocoa {
   // Keeps alert state of tabs in browser for testing purpose.
   std::map<content::WebContents*, TabAlertState> contentsAlertStateMaps_;
 }
@@ -93,15 +93,15 @@ using content::WebContents;
 }
 @end
 
-@interface TabStripController (Test)
+@interface TabStripControllerCocoa (Test)
 
 - (void)mouseMoved:(NSEvent*)event;
 
 @end
 
-@implementation TabView (Test)
+@implementation TabViewCocoa (Test)
 
-- (TabController*)controller {
+- (TabControllerCocoa*)controller {
   return controller_;
 }
 
@@ -135,19 +135,19 @@ class TabStripControllerTest : public CocoaProfileTest {
         [[TabStripView alloc] initWithFrame:strip_frame]);
     [parent addSubview:tab_strip_.get()];
     NSRect button_frame = NSMakeRect(0, 0, 15, 15);
-    base::scoped_nsobject<NewTabButton> new_tab_button(
-        [[NewTabButton alloc] initWithFrame:button_frame]);
+    base::scoped_nsobject<NewTabButtonCocoa> new_tab_button(
+        [[NewTabButtonCocoa alloc] initWithFrame:button_frame]);
     [tab_strip_ addSubview:new_tab_button.get()];
     [tab_strip_ setNewTabButton:new_tab_button.get()];
 
     delegate_.reset(new TestTabStripModelDelegate());
     model_ = browser()->tab_strip_model();
     controller_delegate_.reset([TestTabStripControllerDelegate alloc]);
-    controller_.reset([[TabStripController alloc]
-                      initWithView:static_cast<TabStripView*>(tab_strip_.get())
-                        switchView:switch_view.get()
-                           browser:browser()
-                          delegate:controller_delegate_.get()]);
+    controller_.reset([[TabStripControllerCocoa alloc]
+        initWithView:static_cast<TabStripView*>(tab_strip_.get())
+          switchView:switch_view.get()
+             browser:browser()
+            delegate:controller_delegate_.get()]);
   }
 
   void TearDown() override {
@@ -158,7 +158,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
-  // Return a derived TabStripController.
+  // Return a derived TabStripControllerCocoa.
   TabStripControllerForAlertTesting* InitTabStripControllerForAlertTesting() {
     TabStripControllerForAlertTesting* c =
         [[TabStripControllerForAlertTesting alloc]
@@ -169,13 +169,14 @@ class TabStripControllerTest : public CocoaProfileTest {
     return c;
   }
 
-  TabView* CreateTab() {
+  TabViewCocoa* CreateTab() {
     std::unique_ptr<WebContents> web_contents =
         WebContents::Create(content::WebContents::CreateParams(
             profile(), SiteInstance::Create(profile())));
     model_->AppendWebContents(std::move(web_contents), true);
     const NSUInteger tab_count = [controller_.get() viewsCount];
-    return static_cast<TabView*>([controller_.get() viewAtIndex:tab_count - 1]);
+    return static_cast<TabViewCocoa*>(
+        [controller_.get() viewAtIndex:tab_count - 1]);
   }
 
   // Closes all tabs and unrefs the tabstrip and then posts a NSLeftMouseUp
@@ -194,7 +195,7 @@ class TabStripControllerTest : public CocoaProfileTest {
   std::unique_ptr<TestTabStripModelDelegate> delegate_;
   TabStripModel* model_;
   base::scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
-  base::scoped_nsobject<TabStripController> controller_;
+  base::scoped_nsobject<TabStripControllerCocoa> controller_;
   base::scoped_nsobject<TabStripView> tab_strip_;
   base::scoped_nsobject<NSView> switch_view_;
 };
@@ -209,8 +210,8 @@ TEST_F(TabStripControllerTest, AddRemoveTabs) {
 
 // Clicking a selected (but inactive) tab should activate it.
 TEST_F(TabStripControllerTest, ActivateSelectedButInactiveTab) {
-  TabView* tab0 = CreateTab();
-  TabView* tab1 = CreateTab();
+  TabViewCocoa* tab0 = CreateTab();
+  TabViewCocoa* tab1 = CreateTab();
   model_->ToggleSelectionAt(0);
   EXPECT_TRUE([[tab0 controller] selected]);
   EXPECT_TRUE([[tab1 controller] selected]);
@@ -221,8 +222,8 @@ TEST_F(TabStripControllerTest, ActivateSelectedButInactiveTab) {
 
 // Toggling (cmd-click) a selected (but inactive) tab should deselect it.
 TEST_F(TabStripControllerTest, DeselectInactiveTab) {
-  TabView* tab0 = CreateTab();
-  TabView* tab1 = CreateTab();
+  TabViewCocoa* tab0 = CreateTab();
+  TabViewCocoa* tab1 = CreateTab();
   model_->ToggleSelectionAt(0);
   EXPECT_TRUE([[tab0 controller] selected]);
   EXPECT_TRUE([[tab1 controller] selected]);
@@ -241,8 +242,8 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
 }
 
 TEST_F(TabStripControllerTest, CorrectMouseHoverBehavior) {
-  TabView* tab1 = CreateTab();
-  TabView* tab2 = CreateTab();
+  TabViewCocoa* tab1 = CreateTab();
+  TabViewCocoa* tab2 = CreateTab();
 
   EXPECT_FALSE([tab1 controller].selected);
   EXPECT_TRUE([tab2 controller].selected);
@@ -252,7 +253,7 @@ TEST_F(TabStripControllerTest, CorrectMouseHoverBehavior) {
 
   // Set up mouse event on overlap of tab1 + tab2.
   const CGFloat min_y = NSMinY([tab_strip_.get() frame]) + 1;
-  const CGFloat tab_overlap = [TabStripController tabOverlap];
+  const CGFloat tab_overlap = [TabStripControllerCocoa tabOverlap];
 
   // Hover over overlap between tab 1 and 2.
   NSRect tab1_frame = [tab1 frame];
@@ -286,8 +287,8 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   using content::MediaStreamDevices;
   using content::MediaStreamUI;
 
-  TabView* const tab = CreateTab();
-  TabController* const tabController = [tab controller];
+  TabViewCocoa* const tab = CreateTab();
+  TabControllerCocoa* const tabController = [tab controller];
   WebContents* const contents = model_->GetActiveWebContents();
 
   // For the duration of the test, assume the tab has been hovered. This adds a
@@ -349,8 +350,8 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
 }
 
 TEST_F(TabStripControllerTest, TabCloseDuringDrag) {
-  TabController* tab;
-  // The TabController gets autoreleased when created, but is owned by the
+  TabControllerCocoa* tab;
+  // The TabControllerCocoa gets autoreleased when created, but is owned by the
   // tab strip model. Use a ScopedNSAutoreleasePool to get a truly weak ref
   // to it to test that -maybeStartDrag:forTab: can handle that properly.
   {
@@ -376,8 +377,8 @@ TEST_F(TabStripControllerTest, ViewAccessibility_Contents) {
   ASSERT_TRUE([attrs containsObject:NSAccessibilityContentsAttribute]);
 
   // Create two tabs and ensure they exist in the contents array.
-  TabView* tab1 = CreateTab();
-  TabView* tab2 = CreateTab();
+  TabViewCocoa* tab1 = CreateTab();
+  TabViewCocoa* tab2 = CreateTab();
   NSObject* contents =
       [tab_strip_ accessibilityAttributeValue:NSAccessibilityContentsAttribute];
   DCHECK([contents isKindOfClass:[NSArray class]]);
@@ -391,8 +392,8 @@ TEST_F(TabStripControllerTest, ViewAccessibility_Value) {
   ASSERT_TRUE([attrs containsObject:NSAccessibilityValueAttribute]);
 
   // Create two tabs and ensure the active one gets returned.
-  TabView* tab1 = CreateTab();
-  TabView* tab2 = CreateTab();
+  TabViewCocoa* tab1 = CreateTab();
+  TabViewCocoa* tab2 = CreateTab();
   EXPECT_FALSE([tab1 controller].selected);
   EXPECT_TRUE([tab2 controller].selected);
   NSObject* value =
@@ -415,8 +416,8 @@ TEST_F(TabStripControllerTest, CorrectWindowFromUpdateWindowAlertState) {
   TabStripControllerForAlertTesting* tabStripControllerForTesting =
       static_cast<TabStripControllerForAlertTesting*>(controller_);
 
-  TabView* const tab1 = CreateTab();
-  TabView* const tab2 = CreateTab();
+  TabViewCocoa* const tab1 = CreateTab();
+  TabViewCocoa* const tab2 = CreateTab();
 
   // tab2 should be the selected one.
   EXPECT_FALSE([tab1 controller].selected);

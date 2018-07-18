@@ -8,7 +8,7 @@
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
-@interface AvatarButton (ExposedForTesting)
+@interface AvatarButtonCocoa (ExposedForTesting)
 - (void)performRightClick;
 @end
 
@@ -30,13 +30,13 @@ class AvatarButtonTest : public ui::CocoaTest {
  public:
   AvatarButtonTest() {
     NSRect content_frame = [[test_window() contentView] frame];
-    base::scoped_nsobject<AvatarButton> button(
-        [[AvatarButton alloc] initWithFrame:content_frame]);
+    base::scoped_nsobject<AvatarButtonCocoa> button(
+        [[AvatarButtonCocoa alloc] initWithFrame:content_frame]);
     button_ = button.get();
     [[test_window() contentView] addSubview:button_];
   }
 
-  AvatarButton* button_;
+  AvatarButtonCocoa* button_;
 };
 
 TEST_F(AvatarButtonTest, RightClick) {

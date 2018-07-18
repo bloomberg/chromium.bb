@@ -9,7 +9,7 @@
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
-@interface TestHoverButton : HoverButton
+@interface TestHoverButton : HoverButtonCocoa
 @property(readwrite, nonatomic) NSRect hitbox;
 @end
 
@@ -40,7 +40,7 @@
 @end
 
 @interface HoverButtonTestDragDelegate : NSObject<HoverButtonDragDelegate>
-@property(nonatomic, copy) void (^dragHandler)(HoverButton*, NSEvent*);
+@property(nonatomic, copy) void (^dragHandler)(HoverButtonCocoa*, NSEvent*);
 @end
 
 @implementation HoverButtonTestDragDelegate
@@ -51,7 +51,8 @@
   [super dealloc];
 }
 
-- (void)beginDragFromHoverButton:(HoverButton*)button event:(NSEvent*)event {
+- (void)beginDragFromHoverButton:(HoverButtonCocoa*)button
+                           event:(NSEvent*)event {
   dragHandler_(button, event);
 }
 @end
@@ -171,7 +172,7 @@ TEST_F(HoverButtonTest, DragDelegate) {
       [[HoverButtonTestDragDelegate alloc] init]);
 
   __block bool dragged = false;
-  dragDelegate.get().dragHandler = ^(HoverButton* button, NSEvent* event) {
+  dragDelegate.get().dragHandler = ^(HoverButtonCocoa* button, NSEvent* event) {
     dragged = true;
   };
   button_.dragDelegate = dragDelegate;

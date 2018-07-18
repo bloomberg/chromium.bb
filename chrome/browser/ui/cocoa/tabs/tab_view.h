@@ -25,15 +25,15 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 
 }  // namespace tabs
 
-@class TabController, TabWindowController, GTMFadeTruncatingTextFieldCell;
+@class TabControllerCocoa, TabWindowController, GTMFadeTruncatingTextFieldCell;
 
 // A view that handles the event tracking (clicking and dragging) for a tab
-// on the tab strip. Relies on an associated TabController to provide a
+// on the tab strip. Relies on an associated TabControllerCocoa to provide a
 // target/action for selecting the tab.
 
-@interface TabView : NSControl<ThemedWindowDrawing> {
+@interface TabViewCocoa : NSControl<ThemedWindowDrawing> {
  @private
-  TabController* controller_;
+  TabControllerCocoa* controller_;
   base::scoped_nsobject<NSTextField> titleView_;
   GTMFadeTruncatingTextFieldCell* titleViewCell_;  // weak
 
@@ -86,7 +86,7 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 
 // Designated initializer.
 - (id)initWithFrame:(NSRect)frame
-         controller:(TabController*)controller
+         controller:(TabControllerCocoa*)controller
         closeButton:(HoverCloseButton*)closeButton;
 
 // Enables/Disables tracking regions for the tab.
@@ -108,12 +108,12 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 
 @end
 
-// The TabController |controller_| is not the only owner of this view. If the
-// controller is released before this view, then we could be hanging onto a
-// garbage pointer. To prevent this, the TabController uses this interface to
-// clear the |controller_| pointer when it is dying.
-@interface TabView (TabControllerInterface)
-- (void)setController:(TabController*)controller;
+// The TabControllerCocoa |controller_| is not the only owner of this view. If
+// the controller is released before this view, then we could be hanging onto a
+// garbage pointer. To prevent this, the TabControllerCocoa uses this interface
+// to clear the |controller_| pointer when it is dying.
+@interface TabViewCocoa (TabControllerInterface)
+- (void)setController:(TabControllerCocoa*)controller;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_VIEW_H_

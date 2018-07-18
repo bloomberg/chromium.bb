@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/sad_tab.h"
 
 // A view that displays the "sad tab" (aka crash page).
-@interface SadTabView : NSView
+@interface SabTabViewCocoa : NSView
 
 - (instancetype)initWithFrame:(NSRect)frame sadTab:(SadTab*)sadTab;
 

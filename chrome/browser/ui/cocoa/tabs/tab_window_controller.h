@@ -25,7 +25,7 @@
 @class FocusTracker;
 @class NSVisualEffectView;
 @class TabStripView;
-@class TabView;
+@class TabViewCocoa;
 
 @interface TabWindowController : NSResponder<NSWindowDelegate> {
  @private
@@ -108,7 +108,7 @@
 // Make room in the tab strip for |tab| at the given x coordinate. Will hide the
 // new tab button while there's a placeholder. Subclasses need to call the
 // superclass implementation.
-- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame;
+- (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame;
 
 // Removes the placeholder installed by |-insertPlaceholderForTab:atLocation:|
 // and restores the new tab button. Subclasses need to call the superclass
@@ -134,7 +134,7 @@
 // its current position would cause it be obscured by things such as the edge
 // of the window or the window decorations. Returns YES only if the entire tab
 // is visible. The default implementation always returns YES.
-- (BOOL)isTabFullyVisible:(TabView*)tab;
+- (BOOL)isTabFullyVisible:(TabViewCocoa*)tab;
 
 // Called to check if the receiver can receive dragged tabs from
 // source.  Return YES if so.  The default implementation returns NO.

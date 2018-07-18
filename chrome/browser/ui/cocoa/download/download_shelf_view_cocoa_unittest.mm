@@ -16,8 +16,8 @@ class DownloadShelfViewTest : public CocoaTest {
 // This class only needs to do one thing: prevent mouse down events from moving
 // the parent window around.
 TEST_F(DownloadShelfViewTest, CanDragWindow) {
-  base::scoped_nsobject<DownloadShelfView> view(
-      [[DownloadShelfView alloc] init]);
+  base::scoped_nsobject<DownloadShelfViewCocoa> view(
+      [[DownloadShelfViewCocoa alloc] init]);
   EXPECT_FALSE([view mouseDownCanMoveWindow]);
 }
 

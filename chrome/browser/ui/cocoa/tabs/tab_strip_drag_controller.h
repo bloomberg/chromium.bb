@@ -8,8 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #include <map>
 
-@class TabController;
-@class TabStripController;
+@class TabControllerCocoa;
+@class TabStripControllerCocoa;
 @class TabWindowController;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,17 +20,17 @@
 
 // Initiates a dragging session with a mouseDown event. The tab controller
 // passed here is the one used for the rest of the dragging session.
-- (void)maybeStartDrag:(NSEvent*)event forTab:(TabController*)tab;
+- (void)maybeStartDrag:(NSEvent*)event forTab:(TabControllerCocoa*)tab;
 
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// This controller is owned by the TabStripController and is used to delegate
-// all the logic for tab dragging from the TabView's events.
+// This controller is owned by the TabStripControllerCocoa and is used to
+// delegate all the logic for tab dragging from the TabViewCocoa's events.
 @interface TabStripDragController : NSObject<TabDraggingEventTarget> {
  @private
-  TabStripController* tabStrip_;  // Weak; owns this.
+  TabStripControllerCocoa* tabStrip_;  // Weak; owns this.
 
   // These are released on mouseUp:
   BOOL moveWindowOnDrag_;  // Set if the only tab of a window is dragged.
@@ -48,7 +48,7 @@
   NSRect sourceWindowFrame_;
   NSRect sourceTabFrame_;
 
-  TabController* draggedTab_;  // Weak. The tab controller being dragged.
+  TabControllerCocoa* draggedTab_;  // Weak. The tab controller being dragged.
 
   TabWindowController* draggedController_;  // Weak. Controller being dragged.
   NSWindow* dragWindow_;  // Weak. The window being dragged
@@ -60,10 +60,10 @@
 }
 
 // The tab being dragged, or nil if not dragging a tab.
-@property(readonly) TabController* draggedTab;
+@property(readonly) TabControllerCocoa* draggedTab;
 
 // Designated initializer.
-- (id)initWithTabStripController:(TabStripController*)controller;
+- (id)initWithTabStripController:(TabStripControllerCocoa*)controller;
 
 // TabDraggingEventTarget methods are also implemented.
 

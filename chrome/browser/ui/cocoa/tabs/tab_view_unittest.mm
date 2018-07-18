@@ -19,13 +19,15 @@ class TabViewTest : public CocoaTest {
  public:
   TabViewTest() {
     NSRect frame = NSMakeRect(0, 0, kTabWidth, kTabHeight);
-    base::scoped_nsobject<TabView> view(
-        [[TabView alloc] initWithFrame:frame controller:nil closeButton:nil]);
+    base::scoped_nsobject<TabViewCocoa> view([[TabViewCocoa alloc]
+        initWithFrame:frame
+           controller:nil
+          closeButton:nil]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }
 
-  TabView* view_;
+  TabViewCocoa* view_;
 };
 
 TEST_VIEW(TabViewTest, view_)
@@ -38,7 +40,7 @@ TEST_F(TabViewTest, Display) {
   }
 }
 
-// Test it doesn't crash when asked for its menu with no TabController set.
+// Test it doesn't crash when asked for its menu with no TabControllerCocoa set.
 TEST_F(TabViewTest, Menu) {
   EXPECT_FALSE([view_ menu]);
 }

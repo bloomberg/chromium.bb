@@ -10,25 +10,26 @@
 #import "ui/base/cocoa/tracking_area.h"
 #import "ui/base/ui_base_export.h"
 
-@class HoverButton;
+@class HoverButtonCocoa;
 
-// Assign an object which conforms to this protocol to a HoverButton's
+// Assign an object which conforms to this protocol to a HoverButtonCocoa's
 // dragDelegate property to make the button draggable.
 UI_BASE_EXPORT
 @protocol HoverButtonDragDelegate
 
-// When the user performs a drag on the HoverButton, this method will be called
-// with the button and the mouse down event. The delegate is expected to begin
-// a drag by calling -[NSView beginDraggingSessionWithItems:event:source:] with
-// the event or run a nested tracking loop. When it returns, the HoverButton
-// returns to kHoverStateNone and stops tracking the mouse.
-- (void)beginDragFromHoverButton:(HoverButton*)button event:(NSEvent*)event;
+// When the user performs a drag on the HoverButtonCocoa, this method will be
+// called with the button and the mouse down event. The delegate is expected to
+// begin a drag by calling -[NSView beginDraggingSessionWithItems:event:source:]
+// with the event or run a nested tracking loop. When it returns, the
+// HoverButtonCocoa returns to kHoverStateNone and stops tracking the mouse.
+- (void)beginDragFromHoverButton:(HoverButtonCocoa*)button
+                           event:(NSEvent*)event;
 
 @end
 
 // A button that changes when you hover over it and click it.
 UI_BASE_EXPORT
-@interface HoverButton : NSButton {
+@interface HoverButtonCocoa : NSButton {
  @protected
   // Enumeration of the hover states that the close button can be in at any one
   // time. The button cannot be in more than one hover state at a time.

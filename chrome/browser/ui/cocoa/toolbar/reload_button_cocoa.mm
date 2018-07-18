@@ -41,13 +41,13 @@ const int kReloadMenuCommands[]  = {
 
 }  // namespace
 
-@interface ReloadButton ()
+@interface ReloadButtonCocoa ()
 - (void)invalidatePendingReloadTimer;
 - (void)forceReloadState:(NSTimer *)timer;
 - (void)populateMenu;
 @end
 
-@implementation ReloadButton
+@implementation ReloadButtonCocoa
 
 + (Class)cellClass {
   return [ClickHoldButtonCell class];
@@ -262,9 +262,9 @@ const int kReloadMenuCommands[]  = {
       command, ui::DispositionFromEventFlags(event_flags));
 }
 
-@end  // ReloadButton
+@end  // ReloadButtonCocoa
 
-@implementation ReloadButton (Testing)
+@implementation ReloadButtonCocoa (Testing)
 
 + (void)setPendingReloadTimeout:(NSTimeInterval)seconds {
   kPendingReloadTimeout = seconds;

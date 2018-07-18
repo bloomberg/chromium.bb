@@ -158,7 +158,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 - (NSRect)_opaqueRectForWindowMoveWhenInTitlebar;
 @end
 
-@interface TabStripController (Private)
+@interface TabStripControllerCocoa (Private)
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
@@ -169,7 +169,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
 - (void)animationDidStop:(CAAnimation*)animation
-           forController:(TabController*)controller
+           forController:(TabControllerCocoa*)controller
                 finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
 - (void)clickNewTabButton:(id)sender;
@@ -226,11 +226,11 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // falsely pick up clicks during rapid tab closure, so we have to account for
 // that.
 @interface TabStripControllerDragBlockingView : NSView {
-  TabStripController* controller_;  // weak; owns us
+  TabStripControllerCocoa* controller_;  // weak; owns us
 }
 
 - (id)initWithFrame:(NSRect)frameRect
-         controller:(TabStripController*)controller;
+         controller:(TabStripControllerCocoa*)controller;
 
 // Runs a nested runloop to do window move tracking. Overriding
 // -mouseDownCanMoveWindow with a dynamic result instead doesn't work:
@@ -249,7 +249,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 }
 
 - (id)initWithFrame:(NSRect)frameRect
-         controller:(TabStripController*)controller {
+         controller:(TabStripControllerCocoa*)controller {
   if ((self = [super initWithFrame:frameRect])) {
     controller_ = controller;
   }
@@ -320,14 +320,14 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // to prevent the use of dangling pointers.
 @interface TabCloseAnimationDelegate : NSObject <CAAnimationDelegate> {
  @private
-  TabStripController* strip_;  // weak; owns us indirectly
-  TabController* controller_;  // weak
+  TabStripControllerCocoa* strip_;  // weak; owns us indirectly
+  TabControllerCocoa* controller_;  // weak
 }
 
 // Will tell |strip| when the animation for |controller|'s view has completed.
 // These should not be nil, and will not be retained.
-- (id)initWithTabStrip:(TabStripController*)strip
-         tabController:(TabController*)controller;
+- (id)initWithTabStrip:(TabStripControllerCocoa*)strip
+         tabController:(TabControllerCocoa*)controller;
 
 // Invalidates this object so that no further calls will be made to
 // |strip_|.  This should be called when |strip_| is released, to
@@ -342,8 +342,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 @implementation TabCloseAnimationDelegate
 
-- (id)initWithTabStrip:(TabStripController*)strip
-         tabController:(TabController*)controller {
+- (id)initWithTabStrip:(TabStripControllerCocoa*)strip
+         tabController:(TabControllerCocoa*)controller {
   if ((self = [super init])) {
     DCHECK(strip && controller);
     strip_ = strip;
@@ -376,22 +376,22 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // from the model is directly mapped to the same index in the parallel arrays
 // holding our views and controllers. This is also true when new tabs are
 // created (even though there is a small period of animation) because the tab is
-// present in the model while the TabView is animating into place. As a result,
-// nothing special need be done to handle "new tab" animation.
+// present in the model while the TabViewCocoa is animating into place. As a
+// result, nothing special need be done to handle "new tab" animation.
 //
 // This all goes out the window with the "close tab" animation. The animation
 // kicks off in |-tabDetachedWithContents:atIndex:| with the notification that
 // the tab has been removed from the model. The simplest solution at this
 // point would be to remove the views and controllers as well, however once
-// the TabView is removed from the view list, the tab z-order code takes care of
-// removing it from the tab strip and we'll get no animation. That means if
-// there is to be any visible animation, the TabView needs to stay around until
-// its animation is complete. In order to maintain consistency among the
-// internal parallel arrays, this means all structures are kept around until
-// the animation completes. At this point, though, the model and our internal
-// structures are out of sync: the indices no longer line up. As a result,
-// there is a concept of a "model index" which represents an index valid in
-// the TabStripModel. During steady-state, the "model index" is just the same
+// the TabViewCocoa is removed from the view list, the tab z-order code takes
+// care of removing it from the tab strip and we'll get no animation. That means
+// if there is to be any visible animation, the TabViewCocoa needs to stay
+// around until its animation is complete. In order to maintain consistency
+// among the internal parallel arrays, this means all structures are kept around
+// until the animation completes. At this point, though, the model and our
+// internal structures are out of sync: the indices no longer line up. As a
+// result, there is a concept of a "model index" which represents an index valid
+// in the TabStripModel. During steady-state, the "model index" is just the same
 // index as our parallel arrays (as above), but during tab close animations,
 // it is different, offset by the number of tabs preceding the index which
 // are undergoing tab closing animation. As a result, the caller needs to be
@@ -406,7 +406,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // or allow itself to be dragged. In addition, drags on the tab strip as a
 // whole are disabled while there are tabs closing.
 
-@implementation TabStripController
+@implementation TabStripControllerCocoa
 
 @synthesize leadingIndentForControls = leadingIndentForControls_;
 @synthesize trailingIndentForControls = trailingIndentForControls_;
@@ -568,7 +568,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [newTabButton_ removeTrackingArea:newTabTrackingArea_.get()];
   // Invalidate all closing animations so they don't call back to us after
   // we're gone.
-  for (TabController* controller in closingControllers_.get()) {
+  for (TabControllerCocoa* controller in closingControllers_.get()) {
     NSView* view = [controller view];
     [[[view animationForKey:@"frameOrigin"] delegate] invalidate];
   }
@@ -578,7 +578,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 }
 
 + (CGFloat)defaultTabHeight {
-  return [TabController defaultTabHeight];
+  return [TabControllerCocoa defaultTabHeight];
 }
 
 + (CGFloat)defaultLeadingIndentForControls {
@@ -632,8 +632,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // it to. It will be sized and positioned by |-layoutTabs| so there's no need to
 // set the frame here. This also creates the view as hidden, it will be
 // shown during layout.
-- (TabController*)newTab {
-  TabController* controller = [[[TabController alloc] init] autorelease];
+- (TabControllerCocoa*)newTab {
+  TabControllerCocoa* controller =
+      [[[TabControllerCocoa alloc] init] autorelease];
   [controller setTarget:self];
   [controller setAction:@selector(selectTab:)];
   [[controller view] setHidden:YES];
@@ -682,7 +683,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     return index;
 
   NSInteger i = 0;
-  for (TabController* controller in tabArray_.get()) {
+  for (TabControllerCocoa* controller in tabArray_.get()) {
     if ([closingControllers_ containsObject:controller]) {
       DCHECK([[controller tabView] isClosing]);
       ++index;
@@ -700,7 +701,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 - (NSInteger)modelIndexFromIndex:(NSInteger)index {
   NSInteger modelIndex = 0;
   NSInteger arrayIndex = 0;
-  for (TabController* controller in tabArray_.get()) {
+  for (TabControllerCocoa* controller in tabArray_.get()) {
     if (![closingControllers_ containsObject:controller]) {
       if (arrayIndex == index)
         return modelIndex;
@@ -720,7 +721,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // are no longer in the model.
 - (NSInteger)modelIndexForTabView:(NSView*)view {
   NSInteger index = 0;
-  for (TabController* current in tabArray_.get()) {
+  for (TabControllerCocoa* current in tabArray_.get()) {
     // If |current| is closing, skip it.
     if ([closingControllers_ containsObject:current])
       continue;
@@ -739,8 +740,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   NSInteger index = 0;
   NSInteger i = 0;
   for (TabContentsController* current in tabContentsArray_.get()) {
-    // If the TabController corresponding to |current| is closing, skip it.
-    TabController* controller = [tabArray_ objectAtIndex:i];
+    // If the TabControllerCocoa corresponding to |current| is closing, skip it.
+    TabControllerCocoa* controller = [tabArray_ objectAtIndex:i];
     if ([closingControllers_ containsObject:controller]) {
       ++i;
       continue;
@@ -755,7 +756,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 - (NSArray*)selectedViews {
   NSMutableArray* views = [NSMutableArray arrayWithCapacity:[tabArray_ count]];
-  for (TabController* tab in tabArray_.get()) {
+  for (TabControllerCocoa* tab in tabArray_.get()) {
     if ([tab selected])
       [views addObject:[tab tabView]];
   }
@@ -795,7 +796,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 // Called when the user clicks the tab audio indicator to mute the tab.
 - (void)toggleMute:(id)sender {
-  DCHECK([sender isKindOfClass:[TabView class]]);
+  DCHECK([sender isKindOfClass:[TabViewCocoa class]]);
   NSInteger index = [self modelIndexForTabView:sender];
   if (!tabStripModel_->ContainsIndex(index))
     return;
@@ -805,9 +806,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 }
 
 // Called when the user closes a tab. Asks the model to close the tab. |sender|
-// is the TabView that is potentially going away.
+// is the TabViewCocoa that is potentially going away.
 - (void)closeTab:(id)sender {
-  DCHECK([sender isKindOfClass:[TabView class]]);
+  DCHECK([sender isKindOfClass:[TabViewCocoa class]]);
 
   // Cancel any pending tab transition.
   hoverTabSelector_->CancelTabTransition();
@@ -864,7 +865,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 // Dispatch context menu commands for the given tab controller.
 - (void)commandDispatch:(TabStripModel::ContextMenuCommand)command
-          forController:(TabController*)controller {
+          forController:(TabControllerCocoa*)controller {
   int index = [self modelIndexForTabView:[controller view]];
   if (tabStripModel_->ContainsIndex(index))
     tabStripModel_->ExecuteContextMenuCommand(index, command);
@@ -873,7 +874,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // Returns YES if the specificed command should be enabled for the given
 // controller.
 - (BOOL)isCommandEnabled:(TabStripModel::ContextMenuCommand)command
-           forController:(TabController*)controller {
+           forController:(TabControllerCocoa*)controller {
   int index = [self modelIndexForTabView:[controller view]];
   if (!tabStripModel_->ContainsIndex(index))
     return NO;
@@ -881,8 +882,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 }
 
 // Returns a context menu model for a given controller. Caller owns the result.
-- (ui::SimpleMenuModel*)contextMenuModelForController:(TabController*)controller
-    menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
+- (ui::SimpleMenuModel*)
+contextMenuModelForController:(TabControllerCocoa*)controller
+                 menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
   int index = [self modelIndexForTabView:[controller view]];
   return new TabMenuModel(delegate, tabStripModel_, index);
 }
@@ -892,7 +894,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   return dragController_.get();
 }
 
-- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame {
+- (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame {
   placeholderTab_ = tab;
   placeholderFrame_ = frame;
   [self layoutTabsWithAnimation:initialLayoutComplete_ regenerateSubviews:NO];
@@ -902,7 +904,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   return placeholderTab_ != nil;
 }
 
-- (BOOL)isTabFullyVisible:(TabView*)tab {
+- (BOOL)isTabFullyVisible:(TabViewCocoa*)tab {
   NSRect frame = [tab frame];
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
     return NSMinX(frame) >= [self trailingIndentForControls] &&
@@ -938,11 +940,11 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (![tabArray_ count])
     return;
 
-  const CGFloat kMaxTabWidth = [TabController maxTabWidth];
-  const CGFloat kMinTabWidth = [TabController minTabWidth];
-  const CGFloat kMinActiveTabWidth = [TabController minActiveTabWidth];
-  const CGFloat kPinnedTabWidth = [TabController pinnedTabWidth];
-  const CGFloat kTabOverlap = [TabStripController tabOverlap];
+  const CGFloat kMaxTabWidth = [TabControllerCocoa maxTabWidth];
+  const CGFloat kMinTabWidth = [TabControllerCocoa minTabWidth];
+  const CGFloat kMinActiveTabWidth = [TabControllerCocoa minActiveTabWidth];
+  const CGFloat kPinnedTabWidth = [TabControllerCocoa pinnedTabWidth];
+  const CGFloat kTabOverlap = [TabStripControllerCocoa tabOverlap];
 
   NSRect enclosingRect = NSZeroRect;
   ScopedNSAnimationContextGroup mainAnimationGroup(animate);
@@ -1041,7 +1043,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   // Lay everything out as if it was LTR and flip at the end
   // for RTL, if necessary.
-  for (TabController* tab in tabArray_.get()) {
+  for (TabControllerCocoa* tab in tabArray_.get()) {
     // Ignore a tab that is going through a close animation.
     if ([closingControllers_ containsObject:tab])
       continue;
@@ -1253,7 +1255,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 // Handles setting the title of the tab based on the given |contents|. Uses
 // a canned string if |contents| is NULL.
-- (void)setTabTitle:(TabController*)tab withContents:(WebContents*)contents {
+- (void)setTabTitle:(TabControllerCocoa*)tab
+       withContents:(WebContents*)contents {
   base::string16 title;
   if (contents)
     title = TabUIHelper::FromWebContents(contents)->GetTitle();
@@ -1290,7 +1293,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
   // Make a new tab and add it to the strip. Keep track of its controller.
-  TabController* newController = [self newTab];
+  TabControllerCocoa* newController = [self newTab];
   [newController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [newController setUrl:contents->GetURL()];
   [tabArray_ insertObject:newController atIndex:index];
@@ -1359,11 +1362,10 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   NSUInteger activeIndex = [self indexFromModelIndex:modelIndex];
 
-  [tabArray_ enumerateObjectsUsingBlock:^(TabController* current,
-                                          NSUInteger index,
-                                          BOOL* stop) {
-      [current setActive:index == activeIndex];
-      [self updateIconsForContents:newContents atIndex:modelIndex];
+  [tabArray_ enumerateObjectsUsingBlock:^(TabControllerCocoa* current,
+                                          NSUInteger index, BOOL* stop) {
+    [current setActive:index == activeIndex];
+    [self updateIconsForContents:newContents atIndex:modelIndex];
   }];
 
   // Tell the new tab contents it is about to become the selected tab. Here it
@@ -1391,7 +1393,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Iterate through all of the tabs, selecting each as necessary.
   ui::ListSelectionModel::SelectedIndices::iterator iter = selection.begin();
   int i = 0;
-  for (TabController* current in tabArray_.get()) {
+  for (TabControllerCocoa* current in tabArray_.get()) {
     BOOL selected = iter != selection.end() &&
         [self indexFromModelIndex:*iter] == i;
     [current setSelected:selected];
@@ -1429,7 +1431,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 // Remove all knowledge about this tab and its associated controller, and remove
 // the view from the strip.
-- (void)removeTab:(TabController*)controller {
+- (void)removeTab:(TabControllerCocoa*)controller {
   // Cancel any pending tab transition.
   hoverTabSelector_->CancelTabTransition();
 
@@ -1469,17 +1471,17 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // Called by the CAAnimation delegate when the tab completes the closing
 // animation.
 - (void)animationDidStop:(CAAnimation*)animation
-           forController:(TabController*)controller
-                finished:(BOOL)finished{
+           forController:(TabControllerCocoa*)controller
+                finished:(BOOL)finished {
   [(TabCloseAnimationDelegate *)[animation delegate] invalidate];
   [closingControllers_ removeObject:controller];
   [self removeTab:controller];
 }
 
-// Save off which TabController is closing and tell its view's animator
+// Save off which TabControllerCocoa is closing and tell its view's animator
 // where to move the tab to. Registers a delegate to call back when the
 // animation is complete in order to remove the tab from the model.
-- (void)startClosingTabWithAnimation:(TabController*)closingTab {
+- (void)startClosingTabWithAnimation:(TabControllerCocoa*)closingTab {
   DCHECK([NSThread isMainThread]);
 
   // Cancel any pending tab transition.
@@ -1526,7 +1528,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Cancel any pending tab transition.
   hoverTabSelector_->CancelTabTransition();
 
-  TabController* tab = [tabArray_ objectAtIndex:index];
+  TabControllerCocoa* tab = [tabArray_ objectAtIndex:index];
   if (tabStripModel_->count() > 0) {
     [self startClosingTabWithAnimation:tab];
     [self layoutTabs];
@@ -1556,7 +1558,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     if (icon)
       image = skia::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    TabController* tab = [tabArray_ objectAtIndex:modelIndex];
+    TabControllerCocoa* tab = [tabArray_ objectAtIndex:modelIndex];
     image = mac::FaviconForWebContents(contents, [[tab tabView] iconColor]);
   }
 
@@ -1577,7 +1579,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
-  TabController* tabController = [tabArray_ objectAtIndex:index];
+  TabControllerCocoa* tabController = [tabArray_ objectAtIndex:index];
   TabUIHelper* tabUIHelper = TabUIHelper::FromWebContents(contents);
 
   bool oldShowIcon = [tabController showIcon];
@@ -1644,7 +1646,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (modelIndex == tabStripModel_->active_index())
     [delegate_ onTabChanged:change withContents:contents];
 
-  TabController* tabController = [tabArray_ objectAtIndex:index];
+  TabControllerCocoa* tabController = [tabArray_ objectAtIndex:index];
 
   if (change != TabChangeType::kLoadingOnly)
     [self setTabTitle:tabController withContents:contents];
@@ -1674,8 +1676,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [tabContentsArray_ removeObjectAtIndex:from];
   [tabContentsArray_ insertObject:movedTabContentsController.get()
                           atIndex:to];
-  base::scoped_nsobject<TabController> movedTabController(
-      base::mac::ObjCCastStrict<TabController>(
+  base::scoped_nsobject<TabControllerCocoa> movedTabController(
+      base::mac::ObjCCastStrict<TabControllerCocoa>(
           [[tabArray_ objectAtIndex:from] retain]));
   [tabArray_ removeObjectAtIndex:from];
   [tabArray_ insertObject:movedTabController.get() atIndex:to];
@@ -1693,8 +1695,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
-  TabController* tabController =
-      base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
+  TabControllerCocoa* tabController =
+      base::mac::ObjCCastStrict<TabControllerCocoa>(
+          [tabArray_ objectAtIndex:index]);
 
   // Don't do anything if the change was already picked up by the move event.
   if (tabStripModel_->IsTabPinned(modelIndex) == [tabController pinned])
@@ -1714,8 +1717,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
-  TabController* tabController =
-      base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
+  TabControllerCocoa* tabController =
+      base::mac::ObjCCastStrict<TabControllerCocoa>(
+          [tabArray_ objectAtIndex:index]);
 
   [tabController setBlocked:tabStripModel_->IsTabBlocked(modelIndex)];
 }
@@ -1724,8 +1728,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
-  TabController* tabController =
-      base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
+  TabControllerCocoa* tabController =
+      base::mac::ObjCCastStrict<TabControllerCocoa>(
+          [tabArray_ objectAtIndex:index]);
 
   [tabController setNeedsAttention:attention];
 }
@@ -1743,7 +1748,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 - (NSArray*)tabViews {
   NSMutableArray* views = [NSMutableArray arrayWithCapacity:[tabArray_ count]];
-  for (TabController* tab in tabArray_.get()) {
+  for (TabControllerCocoa* tab in tabArray_.get()) {
     [views addObject:[tab tabView]];
   }
   return views;
@@ -1772,8 +1777,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   while (index < count) {
     // Ignore closing tabs for simplicity. The only drawback of this is that
     // if the placeholder is placed right before one or several contiguous
-    // currently closing tabs, the associated TabController will start at the
-    // end of the closing tabs.
+    // currently closing tabs, the associated TabControllerCocoa will start at
+    // the end of the closing tabs.
     if ([closingControllers_ containsObject:[tabArray_ objectAtIndex:index]]) {
       index++;
       continue;
@@ -1844,7 +1849,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // the individual tabs to update their hover states correctly.
 // Only generates the event if the cursor is in the tab strip.
 - (void)tabUpdateTracking:(NSNotification*)notification {
-  DCHECK([[notification object] isKindOfClass:[TabView class]]);
+  DCHECK([[notification object] isKindOfClass:[TabViewCocoa class]]);
   DCHECK(mouseInside_);
   NSWindow* window = [tabStripView_ window];
   NSPoint location = [window mouseLocationOutsideOfEventStream];
@@ -1882,12 +1887,13 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   NSView* targetView = [tabStripView_ hitTest:[event locationInWindow]];
 
   // Set the new tab button hover state iff the mouse is over the button.
-  BOOL shouldShowHoverImage = [targetView isKindOfClass:[NewTabButton class]];
+  BOOL shouldShowHoverImage =
+      [targetView isKindOfClass:[NewTabButtonCocoa class]];
   [self setNewTabButtonHoverState:shouldShowHoverImage];
 
-  TabView* tabView = base::mac::ObjCCast<TabView>(targetView);
+  TabViewCocoa* tabView = base::mac::ObjCCast<TabViewCocoa>(targetView);
   if (!tabView)
-    tabView = base::mac::ObjCCast<TabView>([targetView superview]);
+    tabView = base::mac::ObjCCast<TabViewCocoa>([targetView superview]);
 
   if (hoveredTab_ != tabView) {
     [self setHoveredTab:tabView];
@@ -1929,11 +1935,11 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   }
 }
 
-- (TabView*)hoveredTab {
+- (TabViewCocoa*)hoveredTab {
   return hoveredTab_;
 }
 
-- (void)setHoveredTab:(TabView*)newHoveredTab {
+- (void)setHoveredTab:(TabViewCocoa*)newHoveredTab {
   if (hoveredTab_) {
     [hoveredTab_ mouseExited:nil];
     [toolTipView_ setFrame:NSZeroRect];
@@ -1962,8 +1968,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // when the mouse is in the tabstrip.
 - (void)setTabTrackingAreasEnabled:(BOOL)enabled {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  for (TabController* controller in tabArray_.get()) {
-    TabView* tabView = [controller tabView];
+  for (TabControllerCocoa* controller in tabArray_.get()) {
+    TabViewCocoa* tabView = [controller tabView];
     if (enabled) {
       // Set self up to observe tabs so hover states will be correct.
       [defaultCenter addObserver:self
@@ -2017,7 +2023,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   NSView* activeTabView = nil;
   // Go through tabs in reverse order, since |subviews| is bottom-to-top.
-  for (TabController* tab in [tabArray_ reverseObjectEnumerator]) {
+  for (TabControllerCocoa* tab in [tabArray_ reverseObjectEnumerator]) {
     NSView* tabView = [tab view];
     if ([tab active]) {
       DCHECK(!activeTabView);
@@ -2046,16 +2052,16 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // to drop on that tab).
   const double kMiddleProportion = 0.5;
   const double kLRProportion = (1.0 - kMiddleProportion) / 2.0;
-  const CGFloat kTabOverlap = [TabStripController tabOverlap];
+  const CGFloat kTabOverlap = [TabStripControllerCocoa tabOverlap];
 
   DCHECK(index && disposition);
   NSInteger i = 0;
   BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
-  for (TabController* tab in tabArray_.get()) {
-    TabView* view = base::mac::ObjCCastStrict<TabView>([tab view]);
+  for (TabControllerCocoa* tab in tabArray_.get()) {
+    TabViewCocoa* view = base::mac::ObjCCastStrict<TabViewCocoa>([tab view]);
 
     // Recall that |-[NSView frame]| is in its superview's coordinates, so a
-    // |TabView|'s frame is in the coordinates of the |TabStripView| (which
+    // |TabViewCocoa|'s frame is in the coordinates of the |TabStripView| (which
     // matches the coordinate system of |point|).
     NSRect frame = [view frame];
 
@@ -2189,7 +2195,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   // The minimum y-coordinate at which one should consider place the arrow.
   const CGFloat arrowBaseY = 25;
-  const CGFloat kTabOverlap = [TabStripController tabOverlap];
+  const CGFloat kTabOverlap = [TabStripControllerCocoa tabOverlap];
 
   NSInteger index;
   WindowOpenDisposition disposition;

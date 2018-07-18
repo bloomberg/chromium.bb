@@ -217,10 +217,10 @@ class BookmarkBarViewTestCocoa : public CocoaProfileTest {
  public:
   void SetUp() override {
     CocoaProfileTest::SetUp();
-    view_.reset([[BookmarkBarView alloc] init]);
+    view_.reset([[BookmarkBarViewCocoa alloc] init]);
   }
 
-  base::scoped_nsobject<BookmarkBarView> view_;
+  base::scoped_nsobject<BookmarkBarViewCocoa> view_;
 };
 
 TEST_F(BookmarkBarViewTestCocoa, CanDragWindow) {

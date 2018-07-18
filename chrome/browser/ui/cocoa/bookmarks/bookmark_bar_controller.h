@@ -24,7 +24,7 @@
 
 @class BookmarkBarController;
 @class BookmarkBarFolderController;
-@class BookmarkBarView;
+@class BookmarkBarViewCocoa;
 @class BookmarkButtonCell;
 @class BookmarkContextMenuCocoaController;
 @class BookmarkFolderTarget;
@@ -278,7 +278,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // a click outside the bounds of the window.
   id exitEventTap_;
 
-  base::scoped_nsobject<BookmarkBarView>
+  base::scoped_nsobject<BookmarkBarViewCocoa>
       buttonView_;  // Contains 'no items' text fields.
   base::scoped_nsobject<BookmarkButton> offTheSideButton_;  // aka the chevron.
 
@@ -473,7 +473,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)rebuildLayoutWithAnimated:(BOOL)animated;
 - (void)openBookmarkFolder:(id)sender;
 - (void)openOrCloseBookmarkFolderForOffTheSideButton;
-- (BookmarkBarView*)buttonView;
+- (BookmarkBarViewCocoa*)buttonView;
 - (NSMutableArray*)buttons;
 - (BookmarkButton*)otherBookmarksButton;
 - (BookmarkButton*)managedBookmarksButton;

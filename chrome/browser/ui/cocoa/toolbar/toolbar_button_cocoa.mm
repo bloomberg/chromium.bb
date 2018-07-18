@@ -136,7 +136,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 
 @end
 
-@interface ToolbarButton ()
+@interface ToolbarButtonCocoa ()
 // Returns an image that draws the browser tools button icon using vector
 // commands.
 - (NSImage*)browserToolsIconForFillColor:(SkColor)fillColor;
@@ -151,8 +151,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 
 @end
 
-
-@implementation ToolbarButton
+@implementation ToolbarButtonCocoa
 
 @synthesize handleMiddleClick = handleMiddleClick_;
 

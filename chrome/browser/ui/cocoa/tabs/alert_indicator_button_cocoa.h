@@ -17,9 +17,9 @@ class Animation;
 class AnimationDelegate;
 }  // namespace gfx
 
-// This is an HoverButton subclass that serves as both the alert indicator icon
-// (audio, tab capture, etc.), and as a mute button.  It is meant to only be
-// used as a subview of TabView.
+// This is an HoverButtonCocoa subclass that serves as both the alert indicator
+// icon (audio, tab capture, etc.), and as a mute button.  It is meant to only
+// be used as a subview of TabViewCocoa.
 //
 // When the indicator is transitioned to the audio playing or muting state, the
 // button functionality is enabled and begins handling mouse events.  Otherwise,
@@ -28,7 +28,7 @@ class AnimationDelegate;
 //
 // Note: Send the |-setClickTarget:withAction:| message instead of the
 // |-setTarget:| and |-setAction:| messages to be notified of button clicks.
-@interface AlertIndicatorButton : HoverButton <ThemedWindowDrawing> {
+@interface AlertIndicatorButtonCocoa : HoverButtonCocoa<ThemedWindowDrawing> {
  @private
   class FadeAnimationDelegate;
 
@@ -47,8 +47,8 @@ class AnimationDelegate;
   BOOL isDormant_;
 
   // Target and action invoked whenever a fade-in/out animation completes.  This
-  // is used by TabController to layout the TabView after an indicator has
-  // completely faded out.
+  // is used by TabControllerCocoa to layout the TabViewCocoa after an indicator
+  // has completely faded out.
   id animationDoneTarget_;  // weak
   SEL animationDoneAction_;
 
@@ -62,7 +62,7 @@ class AnimationDelegate;
 
 @property(readonly, nonatomic) TabAlertState showingAlertState;
 
-// Initialize a new AlertIndicatorButton in TabAlertState::NONE (i.e., a
+// Initialize a new AlertIndicatorButtonCocoa in TabAlertState::NONE (i.e., a
 // non-active indicator).
 - (id)init;
 

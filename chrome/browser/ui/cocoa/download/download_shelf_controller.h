@@ -19,9 +19,9 @@ class Browser;
 @class BrowserWindowController;
 @class DownloadItemController;
 class DownloadShelf;
-@class DownloadShelfView;
+@class DownloadShelfViewCocoa;
 @class HyperlinkButtonCell;
-@class HoverButton;
+@class HoverButtonCocoa;
 
 namespace content {
 class PageNavigator;
@@ -51,7 +51,7 @@ class DownloadItem;
 @interface DownloadShelfController
     : NSViewController<NSTextViewDelegate, HasWeakBrowserPointer> {
  @private
-  IBOutlet HoverButton* hoverCloseButton_;
+  IBOutlet HoverButtonCocoa* hoverCloseButton_;
 
   // YES if the download shelf is intended to be displayed. The shelf animates
   // out when it is closing. During this time, barIsVisible_ is NO although the

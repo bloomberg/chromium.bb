@@ -16,7 +16,7 @@ class ToolbarViewTest : public CocoaTest {
 // This class only needs to do one thing: prevent mouse down events from moving
 // the parent window around.
 TEST_F(ToolbarViewTest, CanDragWindow) {
-  base::scoped_nsobject<ToolbarView> view([[ToolbarView alloc] init]);
+  base::scoped_nsobject<ToolbarViewCocoa> view([[ToolbarViewCocoa alloc] init]);
   EXPECT_FALSE([view mouseDownCanMoveWindow]);
 }
 

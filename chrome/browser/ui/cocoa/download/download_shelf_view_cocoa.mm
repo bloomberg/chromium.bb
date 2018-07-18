@@ -19,13 +19,13 @@ namespace {
 constexpr CGFloat kMDShelfHeight = 44;
 }  // namespace
 
-@interface DownloadShelfView ()
+@interface DownloadShelfViewCocoa ()
 // AppKit declares this method as 10.10+. Explicitly declare it so that it can
 // be called on the 10.9 path.
 - (NSString*)accessibilityLabel;
 @end
 
-@implementation DownloadShelfView
+@implementation DownloadShelfViewCocoa
 
 + (CGFloat)shelfHeight {
   return kMDShelfHeight;
@@ -70,7 +70,7 @@ constexpr CGFloat kMDShelfHeight = 44;
   // left hand corner of the view. Offset it by tab height so that the
   // background matches the toolbar background.
   return NSMakePoint(
-      0, NSHeight([self bounds]) + [TabStripController defaultTabHeight]);
+      0, NSHeight([self bounds]) + [TabStripControllerCocoa defaultTabHeight]);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {

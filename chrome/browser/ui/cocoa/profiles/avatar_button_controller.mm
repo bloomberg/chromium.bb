@@ -104,7 +104,8 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
 
 - (void)drawBezelWithFrame:(NSRect)frame
                     inView:(NSView*)controlView {
-  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(controlView);
+  AvatarButtonCocoa* button =
+      base::mac::ObjCCastStrict<AvatarButtonCocoa>(controlView);
   HoverState hoverState = [button hoverState];
 
   NSColor* backgroundColor = nil;
@@ -165,8 +166,8 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
         ThemeServiceFactory::GetForProfile(browser->profile());
     isThemedWindow_ = !themeService->UsingSystemTheme();
 
-    AvatarButton* avatarButton =
-        [[AvatarButton alloc] initWithFrame:NSZeroRect];
+    AvatarButtonCocoa* avatarButton =
+        [[AvatarButtonCocoa alloc] initWithFrame:NSZeroRect];
     avatarButton.sendActionOnMouseDown = YES;
     button_.reset(avatarButton);
 
@@ -244,8 +245,8 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));
   [[button_ cell] setHasError:hasError_ withTitle:buttonTitle];
 
-  AvatarButton* button =
-      base::mac::ObjCCastStrict<AvatarButton>(button_);
+  AvatarButtonCocoa* button =
+      base::mac::ObjCCastStrict<AvatarButtonCocoa>(button_);
 
   if (useGenericButton) {
     NSImage* avatarIcon = NSImageFromImageSkia(gfx::CreateVectorIcon(
@@ -336,14 +337,16 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
                     withServiceType:serviceType
                     fromAccessPoint:accessPoint];
 
-  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
+  AvatarButtonCocoa* button =
+      base::mac::ObjCCastStrict<AvatarButtonCocoa>(button_);
   // When the user clicks a second time on the button, the menu closes.
   [button setIsActive:[self isMenuOpened]];
 }
 
 // AvatarBaseController overrides:
 - (void)bubbleWillClose {
-  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
+  AvatarButtonCocoa* button =
+      base::mac::ObjCCastStrict<AvatarButtonCocoa>(button_);
   [button setIsActive:NO];
   [self updateAvatarButtonAndLayoutParent:NO];
   [super bubbleWillClose];

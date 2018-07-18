@@ -40,7 +40,7 @@
 @end
 
 // Button that highlights the background on mouse over.
-@interface ZoomHoverButton : HoverButton
+@interface ZoomHoverButton : HoverButtonCocoa
 @end
 
 namespace {

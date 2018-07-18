@@ -158,7 +158,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 @implementation NewTabButtonCell
 
 - (void)mouseEntered:(NSEvent*)theEvent {
-  // Ignore this since the NTB enter is handled by the TabStripController.
+  // Ignore this since the NTB enter is handled by the TabStripControllerCocoa.
 }
 
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView*)view {
@@ -168,7 +168,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 @end
 
-@interface NewTabButton()
+@interface NewTabButtonCocoa ()
 
 // Returns a new tab button image appropriate for the specified button state
 // (e.g. hover) and theme. In Material Design, the theme color affects the
@@ -196,7 +196,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 @end
 
-@implementation NewTabButton
+@implementation NewTabButtonCocoa
 
 + (Class)cellClass {
   return [NewTabButtonCell class];
@@ -328,7 +328,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   base::scoped_nsobject<NewTabButtonCustomImageRep> imageRep(
       [[NewTabButtonCustomImageRep alloc]
           initWithDrawSelector:drawSelector
-                      delegate:[NewTabButton class]]);
+                      delegate:[NewTabButtonCocoa class]]);
   [imageRep setDestView:self];
   [imageRep setFillColor:fillColor];
   [imageRep setPatternPhasePosition:
@@ -523,7 +523,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
   CGFloat lineWidth = LineWidthFromContext(context);
-  [[NewTabButton newTabButtonBezierPathWithLineWidth:lineWidth] fill];
+  [[NewTabButtonCocoa newTabButtonBezierPathWithLineWidth:lineWidth] fill];
   [image unlockFocus];
   return image;
 }

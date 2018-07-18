@@ -16,11 +16,11 @@
 #import "ui/base/test/menu_test_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
-@interface ReloadButton (TestForwardDeclares)
+@interface ReloadButtonCocoa (TestForwardDeclares)
 + (void)setPendingReloadTimeout:(NSTimeInterval)seconds;
 @end
 
-@implementation ReloadButton (TestImplementation)
+@implementation ReloadButtonCocoa (TestImplementation)
 - (NSMenu*)menuForTesting {
   return menu_;
 }
@@ -41,8 +41,8 @@ class ReloadButtonCocoaTest : public CocoaTest {
  public:
   ReloadButtonCocoaTest() {
     NSRect frame = NSMakeRect(0, 0, 20, 20);
-    base::scoped_nsobject<ReloadButton> button(
-        [[ReloadButton alloc] initWithFrame:frame]);
+    base::scoped_nsobject<ReloadButtonCocoa> button(
+        [[ReloadButtonCocoa alloc] initWithFrame:frame]);
     button_ = button;
 
     // Set things up so unit tests have a reliable baseline.
@@ -64,7 +64,7 @@ class ReloadButtonCocoaTest : public CocoaTest {
     [[button_ cell] mouseExited:cocoa_test_event_utils::ExitEvent()];
   }
 
-  ReloadButton* button_;  // Weak, owned by test_window().
+  ReloadButtonCocoa* button_;  // Weak, owned by test_window().
 };
 
 TEST_VIEW(ReloadButtonCocoaTest, button_)
@@ -205,7 +205,7 @@ TEST_F(ReloadButtonCocoaTest, DISABLED_SetIsLoadingNoForceTimeout) {
   }
 
   const NSTimeInterval kShortTimeout = 0.1;
-  [ReloadButton setPendingReloadTimeout:kShortTimeout];
+  [ReloadButtonCocoa setPendingReloadTimeout:kShortTimeout];
 
   EXPECT_FALSE(IsMouseInside());
   EXPECT_EQ(IDC_RELOAD, [button_ tag]);

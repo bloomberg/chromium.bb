@@ -57,7 +57,7 @@
   closed_ = true;
 }
 - (void)mouseTimer:(NSTimer*)timer {
-  // Fire the mouseUp to break the TabView drag loop.
+  // Fire the mouseUp to break the TabViewCocoa drag loop.
   NSEvent* current = [NSApp currentEvent];
   NSWindow* window = [timer userInfo];
   NSEvent* up = [NSEvent mouseEventWithType:NSLeftMouseUp
@@ -72,14 +72,15 @@
   [window postEvent:up atStart:YES];
 }
 - (void)commandDispatch:(TabStripModel::ContextMenuCommand)command
-          forController:(TabController*)controller {
+          forController:(TabControllerCocoa*)controller {
 }
 - (BOOL)isCommandEnabled:(TabStripModel::ContextMenuCommand)command
-           forController:(TabController*)controller {
+           forController:(TabControllerCocoa*)controller {
   return NO;
 }
-- (ui::SimpleMenuModel*)contextMenuModelForController:(TabController*)controller
-    menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
+- (ui::SimpleMenuModel*)
+contextMenuModelForController:(TabControllerCocoa*)controller
+                 menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
   ui::SimpleMenuModel* model = new ui::SimpleMenuModel(delegate);
   model->AddItem(1, base::ASCIIToUTF16("Hello World"));
   model->AddItem(2, base::ASCIIToUTF16("Allays"));
@@ -101,7 +102,7 @@ CGFloat RightMargin(NSRect superFrame, NSRect subFrame) {
   return NSMaxX(superFrame) - NSMaxX(subFrame);
 }
 
-// The dragging code in TabView makes heavy use of autorelease pools so
+// The dragging code in TabViewCocoa makes heavy use of autorelease pools so
 // inherit from CocoaTest to have one created for us.
 class TabControllerTest : public CocoaTest {
  public:
@@ -115,9 +116,10 @@ class TabControllerTest : public CocoaTest {
 
     NSWindow* const window = test_window();
 
-    // Create TabController instance and place its view into the test window.
-    base::scoped_nsobject<TabController> controller(
-        [[TabController alloc] init]);
+    // Create TabControllerCocoa instance and place its view into the test
+    // window.
+    base::scoped_nsobject<TabControllerCocoa> controller(
+        [[TabControllerCocoa alloc] init]);
     [[window contentView] addSubview:[controller view]];
 
     // Create favicon.
@@ -125,10 +127,10 @@ class TabControllerTest : public CocoaTest {
     base::scoped_nsobject<NSImage> favicon(
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
-    // Trigger TabController to auto-create the AlertIndicatorButton.
+    // Trigger TabControllerCocoa to auto-create the AlertIndicatorButtonCocoa.
     [controller setAlertState:TabAlertState::AUDIO_PLAYING];
     [controller setAlertState:TabAlertState::NONE];
-    base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton(
+    base::scoped_nsobject<AlertIndicatorButtonCocoa> alertIndicatorButton(
         [[controller alertIndicatorButton] retain]);
     ASSERT_TRUE(alertIndicatorButton.get());
 
@@ -147,7 +149,7 @@ class TabControllerTest : public CocoaTest {
                        << static_cast<uint8_t>(alertState));
 
           // Simulate what tab_strip_controller would do to set up the
-          // TabController state.
+          // TabControllerCocoa state.
           [controller setPinned:(isPinnedTab ? YES : NO)];
           [controller setActive:(isActiveTab ? YES : NO)];
           [controller setIconImage:favicon
@@ -160,11 +162,12 @@ class TabControllerTest : public CocoaTest {
           NSRect tabFrame = [[controller view] frame];
           int minWidth;
           if (isPinnedTab) {
-            tabFrame.size.width = minWidth = [TabController pinnedTabWidth];
+            tabFrame.size.width = minWidth =
+                [TabControllerCocoa pinnedTabWidth];
           } else {
-            tabFrame.size.width = [TabController maxTabWidth];
-            minWidth = isActiveTab ? [TabController minActiveTabWidth]
-                                   : [TabController minTabWidth];
+            tabFrame.size.width = [TabControllerCocoa maxTabWidth];
+            minWidth = isActiveTab ? [TabControllerCocoa minActiveTabWidth]
+                                   : [TabControllerCocoa minTabWidth];
           }
           while (NSWidth(tabFrame) >= minWidth) {
             SCOPED_TRACE(::testing::Message() << "width="
@@ -183,7 +186,7 @@ class TabControllerTest : public CocoaTest {
 
  private:
   static void CheckForExpectedLayoutAndVisibilityOfSubviews(
-      const TabController* controller) {
+      const TabControllerCocoa* controller) {
     CheckVisibilityOfSubviews(controller);
 
     // Check positioning of elements with respect to each other, and that they
@@ -226,7 +229,7 @@ class TabControllerTest : public CocoaTest {
     }
   }
   static void CheckForExpectedLayoutAndVisibilityOfSubviewsRTL(
-      const TabController* controller) {
+      const TabControllerCocoa* controller) {
     CheckVisibilityOfSubviews(controller);
     // Check positioning of elements with respect to each other, and that they
     // are fully within the tab frame.
@@ -262,7 +265,7 @@ class TabControllerTest : public CocoaTest {
     }
   }
   // Common for RTL and LTR
-  static void CheckVisibilityOfSubviews(const TabController* controller) {
+  static void CheckVisibilityOfSubviews(const TabControllerCocoa* controller) {
     // Check whether subviews should be visible when they are supposed to be,
     // given Tab size and TabRendererData state.
     const TabAlertState indicatorState =
@@ -338,7 +341,8 @@ class TabControllerTest : public CocoaTest {
 // Tests creating the controller, sticking it in a window, and removing it.
 TEST_F(TabControllerTest, Creation) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
   EXPECT_TRUE([controller tabView]);
   EXPECT_EQ([[controller view] window], window);
@@ -350,7 +354,8 @@ TEST_F(TabControllerTest, Creation) {
 // called. Mimics the user clicking on the close button in the tab.
 TEST_F(TabControllerTest, Close) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   base::scoped_nsobject<TabControllerTestTarget> target(
@@ -368,7 +373,8 @@ TEST_F(TabControllerTest, Close) {
 // Tests setting the |selected| property via code.
 TEST_F(TabControllerTest, APISelection) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   EXPECT_FALSE([controller selected]);
@@ -381,7 +387,8 @@ TEST_F(TabControllerTest, APISelection) {
 // Tests setting the |loading| property via code.
 TEST_F(TabControllerTest, Loading) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   EXPECT_EQ(kTabDone, [controller loadingState]);
@@ -406,10 +413,11 @@ TEST_F(TabControllerTest, UserSelection) {
 
   // Create a tab at a known location in the window that we can click on
   // to activate selection.
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
   NSRect frame = [[controller view] frame];
-  frame.size.width = [TabController minTabWidth];
+  frame.size.width = [TabControllerCocoa minTabWidth];
   frame.origin = NSZeroPoint;
   [[controller view] setFrame:frame];
 
@@ -452,7 +460,8 @@ TEST_F(TabControllerTest, UserSelection) {
 
 TEST_F(TabControllerTest, IconCapacity) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];
   EXPECT_GE(cap, 1);
@@ -466,14 +475,15 @@ TEST_F(TabControllerTest, IconCapacity) {
 
 TEST_F(TabControllerTest, ShouldShowIcon) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];
   EXPECT_GT(cap, 0);
 
   // Tab is minimum width, both icon and close box should be hidden.
   NSRect frame = [[controller view] frame];
-  frame.size.width = [TabController minTabWidth];
+  frame.size.width = [TabControllerCocoa minTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_FALSE([controller shouldShowIcon]);
   EXPECT_FALSE([controller shouldShowCloseButton]);
@@ -491,7 +501,7 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   // should be visible.
   [controller setActive:YES];
   frame = [[controller view] frame];
-  frame.size.width = [TabController minActiveTabWidth];
+  frame.size.width = [TabControllerCocoa minActiveTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_FALSE([controller shouldShowIcon]);
   EXPECT_TRUE([newIcon isHidden]);
@@ -499,7 +509,7 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
 
   // Test expanding the tab to max width and ensure the icon and close box
   // get put back, even when de-activated.
-  frame.size.width = [TabController maxTabWidth];
+  frame.size.width = [TabControllerCocoa maxTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_TRUE([controller shouldShowIcon]);
   EXPECT_FALSE([newIcon isHidden]);
@@ -514,7 +524,8 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
 
 TEST_F(TabControllerTest, Menu) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   base::scoped_nsobject<TabControllerTestTarget> target(
       [[TabControllerTestTarget alloc] init]);
   [controller setTarget:target];
@@ -530,10 +541,11 @@ TEST_F(TabControllerTest, Menu) {
 }
 
 // Regression test for https://crbug.com/778776. An accessibility message can
-// cause -[TabController menu] to be called while the existing menu is open.
-// Test that this does not cause the running menu to be deleted.
+// cause -[TabControllerCocoa menu] to be called while the existing menu is
+// open. Test that this does not cause the running menu to be deleted.
 TEST_F(TabControllerTest, RecursiveMenu) {
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   base::scoped_nsobject<TabControllerTestTarget> target(
       [[TabControllerTestTarget alloc] init]);
   [controller setTarget:target];
@@ -562,10 +574,11 @@ TEST_F(TabControllerTest, RecursiveMenu) {
 TEST_F(TabControllerTest, TitleViewLayout) {
   NSWindow* window = test_window();
 
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
   NSRect tabFrame = [[controller view] frame];
-  tabFrame.size.width = [TabController maxTabWidth];
+  tabFrame.size.width = [TabControllerCocoa maxTabWidth];
   [[controller view] setFrame:tabFrame];
 
   // Set up the favicon in the tabview.
@@ -587,7 +600,7 @@ TEST_F(TabControllerTest, TitleViewLayout) {
             NSWidth([[controller tabView] titleFrame]));
 
   // Resize the tab so that that the it shrinks.
-  tabFrame.size.width = [TabController minTabWidth];
+  tabFrame.size.width = [TabControllerCocoa minTabWidth];
   [[controller view] setFrame:tabFrame];
 
   // The icon view and close button should be hidden and the title view should
@@ -604,7 +617,8 @@ TEST_F(TabControllerTest, TitleViewLayout) {
                         [[controller tabView] titleFrame]));
 
   // Resize the tab so that that the it grows.
-  tabFrame.size.width = static_cast<int>([TabController maxTabWidth] * 0.75);
+  tabFrame.size.width =
+      static_cast<int>([TabControllerCocoa maxTabWidth] * 0.75);
   [[controller view] setFrame:tabFrame];
 
   // The icon view and close button should be visible again and the title view
@@ -633,7 +647,8 @@ TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviewsRTL) {
 
 TEST_F(TabControllerTest, TabSelection) {
   NSWindow* window = test_window();
-  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerCocoa> controller(
+      [[TabControllerCocoa alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   base::scoped_nsobject<TabControllerTestTarget> target(

@@ -216,7 +216,8 @@ const CGFloat kLocationBarRightOffset = 35;
 
   // Set left indentation based on fullscreen mode status.
   if (!parameters_.inAnyFullscreen || layout.addCustomWindowControls)
-    layout.leadingIndent = [TabStripController defaultLeadingIndentForControls];
+    layout.leadingIndent =
+        [TabStripControllerCocoa defaultLeadingIndentForControls];
 
   // Lay out the icognito/avatar badge because calculating the indentation on
   // the right depends on it.

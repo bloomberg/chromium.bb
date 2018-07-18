@@ -13,7 +13,7 @@
 
 // A button that changes images when you hover over it and click it.
 UI_BASE_EXPORT
-@interface HoverImageButton : HoverButton {
+@interface HoverImageButton : HoverButtonCocoa {
  @private
   base::scoped_nsobject<NSImage> defaultImage_;
   base::scoped_nsobject<NSImage> hoverImage_;

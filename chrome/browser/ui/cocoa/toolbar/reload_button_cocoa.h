@@ -10,12 +10,12 @@
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 
-// ToolbarButton subclass which defers certain state changes when the mouse
+// ToolbarButtonCocoa subclass which defers certain state changes when the mouse
 // is hovering over it.
 
 class CommandUpdater;
 
-@interface ReloadButton : MenuButton<ImageButton> {
+@interface ReloadButtonCocoa : MenuButton<ImageButton> {
  @private
   // Timer used when setting reload mode while the mouse is hovered.
   NSTimer* pendingReloadTimer_;

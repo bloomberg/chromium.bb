@@ -311,7 +311,7 @@ bool IsTabDetachingInFullscreenEnabled() {
     [[self tabContentArea] addSubview:[devToolsController_ view]];
 
     // Create the overlayable contents controller.  This provides the switch
-    // view that TabStripController needs.
+    // view that TabStripControllerCocoa needs.
     overlayableContentsController_.reset(
         [[OverlayableContentsController alloc] init]);
     [[overlayableContentsController_ view]
@@ -489,7 +489,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   return toolbarController_.get();
 }
 
-- (TabStripController*)tabStripController {
+- (TabStripControllerCocoa*)tabStripController {
   return tabStripController_.get();
 }
 
@@ -1217,7 +1217,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   std::vector<TabStripModelDelegate::NewStripContents> contentses;
   TabStripModel* model = browser_->tab_strip_model();
 
-  for (TabView* tabView in tabViews) {
+  for (TabViewCocoa* tabView in tabViews) {
     // Fetch the tab contents for the tab being dragged.
     int index = [tabStripController_ modelIndexForTabView:tabView];
     bool isPinned = model->IsTabPinned(index);
@@ -1255,7 +1255,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   }
 
   // And make sure we use the correct frame in the new view.
-  TabStripController* tabStripController = [controller tabStripController];
+  TabStripControllerCocoa* tabStripController = [controller tabStripController];
   NSView* tabStrip = [self tabStripView];
   NSEnumerator* tabEnumerator = [tabViews objectEnumerator];
   for (NSView* newView in [tabStripController tabViews]) {
@@ -1269,7 +1269,7 @@ bool IsTabDetachingInFullscreenEnabled() {
       NSRect tabRect =
           NSOffsetRect(sourceTabRect, -tabOverflow.width, -tabOverflow.height);
       // Force the added tab to the right size (remove stretching.)
-      tabRect.size.height = [TabStripController defaultTabHeight];
+      tabRect.size.height = [TabStripControllerCocoa defaultTabHeight];
 
       [tabStripController setFrame:tabRect ofTabView:newView];
     }
@@ -1297,8 +1297,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   }
 }
 
-- (void)insertPlaceholderForTab:(TabView*)tab
-                          frame:(NSRect)frame {
+- (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame {
   [super insertPlaceholderForTab:tab frame:frame];
   [tabStripController_ insertPlaceholderForTab:tab frame:frame];
 }
@@ -1327,7 +1326,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   return ![self isInAnyFullscreenMode] || [self overlayWindow];
 }
 
-- (BOOL)isTabFullyVisible:(TabView*)tab {
+- (BOOL)isTabFullyVisible:(TabViewCocoa*)tab {
   return [tabStripController_ isTabFullyVisible:tab];
 }
 
@@ -1673,7 +1672,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)installAvatar {
   // Install the image into the badge view. Hide it for now; positioning and
   // sizing will be done by the layout code. The AvatarIcon will choose which
-  // image to display based on the browser. The AvatarButton will display
+  // image to display based on the browser. The AvatarButtonCocoa will display
   // the browser profile's name unless the browser is incognito.
   NSView* view;
   if ([self shouldUseNewAvatarButton]) {

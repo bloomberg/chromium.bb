@@ -48,7 +48,7 @@ gfx::NativeView TabDialogsCocoa::GetDialogParentView() const {
   //    +- WebContentsViewCocoa
   //
   // Changing it? Do not forget to modify
-  // -[TabStripController swapInTabAtIndex:] too.
+  // -[TabStripControllerCocoa swapInTabAtIndex:] too.
   return [web_contents_->GetNativeView() superview];
 }
 

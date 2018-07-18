@@ -266,9 +266,9 @@ class NotificationBridge : public AppMenuIconController::Delegate {
             : NSViewMinXMargin | NSViewMinYMargin;
 
   // Make Material Design layout adjustments to the NIB items.
-  ToolbarView* toolbarView = [self toolbarView];
+  ToolbarViewCocoa* toolbarView = [self toolbarView];
   NSRect toolbarBounds = [toolbarView bounds];
-  NSSize toolbarButtonSize = [ToolbarButton toolbarButtonSize];
+  NSSize toolbarButtonSize = [ToolbarButtonCocoa toolbarButtonSize];
 
   // Set the toolbar height.
   NSRect frame = [toolbarView frame];
@@ -568,8 +568,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [self mouseMoved:event];
 }
 
-- (ToolbarView*)toolbarView {
-  return base::mac::ObjCCastStrict<ToolbarView>([self view]);
+- (ToolbarViewCocoa*)toolbarView {
+  return base::mac::ObjCCastStrict<ToolbarViewCocoa>([self view]);
 }
 
 - (LocationBarViewMac*)locationBarBridge {
@@ -1011,7 +1011,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {
-  ToolbarView* toolbarView = [self toolbarView];
+  ToolbarViewCocoa* toolbarView = [self toolbarView];
   [toolbarView setShowsDivider:(opacity > 0 ? YES : NO)];
   [toolbarView setDividerOpacity:opacity];
   [toolbarView setNeedsDisplay:YES];
@@ -1037,8 +1037,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 // (URLDropTargetController protocol)
 - (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point {
   // TODO(viettrungluu): This code is more or less copied from the code in
-  // |TabStripController|. I'll refactor this soon to make it common and expand
-  // its capabilities (e.g., allow text DnD).
+  // |TabStripControllerCocoa|. I'll refactor this soon to make it common and
+  // expand its capabilities (e.g., allow text DnD).
   if ([urls count] < 1) {
     NOTREACHED();
     return;
@@ -1073,8 +1073,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 // (URLDropTargetController protocol)
 - (void)dropText:(NSString*)text inView:(NSView*)view at:(NSPoint)point {
   // TODO(viettrungluu): This code is more or less copied from the code in
-  // |TabStripController|. I'll refactor this soon to make it common and expand
-  // its capabilities (e.g., allow text DnD).
+  // |TabStripControllerCocoa|. I'll refactor this soon to make it common and
+  // expand its capabilities (e.g., allow text DnD).
 
   // If the input is plain text, classify the input and make the URL.
   AutocompleteMatch match;
