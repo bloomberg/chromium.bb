@@ -8,11 +8,10 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/appcache_info.h"
 
 namespace {
-// PlzNavigate: Used to generate the host id for a navigation initiated by the
-// browser. Starts at -2 and keeps going down.
+// Used to generate the host id for a navigation initiated by the browser.
+// Starts at -1 and keeps going down.
 static int g_next_appcache_host_id = -1;
 }
 
@@ -20,13 +19,10 @@ namespace content {
 
 AppCacheNavigationHandle::AppCacheNavigationHandle(
     ChromeAppCacheService* appcache_service)
-    : appcache_host_id_(kAppCacheNoHostId),
-      core_(nullptr),
-      weak_factory_(this) {
+    : appcache_host_id_(g_next_appcache_host_id--),
+      core_(std::make_unique<AppCacheNavigationHandleCore>(appcache_service,
+                                                           appcache_host_id_)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  appcache_host_id_ = g_next_appcache_host_id--;
-  core_ = std::make_unique<AppCacheNavigationHandleCore>(appcache_service,
-                                                         appcache_host_id_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&AppCacheNavigationHandleCore::Initialize,

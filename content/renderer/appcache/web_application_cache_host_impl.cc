@@ -5,21 +5,19 @@
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/id_map.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 
 using blink::WebApplicationCacheHost;
 using blink::WebApplicationCacheHostClient;
 using blink::WebString;
-using blink::WebURLRequest;
 using blink::WebURL;
 using blink::WebURLResponse;
 using blink::WebVector;
@@ -70,7 +68,6 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
   DCHECK(client && backend);
   // PlzNavigate: The browser passes the ID to be used.
   if (appcache_host_id != kAppCacheNoHostId) {
-    DCHECK(IsBrowserSideNavigationEnabled());
     all_hosts()->AddWithID(this, appcache_host_id);
     host_id_ = appcache_host_id;
   } else {
