@@ -3520,6 +3520,10 @@ crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/propa
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/importScripts/006.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
+# This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
+# worker script, because the script url has a .html file extension.
+crbug.com/655458 external/wpt/workers/semantics/multiple-workers/003.html [ Timeout ]
+
 crbug.com/490511 external/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]

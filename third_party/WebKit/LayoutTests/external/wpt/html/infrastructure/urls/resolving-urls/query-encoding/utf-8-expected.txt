@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 101 tests; 60 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 101 tests; 61 PASS, 40 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS load nested browsing context <frame src>
 PASS load nested browsing context <iframe src>
 PASS load nested browsing context <object data>
@@ -36,7 +36,7 @@ FAIL SVG <image> poll_for_stash is not defined
 FAIL SVG <use> poll_for_stash is not defined
 PASS XMLHttpRequest#open()
 PASS importScripts() in a dedicated worker
-FAIL Worker() in a dedicated worker assert_equals: expected "%C3%A5" but got "ReferenceError: Worker is not defined"
+PASS Worker() in a dedicated worker
 FAIL SharedWorker() in a dedicated worker assert_equals: expected "%C3%A5" but got "ReferenceError: SharedWorker is not defined"
 FAIL importScripts() in a shared worker assert_equals: expected "%C3%A5" but got "importScripts failed to run"
 FAIL Worker() in a shared worker assert_equals: expected "%C3%A5" but got "ReferenceError: Worker is not defined"
