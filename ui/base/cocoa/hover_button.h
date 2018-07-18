@@ -33,13 +33,13 @@ UI_BASE_EXPORT
  @protected
   // Enumeration of the hover states that the close button can be in at any one
   // time. The button cannot be in more than one hover state at a time.
-  enum HoverState {
+  enum CloseButtonHoverState {
     kHoverStateNone = 0,
     kHoverStateMouseOver = 1,
     kHoverStateMouseDown = 2
   };
 
-  HoverState hoverState_;
+  CloseButtonHoverState hoverState_;
 
  @private
   // Tracking area for button mouseover states. Nil if not enabled.
@@ -48,7 +48,7 @@ UI_BASE_EXPORT
   BOOL sendActionOnMouseDown_;
 }
 
-@property(nonatomic) HoverState hoverState;
+@property(nonatomic) CloseButtonHoverState hoverState;
 
 // Enables or disables the tracking for the button.
 @property(nonatomic) BOOL trackingEnabled;

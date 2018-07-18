@@ -32,10 +32,10 @@
 
 namespace {
 
-const int kWindowHeight = 18;
+const int kStatusBubbleWindowHeight = 18;
 
 // The width of the bubble in relation to the width of the parent window.
-const CGFloat kWindowWidthPercent = 1.0 / 3.0;
+const CGFloat kStatusBubbleWindowWidthPercent = 1.0 / 3.0;
 
 // How close the mouse can get to the infobubble before it starts sliding
 // off-screen.
@@ -759,13 +759,13 @@ NSRect StatusBubbleMac::CalculateWindowFrame(bool expanded_width) {
     screenRect = [parent_ frame];
   }
 
-  NSSize size = NSMakeSize(0, kWindowHeight);
+  NSSize size = NSMakeSize(0, kStatusBubbleWindowHeight);
   size = [[parent_ contentView] convertSize:size toView:nil];
 
   if (expanded_width) {
     size.width = screenRect.size.width;
   } else {
-    size.width = kWindowWidthPercent * screenRect.size.width;
+    size.width = kStatusBubbleWindowWidthPercent * screenRect.size.width;
   }
 
   screenRect.size = size;

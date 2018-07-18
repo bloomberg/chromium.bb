@@ -73,7 +73,7 @@ class HoverButtonTest : public ui::CocoaTest {
   }
 
  protected:
-  void HoverAndExpect(HoverState hoverState) {
+  void HoverAndExpect(CloseButtonHoverState hoverState) {
     EXPECT_EQ(kHoverStateNone, button_.hoverState);
     [button_ mouseEntered:cocoa_test_event_utils::EnterEvent()];
     EXPECT_EQ(hoverState, button_.hoverState);

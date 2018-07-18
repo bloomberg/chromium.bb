@@ -17,7 +17,7 @@
 @interface HoverCloseButton : HoverButtonCocoa<NSAnimationDelegate> {
  @private
   GTMKeyValueAnimation* fadeOutAnimation_;
-  HoverState previousState_;
+  CloseButtonHoverState previousState_;
 }
 
 // The color of the icon in its idle (not-hovering) state.

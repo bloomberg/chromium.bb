@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
 @interface BookmarkBarFolderHoverState(Private)
-- (void)setHoverState:(HoverState)state;
+- (void)setHoverState:(BookmarkBarButtonHoverState)state;
 - (void)closeBookmarkFolderOnHoverButton:(BookmarkButton*)button;
 - (void)openBookmarkFolderOnHoverButton:(BookmarkButton*)button;
 @end
@@ -129,7 +129,7 @@
 }
 
 // Hover state accessor.  For testing only.
-- (HoverState)hoverState {
+- (BookmarkBarButtonHoverState)hoverState {
   return hoverState_;
 }
 
@@ -139,7 +139,7 @@
 // pending open must complete before scheduling a close, and vice versa.  And
 // it is not possible to make a transition directly from open to closed, and
 // vice versa.
-- (void)setHoverState:(HoverState)state {
+- (void)setHoverState:(BookmarkBarButtonHoverState)state {
   DCHECK(
     (hoverState_ == kHoverStateClosed && state == kHoverStateOpening) ||
     (hoverState_ == kHoverStateOpening && state == kHoverStateClosed) ||

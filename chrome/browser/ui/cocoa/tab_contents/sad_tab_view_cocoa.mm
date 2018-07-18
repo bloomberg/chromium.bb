@@ -106,7 +106,7 @@ const CGFloat kMaxTopMargin = 130;
     [message_.textStorage
         appendAttributedString:[[[NSAttributedString alloc]
                                    initWithString:l10n_util::GetNSString(
-                                                      sadTab->GetMessage())
+                                                      sadTab->GetInfoMessage())
                                        attributes:@{
                                          NSFontAttributeName : messageFont,
                                          NSForegroundColorAttributeName :

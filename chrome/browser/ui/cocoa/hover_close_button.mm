@@ -42,7 +42,7 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 - (void)setFadeOutValue:(CGFloat)value;
 
 // Gets the image for the given hover state.
-- (NSImage*)imageForHoverState:(HoverState)hoverState;
+- (NSImage*)imageForHoverState:(CloseButtonHoverState)hoverState;
 
 @end
 
@@ -153,7 +153,7 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
   [self setNeedsDisplay];
 }
 
-- (NSImage*)imageForHoverState:(HoverState)hoverState {
+- (NSImage*)imageForHoverState:(CloseButtonHoverState)hoverState {
   const gfx::VectorIcon* vectorHighlightIcon = nullptr;
   SkColor vectorIconColor = gfx::kPlaceholderColor;
 
@@ -186,7 +186,7 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
   return NSImageFromImageSkia(iconImage);
 }
 
-- (void)setHoverState:(HoverState)state {
+- (void)setHoverState:(CloseButtonHoverState)state {
   if (state != self.hoverState) {
     previousState_ = self.hoverState;
     [super setHoverState:state];
@@ -250,7 +250,7 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 
 @implementation WebUIHoverCloseButton
 
-- (NSImage*)imageForHoverState:(HoverState)hoverState {
+- (NSImage*)imageForHoverState:(CloseButtonHoverState)hoverState {
   int imageID = IDR_CLOSE_DIALOG;
   switch (hoverState) {
     case kHoverStateNone:

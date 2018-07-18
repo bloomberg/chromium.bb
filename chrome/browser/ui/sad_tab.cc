@@ -128,7 +128,7 @@ int SadTab::GetTitle() {
   return 0;
 }
 
-int SadTab::GetMessage() {
+int SadTab::GetInfoMessage() {
   switch (kind_) {
 #if defined(OS_CHROMEOS)
     case SAD_TAB_KIND_KILLED_BY_OOM:

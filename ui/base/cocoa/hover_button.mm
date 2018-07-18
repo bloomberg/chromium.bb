@@ -192,7 +192,7 @@ constexpr CGFloat kDragDistance = 5;
   }
 }
 
-- (void)setHoverState:(HoverState)hoverState {
+- (void)setHoverState:(CloseButtonHoverState)hoverState {
   if (hoverState == hoverState_)
     return;
   hoverState_ = hoverState;

@@ -107,7 +107,7 @@ const int kFontSizeDelta = ui::ResourceBundle::kSmallFontDelta;
   NSColor* centerColor;
   NSColor* innerColor;
   NSColor* outerColor;
-  HoverState hoverState =
+  CloseButtonHoverState hoverState =
       [base::mac::ObjCCastStrict<HoverButtonCocoa>(controlView) hoverState];
   // Leave a sliver of height 1 for the button drop shadow.
   frame.size.height -= 1;

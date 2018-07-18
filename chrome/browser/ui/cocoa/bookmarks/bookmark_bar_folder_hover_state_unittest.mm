@@ -19,7 +19,7 @@ class BookmarkBarFolderHoverStateTest : public CocoaTest {
 // Hover state machine interface.
 // A strict call order is implied with these calls.  It is ONLY valid to make
 // these specific state transitions.
-TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
+TEST_F(BookmarkBarFolderHoverStateTest, BookmarkBarButtonHoverState) {
   base::MessageLoopForUI message_loop;
   base::scoped_nsobject<BookmarkBarFolderHoverState> bbfhs;
   bbfhs.reset([[BookmarkBarFolderHoverState alloc] init]);

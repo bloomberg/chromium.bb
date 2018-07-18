@@ -32,14 +32,14 @@
 
 namespace {
 
-constexpr SkColor kButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
-constexpr SkColor kButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
+constexpr SkColor kAvatarButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
+constexpr SkColor kAvatarButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
 
-const CGFloat kButtonHeight = 24;
+const CGFloat kAvatarButtonHeight = 24;
 
 // NSButtons have a default padding of 5px. Buttons should have a padding of
 // 6px.
-const CGFloat kButtonExtraPadding = 6 - 5;
+const CGFloat kAvatarButtonExtraPadding = 6 - 5;
 
 // Extra padding for the signed out avatar button.
 const CGFloat kSignedOutWidthPadding = 2;
@@ -80,15 +80,15 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
   // is square. Otherwise, we are displaying the profile's name and an
   // optional authentication error icon.
   if ([self image] && !hasError_)
-    buttonSize.width = kButtonHeight + kSignedOutWidthPadding;
+    buttonSize.width = kAvatarButtonHeight + kSignedOutWidthPadding;
   else
-    buttonSize.width += 2 * kButtonExtraPadding;
-  buttonSize.height = kButtonHeight;
+    buttonSize.width += 2 * kAvatarButtonExtraPadding;
+  buttonSize.height = kAvatarButtonHeight;
   return buttonSize;
 }
 
 - (void)drawInteriorWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  NSRect frameAfterPadding = NSInsetRect(frame, kButtonExtraPadding, 0);
+  NSRect frameAfterPadding = NSInsetRect(frame, kAvatarButtonExtraPadding, 0);
   [super drawInteriorWithFrame:frameAfterPadding inView:controlView];
 }
 
@@ -106,13 +106,13 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
                     inView:(NSView*)controlView {
   AvatarButtonCocoa* button =
       base::mac::ObjCCastStrict<AvatarButtonCocoa>(controlView);
-  HoverState hoverState = [button hoverState];
+  CloseButtonHoverState hoverState = [button hoverState];
 
   NSColor* backgroundColor = nil;
   if (hoverState == kHoverStateMouseDown || [button isActive]) {
-    backgroundColor = skia::SkColorToSRGBNSColor(kButtonPressedColor);
+    backgroundColor = skia::SkColorToSRGBNSColor(kAvatarButtonPressedColor);
   } else if (hoverState == kHoverStateMouseOver) {
-    backgroundColor = skia::SkColorToSRGBNSColor(kButtonHoverColor);
+    backgroundColor = skia::SkColorToSRGBNSColor(kAvatarButtonHoverColor);
   }
 
   if (backgroundColor) {
