@@ -213,8 +213,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   // Setup accessibility.
   _trailingButton.isAccessibilityElement = YES;
-  _trailingButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
   _locationButton.isAccessibilityElement = YES;
   _locationButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);

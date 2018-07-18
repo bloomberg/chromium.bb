@@ -144,7 +144,7 @@ id<GREYAction> ScrollDown() {
 }
 
 + (void)openShareMenu {
-  if (IsCompactWidth()) {
+  if (IsCompactWidth() && !IsRefreshLocationBarEnabled()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShareButton()]

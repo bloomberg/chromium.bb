@@ -242,7 +242,8 @@ id<GREYMatcher> ToolsMenuButton() {
 }
 
 id<GREYMatcher> ShareButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_SHARE);
+  return grey_allOf(ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_SHARE),
+                    grey_sufficientlyVisible(), nil);
 }
 
 id<GREYMatcher> ShowTabsButton() {

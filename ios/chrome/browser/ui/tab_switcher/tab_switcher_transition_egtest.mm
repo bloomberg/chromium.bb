@@ -6,7 +6,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -261,11 +260,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Tests exiting the switcher by tapping the new tab button or selecting new tab
 // from the menu (on phone only).
 - (void)testLeaveSwitcherByOpeningNewNormalTab {
-  // TODO(crbug.com/849937): re-enable this test on iOS 10.
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS10");
-  }
-
   NSString* tab1_title = @"NormalTab1";
   NSString* tab2_title = @"NormalTab2";
   [self setUpTestServer];

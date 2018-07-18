@@ -484,13 +484,11 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is presented after displaying the share menu.
 - (void)testShowJavaScriptAfterShareMenu {
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
   // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
   // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
 
   // Load the blank test page.
   [self loadBlankTestPage];

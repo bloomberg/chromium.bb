@@ -288,11 +288,6 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
     // location bar is supported.
     EARL_GREY_TEST_SKIPPED(@"Test not supported yet in UI Refresh.");
   }
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled until share button is implemented.");
-  }
 
   // Clear generalPasteboard before and after the test.
   [UIPasteboard generalPasteboard].string = @"";

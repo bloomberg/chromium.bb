@@ -64,14 +64,6 @@ id<GREYMatcher> ShareMenuCollectionView() {
 // loaded.
 // TODO(crbug.com/683280): Does this test serve any purpose on iOS11?
 - (void)testPrintNormalPage {
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
-
   if (base::ios::IsRunningOnIOS11OrLater() && IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(
         @"Dispatcher-based printing does not work on iOS11 when the "
@@ -93,14 +85,6 @@ id<GREYMatcher> ShareMenuCollectionView() {
 // Tests that the AirPrint menu successfully loads when a PDF is loaded.
 // TODO(crbug.com/683280): Does this test serve any purpose on iOS11?
 - (void)testPrintPDF {
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
-
   if (base::ios::IsRunningOnIOS11OrLater() && IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(
         @"Dispatcher-based printing does not work on iOS11 when the "
