@@ -1222,3 +1222,10 @@ UPDATE_ENGINE_SCRIPTS_PATH = os.path.join(SOURCE_ROOT, 'src', 'aosp', 'system',
 
 # Chroot snapshot names
 CHROOT_SNAPSHOT_CLEAN = 'clean-chroot'
+
+# Partition labels.
+PART_STATE = 'STATE'
+PART_ROOT_A = 'ROOT-A'
+PART_ROOT_B = 'ROOT-B'
+PART_KERN_A = 'KERN-A'
+PART_KERN_B = 'KERN-B'

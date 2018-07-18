@@ -2898,7 +2898,7 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
     chroot_temp_dir = temp_dir.replace(chroot_dir, '', 1)
 
     cmd = [
-        os.path.join(path, 'cros_generate_update_payload'),
+        'cros_generate_update_payload',
         '--image', chroot_target,
         '--output', os.path.join(chroot_temp_dir, 'update.gz')
     ]
