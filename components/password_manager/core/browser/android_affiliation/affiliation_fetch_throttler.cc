@@ -64,12 +64,12 @@ AffiliationFetchThrottler::AffiliationFetchThrottler(
   DCHECK(delegate);
   // Start observing before querying the current connectivity state, so that if
   // the state changes concurrently in-between, it will not go unnoticed.
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   has_network_connectivity_ = !net::NetworkChangeNotifier::IsOffline();
 }
 
 AffiliationFetchThrottler::~AffiliationFetchThrottler() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void AffiliationFetchThrottler::SignalNetworkRequestNeeded() {
@@ -108,7 +108,7 @@ void AffiliationFetchThrottler::OnBackoffDelayExpiredCallback() {
   is_fetch_scheduled_ = false;
 
   // Do nothing if network connectivity was lost while this callback was in the
-  // task queue. The callback will be posted in the OnConnectionTypeChanged
+  // task queue. The callback will be posted in the OnNetworkChanged
   // handler once again.
   if (!has_network_connectivity_)
     return;
@@ -121,7 +121,7 @@ void AffiliationFetchThrottler::OnBackoffDelayExpiredCallback() {
     state_ = delegate_->OnCanSendNetworkRequest() ? FETCH_IN_FLIGHT : IDLE;
 }
 
-void AffiliationFetchThrottler::OnConnectionTypeChanged(
+void AffiliationFetchThrottler::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   bool old_has_network_connectivity = has_network_connectivity_;
   has_network_connectivity_ =

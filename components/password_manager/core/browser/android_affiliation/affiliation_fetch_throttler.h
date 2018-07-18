@@ -50,7 +50,7 @@ class AffiliationFetchThrottlerDelegate;
 // periods, so that requests will not be held back for too long after
 // connectivity is restored.
 class AffiliationFetchThrottler
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Creates an instance that will use |tick_clock| as its tick source, and will
   // post to |task_runner| to call the |delegate|'s OnSendNetworkRequest(). The
@@ -114,8 +114,8 @@ class AffiliationFetchThrottler
   // Called back when the |exponential_backoff_| delay expires.
   void OnBackoffDelayExpiredCallback();
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver:
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
