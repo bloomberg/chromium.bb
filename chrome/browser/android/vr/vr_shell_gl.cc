@@ -190,6 +190,19 @@ gfx::RectF ClampRect(gfx::RectF bounds) {
   return bounds;
 }
 
+gvr::Rectf GetMinimalFov(const gfx::Transform& view_matrix,
+                         const std::vector<const UiElement*>& elements,
+                         const gvr::Rectf& recommended,
+                         float z_near,
+                         Ui* ui) {
+  Ui::FovRectangle rect =
+      ui->GetMinimalFov(view_matrix, elements,
+                        Ui::FovRectangle{recommended.left, recommended.right,
+                                         recommended.bottom, recommended.top},
+                        z_near);
+  return gvr::Rectf{rect.left, rect.right, rect.bottom, rect.top};
+}
+
 }  // namespace
 
 WebXrSharedBuffer::WebXrSharedBuffer() = default;
@@ -1314,8 +1327,8 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model_ = controller_model;
 
   ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
-                                    &reticle_model, input_event_list.get());
+  ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
+                   input_event_list.get());
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 
@@ -1464,7 +1477,7 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
     eye_info.view_matrix = eye_matrix * head_pose;
 
     const gfx::RectF& rect = GfxRectFromUV(vp.GetSourceUv());
-    eye_info.viewport = CalculatePixelSpaceRect(render_size, rect);
+    eye_info.viewport = ui_->CalculatePixelSpaceRect(render_size, rect);
 
     eye_info.proj_matrix =
         PerspectiveMatrixFromView(vp.GetSourceFov(), kZNear, kZFar);
@@ -1555,8 +1568,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   // Update the render position of all UI elements (including desktop).
   TRACE_EVENT_BEGIN0("gpu", "SceneUpdate");
   base::TimeTicks scene_start = base::TimeTicks::Now();
-  bool ui_updated =
-      ui_->scene()->OnBeginFrame(current_time, render_info_.head_pose);
+  bool ui_updated = ui_->OnBeginFrame(current_time, render_info_.head_pose);
 
   // WebVR handles controller input in OnVsync.
   base::TimeDelta controller_time = base::TimeDelta();
@@ -1704,7 +1716,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     // splash screen showing in WebVR mode that must also fill the screen. That
     // said, while the splash screen is up ShouldDrawWebVr() will return false,
     // and we only draw UI frames, not WebVR frames.
-    ui_->ui_renderer()->Draw(render_info_);
+    ui_->Draw(render_info_);
     acquired_frame_.Unbind();
   }
 
@@ -1712,7 +1724,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
   std::vector<const UiElement*> overlay_elements;
   if (is_webvr_frame) {
-    overlay_elements = ui_->scene()->GetWebVrOverlayElementsToDraw();
+    overlay_elements = ui_->GetWebVrOverlayElementsToDraw();
   }
 
   TRACE_COUNTER1("gpu", "VR overlay element count", overlay_elements.size());
@@ -1731,21 +1743,16 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     // optimization.
     RenderInfo render_info_webvr_browser_ui;
     render_info_webvr_browser_ui.head_pose = render_info_.head_pose;
-    webvr_overlay_viewport_.left.SetSourceFov(fov_recommended_left);
-    webvr_overlay_viewport_.right.SetSourceFov(fov_recommended_right);
 
     UpdateEyeInfos(render_info_webvr_browser_ui.head_pose,
                    webvr_overlay_viewport_, render_size_webvr_ui_,
                    &render_info_webvr_browser_ui);
-    gvr::Rectf minimal_fov;
-    GetMinimalFov(render_info_webvr_browser_ui.left_eye_model.view_matrix,
-                  overlay_elements, fov_recommended_left, kZNear, &minimal_fov);
-    webvr_overlay_viewport_.left.SetSourceFov(minimal_fov);
-
-    GetMinimalFov(render_info_webvr_browser_ui.right_eye_model.view_matrix,
-                  overlay_elements, fov_recommended_right, kZNear,
-                  &minimal_fov);
-    webvr_overlay_viewport_.right.SetSourceFov(minimal_fov);
+    webvr_overlay_viewport_.left.SetSourceFov(GetMinimalFov(
+        render_info_webvr_browser_ui.left_eye_model.view_matrix,
+        overlay_elements, fov_recommended_left, kZNear, ui_.get()));
+    webvr_overlay_viewport_.right.SetSourceFov(GetMinimalFov(
+        render_info_webvr_browser_ui.right_eye_model.view_matrix,
+        overlay_elements, fov_recommended_right, kZNear, ui_.get()));
 
     DCHECK(viewport_list_.GetSize() == 2);
     viewport_list_.SetBufferViewport(2, webvr_overlay_viewport_.left);
@@ -1754,8 +1761,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                    webvr_overlay_viewport_, render_size_webvr_ui_,
                    &render_info_webvr_browser_ui);
 
-    ui_->ui_renderer()->DrawWebVrOverlayForeground(
-        render_info_webvr_browser_ui);
+    ui_->DrawWebVrOverlayForeground(render_info_webvr_browser_ui);
 
     acquired_frame_.Unbind();
   }
@@ -2076,7 +2082,7 @@ void VrShellGl::OnPause() {
   paused_ = true;
   vsync_helper_.CancelVSyncRequest();
   controller_->OnPause();
-  ui_->input_manager()->OnPause();
+  ui_->OnPause();
   gvr_api_->PauseTracking();
   webvr_frame_timeout_.Cancel();
   webvr_spinner_timeout_.Cancel();

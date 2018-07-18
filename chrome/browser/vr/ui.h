@@ -17,6 +17,9 @@
 #include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/ui_initial_state.h"
+#include "chrome/browser/vr/ui_renderer.h"
+#include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_export.h"
 
@@ -34,26 +37,11 @@ class TextInputDelegate;
 class UiBrowserInterface;
 class UiInputManager;
 class UiRenderer;
-class UiScene;
 struct Assets;
 struct ControllerModel;
 struct Model;
 struct OmniboxSuggestions;
 struct ReticleModel;
-
-struct VR_EXPORT UiInitialState {
-  UiInitialState();
-  UiInitialState(const UiInitialState& other);
-  bool in_web_vr = false;
-  bool web_vr_autopresentation_expected = false;
-  bool browsing_disabled = false;
-  bool has_or_can_request_audio_permission = true;
-  bool assets_supported = false;
-  bool supports_selection = true;
-  bool needs_keyboard_update = false;
-  bool is_standalone_vr_device = false;
-  bool create_tabs_view = false;
-};
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
@@ -144,6 +132,7 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
       UiElementRenderer::TextureLocation content_overlay_location,
       unsigned int ui_texture_id);
 
+  void OnPause();
   void OnAppButtonClicked();
   void OnAppButtonSwipePerformed(PlatformController::SwipeDirection direction);
   void OnControllerUpdated(const ControllerModel& controller_model,
@@ -186,9 +175,41 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void SetContentUsesQuadLayer(bool uses_quad_buffers);
   gfx::Transform GetContentWorldSpaceTransform();
 
-  // Scene wrappers.
+  bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&);
   bool SceneHasDirtyTextures() const;
   void UpdateSceneTextures();
+  void Draw(const RenderInfo& render_info);
+  void DrawWebVrOverlayForeground(const RenderInfo& render_info);
+  UiScene::Elements GetWebVrOverlayElementsToDraw();
+  gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
+                                    const gfx::RectF& texture_rect);
+  void HandleInput(base::TimeTicks current_time,
+                   const RenderInfo& render_info,
+                   const ControllerModel& controller_model,
+                   ReticleModel* reticle_model,
+                   InputEventList* input_event_list);
+
+  // This function calculates the minimal FOV (in degrees) which covers all
+  // visible |elements| as if it was viewing from fov_recommended. For example,
+  // if fov_recommended is {20.f, 20.f, 20.f, 20.f}. And all elements appear on
+  // screen within a FOV of {-11.f, 19.f, 9.f, 9.f} if we use fov_recommended.
+  // Ideally, the calculated minimal FOV should be the same. In practice, the
+  // elements might get clipped near the edge sometimes due to float precison.
+  // To fix this, we add a small margin (1 degree) to all directions. So the
+  // |out_fov| set by this function should be {-10.f, 20.f, 10.f, 10.f} in the
+  // example case.
+  // Using a smaller FOV could improve the performance a lot while we are
+  // showing UIs on top of WebVR content.
+  struct FovRectangle {
+    float left;
+    float right;
+    float bottom;
+    float top;
+  };
+  FovRectangle GetMinimalFov(const gfx::Transform& view_matrix,
+                             const std::vector<const UiElement*>& elements,
+                             const FovRectangle& fov_recommended,
+                             float z_near);
 
  private:
   void OnSpeechRecognitionEnded();
