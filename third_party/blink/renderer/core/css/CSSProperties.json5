@@ -4279,6 +4279,42 @@
         shorthand_for_physical_side: "borderColorShorthand",
       },
     },
+    {
+      name: "inset-inline-start",
+      property_methods: ["ParseSingleValue"],
+      runtime_flag: "CSSLogical",
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "insetShorthand",
+      }
+    },
+    {
+      name: "inset-inline-end",
+      property_methods: ["ParseSingleValue"],
+      runtime_flag: "CSSLogical",
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "insetShorthand",
+      }
+    },
+    {
+      name: "inset-block-start",
+      property_methods: ["ParseSingleValue"],
+      runtime_flag: "CSSLogical",
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "insetShorthand",
+      }
+    },
+    {
+      name: "inset-block-end",
+      property_methods: ["ParseSingleValue"],
+      runtime_flag: "CSSLogical",
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "insetShorthand",
+      }
+    },
 
     // Non-standard direction aware properties
 
@@ -4764,6 +4800,24 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       layout_dependent: true,
+    },
+    {
+      name: "inset-block",
+      longhands: ["inset-block-start", "inset-block-end"],
+      property_methods: ["ParseShorthand"],
+      runtime_flag: "CSSLogical",
+    },
+    {
+      name: "inset-inline",
+      longhands: ["inset-inline-start", "inset-inline-end"],
+      property_methods: ["ParseShorthand"],
+      runtime_flag: "CSSLogical",
+    },
+    {
+      name: "inset",
+      longhands: ["top", "right", "bottom", "left"],
+      property_methods: ["ParseShorthand"],
+      runtime_flag: "CSSLogical",
     },
     {
       name: "list-style",

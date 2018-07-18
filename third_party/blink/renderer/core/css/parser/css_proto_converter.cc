@@ -1470,6 +1470,13 @@ const std::string Converter::kPropertyLookupTable[] = {
     "border-inline-color",
     "border-block",
     "border-inline",
+    "inset-block-start",
+    "inset-block-end",
+    "inset-block",
+    "inset-inline-start",
+    "inset-inline-end",
+    "inset-inline",
+    "inset",
     "INVALID_PROPERTY",
 };
 

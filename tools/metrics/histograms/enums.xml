@@ -30418,6 +30418,13 @@ Called by update_use_counter_css.py.-->
   <int value="627" label="border-inline-width"/>
   <int value="628" label="border-block"/>
   <int value="629" label="border-inline"/>
+  <int value="630" label="inset-block-start"/>
+  <int value="631" label="inset-block-end"/>
+  <int value="632" label="inset-block"/>
+  <int value="633" label="inset-inline-start"/>
+  <int value="634" label="inset-inline-end"/>
+  <int value="635" label="inset-inline"/>
+  <int value="636" label="inset"/>
 </enum>
 
 <enum name="MappedEditingCommands">
