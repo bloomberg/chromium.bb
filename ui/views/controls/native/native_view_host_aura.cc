@@ -149,16 +149,16 @@ void NativeViewHostAura::RemovedFromWidget() {
   }
 }
 
-bool NativeViewHostAura::SetCornerRadius(int corner_radius) {
+bool NativeViewHostAura::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
 #if defined(OS_WIN)
   // TODO(crbug/843250): On Aura, layer masks don't play with HiDPI. Fix this
   // and enable this on Windows.
   return false;
 #else
-  mask_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                  corner_radius));
-  mask_->layer()->SetFillsBoundsOpaquely(false);
+  UninstallMask();
+  mask_ = std::move(mask);
+  if (mask_)
+    mask_->layer()->SetFillsBoundsOpaquely(false);
   InstallMask();
   return true;
 #endif
@@ -310,6 +310,14 @@ void NativeViewHostAura::InstallMask() {
     mask_->layer()->SetBounds(gfx::Rect(host_->native_view()->bounds().size()));
     host_->native_view()->layer()->SetMaskLayer(mask_->layer());
   }
+}
+
+void NativeViewHostAura::UninstallMask() {
+  if (!host_->native_view() || !mask_)
+    return;
+
+  host_->native_view()->layer()->SetMaskLayer(nullptr);
+  mask_.reset();
 }
 
 }  // namespace views

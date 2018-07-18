@@ -8,6 +8,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
+namespace ui {
+class LayerOwner;
+}
+
 namespace views {
 
 class NativeViewHost;
@@ -38,9 +42,9 @@ class NativeViewHostWrapper {
   // rooted at a valid Widget.
   virtual void RemovedFromWidget() = 0;
 
-  // Sets the corner radius for clipping gfx::NativeView. Returns true on
+  // Sets the custom mask for clipping gfx::NativeView. Returns true on
   // success or false if the platform doesn't support the operation.
-  virtual bool SetCornerRadius(int corner_radius) = 0;
+  virtual bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) = 0;
 
   // Installs a clip on the gfx::NativeView. These values are in the coordinate
   // space of the Widget, so if this method is called from ShowWidget

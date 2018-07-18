@@ -18,6 +18,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -26,7 +27,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace message_center {
@@ -58,38 +58,6 @@ base::string16 CreateAccessibleName(const Notification& notification) {
 bool ShouldRoundMessageViewCorners() {
   return base::FeatureList::IsEnabled(message_center::kNewStyleNotifications);
 }
-
-class BackgroundPainter : public views::Painter {
- public:
-  BackgroundPainter(int top_radius, int bottom_radius)
-      : top_radius_(SkIntToScalar(top_radius)),
-        bottom_radius_(SkIntToScalar(bottom_radius)) {}
-
-  ~BackgroundPainter() override = default;
-
-  // views::Painter
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-
-  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
-    SkPath path;
-    SkScalar radii[8] = {top_radius_,    top_radius_,    top_radius_,
-                         top_radius_,    bottom_radius_, bottom_radius_,
-                         bottom_radius_, bottom_radius_};
-    path.addRoundRect(gfx::RectToSkRect(gfx::Rect(size)), radii);
-
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(kNotificationBackgroundColor);
-    canvas->DrawPath(path, flags);
-  }
-
- private:
-  const SkScalar top_radius_;
-  const SkScalar bottom_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
-};
 
 }  // namespace
 
@@ -190,7 +158,8 @@ void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
 
 void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
   background_view_->SetBackground(views::CreateBackgroundFromPainter(
-      std::make_unique<BackgroundPainter>(top_radius, bottom_radius)));
+      std::make_unique<NotificationBackgroundPainter>(top_radius,
+                                                      bottom_radius)));
   SchedulePaint();
 }
 

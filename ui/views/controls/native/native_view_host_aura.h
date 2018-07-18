@@ -30,7 +30,7 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   void NativeViewDetaching(bool destroyed) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
-  bool SetCornerRadius(int corner_radius) override;
+  bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;
@@ -63,6 +63,9 @@ class NativeViewHostAura : public NativeViewHostWrapper,
 
   // Sets or updates the mask layer on the native view's layer.
   void InstallMask();
+
+  // Unsets the mask layer on the native view's layer.
+  void UninstallMask();
 
   // Our associated NativeViewHost.
   NativeViewHost* host_;

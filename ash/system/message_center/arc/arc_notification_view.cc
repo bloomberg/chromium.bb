@@ -14,6 +14,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -81,6 +82,13 @@ void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {
     return;
 
   message_center::MessageView::SetDrawBackgroundAsActive(active);
+}
+
+void ArcNotificationView::UpdateCornerRadius(int top_radius,
+                                             int bottom_radius) {
+  MessageView::UpdateCornerRadius(top_radius, bottom_radius);
+
+  content_view_->UpdateCornerRadius(top_radius, bottom_radius);
 }
 
 void ArcNotificationView::UpdateControlButtonsVisibility() {

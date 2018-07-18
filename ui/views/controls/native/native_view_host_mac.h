@@ -10,6 +10,10 @@
 #include "ui/views/controls/native/native_view_host_wrapper.h"
 #include "ui/views/views_export.h"
 
+namespace ui {
+class LayerOwner;
+}
+
 namespace views {
 
 class NativeViewHost;
@@ -25,7 +29,7 @@ class NativeViewHostMac : public NativeViewHostWrapper {
   void NativeViewDetaching(bool destroyed) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
-  bool SetCornerRadius(int corner_radius) override;
+  bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;

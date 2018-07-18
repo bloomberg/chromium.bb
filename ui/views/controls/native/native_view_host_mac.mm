@@ -111,7 +111,7 @@ void NativeViewHostMac::RemovedFromWidget() {
   NativeViewDetaching(false);
 }
 
-bool NativeViewHostMac::SetCornerRadius(int corner_radius) {
+bool NativeViewHostMac::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
   NOTIMPLEMENTED();
   return false;
 }
