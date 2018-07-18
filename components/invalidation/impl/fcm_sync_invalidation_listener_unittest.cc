@@ -170,7 +170,7 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
 
 std::unique_ptr<InvalidationClient> CreateFakeInvalidationClient(
     FakeInvalidationClient** fake_invalidation_client,
-    FCMSyncNetworkChannel* network_channel,
+    NetworkChannel* network_channel,
     Logger* logger,
     InvalidationListener* listener) {
   std::unique_ptr<FakeInvalidationClient> fake_client =
@@ -189,7 +189,9 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* loader_factory */,
             base::BindRepeating(&syncer::JsonUnsafeParser::Parse)) {}
   ~MockRegistrationManager() override {}
-  MOCK_METHOD1(UpdateRegisteredIds, void(const InvalidationObjectIdSet& ids));
+  MOCK_METHOD2(UpdateRegisteredIds,
+               void(const InvalidationObjectIdSet& ids,
+                    const std::string& token));
 };
 
 class FCMSyncInvalidationListenerTest : public testing::Test {

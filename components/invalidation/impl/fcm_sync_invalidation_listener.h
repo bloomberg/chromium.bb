@@ -35,7 +35,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
                                     FCMSyncNetworkChannel::Observer {
  public:
   typedef base::OnceCallback<std::unique_ptr<InvalidationClient>(
-      FCMSyncNetworkChannel* network_channel,
+      NetworkChannel* network_channel,
       Logger* logger,
       InvalidationListener*)>
       CreateInvalidationClientCallback;
@@ -72,19 +72,10 @@ class FCMSyncInvalidationListener : public InvalidationListener,
       InvalidationClient* client,
       const invalidation::ObjectId& object_id) override;
   void InvalidateAll(InvalidationClient* client) override;
-  void InformRegistrationStatus(
-      InvalidationClient* client,
-      const invalidation::ObjectId& object_id,
-      InvalidationListener::RegistrationState reg_state) override;
-  void InformRegistrationFailure(InvalidationClient* client,
-                                 const invalidation::ObjectId& object_id,
-                                 bool is_transient,
-                                 const std::string& error_message) override;
-  void ReissueRegistrations(InvalidationClient* client,
-                            const std::string& prefix,
-                            int prefix_length) override;
   void InformError(InvalidationClient* client,
                    const invalidation::ErrorInfo& error_info) override;
+  void InformTokenRecieved(InvalidationClient* client,
+                           const std::string& token) override;
 
   // AckHandler implementation.
   void Acknowledge(const invalidation::ObjectId& id,
@@ -147,6 +138,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
 
   std::unique_ptr<PerUserTopicRegistrationManager>
       per_user_topic_registration_manager_;
+  std::string token_;
 
   base::WeakPtrFactory<FCMSyncInvalidationListener> weak_factory_;
 

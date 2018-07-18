@@ -15,6 +15,11 @@ class InvalidationListener;
 class Logger;
 class NetworkChannel;
 
+std::unique_ptr<InvalidationClient> CreatePerUserTopicInvalidationClient(
+    NetworkChannel* network,
+    Logger* logger,
+    InvalidationListener* listener);
+
 class PerUserTopicInvalidationClient : public InvalidationClient {
  public:
   PerUserTopicInvalidationClient(NetworkChannel* network,
@@ -41,6 +46,8 @@ class PerUserTopicInvalidationClient : public InvalidationClient {
 
   /* Handles inbound messages from the network. */
   void MessageReceiver(const std::string& message);
+  /* Handles registartion tokens from the network. */
+  void TokenReceiver(const std::string& token);
 
   /* The state of the Ticl whether it has started or not. */
   bool ticl_protocol_started_ = false;

@@ -116,8 +116,12 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
 PerUserTopicRegistrationManager::~PerUserTopicRegistrationManager() {}
 
 void PerUserTopicRegistrationManager::UpdateRegisteredIds(
-    const InvalidationObjectIdSet& ids) {
+    const InvalidationObjectIdSet& ids,
+    const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  token_ = instance_id_token;
+  // TODO(melandory): On change of token registrations
+  // should be re-requested.
   for (const invalidation::InvalidationObjectId& objectId : ids) {
     if (!base::ContainsKey(registration_statuses_, objectId)) {
       registration_statuses_[objectId] =

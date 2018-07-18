@@ -17,6 +17,8 @@ void FCMSyncNetworkChannel::SetMessageReceiver(
 
 void FCMSyncNetworkChannel::SetTokenReceiver(TokenCallback token_receiver) {
   token_receiver_ = token_receiver;
+  if (!token_.empty())
+    token_receiver_.Run(token_);
 }
 
 void FCMSyncNetworkChannel::AddObserver(Observer* observer) {
@@ -44,11 +46,12 @@ bool FCMSyncNetworkChannel::DeliverIncomingMessage(const std::string& message) {
 }
 
 bool FCMSyncNetworkChannel::DeliverToken(const std::string& token) {
+  token_ = token;
   if (!token_receiver_) {
     DLOG(ERROR) << "No receiver for token";
     return false;
   }
-  token_receiver_.Run(token);
+  token_receiver_.Run(token_);
   return true;
 }
 

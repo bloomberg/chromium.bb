@@ -66,6 +66,7 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   TokenCallback token_receiver_;
 
   int received_messages_count_;
+  std::string token_;
 
   base::ObserverList<Observer> observers_;
 };

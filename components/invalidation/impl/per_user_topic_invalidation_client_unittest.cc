@@ -34,6 +34,8 @@ class MockInvalidationListener : public InvalidationListener {
                void(InvalidationClient*, const std::string&, int));
   MOCK_METHOD2(InformError,
                void(InvalidationClient*, const invalidation::ErrorInfo&));
+  MOCK_METHOD2(InformTokenRecieved,
+               void(InvalidationClient*, const std::string&));
 };
 
 // A mock of the Network interface.

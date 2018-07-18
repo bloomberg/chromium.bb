@@ -182,34 +182,16 @@ void FCMSyncInvalidationListener::EmitSavedInvalidations(
   delegate_->OnInvalidate(to_emit);
 }
 
-void FCMSyncInvalidationListener::InformRegistrationStatus(
-    InvalidationClient* client,
-    const invalidation::ObjectId& object_id,
-    InvalidationListener::RegistrationState new_state) {
-  // TODO(melandory): this method is irrelevant in new architecture and
-  // should be removed along with cacheinvalidation library.
-}
-
-void FCMSyncInvalidationListener::InformRegistrationFailure(
-    InvalidationClient* client,
-    const invalidation::ObjectId& object_id,
-    bool is_transient,
-    const std::string& error_message) {
-  // TODO(melandory): this method is irrelevant in new architecture and
-  // should be removed along with cacheinvalidation library.
-}
-
-void FCMSyncInvalidationListener::ReissueRegistrations(
-    InvalidationClient* client,
-    const std::string& prefix,
-    int prefix_length) {
-  // TODO(melandory): this method is irrelevant in new architecture and
-  // should be removed along with cacheinvalidation library.
-}
-
 void FCMSyncInvalidationListener::InformError(
     InvalidationClient* client,
     const invalidation::ErrorInfo& error_info) {}
+
+void FCMSyncInvalidationListener::InformTokenRecieved(
+    InvalidationClient* client,
+    const std::string& token) {
+  DCHECK_EQ(client, invalidation_client_.get());
+  token_ = token;
+}
 
 void FCMSyncInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
                                               const syncer::AckHandle& handle) {
@@ -234,7 +216,8 @@ void FCMSyncInvalidationListener::Drop(const invalidation::ObjectId& id,
 }
 
 void FCMSyncInvalidationListener::DoRegistrationUpdate() {
-  per_user_topic_registration_manager_->UpdateRegisteredIds(registered_ids_);
+  per_user_topic_registration_manager_->UpdateRegisteredIds(registered_ids_,
+                                                            token_);
 
   // TODO(melandory): remove unacked invalidations for unregistered objects.
   ObjectIdInvalidationMap object_id_invalidation_map;
