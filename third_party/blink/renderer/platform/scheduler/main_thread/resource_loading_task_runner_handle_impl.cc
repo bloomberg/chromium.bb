@@ -13,26 +13,6 @@ namespace scheduler {
 
 using base::sequence_manager::TaskQueue;
 
-namespace {
-
-TaskQueue::QueuePriority NetPriorityToBlinkSchedulerPriority(
-    const net::RequestPriority priority) {
-  switch (priority) {
-    case net::RequestPriority::HIGHEST:
-      return TaskQueue::QueuePriority::kHighPriority;
-    case net::RequestPriority::MEDIUM:
-    case net::RequestPriority::LOW:
-      return TaskQueue::QueuePriority::kNormalPriority;
-    case net::RequestPriority::LOWEST:
-    case net::RequestPriority::IDLE:
-    case net::RequestPriority::THROTTLED:
-    default:
-      return TaskQueue::QueuePriority::kLowPriority;
-  }
-}
-
-}  // namespace
-
 std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
 ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
     scoped_refptr<MainThreadTaskQueue> task_queue) {
@@ -59,8 +39,7 @@ void ResourceLoadingTaskRunnerHandleImpl::DidChangeRequestPriority(
     net::RequestPriority priority) {
   FrameSchedulerImpl* frame_scheduler = task_queue_->GetFrameScheduler();
   if (frame_scheduler) {
-    frame_scheduler->DidChangeResourceLoadingPriority(
-        task_queue_, NetPriorityToBlinkSchedulerPriority(priority));
+    frame_scheduler->DidChangeResourceLoadingPriority(task_queue_, priority);
   }
 }
 

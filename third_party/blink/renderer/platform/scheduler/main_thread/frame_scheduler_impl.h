@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/trace_event/trace_event.h"
+#include "net/base/request_priority.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
@@ -134,7 +135,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
 
   void DidChangeResourceLoadingPriority(
       scoped_refptr<MainThreadTaskQueue> task_queue,
-      base::sequence_manager::TaskQueue::QueuePriority priority);
+      net::RequestPriority priority);
 
  private:
   friend class PageSchedulerImpl;

@@ -72,6 +72,11 @@ const char kWakeUpDurationParam[] = "wake_up_duration_ms";
 constexpr base::TimeDelta kDefaultWakeUpDuration =
     base::TimeDelta::FromMilliseconds(3);
 
+// Name of the finch study that enables using resource fetch priorities to
+// schedule tasks on Blink.
+constexpr const char kResourceFetchPriorityExperiment[] =
+    "BlinkSchedulerResourceFetchPriority";
+
 base::TimeDelta GetWakeUpDuration() {
   int duration_ms;
   if (!base::StringToInt(base::GetFieldTrialParamValue(kWakeUpThrottlingTrial,
@@ -237,6 +242,26 @@ const char* OptionalTaskPriorityToString(
   if (!priority)
     return nullptr;
   return TaskQueue::PriorityToString(priority.value());
+}
+
+TaskQueue::QueuePriority StringToTaskQueuePriority(
+    const std::string& priority) {
+  if (priority == "CONTROL") {
+    return TaskQueue::QueuePriority::kControlPriority;
+  } else if (priority == "HIGHEST") {
+    return TaskQueue::QueuePriority::kHighestPriority;
+  } else if (priority == "HIGH") {
+    return TaskQueue::QueuePriority::kHighPriority;
+  } else if (priority == "NORMAL") {
+    return TaskQueue::QueuePriority::kNormalPriority;
+  } else if (priority == "LOW") {
+    return TaskQueue::QueuePriority::kLowPriority;
+  } else if (priority == "BEST_EFFORT") {
+    return TaskQueue::QueuePriority::kBestEffortPriority;
+  } else {
+    NOTREACHED();
+    return TaskQueue::QueuePriority::kQueuePriorityCount;
+  }
 }
 
 bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
@@ -663,6 +688,23 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 
   use_resource_fetch_priority =
       base::FeatureList::IsEnabled(kUseResourceFetchPriority);
+
+  if (use_resource_fetch_priority) {
+    std::map<std::string, std::string> params;
+    base::GetFieldTrialParams(kResourceFetchPriorityExperiment, &params);
+    for (size_t net_priority = 0;
+         net_priority < net::RequestPrioritySize::NUM_PRIORITIES;
+         net_priority++) {
+      net_to_blink_priority[net_priority] =
+          TaskQueue::QueuePriority::kNormalPriority;
+      auto iter = params.find(net::RequestPriorityToString(
+          static_cast<net::RequestPriority>(net_priority)));
+      if (iter != params.end()) {
+        net_to_blink_priority[net_priority] =
+            StringToTaskQueuePriority(iter->second);
+      }
+    }
+  }
 
   experiment_only_when_loading =
       base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading);
