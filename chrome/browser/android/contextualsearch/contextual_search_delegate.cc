@@ -20,6 +20,7 @@
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/common/pref_names.h"
@@ -28,6 +29,8 @@
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
@@ -38,6 +41,7 @@
 #include "url/gurl.h"
 
 using content::RenderFrameHost;
+using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace {
 
@@ -287,7 +291,7 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
     return;
 
   // Sometimes the surroundings are 0, 0, '', so run the callback with empty
-  // data in that case. See crbug.com/393100.
+  // data in that case. See https://crbug.com/393100.
   if (start_offset == 0 && end_offset == 0 && surrounding_text.length() == 0) {
     surrounding_text_callback_.Run(std::string(), base::string16(), 0, 0);
     return;
@@ -373,17 +377,23 @@ bool ContextualSearchDelegate::CanSendPageURL(
       (current_page_url.scheme() != url::kHttpsScheme))
     return false;
 
-  // Check that the user has sync enabled, is logged in, and syncs their Chrome
-  // History.
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (service == NULL || !service->CanSyncStart() ||
-      !service->GetPreferredDataTypes().Has(syncer::PROXY_TABS) ||
-      !service->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+  if (!sync_service)
     return false;
-  }
 
-  return true;
+  // Check whether the user has enabled *personalized* URL-keyed data collection
+  // from the unified consent service.
+  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile);
+  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
+      personalized_unified_consent_url_helper =
+          UrlKeyedDataCollectionConsentHelper::
+              NewPersonalizedDataCollectionConsentHelper(
+                  is_unified_consent_enabled, sync_service);
+  // TODO(donnd): if not enabled, check if *anonymous* URL-keyed data collection
+  // is enabled and do what's needed to send it but not logging it.
+  // See https://crbug.com.com/865104 for details.
+  return personalized_unified_consent_url_helper->IsEnabled();
 }
 
 // Gets the target language from the translate service using the user's profile.

@@ -100,7 +100,6 @@ class ContextualSearchDelegate
                            SampleSurroundingTextSameStartEnd);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            DecodeSearchTermFromJsonResponse);
-  FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest, DecodeStringMentions);
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
