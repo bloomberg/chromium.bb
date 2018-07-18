@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, WebDisplayMode_Standalone) {
   {
     TestWebContentsObserver observer(web_contents_impl());
     LoadTestPageWithViewportFitFromMeta("cover");
-    observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
+    EXPECT_FALSE(observer.has_value());
   }
 }
 
