@@ -45,9 +45,6 @@
 
 namespace blink {
 
-static const int kMaximumValidPortNumber = 0xFFFE;
-static const int kInvalidPortNumber = 0xFFFF;
-
 #if DCHECK_IS_ON()
 static void AssertProtocolIsGood(const StringView protocol) {
   DCHECK(protocol != "");
@@ -359,26 +356,15 @@ String KURL::Host() const {
   return ComponentString(parsed_.host);
 }
 
-// Returns 0 when there is no port.
-//
-// We treat URL's with out-of-range port numbers as invalid URLs, and they will
-// be rejected by the canonicalizer. KURL.cpp will allow them in parsing, but
-// return invalidPortNumber from this port() function, so we mirror that
-// behavior here.
 unsigned short KURL::Port() const {
   if (!is_valid_ || parsed_.port.len <= 0)
     return 0;
-  // TODO(ricea): Change this back to DCHECK.
-  CHECK(!string_.IsNull());
+  DCHECK(!string_.IsNull());
   int port = string_.Is8Bit()
                  ? url::ParsePort(AsURLChar8Subtle(string_), parsed_.port)
                  : url::ParsePort(string_.Characters16(), parsed_.port);
-  // TODO(ricea): Change these two to DCHECK.
-  CHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 already.
-  CHECK_NE(port, url::PORT_INVALID);      // Checked is_valid_ already.
-
-  // TODO(ricea): Remove this CHECK and the constants it uses.
-  CHECK(port <= kMaximumValidPortNumber || port == kInvalidPortNumber);
+  DCHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 already.
+  DCHECK_NE(port, url::PORT_INVALID);      // Checked is_valid_ already.
 
   return static_cast<unsigned short>(port);
 }
