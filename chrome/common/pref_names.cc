@@ -2596,10 +2596,15 @@ const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
 
 // Holds URL for New Tab Page custom background
 const char kNTPCustomBackgroundURL[] = "new_tab_page.custom_background_url";
+
 #endif  // !defined(OS_ANDROID)
 
 // Integer that holds the value of the next persistent notification ID to be
 // used.
 const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
+
+// Preference for controlling whether tab lifecycles
+// (throttling/freezing/discarding) are enabled.
+const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
 
 }  // namespace prefs

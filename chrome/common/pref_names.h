@@ -919,6 +919,8 @@ extern const char kNTPCustomBackgroundURL[];
 
 extern const char kNotificationNextPersistentId[];
 
+extern const char kTabLifecyclesEnabled[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

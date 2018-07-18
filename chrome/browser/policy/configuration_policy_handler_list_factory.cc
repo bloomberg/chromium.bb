@@ -819,6 +819,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebUsbBlockedForUrls,
     prefs::kManagedWebUsbBlockedForUrls,
     base::Value::Type::LIST },
+
+  { key::kTabLifecyclesEnabled,
+    prefs::kTabLifecyclesEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

@@ -31,6 +31,17 @@
     "indicator_selector": "A CSS selector that locates the controlled setting indicator directly affected by the policy. This is appended to the selector 'span.controlled-setting-indicator'."
   },
 
+  "TabLifecyclesEnabled": {
+    "os": ["win"],
+    "official_only": true,
+    "test_policy": { "TabLifecyclesEnabled": false },
+    "pref_mappings": [
+      { "pref": "tab_lifecycles_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "OverrideSecurityRestrictionsOnInsecureOrigin": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "OverrideSecurityRestrictionsOnInsecureOrigin": ["http://example.com/"] },
