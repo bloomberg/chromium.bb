@@ -52,6 +52,16 @@ base::Optional<uint32_t> GetDeviceTransportType(AudioObjectID device_id);
 // AudioUnit.
 bool IsPrivateAggregateDevice(AudioObjectID device_id);
 
+// Returns whether or not the |device_id| corresponds to a device that has valid
+// input streams. When the VoiceProcessing AudioUnit is active, some output
+// devices get an input stream as well. This function tries to filter those out,
+// based on the value of the stream's kAudioStreamPropertyTerminalType value.
+bool IsInputDevice(AudioObjectID device_id);
+
+// Returns whether or not the |device_id| corresponds to a device with output
+// streams.
+bool IsOutputDevice(AudioObjectID device_id);
+
 }  // namespace core_audio_mac
 }  // namespace media
 
