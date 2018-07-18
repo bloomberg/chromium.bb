@@ -197,7 +197,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
 
   cc::PaintCanvas* canvas = context.Canvas();
 
-  IntRect window_rect = ParentFrameView().ConvertToRootFrame(cull_rect.rect_);
+  IntRect window_rect = ParentFrameView().ConvertToRootFrame(cull_rect.Rect());
   web_plugin_->Paint(canvas, window_rect);
 
   context.Restore();

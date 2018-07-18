@@ -107,6 +107,18 @@ void TableSectionPainter::PaintCollapsedBorders(const PaintInfo& paint_info) {
   }
 }
 
+LayoutRect TableSectionPainter::TableAlignedRect(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) {
+  LayoutRect local_cull_rect = LayoutRect(paint_info.GetCullRect().Rect());
+  local_cull_rect.MoveBy(-paint_offset);
+
+  LayoutRect table_aligned_rect =
+      layout_table_section_.LogicalRectForWritingModeAndDirection(
+          local_cull_rect);
+  return table_aligned_rect;
+}
+
 void TableSectionPainter::PaintCollapsedSectionBorders(
     const PaintInfo& paint_info) {
   if (!layout_table_section_.NumRows() ||
@@ -118,14 +130,6 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
   auto paint_offset = adjustment.PaintOffset();
   BoxClipper box_clipper(layout_table_section_, local_paint_info);
 
-  LayoutRect local_visual_rect =
-      LayoutRect(local_paint_info.GetCullRect().rect_);
-  local_visual_rect.MoveBy(-paint_offset);
-
-  LayoutRect table_aligned_rect =
-      layout_table_section_.LogicalRectForWritingModeAndDirection(
-          local_visual_rect);
-
   CellSpan dirtied_rows;
   CellSpan dirtied_columns;
   if (UNLIKELY(
@@ -135,7 +139,8 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
     dirtied_columns = layout_table_section_.FullTableEffectiveColumnSpan();
   } else {
     layout_table_section_.DirtiedRowsAndEffectiveColumns(
-        table_aligned_rect, dirtied_rows, dirtied_columns);
+        TableAlignedRect(paint_info, paint_offset), dirtied_rows,
+        dirtied_columns);
   }
 
   if (dirtied_columns.Start() >= dirtied_columns.End())
@@ -153,17 +158,11 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
 
 void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
                                       const LayoutPoint& paint_offset) {
-  LayoutRect local_visual_rect = LayoutRect(paint_info.GetCullRect().rect_);
-  local_visual_rect.MoveBy(-paint_offset);
-
-  LayoutRect table_aligned_rect =
-      layout_table_section_.LogicalRectForWritingModeAndDirection(
-          local_visual_rect);
-
   CellSpan dirtied_rows;
   CellSpan dirtied_columns;
   layout_table_section_.DirtiedRowsAndEffectiveColumns(
-      table_aligned_rect, dirtied_rows, dirtied_columns);
+      TableAlignedRect(paint_info, paint_offset), dirtied_rows,
+      dirtied_columns);
 
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
 

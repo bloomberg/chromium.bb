@@ -31,7 +31,7 @@ void FramePainter::Paint(GraphicsContext& context,
 
   GetFrameView().NotifyPageThatContentAreaWillPaint();
 
-  IntRect document_dirty_rect(rect.rect_);
+  IntRect document_dirty_rect(rect.Rect());
   document_dirty_rect.Intersect(GetFrameView().FrameRect());
   document_dirty_rect.MoveBy(-GetFrameView().Location());
 
