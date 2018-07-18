@@ -53,9 +53,7 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
         mTopMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height)
                 + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
 
-        if (host.getActiveTab() != null) {
-            host.getActiveTab().addObserver(this);
-        }
+        if (host.getActiveTab() != null) host.getActiveTab().addObserver(this);
 
         updateMargins(host.getActiveTab() != null
                         ? host.getActiveTab().getBrowserControlsStateConstraints()

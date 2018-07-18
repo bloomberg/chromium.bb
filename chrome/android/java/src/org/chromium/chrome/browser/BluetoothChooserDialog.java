@@ -51,14 +51,23 @@ public class BluetoothChooserDialog
 
     // These constants match BluetoothChooserAndroid::ShowDiscoveryState, and are used in
     // notifyDiscoveryState().
-    static final int DISCOVERY_FAILED_TO_START = 0;
-    static final int DISCOVERING = 1;
-    static final int DISCOVERY_IDLE = 2;
+    @IntDef({DiscoveryMode.DISCOVERY_FAILED_TO_START, DiscoveryMode.DISCOVERING,
+            DiscoveryMode.DISCOVERY_IDLE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface DiscoveryMode {
+        int DISCOVERY_FAILED_TO_START = 0;
+        int DISCOVERING = 1;
+        int DISCOVERY_IDLE = 2;
+    }
 
     // Values passed to nativeOnDialogFinished:eventType, and only used in the native function.
-    static final int DIALOG_FINISHED_DENIED_PERMISSION = 0;
-    static final int DIALOG_FINISHED_CANCELLED = 1;
-    static final int DIALOG_FINISHED_SELECTED = 2;
+    @IntDef({DialogFinished.DENIED_PERMISSION, DialogFinished.CANCELLED, DialogFinished.SELECTED})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface DialogFinished {
+        int DENIED_PERMISSION = 0;
+        int CANCELLED = 1;
+        int SELECTED = 2;
+    }
 
     // The window that owns this dialog.
     final WindowAndroid mWindowAndroid;
@@ -226,18 +235,16 @@ public class BluetoothChooserDialog
     @Override
     public void onItemSelected(String id) {
         if (id.isEmpty()) {
-            finishDialog(DIALOG_FINISHED_CANCELLED, "");
+            finishDialog(DialogFinished.CANCELLED, "");
         } else {
-            finishDialog(DIALOG_FINISHED_SELECTED, id);
+            finishDialog(DialogFinished.SELECTED, id);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
         // The chooser might have been closed during the request.
-        if (mNativeBluetoothChooserDialogPtr == 0) {
-            return;
-        }
+        if (mNativeBluetoothChooserDialogPtr == 0) return;
 
         for (int i = 0; i < permissions.length; i++) {
             if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
@@ -262,7 +269,7 @@ public class BluetoothChooserDialog
                            Manifest.permission.ACCESS_COARSE_LOCATION)) {
             // Immediately close the dialog because the user has asked Chrome not to request the
             // location permission.
-            finishDialog(DIALOG_FINISHED_DENIED_PERMISSION, "");
+            finishDialog(DialogFinished.DENIED_PERMISSION, "");
             return false;
         }
 
@@ -308,9 +315,7 @@ public class BluetoothChooserDialog
     }
 
     private void onBluetoothLinkClick(View view, @LinkType int linkType) {
-        if (mNativeBluetoothChooserDialogPtr == 0) {
-            return;
-        }
+        if (mNativeBluetoothChooserDialogPtr == 0) return;
 
         switch (linkType) {
             case LinkType.EXPLAIN_BLUETOOTH:
@@ -415,16 +420,16 @@ public class BluetoothChooserDialog
 
     @VisibleForTesting
     @CalledByNative
-    void notifyDiscoveryState(int discoveryState) {
+    void notifyDiscoveryState(@DiscoveryMode int discoveryState) {
         switch (discoveryState) {
-            case DISCOVERY_FAILED_TO_START: {
+            case DiscoveryMode.DISCOVERY_FAILED_TO_START: {
                 // FAILED_TO_START might be caused by a missing Location
                 // permission or by the Location service being turned off.
                 // Check, and show a request if so.
                 checkLocationServicesAndPermission();
                 break;
             }
-            case DISCOVERY_IDLE: {
+            case DiscoveryMode.DISCOVERY_IDLE: {
                 mItemChooserDialog.setIdleState();
                 break;
             }

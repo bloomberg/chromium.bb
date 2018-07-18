@@ -52,9 +52,7 @@ public class ChromeApplication extends Application {
     @Override
     protected void attachBaseContext(Context context) {
         boolean browserProcess = ContextUtils.isMainProcess();
-        if (browserProcess) {
-            UmaUtils.recordMainEntryPointTime();
-        }
+        if (browserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
 

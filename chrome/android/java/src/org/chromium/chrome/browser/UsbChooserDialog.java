@@ -69,9 +69,7 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         SpannableString statusActive = SpanApplier.applySpans(
                 activity.getString(R.string.usb_chooser_dialog_footnote_text),
                 new SpanInfo("<link>", "</link>", new NoUnderlineClickableSpan((view) -> {
-                    if (mNativeUsbChooserDialogPtr == 0) {
-                        return;
-                    }
+                    if (mNativeUsbChooserDialogPtr == 0) return;
 
                     nativeLoadUsbHelpPage(mNativeUsbChooserDialogPtr);
 
@@ -103,9 +101,7 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
     private static UsbChooserDialog create(WindowAndroid windowAndroid, String origin,
             int securityLevel, long nativeUsbChooserDialogPtr) {
         Activity activity = windowAndroid.getActivity().get();
-        if (activity == null) {
-            return null;
-        }
+        if (activity == null) return null;
 
         UsbChooserDialog dialog = new UsbChooserDialog(nativeUsbChooserDialogPtr);
         dialog.show(activity, origin, securityLevel);

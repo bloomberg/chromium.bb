@@ -103,9 +103,7 @@ public class BitmapCache {
     public void putBitmap(@NonNull String key, @Nullable Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
         if (bitmap == null) return;
-        if (!SysUtils.isLowEndDevice()) {
-            getBitmapCache().put(key, bitmap);
-        }
+        if (!SysUtils.isLowEndDevice()) getBitmapCache().put(key, bitmap);
         maybeScheduleDeduplicationCache();
         sDeduplicationCache.put(key, new WeakReference<>(bitmap));
     }
