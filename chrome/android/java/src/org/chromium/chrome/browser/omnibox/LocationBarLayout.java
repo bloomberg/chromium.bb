@@ -128,7 +128,7 @@ public class LocationBarLayout extends FrameLayout
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
     // The type of the navigation button currently showing.
-    private NavigationButtonType mNavigationButtonType;
+    private @NavigationButtonType int mNavigationButtonType;
 
     // The type of the security icon currently active.
     @DrawableRes
@@ -356,10 +356,12 @@ public class LocationBarLayout extends FrameLayout
     /**
      * Specifies the types of buttons shown to signify different types of navigation elements.
      */
-    protected enum NavigationButtonType {
-        PAGE,
-        MAGNIFIER,
-        EMPTY,
+    @IntDef({NavigationButtonType.PAGE, NavigationButtonType.MAGNIFIER, NavigationButtonType.EMPTY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface NavigationButtonType {
+        int PAGE = 0;
+        int MAGNIFIER = 1;
+        int EMPTY = 2;
     }
 
     /** Specifies which button should be shown in location bar, if any. */
@@ -997,7 +999,7 @@ public class LocationBarLayout extends FrameLayout
         return mToolbarDataProvider;
     }
 
-    private static NavigationButtonType suggestionTypeToNavigationButtonType(
+    private static @NavigationButtonType int suggestionTypeToNavigationButtonType(
             OmniboxSuggestion suggestion) {
         if (suggestion.isUrlSuggestion()) {
             return NavigationButtonType.PAGE;
@@ -1008,7 +1010,8 @@ public class LocationBarLayout extends FrameLayout
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
-        NavigationButtonType type = NavigationButtonType.EMPTY;
+        @NavigationButtonType
+        int type = NavigationButtonType.EMPTY;
         if (mIsTablet && !mSuggestionItems.isEmpty()) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
@@ -1090,19 +1093,19 @@ public class LocationBarLayout extends FrameLayout
      * Sets the type of the current navigation type and updates the UI to match it.
      * @param buttonType The type of navigation button to be shown.
      */
-    private void setNavigationButtonType(NavigationButtonType buttonType) {
+    private void setNavigationButtonType(@NavigationButtonType int buttonType) {
         if (!mIsTablet) return;
         switch (buttonType) {
-            case PAGE:
+            case NavigationButtonType.PAGE:
                 Drawable page = TintedDrawable.constructTintedDrawable(getContext(),
                         R.drawable.ic_omnibox_page,
                         mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
                 mNavigationButton.setImageDrawable(page);
                 break;
-            case MAGNIFIER:
+            case NavigationButtonType.MAGNIFIER:
                 mNavigationButton.setImageResource(R.drawable.ic_omnibox_magnifier);
                 break;
-            case EMPTY:
+            case NavigationButtonType.EMPTY:
                 mNavigationButton.setImageDrawable(null);
                 break;
             default:
