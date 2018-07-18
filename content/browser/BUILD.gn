@@ -1050,8 +1050,6 @@ jumbo_source_set("browser") {
     "loader/upload_data_stream_builder.h",
     "loader/url_loader_factory_impl.cc",
     "loader/url_loader_factory_impl.h",
-    "loader/wake_lock_resource_throttle.cc",
-    "loader/wake_lock_resource_throttle.h",
     "loader_delegate_impl.cc",
     "loader_delegate_impl.h",
     "locks/lock_manager.cc",
