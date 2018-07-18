@@ -178,6 +178,20 @@ int GetInkDropCornerRadius(const views::View* host_view) {
       views::EMPHASIS_MAXIMUM, host_view->size());
 }
 
+// Create a SkPath matching the bookmark inkdrops to be used for the focus ring.
+// TODO(pbos): Consolidate inkdrop effects, highlights and ripples along with
+// focus rings so that they are derived from the same actual SkPath or other
+// shared primitive.
+SkPath CreateBookmarkFocusRingPath(views::InkDropHostView* host_view) {
+  gfx::Rect rect(host_view->size());
+  rect.Inset(GetInkDropInsets());
+
+  SkPath path;
+  const int radius = GetInkDropCornerRadius(host_view);
+  path.addRoundRect(gfx::RectToSkRect(rect), radius, radius);
+  return path;
+}
+
 std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
     std::unique_ptr<views::InkDropImpl> ink_drop) {
   ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
@@ -257,6 +271,12 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   // LabelButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    if (focus_ring())
+      focus_ring()->SetPath(CreateBookmarkFocusRingPath(this));
+    LabelButton::OnBoundsChanged(previous_bounds);
+  }
+
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
@@ -380,6 +400,12 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   }
 
   // MenuButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    if (focus_ring())
+      focus_ring()->SetPath(CreateBookmarkFocusRingPath(this));
+    MenuButton::OnBoundsChanged(previous_bounds);
+  }
+
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
