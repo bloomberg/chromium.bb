@@ -5,8 +5,8 @@
 #include "ash/login/ui/views_utils.h"
 
 #include "ash/login/ui/non_accessible_view.h"
-#include "ash/shell.h"
-#include "ui/display/manager/display_manager.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,20 +36,19 @@ bool ShouldShowLandscape(const views::Widget* widget) {
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           widget->GetNativeWindow());
-  display::ManagedDisplayInfo info =
-      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
-  // Return true if it is landscape.
-  switch (info.GetActiveRotation()) {
-    case display::Display::ROTATE_0:
-    case display::Display::ROTATE_180:
-      return true;
-    case display::Display::ROTATE_90:
-    case display::Display::ROTATE_270:
-      return false;
-  }
-  NOTREACHED();
-  return true;
+  // The display bounds are updated after a rotation. This means that if the
+  // device has resolution 800x600, and the rotation is
+  // display::Display::ROTATE_0, bounds() is 800x600. On
+  // display::Display::ROTATE_90, bounds() is 600x800.
+  //
+  // ash/login/ui assumes landscape means width>height, and portrait means
+  // height>width.
+  //
+  // Considering the actual rotation of the device introduces edge-cases, ie,
+  // when the device resolution in display::Display::ROTATE_0 is 768x1024, such
+  // as in https://crbug.com/858858.
+  return display.bounds().width() > display.bounds().height();
 }
 
 bool HasFocusInAnyChildView(views::View* view) {
