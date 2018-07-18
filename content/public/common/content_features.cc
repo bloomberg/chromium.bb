@@ -649,6 +649,12 @@ const base::Feature kMacV2Sandbox{"MacV2Sandbox",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+// Always set the UI thread's priority to DISPLAY.
+const base::Feature kOverrideUIThreadPriority{
+    "OverrideUIThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
+
 bool IsVideoCaptureServiceEnabledForOutOfProcess() {
 #if defined(OS_ANDROID)
   return false;
