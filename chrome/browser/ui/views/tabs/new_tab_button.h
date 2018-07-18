@@ -107,10 +107,14 @@ class NewTabButton : public views::ImageButton,
                  const SkPath& fill,
                  gfx::Canvas* canvas) const;
 
-  SkColor GetButtonFillColor() const;
+  // Paints a properly sized plus (+) icon into the center of the button.
+  void PaintPlusIcon(gfx::Canvas* canvas, int offset, int size);
 
-  // In the touch-optimized UI, initializes the needed button icons.
-  void InitButtonIcons();
+  SkColor GetButtonFillColor() const;
+  SkColor GetIconColor() const;
+
+  // In the touch-optimized UI, initializes the incognito button icon.
+  void InitIncognitoIcon();
 
   // Returns the path for the touch-optimized new tab button for the given
   // |scale|. |button_y| is the button's top y-cordinate. If |for_fill| is true,
@@ -148,7 +152,6 @@ class NewTabButton : public views::ImageButton,
 
   // In the touch-optimized UI, the new tab button has a plus icon, and an
   // incognito icon if is in incognito mode.
-  gfx::ImageSkia plus_icon_;
   gfx::ImageSkia incognito_icon_;
 
   // In touch-optimized UI, this view holds the ink drop layer so that it's
