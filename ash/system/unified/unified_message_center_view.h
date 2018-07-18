@@ -22,6 +22,12 @@ class MessageCenter;
 
 }  // namespace message_center
 
+namespace views {
+
+class FocusManager;
+
+}  // namespace views
+
 namespace ash {
 
 class UnifiedSystemTrayController;
@@ -33,11 +39,15 @@ class ASH_EXPORT UnifiedMessageCenterView
       public message_center::MessageCenterObserver,
       public views::ViewObserver,
       public views::ButtonListener,
+      public views::FocusChangeListener,
       public MessageListView::Observer {
  public:
   UnifiedMessageCenterView(UnifiedSystemTrayController* tray_controller,
                            message_center::MessageCenter* message_center);
   ~UnifiedMessageCenterView() override;
+
+  // Initialize focus listener.
+  void Init();
 
   // Set the maximum height that the view can take.
   void SetMaxHeight(int max_height);
@@ -66,6 +76,10 @@ class ASH_EXPORT UnifiedMessageCenterView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* before, views::View* now) override;
+  void OnDidChangeFocus(views::View* before, views::View* now) override;
+
   // MessageListView::Observer:
   void OnAllNotificationsCleared() override;
 
@@ -83,6 +97,8 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   views::ScrollView* const scroller_;
   MessageListView* const message_list_view_;
+
+  views::FocusManager* focus_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterView);
 };
