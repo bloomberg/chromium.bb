@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/renderer/autofill/fake_mojo_password_manager_driver.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
@@ -1670,8 +1672,10 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
   // If the field is readonly, it should not be affected.
   SetElementReadOnly(username_element_, true);
   SimulateElementClick(kUsernameName);
-  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/false,
-                                                 ASCIIToUTF16(kAliceUsername));
+  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
+  EXPECT_CALL(mock_callback, Run(FillingStatus::ERROR_NO_VALID_FIELD));
+  password_autofill_agent_->FillIntoFocusedField(
+      /*is_password=*/false, ASCIIToUTF16(kAliceUsername), mock_callback.Get());
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 }
 
@@ -1684,8 +1688,11 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedWritableTextField) {
   SetFocused(username_element_);
 
   SetElementReadOnly(username_element_, false);
-  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/false,
-                                                 ASCIIToUTF16(kAliceUsername));
+
+  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
+  EXPECT_CALL(mock_callback, Run(FillingStatus::SUCCESS));
+  password_autofill_agent_->FillIntoFocusedField(
+      /*is_password=*/false, ASCIIToUTF16(kAliceUsername), mock_callback.Get());
   CheckTextFieldsDOMState(kAliceUsername, true, std::string(), false);
   CheckUsernameSelection(strlen(kAliceUsername), strlen(kAliceUsername));
 }
@@ -1697,14 +1704,19 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedFieldOnlyIntoPasswordFields) {
 
   // Filling a password into a username field doesn't work.
   SimulateElementClick(kUsernameName);
-  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/true,
-                                                 ASCIIToUTF16(kAlicePassword));
+
+  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
+  EXPECT_CALL(mock_callback, Run(FillingStatus::ERROR_NOT_ALLOWED));
+  password_autofill_agent_->FillIntoFocusedField(
+      /*is_password=*/true, ASCIIToUTF16(kAlicePassword), mock_callback.Get());
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 
   // When a password field is focus, the filling works.
   SimulateElementClick(kPasswordName);
-  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/true,
-                                                 ASCIIToUTF16(kAlicePassword));
+
+  EXPECT_CALL(mock_callback, Run(FillingStatus::SUCCESS));
+  password_autofill_agent_->FillIntoFocusedField(
+      /*is_password=*/true, ASCIIToUTF16(kAlicePassword), mock_callback.Get());
   CheckTextFieldsDOMState(std::string(), false, kAlicePassword, true);
 }
 
@@ -1719,8 +1731,11 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedFieldForNonClickFocus) {
   // The completion should now affect ONLY the password field. Don't fill a
   // password so the error on failure shows where the filling happened.
   // (see FillIntoFocusedFieldOnlyIntoPasswordFields).
-  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/false,
-                                                 ASCIIToUTF16("TextToFill"));
+
+  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
+  EXPECT_CALL(mock_callback, Run(FillingStatus::SUCCESS)).Times(1);
+  password_autofill_agent_->FillIntoFocusedField(
+      /*is_password=*/false, ASCIIToUTF16("TextToFill"), mock_callback.Get());
   CheckTextFieldsDOMState(std::string(), false, "TextToFill", true);
 }
 
@@ -2885,6 +2900,28 @@ TEST_F(PasswordAutofillAgentTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_driver_.called_same_document_navigation());
   EXPECT_FALSE(fake_driver_.called_password_form_submitted());
+}
+
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutUnfillableField) {
+  EXPECT_FALSE(fake_driver_.last_focused_element_was_fillable());
+  SimulateElementClick(kPasswordName);
+  fake_driver_.Flush();
+  EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
+
+  SetElementReadOnly(username_element_, true);
+  SetFocused(username_element_);
+  fake_driver_.Flush();
+  EXPECT_FALSE(fake_driver_.last_focused_element_was_fillable());
+}
+
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutPasswordFields) {
+  SimulateElementClick(kUsernameName);
+  fake_driver_.Flush();
+  EXPECT_FALSE(fake_driver_.last_focused_input_was_password());
+
+  SimulateElementClick(kPasswordName);
+  fake_driver_.Flush();
+  EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
 }
 
 // Tests that credential suggestions are autofilled on a password (and change

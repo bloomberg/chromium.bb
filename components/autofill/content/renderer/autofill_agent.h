@@ -95,11 +95,6 @@ class AutofillAgent : public content::RenderFrameObserver,
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  // Returns the input element that was last focused.
-  blink::WebInputElement GetLastFocusedInput() const {
-    return last_input_element_;
-  }
-
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,
                                const blink::WebFormControlElement& element,
@@ -300,9 +295,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Last form which was interacted with by the user.
   blink::WebFormElement last_interacted_form_;
-
-  // Last input element the user interacted with.
-  blink::WebInputElement last_input_element_;
 
   // When dealing with forms that don't use a <form> tag, we keep track of the
   // elements the user has modified so we can determine when submission occurs.
