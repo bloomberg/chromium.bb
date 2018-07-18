@@ -106,6 +106,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the size of the entire tile grid without padding.
   gfx::Size GetTileGridSizeWithoutPadding() const;
 
+  // Returns the minimum size of the entire tile grid.
+  gfx::Size GetMinimumTileGridSize() const;
+
+  // Returns the maximum size of the entire tile grid.
+  gfx::Size GetMaximumTileGridSize() const;
+
   // This resets the grid view to a fresh state for showing the app list.
   void ResetForShowApps();
 
@@ -592,6 +598,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // histograms.
   void RecordAppMovingTypeMetrics(AppListAppMovingType type);
 
+  // Update the padding of tile view based on the contents bounds.
+  void UpdateTilePadding();
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
@@ -713,6 +722,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // True if the apps grid gap feature is enabled.
   const bool is_apps_grid_gap_feature_enabled_;
+
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
+
+  // Tile spacing between the tile views.
+  int horizontal_tile_padding_ = 0;
+  int vertical_tile_padding_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

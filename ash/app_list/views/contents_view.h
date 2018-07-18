@@ -154,11 +154,11 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void TransitionChanged() override;
   void TransitionEnded() override;
 
-  // Returns the height of current display.
-  int GetDisplayHeight() const;
+  // Returns the size of current work area.
+  gfx::Size GetWorkAreaSize() const;
 
-  // Returns the width of the current display.
-  int GetDisplayWidth() const;
+  // Returns the size of current display.
+  gfx::Size GetDisplaySize() const;
 
   // Starts the fade out animation when the app list is closed.
   void FadeOutOnClose(base::TimeDelta animation_duration);
@@ -204,6 +204,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Note: This is different to |pagination_model_|, which manages top-level
   // launcher-page pagination.
   PaginationModel* GetAppsPaginationModel();
+
+  // Returns true if the |page| requires layout when transitioning from
+  // |current_state| to |target_state|.
+  bool ShouldLayoutPage(AppListPage* page,
+                        ash::AppListState current_state,
+                        ash::AppListState target_state) const;
 
   // Unowned pointer to application list model.
   AppListModel* model_ = nullptr;

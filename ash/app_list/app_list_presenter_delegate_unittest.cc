@@ -95,12 +95,18 @@ class AppListPresenterDelegateTest : public AshTestBase,
 
   // testing::Test:
   void SetUp() override {
+    app_list::AppListView::SetShortAnimationForTesting(true);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
 
     // Make the display big enough to hold the app list.
     UpdateDisplay("1024x768");
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    app_list::AppListView::SetShortAnimationForTesting(false);
   }
 
   // Whether to run the test with mouse or gesture events.

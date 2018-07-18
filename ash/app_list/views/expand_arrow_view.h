@@ -16,7 +16,6 @@ class SlideAnimation;
 }  // namespace gfx
 
 namespace views {
-class ImageView;
 class InkDrop;
 class InkDropMask;
 class InkDropRipple;
@@ -42,7 +41,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -68,11 +66,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   ContentsView* const contents_view_;
   AppListView* const app_list_view_;  // Owned by the views hierarchy.
 
-  // This is a container view for |icon_| and is used to clip |icon_| during
-  // the animation.
-  views::View* clip_view_;
-  views::ImageView* icon_;
-
   // Properties for pulse opacity and size used in animation.
   float pulse_opacity_;
   int pulse_radius_;
@@ -82,6 +75,12 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   // Whether the expand arrow view is pressed or not. If true, animation should
   // be canceled.
   bool button_pressed_ = false;
+
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
+
+  // The y position offset of the arrow in this view.
+  int arrow_y_offset_;
 
   base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_;
 

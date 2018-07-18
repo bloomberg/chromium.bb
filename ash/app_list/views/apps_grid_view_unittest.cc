@@ -172,6 +172,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
 
   // testing::Test overrides:
   void SetUp() override {
+    AppListView::SetShortAnimationForTesting(true);
     views::ViewsTestBase::SetUp();
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
       is_rtl_ = GetParam().is_rtl_enabled;
@@ -183,7 +184,6 @@ class AppsGridViewTest : public views::ViewsTestBase,
     parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
-    app_list_view_->set_short_animation_for_testing();
     AppListView::InitParams params;
     params.parent = parent;
     app_list_view_->Initialize(params);
@@ -209,6 +209,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   void TearDown() override {
     app_list_view_->GetWidget()->Close();
     views::ViewsTestBase::TearDown();
+    AppListView::SetShortAnimationForTesting(false);
   }
 
  protected:

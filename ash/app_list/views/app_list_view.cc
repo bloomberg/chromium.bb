@@ -15,6 +15,7 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -96,6 +97,9 @@ constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 
 // The app list opacity when the tablet mode is enabled.
 constexpr float kAppListOpacityInTabletMode = 0.1;
+
+// Set animation durations to 0 for testing.
+static bool short_animations_for_testing;
 
 // This view forwards the focus to the search box widget by providing it as a
 // FocusTraversable when a focus search is provided.
@@ -229,6 +233,23 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(HideViewAnimationObserver);
 };
 
+// An animation observer to transition between states.
+class TransitionAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit TransitionAnimationObserver(AppListView* view) : view_(view) {}
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    DCHECK(view_);
+    view_->Layout();
+  }
+
+ private:
+  AppListView* const view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransitionAnimationObserver);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView::TestApi
 
@@ -247,10 +268,12 @@ AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_model_(delegate->GetSearchModel()),
-      short_animations_for_testing_(false),
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
       display_observer_(this),
-      animation_observer_(new HideViewAnimationObserver()),
+      hide_view_animation_observer_(
+          std::make_unique<HideViewAnimationObserver>()),
+      transition_animation_observer_(
+          std::make_unique<TransitionAnimationObserver>(this)),
       previous_arrow_key_traversal_enabled_(
           views::FocusManager::arrow_key_traversal_enabled()),
       state_animation_metrics_reporter_(
@@ -266,7 +289,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
 }
 
 AppListView::~AppListView() {
-  animation_observer_.reset();
+  hide_view_animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
   views::FocusManager::set_arrow_key_traversal_enabled(
@@ -277,6 +300,16 @@ AppListView::~AppListView() {
 void AppListView::ExcludeWindowFromEventHandling(aura::Window* window) {
   DCHECK(window);
   window->SetProperty(kExcludeWindowFromEventHandling, true);
+}
+
+// static
+void AppListView::SetShortAnimationForTesting(bool enabled) {
+  short_animations_for_testing = enabled;
+}
+
+// static
+bool AppListView::ShortAnimationsForTesting() {
+  return short_animations_for_testing;
 }
 
 void AppListView::Initialize(const InitParams& params) {
@@ -335,8 +368,8 @@ void AppListView::SetAppListOverlayVisible(bool visible) {
   if (!visible) {
     // Since only one animation is visible at a time, it's safe to re-use
     // animation_observer_ here.
-    animation_observer_->SetTarget(overlay_view_);
-    settings.AddObserver(animation_observer_.get());
+    hide_view_animation_observer_->SetTarget(overlay_view_);
+    settings.AddObserver(hide_view_animation_observer_.get());
   }
 
   const float kOverlayFadeInMilliseconds = 125;
@@ -652,10 +685,13 @@ void AppListView::EndDrag(const gfx::Point& location) {
         app_list_y_for_state = display_height - kHalfAppListHeight;
         app_list_height = kHalfAppListHeight;
         break;
-      case AppListViewState::PEEKING:
-        app_list_y_for_state = display_height - kPeekingAppListHeight;
-        app_list_height = kPeekingAppListHeight;
+      case AppListViewState::PEEKING: {
+        const int peeking_height =
+            AppListConfig::instance().peeking_app_list_height();
+        app_list_y_for_state = display_height - peeking_height;
+        app_list_height = peeking_height;
         break;
+      }
       case AppListViewState::CLOSED:
         NOTREACHED();
         break;
@@ -1156,7 +1192,8 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
 
   switch (target_state) {
     case AppListViewState::PEEKING:
-      target_state_y = display_height - kPeekingAppListHeight;
+      target_state_y =
+          display_height - AppListConfig::instance().peeking_app_list_height();
       break;
     case AppListViewState::HALF:
       target_state_y = std::max(0, display_height - kHalfAppListHeight);
@@ -1183,7 +1220,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   int animation_duration;
   // If animating to or from a fullscreen state, animate over 250ms, else
   // animate over 200 ms.
-  if (short_animations_for_testing_) {
+  if (ShortAnimationsForTesting()) {
     animation_duration = kAppListAnimationDurationTestMs;
   } else if (is_fullscreen() ||
              target_state == AppListViewState::FULLSCREEN_ALL_APPS ||
@@ -1216,6 +1253,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetAnimationMetricsReporter(state_animation_metrics_reporter_.get());
+  settings.AddObserver(transition_animation_observer_.get());
 
   layer->SetTransform(gfx::Transform());
 }
@@ -1307,6 +1345,13 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
 
 int AppListView::GetScreenBottom() {
   return GetDisplayNearestView().bounds().bottom();
+}
+
+int AppListView::GetCurrentAppListHeight() const {
+  if (!fullscreen_widget_)
+    return kShelfSize;
+  return GetDisplayNearestView().size().height() -
+         fullscreen_widget_->GetWindowBoundsInScreen().y();
 }
 
 bool AppListView::IsHomeLauncherEnabledInTabletMode() const {

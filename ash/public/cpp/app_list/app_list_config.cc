@@ -25,7 +25,16 @@ AppListConfig::AppListConfig()
       search_tile_badge_background_radius_(10),
       search_list_icon_dimension_(18),
       search_list_badge_icon_dimension_(14),
-      app_title_max_line_height_(16) {
+      app_title_max_line_height_(16),
+      peeking_app_list_height_(320),
+      search_box_closed_top_padding_(12),
+      search_box_peeking_top_padding_(24),
+      search_box_fullscreen_top_padding_(24),
+      preferred_cols_(5),
+      preferred_rows_(5),
+      page_spacing_(40),
+      expand_arrow_tile_height_(60),
+      folder_bubble_radius_(23) {
   if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;
@@ -37,6 +46,13 @@ AppListConfig::AppListConfig()
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
     app_title_max_line_height_ = 20;
+    peeking_app_list_height_ = 284;
+    search_box_closed_top_padding_ = 84;
+    search_box_peeking_top_padding_ = 84;
+    preferred_rows_ = 4;
+    page_spacing_ = 48;
+    expand_arrow_tile_height_ = 72;
+    folder_bubble_radius_ = 31;
   }
 
   // We're getting the largest font that doesn't exceed

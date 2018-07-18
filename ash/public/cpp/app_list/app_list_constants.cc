@@ -73,18 +73,11 @@ const gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;
 // a folder.
 const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 
-// Preferred number of columns and rows in apps grid.
-const int kPreferredCols = 5;
-const int kPreferredRows = 5;
-
 // The number of apps shown in the start page app grid.
 const int kNumStartPageTiles = 5;
 
 // Maximum number of results to show in the launcher Search UI.
 const size_t kMaxSearchResults = 6;
-
-// Top padding of expand arrow.
-const size_t kExpandArrowTopPadding = 29;
 
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;

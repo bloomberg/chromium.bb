@@ -136,7 +136,7 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
 }
 
 void ContentsView::SetActiveState(ash::AppListState state) {
-  SetActiveState(state, true);
+  SetActiveState(state, !AppListView::ShortAnimationsForTesting());
 }
 
 void ContentsView::SetActiveState(ash::AppListState state, bool animate) {
@@ -252,18 +252,17 @@ void ContentsView::UpdatePageBounds() {
 
   // Update app list pages.
   for (AppListPage* page : app_list_pages_) {
-    page->OnAnimationUpdated(progress, current_state, target_state);
-
     gfx::Rect to_rect = page->GetPageBoundsForState(target_state);
     gfx::Rect from_rect = page->GetPageBoundsForState(current_state);
-    if (from_rect == to_rect)
-      continue;
 
     // Animate linearly (the PaginationModel handles easing).
     gfx::Rect bounds(
         gfx::Tween::RectValueBetween(progress, from_rect, to_rect));
 
     page->SetBoundsRect(bounds);
+
+    if (ShouldLayoutPage(page, current_state, target_state))
+      page->OnAnimationUpdated(progress, current_state, target_state);
   }
 
   // Update the search box.
@@ -273,10 +272,12 @@ void ContentsView::UpdatePageBounds() {
 void ContentsView::UpdateSearchBox(double progress,
                                    ash::AppListState current_state,
                                    ash::AppListState target_state) {
+  SearchBoxView* search_box = GetSearchBoxView();
+  if (!search_box->GetWidget())
+    return;
+
   AppListPage* from_page = GetPageView(GetPageIndexForState(current_state));
   AppListPage* to_page = GetPageView(GetPageIndexForState(target_state));
-
-  SearchBoxView* search_box = GetSearchBoxView();
 
   gfx::Rect search_box_from(from_page->GetSearchBoxBounds());
   gfx::Rect search_box_to(to_page->GetSearchBoxBounds());
@@ -392,33 +393,14 @@ gfx::Size ContentsView::GetDefaultContentsSize() const {
 }
 
 gfx::Size ContentsView::CalculatePreferredSize() const {
-  return gfx::Size(GetDisplayWidth(), GetDisplayHeight());
+  return GetWorkAreaSize();
 }
 
 void ContentsView::Layout() {
-  // Immediately finish all current animations.
-  pagination_model_.FinishAnimation();
-
   if (GetContentsBounds().IsEmpty())
     return;
 
-  for (AppListPage* page : app_list_pages_) {
-    // Ensures re-layout happens even when the page bounds does not change. So
-    // that |horizontal_page_container_| can layout its children in response to
-    // user dragging.
-    page->InvalidateLayout();
-    page->SetBoundsRect(page->GetPageBoundsForState(GetActiveState()));
-  }
-
-  // The search box is contained in a widget so set the bounds of the widget
-  // rather than the SearchBoxView.
-  views::Widget* search_box_widget = GetSearchBoxView()->GetWidget();
-  if (search_box_widget && search_box_widget != GetWidget()) {
-    gfx::Rect search_box_bounds = GetSearchBoxBoundsForState(GetActiveState());
-    search_box_widget->SetBounds(ConvertRectToWidget(
-        GetSearchBoxView()->GetViewBoundsForSearchBoxContentsBounds(
-            search_box_bounds)));
-  }
+  UpdatePageBounds();
 }
 
 const char* ContentsView::GetClassName() const {
@@ -443,20 +425,17 @@ void ContentsView::TransitionChanged() {
 
 void ContentsView::TransitionEnded() {}
 
-int ContentsView::GetDisplayHeight() const {
+gfx::Size ContentsView::GetWorkAreaSize() const {
   return display::Screen::GetScreen()
       ->GetDisplayNearestView(GetWidget()->GetNativeView())
       .work_area()
-      .size()
-      .height();
+      .size();
 }
 
-int ContentsView::GetDisplayWidth() const {
+gfx::Size ContentsView::GetDisplaySize() const {
   return display::Screen::GetScreen()
       ->GetDisplayNearestView(GetWidget()->GetNativeView())
-      .work_area()
-      .size()
-      .width();
+      .size();
 }
 
 void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
@@ -473,6 +452,30 @@ void ContentsView::FadeInOnOpen(base::TimeDelta animation_duration) {
 
 views::View* ContentsView::GetSelectedView() const {
   return app_list_pages_[GetActivePageIndex()]->GetSelectedView();
+}
+
+bool ContentsView::ShouldLayoutPage(AppListPage* page,
+                                    ash::AppListState current_state,
+                                    ash::AppListState target_state) const {
+  if (page == horizontal_page_container_) {
+    return (current_state == ash::AppListState::kStateStart &&
+            target_state == ash::AppListState::kStateApps) ||
+           (current_state == ash::AppListState::kStateApps &&
+            target_state == ash::AppListState::kStateStart);
+  }
+
+  if (page == search_results_page_view_) {
+    return ((current_state == ash::AppListState::kStateSearchResults &&
+             target_state == ash::AppListState::kStateStart) ||
+            (current_state == ash::AppListState::kStateStart &&
+             target_state == ash::AppListState::kStateSearchResults)) ||
+           ((current_state == ash::AppListState::kStateSearchResults &&
+             target_state == ash::AppListState::kStateApps) ||
+            (current_state == ash::AppListState::kStateApps &&
+             target_state == ash::AppListState::kStateSearchResults));
+  }
+
+  return false;
 }
 
 }  // namespace app_list
