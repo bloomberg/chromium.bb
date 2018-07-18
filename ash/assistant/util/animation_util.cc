@@ -13,15 +13,22 @@ namespace assistant {
 namespace util {
 
 ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> layer_animation_element) {
-  return CreateLayerAnimationSequenceWithDelay(
-      std::move(layer_animation_element),
-      /*delay=*/base::TimeDelta());
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b) {
+  ui::LayerAnimationSequence* layer_animation_sequence =
+      new ui::LayerAnimationSequence();
+
+  layer_animation_sequence->AddElement(std::move(a));
+
+  if (b)
+    layer_animation_sequence->AddElement(std::move(b));
+
+  return layer_animation_sequence;
 }
 
 ui::LayerAnimationSequence* CreateLayerAnimationSequenceWithDelay(
     std::unique_ptr<ui::LayerAnimationElement> layer_animation_element,
-    base::TimeDelta delay) {
+    const base::TimeDelta& delay) {
   DCHECK(delay.InMilliseconds() >= 0);
 
   ui::LayerAnimationSequence* layer_animation_sequence =
@@ -36,6 +43,26 @@ ui::LayerAnimationSequence* CreateLayerAnimationSequenceWithDelay(
   layer_animation_sequence->AddElement(std::move(layer_animation_element));
 
   return layer_animation_sequence;
+}
+
+std::unique_ptr<ui::LayerAnimationElement> CreateOpacityElement(
+    float opacity,
+    const base::TimeDelta& duration,
+    const gfx::Tween::Type& tween) {
+  std::unique_ptr<ui::LayerAnimationElement> layer_animation_element =
+      ui::LayerAnimationElement::CreateOpacityElement(opacity, duration);
+  layer_animation_element->set_tween_type(tween);
+  return layer_animation_element;
+}
+
+std::unique_ptr<ui::LayerAnimationElement> CreateTransformElement(
+    const gfx::Transform& transform,
+    const base::TimeDelta& duration,
+    const gfx::Tween::Type& tween) {
+  std::unique_ptr<ui::LayerAnimationElement> layer_animation_element =
+      ui::LayerAnimationElement::CreateTransformElement(transform, duration);
+  layer_animation_element->set_tween_type(tween);
+  return layer_animation_element;
 }
 
 }  // namespace util
