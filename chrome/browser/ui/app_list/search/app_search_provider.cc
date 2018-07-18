@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
@@ -254,8 +255,7 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
     for (const auto& it : extensions) {
       const extensions::Extension* extension = it.get();
 
-      if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension,
-                                                           profile())) {
+      if (!app_list::ShouldShowInLauncher(extension, profile())) {
         continue;
       }
 

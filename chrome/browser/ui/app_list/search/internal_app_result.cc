@@ -71,7 +71,7 @@ void InternalAppResult::Open(int event_flags) {
     return;
   }
 
-  OpenInternalApp(id(), profile());
+  OpenInternalApp(id(), profile(), event_flags);
 }
 
 void InternalAppResult::OnForeignSessionUpdated(syncer::SyncService* sync) {

@@ -22,6 +22,8 @@ constexpr char kInternalAppIdSettings[] = "dhnmfjegnohoakobpikffnelcemaplkm";
 constexpr char kInternalAppIdContinueReading[] =
     "fbokpncipdhffndmljhhidahghagaonp";
 
+// Generated as crx_file::id_util::GenerateId("org.chromium.camera").
+constexpr char kInternalAppIdCamera[] = "iniodglblcgmngkgdipeiclkdjjpnlbn";
 }  // namespace app_list
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_INTERNAL_APP_ID_CONSTANTS_H_

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_prefs.h"
@@ -52,8 +53,7 @@ void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
 
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
-    bool should_display =
-        extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile());
+    bool should_display = app_list::ShouldShowInLauncher(app->get(), profile());
     bool does_display = GetExtensionAppItem((*app)->id()) != nullptr;
 
     if (should_display == does_display)
@@ -82,6 +82,9 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
     existing_item->SetIsInstalling(true);
     return;
   }
+
+  if (app_list::HideInLauncherById(params.extension_id))
+    return;
 
   // Icons from the webstore can be unusual sizes. Once installed,
   // ExtensionAppItem uses extension_misc::EXTENSION_ICON_MEDIUM (48) to load
@@ -125,7 +128,7 @@ void ExtensionAppModelBuilder::OnAppInstalled(
     return;
   }
 
-  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile()))
+  if (!app_list::ShouldShowInLauncher(extension, profile()))
     return;
 
   DVLOG(2) << service() << ": OnAppInstalled: " << app_id.substr(0, 8);
@@ -154,7 +157,7 @@ void ExtensionAppModelBuilder::OnAppUninstalled(
 
 void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(
     const Extension* extension) {
-  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile()))
+  if (!app_list::ShouldShowInLauncher(extension, profile()))
     return;
 
   ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
@@ -202,7 +205,7 @@ void ExtensionAppModelBuilder::PopulateApps() {
 
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
-    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile()))
+    if (!app_list::ShouldShowInLauncher(app->get(), profile()))
       continue;
     InsertApp(CreateAppItem((*app)->id(),
                             "",
