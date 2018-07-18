@@ -5,11 +5,16 @@
 package org.chromium.chrome.browser.metrics;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -53,10 +58,29 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
     private static final int DURATION_HISTOGRAM_BUCKET_COUNT = 50;
 
     private static long sTimeoutDurationMs = TIMEOUT_DURATION_MS;
+    private static boolean sLoggedLaunchBehavior;
+    static {
+        ApplicationStatus.registerApplicationStateListener(newState -> {
+            if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
+                sLoggedLaunchBehavior = false;
+            }
+        });
+    }
+
+    @VisibleForTesting
+    static final String LAUNCH_TIMESTAMP_PREF = "MainIntent.LaunchTimestamp";
+    @VisibleForTesting
+    static final String LAUNCH_COUNT_PREF = "MainIntent.LaunchCount";
+
+    // Constants used to log UMA "enum" histogram about launch type.
+    private static final int LAUNCH_FROM_ICON = 0;
+    private static final int LAUNCH_NOT_FROM_ICON = 1;
+    private static final int LAUNCH_BOUNDARY = 2;
 
     private final ChromeActivity mActivity;
     private final Handler mHandler;
     private final Runnable mTimeoutRunnable;
+    private final Runnable mLogLaunchRunnable;
 
     private boolean mPendingActionRecordForMainIntent;
     private long mBackgroundDurationMs;
@@ -78,6 +102,7 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
                 recordUserBehavior(MainIntentActionType.CONTINUATION);
             }
         };
+        mLogLaunchRunnable = () -> logLaunchBehavior(false);
     }
 
     /**
@@ -121,6 +146,8 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
                 recordUserBehavior(MainIntentActionType.SWITCH_TABS);
             }
         };
+
+        logLaunchBehavior(true);
     }
 
     /**
@@ -169,6 +196,15 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
         return mPendingActionRecordForMainIntent;
     }
 
+    /**
+     * Log how many times user intentionally (from launcher or recents) launch Chrome per day,
+     * and the type of each launch.
+     */
+    public void logLaunchBehavior() {
+        if (sLoggedLaunchBehavior) return;
+        ThreadUtils.getUiThreadHandler().postDelayed(mLogLaunchRunnable, sTimeoutDurationMs);
+    }
+
     private String getHistogramNameForBehavior(@MainIntentActionType int behavior) {
         switch (behavior) {
             case MainIntentActionType.CONTINUATION:
@@ -209,5 +245,32 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
 
         mTabModelObserver.destroy();
         mTabModelObserver = null;
+    }
+
+    private void logLaunchBehavior(boolean isLaunchFromIcon) {
+        if (sLoggedLaunchBehavior) return;
+        sLoggedLaunchBehavior = true;
+
+        SharedPreferences pref = ContextUtils.getAppSharedPreferences();
+        SharedPreferences.Editor editor = pref.edit();
+        long current = System.currentTimeMillis();
+        long timestamp = pref.getLong(LAUNCH_TIMESTAMP_PREF, 0);
+        int count = pref.getInt(LAUNCH_COUNT_PREF, 0);
+
+        if (current - timestamp > BACKGROUND_TIME_24_HOUR_MS) {
+            // Log count if it's not first launch of Chrome.
+            if (timestamp != 0) {
+                RecordHistogram.recordCountHistogram("MobileStartup.DailyLaunchCount", count);
+            }
+            count = 0;
+            editor.putLong(LAUNCH_TIMESTAMP_PREF, current);
+        }
+
+        count++;
+        editor.putInt(LAUNCH_COUNT_PREF, count).apply();
+        RecordHistogram.recordEnumeratedHistogram("MobileStartup.LaunchType",
+                isLaunchFromIcon ? LAUNCH_FROM_ICON : LAUNCH_NOT_FROM_ICON, LAUNCH_BOUNDARY);
+
+        ThreadUtils.getUiThreadHandler().removeCallbacks(mLogLaunchRunnable);
     }
 }

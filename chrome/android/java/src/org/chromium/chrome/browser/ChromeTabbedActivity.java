@@ -736,6 +736,7 @@ public class ChromeTabbedActivity
 
     @Override
     public void onStartWithNative() {
+        mMainIntentMetrics.logLaunchBehavior();
         super.onStartWithNative();
 
         setInitialOverviewState();
