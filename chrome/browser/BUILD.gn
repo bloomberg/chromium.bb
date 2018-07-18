@@ -3799,7 +3799,6 @@ jumbo_split_static_library("browser") {
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/browser/web_applications",
       "//chrome/common/extensions/api",
-      "//chrome/common/extensions/api:api_registration",
       "//chrome/common/extensions/api:extensions_features",
       "//components/drive",
       "//components/guest_view/browser",
