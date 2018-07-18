@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.preference.Preference;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
@@ -14,8 +13,7 @@ import android.widget.TextView;
 /**
  * A preference that displays informational text.
  */
-public class TextMessagePreference extends Preference {
-
+public class TextMessagePreference extends ChromeBasePreference {
     /**
      * Constructor for inflating from XML.
      */

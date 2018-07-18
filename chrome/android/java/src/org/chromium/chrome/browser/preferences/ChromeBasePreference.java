@@ -5,10 +5,16 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
+
+import org.chromium.chrome.R;
 
 /**
  * A preference that supports some Chrome-specific customizations:
@@ -18,15 +24,18 @@ import android.widget.TextView;
  *    enterprise icon, disables clicks, etc.
  *
  * 2. This preference can have a multiline title.
+ * 3. This preference can set an icon color in XML through app:iconTint. Note that if a
+ *    ColorStateList is set, only the default color will be used.
  */
 public class ChromeBasePreference extends Preference {
+    private ColorStateList mIconTint;
     private ManagedPreferenceDelegate mManagedPrefDelegate;
 
     /**
      * Constructor for use in Java.
      */
     public ChromeBasePreference(Context context) {
-        super(context);
+        this(context, null);
     }
 
     /**
@@ -34,6 +43,10 @@ public class ChromeBasePreference extends Preference {
      */
     public ChromeBasePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeBasePreference);
+        mIconTint = a.getColorStateList(R.styleable.ChromeBasePreference_iconTint);
+        a.recycle();
     }
 
     /**
@@ -48,6 +61,10 @@ public class ChromeBasePreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
         ((TextView) view.findViewById(android.R.id.title)).setSingleLine(false);
+        Drawable icon = getIcon();
+        if (icon != null && mIconTint != null) {
+            icon.setColorFilter(mIconTint.getDefaultColor(), PorterDuff.Mode.SRC_IN);
+        }
         ManagedPreferencesUtils.onBindViewToPreference(mManagedPrefDelegate, this, view);
     }
 

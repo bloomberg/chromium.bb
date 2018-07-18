@@ -102,7 +102,7 @@
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/download_notification_pause_button"
                     android:src="@drawable/ic_pause_white_24dp"
-                    app:chrometint="@color/google_grey_600" />
+                    app:chrometint="@color/default_icon_color" />
 
             <org.chromium.chrome.browser.widget.TintedImageButton
                     android:id="@+id/cancel_button"
@@ -116,7 +116,7 @@
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/download_notification_cancel_button"
                     android:src="@drawable/btn_close"
-                    app:chrometint="@color/google_grey_600" />
+                    app:chrometint="@color/default_icon_color" />
         </RelativeLayout>
     </LinearLayout>
 </view>

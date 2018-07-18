@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import android.content.res.Resources;
 import android.support.annotation.LayoutRes;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +21,16 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /** An adapter that allows selecting an item from a dropdown spinner. */
 class FilterAdapter extends BaseAdapter implements AdapterView.OnItemSelectedListener {
+    private final int mIconColor;
     private DownloadManagerUi mManagerUi;
+
+    /**
+     * @param resources The {@link Resources} used to retrieve resources.
+     */
+    FilterAdapter(Resources resources) {
+        super();
+        mIconColor = ApiCompatibilityUtils.getColor(resources, R.color.default_icon_color);
+    }
 
     @Override
     public int getCount() {
@@ -45,6 +56,7 @@ class FilterAdapter extends BaseAdapter implements AdapterView.OnItemSelectedLis
         VectorDrawableCompat iconDrawable =
                 VectorDrawableCompat.create(mManagerUi.getActivity().getResources(), iconId,
                         mManagerUi.getActivity().getTheme());
+        DrawableCompat.setTint(iconDrawable, mIconColor);
         labelView.setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null);
 
         return labelView;

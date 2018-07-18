@@ -243,7 +243,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             }
         });
 
-        mFilterAdapter = new FilterAdapter();
+        mFilterAdapter = new FilterAdapter(mActivity.getResources());
         mFilterAdapter.initialize(this);
 
         boolean isLocationEnabled =
