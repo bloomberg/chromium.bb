@@ -37,11 +37,13 @@ void WindowTreeBinding::InitForEmbed(
 
 void WindowTreeBinding::InitFromFactory(
     WindowService* window_service,
+    const std::string& client_name,
     mojom::WindowTreeRequest window_tree_request,
     mojom::WindowTreeClientPtr window_tree_client,
     base::OnceClosure connection_lost_callback) {
   window_tree_client_ = std::move(window_tree_client);
-  window_tree_ = window_service->CreateWindowTree(window_tree_client_.get());
+  window_tree_ =
+      window_service->CreateWindowTree(window_tree_client_.get(), client_name);
   CreateBinding(std::move(window_tree_request),
                 std::move(connection_lost_callback));
   window_tree_->InitFromFactory();

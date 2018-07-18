@@ -148,6 +148,13 @@ void ClientRoot::OnFirstSurfaceActivation(
   } else {
     fallback_surface_info_ = std::make_unique<viz::SurfaceInfo>(surface_info);
   }
+  if (!window_tree_->client_name().empty()) {
+    // OnFirstSurfaceActivation() should only be called after
+    // AttachCompositorFrameSink().
+    DCHECK(server_window->attached_compositor_frame_sink());
+    window_tree_->window_service()->OnFirstSurfaceActivation(
+        window_tree_->client_name());
+  }
 }
 
 void ClientRoot::OnFrameTokenChanged(uint32_t frame_token) {

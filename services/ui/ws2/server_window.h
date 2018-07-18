@@ -104,6 +104,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   void AttachCompositorFrameSink(
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
       viz::mojom::CompositorFrameSinkClientPtr client);
+  bool attached_compositor_frame_sink() const {
+    return attached_compositor_frame_sink_;
+  }
 
   void set_local_surface_id(
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
@@ -181,6 +184,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   // The last cursor that the client has requested. This is only set for embed
   // roots. For top level windows, see WmNativeWidgetAura.
   ui::Cursor cursor_;
+
+  // Set to true once AttachCompositorFrameSink() has been called.
+  bool attached_compositor_frame_sink_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };

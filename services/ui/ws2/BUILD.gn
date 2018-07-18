@@ -48,6 +48,8 @@ component("lib") {
     "user_activity_monitor.h",
     "window_delegate_impl.cc",
     "window_properties.cc",
+    "window_server_test_impl.cc",
+    "window_server_test_impl.h",
     "window_service.cc",
     "window_service_delegate.cc",
     "window_tree.cc",

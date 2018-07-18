@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeBinding {
 
   // See WindowTree for details on parameters and when to use.
   void InitFromFactory(WindowService* window_service,
+                       const std::string& client_name,
                        mojom::WindowTreeRequest window_tree_request,
                        mojom::WindowTreeClientPtr window_tree_client,
                        base::OnceClosure connection_lost_callback);

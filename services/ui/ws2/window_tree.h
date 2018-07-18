@@ -66,7 +66,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
  public:
   WindowTree(WindowService* window_service,
              ClientSpecificId client_id,
-             mojom::WindowTreeClient* client);
+             mojom::WindowTreeClient* client,
+             const std::string& client_name);
   ~WindowTree() override;
 
   // See class description for details on Init variants.
@@ -96,6 +97,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   WindowService* window_service() { return window_service_; }
 
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);
+
+  const std::string& client_name() const { return client_name_; }
+
+  // Returns true if at a compositor frame sink has been created for at least
+  // one of the roots.
+  bool HasAtLeastOneRootWithCompositorFrameSink();
 
  private:
   friend class ClientRoot;
@@ -419,6 +426,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   WindowService* window_service_;
 
   const ClientSpecificId client_id_;
+
+  // Identity of the remote client. This is only valid for clients connecting
+  // directly to the WindowService. Clients that were embedded do not connect
+  // directly to the WindowService, in which case |client_name_| is empty.
+  const std::string client_name_;
 
   ConnectionType connection_type_ = ConnectionType::kEmbedding;
 
