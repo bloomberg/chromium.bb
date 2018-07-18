@@ -11,6 +11,14 @@
 
 namespace syncer {
 
+std::unique_ptr<InvalidationClient> CreatePerUserTopicInvalidationClient(
+    NetworkChannel* network,
+    Logger* logger,
+    InvalidationListener* listener) {
+  return std::make_unique<PerUserTopicInvalidationClient>(network, logger,
+                                                          listener);
+}
+
 PerUserTopicInvalidationClient::PerUserTopicInvalidationClient(
     NetworkChannel* network,
     Logger* logger,
@@ -30,15 +38,16 @@ void PerUserTopicInvalidationClient::RegisterWithNetwork() {
   network_->SetMessageReceiver(
       base::BindRepeating(&PerUserTopicInvalidationClient::MessageReceiver,
                           weak_factory_.GetWeakPtr()));
+  network_->SetTokenReceiver(
+      base::BindRepeating(&PerUserTopicInvalidationClient::TokenReceiver,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void PerUserTopicInvalidationClient::Start() {
   if (ticl_protocol_started_) {
     TLOG(logger_, SEVERE, "Ignoring start call since already started");
-
     return;
   }
-
   FinishStartingTiclAndInformListener();
 }
 
@@ -51,7 +60,6 @@ void PerUserTopicInvalidationClient::FinishStartingTiclAndInformListener() {
   DCHECK(!ticl_protocol_started_);
   ticl_protocol_started_ = true;
   GetListener()->Ready(this);
-  GetListener()->ReissueRegistrations(this, "", 0);
   TLOG(logger_, INFO, "Ticl started");
 }
 
@@ -59,6 +67,12 @@ void PerUserTopicInvalidationClient::MessageReceiver(
     const std::string& message) {
   // TODO(melandory): Here message should be passed to the protocol handler,
   // converted to the invalidation and passed to the listener afterwards.
+}
+
+void PerUserTopicInvalidationClient::TokenReceiver(const std::string& token) {
+  GetListener()->InformTokenRecieved(this, token);
+  if (!ticl_protocol_started_)
+    FinishStartingTiclAndInformListener();
 }
 
 }  // namespace invalidation

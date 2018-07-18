@@ -45,7 +45,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  virtual void UpdateRegisteredIds(const InvalidationObjectIdSet& ids);
+  virtual void UpdateRegisteredIds(const InvalidationObjectIdSet& ids,
+                                   const std::string& token);
 
   InvalidationObjectIdSet GetRegisteredIds() const;
 
