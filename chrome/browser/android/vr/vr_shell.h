@@ -78,6 +78,8 @@ class VrShell : device::GvrGamepadDataProvider,
           int display_height_pixels,
           bool pause_content,
           bool low_density);
+  bool HasUiFinishedLoading(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
   void SwapContents(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jobject>& web_contents);
@@ -371,6 +373,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   base::OneShotTimer waiting_for_assets_component_timer_;
   bool can_load_new_assets_ = false;
+  bool ui_finished_loading_ = false;
 
   base::WaitableEvent gl_surface_created_event_;
   gfx::AcceleratedWidget surface_window_ = nullptr;

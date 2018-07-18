@@ -209,6 +209,12 @@ void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
+bool VrShell::HasUiFinishedLoading(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return ui_finished_loading_;
+}
+
 void VrShell::SwapContents(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& tab) {
@@ -1202,6 +1208,7 @@ void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
 
   AssetsLoader::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
       status, component_version);
+  ui_finished_loading_ = true;
 }
 
 void VrShell::LoadAssets() {
@@ -1223,6 +1230,7 @@ void VrShell::OnAssetsComponentReady() {
 
 void VrShell::OnAssetsComponentWaitTimeout() {
   ui_->OnAssetsUnavailable();
+  ui_finished_loading_ = true;
 }
 
 void VrShell::SetCookieInfo(const CookieInfoList& cookie_info_list) {}

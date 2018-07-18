@@ -2000,7 +2000,7 @@ public class VrShellDelegate
 
     @VisibleForTesting
     protected boolean isVrEntryComplete() {
-        return mInVr && !mProbablyInDon;
+        return mInVr && !mProbablyInDon && getVrShell().hasUiFinishedLoading();
     }
 
     @VisibleForTesting
