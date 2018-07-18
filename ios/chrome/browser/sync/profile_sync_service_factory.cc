@@ -32,6 +32,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -97,11 +98,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
-  // TODO(crbug.com/850428): This should have
-  // DependsOn(ConsentAuditorFactory::GetInstance()), but it can't due to a
-  // BUILD.gn dependency cycle. Note that this can be added only after
-  // ConsentAuditorFactory does not depend on both UserEventService and
-  // SyncService.
+  DependsOn(ConsentAuditorFactory::GetInstance());
   DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
   DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());

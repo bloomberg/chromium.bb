@@ -19,6 +19,7 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/history/core/browser/history_service.h"
@@ -55,6 +56,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -352,9 +354,8 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
                      : base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     }
     case syncer::USER_CONSENTS:
-      // TODO(crbug.com/840357): Return the real delegate once it is wired to
-      // the consent auditor.
-      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
+      return ConsentAuditorFactory::GetForBrowserState(browser_state_)
+          ->GetControllerDelegateOnUIThread();
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetSyncBridge()
