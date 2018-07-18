@@ -13,30 +13,31 @@ namespace nearby {
 CountDownLatchImpl::CountDownLatchImpl(int32_t count)
     : count_(count),
       count_waitable_event_(
-          base::WaitableEvent::ResetPolicy::MANUAL /* reset_policy */,
-          count <= 0 ? base::WaitableEvent::InitialState::SIGNALED
-                     : base::WaitableEvent::InitialState::
-                           NOT_SIGNALED /* initial_state*/) {}
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          count_.IsZero() ? base::WaitableEvent::InitialState::SIGNALED
+                          : base::WaitableEvent::InitialState::NOT_SIGNALED) {
+  DCHECK_GE(count, 0);
+}
 
 CountDownLatchImpl::~CountDownLatchImpl() = default;
 
 location::nearby::Exception::Value CountDownLatchImpl::await() {
-  if (count_waitable_event_.IsSignaled())
-    return location::nearby::Exception::NONE;
+  if (!count_waitable_event_.IsSignaled())
+    count_waitable_event_.Wait();
 
-  count_waitable_event_.Wait();
   return location::nearby::Exception::NONE;
 }
 
 location::nearby::ExceptionOr<bool> CountDownLatchImpl::await(
     int32_t timeout_millis) {
-  if (count_waitable_event_.IsSignaled())
-    return location::nearby::ExceptionOr<bool>(true);
+  if (!count_waitable_event_.IsSignaled())
+    // Return true if |count_waitable_event_| is signaled before TimedAwait()
+    // times out. Otherwise, this returns false due to timing out.
+    return location::nearby::ExceptionOr<bool>(
+        count_waitable_event_.TimedWait(base::TimeDelta::FromMilliseconds(
+            static_cast<int64_t>(timeout_millis))));
 
-  // Return true if |count_waitable_event_| is signaled before it times out.
-  // Otherwise, this returns false due to timing out.
-  return location::nearby::ExceptionOr<bool>(count_waitable_event_.TimedWait(
-      base::TimeDelta::FromMilliseconds(static_cast<int64_t>(timeout_millis))));
+  return location::nearby::ExceptionOr<bool>(true);
 }
 
 void CountDownLatchImpl::countDown() {
