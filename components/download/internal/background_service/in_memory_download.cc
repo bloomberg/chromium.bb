@@ -16,10 +16,11 @@
 
 namespace download {
 
-InMemoryDownload::InMemoryDownload(const std::string& guid)
+InMemoryDownload::InMemoryDownload(const std::string& guid, const GURL& url)
     : guid_(guid),
       state_(State::INITIAL),
       paused_(false),
+      url_chain_({url}),
       bytes_downloaded_(0u) {}
 
 InMemoryDownload::~InMemoryDownload() = default;
@@ -32,7 +33,7 @@ InMemoryDownloadImpl::InMemoryDownloadImpl(
     network::mojom::URLLoaderFactory* url_loader_factory,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : InMemoryDownload(guid),
+    : InMemoryDownload(guid, request_params.url),
       request_params_(request_params),
       traffic_annotation_(traffic_annotation),
       url_loader_factory_(url_loader_factory),

@@ -99,19 +99,28 @@ void MarkRequestCompleteTask::PopulateResponseBody(
   response->headers.insert(request_info_->GetResponseHeaders().begin(),
                            request_info_->GetResponseHeaders().end());
 
-  if (request_info_->GetFileSize() == 0 || request_info_->GetFilePath().empty())
-    return;
-
   DCHECK(blob_storage_context());
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
-  auto blob_builder =
-      std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
-  blob_builder->AppendFile(request_info_->GetFilePath(), 0 /* offset */,
-                           request_info_->GetFileSize(),
-                           base::Time() /* expected_modification_time */);
+  // Prefer the blob data handle provided by the |request_info_| if one is
+  // available. Otherwise create one based on the file path and size.
+  if (request_info_->GetBlobDataHandle()) {
+    blob_data_handle = std::make_unique<storage::BlobDataHandle>(
+        request_info_->GetBlobDataHandle().value());
 
-  auto blob_data_handle = GetBlobStorageContext(blob_storage_context())
-                              ->AddFinishedBlob(std::move(blob_builder));
+  } else if (request_info_->GetFileSize() > 0 &&
+             !request_info_->GetFilePath().empty()) {
+    // TODO(rayankans): Simplify this code by making either the download service
+    // or the BackgroundFetchRequestInfo responsible for files vs. blobs.
+    auto blob_builder =
+        std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
+    blob_builder->AppendFile(request_info_->GetFilePath(), 0 /* offset */,
+                             request_info_->GetFileSize(),
+                             base::Time() /* expected_modification_time */);
+
+    blob_data_handle = GetBlobStorageContext(blob_storage_context())
+                           ->AddFinishedBlob(std::move(blob_builder));
+  }
 
   // TODO(rayankans): Appropriately handle !blob_data_handle
   if (!blob_data_handle)

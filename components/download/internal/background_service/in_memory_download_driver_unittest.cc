@@ -28,7 +28,7 @@ class TestInMemoryDownload : public InMemoryDownload {
  public:
   TestInMemoryDownload(const std::string& guid,
                        InMemoryDownload::Delegate* delegate)
-      : InMemoryDownload(guid), delegate_(delegate) {
+      : InMemoryDownload(guid, GURL()), delegate_(delegate) {
     DCHECK(delegate_) << "Delegate can't be nullptr.";
   }
 

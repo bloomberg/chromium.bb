@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_item.h"
@@ -20,6 +21,10 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "url/gurl.h"
+
+namespace storage {
+class BlobDataHandle;
+}
 
 namespace content {
 
@@ -74,6 +79,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
   // Returns the URL chain for the response, including redirects.
   const std::vector<GURL>& GetURLChain() const;
+
+  // Returns the blob data handle for the response. Only available when dealing
+  // with in-memory downloads.
+  const base::Optional<storage::BlobDataHandle>& GetBlobDataHandle() const;
 
   // Returns the absolute path to the file in which the response is stored.
   const base::FilePath& GetFilePath() const;

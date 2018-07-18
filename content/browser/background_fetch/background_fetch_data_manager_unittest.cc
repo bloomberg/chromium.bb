@@ -108,7 +108,8 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
   // This is treated as an empty response, but the size is set to
   // |kResponseFileSize| for tests that use filesize.
   request_info->SetResult(std::make_unique<BackgroundFetchResult>(
-      base::Time::Now(), base::FilePath(), kResponseFileSize));
+      base::Time::Now(), base::FilePath(), base::nullopt /* blob_handle */,
+      kResponseFileSize));
 }
 
 void GetNumUserData(base::Closure quit_closure,

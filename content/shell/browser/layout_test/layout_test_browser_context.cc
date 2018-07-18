@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
+#include "content/shell/browser/layout_test/layout_test_background_fetch_delegate.h"
 #include "content/shell/browser/layout_test/layout_test_download_manager_delegate.h"
 #include "content/shell/browser/layout_test/layout_test_permission_manager.h"
 #include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
@@ -70,22 +71,35 @@ LayoutTestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 PushMessagingService* LayoutTestBrowserContext::GetPushMessagingService() {
-  if (!push_messaging_service_)
-    push_messaging_service_.reset(new LayoutTestPushMessagingService());
+  if (!push_messaging_service_) {
+    push_messaging_service_ =
+        std::make_unique<LayoutTestPushMessagingService>();
+  }
   return push_messaging_service_.get();
 }
 
 PermissionControllerDelegate*
 LayoutTestBrowserContext::GetPermissionControllerDelegate() {
   if (!permission_manager_.get())
-    permission_manager_.reset(new LayoutTestPermissionManager());
+    permission_manager_ = std::make_unique<LayoutTestPermissionManager>();
   return permission_manager_.get();
+}
+
+BackgroundFetchDelegate*
+LayoutTestBrowserContext::GetBackgroundFetchDelegate() {
+  if (!background_fetch_delegate_) {
+    background_fetch_delegate_ =
+        std::make_unique<LayoutTestBackgroundFetchDelegate>(this);
+  }
+  return background_fetch_delegate_.get();
 }
 
 BackgroundSyncController*
 LayoutTestBrowserContext::GetBackgroundSyncController() {
-  if (!background_sync_controller_)
-    background_sync_controller_.reset(new MockBackgroundSyncController());
+  if (!background_sync_controller_) {
+    background_sync_controller_ =
+        std::make_unique<MockBackgroundSyncController>();
+  }
   return background_sync_controller_.get();
 }
 

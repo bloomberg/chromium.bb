@@ -84,7 +84,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
     client()->OnDownloadComplete(job_unique_id, guid,
                                  std::make_unique<BackgroundFetchResult>(
-                                     base::Time::Now(), base::FilePath(), 10u));
+                                     base::Time::Now(), base::FilePath(),
+                                     base::nullopt /* blob_handle */, 10u));
   }
 
   std::set<std::string> aborted_jobs_;

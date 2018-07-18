@@ -21,6 +21,7 @@ namespace content {
 
 class BackgroundSyncController;
 class DownloadManagerDelegate;
+class LayoutTestBackgroundFetchDelegate;
 class LayoutTestPermissionManager;
 class LayoutTestPushMessagingService;
 class PermissionControllerDelegate;
@@ -35,6 +36,7 @@ class LayoutTestBrowserContext final : public ShellBrowserContext {
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   PushMessagingService* GetPushMessagingService() override;
   PermissionControllerDelegate* GetPermissionControllerDelegate() override;
+  BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
 
   LayoutTestPermissionManager* GetLayoutTestPermissionManager();
@@ -47,6 +49,7 @@ class LayoutTestBrowserContext final : public ShellBrowserContext {
  private:
   std::unique_ptr<LayoutTestPushMessagingService> push_messaging_service_;
   std::unique_ptr<PermissionControllerDelegate> permission_manager_;
+  std::unique_ptr<LayoutTestBackgroundFetchDelegate> background_fetch_delegate_;
   std::unique_ptr<BackgroundSyncController> background_sync_controller_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 

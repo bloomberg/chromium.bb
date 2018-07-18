@@ -34,7 +34,7 @@ include_rules = [
   #   2) it's not linked into the content library
   "+components/embedder_support",
   "+components/crash",
-  "+components/download/public/common",
+  "+components/download",
   "+components/url_formatter",
   "+components/network_session_configurator/browser",
   "+components/viz/common/resources",
