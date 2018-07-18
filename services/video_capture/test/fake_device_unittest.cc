@@ -78,6 +78,51 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
   ASSERT_LE(num_buffers_created, kMaxBufferPoolBuffers);
 }
 
+// Tests that OnBufferRetired() events get sent out to the receiver when the
+// device is stopped.
+TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
+  base::RunLoop wait_for_frames_loop;
+  static const int kNumFramesToWaitFor = 2;
+  std::vector<int32_t> received_buffer_ids;
+  int num_frames_arrived = 0;
+  mojom::ReceiverPtr receiver_proxy;
+  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
+      .WillRepeatedly(
+          Invoke([&received_buffer_ids](int32_t buffer_id,
+                                        media::mojom::VideoBufferHandlePtr*) {
+            received_buffer_ids.push_back(buffer_id);
+          }));
+  EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillRepeatedly(
+          InvokeWithoutArgs([&wait_for_frames_loop, &num_frames_arrived]() {
+            if (++num_frames_arrived >= kNumFramesToWaitFor) {
+              wait_for_frames_loop.Quit();
+            }
+          }));
+
+  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
+  wait_for_frames_loop.Run();
+
+  base::RunLoop wait_for_buffers_retired_loop;
+  EXPECT_CALL(receiver, OnBufferRetired(_))
+      .WillRepeatedly(
+          Invoke([&received_buffer_ids,
+                  &wait_for_buffers_retired_loop](int32_t buffer_id) {
+            auto iter = std::find(received_buffer_ids.begin(),
+                                  received_buffer_ids.end(), buffer_id);
+            ASSERT_TRUE(iter != received_buffer_ids.end());
+            received_buffer_ids.erase(iter);
+            if (received_buffer_ids.empty()) {
+              wait_for_buffers_retired_loop.Quit();
+            }
+          }));
+
+  // Stop the device
+  fake_device_proxy_.reset();
+  wait_for_buffers_retired_loop.Run();
+}
+
 // This requires platforms where base::SharedMemoryHandle is backed by a
 // file descriptor.
 #if defined(OS_LINUX)
