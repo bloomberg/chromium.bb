@@ -32,16 +32,14 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
     return UploadState::NOT_ACTIVE;
   }
 
+  // Persistent auth errors always map to NOT_ACTIVE. For transient errors, we
+  // give the benefit of the doubt and may still say we're INITIALIZING.
+  if (sync_service->GetAuthError().IsPersistentError()) {
+    return UploadState::NOT_ACTIVE;
+  }
+
   switch (sync_service->GetState()) {
     case SyncService::State::DISABLED:
-      return UploadState::NOT_ACTIVE;
-
-    case SyncService::State::AUTH_ERROR:
-      // For transient errors, give the benefit of the doubt and say we're
-      // INITIALIZING.
-      if (sync_service->GetAuthError().IsTransientError()) {
-        return UploadState::INITIALIZING;
-      }
       return UploadState::NOT_ACTIVE;
 
     case SyncService::State::WAITING_FOR_START_REQUEST:
@@ -56,6 +54,9 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
       // something must have gone wrong with that data type.
       if (!sync_service->GetActiveDataTypes().Has(type)) {
         return UploadState::NOT_ACTIVE;
+      }
+      if (sync_service->GetAuthError().IsTransientError()) {
+        return UploadState::INITIALIZING;
       }
       // TODO(crbug.com/831579): We currently need to wait for
       // GetLastCycleSnapshot to return an initialized snapshot because we don't

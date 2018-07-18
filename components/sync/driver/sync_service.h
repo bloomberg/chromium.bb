@@ -107,11 +107,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     // disabled it, or simply because there is no authenticated user. Call
     // GetDisableReasons to figure out which of these it is.
     DISABLED,
-    // Sync has encountered an authentication error. Note that Sync may have
-    // been in any of the below states before, and might go straight back to it
-    // if the auth error gets resolved. Call GetAuthError for more details on
-    // the error.
-    AUTH_ERROR,
     // Sync can start in principle, but nothing has prodded it to actually do it
     // yet. Note that during subsequent browser startups, Sync starts
     // automatically, i.e. no prod is necessary, but during the first start Sync

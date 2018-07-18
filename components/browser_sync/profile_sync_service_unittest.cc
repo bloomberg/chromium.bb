@@ -680,8 +680,8 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
 
   // The observer should have been notified of the auth error state.
   EXPECT_EQ(rejected_by_client, observer.auth_error());
-
-  EXPECT_EQ(syncer::SyncService::State::AUTH_ERROR, service()->GetState());
+  // The overall state should remain ACTIVE.
+  EXPECT_EQ(syncer::SyncService::State::ACTIVE, service()->GetState());
 
   service()->RemoveObserver(&observer);
 }
@@ -798,7 +798,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
             service()->GetAuthError().state());
   EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             observer.auth_error().state());
-  EXPECT_EQ(syncer::SyncService::State::AUTH_ERROR, service()->GetState());
+  // The overall state should remain ACTIVE.
+  EXPECT_EQ(syncer::SyncService::State::ACTIVE, service()->GetState());
 
   service()->RemoveObserver(&observer);
 }
@@ -858,7 +859,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // Check that the invalid token is returned from sync.
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             service()->GetAuthError().state());
-  ASSERT_EQ(syncer::SyncService::State::AUTH_ERROR, service()->GetState());
+  // The overall state should remain ACTIVE.
+  ASSERT_EQ(syncer::SyncService::State::ACTIVE, service()->GetState());
 
   // Now emulate Chrome receiving a new, valid LST.
   auth_service()->UpdateCredentials(primary_account_id, "totally valid token");
@@ -870,7 +872,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // Check that sync auth error state cleared.
   EXPECT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
   EXPECT_EQ(GoogleServiceAuthError::NONE, observer.auth_error().state());
-  EXPECT_NE(syncer::SyncService::State::AUTH_ERROR, service()->GetState());
+  EXPECT_EQ(syncer::SyncService::State::ACTIVE, service()->GetState());
 
   service()->RemoveObserver(&observer);
 }
