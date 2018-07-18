@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -18,14 +19,13 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
  */
 public class TrustedWebActivityClient {
     private final TrustedWebActivityServiceConnectionManager mConnection;
-    private final Context mContext;
 
     /**
      * Creates a TrustedWebActivityService.
      */
-    public TrustedWebActivityClient(Context context) {
-        mConnection = new TrustedWebActivityServiceConnectionManager(context);
-        mContext = context.getApplicationContext();
+    public TrustedWebActivityClient() {
+        mConnection = new TrustedWebActivityServiceConnectionManager(
+                ContextUtils.getApplicationContext());
     }
 
     /**
@@ -48,7 +48,7 @@ public class TrustedWebActivityClient {
      */
     public void notifyNotification(Uri scope, String platformTag, int platformId,
             NotificationBuilderBase builder) {
-        Resources res = mContext.getResources();
+        Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
 
         mConnection.execute(scope, new Origin(scope).toString(), service -> {
