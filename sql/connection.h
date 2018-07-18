@@ -581,6 +581,8 @@ class SQL_EXPORT Connection {
   // should always check validity before using.
   class SQL_EXPORT StatementRef : public base::RefCounted<StatementRef> {
    public:
+    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
     // |connection| is the sql::Connection instance associated with
     // the statement, and is used for tracking outstanding statements
     // and for error handling.  Set to NULL for invalid or untracked

@@ -1435,7 +1435,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
 
   // Return inactive statement.
   if (!db_)
-    return new StatementRef(NULL, NULL, poisoned_);
+    return base::MakeRefCounted<StatementRef>(nullptr, nullptr, poisoned_);
 
   sqlite3_stmt* stmt = NULL;
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
@@ -1445,9 +1445,9 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
 
     // It could also be database corruption.
     OnSqliteError(rc, NULL, sql);
-    return new StatementRef(NULL, NULL, false);
+    return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
-  return new StatementRef(tracking_db, stmt, true);
+  return base::MakeRefCounted<StatementRef>(tracking_db, stmt, true);
 }
 
 scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
