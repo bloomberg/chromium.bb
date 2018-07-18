@@ -49,6 +49,14 @@ public class AutofillProfilesFragmentTest {
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "John Doe", "Google",
                 "111 Second St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000",
                 "second@gmail.com", "en-US"));
+        // Invalid state should not cause a crash on the state dropdown list.
+        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Bill Doe", "Google",
+                "111 Third St", "XXXYYY", "Los Angeles", "", "90291", "", "US", "650-253-0000",
+                "third@gmail.com", "en-US"));
+        // Full value for state should show up correctly on the dropdown list.
+        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Bob Doe", "Google",
+                "111 Fourth St", "California", "Los Angeles", "", "90291", "", "US", "650-253-0000",
+                "fourth@gmail.com", "en-US"));
     }
 
     @Test
@@ -62,7 +70,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(3 /* One add button + two profiles. */,
+        Assert.assertEquals(5 /* One add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference addProfile =
@@ -88,7 +96,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(4 /* One add button + three profiles. */,
+        Assert.assertEquals(6 /* One add button + five profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         AutofillProfileEditorPreference addedProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Alice Doe");
@@ -108,7 +116,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(3 /* One add button + two profiles. */,
+        Assert.assertEquals(5 /* One add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference addProfile =
@@ -129,8 +137,8 @@ public class AutofillProfilesFragmentTest {
                 } catch (TimeoutException ex) {
                     // There should be no timeout, which means that there should be a validation
                     // error.
-                    Assert.assertTrue(false);
                     ex.printStackTrace();
+                    Assert.assertTrue(false);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -150,7 +158,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(3 /* One add button + two profiles. */,
+        Assert.assertEquals(5 /* One add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference sebProfile =
@@ -174,7 +182,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(2 /* One add button + one profile. */,
+        Assert.assertEquals(4 /* One add button + three profile. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         AutofillProfileEditorPreference remainedProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("John Doe");
@@ -196,7 +204,7 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfilesFragment) activity.getFragmentForTest();
 
         // Check the preferences on the initial screen.
-        Assert.assertEquals(3 /* One add button + two profiles. */,
+        Assert.assertEquals(5 /* One add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
         AutofillProfileEditorPreference johnProfile =
@@ -223,7 +231,7 @@ public class AutofillProfilesFragmentTest {
         });
         // Check if the preferences are updated correctly.
         rule.waitForThePreferenceUpdate();
-        Assert.assertEquals(3 /* One add button + two profiles. */,
+        Assert.assertEquals(5 /* One add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
         AutofillProfileEditorPreference editedProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Emily Doe");
@@ -233,6 +241,78 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfileEditorPreference) fragment.findPreference("John Doe");
         Assert.assertTrue(oldProfile == null);
         activity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    public void testOpenProfileWithCompleteState() throws Exception {
+        Preferences activity =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        AutofillProfilesFragment.class.getName());
+        AutofillProfilesFragment autofillProfileFragment =
+                (AutofillProfilesFragment) activity.getFragmentForTest();
+
+        // Check the preferences on the initial screen.
+        Assert.assertEquals(5 /* One add button + four profiles. */,
+                autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
+        PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        AutofillProfileEditorPreference bobProfile =
+                (AutofillProfileEditorPreference) fragment.findPreference("Bob Doe");
+        Assert.assertTrue(bobProfile != null);
+        Assert.assertEquals("Bob Doe", bobProfile.getTitle());
+
+        // Open the profile.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PreferencesTest.clickPreference(autofillProfileFragment, bobProfile);
+            rule.setEditorDialog(((AutofillProfileEditorPreference) bobProfile).getEditorDialog());
+            try {
+                rule.clickInEditorAndWait(R.id.editor_dialog_done_button);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Assert.assertTrue(false);
+            }
+        });
+        rule.waitForThePreferenceUpdate();
+        Assert.assertEquals(5 /* One add button + four profiles. */,
+                autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
+        activity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    public void testOpenProfileWithInvalidState() throws Exception {
+        Preferences activity =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        AutofillProfilesFragment.class.getName());
+        AutofillProfilesFragment autofillProfileFragment =
+                (AutofillProfilesFragment) activity.getFragmentForTest();
+
+        // Check the preferences on the initial screen.
+        Assert.assertEquals(5 /* One add button + four profiles. */,
+                autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
+        PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        AutofillProfileEditorPreference billProfile =
+                (AutofillProfileEditorPreference) fragment.findPreference("Bill Doe");
+        Assert.assertTrue(billProfile != null);
+        Assert.assertEquals("Bill Doe", billProfile.getTitle());
+
+        // Open the profile.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PreferencesTest.clickPreference(autofillProfileFragment, billProfile);
+            rule.setEditorDialog(((AutofillProfileEditorPreference) billProfile).getEditorDialog());
+            try {
+                rule.clickInEditorAndWait(R.id.editor_dialog_done_button);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Assert.assertTrue(false);
+            }
+        });
+        // Check if the preferences are updated correctly.
+        rule.waitForThePreferenceUpdate();
+        Assert.assertEquals(5 /* One add button + four profiles. */,
+                autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
     }
 
     @Test
