@@ -201,8 +201,8 @@ std::string GetSummaryString(syncer::SyncService::State state,
       return "Start deferred";
     case syncer::SyncService::State::INITIALIZING:
       return "Initializing";
-    case syncer::SyncService::State::WAITING_FOR_CONSENT:
-      return "Waiting for initial setup";
+    case syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION:
+      return "Pending desired configuration";
     case syncer::SyncService::State::CONFIGURING:
       return "Configuring data types";
     case syncer::SyncService::State::ACTIVE:
