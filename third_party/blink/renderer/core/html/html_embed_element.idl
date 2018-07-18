@@ -20,13 +20,17 @@
 
 // https://html.spec.whatwg.org/#the-embed-element
 
+// The `ScriptURLString` reference below is from Trusted Types:
+// https://github.com/WICG/trusted-types/, which is still WIP.
+// https://crbug.com/739170.
+
 // TODO(yukishiino): HTMLEmbedElement should not have [OverrideBuiltins].
 [
     OverrideBuiltins,
     ActiveScriptWrappable,
     HTMLConstructor
 ] interface HTMLEmbedElement : HTMLElement {
-    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect, URL, RaisesException=Setter] attribute ScriptURLString src;
     [CEReactions, Reflect] attribute DOMString type;
     [CEReactions, Reflect] attribute DOMString width;
     [CEReactions, Reflect] attribute DOMString height;
