@@ -23,7 +23,7 @@ extern NSString* const kBrowserActionButtonDraggingNotification;
 // Fired when the user drops the button.
 extern NSString* const kBrowserActionButtonDragEndNotification;
 
-@interface BrowserActionButton : ToolbarButton<NSMenuDelegate> {
+@interface BrowserActionButton : ToolbarButtonCocoa<NSMenuDelegate> {
  @private
   // Used to move the button and query whether a button is currently animating.
   base::scoped_nsobject<NSViewAnimation> moveAnimation_;

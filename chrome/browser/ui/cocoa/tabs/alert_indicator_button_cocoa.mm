@@ -19,17 +19,17 @@ namespace {
 
 // The minimum required click-to-select area of an inactive tab before allowing
 // the click-to-mute functionality to be enabled.  This value is in terms of
-// some percentage of the AlertIndicatorButton's width.  See comments in the
-// updateEnabledForMuteToggle method.
+// some percentage of the AlertIndicatorButtonCocoa's width.  See comments in
+// the updateEnabledForMuteToggle method.
 const int kMinMouseSelectableAreaPercent = 250;
 
 }  // namespace
 
-@implementation AlertIndicatorButton
+@implementation AlertIndicatorButtonCocoa
 
 class FadeAnimationDelegate : public gfx::AnimationDelegate {
  public:
-  explicit FadeAnimationDelegate(AlertIndicatorButton* button)
+  explicit FadeAnimationDelegate(AlertIndicatorButtonCocoa* button)
       : button_(button) {}
   ~FadeAnimationDelegate() override {}
 
@@ -50,7 +50,7 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
         performSelector:button_->animationDoneAction_];
   }
 
-  AlertIndicatorButton* const button_;
+  AlertIndicatorButtonCocoa* const button_;
 
   DISALLOW_COPY_AND_ASSIGN(FadeAnimationDelegate);
 };
@@ -82,7 +82,8 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 
 - (void)updateIconForState:(TabAlertState)aState {
   if (aState != TabAlertState::NONE) {
-    TabView* const tabView = base::mac::ObjCCast<TabView>([self superview]);
+    TabViewCocoa* const tabView =
+        base::mac::ObjCCast<TabViewCocoa>([self superview]);
     SkColor iconColor = [tabView alertIndicatorColorForState:aState];
     NSImage* tabIndicatorImage =
         chrome::GetTabAlertIndicatorImage(aState, iconColor).ToNSImage();
@@ -262,7 +263,8 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   // If the tab is not the currently-active tab, make sure it is wide enough
   // before enabling click-to-mute.  This ensures that there is enough click
   // area for the user to activate a tab rather than unintentionally muting it.
-  TabView* const tabView = base::mac::ObjCCast<TabView>([self superview]);
+  TabViewCocoa* const tabView =
+      base::mac::ObjCCast<TabViewCocoa>([self superview]);
   if (enable && tabView && ([tabView state] != NSOnState)) {
     const int requiredWidth =
         NSWidth([self frame]) * kMinMouseSelectableAreaPercent / 100;

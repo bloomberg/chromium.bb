@@ -113,8 +113,8 @@ const CGFloat kPatternHorizontalOffset = -5;
     // The theme image is lined up with the top of the tab which is below the
     // top of the tab strip.
     return NSMakePoint(kPatternHorizontalOffset,
-        [TabStripController defaultTabHeight] +
-            GetPatternVerticalOffsetWithTabStrip(true));
+                       [TabStripControllerCocoa defaultTabHeight] +
+                           GetPatternVerticalOffsetWithTabStrip(true));
   }
   // The theme image is lined up with the top of the tab strip (as opposed to
   // the top of the tab above). This is the same as lining up with the top of

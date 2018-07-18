@@ -632,7 +632,8 @@ NSTextField* MakeLabel(
   imageView_.image = image;
 }
 
-- (void)beginDragFromHoverButton:(HoverButton*)button event:(NSEvent*)event {
+- (void)beginDragFromHoverButton:(HoverButtonCocoa*)button
+                           event:(NSEvent*)event {
   NSAttributedString* filename = filenameView_.attributedStringValue;
   NSRect imageRect = imageView_.frame;
   NSRect labelRect = filenameView_.frame;

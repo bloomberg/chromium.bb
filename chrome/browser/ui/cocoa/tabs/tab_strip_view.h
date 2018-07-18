@@ -11,22 +11,22 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
-@class NewTabButton;
-@class TabStripController;
+@class NewTabButtonCocoa;
+@class TabStripControllerCocoa;
 
 // A view class that handles rendering the tab strip and drops of URLS with
 // a positioning locator for drop feedback.
 
 @interface TabStripView : BackgroundGradientView<URLDropTarget> {
  @private
-  TabStripController* controller_;  // Weak; owns us.
+  TabStripControllerCocoa* controller_;  // Weak; owns us.
 
   NSTimeInterval lastMouseUp_;
 
   // Handles being a drag-and-drop target.
   base::scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
-  base::scoped_nsobject<NewTabButton> newTabButton_;
+  base::scoped_nsobject<NewTabButtonCocoa> newTabButton_;
 
   // Whether the drop-indicator arrow is shown, and if it is, the coordinate of
   // its tip.
@@ -42,7 +42,7 @@
 
 // Name starts with "get" because methods staring with "new" return retained
 // objects according to Cocoa's create rule.
-- (NewTabButton*)getNewTabButton;
+- (NewTabButtonCocoa*)getNewTabButton;
 
 // Leaving visual effects enabled when fullscreen results in higher power
 // consumption. This is used to disable effects when fullscreen.
@@ -51,7 +51,7 @@
 
 // Interface for the controller to set and clear the weak reference to itself.
 @interface TabStripView (TabStripControllerInterface)
-- (void)setController:(TabStripController*)controller;
+- (void)setController:(TabStripControllerCocoa*)controller;
 @end
 
 // Protected methods subclasses can override to alter behavior. Clients should
@@ -62,7 +62,7 @@
 @end
 
 @interface TabStripView (TestingAPI)
-- (void)setNewTabButton:(NewTabButton*)button;
+- (void)setNewTabButton:(NewTabButtonCocoa*)button;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_VIEW_H_

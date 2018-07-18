@@ -26,9 +26,9 @@ class CommandUpdater;
 class LocationBarViewMac;
 @class MenuButton;
 class Profile;
-@class ReloadButton;
-@class ToolbarButton;
-@class ToolbarView;
+@class ReloadButtonCocoa;
+@class ToolbarButtonCocoa;
+@class ToolbarViewCocoa;
 @class AppMenuController;
 
 namespace content {
@@ -53,8 +53,8 @@ class NotificationBridge;
   // corresponding enum in the unit tests.
   IBOutlet MenuButton* backButton_;
   IBOutlet MenuButton* forwardButton_;
-  IBOutlet ReloadButton* reloadButton_;
-  IBOutlet ToolbarButton* homeButton_;
+  IBOutlet ReloadButtonCocoa* reloadButton_;
+  IBOutlet ToolbarButtonCocoa* homeButton_;
   IBOutlet MenuButton* appMenuButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
@@ -106,7 +106,7 @@ class NotificationBridge;
                browser:(Browser*)browser;
 
 // Strongly typed controlled view.
-- (ToolbarView*)toolbarView;
+- (ToolbarViewCocoa*)toolbarView;
 
 // Get the C++ bridge object representing the location bar for this tab.
 - (LocationBarViewMac*)locationBarBridge;
@@ -174,7 +174,7 @@ class NotificationBridge;
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;
 
 // Set the opacity of the divider (the line at the bottom) *if* we have a
-// |ToolbarView| (0 means don't show it); no-op otherwise.
+// |ToolbarViewCocoa| (0 means don't show it); no-op otherwise.
 - (void)setDividerOpacity:(CGFloat)opacity;
 
 // Create and add the Browser Action buttons to the toolbar view.

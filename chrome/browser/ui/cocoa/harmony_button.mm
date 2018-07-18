@@ -156,7 +156,7 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
   }
 }
 
-// HoverButton overrides.
+// HoverButtonCocoa overrides.
 
 - (void)setHoverState:(HoverState)state {
   if (state == hoverState_) {

@@ -24,7 +24,7 @@ enum class ToolbarButtonImageBackgroundStyle {
 };
 
 // NSButton subclass which handles middle mouse clicking.
-@interface ToolbarButton : NSButton<ThemedWindowDrawing>  {
+@interface ToolbarButtonCocoa : NSButton<ThemedWindowDrawing> {
  @protected
   // The toolbar button's image, as assigned by setImage:.
   base::scoped_nsobject<NSImage> image_;
@@ -43,15 +43,16 @@ enum class ToolbarButtonImageBackgroundStyle {
 - (const gfx::VectorIcon*)vectorIcon;
 // Override point for subclasses to return their vector icon color.
 - (SkColor)vectorIconColor:(BOOL)themeIsDark;
-// When in Material Design mode, sets the images for each of the ToolbarButton's
-// states from the specified image.
+// When in Material Design mode, sets the images for each of the
+// ToolbarButtonCocoa's states from the specified image.
 - (void)setImage:(NSImage*)anImage;
-// Resets the images for each of the ToolbarButton's states from its vector icon
-// id or its main image. Should only be called when in Material Design mode.
+// Resets the images for each of the ToolbarButtonCocoa's states from its vector
+// icon id or its main image. Should only be called when in Material Design
+// mode.
 - (void)resetButtonStateImages;
 @end
 
-@interface ToolbarButton (ExposedForTesting)
+@interface ToolbarButtonCocoa (ExposedForTesting)
 - (BOOL)shouldHandleEvent:(NSEvent*)theEvent;
 @end
 

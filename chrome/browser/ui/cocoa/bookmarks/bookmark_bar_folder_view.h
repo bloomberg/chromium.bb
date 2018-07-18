@@ -13,7 +13,7 @@
 @class BookmarkBarFolderController;
 
 // Main content view for a bookmark bar folder "menu" window.  This is
-// logically similar to a BookmarkBarView but is oriented vertically.
+// logically similar to a BookmarkBarViewCocoa but is oriented vertically.
 @interface BookmarkBarFolderView : NSView {
  @private
   BOOL inDrag_;  // Are we in the middle of a drag?

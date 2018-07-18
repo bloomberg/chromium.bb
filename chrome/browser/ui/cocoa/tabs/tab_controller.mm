@@ -36,9 +36,9 @@ namespace {
 // tab".
 class MenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
-  explicit MenuDelegate(id<TabControllerTarget> target, TabController* owner)
-      : target_(target),
-        owner_(owner) {}
+  explicit MenuDelegate(id<TabControllerTarget> target,
+                        TabControllerCocoa* owner)
+      : target_(target), owner_(owner) {}
 
   // Overridden from ui::SimpleMenuModel::Delegate
   bool IsCommandIdChecked(int command_id) const override { return false; }
@@ -55,16 +55,16 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
  private:
   id<TabControllerTarget> target_;  // weak
-  TabController* owner_;  // weak, owns me
+  TabControllerCocoa* owner_;       // weak, owns me
 };
 
 }  // namespace
 
-@interface TabController () {
+@interface TabControllerCocoa () {
   base::scoped_nsobject<TabFaviconView> iconView_;
   base::scoped_nsobject<NSImage> icon_;
   base::scoped_nsobject<NSView> attentionDotView_;
-  base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton_;
+  base::scoped_nsobject<AlertIndicatorButtonCocoa> alertIndicatorButton_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   BOOL active_;
@@ -86,7 +86,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 @end
 
-@implementation TabController
+@implementation TabControllerCocoa
 
 @synthesize action = action_;
 @synthesize currentAttentionTypes = currentAttentionTypes_;
@@ -134,9 +134,9 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   return kPinnedTabWidth;
 }
 
-- (TabView*)tabView {
-  DCHECK([[self view] isKindOfClass:[TabView class]]);
-  return static_cast<TabView*>([self view]);
+- (TabViewCocoa*)tabView {
+  DCHECK([[self view] isKindOfClass:[TabViewCocoa class]]);
+  return static_cast<TabViewCocoa*>([self view]);
 }
 
 - (id)init {
@@ -156,11 +156,11 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(closeTab:)];
 
-    // Create the TabView. The TabView works directly with the closeButton so
-    // here (the TabView handles adding it as a subview).
-    base::scoped_nsobject<TabView> tabView([[TabView alloc]
+    // Create the TabViewCocoa. The TabViewCocoa works directly with the
+    // closeButton so here (the TabViewCocoa handles adding it as a subview).
+    base::scoped_nsobject<TabViewCocoa> tabView([[TabViewCocoa alloc]
         initWithFrame:NSMakeRect(0, 0, kInitialTabWidth,
-                                 [TabController defaultTabHeight])
+                                 [TabControllerCocoa defaultTabHeight])
            controller:self
           closeButton:closeButton_]);
     [tabView setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
@@ -209,7 +209,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 // backing variables. This updates the drawing state and marks self as needing
 // a re-draw.
 - (void)internalSetSelected:(BOOL)selected {
-  TabView* tabView = [self tabView];
+  TabViewCocoa* tabView = [self tabView];
   if ([self active])
     [tabView setState:NSOnState];
   else
@@ -287,7 +287,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   if ([[self title] isEqualToString:title])
     return;
 
-  TabView* tabView = [self tabView];
+  TabViewCocoa* tabView = [self tabView];
   [tabView setTitle:title];
 
   [super setTitle:title];
@@ -340,20 +340,20 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   if (shouldAnimate && !isRTL) {
     // Animate at the same rate as the tab changes shape.
     [[NSAnimationContext currentContext]
-        setDuration:[TabStripController tabAnimationDuration]];
+        setDuration:[TabStripControllerCocoa tabAnimationDuration]];
     [[iconView_ animator] setFrame:iconViewFrame];
   } else {
     [iconView_ setFrame:iconViewFrame];
   }
 }
 
-- (AlertIndicatorButton*)alertIndicatorButton {
+- (AlertIndicatorButtonCocoa*)alertIndicatorButton {
   return alertIndicatorButton_;
 }
 
 - (void)setAlertState:(TabAlertState)alertState {
   if (!alertIndicatorButton_ && alertState != TabAlertState::NONE) {
-    alertIndicatorButton_.reset([[AlertIndicatorButton alloc] init]);
+    alertIndicatorButton_.reset([[AlertIndicatorButtonCocoa alloc] init]);
     [self updateVisibility];  // Do layout and visibility before adding subview.
     [[self view] addSubview:alertIndicatorButton_];
     [alertIndicatorButton_ setAnimationDoneTarget:self
@@ -444,9 +444,9 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 - (void)setIconImage:(NSImage*)image
      forLoadingState:(TabLoadingState)newLoadingState
             showIcon:(BOOL)showIcon {
-  // Update the favicon's visbility state. Note that TabStripController calls
-  // -updateVisibility immediately after calling this method, so we don't need
-  // to act on a change in this state.
+  // Update the favicon's visbility state. Note that TabStripControllerCocoa
+  // calls -updateVisibility immediately after calling this method, so we don't
+  // need to act on a change in this state.
   showIcon_ = showIcon;
 
   // Always draw the favicon when the state is already kTabDone because the site
@@ -536,7 +536,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   [iconView_ setHidden:!newShowIcon];
 
   // If the tab is a pinned-tab, hide the title.
-  TabView* tabView = [self tabView];
+  TabViewCocoa* tabView = [self tabView];
   [tabView setTitleHidden:[self pinned]];
 
   BOOL newShowCloseButton = [self shouldShowCloseButton];
@@ -554,7 +554,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
     newFrame.size = [[alertIndicatorButton_ image] size];
     if ([self pinned]) {
       // Tab is pinned: Position the alert indicator in the center.
-      const CGFloat tabWidth = [TabController pinnedTabWidth];
+      const CGFloat tabWidth = [TabControllerCocoa pinnedTabWidth];
       newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
       newFrame.origin.y =
           kTabElementYOrigin -
@@ -648,7 +648,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   return NO;
 }
 
-- (void)maybeStartDrag:(NSEvent*)event forTab:(TabController*)tab {
+- (void)maybeStartDrag:(NSEvent*)event forTab:(TabControllerCocoa*)tab {
   [[target_ dragController] maybeStartDrag:event forTab:tab];
 }
 

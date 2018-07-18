@@ -301,7 +301,7 @@ BOOL ViewContainmentValid(NSView* view) {
 BOOL ViewHierarchyContainmentValid(NSView* view) {
   // TODO(erikchen): Fix these views to have correct containment.
   // http://crbug.com/397665.
-  if ([view isKindOfClass:NSClassFromString(@"DownloadShelfView")])
+  if ([view isKindOfClass:NSClassFromString(@"DownloadShelfViewCocoa")])
     return YES;
   if ([view isKindOfClass:NSClassFromString(@"BookmarkBarToolbarView")])
     return YES;

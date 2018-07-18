@@ -48,7 +48,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
 
 @synthesize draggedTab = draggedTab_;
 
-- (id)initWithTabStripController:(TabStripController*)controller {
+- (id)initWithTabStripController:(TabStripControllerCocoa*)controller {
   if ((self = [super init])) {
     tabStrip_ = controller;
   }
@@ -60,7 +60,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   [super dealloc];
 }
 
-- (void)maybeStartDrag:(NSEvent*)theEvent forTab:(TabController*)tab {
+- (void)maybeStartDrag:(NSEvent*)theEvent forTab:(TabControllerCocoa*)tab {
   [self resetDragControllers];
 
   // Resolve overlay back to original window.
@@ -92,7 +92,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   // our own destruction. Keep ourselves around while spinning the loop as well
   // as the tab controller being dragged.
   base::scoped_nsobject<TabStripDragController> keepAlive([self retain]);
-  base::scoped_nsobject<TabController> keepAliveTab([tab retain]);
+  base::scoped_nsobject<TabControllerCocoa> keepAliveTab([tab retain]);
 
   // Because we move views between windows, we need to handle the event loop
   // ourselves. Ideally we should use the standard event loop.
@@ -186,7 +186,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     // and call insertPlaceholderForTab:frame:.
     if (outOfTabHorizDeadZone_ || fabs(vertOffset) > kVertTearDistance) {
       tabWasDragged_ = YES;
-      TabView* tabView = [draggedTab_ tabView];
+      TabViewCocoa* tabView = [draggedTab_ tabView];
       [sourceController_
           insertPlaceholderForTab:tabView
                             frame:[tabView centerScanRect:NSOffsetRect(
@@ -519,7 +519,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   if (![targets count] && [sourceController_ numberOfTabs] - [tabs count] == 0)
     return NO;  // I.e. ignore dragging *all* tabs in the last Browser window.
 
-  for (TabView* tabView in tabs) {
+  for (TabViewCocoa* tabView in tabs) {
     if ([tabView isClosing])
       return NO;
   }
@@ -527,7 +527,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   TabWindowController* controller =
       [TabWindowController tabWindowControllerForWindow:sourceWindow_];
   if (controller) {
-    for (TabView* tabView in tabs) {
+    for (TabViewCocoa* tabView in tabs) {
       if (![controller isTabDraggable:tabView])
         return NO;
     }

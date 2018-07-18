@@ -50,7 +50,7 @@ using bookmarks::BookmarkNode;
   return controller_ ? controller_ : [[self window] windowController];
 }
 
-// Virtually identical to [BookmarkBarView draggingEntered:].
+// Virtually identical to [BookmarkBarViewCocoa draggingEntered:].
 // TODO(jrg): find a way to share code.  Lack of multiple inheritance
 // makes things more of a pain but there should be no excuse for laziness.
 // http://crbug.com/35966
@@ -125,8 +125,9 @@ using bookmarks::BookmarkNode;
   return YES;
 }
 
-// This code is practically identical to the same function in BookmarkBarView
-// with the only difference being how the controller is retrieved.
+// This code is practically identical to the same function in
+// BookmarkBarViewCocoa with the only difference being how the controller is
+// retrieved.
 // TODO(mrossetti,jrg): http://crbug.com/35966
 // Implement NSDraggingDestination protocol method
 // performDragOperation: for URLs.
@@ -146,11 +147,10 @@ using bookmarks::BookmarkNode;
                                  at:[info draggingLocation]];
 }
 
-// This code is practically identical to the same function in BookmarkBarView
-// with the only difference being how the controller is retrieved.
-// http://crbug.com/35966
-// Implement NSDraggingDestination protocol method
-// performDragOperation: for bookmark buttons.
+// This code is practically identical to the same function in
+// BookmarkBarViewCocoa with the only difference being how the controller is
+// retrieved. http://crbug.com/35966 Implement NSDraggingDestination protocol
+// method performDragOperation: for bookmark buttons.
 - (BOOL)performDragOperationForBookmarkButton:(id<NSDraggingInfo>)info {
   BOOL doDrag = NO;
   NSData* data = [[info draggingPasteboard]

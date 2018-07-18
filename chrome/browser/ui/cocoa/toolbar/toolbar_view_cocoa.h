@@ -12,7 +12,7 @@
 // this time it only draws a gradient.  Future changes (e.g. themes)
 // may require new functionality here.
 
-@interface ToolbarView : AnimatableView {
+@interface ToolbarViewCocoa : AnimatableView {
  @private
   // The opacity of the divider line (at the bottom of the toolbar); used when
   // the detached bookmark bar is morphing to the normal bar and vice versa.

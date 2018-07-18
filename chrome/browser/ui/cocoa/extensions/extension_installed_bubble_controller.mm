@@ -216,7 +216,7 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
       static_cast<BrowserWindowCocoa*>(browser_->window());
   if (type_ == extension_installed_bubble::kApp) {
     TabStripView* view = [window->cocoa_controller() tabStripView];
-    NewTabButton* button = [view getNewTabButton];
+    NewTabButtonCocoa* button = [view getNewTabButton];
     NSRect bounds = [button bounds];
     NSPoint anchor = NSMakePoint(
         NSMidX(bounds),

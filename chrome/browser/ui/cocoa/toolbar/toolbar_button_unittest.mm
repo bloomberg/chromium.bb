@@ -11,7 +11,7 @@
 #import "testing/gtest_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
-@interface TestableToolbarButton : ToolbarButton {
+@interface TestableToolbarButton : ToolbarButtonCocoa {
  @private
   NSInteger numOfClick_;
   NSInteger lastCommand_;
@@ -126,7 +126,7 @@ TEST_VIEW(ToolbarButtonTest, button_)
 
 TEST_F(ToolbarButtonTest, DoesNotSwallowClicksOnNO) {
   // Middle button being down doesn't swallow right button clicks. But
-  // ToolbarButton doesn't handle right button events.
+  // ToolbarButtonCocoa doesn't handle right button events.
   [button_ otherMouseDown:other_down_in_view];
   EXPECT_EQ(NSOffState, [button_ state]);
   [button_ rightMouseDown:right_down_in_view];

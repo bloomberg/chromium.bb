@@ -4,14 +4,14 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 
-@interface AvatarButton (Private)
+@interface AvatarButtonCocoa (Private)
 
 - (void)rightMouseDown:(NSEvent*)event;
 - (void)performRightClick;
 
 @end
 
-@implementation AvatarButton
+@implementation AvatarButtonCocoa
 
 @synthesize isActive = isActive_;
 

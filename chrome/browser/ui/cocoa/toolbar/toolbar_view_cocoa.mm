@@ -8,7 +8,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
 
-@implementation ToolbarView
+@implementation ToolbarViewCocoa
 
 @synthesize dividerOpacity = dividerOpacity_;
 

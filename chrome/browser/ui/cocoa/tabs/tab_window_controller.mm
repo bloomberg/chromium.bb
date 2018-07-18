@@ -420,7 +420,7 @@
   NOTIMPLEMENTED();
 }
 
-- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame {
+- (void)insertPlaceholderForTab:(TabViewCocoa*)tab frame:(NSRect)frame {
   [self showNewTabButton:NO];
 }
 
@@ -445,7 +445,7 @@
   return YES;
 }
 
-- (BOOL)isTabFullyVisible:(TabView*)tab {
+- (BOOL)isTabFullyVisible:(TabViewCocoa*)tab {
   // Subclasses should implement this, but it's not necessary.
   return YES;
 }

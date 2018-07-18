@@ -14,7 +14,7 @@
 // can contain an arbitrary single-line text label, and will be sized to fit the
 // font height and label width.
 UI_BASE_EXPORT
-@interface BlueLabelButton : HoverButton
+@interface BlueLabelButton : HoverButtonCocoa
 @end
 
 #endif  // UI_BASE_COCOA_CONTROLS_BLUE_LABEL_BUTTON_H_

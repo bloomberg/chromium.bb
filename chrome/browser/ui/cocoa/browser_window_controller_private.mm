@@ -92,7 +92,7 @@ enum WindowLocation {
 - (void)createTabStripController {
   DCHECK([overlayableContentsController_ activeContainer]);
   DCHECK([[overlayableContentsController_ activeContainer] window]);
-  tabStripController_.reset([[TabStripController alloc]
+  tabStripController_.reset([[TabStripControllerCocoa alloc]
       initWithView:[self tabStripView]
         switchView:[overlayableContentsController_ activeContainer]
            browser:browser_.get()
@@ -107,7 +107,7 @@ enum WindowLocation {
   // This ensures the fullscreen button is appropriately positioned. It must
   // be done before calling layoutSubviews because the new avatar button's
   // position depends on the fullscreen button's position, as well as
-  // TabStripController's trailingIndentForControls.
+  // TabStripControllerCocoa's trailingIndentForControls.
   // The fullscreen button's position may depend on the old avatar button's
   // width, but that does not require calling layoutSubviews first.
   NSWindow* window = [self window];

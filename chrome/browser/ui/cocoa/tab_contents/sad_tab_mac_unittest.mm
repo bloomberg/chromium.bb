@@ -26,12 +26,12 @@ T* FindSadTabSubview(NSView* sadTabView) {
 class SadTabViewTest : public CocoaTest {
  public:
   SadTabViewTest() {
-    base::scoped_nsobject<SadTabView> view([SadTabView new]);
+    base::scoped_nsobject<SabTabViewCocoa> view([SabTabViewCocoa new]);
     view_ = view;
     [[test_window() contentView] addSubview:view_];
   }
 
-  SadTabView* view_;  // Weak. Owned by the view hierarchy.
+  SabTabViewCocoa* view_;  // Weak. Owned by the view hierarchy.
 };
 
 TEST_VIEW(SadTabViewTest, view_);
@@ -48,8 +48,8 @@ TEST(SadTabViewBehaviorTest, ClickOnLinks) {
 
   MockSadTab sadTab;
 
-  base::scoped_nsobject<SadTabView> view(
-      [[SadTabView alloc] initWithFrame:NSZeroRect sadTab:&sadTab]);
+  base::scoped_nsobject<SabTabViewCocoa> view(
+      [[SabTabViewCocoa alloc] initWithFrame:NSZeroRect sadTab:&sadTab]);
 
   EXPECT_CALL(sadTab, RecordFirstPaint());
   EXPECT_CALL(sadTab, PerformAction(testing::TypedEq<Action>(Action::BUTTON)));

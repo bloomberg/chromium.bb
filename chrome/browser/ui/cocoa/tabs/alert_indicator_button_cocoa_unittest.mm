@@ -40,8 +40,8 @@ class AlertIndicatorButtonTestCocoa : public CocoaTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         std::string("--") + switches::kEnableTabAudioMuting);
 
-    // Create the AlertIndicatorButton and add it to a view.
-    button_.reset([[AlertIndicatorButton alloc] init]);
+    // Create the AlertIndicatorButtonCocoa and add it to a view.
+    button_.reset([[AlertIndicatorButtonCocoa alloc] init]);
     EXPECT_TRUE(button_ != nil);
     [[test_window() contentView] addSubview:button_.get()];
 
@@ -83,7 +83,7 @@ class AlertIndicatorButtonTestCocoa : public CocoaTest {
     EXPECT_EQ(2, [clickTarget count]);
   }
 
-  base::scoped_nsobject<AlertIndicatorButton> button_;
+  base::scoped_nsobject<AlertIndicatorButtonCocoa> button_;
 
   // Needed for gfx::Animation.
   base::test::ScopedTaskEnvironment scoped_task_environment_;

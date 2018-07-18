@@ -33,7 +33,7 @@ static const CGFloat kInitialElementHeight = 14;
 static const CGFloat kInitialTextFieldXOrigin = 5;
 static const CGFloat kTextFieldTrailingPadding = 5;
 
-@interface BookmarkBarView (Private)
+@interface BookmarkBarViewCocoa (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
 - (void)updateTheme:(const ui::ThemeProvider*)themeProvider;
 
@@ -41,7 +41,7 @@ static const CGFloat kTextFieldTrailingPadding = 5;
 - (void)setFrameSize:(NSSize)size;
 @end
 
-@implementation BookmarkBarView
+@implementation BookmarkBarViewCocoa
 
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize dropIndicatorPosition = dropIndicatorPosition_;
@@ -338,4 +338,4 @@ static const CGFloat kTextFieldTrailingPadding = 5;
   return VIEW_ID_BOOKMARK_BAR;
 }
 
-@end  // @implementation BookmarkBarView
+@end  // @implementation BookmarkBarViewCocoa

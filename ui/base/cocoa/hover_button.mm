@@ -13,7 +13,7 @@ constexpr CGFloat kDragDistance = 5;
 
 }  // namespace
 
-@implementation HoverButton
+@implementation HoverButtonCocoa
 
 @synthesize hoverState = hoverState_;
 @synthesize trackingEnabled = trackingEnabled_;
@@ -85,7 +85,7 @@ constexpr CGFloat kDragDistance = 5;
   // The hover button needs to hold onto itself here for a bit.  Otherwise,
   // it can be freed while in the tracking loop below.
   // http://crbug.com/28220
-  base::scoped_nsobject<HoverButton> myself([self retain]);
+  base::scoped_nsobject<HoverButtonCocoa> myself([self retain]);
 
   // Begin tracking the mouse.
   if ([theEvent type] == NSLeftMouseDown) {

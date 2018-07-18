@@ -59,7 +59,7 @@
 }
 
 // When becoming/resigning main status, explicitly set the background color,
-// which is required by |TabView|.
+// which is required by |TabViewCocoa|.
 - (void)becomeMainWindow {
   [super becomeMainWindow];
   [self setBackgroundColor:[NSColor windowFrameColor]];

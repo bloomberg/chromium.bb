@@ -14,7 +14,7 @@
 // A view that handles any special rendering for the download shelf, painting
 // a gradient and managing a set of DownloadItemViews.
 
-@interface DownloadShelfView : AnimatableView {
+@interface DownloadShelfViewCocoa : AnimatableView {
  @private
   IBOutlet HoverCloseButton* closeButton_;
 }

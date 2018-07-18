@@ -11,7 +11,7 @@
 
 // A subclass of HoverImageButton that sends a target-action on right click and
 // has an active state.
-@interface AvatarButton : HoverImageButton {
+@interface AvatarButtonCocoa : HoverImageButton {
  @private
   SEL rightAction_;
 }

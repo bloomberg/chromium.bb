@@ -54,7 +54,7 @@ class ExclusiveAccessContext;
 class LocationBarViewMac;
 @class OverlayableContentsController;
 class StatusBubbleMac;
-@class TabStripController;
+@class TabStripControllerCocoa;
 @class TabStripView;
 @class ToolbarController;
 @class TranslateBubbleController;
@@ -83,7 +83,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   NSWindow* savedRegularWindow_;
   std::unique_ptr<BrowserWindowCocoa> windowShim_;
   base::scoped_nsobject<ToolbarController> toolbarController_;
-  base::scoped_nsobject<TabStripController> tabStripController_;
+  base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
   base::scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   base::scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   base::scoped_nsobject<DownloadShelfController> downloadShelfController_;
@@ -228,7 +228,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 - (ToolbarController*)toolbarController;
 
 // Return a weak pointer to the tab strip controller.
-- (TabStripController*)tabStripController;
+- (TabStripControllerCocoa*)tabStripController;
 
 // Return a weak pointer to the find bar controller.
 - (FindBarCocoaController*)findBarCocoaController;

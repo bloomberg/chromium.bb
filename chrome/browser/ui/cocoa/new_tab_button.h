@@ -14,13 +14,13 @@
 // use, but no other buttons are so irregularly shaped with respect to their
 // bounding box.
 
-@interface NewTabButton : NSButton<ThemedWindowDrawing>
+@interface NewTabButtonCocoa : NSButton<ThemedWindowDrawing>
 
 // Returns YES if the given point is over the button.  |point| is in the
 // superview's coordinate system.
 - (BOOL)pointIsOverButton:(NSPoint)point;
 
-// Sets the images shown by the NewTabButton's different states.
+// Sets the images shown by the NewTabButtonCocoa's different states.
 - (void)setImages;
 
 @end

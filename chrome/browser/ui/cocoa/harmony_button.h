@@ -16,7 +16,7 @@
 // if it's disabled, for instance. Anyone who needs these things is encouraged
 // to find joy in adding support for them.
 
-@interface HarmonyButton : HoverButton
+@interface HarmonyButton : HoverButtonCocoa
 + (instancetype)buttonWithTitle:(NSString*)title
                          target:(id)target
                          action:(SEL)action;

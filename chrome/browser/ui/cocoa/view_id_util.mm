@@ -66,7 +66,7 @@ NSView* GetView(NSWindow* window, ViewID viewID) {
     BrowserWindowController* windowController =
         [BrowserWindowController browserWindowControllerForWindow:window];
     DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
-    TabStripController* tabStripController =
+    TabStripControllerCocoa* tabStripController =
         [windowController tabStripController];
     DCHECK(tabStripController);
     NSUInteger count = [tabStripController viewsCount];
