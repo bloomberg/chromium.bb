@@ -1545,7 +1545,8 @@ should be able to be added at any place in this file.
   <description>The infobar was created and shown.</description>
 </action>
 
-<action name="Android.DownloadManager.CheckForExternallyRemovedItems">
+<action name="Android.DownloadManager.CheckForExternallyRemovedItems"
+    not_user_triggered="true">
   <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
