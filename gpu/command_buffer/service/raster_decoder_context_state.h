@@ -32,7 +32,8 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
                             scoped_refptr<gl::GLSurface> surface,
                             scoped_refptr<gl::GLContext> context,
                             bool use_virtualized_gl_contexts);
-  void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds);
+  void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
+                           GrContextOptions::PersistentCache* cache);
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 

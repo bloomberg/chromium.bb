@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -82,6 +83,15 @@ GpuChannelManager::GpuChannelManager(
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
+
+  const bool enable_raster_transport =
+      gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
+  bool disable_disk_cache =
+      gpu_preferences_.disable_gpu_shader_disk_cache ||
+      gpu_driver_bug_workarounds_.disable_program_disk_cache;
+  if (enable_raster_transport && !disable_disk_cache)
+    gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
 }
 
 GpuChannelManager::~GpuChannelManager() {
@@ -133,7 +143,11 @@ GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {
 
 GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
                                                 uint64_t client_tracing_id,
-                                                bool is_gpu_host) {
+                                                bool is_gpu_host,
+                                                bool cache_shaders_on_disk) {
+  if (gr_shader_cache_ && cache_shaders_on_disk)
+    gr_shader_cache_->CacheClientIdOnDisk(client_id);
+
   std::unique_ptr<GpuChannel> gpu_channel = std::make_unique<GpuChannel>(
       this, scheduler_, sync_point_manager_, share_group_, task_runner_,
       io_task_runner_, client_id, client_tracing_id, is_gpu_host);
@@ -170,8 +184,15 @@ void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
   }
 }
 
-void GpuChannelManager::PopulateShaderCache(const std::string& key,
+void GpuChannelManager::PopulateShaderCache(int32_t client_id,
+                                            const std::string& key,
                                             const std::string& program) {
+  if (client_id == kGrShaderCacheClientId) {
+    if (gr_shader_cache_)
+      gr_shader_cache_->PopulateCache(key, program);
+    return;
+  }
+
   if (program_cache())
     program_cache()->LoadProgram(key, program);
 }
@@ -322,6 +343,8 @@ void GpuChannelManager::HandleMemoryPressure(
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
   if (raster_decoder_context_state_)
     raster_decoder_context_state_->PurgeMemory(memory_pressure_level);
+  if (gr_shader_cache_)
+    gr_shader_cache_->PurgeMemory(memory_pressure_level);
 }
 
 scoped_refptr<raster::RasterDecoderContextState>
@@ -411,7 +434,7 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
       gpu::kGpuFeatureStatusEnabled;
   if (enable_raster_transport) {
     raster_decoder_context_state_->InitializeGrContext(
-        gpu_driver_bug_workarounds_);
+        gpu_driver_bug_workarounds_, gr_shader_cache());
   }
 
   gr_cache_controller_.emplace(raster_decoder_context_state_.get(),
@@ -424,6 +447,11 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
 void GpuChannelManager::ScheduleGrContextCleanup() {
   if (gr_cache_controller_)
     gr_cache_controller_->ScheduleGrContextCleanup();
+}
+
+void GpuChannelManager::StoreShader(const std::string& key,
+                                    const std::string& shader) {
+  delegate_->StoreShaderToDisk(kGrShaderCacheClientId, key, shader);
 }
 
 }  // namespace gpu

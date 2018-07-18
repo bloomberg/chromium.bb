@@ -54,6 +54,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -159,9 +160,6 @@ scoped_refptr<CommandBufferTaskExecutor> MaybeGetDefaultTaskExecutor(
 }
 
 }  // anonyous namespace
-
-const int InProcessCommandBuffer::kGpuClientId =
-    std::numeric_limits<int>::max();
 
 InProcessCommandBuffer::InProcessCommandBuffer(
     scoped_refptr<CommandBufferTaskExecutor> task_executer)
@@ -434,7 +432,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         new raster::RasterDecoderContextState(gl_share_group_, surface_,
                                               real_context,
                                               use_virtualized_gl_context_);
-    context_state->InitializeGrContext(workarounds);
+    context_state->InitializeGrContext(workarounds, nullptr);
 
     if (base::ThreadTaskRunnerHandle::IsSet()) {
       gr_cache_controller_.emplace(context_state.get(),
@@ -924,8 +922,8 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
       scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
-              std::move(handle), size, format, internalformat, kGpuClientId,
-              kNullSurfaceHandle);
+              std::move(handle), size, format, internalformat,
+              kInProcessCommandBufferClientId, kNullSurfaceHandle);
       if (!image.get()) {
         LOG(ERROR) << "Failed to create image for buffer.";
         return;
@@ -967,7 +965,8 @@ void InProcessCommandBuffer::OnConsoleMessage(int32_t id,
 void InProcessCommandBuffer::CacheShader(const std::string& key,
                                          const std::string& shader) {
   if (gpu_channel_manager_delegate_)
-    gpu_channel_manager_delegate_->StoreShaderToDisk(kGpuClientId, key, shader);
+    gpu_channel_manager_delegate_->StoreShaderToDisk(
+        kInProcessCommandBufferClientId, key, shader);
 }
 
 void InProcessCommandBuffer::OnFenceSyncRelease(uint64_t release) {

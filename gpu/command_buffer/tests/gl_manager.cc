@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -515,7 +516,7 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
       gl_image = gpu_memory_buffer_factory_->AsImageFactory()
                      ->CreateImageForGpuMemoryBuffer(
                          handle, size, format, internalformat,
-                         gpu::InProcessCommandBuffer::kGpuClientId,
+                         gpu::kInProcessCommandBufferClientId,
                          gpu::kNullSurfaceHandle);
       if (!gl_image)
         return -1;

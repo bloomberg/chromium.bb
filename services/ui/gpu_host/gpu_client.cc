@@ -54,8 +54,9 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
              gpu::GpuFeatureInfo());
   }
   establish_callback_ = std::move(callback);
+  const bool cache_shaders_on_disk = true;
   gpu_service_->EstablishGpuChannel(
-      client_id_, client_tracing_id, is_gpu_host,
+      client_id_, client_tracing_id, is_gpu_host, cache_shaders_on_disk,
       base::Bind(&GpuClient::OnGpuChannelEstablished,
                  weak_factory_.GetWeakPtr()));
 }

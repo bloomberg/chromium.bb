@@ -28,6 +28,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -270,6 +272,19 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
               &BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO,
               gpu_client_id_, cache_dir));
     }
+
+    if (base::FeatureList::IsEnabled(
+            features::kDefaultEnableOopRasterization)) {
+      base::FilePath gr_cache_dir =
+          GetContentClient()->browser()->GetGrShaderDiskCacheDirectory();
+      if (!gr_cache_dir.empty()) {
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::BindOnce(
+                &BrowserGpuChannelHostFactory::InitializeGrShaderDiskCacheOnIO,
+                gr_cache_dir));
+      }
+    }
   }
 }
 
@@ -386,8 +401,15 @@ void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
   GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
     GetShaderCacheFactorySingleton()->SetCacheInfo(
-        gpu::InProcessCommandBuffer::kGpuClientId, cache_dir);
+        gpu::kInProcessCommandBufferClientId, cache_dir);
   }
+}
+
+// static
+void BrowserGpuChannelHostFactory::InitializeGrShaderDiskCacheOnIO(
+    const base::FilePath& cache_dir) {
+  GetShaderCacheFactorySingleton()->SetCacheInfo(gpu::kGrShaderCacheClientId,
+                                                 cache_dir);
 }
 
 }  // namespace content

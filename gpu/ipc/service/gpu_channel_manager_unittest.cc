@@ -73,8 +73,8 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
   uint64_t kClientTracingId = 1;
 
   ASSERT_TRUE(channel_manager());
-  GpuChannel* channel =
-      channel_manager()->EstablishChannel(kClientId, kClientTracingId, false);
+  GpuChannel* channel = channel_manager()->EstablishChannel(
+      kClientId, kClientTracingId, false, true);
   EXPECT_TRUE(channel);
   EXPECT_EQ(channel_manager()->LookupChannel(kClientId), channel);
 }

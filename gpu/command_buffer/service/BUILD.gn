@@ -161,6 +161,8 @@ target(link_target_type, "gles2_sources") {
     "gpu_tracer.h",
     "gr_cache_controller.cc",
     "gr_cache_controller.h",
+    "gr_shader_cache.cc",
+    "gr_shader_cache.h",
     "id_manager.cc",
     "id_manager.h",
     "indexed_buffer_binding_host.cc",
