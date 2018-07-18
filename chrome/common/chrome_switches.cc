@@ -377,10 +377,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // is triggered.
 const char kForceDesktopIOSPromotion[] = "force-desktop-ios-promotion";
 
-// Forces developer tools availability, no matter what values the enterprise
-// policies DeveloperToolsDisabled and DeveloperToolsAvailability are set to.
-const char kForceDevToolsAvailable[] = "force-devtools-available";
-
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
