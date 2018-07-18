@@ -254,12 +254,15 @@ void OmniboxResultView::Layout() {
     if (ts_button_size.width() > 0) {
       suggestion_tab_switch_button_->SetSize(ts_button_size);
 
-      // It looks nice to have the same margin on top, bottom and right side.
-      const int margin =
+      // Give the tab switch button a right margin matching the text.
+      suggestion_width -=
+          ts_button_size.width() + OmniboxMatchCellView::kRefreshMarginRight;
+
+      // Center the button vertically.
+      const int vertical_margin =
           (suggestion_view_->height() - ts_button_size.height()) / 2;
-      suggestion_width -= ts_button_size.width() + margin;
       suggestion_tab_switch_button_->SetPosition(
-          gfx::Point(suggestion_width, margin));
+          gfx::Point(suggestion_width, vertical_margin));
       suggestion_tab_switch_button_->SetVisible(true);
     } else {
       suggestion_tab_switch_button_->SetVisible(false);

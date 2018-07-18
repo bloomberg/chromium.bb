@@ -37,6 +37,9 @@ class OmniboxMatchCellView : public views::View {
   gfx::Size CalculatePreferredSize() const override;
   bool CanProcessEventsWithinSubtree() const override;
 
+  // The right-hand margin used for rows with the refresh UI.
+  static constexpr int kRefreshMarginRight = 8;
+
  protected:
   // views::View:
   void Layout() override;

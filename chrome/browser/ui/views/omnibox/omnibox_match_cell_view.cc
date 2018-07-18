@@ -74,15 +74,12 @@ int HorizontalPadding() {
 // Omnibox icon.  The alignment offset (labeled "a" in the diagram below) and
 // padding (p) are used thusly:
 //
-//     +---+---+------+---+-------------------------------+----+
-//     | a | p | icon | p | "result text"                 | p* |
-//     +---+---+------+---+-------------------------------+----+
+//     +---+---+------+---+-------------------------------+---+
+//     | a | p | icon | p | "result text"                 | p |
+//     +---+---+------+---+-------------------------------+---+
 //
 // I.e. the icon alignment offset is only used on the starting edge as a
 // workaround to get the text input bar and the drop down contents to line up.
-//
-// *The last padding is not present.
-// TODO(dschuyler): add end margin/padding.
 int GetIconAlignmentOffset() {
   // The horizontal bounds of a result is the width of the selection highlight
   // (i.e. the views::Background). The traditional popup is designed with its
@@ -103,13 +100,13 @@ int GetIconAlignmentOffset() {
 // |is_two_line| indicates whether the vertical margin is for a omnibox
 // result displaying an answer to the query.
 gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
-  // TODO(dschuyler): Consider adding a right-hand margin to each |return|.
+  // Non-Refresh layouts use a window-width dropdown, so they don't need the
+  // right-hand margin.
   if (ui::MaterialDesignController::IsRefreshUi()) {
-    return is_two_line
-               ? gfx::Insets(kRefreshTwoLineRowMarginHeight, kRefreshMarginLeft,
-                             kRefreshTwoLineRowMarginHeight, 0)
-               : gfx::Insets(kRefreshOneLineRowMarginHeight, kRefreshMarginLeft,
-                             kRefreshOneLineRowMarginHeight, 0);
+    int vertical_margin = is_two_line ? kRefreshTwoLineRowMarginHeight
+                                      : kRefreshOneLineRowMarginHeight;
+    return gfx::Insets(vertical_margin, kRefreshMarginLeft, vertical_margin,
+                       OmniboxMatchCellView::kRefreshMarginRight);
   }
 
   // Regardless of the text size, we ensure a minimum size for the content line
