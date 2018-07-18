@@ -28,7 +28,6 @@ namespace app_list {
 namespace {
 
 constexpr int kItemIconDimension = 16;
-constexpr float kFolderBubbleRadius = 23;
 constexpr float kFolderBubbleOffsetY = 1;
 
 // Gets the size of a small app icon inside the folder icon.
@@ -89,7 +88,8 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(FolderImage::kFolderBubbleColor);
-  canvas->DrawCircle(bubble_center, kFolderBubbleRadius, flags);
+  canvas->DrawCircle(bubble_center,
+                     AppListConfig::instance().folder_bubble_radius(), flags);
 
   if (icons_.size() == 0)
     return;

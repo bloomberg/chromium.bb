@@ -85,6 +85,7 @@ gfx::Size SearchResultSuggestionChipView::CalculatePreferredSize() const {
 
 void SearchResultSuggestionChipView::DiscardItem() {
   delete suggestion_chip_view_;
+  suggestion_chip_view_ = nullptr;
 
   if (item_)
     item_->RemoveObserver(this);

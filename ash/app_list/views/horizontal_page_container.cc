@@ -43,8 +43,7 @@ gfx::Size HorizontalPageContainer::CalculatePreferredSize() const {
   if (!GetWidget())
     return gfx::Size();
 
-  return gfx::Size(contents_view_->GetDisplayWidth(),
-                   contents_view_->GetDisplayHeight());
+  return contents_view_->GetWorkAreaSize();
 }
 
 void HorizontalPageContainer::Layout() {
@@ -56,6 +55,7 @@ void HorizontalPageContainer::Layout() {
     gfx::Rect page_bounds(
         page->GetPageBoundsForState(contents_view_->GetActiveState()));
     page_bounds.Offset(GetOffsetForPageIndex(i));
+    page->InvalidateLayout();
     page->SetBoundsRect(page_bounds);
   }
 }
@@ -81,6 +81,7 @@ void HorizontalPageContainer::OnAnimationUpdated(double progress,
     gfx::Rect bounds(
         gfx::Tween::RectValueBetween(progress, from_rect, to_rect));
     bounds.Offset(GetOffsetForPageIndex(i));
+    page->InvalidateLayout();
     page->SetBoundsRect(bounds);
   }
 }
@@ -93,7 +94,7 @@ gfx::Rect HorizontalPageContainer::GetSearchBoxBoundsForState(
     ash::AppListState state) const {
   // The search box bounds are decided by AppsContainerView and are not changed
   // during horizontal page switching.
-  return apps_container_view_->GetSearchBoxBoundsForState(state);
+  return apps_container_view_->GetSearchBoxExpectedBounds();
 }
 
 gfx::Rect HorizontalPageContainer::GetPageBoundsForState(

@@ -18,6 +18,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/wallpaper_types.h"
@@ -266,12 +267,10 @@ void SearchBoxView::UpdateOpacity() {
            ->ShouldShowSearchBox()) {
     return;
   }
-  int app_list_y_position_in_screen =
-      contents->app_list_view()->app_list_y_position_in_screen();
   float fraction =
-      std::max<float>(0, contents->app_list_view()->GetScreenBottom() -
-                             kShelfSize - app_list_y_position_in_screen) /
-      (kPeekingAppListHeight - kShelfSize);
+      std::max<float>(0, contents->app_list_view()->GetCurrentAppListHeight() -
+                             kShelfSize) /
+      (AppListConfig::instance().peeking_app_list_height() - kShelfSize);
 
   float opacity =
       std::min(std::max((fraction - kOpacityStartFraction) /

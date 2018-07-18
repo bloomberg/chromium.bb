@@ -48,6 +48,21 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
   int app_title_max_line_height() const { return app_title_max_line_height_; }
   const gfx::FontList& app_title_font() const { return app_title_font_; }
+  int peeking_app_list_height() const { return peeking_app_list_height_; }
+  int search_box_closed_top_padding() const {
+    return search_box_closed_top_padding_;
+  }
+  int search_box_peeking_top_padding() const {
+    return search_box_peeking_top_padding_;
+  }
+  int search_box_fullscreen_top_padding() const {
+    return search_box_fullscreen_top_padding_;
+  }
+  int preferred_cols() const { return preferred_cols_; }
+  int preferred_rows() const { return preferred_rows_; }
+  int page_spacing() const { return page_spacing_; }
+  int expand_arrow_tile_height() const { return expand_arrow_tile_height_; }
+  int folder_bubble_radius() const { return folder_bubble_radius_; }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -126,6 +141,31 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The font for app title in app list.
   gfx::FontList app_title_font_;
+
+  // The height of app list in peeking mode.
+  int peeking_app_list_height_;
+
+  // The top padding of search box in closed state.
+  int search_box_closed_top_padding_;
+
+  // The top padding of search box in peeking state.
+  int search_box_peeking_top_padding_;
+
+  // The top padding of search box in fullscreen state.
+  int search_box_fullscreen_top_padding_;
+
+  // Preferred number of columns and rows in apps grid.
+  int preferred_cols_;
+  int preferred_rows_;
+
+  // The spacing between each page.
+  int page_spacing_;
+
+  // The tile height of expand arrow.
+  int expand_arrow_tile_height_;
+
+  // The folder image bubble radius.
+  int folder_bubble_radius_;
 };
 
 }  // namespace app_list

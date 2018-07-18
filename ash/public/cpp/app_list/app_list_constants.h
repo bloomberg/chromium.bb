@@ -50,13 +50,8 @@ ASH_PUBLIC_EXPORT extern const int kCustomPageCollapsedHeight;
 ASH_PUBLIC_EXPORT extern const gfx::Tween::Type kFolderFadeInTweenType;
 ASH_PUBLIC_EXPORT extern const gfx::Tween::Type kFolderFadeOutTweenType;
 
-ASH_PUBLIC_EXPORT extern const int kPreferredCols;
-ASH_PUBLIC_EXPORT extern const int kPreferredRows;
-
 ASH_PUBLIC_EXPORT extern const int kNumStartPageTiles;
 ASH_PUBLIC_EXPORT extern const size_t kMaxSearchResults;
-
-ASH_PUBLIC_EXPORT extern const size_t kExpandArrowTopPadding;
 
 ASH_PUBLIC_EXPORT extern const int kReorderDroppingCircleRadius;
 

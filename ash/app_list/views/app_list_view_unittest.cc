@@ -97,9 +97,15 @@ class AppListViewTest : public views::ViewsTestBase {
   AppListViewTest() = default;
   ~AppListViewTest() override = default;
 
+  void SetUp() override {
+    AppListView::SetShortAnimationForTesting(true);
+    views::ViewsTestBase::SetUp();
+  }
+
   void TearDown() override {
     view_->GetWidget()->Close();
     views::ViewsTestBase::TearDown();
+    AppListView::SetShortAnimationForTesting(false);
   }
 
  protected:

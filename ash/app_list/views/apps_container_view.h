@@ -21,6 +21,7 @@ class AppListFolderItem;
 class AppListFolderView;
 class AppListModel;
 class ContentsView;
+class ExpandArrowView;
 class FolderBackgroundView;
 class PageSwitcher;
 class SuggestionChipContainerView;
@@ -80,9 +81,9 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   views::View* GetFirstFocusableView() override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
 
-  // Returns the expected search box bounds in the screen when the given state
-  // is active.
-  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const;
+  // Returns the expected search box bounds based on the current height of app
+  // list.
+  gfx::Rect GetSearchBoxExpectedBounds() const;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
@@ -103,9 +104,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Gets the final top padding of search box.
   int GetSearchBoxFinalTopPadding() const;
 
-  // Gets the top padding of search box during dragging.
-  int GetSearchBoxTopPaddingDuringDragging() const;
-
   // Returns the bounds of the page in the parent view during dragging.
   gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
 
@@ -114,12 +112,16 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   ContentsView* contents_view_;  // Not owned.
 
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
+
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;
   AppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;
   PageSwitcher* page_switcher_ = nullptr;
   FolderBackgroundView* folder_background_view_ = nullptr;
+  ExpandArrowView* expand_arrow_view_ = nullptr;
 
   ShowState show_state_ = SHOW_NONE;
 

@@ -42,6 +42,7 @@ class HideViewAnimationObserver;
 class PaginationModel;
 class SearchBoxView;
 class SearchModel;
+class TransitionAnimationObserver;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
@@ -102,6 +103,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Prevents handling input events for the |window| in context of handling in
   // app list.
   static void ExcludeWindowFromEventHandling(aura::Window* window);
+
+  static void SetShortAnimationForTesting(bool enabled);
+  static bool ShortAnimationsForTesting();
 
   // Initializes the widget as a bubble or fullscreen view depending on if the
   // fullscreen app list feature is set.
@@ -181,10 +185,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
 
-  void set_short_animation_for_testing() {
-    short_animations_for_testing_ = true;
-  }
-
   // Gets the PaginationModel owned by this view's apps grid.
   PaginationModel* GetAppsPaginationModel();
 
@@ -194,6 +194,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Gets current screen bottom.
   int GetScreenBottom();
+
+  // Returns current app list height above display bottom.
+  int GetCurrentAppListHeight() const;
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
@@ -219,10 +222,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   bool is_side_shelf() const { return is_side_shelf_; }
 
   bool is_in_drag() const { return is_in_drag_; }
-
-  int app_list_y_position_in_screen() const {
-    return app_list_y_position_in_screen_;
-  }
 
   bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
 
@@ -350,9 +349,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // or dragging the app list from shelf.
   bool is_in_drag_ = false;
 
-  // Set animation durations to 0 for testing.
-  bool short_animations_for_testing_;
-
   // Y position of the app list in screen space coordinate during dragging.
   int app_list_y_position_in_screen_ = 0;
 
@@ -382,7 +378,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // are open.
   views::View* overlay_view_ = nullptr;
 
-  std::unique_ptr<HideViewAnimationObserver> animation_observer_;
+  std::unique_ptr<HideViewAnimationObserver> hide_view_animation_observer_;
+
+  std::unique_ptr<TransitionAnimationObserver> transition_animation_observer_;
 
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;
