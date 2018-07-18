@@ -70,7 +70,7 @@ public class WebappDisplayCutoutTest {
     }
 
     /**
-     * Test that a safe area is applied when we have viewport-fit=cover and a standalone
+     * Test that a safe area is not applied when we have viewport-fit=cover and a standalone
      * display mode.
      */
     @Test
@@ -79,8 +79,8 @@ public class WebappDisplayCutoutTest {
     public void testViewportFitWebapp_Standalone() throws InterruptedException, TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
 
-        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
+        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
-                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
     }
 }

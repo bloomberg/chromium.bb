@@ -75,13 +75,12 @@ void DisplayCutoutHostImpl::DidFinishNavigation(
   }
 
   // If we finish a main frame navigation and the |WebDisplayMode| is
-  // fullscreen or standalone then we should make the main frame the
-  // current |RenderFrameHost|.
+  // fullscreen then we should make the main frame the current
+  // |RenderFrameHost|.
   RenderWidgetHostImpl* rwh =
       web_contents_impl()->GetRenderViewHost()->GetWidget();
   blink::WebDisplayMode mode = web_contents_impl()->GetDisplayMode(rwh);
-  if (mode == blink::WebDisplayMode::kWebDisplayModeFullscreen ||
-      mode == blink::WebDisplayMode::kWebDisplayModeStandalone) {
+  if (mode == blink::WebDisplayMode::kWebDisplayModeFullscreen) {
     SetCurrentRenderFrameHost(web_contents_impl()->GetMainFrame());
   }
 }
