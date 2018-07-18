@@ -541,12 +541,16 @@ TEST_F(TabletModeControllerTest, VerticalHingeTest) {
 
 // Test if this case does not crash. See http://crbug.com/462806
 TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
+  // Do not animate wallpaper on entering overview.
+  WindowSelectorController::SetDoNotChangeWallpaperBlurForTests();
+
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));
   std::unique_ptr<aura::Window> w2(
       CreateTestWindowInShellWithBounds(gfx::Rect(800, 0, 100, 100)));
   ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
+  ASSERT_FALSE(IsTabletModeStarted());
 
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
@@ -755,9 +759,9 @@ TEST_F(TabletModeControllerTest, RecordLidAngle) {
 TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ui::InputDeviceClientTestApi().SetMouseDevices({});
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   OpenLidToAngle(300.0f);
   EXPECT_TRUE(IsTabletModeStarted());
@@ -768,7 +772,7 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Attach a external mouse.
   ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Open lid to tent mode. Verify that tablet mode is not started.
@@ -781,9 +785,9 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
 TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ui::InputDeviceClientTestApi().SetMouseDevices({});
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Start in tablet mode.
   OpenLidToAngle(300.0f);
@@ -792,12 +796,12 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // Attach external mouse and keyboard. Verify that tablet mode has ended.
   ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Verify that after unplugging the mouse, tablet mode will resume.
   ui::InputDeviceClientTestApi().SetMouseDevices({});
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
 }
 
