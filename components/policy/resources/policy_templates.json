@@ -12516,7 +12516,30 @@
       If the policy is set to false then tab lifecycles are disabled, and all tabs will be left running normally.
 
       If the policy is set to true or left unspecified then tab lifecycles are enabled.''',
-    }
+    },
+    {
+      'name': 'UrlKeyedAnonymizedDataCollectionEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:69-', 'chrome_os:69-', 'android:70-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 461,
+      'caption': '''Enable URL-keyed anonymized data collection''',
+      'tags': ['google-sharing'],
+      'desc': '''Enable URL-keyed anonymized data collection in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      URL-keyed anonymized data collection sends URLs of pages the user visits to Google to make searches and browsing better.
+
+      If you enable this policy, URL-keyed anonymized data collection is always active.
+
+      If you disable this policy, URL-keyed anonymized data collection is never active.
+
+      If this policy is left not set, URL-keyed anonymized data collection will be enabled but the user will be able to change it.''',
+    },
   ],
 
   'messages': {
@@ -12658,4 +12681,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 460}
+  'highest_id_currently_used': 461
+}

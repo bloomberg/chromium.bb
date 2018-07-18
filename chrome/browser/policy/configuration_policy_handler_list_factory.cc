@@ -61,6 +61,7 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_policy_handler.h"
 #include "components/translate/core/browser/translate_pref_names.h"
+#include "components/unified_consent/pref_names.h"
 #include "components/variations/pref_names.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -153,6 +154,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kSafeBrowsingForTrustedSourcesEnabled,
     prefs::kSafeBrowsingForTrustedSourcesEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kUrlKeyedAnonymizedDataCollectionEnabled,
+    unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDownloadRestrictions,
     prefs::kDownloadRestrictions,

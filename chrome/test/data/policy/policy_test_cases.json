@@ -3180,6 +3180,17 @@
     ]
   },
 
+  "UrlKeyedAnonymizedDataCollectionEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "UrlKeyedAnonymizedDataCollectionEnabled": false },
+    "pref_mappings": [
+      { "pref": "url_keyed_anonymized_data_collection.enabled",
+        "indicator_tests": [
+          { "policy": { "url_keyed_anonymized_data_collection.enabled": false } }
+        ]
+      }
+    ]
+  },
 
   "----- Chrome OS device policies ---------------------------------------": {},
 

@@ -13833,6 +13833,7 @@ Called by update_net_error_codes.py.-->
   <int value="458" label="DeviceUpdateStagingPercentOfFleetPerWeek"/>
   <int value="459" label="AutofillProfileEnabled"/>
   <int value="460" label="TabLifecyclesEnabled"/>
+  <int value="461" label="UrlKeyedAnonymizedDataCollectionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
