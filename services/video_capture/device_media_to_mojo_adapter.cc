@@ -145,7 +145,12 @@ void DeviceMediaToMojoAdapter::Stop() {
   device_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
   device_->StopAndDeAllocate();
-  receiver_.reset();
+  // We need to post the deletion of receiver to the end of the message queue,
+  // because |device_->StopAndDeAllocate()| may post messages (e.g.
+  // OnBufferRetired()) to a WeakPtr to |receiver_| to this queue, and we need
+  // those messages to be sent before we invalidate the WeakPtr.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  std::move(receiver_));
 }
 
 void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
