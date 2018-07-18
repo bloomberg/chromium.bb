@@ -4,7 +4,6 @@
 
 #include "components/feed/core/feed_scheduler_host.h"
 
-#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,8 +13,11 @@
 #include "components/feed/core/time_serialization.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_params_manager.h"
+#include "components/web_resource/web_resource_pref_names.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -24,6 +26,14 @@ namespace feed {
 char kNowString[] = "2018-06-11 15:41";
 
 using base::Time;
+using base::TimeDelta;
+
+class ForceDeviceOffline : public net::NetworkChangeNotifier {
+ public:
+  ConnectionType GetCurrentConnectionType() const override {
+    return NetworkChangeNotifier::CONNECTION_NONE;
+  }
+};
 
 class FeedSchedulerHostTest : public ::testing::Test {
  public:
@@ -31,16 +41,16 @@ class FeedSchedulerHostTest : public ::testing::Test {
 
  protected:
   FeedSchedulerHostTest() : weak_factory_(this) {
+    FeedSchedulerHost::RegisterProfilePrefs(profile_prefs_.registry());
+    UserClassifier::RegisterProfilePrefs(profile_prefs_.registry());
+    local_state()->registry()->RegisterBooleanPref(::prefs::kEulaAccepted,
+                                                   true);
+
     Time now;
     EXPECT_TRUE(Time::FromUTCString(kNowString, &now));
     test_clock_.SetNow(now);
 
-    FeedSchedulerHost::RegisterProfilePrefs(pref_service_.registry());
-    UserClassifier::RegisterProfilePrefs(pref_service_.registry());
-
-    scheduler_ =
-        std::make_unique<FeedSchedulerHost>(&pref_service_, &test_clock_);
-    InitializeScheduler(scheduler());
+    NewScheduler();
   }
 
   void InitializeScheduler(FeedSchedulerHost* scheduler) {
@@ -51,11 +61,20 @@ class FeedSchedulerHostTest : public ::testing::Test {
                             base::Unretained(this)));
   }
 
+  // Recreates a new copy of the scheduler. This is useful if a test case needs
+  // to change some global state like prefs or params before the scheduler's
+  // constructor runs.
+  void NewScheduler() {
+    scheduler_ = std::make_unique<FeedSchedulerHost>(
+        &profile_prefs_, &local_state_, &test_clock_);
+    InitializeScheduler(scheduler());
+  }
+
   // Note: Time will be advanced.
   void ClassifyAsRareNtpUser() {
     // By moving time forward from initial seed events, the user will be moved
     // into RARE_NTP_USER classification.
-    test_clock()->Advance(base::TimeDelta::FromDays(7));
+    test_clock()->Advance(TimeDelta::FromDays(7));
   }
 
   // Note: Time will be advanced.
@@ -63,28 +82,48 @@ class FeedSchedulerHostTest : public ::testing::Test {
     // Click on some articles to move the user into ACTIVE_SUGGESTIONS_CONSUMER
     // classification. Separate by at least 30 minutes for different sessions.
     scheduler()->OnSuggestionConsumed();
-    test_clock()->Advance(base::TimeDelta::FromMinutes(31));
+    test_clock()->Advance(TimeDelta::FromMinutes(31));
     scheduler()->OnSuggestionConsumed();
+  }
+
+  // Many test cases want to ask the scheduler multiple times in a row to see
+  // which of the different triggers or under which conditions the scheduler
+  // will request a refresh. However the scheduler updates internal state when
+  // it decides a refresh must be made, most importantly, it sets
+  // |tracking_oustanding_request_| to true. Any subsequent trigger would then
+  // not start a refresh. To get around this, this method clears out
+  // |tracking_oustanding_request_|.
+  void ResetRefreshState(Time last_attempt) {
+    // OnRequestError() has the side effect of setting kLastFetchAttemptTime to
+    // the scheduler's clock's now. This typically is not helpful to most test
+    // cases, so override it.
+    scheduler()->OnRequestError(0);
+    profile_prefs()->SetTime(prefs::kLastFetchAttemptTime, last_attempt);
+  }
+
+  bool PlatformSupportsEula() {
+    return web_resource::EulaAcceptedNotifier::Create(local_state()) != nullptr;
   }
 
   // This helper method sets prefs::kLastFetchAttemptTime to the same value
   // that's about to be passed into ShouldSessionRequestData(). This is what the
-  // scheduler will typically experience when refreshes are successful.
+  // scheduler will typically experience when refreshes are successful. Also
+  // clears out |tracking_oustanding_request_| through OnRequestError().
   NativeRequestBehavior ShouldSessionRequestData(
       bool has_content,
-      base::Time content_creation_date_time,
+      Time content_creation_date_time,
       bool has_outstanding_request) {
-    pref_service()->SetTime(prefs::kLastFetchAttemptTime,
-                            content_creation_date_time);
+    ResetRefreshState(content_creation_date_time);
     return scheduler()->ShouldSessionRequestData(
         has_content, content_creation_date_time, has_outstanding_request);
   }
 
-  PrefService* pref_service() { return &pref_service_; }
+  TestingPrefServiceSimple* profile_prefs() { return &profile_prefs_; }
+  TestingPrefServiceSimple* local_state() { return &local_state_; }
   base::SimpleTestClock* test_clock() { return &test_clock_; }
   FeedSchedulerHost* scheduler() { return scheduler_.get(); }
   int refresh_call_count() { return refresh_call_count_; }
-  const std::vector<base::TimeDelta>& schedule_wake_up_times() {
+  const std::vector<TimeDelta>& schedule_wake_up_times() {
     return schedule_wake_up_times_;
   }
   int cancel_wake_up_call_count() { return cancel_wake_up_call_count_; }
@@ -93,24 +132,25 @@ class FeedSchedulerHostTest : public ::testing::Test {
  private:
   void TriggerRefresh() { refresh_call_count_++; }
 
-  void ScheduleWakeUp(base::TimeDelta threshold_ms) {
+  void ScheduleWakeUp(TimeDelta threshold_ms) {
     schedule_wake_up_times_.push_back(threshold_ms);
   }
 
   void CancelWakeUp() { cancel_wake_up_call_count_++; }
 
-  TestingPrefServiceSimple pref_service_;
+  TestingPrefServiceSimple profile_prefs_;
+  TestingPrefServiceSimple local_state_;
   base::SimpleTestClock test_clock_;
   std::unique_ptr<FeedSchedulerHost> scheduler_;
   int refresh_call_count_ = 0;
-  std::vector<base::TimeDelta> schedule_wake_up_times_;
+  std::vector<TimeDelta> schedule_wake_up_times_;
   int cancel_wake_up_call_count_ = 0;
   int fixed_timer_completion_count_ = 0;
   base::WeakPtrFactory<FeedSchedulerHostTest> weak_factory_;
 };
 
 TEST_F(FeedSchedulerHostTest, GetTriggerThreshold) {
-  // Make sure that there is no missing configuration in the cartesian product
+  // Make sure that there is no missing configuration in the Cartesian product
   // of states between TriggerType and UserClass.
   std::vector<FeedSchedulerHost::TriggerType> triggers = {
       FeedSchedulerHost::TriggerType::NTP_SHOWN,
@@ -137,13 +177,10 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataSimple) {
   // For an ACTIVE_NTP_USER, refreshes on NTP_OPEN should be triggered after 4
   // hours, and staleness should be at 24 hours. Each case tests a range of
   // values.
-  base::Time no_refresh_large =
-      test_clock()->Now() - base::TimeDelta::FromHours(3);
-  base::Time refresh_only_small =
-      test_clock()->Now() - base::TimeDelta::FromHours(5);
-  base::Time refresh_only_large =
-      test_clock()->Now() - base::TimeDelta::FromHours(23);
-  base::Time stale_small = test_clock()->Now() - base::TimeDelta::FromHours(25);
+  Time no_refresh_large = test_clock()->Now() - TimeDelta::FromHours(3);
+  Time refresh_only_small = test_clock()->Now() - TimeDelta::FromHours(5);
+  Time refresh_only_large = test_clock()->Now() - TimeDelta::FromHours(23);
+  Time stale_small = test_clock()->Now() - TimeDelta::FromHours(25);
 
   EXPECT_EQ(REQUEST_WITH_WAIT,
             ShouldSessionRequestData(
@@ -166,11 +203,10 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataSimple) {
       ShouldSessionRequestData(
           /*has_content*/ true, /*content_creation_date_time*/ stale_small,
           /*has_outstanding_request*/ false));
-  EXPECT_EQ(
-      REQUEST_WITH_TIMEOUT,
-      ShouldSessionRequestData(
-          /*has_content*/ true, /*content_creation_date_time*/ base::Time(),
-          /*has_outstanding_request*/ false));
+  EXPECT_EQ(REQUEST_WITH_TIMEOUT,
+            ShouldSessionRequestData(
+                /*has_content*/ true, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ false));
 
   // |content_creation_date_time| should be ignored when |has_content| is false.
   EXPECT_EQ(NO_REQUEST_WITH_WAIT,
@@ -209,11 +245,10 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataSimple) {
       ShouldSessionRequestData(
           /*has_content*/ true, /*content_creation_date_time*/ stale_small,
           /*has_outstanding_request*/ true));
-  EXPECT_EQ(
-      NO_REQUEST_WITH_TIMEOUT,
-      ShouldSessionRequestData(
-          /*has_content*/ true, /*content_creation_date_time*/ base::Time(),
-          /*has_outstanding_request*/ true));
+  EXPECT_EQ(NO_REQUEST_WITH_TIMEOUT,
+            ShouldSessionRequestData(
+                /*has_content*/ true, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ true));
 }
 
 TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
@@ -225,25 +260,24 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
 
   // Like above case, the user is an ACTIVE_NTP_USER, staleness at 24 hours and
   // refresh at 4.
-  base::Time refresh = test_clock()->Now() - base::TimeDelta::FromHours(5);
-  base::Time no_refresh = test_clock()->Now() - base::TimeDelta::FromHours(3);
-  base::Time stale = test_clock()->Now() - base::TimeDelta::FromHours(25);
-  base::Time not_stale = test_clock()->Now() - base::TimeDelta::FromHours(23);
+  Time refresh = test_clock()->Now() - TimeDelta::FromHours(5);
+  Time no_refresh = test_clock()->Now() - TimeDelta::FromHours(3);
+  Time stale = test_clock()->Now() - TimeDelta::FromHours(25);
+  Time not_stale = test_clock()->Now() - TimeDelta::FromHours(23);
 
-  pref_service()->SetTime(prefs::kLastFetchAttemptTime, no_refresh);
+  ResetRefreshState(no_refresh);
   EXPECT_EQ(NO_REQUEST_WITH_CONTENT, scheduler()->ShouldSessionRequestData(
                                          /*has_content*/ true,
                                          /*content_creation_date_time*/ stale,
                                          /*has_outstanding_request*/ false));
 
-  pref_service()->SetTime(prefs::kLastFetchAttemptTime, refresh);
-
+  ResetRefreshState(refresh);
   EXPECT_EQ(REQUEST_WITH_CONTENT, scheduler()->ShouldSessionRequestData(
                                       /*has_content*/ true,
                                       /*content_creation_date_time*/ not_stale,
                                       /*has_outstanding_request*/ false));
 
-  pref_service()->SetTime(prefs::kLastFetchAttemptTime, refresh);
+  ResetRefreshState(refresh);
   EXPECT_EQ(REQUEST_WITH_TIMEOUT, scheduler()->ShouldSessionRequestData(
                                       /*has_content*/ true,
                                       /*content_creation_date_time*/ stale,
@@ -252,7 +286,7 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
   // This shouldn't be possible, since last attempt is farther back than
   // |content_creation_date_time| which updates on success, but verify scheduler
   // handles it reasonably.
-  pref_service()->SetTime(prefs::kLastFetchAttemptTime, base::Time());
+  ResetRefreshState(Time());
   EXPECT_EQ(REQUEST_WITH_CONTENT,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ true,
@@ -265,17 +299,20 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
       {{"foregrounded_hours_active_ntp_user", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
+  ResetRefreshState(Time());
   EXPECT_EQ(REQUEST_WITH_CONTENT,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(7),
+                    TimeDelta::FromHours(7),
                 /*has_outstanding_request*/ false));
+
+  ResetRefreshState(Time());
   EXPECT_EQ(REQUEST_WITH_TIMEOUT,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(8),
+                    TimeDelta::FromHours(8),
                 /*has_outstanding_request*/ false));
 }
 
@@ -289,14 +326,14 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveNtpUser) {
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(2),
+                    TimeDelta::FromHours(2),
                 /*has_outstanding_request*/ false));
 
   EXPECT_EQ(REQUEST_WITH_CONTENT,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(3),
+                    TimeDelta::FromHours(3),
                 /*has_outstanding_request*/ false));
 }
 
@@ -312,7 +349,7 @@ TEST_F(FeedSchedulerHostTest, NtpShownRareNtpUser) {
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(1),
+                    TimeDelta::FromHours(1),
                 /*has_outstanding_request*/ false));
 
   // ShouldSessionRequestData() has the side effect of adding NTP_SHOWN event to
@@ -323,7 +360,7 @@ TEST_F(FeedSchedulerHostTest, NtpShownRareNtpUser) {
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(2),
+                    TimeDelta::FromHours(2),
                 /*has_outstanding_request*/ false));
 }
 
@@ -334,14 +371,14 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveSuggestionsConsumer) {
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromMinutes(59),
+                    TimeDelta::FromMinutes(59),
                 /*has_outstanding_request*/ false));
 
   EXPECT_EQ(REQUEST_WITH_CONTENT,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromMinutes(61),
+                    TimeDelta::FromMinutes(61),
                 /*has_outstanding_request*/ false));
 
   variations::testing::VariationParamsManager variation_params(
@@ -353,31 +390,31 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveSuggestionsConsumer) {
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(7),
+                    TimeDelta::FromHours(7),
                 /*has_outstanding_request*/ false));
 
   EXPECT_EQ(REQUEST_WITH_CONTENT,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
-                    base::TimeDelta::FromHours(8),
+                    TimeDelta::FromHours(8),
                 /*has_outstanding_request*/ false));
 }
 
 TEST_F(FeedSchedulerHostTest, OnReceiveNewContentVerifyPref) {
-  EXPECT_EQ(Time(), pref_service()->GetTime(prefs::kLastFetchAttemptTime));
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
   scheduler()->OnReceiveNewContent(Time());
-  EXPECT_EQ(Time(), pref_service()->GetTime(prefs::kLastFetchAttemptTime));
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
   // Scheduler should prefer to use specified time over clock time.
   EXPECT_NE(test_clock()->Now(),
-            pref_service()->GetTime(prefs::kLastFetchAttemptTime));
+            profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
 }
 
 TEST_F(FeedSchedulerHostTest, OnRequestErrorVerifyPref) {
-  EXPECT_EQ(Time(), pref_service()->GetTime(prefs::kLastFetchAttemptTime));
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
   scheduler()->OnRequestError(0);
   EXPECT_EQ(test_clock()->Now(),
-            pref_service()->GetTime(prefs::kLastFetchAttemptTime));
+            profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
 }
 
 TEST_F(FeedSchedulerHostTest, OnForegroundedActiveNtpUser) {
@@ -386,11 +423,11 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedActiveNtpUser) {
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
   // Default is 24 hours.
-  test_clock()->Advance(base::TimeDelta::FromHours(23));
+  test_clock()->Advance(TimeDelta::FromHours(23));
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  test_clock()->Advance(TimeDelta::FromHours(2));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
@@ -400,11 +437,11 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedActiveNtpUser) {
       {{"foregrounded_hours_active_ntp_user", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  test_clock()->Advance(TimeDelta::FromHours(1));
   scheduler()->OnForegrounded();
   EXPECT_EQ(3, refresh_call_count());
 }
@@ -417,11 +454,11 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedRareNtpUser) {
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
   // Default is 24 hours.
-  test_clock()->Advance(base::TimeDelta::FromHours(23));
+  test_clock()->Advance(TimeDelta::FromHours(23));
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  test_clock()->Advance(TimeDelta::FromHours(2));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
@@ -431,11 +468,11 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedRareNtpUser) {
       {{"foregrounded_hours_rare_ntp_user", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  test_clock()->Advance(TimeDelta::FromHours(1));
   scheduler()->OnForegrounded();
   EXPECT_EQ(3, refresh_call_count());
 }
@@ -448,11 +485,11 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedActiveSuggestionsConsumer) {
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
   // Default is 12 hours.
-  test_clock()->Advance(base::TimeDelta::FromHours(11));
+  test_clock()->Advance(TimeDelta::FromHours(11));
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  test_clock()->Advance(TimeDelta::FromHours(2));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
@@ -462,11 +499,11 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedActiveSuggestionsConsumer) {
       {{"foregrounded_hours_active_suggestions_consumer", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  test_clock()->Advance(TimeDelta::FromHours(1));
   scheduler()->OnForegrounded();
   EXPECT_EQ(3, refresh_call_count());
 }
@@ -500,11 +537,11 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveNtpUser) {
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
   // Default is 48 hours.
-  test_clock()->Advance(base::TimeDelta::FromHours(47));
+  test_clock()->Advance(TimeDelta::FromHours(47));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  test_clock()->Advance(TimeDelta::FromHours(2));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
@@ -514,11 +551,11 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveNtpUser) {
       {{"fixed_timer_hours_active_ntp_user", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  test_clock()->Advance(TimeDelta::FromHours(1));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(3, refresh_call_count());
 }
@@ -531,11 +568,11 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveRareNtpUser) {
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
   // Default is 96 hours.
-  test_clock()->Advance(base::TimeDelta::FromHours(95));
+  test_clock()->Advance(TimeDelta::FromHours(95));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  test_clock()->Advance(TimeDelta::FromHours(2));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
@@ -545,11 +582,11 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveRareNtpUser) {
       {{"fixed_timer_hours_rare_ntp_user", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  test_clock()->Advance(TimeDelta::FromHours(1));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(3, refresh_call_count());
 }
@@ -562,11 +599,11 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveSuggestionsConsumer) {
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
   // Default is 24 hours.
-  test_clock()->Advance(base::TimeDelta::FromHours(23));
+  test_clock()->Advance(TimeDelta::FromHours(23));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  test_clock()->Advance(TimeDelta::FromHours(2));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
@@ -576,11 +613,11 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveSuggestionsConsumer) {
       {{"fixed_timer_hours_active_suggestions_consumer", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
 
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  test_clock()->Advance(TimeDelta::FromHours(1));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(3, refresh_call_count());
 }
@@ -593,7 +630,8 @@ TEST_F(FeedSchedulerHostTest, ScheduleFixedTimerWakeUpOnSuccess) {
 
   // Make another scheduler to initialize, make sure it doesn't schedule a
   // wake up.
-  FeedSchedulerHost second_scheduler(pref_service(), test_clock());
+  FeedSchedulerHost second_scheduler(profile_prefs(), local_state(),
+                                     test_clock());
   InitializeScheduler(&second_scheduler);
   EXPECT_EQ(2U, schedule_wake_up_times().size());
 }
@@ -602,6 +640,199 @@ TEST_F(FeedSchedulerHostTest, OnTaskReschedule) {
   EXPECT_EQ(1U, schedule_wake_up_times().size());
   scheduler()->OnTaskReschedule();
   EXPECT_EQ(2U, schedule_wake_up_times().size());
+}
+
+TEST_F(FeedSchedulerHostTest, ShouldRefreshOffline) {
+  {
+    ForceDeviceOffline forceDeviceOffline;
+    scheduler()->OnForegrounded();
+    EXPECT_EQ(0, refresh_call_count());
+  }
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, EulaNotAccepted) {
+  if (PlatformSupportsEula()) {
+    local_state()->SetBoolean(::prefs::kEulaAccepted, false);
+    scheduler()->OnForegrounded();
+    EXPECT_EQ(0, refresh_call_count());
+
+    // The transition should kick off a refresh.
+    local_state()->SetBoolean(::prefs::kEulaAccepted, true);
+    EXPECT_EQ(1, refresh_call_count());
+
+    // And now it doesn't block normal triggers either.
+    ResetRefreshState(Time());
+    scheduler()->OnForegrounded();
+    EXPECT_EQ(2, refresh_call_count());
+  }
+}
+
+TEST_F(FeedSchedulerHostTest, DisableOneTrigger) {
+  variations::testing::VariationParamsManager variation_params(
+      kInterestFeedContentSuggestions.name,
+      {{"disable_trigger_types", "foregrounded"}},
+      {kInterestFeedContentSuggestions.name});
+  NewScheduler();
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
+
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(1, refresh_call_count());
+
+  EXPECT_EQ(REQUEST_WITH_WAIT,
+            ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ false));
+}
+
+TEST_F(FeedSchedulerHostTest, DisableAllTriggers) {
+  variations::testing::VariationParamsManager variation_params(
+      kInterestFeedContentSuggestions.name,
+      {{"disable_trigger_types", "ntp_shown,foregrounded,fixed_timer"}},
+      {kInterestFeedContentSuggestions.name});
+  NewScheduler();
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
+
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(0, refresh_call_count());
+
+  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+            ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ false));
+}
+
+TEST_F(FeedSchedulerHostTest, DisableBogusTriggers) {
+  variations::testing::VariationParamsManager variation_params(
+      kInterestFeedContentSuggestions.name,
+      {{"disable_trigger_types", "foo,123,#$*,,"}},
+      {kInterestFeedContentSuggestions.name});
+
+  NewScheduler();
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+
+  ResetRefreshState(Time());
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(2, refresh_call_count());
+
+  EXPECT_EQ(REQUEST_WITH_WAIT,
+            ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ false));
+}
+
+TEST_F(FeedSchedulerHostTest, OnHistoryCleared) {
+  // OnForegrounded() does nothing because content is fresher than threshold.
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
+
+  scheduler()->OnHistoryCleared();
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
+
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(0, refresh_call_count());
+
+  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+            ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ false));
+
+  test_clock()->Advance(TimeDelta::FromMinutes(29));
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
+
+  test_clock()->Advance(TimeDelta::FromMinutes(1));
+
+  // Normally this would still be within foreground threshold, but the
+  // OnHistoryCleared() cleared the last attempt time.
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
+  variations::testing::VariationParamsManager variation_params(
+      kInterestFeedContentSuggestions.name,
+      {{"suppress_refresh_duration_minutes", "100"}},
+      {kInterestFeedContentSuggestions.name});
+  scheduler()->OnHistoryCleared();
+
+  test_clock()->Advance(TimeDelta::FromMinutes(99));
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
+
+  test_clock()->Advance(TimeDelta::FromMinutes(1));
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, OustandingRequest) {
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+
+  scheduler()->OnForegrounded();
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(1, refresh_call_count());
+  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+            scheduler()->ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ true));
+
+  test_clock()->Advance(TimeDelta::FromDays(7));
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+
+  // Although this clears outstanding, it also updates last attempted time, so
+  // still expect no refresh.
+  scheduler()->OnRequestError(0);
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, refresh_call_count());
+
+  test_clock()->Advance(TimeDelta::FromDays(7));
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(2, refresh_call_count());
+
+  // OnReceiveNewContent() should also clear tracked outstanding request, but
+  // similar to above, last attempted time is also set.
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(2, refresh_call_count());
+
+  test_clock()->Advance(TimeDelta::FromDays(7));
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(3, refresh_call_count());
+
+  // Although this shouldn't typically happen, OnReceiveNewContent() takes a
+  // time that could be wildly divergent from the scheduler's clock's now.
+  scheduler()->OnReceiveNewContent(test_clock()->Now() -
+                                   TimeDelta::FromDays(7));
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(4, refresh_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, IncorporatesExternalOustandingRequest) {
+  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+            scheduler()->ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ true));
+
+  // Normally this would trigger a refresh. In this case the scheduler will
+  // notice the ShouldSessionRequestData() call carries information that there
+  // is an outstanding request, which the scheduler should remember and then
+  // prevent the OnForegrounded() from requesting a refresh.
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(0, refresh_call_count());
 }
 
 }  // namespace feed
