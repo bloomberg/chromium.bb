@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -320,6 +321,10 @@ void LoginScreenController::LoadUsers(
   DCHECK(DataDispatcher());
 
   DataDispatcher()->NotifyUsers(users);
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetAllowLoginAsGuest(show_guest);
 }
 
 void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
@@ -405,12 +410,14 @@ void LoginScreenController::SetKioskApps(
     std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
-      ->SetLoginKioskApps(std::move(kiosk_apps));
+      ->login_shelf_view()
+      ->SetKioskApps(std::move(kiosk_apps));
 }
 
 void LoginScreenController::NotifyOobeDialogVisibility(bool visible) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
+      ->login_shelf_view()
       ->SetLoginDialogVisible(visible);
 }
 

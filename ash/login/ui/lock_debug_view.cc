@@ -19,6 +19,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -120,20 +121,18 @@ mojom::LoginUserInfoPtr PopulateUserData(const mojom::LoginUserInfoPtr& user,
   mojom::LoginUserInfoPtr result = user->Clone();
   result->basic_user_info->type = type;
 
-  bool is_regular_user = type == user_manager::USER_TYPE_REGULAR;
+  bool is_public_account = type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   // Set debug user names and email. Useful for the stub user, which does not
   // have a name  and email set.
   result->basic_user_info->display_name =
-      is_regular_user
-          ? kDebugUserNames[user_index % base::size(kDebugUserNames)]
-          : kDebugPublicAccountNames[user_index %
-                                     base::size(kDebugPublicAccountNames)];
+      is_public_account
+          ? kDebugPublicAccountNames[user_index %
+                                     base::size(kDebugPublicAccountNames)]
+          : kDebugUserNames[user_index % base::size(kDebugUserNames)];
   result->basic_user_info->display_email =
       result->basic_user_info->account_id.GetUserEmail();
 
-  if (is_regular_user) {
-    result->public_account_info.reset();
-  } else {
+  if (is_public_account) {
     result->public_account_info = ash::mojom::PublicAccountInfo::New();
     result->public_account_info->enterprise_domain = kDebugEnterpriseDomain;
     result->public_account_info->default_locale = kDebugDefaultLocaleCode;
@@ -150,6 +149,8 @@ mojom::LoginUserInfoPtr PopulateUserData(const mojom::LoginUserInfoPtr& user,
         ->login_screen_controller()
         ->RequestPublicSessionKeyboardLayouts(
             result->basic_user_info->account_id, kDebugDefaultLocaleCode);
+  } else {
+    result->public_account_info.reset();
   }
 
   return result;
@@ -323,11 +324,10 @@ class LockDebugView::DebugDataDispatcherTransformer
   void TogglePublicAccountForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     UserMetadata& user = debug_users_[user_index];
-    user_manager::UserType new_type =
-        user.type == user_manager::USER_TYPE_REGULAR
-            ? user_manager::USER_TYPE_PUBLIC_ACCOUNT
-            : user_manager::USER_TYPE_REGULAR;
-    user.type = new_type;
+    // Swap the type between regular and public account.
+    user.type = user.type == user_manager::USER_TYPE_REGULAR
+                    ? user_manager::USER_TYPE_PUBLIC_ACCOUNT
+                    : user_manager::USER_TYPE_REGULAR;
 
     std::vector<mojom::LoginUserInfoPtr> users =
         BuildUserList(debug_users_.size());
@@ -352,14 +352,14 @@ class LockDebugView::DebugDataDispatcherTransformer
     app_info->identifier->set_app_id(kDebugKioskAppId);
     app_info->name = base::UTF8ToUTF16(kDebugKioskAppName);
     kiosk_apps_.push_back(std::move(app_info));
-    shelf_widget->SetLoginKioskApps(mojo::Clone(kiosk_apps_));
+    shelf_widget->login_shelf_view()->SetKioskApps(mojo::Clone(kiosk_apps_));
   }
 
   void RemoveKioskApp(ShelfWidget* shelf_widget) {
     if (kiosk_apps_.empty())
       return;
     kiosk_apps_.pop_back();
-    shelf_widget->SetLoginKioskApps(mojo::Clone(kiosk_apps_));
+    shelf_widget->login_shelf_view()->SetKioskApps(mojo::Clone(kiosk_apps_));
   }
 
   void AddLockScreenDevChannelInfo(const std::string& os_version,
