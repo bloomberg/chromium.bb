@@ -794,6 +794,10 @@
       status: "stable",
     },
     {
+      name: "NestedWorkers",
+      status: "stable",
+    },
+    {
       name: "NetInfoDownlink",
       status: "stable",
     },

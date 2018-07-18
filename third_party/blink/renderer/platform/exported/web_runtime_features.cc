@@ -228,6 +228,10 @@ void WebRuntimeFeatures::EnableNavigatorContentUtils(bool enable) {
   RuntimeEnabledFeatures::SetNavigatorContentUtilsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableNestedWorkers(bool enable) {
+  RuntimeEnabledFeatures::SetNestedWorkersEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableNetInfoDownlinkMax(bool enable) {
   RuntimeEnabledFeatures::SetNetInfoDownlinkMaxEnabled(enable);
 }

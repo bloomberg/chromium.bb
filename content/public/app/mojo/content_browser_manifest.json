@@ -222,6 +222,7 @@
         "renderer": [
           "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
+          "blink.mojom.DedicatedWorkerFactory",
           "blink.mojom.LockManager",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",

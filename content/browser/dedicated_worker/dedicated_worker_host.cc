@@ -28,10 +28,10 @@ namespace {
 class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
  public:
   DedicatedWorkerHost(int process_id,
-                      int parent_render_frame_id,
+                      int ancestor_render_frame_id,
                       const url::Origin& origin)
       : process_id_(process_id),
-        parent_render_frame_id_(parent_render_frame_id),
+        ancestor_render_frame_id_(ancestor_render_frame_id),
         origin_(origin) {
     RegisterMojoInterfaces();
   }
@@ -58,18 +58,21 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         &DedicatedWorkerHost::CreateWebSocket, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateUsbDeviceManager, base::Unretained(this)));
+    registry_.AddInterface(base::BindRepeating(
+        &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
   }
 
   void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request) {
     auto* host =
-        RenderFrameHostImpl::FromID(process_id_, parent_render_frame_id_);
+        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
     GetContentClient()->browser()->CreateUsbDeviceManager(host,
                                                           std::move(request));
   }
 
   void CreateWebSocket(network::mojom::WebSocketRequest request) {
     network::mojom::AuthenticationHandlerPtr auth_handler;
-    auto* frame = RenderFrameHost::FromID(process_id_, parent_render_frame_id_);
+    auto* frame =
+        RenderFrameHost::FromID(process_id_, ancestor_render_frame_id_);
     if (!frame) {
       // In some cases |frame| can be null. In such cases the worker will
       // soon be terminated too, so let's abort the connection.
@@ -81,13 +84,22 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     GetContentClient()->browser()->WillCreateWebSocket(frame, &request,
                                                        &auth_handler);
 
-    WebSocketManager::CreateWebSocket(process_id_, parent_render_frame_id_,
+    WebSocketManager::CreateWebSocket(process_id_, ancestor_render_frame_id_,
                                       origin_, std::move(auth_handler),
                                       std::move(request));
   }
 
+  void CreateDedicatedWorker(
+      blink::mojom::DedicatedWorkerFactoryRequest request) {
+    CreateDedicatedWorkerHostFactory(process_id_, ancestor_render_frame_id_,
+                                     origin_, std::move(request));
+  }
+
   const int process_id_;
-  const int parent_render_frame_id_;
+  // ancestor_render_frame_id_ is the id of the frame that owns this worker,
+  // either directly, or (in the case of nested workers) indirectly via a tree
+  // of dedicated workers.
+  const int ancestor_render_frame_id_;
   const url::Origin origin_;
 
   service_manager::BinderRegistry registry_;
@@ -100,10 +112,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
  public:
   DedicatedWorkerFactoryImpl(int process_id,
-                             int parent_render_frame_id,
+                             int ancestor_render_frame_id,
                              const url::Origin& parent_context_origin)
       : process_id_(process_id),
-        parent_render_frame_id_(parent_render_frame_id),
+        ancestor_render_frame_id_(ancestor_render_frame_id),
         parent_context_origin_(parent_context_origin) {}
 
   // blink::mojom::DedicatedWorkerFactory:
@@ -114,7 +126,7 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
     // with the request for |DedicatedWorkerFactory|, enforce that the worker's
     // origin either matches the creating document's origin, or is unique.
     mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerHost>(
-                                process_id_, parent_render_frame_id_, origin),
+                                process_id_, ancestor_render_frame_id_, origin),
                             FilterRendererExposedInterfaces(
                                 blink::mojom::kNavigation_DedicatedWorkerSpec,
                                 process_id_, std::move(request)));
@@ -122,7 +134,7 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
 
  private:
   const int process_id_;
-  const int parent_render_frame_id_;
+  const int ancestor_render_frame_id_;
   const url::Origin parent_context_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerFactoryImpl);
@@ -132,11 +144,11 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
 
 void CreateDedicatedWorkerHostFactory(
     int process_id,
-    int parent_render_frame_id,
+    int ancestor_render_frame_id,
     const url::Origin& origin,
     blink::mojom::DedicatedWorkerFactoryRequest request) {
   mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerFactoryImpl>(
-                              process_id, parent_render_frame_id, origin),
+                              process_id, ancestor_render_frame_id, origin),
                           std::move(request));
 }
 

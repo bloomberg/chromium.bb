@@ -3120,6 +3120,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onmessage
 [Worker]     setter onopen
+[Worker] interface Worker : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onerror
+[Worker]     getter onmessage
+[Worker]     method constructor
+[Worker]     method postMessage
+[Worker]     method terminate
+[Worker]     setter onerror
+[Worker]     setter onmessage
 [Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter caches

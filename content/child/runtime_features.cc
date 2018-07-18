@@ -441,6 +441,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableOffMainThreadWebSocket(
       base::FeatureList::IsEnabled(features::kOffMainThreadWebSocket));
 
+  WebRuntimeFeatures::EnableNestedWorkers(
+      base::FeatureList::IsEnabled(blink::features::kNestedWorkers));
+
   if (base::FeatureList::IsEnabled(
           features::kExperimentalProductivityFeatures)) {
     WebRuntimeFeatures::EnableExperimentalProductivityFeatures(true);
