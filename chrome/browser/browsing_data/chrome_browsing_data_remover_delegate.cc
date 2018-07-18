@@ -17,6 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -73,6 +74,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/domain_reliability/service.h"
+#include "components/feed/core/feed_host_service.h"
+#include "components/feed/core/feed_scheduler_host.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -407,6 +410,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       ntp_snippets::RemoveLastVisitedDatesBetween(delete_begin_, delete_end_,
                                                   filter, bookmark_model);
     }
+
+#if defined(OS_ANDROID)
+    feed::FeedHostService* feed_host_service =
+        feed::FeedHostServiceFactory::GetForBrowserContext(profile_);
+    if (feed_host_service) {
+      feed_host_service->GetSchedulerHost()->OnHistoryCleared();
+    }
+#endif  // defined(OS_ANDROID)
 
     language::UrlLanguageHistogram* language_histogram =
         UrlLanguageHistogramFactory::GetForBrowserContext(profile_);

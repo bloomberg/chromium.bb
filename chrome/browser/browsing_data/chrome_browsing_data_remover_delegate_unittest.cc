@@ -67,6 +67,7 @@
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/service.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/feed/core/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
@@ -2957,4 +2958,14 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeOriginVerifierData) {
       customtabs::OriginVerifier::GetClearBrowsingDataCallCountForTesting());
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, FeedClearsLastFetchAttempt) {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  prefs->SetTime(feed::prefs::kLastFetchAttemptTime, base::Time::Now());
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+
+  EXPECT_EQ(base::Time(), prefs->GetTime(feed::prefs::kLastFetchAttemptTime));
+}
 #endif  // defined(OS_ANDROID)
