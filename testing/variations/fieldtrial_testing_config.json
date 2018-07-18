@@ -4150,10 +4150,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "MaxDelayable_v1_3g_15_Weight3",
                     "params": {
                         "EffectiveConnectionType1": "3G",
-                        "MaxDelayableRequests1": "14",
+                        "MaxDelayableRequests1": "15",
                         "NonDelayableWeight1": "3.0"
                     },
                     "enable_features": [
