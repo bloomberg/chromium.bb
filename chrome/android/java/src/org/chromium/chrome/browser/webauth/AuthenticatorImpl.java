@@ -34,7 +34,7 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     private static final int GMSCORE_MIN_VERSION = 12800000;
 
     /** Ensures only one request is processed at a time. */
-    boolean mIsOperationPending = false;
+    private boolean mIsOperationPending = false;
 
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
@@ -56,6 +56,12 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     public void makeCredential(
             PublicKeyCredentialCreationOptions options, MakeCredentialResponse callback) {
         mMakeCredentialCallback = callback;
+        Context context = ChromeActivity.fromWebContents(mWebContents);
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION) {
+            onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+            return;
+        }
+
         if (mIsOperationPending) {
             onError(AuthenticatorStatus.PENDING_REQUEST);
             return;
@@ -69,6 +75,12 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     public void getAssertion(
             PublicKeyCredentialRequestOptions options, GetAssertionResponse callback) {
         mGetAssertionCallback = callback;
+        Context context = ChromeActivity.fromWebContents(mWebContents);
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION) {
+            onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+            return;
+        }
+
         if (mIsOperationPending) {
             onError(AuthenticatorStatus.PENDING_REQUEST);
             return;
