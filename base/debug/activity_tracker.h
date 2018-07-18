@@ -860,6 +860,13 @@ class BASE_EXPORT GlobalActivityTracker {
       GlobalActivityTracker* global_tracker = Get();
       if (!global_tracker)
         return nullptr;
+
+      // It is not safe to use TLS once TLS has been destroyed. This can happen
+      // if code that runs late during thread destruction tries to use a
+      // base::Lock. See https://crbug.com/864589.
+      if (base::ThreadLocalStorage::HasBeenDestroyed())
+        return nullptr;
+
       if (lock_allowed)
         return global_tracker->GetOrCreateTrackerForCurrentThread();
       else
