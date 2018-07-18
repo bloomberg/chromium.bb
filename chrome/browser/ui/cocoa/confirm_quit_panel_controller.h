@@ -9,10 +9,6 @@
 
 @class ConfirmQuitFrameView;
 
-namespace ui {
-class PlatformAcceleratorCocoa;
-}
-
 // The ConfirmQuitPanelController manages the black HUD window that tells users
 // to "Hold Cmd+Q to Quit".
 @interface ConfirmQuitPanelController : NSWindowController<NSWindowDelegate> {
@@ -46,8 +42,7 @@ class PlatformAcceleratorCocoa;
 @end
 
 @interface ConfirmQuitPanelController (UnitTesting)
-+ (NSString*)keyCombinationForAccelerator:
-    (const ui::PlatformAcceleratorCocoa&)item;
++ (NSString*)keyCombinationForAccelerator:(NSMenuItem*)item;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_PANEL_CONTROLLER_H_

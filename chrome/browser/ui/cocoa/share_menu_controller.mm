@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -272,13 +273,15 @@ NSString* const kRemindersSharingServiceName =
 }
 
 - (NSString*)keyEquivalentForMail {
-  AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
-  const ui::Accelerator* accelerator =
-      keymap->GetAcceleratorForCommand(IDC_EMAIL_PAGE_LOCATION);
-  const ui::PlatformAcceleratorCocoa* platform =
-      static_cast<const ui::PlatformAcceleratorCocoa*>(
-          accelerator->platform_accelerator());
-  return platform->characters();
+  ui::Accelerator accelerator;
+  bool found = GetDefaultMacAcceleratorForCommandId(IDC_EMAIL_PAGE_LOCATION,
+                                                    &accelerator);
+  DCHECK(found);
+  NSString* key_equivalent;
+  NSUInteger modifier_mask;
+  GetKeyEquivalentAndModifierMaskFromAccelerator(accelerator, &key_equivalent,
+                                                 &modifier_mask);
+  return key_equivalent;
 }
 
 @end
