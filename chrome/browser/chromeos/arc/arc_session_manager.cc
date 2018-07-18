@@ -988,6 +988,7 @@ void ArcSessionManager::StartArc() {
   }
 
   params.is_child = profile_->IsChild();
+  params.supervision_transition = GetSupervisionTransition(profile_);
   params.locale = locale;
   // Empty |preferred_lanaguages| is converted to empty array.
   params.preferred_languages = base::SplitString(

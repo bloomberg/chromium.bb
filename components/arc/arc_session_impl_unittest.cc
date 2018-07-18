@@ -660,5 +660,23 @@ TEST_F(ArcSessionImplTest, DemoSessionWithoutOfflineDemoApps) {
                                .demo_session_apps_path());
 }
 
+TEST_F(ArcSessionImplTest, SupervisionTransitionShouldGraduate) {
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+
+  ArcSession::UpgradeParams params;
+  params.supervision_transition = ArcSupervisionTransition::CHILD_TO_REGULAR;
+  params.locale = kDefaultLocale;
+  arc_session->RequestUpgrade(std::move(params));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      login_manager::
+          UpgradeArcContainerRequest_SupervisionTransition_CHILD_TO_REGULAR,
+      GetSessionManagerClient()
+          ->last_upgrade_arc_request()
+          .supervision_transition());
+}
+
 }  // namespace
 }  // namespace arc
