@@ -107,7 +107,7 @@ NSString* GetDocumentEndScriptForAllFrames(BrowserState* browser_state) {
   NSString* plugin_not_supported_text =
       base::SysUTF16ToNSString(GetWebClient()->GetPluginNotSupportedText());
 
-  NSString* script = [GetPageScript(@"plugin_placeholder")
+  NSString* script = [GetPageScript(@"all_frames_document_end_web_bundle")
       stringByReplacingOccurrencesOfString:@"$(PLUGIN_NOT_SUPPORTED_TEXT)"
                                 withString:EscapedQuotedString(
                                                plugin_not_supported_text)];
