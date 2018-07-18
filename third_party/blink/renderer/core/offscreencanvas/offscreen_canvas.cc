@@ -61,6 +61,29 @@ void OffscreenCanvas::Dispose() {
     context_->DetachHost();
     context_ = nullptr;
   }
+
+  if (HasPlaceholderCanvas() && GetTopExecutionContext() &&
+      GetTopExecutionContext()->IsWorkerGlobalScope()) {
+    WorkerAnimationFrameProvider* animation_frame_provider =
+        ToWorkerGlobalScope(GetTopExecutionContext())
+            ->GetAnimationFrameProvider();
+    if (animation_frame_provider) {
+      animation_frame_provider->DeregisterOffscreenCanvas(this);
+    }
+  }
+}
+
+void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
+  placeholder_canvas_id_ = canvas_id;
+  if (GetTopExecutionContext() &&
+      GetTopExecutionContext()->IsWorkerGlobalScope()) {
+    WorkerAnimationFrameProvider* animation_frame_provider =
+        ToWorkerGlobalScope(GetTopExecutionContext())
+            ->GetAnimationFrameProvider();
+    if (animation_frame_provider) {
+      animation_frame_provider->RegisterOffscreenCanvas(this);
+    }
+  }
 }
 
 void OffscreenCanvas::setWidth(unsigned width) {
@@ -321,24 +344,23 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
     return;
 
   if (HasPlaceholderCanvas()) {
-    next_begin_frame_should_push_frame_ = true;
+    needs_push_frame_ = true;
+    // TODO(fserb): perhaps we could avoid requesting begin frames here in cases
+    // where the draw is call from within a worker rAF?
     GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(true);
   }
 }
 
 void OffscreenCanvas::BeginFrame() {
   DCHECK(HasPlaceholderCanvas());
-  // The following check is necessary because it is possible to receive a
-  // BeginFrame signal after SetNeedsBeginFrame(false) was called due to the
-  // asynchronous nature of the mechanism that generates this signal.  It is
-  // very important not to call PushFrame when not necessary because it may
-  // result in a WebGL DrawingBuffer being accidentally cleared at an
-  // inappropriate time (due to preserveDrawingBuffer = false behaviour).
-  if (next_begin_frame_should_push_frame_) {
-    context_->PushFrame();
-    next_begin_frame_should_push_frame_ = false;
-  }
+  PushFrameIfNeeded();
   GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(false);
+}
+
+void OffscreenCanvas::PushFrameIfNeeded() {
+  if (needs_push_frame_ && context_) {
+    context_->PushFrame();
+  }
 }
 
 bool OffscreenCanvas::ShouldAccelerate2dContext() const {
@@ -350,6 +372,8 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
 
 void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
                                 const SkIRect& damage_rect) {
+  DCHECK(needs_push_frame_);
+  needs_push_frame_ = false;
   current_frame_damage_rect_.join(damage_rect);
   if (current_frame_damage_rect_.isEmpty())
     return;
@@ -357,18 +381,6 @@ void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
   GetOrCreateResourceDispatcher()->DispatchFrame(
       std::move(image), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
-}
-
-void OffscreenCanvas::RegisterContextToDispatch(
-    CanvasRenderingContext* context) {
-  if (!HasPlaceholderCanvas())
-    return;
-
-  if (GetExecutionContext()->IsWorkerGlobalScope()) {
-    ToWorkerGlobalScope(GetExecutionContext())
-        ->GetAnimationFrameProvider()
-        ->AddContextToDispatch(context);
-  }
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {

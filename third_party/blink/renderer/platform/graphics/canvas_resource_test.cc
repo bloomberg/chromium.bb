@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::Pointee;
 using testing::Return;
 using testing::SetArrayArgument;
@@ -301,16 +302,20 @@ TEST_F(CanvasResourceTest, MakeUnacceleratedFromAcceleratedResource) {
   EXPECT_FALSE(new_resource->IsAccelerated());
 }
 
-TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
-  testing::InSequence s;
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
-
-  SkImageInfo image_info =
-      SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
+void PaintToCanvasResource(CanvasResource* canvas_resource) {
+  SkImageInfo image_info = SkImageInfo::MakeN32(
+      canvas_resource->Size().Width(), canvas_resource->Size().Height(),
+      kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(image_info);
   SkPaint paint;
   paint.setColor(SK_ColorYELLOW);
   surface->getCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 10, 10), paint);
+  canvas_resource->TakeSkImage(surface->makeImageSnapshot());
+}
+
+TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
+  testing::InSequence s;
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
 
   EXPECT_TRUE(!!context_provider_wrapper_);
   constexpr GLuint image_id = 1;
@@ -334,7 +339,7 @@ TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
         .WillOnce(SetArrayArgument<1>(
             test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
 
-    canvas_resource->TakeSkImage(surface->makeImageSnapshot());
+    PaintToCanvasResource(canvas_resource.get());
 
     viz::TransferableResource transferable_resource;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback;
@@ -346,6 +351,60 @@ TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
 
     release_callback->Run(gpu::SyncToken(), false);
   }
+}
+
+TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_8bit) {
+  testing::InSequence s;
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  EXPECT_TRUE(!!context_provider_wrapper_);
+
+  constexpr GLuint image_id = 1;
+  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
+  EXPECT_CALL(gl_, BindTexture(_, _));
+
+  if (gpu::GetPlatformSpecificTextureTarget() == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint second_image_id = 2;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(second_image_id));
+    EXPECT_CALL(gl_, BindTexture(_, _));
+  }
+
+  constexpr bool is_accelerated = true;
+  scoped_refptr<CanvasResource> canvas_resource =
+      CanvasResourceGpuMemoryBuffer::Create(
+          IntSize(10, 10), CanvasColorParams(), context_provider_wrapper_,
+          nullptr /*CanvasResourceProvider*/, kLow_SkFilterQuality,
+          is_accelerated);
+
+  EXPECT_TRUE(!!canvas_resource);
+}
+
+TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_float16) {
+  testing::InSequence s;
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  EXPECT_TRUE(!!context_provider_wrapper_);
+
+  constexpr GLuint image_id = 1;
+  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
+  EXPECT_CALL(gl_, BindTexture(_, _));
+
+  if (gpu::GetPlatformSpecificTextureTarget() == GL_TEXTURE_EXTERNAL_OES) {
+    constexpr GLuint second_image_id = 2;
+    EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
+        .WillOnce(Return(second_image_id));
+    EXPECT_CALL(gl_, BindTexture(_, _));
+  }
+
+  constexpr bool is_accelerated = true;
+  scoped_refptr<CanvasResource> canvas_resource =
+      CanvasResourceGpuMemoryBuffer::Create(
+          IntSize(10, 10),
+          CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat,
+                            kNonOpaque),
+          context_provider_wrapper_, nullptr /*CanvasResourceProvider*/,
+          kLow_SkFilterQuality, is_accelerated);
+
+  EXPECT_TRUE(!!canvas_resource);
 }
 
 }  // namespace blink

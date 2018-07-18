@@ -21,10 +21,11 @@ namespace blink {
 
 class CanvasColorParams;
 class CanvasRenderingContext;
+class CanvasResource;
 class CanvasResourceDispatcher;
 class FontSelector;
-class StaticBitmapImage;
 class KURL;
+class StaticBitmapImage;
 
 class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
                                                public GarbageCollectedMixin {
@@ -38,7 +39,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual void FinalizeFrame() = 0;
   virtual void PushFrame(scoped_refptr<StaticBitmapImage> image,
-                         const SkIRect& damage_rect);
+                         const SkIRect& damage_rect) = 0;
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
   virtual const IntSize& Size() const = 0;
@@ -72,8 +73,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   bool IsPaintable() const;
 
-  virtual void RegisterContextToDispatch(CanvasRenderingContext*) {}
-
   // Partial CanvasResourceHost implementation
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const final;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
@@ -86,6 +85,12 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions&,
                               ExceptionState&) const;
+
+  // Temporary inefficient adapters
+  void PushFrame(scoped_refptr<CanvasResource> image,
+                 const SkIRect& damage_rect);
+
+  void Commit(scoped_refptr<CanvasResource> image, const SkIRect& damage_rect);
 
  protected:
   ~CanvasRenderingContextHost() override {}

@@ -61,9 +61,7 @@ class CORE_EXPORT OffscreenCanvas final
   const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
 
-  void SetPlaceholderCanvasId(DOMNodeId canvas_id) {
-    placeholder_canvas_id_ = canvas_id;
-  }
+  void SetPlaceholderCanvasId(DOMNodeId canvas_id);
   DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }
   bool HasPlaceholderCanvas() const;
   bool IsNeutered() const override { return is_neutered_; }
@@ -97,6 +95,7 @@ class CORE_EXPORT OffscreenCanvas final
   void FinalizeFrame() override {}
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
+  void PushFrameIfNeeded();
   void PushFrame(scoped_refptr<StaticBitmapImage> image,
                  const SkIRect& damage_rect) override;
   void DidDraw(const FloatRect&) override;
@@ -159,8 +158,6 @@ class CORE_EXPORT OffscreenCanvas final
   bool IsWebGL2Enabled() const override { return true; }
   bool IsWebGLBlocked() const override { return false; }
 
-  void RegisterContextToDispatch(CanvasRenderingContext*) override;
-
   FontSelector* GetFontSelector() override;
 
   void Trace(blink::Visitor*) override;
@@ -189,7 +186,7 @@ class CORE_EXPORT OffscreenCanvas final
   SkIRect current_frame_damage_rect_;
 
   bool needs_matrix_clip_restore_ = false;
-  bool next_begin_frame_should_push_frame_ = false;
+  bool needs_push_frame_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads

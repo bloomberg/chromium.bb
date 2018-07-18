@@ -331,7 +331,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
 
   image_id_ = gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
                                       size.Width(), size.Height(),
-                                      ColorParams().GLInternalFormat());
+                                      ColorParams().GLUnsizedInternalFormat());
   if (!image_id_) {
     gpu_memory_buffer_ = nullptr;
     return;
@@ -349,7 +349,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     // another image and bind a GL_TEXTURE_2D texture to it.
     const GLuint image_2d_id_for_copy = gl->CreateImageCHROMIUM(
         gpu_memory_buffer_->AsClientBuffer(), size.Width(), size.Height(),
-        ColorParams().GLInternalFormat());
+        ColorParams().GLUnsizedInternalFormat());
 
     gl->GenTextures(1, &texture_2d_id_for_copy_);
     gl->BindTexture(GL_TEXTURE_2D, texture_2d_id_for_copy_);
@@ -505,11 +505,11 @@ void CanvasResourceGpuMemoryBuffer::WillPaint() {
       texture_info.fTarget = TextureTarget();
       texture_info.fID = texture_id_;
       texture_info.fFormat =
-          ColorParams().GLInternalFormat();  // unsized format
+          ColorParams().GLSizedInternalFormat();  // unsized format
       GrBackendTexture backend_texture(Size().Width(), Size().Height(),
                                        GrMipMapped::kNo, texture_info);
       constexpr int sample_count = 0;
-      surface_ = SkSurface::MakeFromBackendTexture(
+      surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
           GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
           sample_count, ColorParams().GetSkColorType(),
           ColorParams().GetSkColorSpace(), nullptr /*surface props*/);
@@ -664,7 +664,8 @@ bool CanvasResourceSharedBitmap::HasGpuMailbox() const {
 void CanvasResourceSharedBitmap::TakeSkImage(sk_sp<SkImage> image) {
   SkImageInfo image_info = SkImageInfo::Make(
       Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
-      ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
+      ColorParams().GetSkAlphaType(),
+      ColorParams().GetSkColorSpaceForSkSurfaces());
 
   bool read_pixels_successful = image->readPixels(
       image_info, shared_memory_->memory(), image_info.minRowBytes(), 0, 0);

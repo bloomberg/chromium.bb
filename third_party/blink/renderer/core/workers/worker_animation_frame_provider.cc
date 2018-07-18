@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
+
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -34,23 +36,28 @@ void WorkerAnimationFrameProvider::BeginFrame() {
 
   callback_collection_.ExecuteCallbacks(time, time);
 
-  for (auto& ctx : rendering_contexts_) {
-    ctx->PushFrame();
+  for (auto& offscreen_canvas : offscreen_canvases_) {
+    offscreen_canvas->PushFrameIfNeeded();
   }
 }
 
-void WorkerAnimationFrameProvider::AddContextToDispatch(
-    CanvasRenderingContext* context) {
-  DCHECK(rendering_contexts_.Find(context) == kNotFound);
-  rendering_contexts_.push_back(context);
+void WorkerAnimationFrameProvider::RegisterOffscreenCanvas(
+    OffscreenCanvas* context) {
+  DCHECK(offscreen_canvases_.Find(context) == kNotFound);
+  offscreen_canvases_.push_back(context);
 }
 
-void WorkerAnimationFrameProvider::RemoveContextToDispatch(
-    CanvasRenderingContext* context) {
-  size_t pos = rendering_contexts_.Find(context);
+void WorkerAnimationFrameProvider::DeregisterOffscreenCanvas(
+    OffscreenCanvas* offscreen_canvas) {
+  size_t pos = offscreen_canvases_.Find(offscreen_canvas);
   if (pos != kNotFound) {
-    rendering_contexts_.EraseAt(pos);
+    offscreen_canvases_.EraseAt(pos);
   }
+}
+
+void WorkerAnimationFrameProvider::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_collection_);
+  visitor->Trace(offscreen_canvases_);
 }
 
 }  // namespace blink

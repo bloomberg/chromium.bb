@@ -954,6 +954,11 @@ CanvasResourceDispatcher* HTMLCanvasElement::GetOrCreateResourceDispatcher() {
   return frame_dispatcher_.get();
 }
 
+void HTMLCanvasElement::PushFrame(scoped_refptr<StaticBitmapImage> image,
+                                  const SkIRect& damage_rect) {
+  NOTIMPLEMENTED();
+}
+
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (context_ && !Is2d())
     return false;

@@ -196,17 +196,28 @@ gfx::BufferFormat CanvasColorParams::GetBufferFormat() const {
   return kN32BufferFormat;
 }
 
-GLenum CanvasColorParams::GLInternalFormat() const {
+GLenum CanvasColorParams::GLUnsizedInternalFormat() const {
   // TODO(junov): try GL_RGB when opacity_mode_ == kOpaque
   static_assert(kN32_SkColorType == kRGBA_8888_SkColorType ||
                     kN32_SkColorType == kBGRA_8888_SkColorType,
                 "Unexpected kN32_SkColorType value.");
-  constexpr GLenum kN32GLInternalBufferFormat =
+  constexpr GLenum kN32GLUnsizedInternalBufferFormat =
       kN32_SkColorType == kRGBA_8888_SkColorType ? GL_RGBA : GL_BGRA_EXT;
   if (pixel_format_ == kF16CanvasPixelFormat)
     return GL_RGBA;
 
-  return kN32GLInternalBufferFormat;
+  return kN32GLUnsizedInternalBufferFormat;
+}
+
+GLenum CanvasColorParams::GLSizedInternalFormat() const {
+  static_assert(kN32_SkColorType == kRGBA_8888_SkColorType ||
+                    kN32_SkColorType == kBGRA_8888_SkColorType,
+                "Unexpected kN32_SkColorType value.");
+  constexpr GLenum kN32GLSizedInternalBufferFormat =
+      kN32_SkColorType == kRGBA_8888_SkColorType ? GL_RGBA8 : GL_BGRA8_EXT;
+  if (pixel_format_ == kF16CanvasPixelFormat)
+    return GL_RGBA16F;
+  return kN32GLSizedInternalBufferFormat;
 }
 
 GLenum CanvasColorParams::GLType() const {
