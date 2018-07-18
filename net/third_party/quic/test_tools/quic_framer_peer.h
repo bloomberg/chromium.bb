@@ -143,6 +143,10 @@ class QuicFramerPeer {
   static bool ProcessNewConnectionIdFrame(QuicFramer* framer,
                                           QuicDataReader* reader,
                                           QuicNewConnectionIdFrame* frame);
+  static size_t ComputeFrameLength(QuicFramer* framer,
+                                   const QuicFrame& frame,
+                                   bool last_frame_in_packet,
+                                   QuicPacketNumberLength packet_number_length);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);

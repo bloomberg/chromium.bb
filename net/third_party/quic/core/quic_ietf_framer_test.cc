@@ -267,10 +267,14 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     EXPECT_TRUE(QuicFramerPeer::AppendIetfAckFrameAndTypeByte(
         &framer_, transmit_frame, &writer));
 
-    // Better have something in the packet buffer.
-    EXPECT_NE(0u, writer.length());
+    size_t expected_frame_length = QuicFramerPeer::ComputeFrameLength(
+        &framer_, QuicFrame(&transmit_frame), false,
+        static_cast<QuicPacketNumberLength>(123456u));
+
+    // Encoded length should match what ComputeFrameLength returns
+    EXPECT_EQ(expected_frame_length, writer.length());
     // and what is in the buffer should be the expected size.
-    EXPECT_EQ(expected_size, writer.length());
+    EXPECT_EQ(expected_size, writer.length()) << "Frame is " << transmit_frame;
     // Now set up a reader to read in the frame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
@@ -646,6 +650,15 @@ struct ack_frame ack_frame_variants[] = {
   { 100000000, {{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}, {11, 12}}},
   { 0, {{1, 65}} },
   { 9223372036854775807, {{1, 11}, {74, 138}} },
+  // This ack is for packets 60 & 125. There are 64 packets in the gap.
+  // The encoded value is gap_size - 1, or 63. Crosses a VarInt62 encoding
+  // boundary...
+  { 1, {{60, 61}, {125, 126}} },
+  { 2, {{ 1, 65}, {129, 130}} },
+  { 3, {{ 1, 65}, {129, 195}} },
+  { 4, {{ 1, 65}, {129, 194}} },
+  { 5, {{ 1, 65}, {129, 193}} },
+  { 6, {{ 1, 65}, {129, 192}} },
 };
 // clang-format on
 

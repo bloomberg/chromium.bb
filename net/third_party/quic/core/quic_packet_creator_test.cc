@@ -1183,6 +1183,17 @@ TEST_P(QuicPacketCreatorTest, FlushWithExternalBuffer) {
   creator_.Flush();
 }
 
+// Test for error found in
+// https://bugs.chromium.org/p/chromium/issues/detail?id=859949 where a gap
+// length that crosses an IETF VarInt length boundary would cause a
+// failure. While this test is not applicable to versions other than version 99,
+// it should still work. Hence, it is not made version-specific.
+TEST_P(QuicPacketCreatorTest, IetfAckGapErrorRegression) {
+  QuicAckFrame ack_frame = InitAckFrame({{60, 61}, {125, 126}});
+  frames_.push_back(QuicFrame(&ack_frame));
+  SerializeAllFrames(frames_);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

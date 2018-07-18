@@ -303,5 +303,15 @@ void QuicFramerPeer::SetLastPacketIsIetfQuic(QuicFramer* framer,
   framer->last_packet_is_ietf_quic_ = last_packet_is_ietf_quic;
 }
 
+// static
+size_t QuicFramerPeer::ComputeFrameLength(
+    QuicFramer* framer,
+    const QuicFrame& frame,
+    bool last_frame_in_packet,
+    QuicPacketNumberLength packet_number_length) {
+  return framer->ComputeFrameLength(frame, last_frame_in_packet,
+                                    packet_number_length);
+}
+
 }  // namespace test
 }  // namespace quic
