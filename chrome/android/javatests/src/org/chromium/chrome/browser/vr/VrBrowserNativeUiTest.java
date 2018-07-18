@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.VrTestFramework.NATIVE_URLS_OF_INTEREST;
-import static org.chromium.chrome.browser.vr.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.NATIVE_URLS_OF_INTEREST;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.support.test.filters.MediumTest;
@@ -20,8 +20,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
-import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.TimeoutException;
@@ -36,15 +36,15 @@ public class VrBrowserNativeUiTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityXrTestRule mVrTestRule = new ChromeTabbedActivityXrTestRule();
+    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
 
     private static final String TEST_PAGE_2D_URL =
-            VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
+            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
 
     @Before
     public void setUp() throws Exception {
-        VrTransitionUtils.forceEnterVr();
-        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowser();
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
     }
 
     /**

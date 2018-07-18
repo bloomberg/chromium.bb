@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.TestFramework.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.graphics.PointF;
@@ -26,10 +25,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
-import org.chromium.chrome.browser.vr.util.TransitionUtils;
+import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -59,14 +58,14 @@ public class VrBrowserDialogTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityXrTestRule mVrTestRule = new ChromeTabbedActivityXrTestRule();
+    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
 
-    private VrTestFramework mVrTestFramework;
+    private VrBrowserTestFramework mVrBrowserTestFramework;
     private EmbeddedTestServer mServer;
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mVrTestRule);
+        mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
 
         // Create UiCapture image directory.
         if (!sBaseDirectory.exists() && !sBaseDirectory.isDirectory()) {
@@ -102,16 +101,16 @@ public class VrBrowserDialogTest {
         if (mServer == null) {
             mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         }
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                mServer.getURL(VrTestFramework.getEmbeddedServerPathForHtmlTestFile(initialPage)),
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                mServer.getURL(
+                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(initialPage)),
                 PAGE_LOAD_TIMEOUT_S);
 
         // Display the given permission prompt.
-        Assert.assertTrue(TransitionUtils.forceEnterVr());
-        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        VrTestFramework.runJavaScriptOrFail(navigationCommand, POLL_TIMEOUT_SHORT_MS,
-                mVrTestFramework.getFirstTabWebContents());
-        TransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
+        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        mVrBrowserTestFramework.runJavaScriptOrFail(navigationCommand, POLL_TIMEOUT_SHORT_MS);
+        VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
         // There is currently no way to know whether a dialog has been drawn yet,
         // so sleep long enough for it to show up.
@@ -120,17 +119,17 @@ public class VrBrowserDialogTest {
 
     private void displayJavascriptDialog(String initialPage, String navigationCommand)
             throws InterruptedException, TimeoutException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
 
         // Display the JavaScript dialog.
-        Assert.assertTrue(TransitionUtils.forceEnterVr());
-        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         // We can't use runJavaScriptOrFail here because JavaScript execution is blocked while a
         // JS dialog is visible, so runJavaScriptOrFail will always time out.
         JavaScriptUtils.executeJavaScript(
-                mVrTestFramework.getFirstTabWebContents(), navigationCommand);
-        TransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
+                mVrBrowserTestFramework.getFirstTabWebContents(), navigationCommand);
+        VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
         // There is currently no way to know whether a dialog has been drawn yet,
         // so sleep long enough for it to show up.
@@ -139,10 +138,10 @@ public class VrBrowserDialogTest {
 
     private void clickElement(String initialPage, int elementName)
             throws InterruptedException, TimeoutException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue(TransitionUtils.forceEnterVr());
-        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
+        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         Thread.sleep(VR_ENTRY_SLEEP_MS);
         NativeUiUtils.clickElementAndWaitForUiQuiescence(elementName, new PointF(0, 0));
         // Technically not necessary, but clicking on native elements causes the laser to originate
@@ -262,9 +261,7 @@ public class VrBrowserDialogTest {
         NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // Ensure the cancel button was clicked.
         Assert.assertTrue("Negative button clicked",
-                VrTestFramework
-                        .runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS,
-                                mVrTestFramework.getFirstTabWebContents())
+                mVrBrowserTestFramework.runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS)
                         .equals("false"));
         Assert.assertTrue(captureScreen("JavaScriptConfirm_Dismissed"));
     }
@@ -290,9 +287,8 @@ public class VrBrowserDialogTest {
         // will only be what we expect if the positive button was actually clicked (as opposed to
         // canceled).
         Assert.assertTrue("Positive button clicked",
-                VrTestFramework
-                        .runJavaScriptOrFail("p == '" + expectedString + "'", POLL_TIMEOUT_SHORT_MS,
-                                mVrTestFramework.getFirstTabWebContents())
+                mVrBrowserTestFramework
+                        .runJavaScriptOrFail("p == '" + expectedString + "'", POLL_TIMEOUT_SHORT_MS)
                         .equals("true"));
         Assert.assertTrue(captureScreen("JavaScriptPrompt_Dismissed"));
     }

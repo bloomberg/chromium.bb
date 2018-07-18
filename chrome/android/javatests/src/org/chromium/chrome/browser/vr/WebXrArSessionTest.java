@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.TestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.WebXrArTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.WebXrArTestFramework.POLL_TIMEOUT_LONG_MS;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -28,7 +28,6 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
-import org.chromium.chrome.browser.vr.util.XrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -47,12 +46,12 @@ Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=WebXR,WebXRHi
 public class WebXrArSessionTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
+            XrTestRuleUtils.generateDefaultTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
     private ChromeActivityTestRule mTestRule;
-    private XrTestFramework mXrTestFramework;
+    private WebXrArTestFramework mWebXrArTestFramework;
     private EmbeddedTestServer mServer;
 
     private boolean mShouldCreateServer;
@@ -64,7 +63,7 @@ public class WebXrArSessionTest {
 
     @Before
     public void setUp() throws Exception {
-        mXrTestFramework = new XrTestFramework(mTestRule);
+        mWebXrArTestFramework = new WebXrArTestFramework(mTestRule);
         // WebappActivityTestRule automatically creates a test server, and creating multiple causes
         // it to crash hitting a DCHECK. So, only handle the server ourselves if whatever test rule
         // we're using doesn't create one itself.
@@ -89,12 +88,12 @@ public class WebXrArSessionTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testArRequestSessionSucceeds() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                mServer.getURL(XrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+        mWebXrArTestFramework.loadUrlAndAwaitInitialization(
+                mServer.getURL(WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
                         "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
-        XrTransitionUtils.enterArSessionOrFail(mXrTestFramework.getFirstTabWebContents());
-        XrTestFramework.assertNoJavaScriptErrors(mXrTestFramework.getFirstTabWebContents());
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -105,15 +104,15 @@ public class WebXrArSessionTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsSucceed() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                mServer.getURL(XrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+        mWebXrArTestFramework.loadUrlAndAwaitInitialization(
+                mServer.getURL(WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
                         "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
         for (int i = 0; i < 2; i++) {
-            XrTransitionUtils.enterArSessionOrFail(mXrTestFramework.getFirstTabWebContents());
-            XrTransitionUtils.endArSession(mXrTestFramework.getFirstTabWebContents());
+            mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+            mWebXrArTestFramework.endSession();
         }
-        XrTestFramework.assertNoJavaScriptErrors(mXrTestFramework.getFirstTabWebContents());
+        mWebXrArTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -124,21 +123,18 @@ public class WebXrArSessionTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsOnlyPromptPermissionsOnce() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                mServer.getURL(XrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+        mWebXrArTestFramework.loadUrlAndAwaitInitialization(
+                mServer.getURL(WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
                         "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue(XrTransitionUtils.arSessionRequestWouldTriggerPermissionPrompt(
-                mXrTestFramework.getFirstTabWebContents()));
-        XrTransitionUtils.enterArSessionOrFail(mXrTestFramework.getFirstTabWebContents());
-        XrTransitionUtils.endArSession(mXrTestFramework.getFirstTabWebContents());
+        Assert.assertTrue(mWebXrArTestFramework.arSessionRequestWouldTriggerPermissionPrompt());
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.endSession();
         // Manually run through the same steps as enterArSessionOrFail so that we don't trigger
         // its automatic permission acceptance.
-        Assert.assertFalse(XrTransitionUtils.arSessionRequestWouldTriggerPermissionPrompt(
-                mXrTestFramework.getFirstTabWebContents()));
-        XrTransitionUtils.enterPresentation(mXrTestFramework.getFirstTabWebContents());
-        Assert.assertTrue(XrTestFramework.pollJavaScriptBoolean(
-                "sessionInfos[sessionTypes.AR].currentSession != null", POLL_TIMEOUT_LONG_MS,
-                mXrTestFramework.getFirstTabWebContents()));
+        Assert.assertFalse(mWebXrArTestFramework.arSessionRequestWouldTriggerPermissionPrompt());
+        mWebXrArTestFramework.enterSessionWithUserGesture();
+        Assert.assertTrue(mWebXrArTestFramework.pollJavaScriptBoolean(
+                "sessionInfos[sessionTypes.AR].currentSession != null", POLL_TIMEOUT_LONG_MS));
     }
 }

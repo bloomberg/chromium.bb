@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.TestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.TestFramework.POLL_CHECK_INTERVAL_LONG_MS;
-import static org.chromium.chrome.browser.vr.TestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
-import static org.chromium.chrome.browser.vr.TestFramework.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr.TestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -41,9 +41,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
-import org.chromium.chrome.browser.vr.util.TransitionUtils;
+import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
-import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content.browser.test.util.Criteria;
@@ -67,23 +66,23 @@ import java.util.concurrent.TimeoutException;
 public class WebXrVrTransitionTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
+            VrTestRuleUtils.generateDefaultTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
     private ChromeActivityTestRule mTestRule;
-    private VrTestFramework mVrTestFramework;
-    private XrTestFramework mXrTestFramework;
+    private WebXrVrTestFramework mWebXrVrTestFramework;
+    private WebVrTestFramework mWebVrTestFramework;
 
     public WebXrVrTransitionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mTestRule);
-        mXrTestFramework = new XrTestFramework(mTestRule);
+        mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
+        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
     }
 
     /**
@@ -94,7 +93,8 @@ public class WebXrVrTransitionTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRequestPresentEntersVr() throws InterruptedException {
         testPresentationEntryImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
+                WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
+                mWebVrTestFramework);
     }
 
     /**
@@ -108,13 +108,14 @@ public class WebXrVrTransitionTest {
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testRequestSessionEntersVr() throws InterruptedException {
         testPresentationEntryImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                mWebXrVrTestFramework);
     }
 
-    private void testPresentationEntryImpl(String url, TestFramework framework)
+    private void testPresentationEntryImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationOrFail(framework);
+        framework.enterSessionWithUserGestureOrFail();
         Assert.assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
 
         // Initial Pixel Test - Verify that the Canvas is blue.
@@ -157,9 +158,9 @@ public class WebXrVrTransitionTest {
     public void testWebVrDisabledWithoutFlagSet() throws InterruptedException {
         // TODO(bsheedy): Remove this test once WebVR is on by default without
         // requiring an origin trial.
-        apiDisabledWithoutFlagSetImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile("test_webvr_disabled_without_flag_set"),
-                mVrTestFramework);
+        apiDisabledWithoutFlagSetImpl(WebVrTestFramework.getFileUrlForHtmlTestFile(
+                                              "test_webvr_disabled_without_flag_set"),
+                mWebVrTestFramework);
     }
 
     /**
@@ -173,16 +174,16 @@ public class WebXrVrTransitionTest {
     public void testWebXrDisabledWithoutFlagSet() throws InterruptedException {
         // TODO(bsheedy): Remove this test once WebXR is on by default without
         // requiring an origin trial.
-        apiDisabledWithoutFlagSetImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_disabled_without_flag_set"),
-                mXrTestFramework);
+        apiDisabledWithoutFlagSetImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
+                                              "test_webxr_disabled_without_flag_set"),
+                mWebXrVrTestFramework);
     }
 
-    private void apiDisabledWithoutFlagSetImpl(String url, TestFramework framework)
+    private void apiDisabledWithoutFlagSetImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TestFramework.waitOnJavaScriptStep(framework.getFirstTabWebContents());
-        TestFramework.endTest(framework.getFirstTabWebContents());
+        framework.waitOnJavaScriptStep();
+        framework.endTest();
     }
 
     /**
@@ -194,14 +195,13 @@ public class WebXrVrTransitionTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
+        mWebVrTestFramework.loadUrlAndAwaitInitialization(
+                WebVrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
                 PAGE_LOAD_TIMEOUT_S);
-        VrTestFramework.runJavaScriptOrFail(
-                "addListener()", POLL_TIMEOUT_LONG_MS, mVrTestFramework.getFirstTabWebContents());
+        mWebVrTestFramework.runJavaScriptOrFail("addListener()", POLL_TIMEOUT_LONG_MS);
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
-        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        mWebVrTestFramework.waitOnJavaScriptStep();
+        mWebVrTestFramework.endTest();
         // VrCore has a 2000 ms debounce timeout on NFC scans. When run multiple times in different
         // activities, it is possible for a latter test to be run in the 2 seconds after the
         // previous test's NFC scan, causing it to fail flakily. So, wait 2 seconds to ensure that
@@ -218,12 +218,10 @@ public class WebXrVrTransitionTest {
     @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM, RESTRICTION_TYPE_DON_ENABLED})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile(
+        presentationPromiseUnresolvedDuringDonImpl(
+                WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_presentation_promise_unresolved_during_don"),
-                PAGE_LOAD_TIMEOUT_S);
-        VrTransitionUtils.enterPresentationAndWait(mVrTestFramework.getFirstTabWebContents());
-        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+                mWebVrTestFramework);
     }
 
     /**
@@ -240,16 +238,16 @@ public class WebXrVrTransitionTest {
             public void testPresentationPromiseUnresolvedDuringDon_WebXr()
             throws InterruptedException {
         presentationPromiseUnresolvedDuringDonImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_presentation_promise_unresolved_during_don"),
-                mXrTestFramework);
+                mWebXrVrTestFramework);
     }
 
-    private void presentationPromiseUnresolvedDuringDonImpl(String url, TestFramework framework)
-            throws InterruptedException {
+    private void presentationPromiseUnresolvedDuringDonImpl(
+            String url, WebXrVrTestFramework framework) throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationAndWait(framework.getFirstTabWebContents());
-        TestFramework.endTest(framework.getFirstTabWebContents());
+        framework.enterSessionWithUserGestureOrFail();
+        framework.endTest();
     }
 
     /**
@@ -261,9 +259,9 @@ public class WebXrVrTransitionTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseRejectedIfDonCanceled() throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile(
+                WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_presentation_promise_rejected_if_don_canceled"),
-                mVrTestFramework);
+                mWebVrTestFramework);
     }
 
     /**
@@ -279,17 +277,17 @@ public class WebXrVrTransitionTest {
             public void testPresentationPromiseRejectedIfDonCanceled_WebXr()
             throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_presentation_promise_rejected_if_don_canceled"),
-                mXrTestFramework);
+                mWebXrVrTestFramework);
     }
 
-    private void presentationPromiseRejectedIfDonCanceledImpl(String url, TestFramework framework)
-            throws InterruptedException {
+    private void presentationPromiseRejectedIfDonCanceledImpl(
+            String url, WebXrVrTestFramework framework) throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         final UiDevice uiDevice =
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        TransitionUtils.enterPresentation(framework.getFirstTabWebContents());
+        framework.enterSessionWithUserGesture();
         // Wait until the DON flow appears to be triggered
         // TODO(bsheedy): Make this less hacky if there's ever an explicit way to check if the
         // DON flow is currently active https://crbug.com/758296
@@ -300,8 +298,8 @@ public class WebXrVrTransitionTest {
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         uiDevice.pressBack();
-        TestFramework.waitOnJavaScriptStep(framework.getFirstTabWebContents());
-        TestFramework.endTest(framework.getFirstTabWebContents());
+        framework.waitOnJavaScriptStep();
+        framework.endTest();
     }
 
     /**
@@ -311,7 +309,8 @@ public class WebXrVrTransitionTest {
     @MediumTest
     public void testControlsVisibleAfterExitingVr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
+                WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
+                mWebVrTestFramework);
     }
 
     /**
@@ -324,14 +323,15 @@ public class WebXrVrTransitionTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                mWebXrVrTestFramework);
     }
 
-    private void controlsVisibleAfterExitingVrImpl(String url, final TestFramework framework)
+    private void controlsVisibleAfterExitingVrImpl(String url, final WebXrVrTestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationOrFail(framework);
-        TransitionUtils.forceExitVr();
+        framework.enterSessionWithUserGestureOrFail();
+        VrTransitionUtils.forceExitVr();
         // The hiding of the controls may only propagate after VR has exited, so give it a chance
         // to propagate. In the worst case this test will erroneously pass, but should never
         // erroneously fail, and should only be flaky if omnibox showing is broken.
@@ -355,9 +355,9 @@ public class WebXrVrTransitionTest {
     @RetryOnFailure
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile(
+                WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_window_raf_stops_firing_while_presenting"),
-                mVrTestFramework);
+                mWebVrTestFramework);
     }
 
     /**
@@ -373,28 +373,25 @@ public class WebXrVrTransitionTest {
             public void testWindowRafStopsFiringWhilePresenting_WebXr()
             throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_window_raf_stops_firing_during_immersive_session"),
-                mXrTestFramework);
+                mWebXrVrTestFramework);
     }
 
-    private void windowRafStopsFiringWhilePresentingImpl(String url, TestFramework framework)
+    private void windowRafStopsFiringWhilePresentingImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TestFramework.executeStepAndWait(
-                "stepVerifyBeforePresent()", framework.getFirstTabWebContents());
+        framework.executeStepAndWait("stepVerifyBeforePresent()");
         // Pausing of window.rAF is done asynchronously, so wait until that's done.
         final CountDownLatch vsyncPausedLatch = new CountDownLatch(1);
         TestVrShellDelegate.getInstance().setVrShellOnVSyncPausedCallback(
                 () -> { vsyncPausedLatch.countDown(); });
-        TransitionUtils.enterPresentationOrFail(framework);
+        framework.enterSessionWithUserGestureOrFail();
         vsyncPausedLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
-        TestFramework.executeStepAndWait(
-                "stepVerifyDuringPresent()", framework.getFirstTabWebContents());
-        TransitionUtils.forceExitVr();
-        TestFramework.executeStepAndWait(
-                "stepVerifyAfterPresent()", framework.getFirstTabWebContents());
-        TestFramework.endTest(framework.getFirstTabWebContents());
+        framework.executeStepAndWait("stepVerifyDuringPresent()");
+        VrTransitionUtils.forceExitVr();
+        framework.executeStepAndWait("stepVerifyAfterPresent()");
+        framework.endTest();
     }
 
     /**
@@ -406,7 +403,8 @@ public class WebXrVrTransitionTest {
     public void testRendererKilledInWebVrStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         rendererKilledInVrStaysInVrImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
+                WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
+                mWebVrTestFramework);
     }
 
     /**
@@ -421,13 +419,14 @@ public class WebXrVrTransitionTest {
             public void testRendererKilledInWebXrStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         rendererKilledInVrStaysInVrImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                mWebXrVrTestFramework);
     }
 
-    private void rendererKilledInVrStaysInVrImpl(String url, TestFramework framework)
+    private void rendererKilledInVrStaysInVrImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationOrFail(framework);
+        framework.enterSessionWithUserGestureOrFail();
         framework.simulateRendererKilled();
         Assert.assertTrue("Browser is in VR", VrShellDelegate.isInVr());
     }
@@ -442,12 +441,12 @@ public class WebXrVrTransitionTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafFiresDuringNonImmersiveSession() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getFileUrlForHtmlTestFile(
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_window_raf_fires_during_non_immersive_session"),
                 PAGE_LOAD_TIMEOUT_S);
-        XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
-        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+        mWebXrVrTestFramework.waitOnJavaScriptStep();
+        mWebXrVrTestFramework.endTest();
     }
 
     /**
@@ -461,18 +460,15 @@ public class WebXrVrTransitionTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testNonImmersiveStopsDuringImmersive() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getFileUrlForHtmlTestFile(
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_non_immersive_stops_during_immersive"),
                 PAGE_LOAD_TIMEOUT_S);
-        XrTestFramework.executeStepAndWait(
-                "stepBeforeImmersive()", mXrTestFramework.getFirstTabWebContents());
-        TransitionUtils.enterPresentationOrFail(mXrTestFramework);
-        XrTestFramework.executeStepAndWait(
-                "stepDuringImmersive()", mXrTestFramework.getFirstTabWebContents());
-        TransitionUtils.forceExitVr();
-        XrTestFramework.executeStepAndWait(
-                "stepAfterImmersive()", mXrTestFramework.getFirstTabWebContents());
-        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+        mWebXrVrTestFramework.executeStepAndWait("stepBeforeImmersive()");
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrVrTestFramework.executeStepAndWait("stepDuringImmersive()");
+        VrTransitionUtils.forceExitVr();
+        mWebXrVrTestFramework.executeStepAndWait("stepAfterImmersive()");
+        mWebXrVrTestFramework.endTest();
     }
 }

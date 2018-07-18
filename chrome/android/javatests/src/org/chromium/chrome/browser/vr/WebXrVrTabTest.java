@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 
 import android.os.Build;
 import android.support.test.filters.MediumTest;
@@ -22,7 +22,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 
@@ -39,23 +39,23 @@ import java.util.concurrent.Callable;
 public class WebXrVrTabTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
+            VrTestRuleUtils.generateDefaultTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
     private ChromeActivityTestRule mTestRule;
-    private VrTestFramework mVrTestFramework;
-    private XrTestFramework mXrTestFramework;
+    private WebXrVrTestFramework mWebXrVrTestFramework;
+    private WebVrTestFramework mWebVrTestFramework;
 
     public WebXrVrTabTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mTestRule);
-        mXrTestFramework = new XrTestFramework(mTestRule);
+        mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
+        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
     }
 
     /**
@@ -65,8 +65,8 @@ public class WebXrVrTabTest {
     @MediumTest
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         testPoseDataUnfocusedTabImpl(
-                VrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
-                mVrTestFramework);
+                WebVrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
+                mWebVrTestFramework);
     }
 
     /**
@@ -78,21 +78,19 @@ public class WebXrVrTabTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPoseDataUnfocusedTab_WebXr() throws InterruptedException {
-        testPoseDataUnfocusedTabImpl(
-                XrTestFramework.getFileUrlForHtmlTestFile("webxr_test_pose_data_unfocused_tab"),
-                mXrTestFramework);
+        testPoseDataUnfocusedTabImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
+                                             "webxr_test_pose_data_unfocused_tab"),
+                mWebXrVrTestFramework);
     }
 
-    private void testPoseDataUnfocusedTabImpl(String url, TestFramework framework)
+    private void testPoseDataUnfocusedTabImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TestFramework.executeStepAndWait(
-                "stepCheckFrameDataWhileFocusedTab()", framework.getFirstTabWebContents());
+        framework.executeStepAndWait("stepCheckFrameDataWhileFocusedTab()");
 
         mTestRule.loadUrlInNewTab("about:blank");
 
-        TestFramework.executeStepAndWait(
-                "stepCheckFrameDataWhileNonFocusedTab()", framework.getFirstTabWebContents());
-        TestFramework.endTest(framework.getFirstTabWebContents());
+        framework.executeStepAndWait("stepCheckFrameDataWhileNonFocusedTab()");
+        framework.endTest();
     }
 }
