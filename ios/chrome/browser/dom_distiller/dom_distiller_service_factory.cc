@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 // A simple wrapper for DomDistillerService to expose it as a
@@ -77,7 +78,7 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory =
       std::make_unique<DistillerURLFetcherFactory>(
-          context->GetRequestContext());
+          context->GetSharedURLLoaderFactory());
 
   dom_distiller::proto::DomDistillerOptions options;
   std::unique_ptr<DistillerFactory> distiller_factory =

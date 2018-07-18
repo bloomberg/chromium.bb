@@ -9,9 +9,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace dom_distiller {
 
@@ -20,21 +22,23 @@ class DistillerURLFetcher;
 // Class for creating a DistillerURLFetcher.
 class DistillerURLFetcherFactory {
  public:
-  explicit DistillerURLFetcherFactory(
-      net::URLRequestContextGetter* context_getter);
-  virtual ~DistillerURLFetcherFactory() {}
+  DistillerURLFetcherFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  virtual ~DistillerURLFetcherFactory();
   virtual DistillerURLFetcher* CreateDistillerURLFetcher() const;
 
  private:
-  net::URLRequestContextGetter* context_getter_;
+  friend class TestDistillerURLFetcherFactory;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };
 
-// This class fetches a URL, and notifies the caller when the operation
+// This class loads a URL, and notifies the caller when the operation
 // completes or fails. If the request fails, an empty string will be returned.
-class DistillerURLFetcher : public net::URLFetcherDelegate {
+class DistillerURLFetcher {
  public:
-  explicit DistillerURLFetcher(net::URLRequestContextGetter* context_getter);
-  ~DistillerURLFetcher() override;
+  explicit DistillerURLFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  virtual ~DistillerURLFetcher();
 
   // Indicates when a fetch is done.
   typedef base::Callback<void(const std::string& data)> URLFetcherCallback;
@@ -44,17 +48,15 @@ class DistillerURLFetcher : public net::URLFetcherDelegate {
                         const URLFetcherCallback& callback);
 
  protected:
-  virtual std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      net::URLRequestContextGetter* context_getter,
+  virtual std::unique_ptr<network::SimpleURLLoader> CreateURLFetcher(
       const std::string& url);
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   URLFetcherCallback callback_;
-  net::URLRequestContextGetter* context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   DISALLOW_COPY_AND_ASSIGN(DistillerURLFetcher);
 };
 
