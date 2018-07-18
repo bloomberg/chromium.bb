@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_handler.h"
@@ -43,21 +44,27 @@ class AssistantOptInUI : public ui::WebDialogUI {
 class AssistantOptInDialog : public SystemWebDialogDelegate {
  public:
   // Shows the assistant optin dialog.
-  static void Show();
+  static void Show(ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback
+                       callback = base::DoNothing());
 
   // Returns whether the dialog is being shown.
   static bool IsActive();
 
  protected:
-  AssistantOptInDialog();
+  explicit AssistantOptInDialog(
+      ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback);
   ~AssistantOptInDialog() override;
 
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
+  void OnDialogClosed(const std::string& json_retval) override;
 
  private:
+  // Callback to run if the flow is completed.
+  ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback_;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInDialog);
 };
 

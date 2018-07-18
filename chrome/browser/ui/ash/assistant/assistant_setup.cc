@@ -21,8 +21,10 @@ AssistantSetup::AssistantSetup(service_manager::Connector* connector)
 
 AssistantSetup::~AssistantSetup() = default;
 
-void AssistantSetup::StartAssistantOptInFlow() {
+void AssistantSetup::StartAssistantOptInFlow(
+    StartAssistantOptInFlowCallback callback) {
   if (chromeos::AssistantOptInDialog::IsActive())
     return;
-  chromeos::AssistantOptInDialog::Show();
+
+  chromeos::AssistantOptInDialog::Show(std::move(callback));
 }
