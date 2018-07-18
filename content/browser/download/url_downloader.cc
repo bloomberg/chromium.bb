@@ -13,7 +13,6 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "components/download/public/common/url_download_request_handle.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,6 +24,43 @@
 #include "ui/base/page_transition_types.h"
 
 namespace content {
+
+class UrlDownloader::RequestHandle
+    : public download::DownloadRequestHandleInterface {
+ public:
+  RequestHandle(base::WeakPtr<UrlDownloader> downloader,
+                scoped_refptr<base::SequencedTaskRunner> downloader_task_runner)
+      : downloader_(downloader),
+        downloader_task_runner_(downloader_task_runner) {}
+  RequestHandle(RequestHandle&& other)
+      : downloader_(std::move(other.downloader_)),
+        downloader_task_runner_(std::move(other.downloader_task_runner_)) {}
+  RequestHandle& operator=(RequestHandle&& other) {
+    downloader_ = std::move(other.downloader_);
+    downloader_task_runner_ = std::move(other.downloader_task_runner_);
+    return *this;
+  }
+
+  // DownloadRequestHandleInterface
+  void PauseRequest() override {
+    downloader_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&UrlDownloader::PauseRequest, downloader_));
+  }
+  void ResumeRequest() override {
+    downloader_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&UrlDownloader::ResumeRequest, downloader_));
+  }
+  void CancelRequest(bool user_cancel) override {
+    downloader_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&UrlDownloader::CancelRequest, downloader_));
+  }
+
+ private:
+  base::WeakPtr<UrlDownloader> downloader_;
+  scoped_refptr<base::SequencedTaskRunner> downloader_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestHandle);
+};
 
 // static
 std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
@@ -185,7 +221,7 @@ void UrlDownloader::OnStart(
     std::unique_ptr<download::DownloadCreateInfo> create_info,
     std::unique_ptr<ByteStreamReader> stream_reader,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
-  create_info->request_handle.reset(new download::UrlDownloadRequestHandle(
+  create_info->request_handle.reset(new RequestHandle(
       weak_ptr_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
 
   BrowserThread::PostTask(
