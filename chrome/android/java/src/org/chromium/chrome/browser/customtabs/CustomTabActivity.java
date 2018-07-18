@@ -1165,8 +1165,8 @@ public class CustomTabActivity extends ChromeActivity {
                     params.getIcon(this), params.getDescription(), v -> {
                         if (getActivityTab() == null) return;
                         mIntentDataProvider.sendButtonPendingIntentWithUrlAndTitle(
-                                getApplicationContext(), params, getActivityTab().getUrl(),
-                                getActivityTab().getTitle());
+                                ContextUtils.getApplicationContext(), params,
+                                getActivityTab().getUrl(), getActivityTab().getTitle());
                         RecordUserAction.record("CustomTabsCustomActionButtonClick");
                         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()
                                 && TextUtils.equals(

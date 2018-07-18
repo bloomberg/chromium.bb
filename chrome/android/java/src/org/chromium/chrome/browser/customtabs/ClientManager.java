@@ -22,6 +22,7 @@ import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -255,14 +256,12 @@ class ClientManager {
         }
     }
 
-    private final Context mContext;
     private final Map<CustomTabsSessionToken, SessionParams> mSessionParams = new HashMap<>();
     private final SparseBooleanArray mUidHasCalledWarmup = new SparseBooleanArray();
     private boolean mWarmupHasBeenCalled;
 
-    public ClientManager(Context context) {
-        mContext = context.getApplicationContext();
-        RequestThrottler.loadInBackground(mContext);
+    public ClientManager() {
+        RequestThrottler.loadInBackground(ContextUtils.getApplicationContext());
     }
 
     /** Creates a new session.
@@ -276,7 +275,8 @@ class ClientManager {
     public boolean newSession(CustomTabsSessionToken session, int uid,
             DisconnectCallback onDisconnect, @NonNull PostMessageHandler postMessageHandler) {
         if (session == null) return false;
-        SessionParams params = new SessionParams(mContext, uid, onDisconnect, postMessageHandler);
+        SessionParams params = new SessionParams(
+                ContextUtils.getApplicationContext(), uid, onDisconnect, postMessageHandler);
         synchronized (this) {
             if (mSessionParams.containsKey(session)) return false;
             mSessionParams.put(session, params);
@@ -327,7 +327,8 @@ class ClientManager {
                 TextUtils.isEmpty(url) && lowConfidence && !params.lowConfidencePrediction;
         params.setPredictionMetrics(url, SystemClock.elapsedRealtime(), lowConfidence);
         if (firstLowConfidencePrediction) return true;
-        RequestThrottler throttler = RequestThrottler.getForUid(mContext, uid);
+        RequestThrottler throttler =
+                RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid);
         return throttler.updateStatsAndReturnWhetherAllowed();
     }
 
@@ -381,8 +382,8 @@ class ClientManager {
         if (outcome == PredictionStatus.GOOD) {
             long elapsedTimeMs = SystemClock.elapsedRealtime()
                     - params.getLastMayLaunchUrlTimestamp();
-            RequestThrottler.getForUid(mContext, params.uid).registerSuccess(
-                    params.mPredictedUrl);
+            RequestThrottler.getForUid(ContextUtils.getApplicationContext(), params.uid)
+                    .registerSuccess(params.mPredictedUrl);
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
                     elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
         }
@@ -462,7 +463,7 @@ class ClientManager {
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
                 && InstalledAppProviderImpl.isAppInstalledAndAssociatedWithOrigin(
                            params.getPackageName(), URI.create(origin.toString()),
-                           mContext.getPackageManager())) {
+                           ContextUtils.getApplicationContext().getPackageManager())) {
             params.mLinkedOrigins.add(origin);
         }
         return true;
@@ -724,13 +725,14 @@ class ClientManager {
 
         if (connection == null) {
             String packageName = intent.getComponent().getPackageName();
-            PackageManager pm = mContext.getApplicationContext().getPackageManager();
+            PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
             // Only binds to the application associated to this session.
             if (!Arrays.asList(pm.getPackagesForUid(params.uid)).contains(packageName)) {
                 return false;
             }
             Intent serviceIntent = new Intent().setComponent(intent.getComponent());
-            connection = new KeepAliveServiceConnection(mContext, serviceIntent);
+            connection = new KeepAliveServiceConnection(
+                    ContextUtils.getApplicationContext(), serviceIntent);
         }
 
         boolean ok = connection.connect();
@@ -748,22 +750,24 @@ class ClientManager {
 
     /** See {@link RequestThrottler#isPrerenderingAllowed()} */
     public synchronized boolean isPrerenderingAllowed(int uid) {
-        return RequestThrottler.getForUid(mContext, uid).isPrerenderingAllowed();
+        return RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid)
+                .isPrerenderingAllowed();
     }
 
     /** See {@link RequestThrottler#registerPrerenderRequest(String)} */
     public synchronized void registerPrerenderRequest(int uid, String url) {
-        RequestThrottler.getForUid(mContext, uid).registerPrerenderRequest(url);
+        RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid)
+                .registerPrerenderRequest(url);
     }
 
     /** See {@link RequestThrottler#reset()} */
     public synchronized void resetThrottling(int uid) {
-        RequestThrottler.getForUid(mContext, uid).reset();
+        RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid).reset();
     }
 
     /** See {@link RequestThrottler#ban()} */
     public synchronized void ban(int uid) {
-        RequestThrottler.getForUid(mContext, uid).ban();
+        RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid).ban();
     }
 
     /**
@@ -782,7 +786,8 @@ class ClientManager {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
         mSessionParams.remove(session);
-        if (params.postMessageHandler != null) params.postMessageHandler.cleanup(mContext);
+        if (params.postMessageHandler != null)
+            params.postMessageHandler.cleanup(ContextUtils.getApplicationContext());
         if (params.originVerifier != null) params.originVerifier.cleanUp();
         if (params.disconnectCallback != null) params.disconnectCallback.run(session);
         mUidHasCalledWarmup.delete(params.uid);

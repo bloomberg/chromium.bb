@@ -21,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
@@ -258,7 +259,8 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     private boolean showRemoteViews(RemoteViews remoteViews) {
         final View inflatedView;
         try {
-            inflatedView = remoteViews.apply(mActivity.getApplicationContext(), getBottomBarView());
+            inflatedView =
+                    remoteViews.apply(ContextUtils.getApplicationContext(), getBottomBarView());
         } catch (RemoteViews.ActionException | InflateException | Resources.NotFoundException e) {
             Log.e(TAG, "Failed to inflate the RemoteViews", e);
             return false;
