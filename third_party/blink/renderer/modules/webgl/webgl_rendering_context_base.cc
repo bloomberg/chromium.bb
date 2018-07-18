@@ -749,28 +749,21 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
     ScriptState* script_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmapWebGL;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
-  if (!GetDrawingBuffer())
-    return nullptr;
-  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
-  scoped_refptr<StaticBitmapImage> image =
-      GetDrawingBuffer()->TransferToStaticBitmapImage(&image_release_callback);
-  GetDrawingBuffer()->SwapPreviousFrameCallback(
-      std::move(image_release_callback));
-
-  return ImageBitmap::Create(image);
+  return ImageBitmap::Create(
+      GetDrawingBuffer()->TransferToStaticBitmapImage(nullptr));
 }
 
 void WebGLRenderingContextBase::commit() {
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
 
-  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
-  scoped_refptr<StaticBitmapImage> image =
-      GetStaticBitmapImage(&image_release_callback);
-  GetDrawingBuffer()->SwapPreviousFrameCallback(
-      std::move(image_release_callback));
-
-  Host()->Commit(std::move(image), SkIRect::MakeWH(width, height));
+  if (PaintRenderingResultsToCanvas(kBackBuffer)) {
+    if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      Host()->Commit(Host()->ResourceProvider()->ProduceFrame(),
+                     SkIRect::MakeWH(width, height));
+    }
+  }
+  MarkLayerComposited();
 }
 
 scoped_refptr<StaticBitmapImage>
@@ -791,6 +784,9 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
     return nullptr;
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   IntSize size = ClampedCanvasSize();
+  // Since we are grabbing a snapshot that is not for compositing, we use a
+  // custom resource provider. This avoids consuming compositing-specific
+  // resources (e.g. GpuMemoryBuffer)
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
@@ -1032,8 +1028,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       is_ext_color_buffer_float_formats_added_(false),
       context_type_(context_type) {
   DCHECK(context_provider);
-
-  Host()->RegisterContextToDispatch(this);
 
   // TODO(offenwanger) Make sure this is being created on a compatible adapter.
   compatible_xr_device_ =
@@ -1392,19 +1386,15 @@ void WebGLRenderingContextBase::DidDraw() {
 }
 
 void WebGLRenderingContextBase::PushFrame() {
-  if (!marked_canvas_dirty_)
-    return;
-
-  marked_canvas_dirty_ = false;
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
-
-  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
-  scoped_refptr<StaticBitmapImage> image =
-      GetStaticBitmapImage(&image_release_callback);
-  GetDrawingBuffer()->SwapPreviousFrameCallback(
-      std::move(image_release_callback));
-  return Host()->PushFrame(std::move(image), SkIRect::MakeWH(width, height));
+  if (PaintRenderingResultsToCanvas(kBackBuffer)) {
+    if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      Host()->PushFrame(Host()->ResourceProvider()->ProduceFrame(),
+                        SkIRect::MakeWH(width, height));
+    }
+  }
+  MarkLayerComposited();
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
@@ -1553,20 +1543,18 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   if (!marked_canvas_dirty_ && !must_clear_now)
     return false;
 
-  canvas()->ClearCopiedImage();
+  if (canvas())
+    canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
-  if (!canvas()->GetOrCreateCanvasResourceProvider(kPreferAcceleration))
-    return false;
-
-  if (!canvas()->ResourceProvider()->IsAccelerated())
+  if (!Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration))
     return false;
 
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  if (!CopyRenderingResultsFromDrawingBuffer(canvas()->ResourceProvider(),
+  if (!CopyRenderingResultsFromDrawingBuffer(Host()->ResourceProvider(),
                                              source_buffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
@@ -1575,7 +1563,6 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     NOTREACHED();
     return false;
   }
-
   return true;
 }
 
@@ -1590,23 +1577,36 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     SourceDrawingBuffer source_buffer) const {
   if (!drawing_buffer_)
     return false;
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
-      SharedGpuContext::ContextProviderWrapper();
-  if (!shared_context_wrapper)
-    return false;
-  gpu::gles2::GLES2Interface* gl =
-      shared_context_wrapper->ContextProvider()->ContextGL();
-  GLuint texture_id = resource_provider->GetBackingTextureHandleForOverwrite();
-  if (!texture_id)
-    return false;
+  if (resource_provider->IsAccelerated()) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
+        SharedGpuContext::ContextProviderWrapper();
+    if (!shared_context_wrapper)
+      return false;
+    gpu::gles2::GLES2Interface* gl =
+        shared_context_wrapper->ContextProvider()->ContextGL();
+    GLuint texture_id =
+        resource_provider->GetBackingTextureHandleForOverwrite();
+    if (!texture_id)
+      return false;
 
-  // TODO(xlai): Flush should not be necessary if the synchronization in
-  // CopyToPlatformTexture is done correctly. See crbug.com/794706.
-  gl->Flush();
+    // TODO(xlai): Flush should not be necessary if the synchronization in
+    // CopyToPlatformTexture is done correctly. See crbug.com/794706.
+    gl->Flush();
 
-  return drawing_buffer_->CopyToPlatformTexture(
-      gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
-      IntRect(IntPoint(0, 0), drawing_buffer_->Size()), source_buffer);
+    return drawing_buffer_->CopyToPlatformTexture(
+        gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
+        IntRect(IntPoint(0, 0), drawing_buffer_->Size()), source_buffer);
+  }
+
+  // Note: This code path could work for all cases. The only reason there
+  // is a separate path for the accelerated case is that we assume texture
+  // copying is faster than drawImage.
+  scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
+  if (!image)
+    return false;
+  resource_provider->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0,
+                                         0, nullptr);
+  return true;
 }
 
 IntSize WebGLRenderingContextBase::DrawingBufferSize() const {

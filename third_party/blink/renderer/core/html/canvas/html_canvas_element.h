@@ -180,6 +180,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
   CanvasResourceDispatcher* GetOrCreateResourceDispatcher() override;
 
+  void PushFrame(scoped_refptr<StaticBitmapImage> image,
+                 const SkIRect& damage_rect) override;
+
   // ContextLifecycleObserver and PageVisibilityObserver implementation
   void ContextDestroyed(ExecutionContext*) override;
 

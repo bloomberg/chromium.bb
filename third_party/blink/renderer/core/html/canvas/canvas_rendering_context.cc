@@ -100,16 +100,6 @@ void CanvasRenderingContext::Dispose() {
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
   }
 
-  if (Host() && Host()->GetTopExecutionContext() &&
-      Host()->GetTopExecutionContext()->IsWorkerGlobalScope()) {
-    WorkerAnimationFrameProvider* provider =
-        ToWorkerGlobalScope(Host()->GetTopExecutionContext())
-            ->GetAnimationFrameProvider();
-    if (provider) {
-      provider->RemoveContextToDispatch(this);
-    }
-  }
-
   // HTMLCanvasElement and CanvasRenderingContext have a circular reference.
   // When the pair is no longer reachable, their destruction order is non-
   // deterministic, so the first of the two to be destroyed needs to notify

@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
@@ -192,7 +193,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
 
     GLuint skia_texture_id = info.fID;
     output_resource->CopyFromTexture(skia_texture_id,
-                                     ColorParams().GLInternalFormat(),
+                                     ColorParams().GLUnsizedInternalFormat(),
                                      ColorParams().GLType());
 
     return output_resource;
@@ -416,7 +417,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     // pointers remain valid for the next iteration of this loop if necessary.
     switch (resource_type_fallback_list[i]) {
       case kTextureGpuMemoryBufferResourceType:
-        DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
+        if (!SharedGpuContext::IsGpuCompositingEnabled())
+          continue;
         if (presentation_mode !=
             CanvasResourceProvider::kAllowImageChromiumPresentationMode)
           continue;
@@ -433,14 +435,21 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
           continue;
         }
         DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-            color_params.GLInternalFormat(), color_params.GetBufferFormat()));
+            color_params.GLUnsizedInternalFormat(),
+            color_params.GetBufferFormat()));
         provider =
             std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
                 size, msaa_sample_count, color_params, context_provider_wrapper,
                 resource_dispatcher);
         break;
       case kRamGpuMemoryBufferResourceType:
+        if (!SharedGpuContext::IsGpuCompositingEnabled())
+          continue;
         if (presentation_mode != kAllowImageChromiumPresentationMode)
+          continue;
+        if (!context_provider_wrapper)
+          continue;
+        if (!Platform::Current()->GetGpuMemoryBufferManager())
           continue;
         if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
                 gfx::Size(size), color_params.GetBufferFormat())) {

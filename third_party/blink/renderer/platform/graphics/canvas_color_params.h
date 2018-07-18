@@ -88,7 +88,8 @@ class PLATFORM_EXPORT CanvasColorParams {
 
   // Gpu memory buffer parameters
   gfx::BufferFormat GetBufferFormat() const;
-  uint32_t GLInternalFormat() const;
+  uint32_t GLSizedInternalFormat() const;  // For GLES2, use Unsized
+  uint32_t GLUnsizedInternalFormat() const;
   uint32_t GLType() const;
 
   viz::ResourceFormat TransferableResourceFormat() const;
