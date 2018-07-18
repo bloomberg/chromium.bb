@@ -28,6 +28,7 @@
 #include "chrome/browser/resource_coordinator/usage_clock.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -366,6 +367,43 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
   // tab can be discarded.
   tab_lifecycle_unit.SetRecentlyAudible(false);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
+                                      web_contents_, tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+
+  UsbTabHelper* usb_tab_helper =
+      UsbTabHelper::GetOrCreateForWebContents(web_contents_);
+  usb_tab_helper->CreateChooserService(
+      web_contents_->GetMainFrame(),
+      mojo::InterfaceRequest<device::mojom::UsbChooserService>());
+
+  // Page could be intending to use the WebUSB API, but there's no connection
+  // open yet, so it can still be discarded/frozen.
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+
+  // Open a USB connection. Shouldn't be freezable/discardable anymore.
+  usb_tab_helper->IncrementConnectionCount(web_contents_->GetMainFrame());
+  ExpectCanDiscardFalseAllReasons(
+      &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_USING_WEB_USB);
+  decision_details = DecisionDetails();
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_WEB_USB,
+            decision_details.FailureReason());
+
+  // Close the USB connection. Should be freezable/discardable again.
+  usb_tab_helper->DecrementConnectionCount(web_contents_->GetMainFrame());
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+  decision_details = DecisionDetails();
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
 }
 
 TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {

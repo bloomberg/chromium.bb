@@ -28,6 +28,7 @@
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/usb/usb_tab_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -890,6 +891,14 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
   if (intervention_type == InterventionType::kProactive) {
     CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
                                                       decision_details);
+  }
+
+  // Do not freeze/discard a tab that has active WebUSB connections.
+  if (auto* usb_tab_helper = UsbTabHelper::FromWebContents(GetWebContents())) {
+    if (usb_tab_helper->IsDeviceConnected()) {
+      decision_details->AddReason(
+          DecisionFailureReason::LIVE_STATE_USING_WEB_USB);
+    }
   }
 
   // Do not freeze tabs that are currently using DevTools.
