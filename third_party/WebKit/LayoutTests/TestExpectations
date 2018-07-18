@@ -4631,3 +4631,4 @@ crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pa
 crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Timeout Pass ]
 
 crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
+crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
