@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
+#import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
 #import "ios/chrome/browser/ui/history/history_image_data_source.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
@@ -65,6 +66,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
                                          HistoryEntryInserterDelegate,
+                                         HistoryEntryItemDelegate,
                                          TableViewTextLinkCellDelegate,
                                          UISearchResultsUpdating,
                                          UISearchBarDelegate> {
@@ -272,7 +274,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     DCHECK([[self tableViewModel] numberOfSections]);
     for (const BrowsingHistoryService::HistoryEntry& entry : results) {
       HistoryEntryItem* item =
-          [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry];
+          [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
+                           accessibilityDelegate:self];
       item.text = [history::FormattedTitle(entry.title, entry.url) copy];
       item.detailText =
           [base::SysUTF8ToNSString(entry.url.GetOrigin().spec()) copy];
@@ -364,8 +367,48 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 }
 
 #pragma mark HistoryEntryItemDelegate
-// TODO(crbug.com/805190): Migrate once we decide how to handle favicons and the
-// a11y callback on HistoryEntryItem.
+
+- (void)historyEntryItemDidRequestOpen:(HistoryEntryItem*)item {
+  [self openURL:item.URL];
+}
+
+- (void)historyEntryItemDidRequestDelete:(HistoryEntryItem*)item {
+  NSInteger sectionIdentifier =
+      [self.entryInserter sectionIdentifierForTimestamp:item.timestamp];
+  if ([self.tableViewModel hasSectionForSectionIdentifier:sectionIdentifier] &&
+      [self.tableViewModel hasItem:item
+           inSectionWithIdentifier:sectionIdentifier]) {
+    NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+    [self.tableView selectRowAtIndexPath:indexPath
+                                animated:NO
+                          scrollPosition:UITableViewScrollPositionNone];
+    [self deleteSelectedItemsFromHistory];
+  }
+}
+
+- (void)historyEntryItemDidRequestCopy:(HistoryEntryItem*)item {
+  StoreURLInPasteboard(item.URL);
+}
+
+- (void)historyEntryItemDidRequestOpenInNewTab:(HistoryEntryItem*)item {
+  [self openURLInNewTab:item.URL];
+}
+
+- (void)historyEntryItemDidRequestOpenInNewIncognitoTab:
+    (HistoryEntryItem*)item {
+  [self openURLInNewIncognitoTab:item.URL];
+}
+
+- (void)historyEntryItemShouldUpdateView:(HistoryEntryItem*)item {
+  NSInteger sectionIdentifier =
+      [self.entryInserter sectionIdentifierForTimestamp:item.timestamp];
+  // If the item is still in the model, reconfigure it.
+  if ([self.tableViewModel hasSectionForSectionIdentifier:sectionIdentifier] &&
+      [self.tableViewModel hasItem:item
+           inSectionWithIdentifier:sectionIdentifier]) {
+    [self reconfigureCellsForItems:@[ item ]];
+  }
+}
 
 #pragma mark TableViewTextLinkCellDelegate
 

@@ -8,9 +8,18 @@
 #import "ios/chrome/browser/ui/history/history_entry_item_interface.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+@protocol HistoryEntryItemDelegate;
+
 // Item that display a History entry. A history entry contains the title of the
 // website, the URL and a timestamp of a previously visited website.
 @interface HistoryEntryItem : TableViewItem<HistoryEntryItemInterface>
+
+// The |delegate| is used to perform accessibility actions, it might be nil and
+// it will not be retained.
+- (instancetype)initWithType:(NSInteger)type
+       accessibilityDelegate:(id<HistoryEntryItemDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
 
 // Identifier to match a URLItem with its URLCell. Uses URL.host() as "unique"
 // identifier. Ensures that cell still is displaying item's contents before
