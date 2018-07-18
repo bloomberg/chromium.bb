@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_FACE_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
 class DOMRectReadOnly;
-class Landmark;
 
 class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

@@ -32,7 +32,6 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
-#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"  // For default Vector template parameters.
@@ -979,12 +978,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
 // store iterators in another heap object.
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-class Vector
-    : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
-      // Heap-allocated vectors with no inlineCapacity never need a destructor.
-      public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,
-                                   (INLINE_CAPACITY == 0) &&
-                                       Allocator::kIsGarbageCollected> {
+class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   USE_ALLOCATOR(Vector, Allocator);
   using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
   using TypeOperations = VectorTypeOperations<T, Allocator>;
@@ -1259,11 +1253,9 @@ class Vector
     return Allocator::template MaxElementCountInBackingStore<T>();
   }
 
-  // Off-GC-heap vectors: Destructor should be called.
-  // On-GC-heap vectors: Destructor should be called for inline buffers (if
-  // any) but destructor shouldn't be called for vector backing since it is
-  // managed by the traced GC heap.
-  void Finalize() {
+  // For design of the destructor, please refer to
+  // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
+  ~Vector() {
     if (!INLINE_CAPACITY) {
       if (LIKELY(!Base::Buffer()))
         return;
@@ -1275,10 +1267,16 @@ class Vector
       size_ = 0;  // Partial protection against use-after-free.
     }
 
+    // If this is called during sweeping, it must not touch the OutOfLineBuffer.
+    if (Allocator::IsSweepForbidden())
+      return;
     Base::Destruct();
   }
 
-  void FinalizeGarbageCollectedObject() { Finalize(); }
+  // This method will be referenced when creating an on-heap HeapVector with
+  // inline capacity and elements requiring destruction. However usage of such a
+  // type is banned with a static assert.
+  void FinalizeGarbageCollectedObject() { NOTREACHED(); }
 
   template <typename VisitorDispatcher, typename A = Allocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);

@@ -52,9 +52,7 @@ class DequeConstIterator;
 template <typename T,
           size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
-class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
-                                           (INLINE_CAPACITY == 0) &&
-                                               Allocator::kIsGarbageCollected> {
+class Deque {
   USE_ALLOCATOR(Deque, Allocator);
 
  public:
@@ -68,9 +66,9 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   Deque& operator=(const Deque&);
   Deque(Deque&&);
   Deque& operator=(Deque&&);
+  ~Deque();
 
-  void Finalize();
-  void FinalizeGarbageCollectedObject() { Finalize(); }
+  void FinalizeGarbageCollectedObject() { NOTREACHED(); }
 
   void Swap(Deque&);
 
@@ -371,18 +369,19 @@ inline void Deque<T, inlineCapacity, Allocator>::DestroyAll() {
   }
 }
 
-// Off-GC-heap deques: Destructor should be called.
-// On-GC-heap deques: Destructor should be called for inline buffers (if any)
-// but destructor shouldn't be called for vector backing since it is managed by
-// the traced GC heap.
+// For design of the destructor, please refer to
+// [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::Finalize() {
-  if (!INLINE_CAPACITY && !buffer_.Buffer())
+inline Deque<T, inlineCapacity, Allocator>::~Deque() {
+  if ((!INLINE_CAPACITY && !buffer_.Buffer()))
     return;
   if (!IsEmpty() &&
       !(Allocator::kIsGarbageCollected && buffer_.HasOutOfLineBuffer()))
     DestroyAll();
 
+  // If this is called during sweeping, it must not touch the OutOfLineBuffer.
+  if (Allocator::IsSweepForbidden())
+    return;
   buffer_.Destruct();
 }
 

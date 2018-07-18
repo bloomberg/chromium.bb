@@ -6882,6 +6882,40 @@ TEST(HeapTest, PersistentHeapVectorCopyAssignment) {
   PreciselyCollectGarbage();
 }
 
+TEST(HeapTest, PromptlyFreeStackAllocatedHeapVector) {
+  NormalPageArena* normal_arena;
+  Address before;
+  {
+    HeapVector<Member<IntWrapper>> vector;
+    vector.push_back(new IntWrapper(0));
+    NormalPage* normal_page =
+        static_cast<NormalPage*>(PageFromObject(vector.data()));
+    normal_arena = normal_page->ArenaForNormalPage();
+    CHECK(normal_arena);
+    before = normal_arena->CurrentAllocationPoint();
+  }
+  Address after = normal_arena->CurrentAllocationPoint();
+  // We check the allocation point to see if promptly freed
+  EXPECT_NE(after, before);
+}
+
+TEST(HeapTest, PromptlyFreeStackAllocatedHeapDeque) {
+  NormalPageArena* normal_arena;
+  Address before;
+  {
+    HeapDeque<Member<IntWrapper>> deque;
+    deque.push_back(new IntWrapper(0));
+    NormalPage* normal_page =
+        static_cast<NormalPage*>(PageFromObject(&deque.front()));
+    normal_arena = normal_page->ArenaForNormalPage();
+    CHECK(normal_arena);
+    before = normal_arena->CurrentAllocationPoint();
+  }
+  Address after = normal_arena->CurrentAllocationPoint();
+  // We check the allocation point to see if promptly freed
+  EXPECT_NE(after, before);
+}
+
 TEST(HeapTest, PromptlyFreeStackAllocatedHeapHashSet) {
   NormalPageArena* normal_arena = static_cast<NormalPageArena*>(
       ThreadState::Current()->Heap().Arena(BlinkGC::kHashTableArenaIndex));

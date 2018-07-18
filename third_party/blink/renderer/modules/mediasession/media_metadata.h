@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_METADATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_METADATA_H_
 
+#include "third_party/blink/renderer/modules/mediasession/media_image.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -14,7 +15,6 @@
 namespace blink {
 
 class ExceptionState;
-class MediaImage;
 class MediaMetadataInit;
 class MediaSession;
 class ScriptState;
