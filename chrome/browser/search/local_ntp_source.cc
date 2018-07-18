@@ -173,6 +173,13 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_CANCEL);
     AddString(translated_strings.get(), "selectGooglePhotoAlbum",
               IDS_NTP_CUSTOM_BG_SELECT_GOOGLE_ALBUM);
+    AddString(translated_strings.get(), "connectionErrorNoPeriod",
+              IDS_NTP_CONNECTION_ERROR_NO_PERIOD);
+    AddString(translated_strings.get(), "connectionError",
+              IDS_NTP_CONNECTION_ERROR);
+    AddString(translated_strings.get(), "moreInfo", IDS_NTP_ERROR_MORE_INFO);
+    AddString(translated_strings.get(), "backgroundsUnavailable",
+              IDS_NTP_CUSTOM_BG_BACKGROUNDS_UNAVAILABLE);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
@@ -457,6 +464,22 @@ std::string GetContentSecurityPolicyChildSrcIOThread() {
   // the iframe for interactive Doodles.
   return base::StringPrintf("child-src %s https://*.google.com/;",
                             chrome::kChromeSearchMostVisitedUrl);
+}
+
+std::string GetErrorDict(const ErrorInfo& error) {
+  base::DictionaryValue error_info;
+  error_info.SetBoolean("auth_error",
+                        error.error_type == ErrorType::AUTH_ERROR);
+  error_info.SetBoolean("net_error", error.error_type == ErrorType::NET_ERROR);
+  error_info.SetBoolean("service_error",
+                        error.error_type == ErrorType::SERVICE_ERROR);
+  error_info.SetInteger("net_error_no", error.net_error);
+
+  std::string js_text;
+  JSONStringValueSerializer serializer(&js_text);
+  serializer.Serialize(error_info);
+
+  return js_text;
 }
 
 }  // namespace
@@ -873,12 +896,16 @@ void LocalNtpSource::OnCollectionInfoAvailable() {
   if (ntp_background_collections_requests_.empty())
     return;
 
+  std::string js_errors =
+      "var coll_errors = " +
+      GetErrorDict(ntp_background_service_->collection_error_info());
+
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(
       ConvertCollectionInfoToDict(ntp_background_service_->collection_info()),
       &js);
-  js = "var coll = " + js + ";";
+  js = "var coll = " + js + "; " + js_errors;
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -907,12 +934,16 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
   if (ntp_background_image_info_requests_.empty())
     return;
 
+  std::string js_errors =
+      "var coll_img_errors = " +
+      GetErrorDict(ntp_background_service_->collection_images_error_info());
+
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(ConvertCollectionImageToDict(
                               ntp_background_service_->collection_images()),
                           &js);
-  js = "var coll_img = " + js + ";";
+  js = "var coll_img = " + js + "; " + js_errors;
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -939,11 +970,15 @@ void LocalNtpSource::OnAlbumInfoAvailable() {
   if (ntp_background_albums_requests_.empty())
     return;
 
+  std::string js_errors =
+      "var albums_errors = " +
+      GetErrorDict(ntp_background_service_->album_error_info());
+
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(
       ConvertAlbumInfoToDict(ntp_background_service_->album_info()), &js);
-  js = "var albums = " + js + ";";
+  js = "var albums = " + js + "; " + js_errors;
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -963,11 +998,15 @@ void LocalNtpSource::OnAlbumPhotosAvailable() {
   if (ntp_background_photos_requests_.empty())
     return;
 
+  std::string js_errors =
+      "var photos_errors = " +
+      GetErrorDict(ntp_background_service_->album_photos_error_info());
+
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(
       ConvertAlbumPhotosToDict(ntp_background_service_->album_photos()), &js);
-  js = "var photos = " + js + ";";
+  js = "var photos = " + js + "; " + js_errors;
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();

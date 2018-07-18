@@ -92,6 +92,7 @@ void NtpBackgroundService::Shutdown() {
 void NtpBackgroundService::FetchCollectionInfo() {
   if (collections_loader_ != nullptr)
     return;
+  collection_error_info_.ClearError();
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("backdrop_collection_names_download",
@@ -156,6 +157,8 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
     // response).
     DLOG(WARNING) << "Request failed with error: "
                   << loader_deleter->NetError();
+    collection_error_info_.error_type = ErrorType::NET_ERROR;
+    collection_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::COLLECTION_INFO);
     return;
   }
@@ -165,6 +168,7 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
     DLOG(WARNING)
         << "Deserializing Backdrop wallpaper proto for collection info "
            "failed.";
+    collection_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::COLLECTION_INFO);
     return;
   }
@@ -179,6 +183,7 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
 
 void NtpBackgroundService::FetchCollectionImageInfo(
     const std::string& collection_id) {
+  collection_images_error_info_.ClearError();
   if (collections_image_info_loader_ != nullptr)
     return;
 
@@ -248,6 +253,8 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
     // response).
     DLOG(WARNING) << "Request failed with error: "
                   << loader_deleter->NetError();
+    collection_images_error_info_.error_type = ErrorType::NET_ERROR;
+    collection_images_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
     return;
   }
@@ -256,6 +263,7 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
   if (!images_response.ParseFromString(*response_body)) {
     DLOG(WARNING)
         << "Deserializing Backdrop wallpaper proto for image info failed.";
+    collection_images_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
     return;
   }
@@ -272,6 +280,7 @@ void NtpBackgroundService::FetchAlbumInfo() {
   // We're still waiting for the last request to come back.
   if (token_fetcher_ || albums_loader_)
     return;
+  album_error_info_.ClearError();
 
   // Clear any stale data that may have been fetched with a previous token.
   // This is particularly important if the current token fetch results in an
@@ -293,6 +302,12 @@ void NtpBackgroundService::GetAccessTokenForAlbumCallback(
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
     DLOG(WARNING) << "Failed to retrieve token with error: "
                   << error.ToString();
+    if (error.state() ==
+        GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS) {
+      album_error_info_.error_type = ErrorType::AUTH_ERROR;
+    } else {
+      album_error_info_.error_type = ErrorType::NET_ERROR;
+    }
     NotifyObservers(FetchComplete::ALBUM_INFO);
     return;
   }
@@ -355,13 +370,17 @@ void NtpBackgroundService::OnAlbumInfoFetchComplete(
     // response).
     DLOG(WARNING) << "Request failed with error: "
                   << loader_deleter->NetError();
+    album_error_info_.error_type = ErrorType::NET_ERROR;
+    album_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::ALBUM_INFO);
     return;
   }
 
   ntp::background::PersonalAlbumsResponse albums_response;
-  if (!albums_response.ParseFromString(*response_body)) {
+  if (!albums_response.ParseFromString(*response_body) ||
+      albums_response.error_on_server()) {
     DLOG(WARNING) << "Deserializing personal albums response proto failed.";
+    album_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::ALBUM_INFO);
     return;
   }
@@ -380,6 +399,7 @@ void NtpBackgroundService::FetchAlbumPhotos(
   // We're still waiting for the last request to come back.
   if (token_fetcher_ || albums_photo_info_loader_)
     return;
+  album_photos_error_info_.ClearError();
 
   // Clear any stale data that may have been fetched with a previous token.
   // This is particularly important if the current token fetch results in an
@@ -403,6 +423,7 @@ void NtpBackgroundService::GetAccessTokenForPhotosCallback(
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
     DLOG(WARNING) << "Failed to retrieve token with error: "
                   << error.ToString();
+    album_photos_error_info_.error_type = ErrorType::AUTH_ERROR;
     NotifyObservers(FetchComplete::ALBUM_PHOTOS);
     return;
   }
@@ -465,13 +486,17 @@ void NtpBackgroundService::OnAlbumPhotosFetchComplete(
     // response).
     DLOG(WARNING) << "Request failed with error: "
                   << loader_deleter->NetError();
+    album_photos_error_info_.error_type = ErrorType::NET_ERROR;
+    album_photos_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::ALBUM_PHOTOS);
     return;
   }
 
   ntp::background::SettingPreviewResponse photos_response;
-  if (!photos_response.ParseFromString(*response_body)) {
+  if (!photos_response.ParseFromString(*response_body) ||
+      photos_response.status() == ntp::background::ErrorCode::SERVER_ERROR) {
     DLOG(WARNING) << "Deserializing personal photos response proto failed.";
+    album_photos_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::ALBUM_PHOTOS);
     return;
   }
@@ -494,7 +519,6 @@ void NtpBackgroundService::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-// TODO(crbug.com/851296): Communicate errors to callers.
 void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {
   for (auto& observer : observers_) {
     switch (fetch_complete) {
