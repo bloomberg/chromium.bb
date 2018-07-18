@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,15 +58,20 @@ public final class WarmupManager {
     static final String WEBCONTENTS_STATUS_HISTOGRAM = "CustomTabs.SpareWebContents.Status";
 
     // See CustomTabs.SpareWebContentsStatus histogram. Append-only.
-    @VisibleForTesting
-    static final int WEBCONTENTS_STATUS_CREATED = 0;
-    @VisibleForTesting
-    static final int WEBCONTENTS_STATUS_USED = 1;
-    @VisibleForTesting
-    static final int WEBCONTENTS_STATUS_KILLED = 2;
-    @VisibleForTesting
-    static final int WEBCONTENTS_STATUS_DESTROYED = 3;
-    private static final int WEBCONTENTS_STATUS_COUNT = 4;
+    @IntDef({WebContentsStatus.CREATED, WebContentsStatus.USED, WebContentsStatus.KILLED,
+            WebContentsStatus.DESTROYED})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface WebContentsStatus {
+        @VisibleForTesting
+        int CREATED = 0;
+        @VisibleForTesting
+        int USED = 1;
+        @VisibleForTesting
+        int KILLED = 2;
+        @VisibleForTesting
+        int DESTROYED = 3;
+        int NUM_ENTRIES = 4;
+    }
 
     /**
      * Observes spare WebContents deaths. In case of death, records stats, and cleanup the objects.
@@ -74,7 +82,7 @@ public final class WarmupManager {
             long elapsed = SystemClock.elapsedRealtime() - mWebContentsCreationTimeMs;
             RecordHistogram.recordLongTimesHistogram(
                     "CustomTabs.SpareWebContents.TimeBeforeDeath", elapsed, TimeUnit.MILLISECONDS);
-            recordWebContentsStatus(WEBCONTENTS_STATUS_KILLED);
+            recordWebContentsStatus(WebContentsStatus.KILLED);
             destroySpareWebContentsInternal();
         }
     };
@@ -328,14 +336,16 @@ public final class WarmupManager {
      */
     public void createSpareWebContents() {
         ThreadUtils.assertOnUiThread();
-        if (!LibraryLoader.getInstance().isInitialized()) return;
-        if (mSpareWebContents != null || SysUtils.isLowEndDevice()) return;
+        if (!LibraryLoader.getInstance().isInitialized() || mSpareWebContents != null
+                || SysUtils.isLowEndDevice()) {
+            return;
+        }
         mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(
                 false /* incognito */, true /* initiallyHidden */);
         mObserver = new RenderProcessGoneObserver();
         mSpareWebContents.addObserver(mObserver);
         mWebContentsCreationTimeMs = SystemClock.elapsedRealtime();
-        recordWebContentsStatus(WEBCONTENTS_STATUS_CREATED);
+        recordWebContentsStatus(WebContentsStatus.CREATED);
     }
 
     /**
@@ -344,7 +354,7 @@ public final class WarmupManager {
     public void destroySpareWebContents() {
         ThreadUtils.assertOnUiThread();
         if (mSpareWebContents == null) return;
-        recordWebContentsStatus(WEBCONTENTS_STATUS_DESTROYED);
+        recordWebContentsStatus(WebContentsStatus.DESTROYED);
         destroySpareWebContentsInternal();
     }
 
@@ -364,7 +374,7 @@ public final class WarmupManager {
         result.removeObserver(mObserver);
         mObserver = null;
         if (!initiallyHidden) result.onShow();
-        recordWebContentsStatus(WEBCONTENTS_STATUS_USED);
+        recordWebContentsStatus(WebContentsStatus.USED);
         return result;
     }
 
@@ -382,9 +392,9 @@ public final class WarmupManager {
         mObserver = null;
     }
 
-    private static void recordWebContentsStatus(int status) {
+    private static void recordWebContentsStatus(@WebContentsStatus int status) {
         RecordHistogram.recordEnumeratedHistogram(
-                WEBCONTENTS_STATUS_HISTOGRAM, status, WEBCONTENTS_STATUS_COUNT);
+                WEBCONTENTS_STATUS_HISTOGRAM, status, WebContentsStatus.NUM_ENTRIES);
     }
 
     private static native void nativeStartPreconnectPredictorInitialization(Profile profile);

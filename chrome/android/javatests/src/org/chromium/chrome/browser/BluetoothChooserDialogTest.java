@@ -202,8 +202,8 @@ public class BluetoothChooserDialogTest {
             }
         });
 
-        Assert.assertEquals(BluetoothChooserDialog.DIALOG_FINISHED_CANCELLED,
-                mChooserDialog.mFinishedEventType);
+        Assert.assertEquals(
+                BluetoothChooserDialog.DialogFinished.CANCELLED, mChooserDialog.mFinishedEventType);
         Assert.assertEquals("", mChooserDialog.mFinishedDeviceId);
     }
 
@@ -261,7 +261,7 @@ public class BluetoothChooserDialogTest {
         selectItem(mChooserDialog, 2);
 
         Assert.assertEquals(
-                BluetoothChooserDialog.DIALOG_FINISHED_SELECTED, mChooserDialog.mFinishedEventType);
+                BluetoothChooserDialog.DialogFinished.SELECTED, mChooserDialog.mFinishedEventType);
         Assert.assertEquals("id-2", mChooserDialog.mFinishedDeviceId);
     }
 
@@ -284,8 +284,10 @@ public class BluetoothChooserDialogTest {
                 new TestAndroidPermissionDelegate(dialog);
         mWindowAndroid.setAndroidPermissionDelegate(permissionDelegate);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mChooserDialog.notifyDiscoveryState(
-                BluetoothChooserDialog.DISCOVERY_FAILED_TO_START));
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mChooserDialog.notifyDiscoveryState(
+                                BluetoothChooserDialog.DiscoveryMode.DISCOVERY_FAILED_TO_START));
 
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
                                     R.string.bluetooth_need_location_permission)),
@@ -342,8 +344,10 @@ public class BluetoothChooserDialogTest {
         mLocationUtils.mLocationGranted = true;
         mLocationUtils.mSystemLocationSettingsEnabled = false;
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mChooserDialog.notifyDiscoveryState(
-                BluetoothChooserDialog.DISCOVERY_FAILED_TO_START));
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mChooserDialog.notifyDiscoveryState(
+                                BluetoothChooserDialog.DiscoveryMode.DISCOVERY_FAILED_TO_START));
 
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
                                     R.string.bluetooth_need_location_services_on)),

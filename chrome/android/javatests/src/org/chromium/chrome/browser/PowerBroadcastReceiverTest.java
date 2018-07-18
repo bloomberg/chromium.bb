@@ -50,13 +50,13 @@ public class PowerBroadcastReceiverTest {
         public CallbackHelper runActionsHelper = new CallbackHelper();
 
         @Override
-        public void setState(int state) {
+        public void setState(@State int state) {
             super.setState(state);
-            if (state == STATE_POSTED) {
+            if (state == State.POSTED) {
                 postHelper.notifyCalled();
-            } else if (state == STATE_CANCELED) {
+            } else if (state == State.CANCELED) {
                 cancelHelper.notifyCalled();
-            } else if (state == STATE_COMPLETED) {
+            } else if (state == State.COMPLETED) {
                 runHelper.notifyCalled();
             }
         }

@@ -127,9 +127,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static @Action int dispatchToCustomTabActivity(Activity currentActivity, Intent intent) {
         LaunchIntentDispatcher dispatcher = new LaunchIntentDispatcher(currentActivity, intent);
-        if (!dispatcher.mIsCustomTabIntent) {
-            return Action.CONTINUE;
-        }
+        if (!dispatcher.mIsCustomTabIntent) return Action.CONTINUE;
         dispatcher.launchCustomTabActivity();
         return Action.FINISH_ACTIVITY;
     }

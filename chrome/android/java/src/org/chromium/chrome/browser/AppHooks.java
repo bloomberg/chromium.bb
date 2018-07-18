@@ -79,9 +79,7 @@ public abstract class AppHooks {
 
     @CalledByNative
     public static AppHooks get() {
-        if (sInstance == null) {
-            sInstance = new AppHooksImpl();
-        }
+        if (sInstance == null) sInstance = new AppHooksImpl();
         return sInstance;
     }
 
@@ -354,9 +352,7 @@ public abstract class AppHooks {
                     ContextUtils.getApplicationContext().getPackageManager().getPackageInfo(
                             GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, /* flags= */ 0);
             int apkVersion = gmsPackageInfo.versionCode;
-            if (apkVersion >= minApkVersion) {
-                return ConnectionResult.SUCCESS;
-            }
+            if (apkVersion >= minApkVersion) return ConnectionResult.SUCCESS;
         } catch (PackageManager.NameNotFoundException e) {
             return ConnectionResult.SERVICE_MISSING;
         }

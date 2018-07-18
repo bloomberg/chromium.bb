@@ -22,6 +22,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.content_public.browser.BrowserStartupController;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,22 +43,18 @@ public final class DefaultBrowserInfo {
      * Additions should be treated as APPEND ONLY to keep the UMA metric semantics the same over
      * time.
      */
-    @IntDef({
-            MobileDefaultBrowserState.NO_DEFAULT,
-            MobileDefaultBrowserState.CHROME_SYSTEM_DEFAULT,
+    @IntDef({MobileDefaultBrowserState.NO_DEFAULT, MobileDefaultBrowserState.CHROME_SYSTEM_DEFAULT,
             MobileDefaultBrowserState.CHROME_INSTALLED_DEFAULT,
             MobileDefaultBrowserState.OTHER_SYSTEM_DEFAULT,
-            MobileDefaultBrowserState.OTHER_INSTALLED_DEFAULT,
-
-            MobileDefaultBrowserState.BOUNDARY,
-    })
+            MobileDefaultBrowserState.OTHER_INSTALLED_DEFAULT})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface MobileDefaultBrowserState {
         int NO_DEFAULT = 0;
         int CHROME_SYSTEM_DEFAULT = 1;
         int CHROME_INSTALLED_DEFAULT = 2;
         int OTHER_SYSTEM_DEFAULT = 3;
         int OTHER_INSTALLED_DEFAULT = 4;
-        int BOUNDARY = 5;
+        int NUM_ENTRIES = 5;
     }
 
     /**
@@ -221,7 +219,7 @@ public final class DefaultBrowserInfo {
                     RecordHistogram.recordCount100Histogram(
                             getDefaultBrowserCountUmaName(info), info.browserCount);
                     RecordHistogram.recordEnumeratedHistogram("Mobile.DefaultBrowser.State",
-                            getDefaultBrowserUmaState(info), MobileDefaultBrowserState.BOUNDARY);
+                            getDefaultBrowserUmaState(info), MobileDefaultBrowserState.NUM_ENTRIES);
                 }
             }
                     .executeOnExecutor(

@@ -216,9 +216,7 @@ public class TabState {
                 stream = new DataInputStream(new CipherInputStream(input, cipher));
             }
         }
-        if (stream == null) {
-            stream = new DataInputStream(input);
-        }
+        if (stream == null) stream = new DataInputStream(input);
         try {
             if (encrypted && stream.readLong() != KEY_CHECKER) {
                 // Got the wrong key, skip the file
@@ -302,9 +300,7 @@ public class TabState {
      * @param encrypted Whether or not the TabState should be encrypted.
      */
     public static void saveState(File file, TabState state, boolean encrypted) {
-        if (state == null || state.contentsState == null) {
-            return;
-        }
+        if (state == null || state.contentsState == null) return;
 
         // Create the byte array from contentsState before opening the FileOutputStream, in case
         // contentsState.buffer is an instance of MappedByteBuffer that is mapped to
@@ -342,9 +338,7 @@ public class TabState {
             } else {
                 dataOutputStream = new DataOutputStream(new BufferedOutputStream(fileOutputStream));
             }
-            if (encrypted) {
-                dataOutputStream.writeLong(KEY_CHECKER);
-            }
+            if (encrypted) dataOutputStream.writeLong(KEY_CHECKER);
             dataOutputStream.writeLong(state.timestampMillis);
             dataOutputStream.writeInt(contentsStateBytes.length);
             dataOutputStream.write(contentsStateBytes);
