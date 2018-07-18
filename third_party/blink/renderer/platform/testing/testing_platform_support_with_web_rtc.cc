@@ -83,7 +83,8 @@ MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler() = default;
 MockWebRTCPeerConnectionHandler::~MockWebRTCPeerConnectionHandler() = default;
 
 bool MockWebRTCPeerConnectionHandler::Initialize(const WebRTCConfiguration&,
-                                                 const WebMediaConstraints&) {
+                                                 const WebMediaConstraints&,
+                                                 WebRTCSdpSemantics) {
   return true;
 }
 

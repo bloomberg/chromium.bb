@@ -26,6 +26,7 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_rtc_configuration.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
@@ -107,8 +108,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker);
 
   // blink::WebRTCPeerConnectionHandler implementation
-  bool Initialize(const blink::WebRTCConfiguration& server_configuration,
-                  const blink::WebMediaConstraints& options) override;
+  bool Initialize(
+      const blink::WebRTCConfiguration& server_configuration,
+      const blink::WebMediaConstraints& options,
+      blink::WebRTCSdpSemantics original_sdp_semantics_value) override;
 
   void CreateOffer(const blink::WebRTCSessionDescriptionRequest& request,
                    const blink::WebMediaConstraints& options) override;
@@ -197,8 +200,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();
-  void OnAddReceiver(RtpReceiverState receiver_state);
-  void OnRemoveReceiver(uintptr_t receiver_id);
+  void OnAddReceiverPlanB(RtpReceiverState receiver_state);
+  void OnRemoveReceiverPlanB(uintptr_t receiver_id);
   void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
   void OnIceCandidate(const std::string& sdp,
                       const std::string& sdp_mid,
@@ -279,6 +282,14 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // needs to reference it, and automatically disposed when there are no longer
   // any components referencing it.
   scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
+  // In Plan B, senders and receivers are added or removed independently of one
+  // another. In Unified Plan, senders and receivers are created in pairs as
+  // transceivers. Transceivers may become inactive, but are never removed.
+  // The value of this member affects the behavior of some methods and what
+  // information is surfaced from webrtc. After Initialize(), this is the actual
+  // mode used, meaning "kDefault" is no longer a valid value.
+  // TODO(hbos): Implement transceiver behaviors. https://crbug.com/777617
+  blink::WebRTCSdpSemantics sdp_semantics_;
   // Content layer correspondents of |webrtc::RtpSenderInterface|.
   std::vector<std::unique_ptr<RTCRtpSender>> rtp_senders_;
   // Maps |RTCRtpReceiver::getId|s of |webrtc::RtpReceiverInterface|s to the

@@ -20,10 +20,10 @@ MockWebRTCPeerConnectionHandlerClient()
       .WillByDefault(
           testing::Invoke(this, &MockWebRTCPeerConnectionHandlerClient::
                                     didGenerateICECandidateWorker));
-  ON_CALL(*this, DidAddReceiverForMock(_))
+  ON_CALL(*this, DidAddReceiverPlanBForMock(_))
       .WillByDefault(testing::Invoke(
           this, &MockWebRTCPeerConnectionHandlerClient::didAddReceiverWorker));
-  ON_CALL(*this, DidRemoveReceiverForMock(_))
+  ON_CALL(*this, DidRemoveReceiverPlanBForMock(_))
       .WillByDefault(testing::Invoke(
           this,
           &MockWebRTCPeerConnectionHandlerClient::didRemoveReceiverWorker));

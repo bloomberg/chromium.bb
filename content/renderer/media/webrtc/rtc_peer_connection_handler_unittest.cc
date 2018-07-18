@@ -280,6 +280,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     pc_handler_ = CreateRTCPeerConnectionHandlerUnderTest();
     mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
     blink::WebRTCConfiguration config;
+    config.sdp_semantics = blink::WebRTCSdpSemantics::kPlanB;
     blink::WebMediaConstraints constraints;
     EXPECT_TRUE(pc_handler_->InitializeForTest(
         config, constraints, mock_tracker_.get()->AsWeakPtr()));
@@ -609,12 +610,12 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
   pc_handler_->observer()->OnIceConnectionChange(
       webrtc::PeerConnectionInterface::kIceConnectionDisconnected);
 
-  EXPECT_CALL(*mock_client_.get(), DidAddReceiverForMock(_)).Times(0);
+  EXPECT_CALL(*mock_client_.get(), DidAddReceiverPlanBForMock(_)).Times(0);
   rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
   InvokeOnAddStream(remote_stream);
 
-  EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverForMock(_)).Times(0);
+  EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverPlanBForMock(_)).Times(0);
   InvokeOnRemoveStream(remote_stream);
 
   EXPECT_CALL(*mock_client_.get(), DidAddRemoteDataChannel(_)).Times(0);
@@ -764,6 +765,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
 
 TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
   blink::WebRTCConfiguration config;
+  config.sdp_semantics = blink::WebRTCSdpSemantics::kPlanB;
 
   EXPECT_CALL(*mock_tracker_.get(),
               TrackSetConfiguration(pc_handler_.get(), _));
@@ -777,6 +779,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
 // blink error and false is returned.
 TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
   blink::WebRTCConfiguration config;
+  config.sdp_semantics = blink::WebRTCSdpSemantics::kPlanB;
 
   mock_peer_connection_->set_setconfiguration_error_type(
       webrtc::RTCErrorType::INVALID_MODIFICATION);
@@ -1170,7 +1173,7 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
   // Grab the added receivers when it's been successfully added to the PC.
   std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers_added;
-  EXPECT_CALL(*mock_client_.get(), DidAddReceiverForMock(_))
+  EXPECT_CALL(*mock_client_.get(), DidAddReceiverPlanBForMock(_))
       .WillRepeatedly(
           Invoke([&receivers_added](
                      std::unique_ptr<blink::WebRTCRtpReceiver>* receiver) {
@@ -1190,7 +1193,7 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
           pc_handler_.get(),
           PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack, _, _))
       .Times(2);
-  EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverForMock(_))
+  EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverPlanBForMock(_))
       .WillRepeatedly(
           Invoke([&receivers_removed](
                      std::unique_ptr<blink::WebRTCRtpReceiver>* receiver) {

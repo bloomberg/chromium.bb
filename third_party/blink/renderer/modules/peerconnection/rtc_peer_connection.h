@@ -190,6 +190,11 @@ class MODULES_EXPORT RTCPeerConnection final
   bool IsClosed() { return closed_; }
   void close();
 
+  // Makes the peer connection aware of the track. This is used to map web
+  // tracks to blink tracks, as is necessary for plumbing. There is no need to
+  // unregister the track because Weak references are used.
+  void RegisterTrack(MediaStreamTrack*);
+
   // We allow getStats after close, but not other calls or callbacks.
   bool ShouldFireDefaultCallbacks() { return !closed_ && !stopped_; }
   bool ShouldFireGetStatsCallback() { return !stopped_; }
@@ -217,8 +222,8 @@ class MODULES_EXPORT RTCPeerConnection final
       webrtc::PeerConnectionInterface::SignalingState) override;
   void DidChangeICEGatheringState(ICEGatheringState) override;
   void DidChangeICEConnectionState(ICEConnectionState) override;
-  void DidAddReceiver(std::unique_ptr<WebRTCRtpReceiver>) override;
-  void DidRemoveReceiver(std::unique_ptr<WebRTCRtpReceiver>) override;
+  void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
+  void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) override;
   void ReleasePeerConnectionHandler() override;
   void ClosePeerConnection() override;
@@ -269,7 +274,7 @@ class MODULES_EXPORT RTCPeerConnection final
   };
 
   RTCPeerConnection(ExecutionContext*,
-                    const WebRTCConfiguration&,
+                    WebRTCConfiguration,
                     WebMediaConstraints,
                     ExceptionState&);
   void Dispose();
@@ -355,6 +360,13 @@ class MODULES_EXPORT RTCPeerConnection final
   String last_answer_;
 
   bool has_data_channels_;  // For RAPPOR metrics
+  // In Plan B, senders and receivers are added or removed independently of one
+  // another. In Unified Plan, senders and receivers are created in pairs as
+  // transceivers. Transceivers may become inactive, but are never removed.
+  // The value of this member affects the behavior of some methods and what
+  // information is surfaced from webrtc. This has the value "kPlanB" or
+  // "kUnifiedPlan", if constructed with "kDefault" it is translated to one or
+  // the other.
   WebRTCSdpSemantics sdp_semantics_;
 };
 
