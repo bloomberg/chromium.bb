@@ -134,33 +134,58 @@ class LayoutSelectionTest : public EditingTestBase {
       PrintLayoutObjectForSelection(stream, runner);
     }
   }
-#ifndef NDEBUG
-  void PrintDOMTreeInternal(std::stringstream& stream,
-                            const Node& node,
-                            size_t stack) {
-    stream << '\n';
-    for (size_t s = 0; s < stack; s++) {
-      stream << "  ";
+
+  void PrintText(std::ostream& ostream, const Text& text) {
+    ostream << "'" << text.data().Utf8().data() << "'";
+  }
+
+  void PrintSelectionInfo(std::ostream& ostream, LayoutObject* layout_object) {
+    if (!layout_object) {
+      ostream << "<null>";
+      return;
     }
-    stream << node << ", layout: ";
-    PrintLayoutObjectForSelection(stream, node.GetLayoutObject());
+    if (const LayoutTextFragment* fragment =
+            ToLayoutTextFragmentOrNull(*layout_object)) {
+      // TODO(yoichio): Treat LayoutQuote which may generate LayoutTextFragment
+      // that's neither first-letter nor remaining text.
+      if (fragment->IsRemainingTextLayoutObject())
+        ostream << "remaining part of ";
+      else
+        ostream << "first-letter of ";
+      PrintText(ostream, *fragment->AssociatedTextNode());
+    } else {
+      if (Text* text = ToTextOrNull(layout_object->GetNode()))
+        PrintText(ostream, *text);
+      else
+        ostream << layout_object->GetNode();
+    }
+    ostream << ", " << layout_object->GetSelectionState()
+            << (layout_object->ShouldInvalidateSelection()
+                    ? ", ShouldInvalidate "
+                    : ", NotInvalidate ");
+  }
+
+  void PrintDOMTreeInternal(std::ostream& ostream,
+                            const Node& node,
+                            size_t depth) {
+    ostream << RepeatString("  ", depth).Utf8().data();
+    PrintSelectionInfo(ostream, node.GetLayoutObject());
     if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
-      stream << '\n';
-      for (size_t s = 0; s < stack + 1; s++) {
-        stream << "  ";
-      }
-      stream << "#shadow-root";
+      ostream << std::endl << RepeatString("  ", depth + 1).Utf8().data();
+      ostream << "#shadow-root";
       for (Node* child = shadow_root->firstChild(); child;
            child = child->nextSibling()) {
-        PrintDOMTreeInternal(stream, *child, stack + 2);
+        PrintDOMTreeInternal(ostream, *child, depth + 2);
       }
     }
 
     for (Node* child = node.firstChild(); child; child = child->nextSibling()) {
-      PrintDOMTreeInternal(stream, *child, stack + 1);
+      ostream << std::endl;
+      PrintDOMTreeInternal(ostream, *child, depth + 1);
     }
   }
 
+#ifndef NDEBUG
   void PrintDOMTreeForDebug() {
     std::stringstream stream;
     stream << "\nPrintDOMTreeForDebug";
@@ -168,6 +193,12 @@ class LayoutSelectionTest : public EditingTestBase {
     LOG(INFO) << stream.str();
   }
 #endif
+
+  std::string DumpSelectionInfo() {
+    std::stringstream stream;
+    PrintDOMTreeInternal(stream, *GetDocument().body(), 0u);
+    return stream.str();
+  }
 
  private:
   LayoutObject* current_ = nullptr;
@@ -298,12 +329,12 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
           .SelectAllChildren(*GetDocument().body())
           .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_RESET();
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT("foo", kStart, ShouldInvalidate);
-  TEST_NEXT(IsBR, kInside, ShouldInvalidate);
-  TEST_NEXT("bar", kEnd, ShouldInvalidate);
-  TEST_CHECK();
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  'foo', Start, ShouldInvalidate \n"
+      "  BR, Inside, ShouldInvalidate \n"
+      "  'bar', End, ShouldInvalidate ",
+      DumpSelectionInfo());
 }
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateVisibilityHidden) {
