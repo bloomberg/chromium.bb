@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
@@ -93,6 +94,24 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
         response_code, data);
   }
 
+  static void SetupFullHashFetcherToReturnResponse(V4GetHashProtocolManager* pm,
+                                                   const FullHash& full_hash,
+                                                   int net_error,
+                                                   int response_code,
+                                                   const std::string& data) {
+    network::SimpleURLLoader* url_loader = nullptr;
+    for (const auto& pending_request : pm->pending_hash_requests_) {
+      if (pending_request.second->full_hash_to_store_and_hash_prefixes.count(
+              full_hash)) {
+        EXPECT_EQ(nullptr, url_loader);
+        url_loader = pending_request.second->loader.get();
+      }
+    }
+    ASSERT_TRUE(url_loader);
+
+    pm->OnURLLoaderCompleteInternal(url_loader, net_error, response_code, data);
+  }
+
   static void SetupFetcherToReturnOKResponse(
       V4GetHashProtocolManager* pm,
       const std::vector<ResponseInfo>& infos) {
@@ -133,7 +152,8 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
     callback_called_ = true;
   }
 
-  bool callback_called() { return callback_called_; }
+  bool callback_called() const { return callback_called_; }
+  void reset_callback_called() { callback_called_ = false; }
 
  private:
   static std::string GetV4HashResponse(
@@ -212,6 +232,71 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingResponseCode) {
   EXPECT_EQ(1ul, pm->gethash_error_count_);
   EXPECT_EQ(1ul, pm->gethash_back_off_mult_);
   EXPECT_TRUE(callback_called());
+}
+
+TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingParallelRequests) {
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::vector<FullHashInfo> empty_results;
+  base::HistogramTester histogram_tester;
+
+  FullHashToStoreAndHashPrefixesMap matched_locally1;
+  matched_locally1[FullHash("AHash1Full")].emplace_back(GetUrlSocEngId(),
+                                                        HashPrefix("AHash1"));
+  pm->GetFullHashes(matched_locally1, {},
+                    base::BindRepeating(
+                        &V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                        base::Unretained(this), empty_results));
+
+  FullHashToStoreAndHashPrefixesMap matched_locally2;
+  matched_locally2[FullHash("AHash2Full")].emplace_back(GetUrlSocEngId(),
+                                                        HashPrefix("AHash2"));
+  pm->GetFullHashes(matched_locally2, {},
+                    base::BindRepeating(
+                        &V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                        base::Unretained(this), empty_results));
+
+  // Fail the first request.
+  SetupFullHashFetcherToReturnResponse(pm.get(), FullHash("AHash1Full"),
+                                       net::ERR_CONNECTION_RESET, 200,
+                                       GetStockV4HashResponse());
+
+  // Should have recorded one error, but back off multiplier is unchanged.
+  EXPECT_EQ(1ul, pm->gethash_error_count_);
+  EXPECT_EQ(1ul, pm->gethash_back_off_mult_);
+  EXPECT_TRUE(callback_called());
+  histogram_tester.ExpectUniqueSample("SafeBrowsing.V4GetHash.Result",
+                                      V4OperationResult::NETWORK_ERROR, 1);
+
+  reset_callback_called();
+
+  // Comple the second request successfully.
+  SetupFullHashFetcherToReturnResponse(pm.get(), FullHash("AHash2Full"),
+                                       net::OK, 200, GetStockV4HashResponse());
+
+  // Error counters are reset.
+  EXPECT_EQ(0ul, pm->gethash_error_count_);
+  EXPECT_EQ(1ul, pm->gethash_back_off_mult_);
+  EXPECT_TRUE(callback_called());
+  histogram_tester.ExpectBucketCount("SafeBrowsing.V4GetHash.Result",
+                                     V4OperationResult::STATUS_200, 1);
+
+  reset_callback_called();
+
+  // Start the third request.
+  FullHashToStoreAndHashPrefixesMap matched_locally3;
+  matched_locally3[FullHash("AHash3Full")].emplace_back(GetUrlSocEngId(),
+                                                        HashPrefix("AHash3"));
+  pm->GetFullHashes(matched_locally3, {},
+                    base::BindRepeating(
+                        &V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                        base::Unretained(this), empty_results));
+
+  // The request is not failed right away.
+  EXPECT_FALSE(callback_called());
+  // The request is not reported as MIN_WAIT_DURATION_ERROR.
+  histogram_tester.ExpectBucketCount("SafeBrowsing.V4GetHash.Result",
+                                     V4OperationResult::MIN_WAIT_DURATION_ERROR,
+                                     0);
 }
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {

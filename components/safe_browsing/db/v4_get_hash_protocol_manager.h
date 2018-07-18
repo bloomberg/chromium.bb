@@ -221,6 +221,8 @@ class V4GetHashProtocolManager {
                            TestGetHashErrorHandlingNetwork);
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest,
                            TestGetHashErrorHandlingResponseCode);
+  FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest,
+                           TestGetHashErrorHandlingParallelRequests);
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest, GetCachedResults);
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest, TestUpdatesAreMerged);
   friend class V4GetHashProtocolManagerTest;
