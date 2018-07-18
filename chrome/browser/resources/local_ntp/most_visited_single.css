@@ -489,10 +489,6 @@ body.background-image .md-tile:active .md-title {
   width: var(--md-fallback-letter-size);
 }
 
-.md-title-container {
-  overflow: hidden;
-}
-
 .md-title {
   color: rgba(33, 32, 36, 0.86);
   font-family: 'Roboto', arial, sans-serif;
@@ -511,7 +507,7 @@ body.dark-theme .md-title {
 }
 
 body.background-image .md-title {
-  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
 }
 
 .md-menu {
