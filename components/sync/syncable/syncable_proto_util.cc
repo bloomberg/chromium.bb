@@ -17,7 +17,12 @@ std::string SyncableIdToProto(const syncable::Id& syncable_id) {
 }
 
 bool IsFolder(const sync_pb::SyncEntity& entity) {
-  return entity.folder();
+  // TODO(sync): The checks for has_folder() and has_bookmarkdata() are likely
+  // no longer necessary.  We should remove them if we can convince ourselves
+  // that doing so won't break anything.
+  return (
+      (entity.has_folder() && entity.folder()) ||
+      (entity.has_bookmarkdata() && entity.bookmarkdata().bookmark_folder()));
 }
 
 bool IsRoot(const sync_pb::SyncEntity& entity) {

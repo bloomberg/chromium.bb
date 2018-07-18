@@ -283,7 +283,9 @@ void UpdateServerFieldsAfterCommit(
     return;
   }
 
-  local_entry->PutServerIsDir(committed_entry.folder());
+  local_entry->PutServerIsDir(
+      (committed_entry.folder() ||
+       committed_entry.bookmarkdata().bookmark_folder()));
   local_entry->PutServerSpecifics(committed_entry.specifics());
   local_entry->PutServerMtime(ProtoTimeToTime(committed_entry.mtime()));
   local_entry->PutServerCtime(ProtoTimeToTime(committed_entry.ctime()));
