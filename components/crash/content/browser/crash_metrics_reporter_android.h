@@ -7,8 +7,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/observer_list_threadsafe.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 
 namespace crash_reporter {
 
@@ -71,9 +71,8 @@ class CrashMetricsReporter {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void CrashDumpProcessed(
-      const breakpad::CrashDumpObserver::TerminationInfo& info,
-      breakpad::CrashDumpManager::CrashDumpStatus status);
+  void CrashDumpProcessed(const ChildExitObserver::TerminationInfo& info,
+                          breakpad::CrashDumpManager::CrashDumpStatus status);
 
  private:
   CrashMetricsReporter();

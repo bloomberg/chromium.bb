@@ -41,7 +41,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
@@ -510,8 +510,8 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kAndroidWebViewLocalePakDescriptor, fd, region);
 
-  breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
-      child_process_id, mappings);
+  ::crash_reporter::ChildExitObserver::GetInstance()
+      ->BrowserChildProcessStarted(child_process_id, mappings);
 }
 
 void AwContentBrowserClient::OverrideWebkitPrefs(

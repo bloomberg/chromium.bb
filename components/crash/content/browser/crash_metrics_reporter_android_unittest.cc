@@ -48,7 +48,7 @@ class CrashMetricsReporterTest : public testing::Test {
   ~CrashMetricsReporterTest() override {}
 
   static void CreateAndProcessCrashDump(
-      const breakpad::CrashDumpObserver::TerminationInfo& info,
+      const ChildExitObserver::TerminationInfo& info,
       const std::string& data) {
     base::ScopedFD fd =
         breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
@@ -63,7 +63,7 @@ class CrashMetricsReporterTest : public testing::Test {
 
  protected:
   void TestOomCrashProcessing(
-      const breakpad::CrashDumpObserver::TerminationInfo& termination_info,
+      const ChildExitObserver::TerminationInfo& termination_info,
       CrashMetricsReporter::ReportedCrashTypeSet expected_crash_types,
       const char* histogram_name) {
     base::HistogramTester histogram_tester;
@@ -91,7 +91,7 @@ class CrashMetricsReporterTest : public testing::Test {
 };
 
 TEST_F(CrashMetricsReporterTest, RendereMainFrameOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -109,7 +109,7 @@ TEST_F(CrashMetricsReporterTest, RendereMainFrameOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, GpuProcessOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_GPU;
@@ -127,7 +127,7 @@ TEST_F(CrashMetricsReporterTest, GpuProcessOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, RendererSubframeOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -146,7 +146,7 @@ TEST_F(CrashMetricsReporterTest, RendererSubframeOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, RendererNonVisibleStrongOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -164,7 +164,7 @@ TEST_F(CrashMetricsReporterTest, RendererNonVisibleStrongOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, RendererNonVisibleModerateOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -183,7 +183,7 @@ TEST_F(CrashMetricsReporterTest, RendererNonVisibleModerateOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, IntentionalKillIsNotOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -204,7 +204,7 @@ TEST_F(CrashMetricsReporterTest, IntentionalKillIsNotOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, NormalTerminationIsNotOOM) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -222,7 +222,7 @@ TEST_F(CrashMetricsReporterTest, NormalTerminationIsNotOOM) {
 }
 
 TEST_F(CrashMetricsReporterTest, RendererForegroundCrash) {
-  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;

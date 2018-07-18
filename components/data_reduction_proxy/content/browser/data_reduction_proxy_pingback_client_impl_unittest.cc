@@ -204,7 +204,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
   // Send a fake crash report from crash_reporter.
   void ReportCrash(bool oom) {
 #if defined(OS_ANDROID)
-    breakpad::CrashDumpObserver::TerminationInfo info;
+    crash_reporter::ChildExitObserver::TerminationInfo info;
     crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet types(
         {oom ? crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
                    kRendererForegroundVisibleOom

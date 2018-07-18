@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_OBSERVER_ANDROID_H_
-#define COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_OBSERVER_ANDROID_H_
+#ifndef COMPONENTS_CRASH_CONTENT_BROWSER_CHILD_EXIT_OBSERVER_ANDROID_H_
+#define COMPONENTS_CRASH_CONTENT_BROWSER_CHILD_EXIT_OBSERVER_ANDROID_H_
 
 #include <memory>
 #include <vector>
@@ -24,12 +24,12 @@ namespace content {
 struct ChildProcessTerminationInfo;
 }
 
-namespace breakpad {
+namespace crash_reporter {
 
 // This class centralises the observation of child processes for the
 // purpose of reacting to child process crashes.
-// The CrashDumpObserver instance exists on the browser main thread.
-class CrashDumpObserver : public content::BrowserChildProcessObserver,
+// The ChildExitObserver instance exists on the browser main thread.
+class ChildExitObserver : public content::BrowserChildProcessObserver,
                           public content::NotificationObserver {
  public:
   struct TerminationInfo {
@@ -75,7 +75,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     bool renderer_was_subframe = false;
   };
 
-  // CrashDumpObserver client interface.
+  // ChildExitObserver client interface.
   // Client methods will be called synchronously in the order in which
   // clients were registered. It is the implementer's responsibility
   // to post tasks to the appropriate threads if required (and be
@@ -98,31 +98,31 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     virtual ~Client() {}
   };
 
-  // The global CrashDumpObserver instance is created by calling
+  // The global ChildExitObserver instance is created by calling
   // Create (on the UI thread), and lives until process exit. Tests
   // making use of this class should register an AtExitManager.
   static void Create();
 
-  // Fetch a pointer to the global CrashDumpObserver instance. The
+  // Fetch a pointer to the global ChildExitObserver instance. The
   // global instance must have been created by the time GetInstance is
   // called.
-  static CrashDumpObserver* GetInstance();
+  static ChildExitObserver* GetInstance();
 
   void RegisterClient(std::unique_ptr<Client> client);
 
   // BrowserChildProcessStarted must be called from
   // ContentBrowserClient::GetAdditionalMappedFilesForChildProcess
-  // overrides, to notify the CrashDumpObserver of child process
+  // overrides, to notify the ChildExitObserver of child process
   // creation, and to allow clients to register any fd mappings they
   // need.
   void BrowserChildProcessStarted(int process_host_id,
                                   content::PosixFileDescriptorInfo* mappings);
 
  private:
-  friend struct base::LazyInstanceTraitsBase<CrashDumpObserver>;
+  friend struct base::LazyInstanceTraitsBase<ChildExitObserver>;
 
-  CrashDumpObserver();
-  ~CrashDumpObserver() override;
+  ChildExitObserver();
+  ~ChildExitObserver() override;
 
   // content::BrowserChildProcessObserver implementation:
   void BrowserChildProcessHostDisconnected(
@@ -150,9 +150,9 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   // Key is process_host_id. Only used for BrowserChildProcessHost.
   std::map<int, TerminationInfo> browser_child_process_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrashDumpObserver);
+  DISALLOW_COPY_AND_ASSIGN(ChildExitObserver);
 };
 
-}  // namespace breakpad
+}  // namespace crash_reporter
 
-#endif  // COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_OBSERVER_ANDROID_H_
+#endif  // COMPONENTS_CRASH_CONTENT_BROWSER_CHILD_EXIT_OBSERVER_ANDROID_H_

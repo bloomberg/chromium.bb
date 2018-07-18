@@ -100,7 +100,7 @@ class CrashDumpManagerTest : public testing::Test {
   }
 
   static void CreateAndProcessCrashDump(
-      const CrashDumpObserver::TerminationInfo& info,
+      const crash_reporter::ChildExitObserver::TerminationInfo& info,
       const std::string& data) {
     base::ScopedFD fd =
         CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
@@ -136,7 +136,7 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
   CrashMetricsReporterObserver observer;
   crash_reporter::CrashMetricsReporter::GetInstance()->AddObserver(&observer);
 
-  CrashDumpObserver::TerminationInfo termination_info;
+  crash_reporter::ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;
@@ -163,7 +163,7 @@ TEST_F(CrashDumpManagerTest, NonOomCrash) {
   CrashMetricsReporterObserver observer;
   crash_reporter::CrashMetricsReporter::GetInstance()->AddObserver(&observer);
 
-  CrashDumpObserver::TerminationInfo termination_info;
+  crash_reporter::ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
   termination_info.process_type = content::PROCESS_TYPE_RENDERER;

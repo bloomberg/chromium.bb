@@ -20,8 +20,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/android/compositor.h"
@@ -51,7 +51,7 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   // process creation). Such processes are created on the
   // PROCESS_LAUNCHER thread, and so the observer is initialized and
   // the manager registered before that thread is created.
-  breakpad::CrashDumpObserver::Create();
+  crash_reporter::ChildExitObserver::Create();
 
 #if defined(GOOGLE_CHROME_BUILD)
   // TODO(jcivelli): we should not initialize the crash-reporter when it was not
@@ -70,8 +70,8 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   if (breakpad_enabled) {
     base::FilePath crash_dump_dir;
     base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
-    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        std::make_unique<breakpad::ChildProcessCrashObserver>(
+    crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
+        std::make_unique<crash_reporter::ChildProcessCrashObserver>(
             crash_dump_dir, kAndroidMinidumpDescriptor));
   }
 

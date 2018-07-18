@@ -86,7 +86,7 @@ base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
 
 void CrashDumpManager::ProcessMinidumpFileFromChild(
     base::FilePath crash_dump_dir,
-    const CrashDumpObserver::TerminationInfo& info) {
+    const crash_reporter::ChildExitObserver::TerminationInfo& info) {
   CrashDumpManager::CrashDumpStatus status =
       ProcessMinidumpFileFromChildInternal(crash_dump_dir, info);
   crash_reporter::CrashMetricsReporter::GetInstance()->CrashDumpProcessed(
@@ -96,7 +96,7 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
 CrashDumpManager::CrashDumpStatus
 CrashDumpManager::ProcessMinidumpFileFromChildInternal(
     base::FilePath crash_dump_dir,
-    const CrashDumpObserver::TerminationInfo& info) {
+    const crash_reporter::ChildExitObserver::TerminationInfo& info) {
   base::AssertBlockingAllowed();
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been
