@@ -49,10 +49,6 @@ syncer::SyncService::State FakeSyncService::GetState() const {
   }
   // From this point on, Sync can start in principle.
   DCHECK(CanSyncStart());
-  // The presence of an auth error overrides any non-disabled state.
-  if (GetAuthError() != GoogleServiceAuthError::AuthErrorNone()) {
-    return State::AUTH_ERROR;
-  }
   // Note: We don't distinguish here if the engine doesn't exist at all, or
   // exists but hasn't finished initializing.
   if (!IsEngineInitialized()) {

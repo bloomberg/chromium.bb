@@ -784,14 +784,6 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   // Since there is no disable reason, Sync can start in principle.
   DCHECK(CanSyncStart());
 
-  // The presence of an auth error overrides any non-disabled state.
-  // Note: We typically shouldn't have auth errors without an initialized
-  // engine, but it can happen e.g. if a refresh token gets revoked while Sync
-  // is off.
-  if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
-    return State::AUTH_ERROR;
-  }
-
   // Typically, Sync won't start until the initial setup is at least in
   // progress. StartupController::TryStartImmediately bypasses the first setup
   // check though, so we first have to check whether the engine is initialized.

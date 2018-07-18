@@ -201,8 +201,6 @@ std::string GetSummaryString(syncer::SyncService::State state,
       return "Start deferred";
     case syncer::SyncService::State::INITIALIZING:
       return "Initializing";
-    case syncer::SyncService::State::AUTH_ERROR:
-      return "Auth error";
     case syncer::SyncService::State::WAITING_FOR_CONSENT:
       return "Waiting for initial setup";
     case syncer::SyncService::State::CONFIGURING:
