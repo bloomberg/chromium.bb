@@ -15,9 +15,9 @@ Polymer({
 
   iconNameByType_: function(type) {
     if (type == 'fail')
-      return 'warning';
+      return 'cr:warning';
     if (type == 'success')
-      return 'done';
+      return 'notification-card:done';
     console.error('Unknown type "' + type + '".');
     return '';
   },
