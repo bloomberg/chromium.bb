@@ -18,7 +18,8 @@ RtpTransceiverState::RtpTransceiverState(
     base::Optional<std::string> mid,
     bool stopped,
     webrtc::RtpTransceiverDirection direction,
-    base::Optional<webrtc::RtpTransceiverDirection> current_direction)
+    base::Optional<webrtc::RtpTransceiverDirection> current_direction,
+    base::Optional<webrtc::RtpTransceiverDirection> fired_direction)
     : main_task_runner_(std::move(main_task_runner)),
       signaling_task_runner_(std::move(signaling_task_runner)),
       webrtc_transceiver_(std::move(webrtc_transceiver)),
@@ -28,7 +29,8 @@ RtpTransceiverState::RtpTransceiverState(
       mid_(std::move(mid)),
       stopped_(std::move(stopped)),
       direction_(std::move(direction)),
-      current_direction_(std::move(current_direction)) {
+      current_direction_(std::move(current_direction)),
+      fired_direction_(std::move(fired_direction)) {
   DCHECK(main_task_runner_);
   DCHECK(signaling_task_runner_);
   DCHECK(webrtc_transceiver_);
@@ -44,7 +46,8 @@ RtpTransceiverState::RtpTransceiverState(RtpTransceiverState&& other)
       mid_(std::move(other.mid_)),
       stopped_(std::move(other.stopped_)),
       direction_(std::move(other.direction_)),
-      current_direction_(std::move(other.current_direction_)) {
+      current_direction_(std::move(other.current_direction_)),
+      fired_direction_(std::move(other.fired_direction_)) {
   // Explicitly null |other|'s task runners for use in destructor.
   other.main_task_runner_ = nullptr;
   other.signaling_task_runner_ = nullptr;
@@ -74,6 +77,7 @@ RtpTransceiverState& RtpTransceiverState::operator=(
   stopped_ = std::move(other.stopped_);
   direction_ = std::move(other.direction_);
   current_direction_ = std::move(other.current_direction_);
+  fired_direction_ = std::move(other.fired_direction_);
   return *this;
 }
 
@@ -150,10 +154,22 @@ webrtc::RtpTransceiverDirection RtpTransceiverState::direction() const {
   return direction_;
 }
 
+void RtpTransceiverState::set_direction(
+    webrtc::RtpTransceiverDirection direction) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  direction_ = direction;
+}
+
 base::Optional<webrtc::RtpTransceiverDirection>
 RtpTransceiverState::current_direction() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return current_direction_;
+}
+
+base::Optional<webrtc::RtpTransceiverDirection>
+RtpTransceiverState::fired_direction() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return fired_direction_;
 }
 
 class RTCRtpTransceiver::RTCRtpTransceiverInternal
@@ -201,39 +217,13 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
     return receiver_.get();
   }
 
-  blink::WebString Mid() const {
+  void SetDirection(webrtc::RtpTransceiverDirection direction) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
-    return state_.mid() ? blink::WebString::FromUTF8(*state_.mid())
-                        : blink::WebString();  // IsNull()
+    // This implicitly performs a blocking invoke on the webrtc signaling thread
+    // due to use of PROXY references for |webrtc_transceiver_|.
+    webrtc_transceiver_->SetDirection(direction);
+    state_.set_direction(webrtc_transceiver_->direction());
   }
-
-  std::unique_ptr<blink::WebRTCRtpSender> Sender() const {
-    DCHECK(main_task_runner_->BelongsToCurrentThread());
-    return sender_->ShallowCopy();
-  }
-
-  std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const {
-    DCHECK(main_task_runner_->BelongsToCurrentThread());
-    return receiver_->ShallowCopy();
-  }
-
-  bool Stopped() const {
-    DCHECK(main_task_runner_->BelongsToCurrentThread());
-    return state_.stopped();
-  }
-
-  webrtc::RtpTransceiverDirection Direction() const {
-    DCHECK(main_task_runner_->BelongsToCurrentThread());
-    return state_.direction();
-  }
-
-  base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection() const {
-    DCHECK(main_task_runner_->BelongsToCurrentThread());
-    return state_.current_direction();
-  }
-
-  // TODO(hbos): Implement. https://crbug.com/777617
-  void Stop() { NOTREACHED() << "Not implemented."; }
 
  private:
   friend struct RTCRtpTransceiver::RTCRtpTransceiverInternalTraits;
@@ -328,32 +318,40 @@ uintptr_t RTCRtpTransceiver::Id() const {
 }
 
 blink::WebString RTCRtpTransceiver::Mid() const {
-  return internal_->Mid();
+  const auto& mid = internal_->state().mid();
+  return mid ? blink::WebString::FromUTF8(*mid)
+             : blink::WebString();  // IsNull()
 }
 
 std::unique_ptr<blink::WebRTCRtpSender> RTCRtpTransceiver::Sender() const {
-  return internal_->Sender();
+  return internal_->content_sender()->ShallowCopy();
 }
 
 std::unique_ptr<blink::WebRTCRtpReceiver> RTCRtpTransceiver::Receiver() const {
-  return internal_->Receiver();
+  return internal_->content_receiver()->ShallowCopy();
 }
 
 bool RTCRtpTransceiver::Stopped() const {
-  return internal_->Stopped();
+  return internal_->state().stopped();
 }
 
 webrtc::RtpTransceiverDirection RTCRtpTransceiver::Direction() const {
-  return internal_->Direction();
+  return internal_->state().direction();
+}
+
+void RTCRtpTransceiver::SetDirection(
+    webrtc::RtpTransceiverDirection direction) {
+  internal_->SetDirection(direction);
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>
 RTCRtpTransceiver::CurrentDirection() const {
-  return internal_->CurrentDirection();
+  return internal_->state().current_direction();
 }
 
-void RTCRtpTransceiver::Stop() {
-  internal_->Stop();
+base::Optional<webrtc::RtpTransceiverDirection>
+RTCRtpTransceiver::FiredDirection() const {
+  return internal_->state().fired_direction();
 }
 
 }  // namespace content

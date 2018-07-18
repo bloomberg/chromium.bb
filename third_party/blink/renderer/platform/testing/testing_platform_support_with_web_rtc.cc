@@ -65,11 +65,15 @@ class DummyRTCRtpTransceiver : public WebRTCRtpTransceiver {
   webrtc::RtpTransceiverDirection Direction() const override {
     return webrtc::RtpTransceiverDirection::kInactive;
   }
+  void SetDirection(webrtc::RtpTransceiverDirection) override {}
   base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override {
     return base::nullopt;
   }
-  void Stop() override {}
+  base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
+      const override {
+    return base::nullopt;
+  }
 };
 
 }  // namespace

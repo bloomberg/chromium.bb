@@ -53,9 +53,11 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpTransceiver {
   virtual std::unique_ptr<WebRTCRtpReceiver> Receiver() const = 0;
   virtual bool Stopped() const = 0;
   virtual webrtc::RtpTransceiverDirection Direction() const = 0;
+  virtual void SetDirection(webrtc::RtpTransceiverDirection) = 0;
   virtual base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const = 0;
-  virtual void Stop() = 0;
+  virtual base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
+      const = 0;
 };
 
 }  // namespace blink

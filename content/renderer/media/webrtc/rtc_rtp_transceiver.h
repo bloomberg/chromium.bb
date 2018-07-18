@@ -63,7 +63,8 @@ class CONTENT_EXPORT RtpTransceiverState {
       base::Optional<std::string> mid,
       bool stopped,
       webrtc::RtpTransceiverDirection direction,
-      base::Optional<webrtc::RtpTransceiverDirection> current_direction);
+      base::Optional<webrtc::RtpTransceiverDirection> current_direction,
+      base::Optional<webrtc::RtpTransceiverDirection> fired_direction);
   RtpTransceiverState(RtpTransceiverState&&);
   RtpTransceiverState(const RtpTransceiverState&) = delete;
   ~RtpTransceiverState();
@@ -87,7 +88,9 @@ class CONTENT_EXPORT RtpTransceiverState {
   base::Optional<std::string> mid() const;
   bool stopped() const;
   webrtc::RtpTransceiverDirection direction() const;
+  void set_direction(webrtc::RtpTransceiverDirection);
   base::Optional<webrtc::RtpTransceiverDirection> current_direction() const;
+  base::Optional<webrtc::RtpTransceiverDirection> fired_direction() const;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -100,6 +103,7 @@ class CONTENT_EXPORT RtpTransceiverState {
   bool stopped_;
   webrtc::RtpTransceiverDirection direction_;
   base::Optional<webrtc::RtpTransceiverDirection> current_direction_;
+  base::Optional<webrtc::RtpTransceiverDirection> fired_direction_;
 };
 
 // Used to surface |webrtc::RtpTransceiverInterface| to blink. Multiple
@@ -138,9 +142,11 @@ class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
   std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;
+  void SetDirection(webrtc::RtpTransceiverDirection direction) override;
   base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override;
-  void Stop() override;
+  base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
+      const override;
 
  private:
   class RTCRtpTransceiverInternal;

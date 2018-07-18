@@ -475,14 +475,21 @@ webrtc::RtpTransceiverDirection RTCRtpSenderOnlyTransceiver::Direction() const {
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
+void RTCRtpSenderOnlyTransceiver::SetDirection(
+    webrtc::RtpTransceiverDirection direction) {
+  NOTREACHED();
+}
+
 base::Optional<webrtc::RtpTransceiverDirection>
 RTCRtpSenderOnlyTransceiver::CurrentDirection() const {
   NOTREACHED();
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
-void RTCRtpSenderOnlyTransceiver::Stop() {
+base::Optional<webrtc::RtpTransceiverDirection>
+RTCRtpSenderOnlyTransceiver::FiredDirection() const {
   NOTREACHED();
+  return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
 }  // namespace content

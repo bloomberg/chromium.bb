@@ -168,9 +168,11 @@ class CONTENT_EXPORT RTCRtpSenderOnlyTransceiver
   std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;
+  void SetDirection(webrtc::RtpTransceiverDirection direction) override;
   base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override;
-  void Stop() override;
+  base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
+      const override;
 
  private:
   std::unique_ptr<RTCRtpSender> sender_;
