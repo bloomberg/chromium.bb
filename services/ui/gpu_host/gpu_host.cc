@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "components/viz/host/server_gpu_memory_buffer_manager.h"
+#include "components/viz/host/host_gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
@@ -84,7 +84,7 @@ DefaultGpuHost::DefaultGpuHost(
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)
           .subpixel_rendering);
   gpu_memory_buffer_manager_ =
-      std::make_unique<viz::ServerGpuMemoryBufferManager>(
+      std::make_unique<viz::HostGpuMemoryBufferManager>(
           next_client_id_++, std::make_unique<gpu::GpuMemoryBufferSupport>(),
           main_thread_task_runner_);
   gpu_memory_buffer_manager_->SetGpuService(gpu_service_.get());

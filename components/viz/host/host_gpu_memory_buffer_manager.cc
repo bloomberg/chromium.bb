@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/host/server_gpu_memory_buffer_manager.h"
+#include "components/viz/host/host_gpu_memory_buffer_manager.h"
 
 #include <utility>
 
@@ -24,22 +24,22 @@ void OnGpuMemoryBufferDestroyed(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const gpu::GpuMemoryBufferImpl::DestructionCallback& callback,
     const gpu::SyncToken& sync_token) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, sync_token));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, sync_token));
 }
 
 }  // namespace
 
-ServerGpuMemoryBufferManager::PendingBufferInfo::PendingBufferInfo() = default;
-ServerGpuMemoryBufferManager::PendingBufferInfo::PendingBufferInfo(
+HostGpuMemoryBufferManager::PendingBufferInfo::PendingBufferInfo() = default;
+HostGpuMemoryBufferManager::PendingBufferInfo::PendingBufferInfo(
     PendingBufferInfo&&) = default;
-ServerGpuMemoryBufferManager::PendingBufferInfo::~PendingBufferInfo() = default;
+HostGpuMemoryBufferManager::PendingBufferInfo::~PendingBufferInfo() = default;
 
-ServerGpuMemoryBufferManager::AllocatedBufferInfo::AllocatedBufferInfo() =
+HostGpuMemoryBufferManager::AllocatedBufferInfo::AllocatedBufferInfo() =
     default;
-ServerGpuMemoryBufferManager::AllocatedBufferInfo::~AllocatedBufferInfo() =
+HostGpuMemoryBufferManager::AllocatedBufferInfo::~AllocatedBufferInfo() =
     default;
 
-ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
+HostGpuMemoryBufferManager::HostGpuMemoryBufferManager(
     int client_id,
     std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -50,12 +50,11 @@ ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
-ServerGpuMemoryBufferManager::~ServerGpuMemoryBufferManager() {
+HostGpuMemoryBufferManager::~HostGpuMemoryBufferManager() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-void ServerGpuMemoryBufferManager::SetGpuService(
-    mojom::GpuService* gpu_service) {
+void HostGpuMemoryBufferManager::SetGpuService(mojom::GpuService* gpu_service) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   gpu_service_ = gpu_service;
   gpu_service_version_++;
@@ -78,7 +77,7 @@ void ServerGpuMemoryBufferManager::SetGpuService(
   }
 }
 
-void ServerGpuMemoryBufferManager::DropPendingAllocationRequests() {
+void HostGpuMemoryBufferManager::DropPendingAllocationRequests() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!gpu_service_);
   for (auto& client_pair : pending_buffers_) {
@@ -90,7 +89,7 @@ void ServerGpuMemoryBufferManager::DropPendingAllocationRequests() {
   pending_buffers_.clear();
 }
 
-void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
+void HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gpu::SyncToken& sync_token) {
@@ -108,7 +107,7 @@ void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
   buffers.erase(buffer_iter);
 }
 
-void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
+void HostGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
     int client_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   auto client_iter = allocated_buffers_.find(client_id);
@@ -132,7 +131,7 @@ void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
   }
 }
 
-void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+void HostGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gfx::Size& size,
@@ -160,7 +159,7 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
         gpu_service_->CreateGpuMemoryBuffer(
             id, size, format, usage, client_id, surface_handle,
             base::BindOnce(
-                &ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated,
+                &HostGpuMemoryBufferManager::OnGpuMemoryBufferAllocated,
                 weak_ptr_, gpu_service_version_, client_id, id));
       }
       return;
@@ -190,7 +189,7 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
+HostGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -211,11 +210,11 @@ ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   // We block with a WaitableEvent until the callback is run. So using
   // base::Unretained() is safe here.
   auto allocate_callback =
-      base::BindOnce(&ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer,
+      base::BindOnce(&HostGpuMemoryBufferManager::AllocateGpuMemoryBuffer,
                      base::Unretained(this), id, client_id_, size, format,
                      usage, surface_handle, std::move(reply_callback));
   task_runner_->PostTask(FROM_HERE, std::move(allocate_callback));
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   wait_event.Wait();
   if (handle.is_null())
     return nullptr;
@@ -224,20 +223,21 @@ ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   // onto the |task_runner_| thread to do the real work.
   return gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
       std::move(handle), size, format, usage,
-      base::Bind(
+      base::BindRepeating(
           &OnGpuMemoryBufferDestroyed, task_runner_,
-          base::Bind(&ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
-                     weak_ptr_, id, client_id_)));
+          base::BindRepeating(
+              &HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer, weak_ptr_,
+              id, client_id_)));
 }
 
-void ServerGpuMemoryBufferManager::SetDestructionSyncToken(
+void HostGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
   static_cast<gpu::GpuMemoryBufferImpl*>(buffer)->set_destruction_sync_token(
       sync_token);
 }
 
-bool ServerGpuMemoryBufferManager::OnMemoryDump(
+bool HostGpuMemoryBufferManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -275,19 +275,18 @@ bool ServerGpuMemoryBufferManager::OnMemoryDump(
   return true;
 }
 
-uint64_t ServerGpuMemoryBufferManager::ClientIdToTracingId(
-    int client_id) const {
+uint64_t HostGpuMemoryBufferManager::ClientIdToTracingId(int client_id) const {
   if (client_id == client_id_) {
     return base::trace_event::MemoryDumpManager::GetInstance()
         ->GetTracingProcessId();
   }
-  // TODO(sad|ssid): Find a better way once crbug.com/661257 is resolved.
-  // The hash value is incremented so that the tracing id is never equal to
-  // MemoryDumpManager::kInvalidTracingProcessId.
+  // TODO(sad|ssid): Find a better way once https://crbug.com/661257 is
+  // resolved.  The hash value is incremented so that the tracing id is never
+  // equal to MemoryDumpManager::kInvalidTracingProcessId.
   return static_cast<uint64_t>(base::Hash(&client_id, sizeof(client_id))) + 1;
 }
 
-void ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
+void HostGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     int gpu_service_version,
     int client_id,
     gfx::GpuMemoryBufferId id,
