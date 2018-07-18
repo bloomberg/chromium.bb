@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/sync/model/model_type_store.h"
@@ -52,7 +53,8 @@ enum StoreInitResultForHistogram {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class ModelTypeStoreBackend : public base::RefCounted<ModelTypeStoreBackend> {
+class ModelTypeStoreBackend
+    : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
  public:
   // Helper function to create in memory environment for leveldb.
   static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();
@@ -91,7 +93,7 @@ class ModelTypeStoreBackend : public base::RefCounted<ModelTypeStoreBackend> {
       const std::string& prefix);
 
  private:
-  friend class base::RefCounted<ModelTypeStoreBackend>;
+  friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
   friend class ModelTypeStoreBackendTest;
 
   static const int64_t kLatestSchemaVersion;
