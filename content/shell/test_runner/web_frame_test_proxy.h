@@ -52,10 +52,12 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
 // WebFrameTestProxy is used during LayoutTests and always instantiated, at time
 // of writing with Base=RenderFrameImpl. It does not directly inherit from it
 // for layering purposes.
-template <class Base, typename P>
+template <class Base>
 class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
  public:
-  explicit WebFrameTestProxy(P p) : Base(std::move(p)) {}
+  template <typename... Args>
+  explicit WebFrameTestProxy(Args&&... args)
+      : Base(std::forward<Args>(args)...) {}
 
   virtual ~WebFrameTestProxy() {}
 

@@ -89,10 +89,12 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
 //    override RenderViewImpl's getter and call a getter from
 //    WebWidgetTestProxyBase instead. In addition, WebWidgetTestProxyBase will
 //    have a public setter that could be called from the TestRunner.
-template <class Base, typename... Args>
+template <class Base>
 class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
  public:
-  explicit WebWidgetTestProxy(Args... args) : Base(args...) {}
+  template <typename... Args>
+  explicit WebWidgetTestProxy(Args&&... args)
+      : Base(std::forward<Args>(args)...) {}
 
   // WebWidgetClient implementation.
   blink::WebLayerTreeView* InitializeLayerTreeView() override {

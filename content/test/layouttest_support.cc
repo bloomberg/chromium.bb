@@ -92,24 +92,9 @@ base::LazyInstance<WidgetProxyCreationCallback>::Leaky
 base::LazyInstance<FrameProxyCreationCallback>::Leaky
     g_frame_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
 
-using WebViewTestProxyType =
-    test_runner::WebViewTestProxy<RenderViewImpl,
-                                  CompositorDependencies*,
-                                  const mojom::CreateViewParams&,
-                                  scoped_refptr<base::SingleThreadTaskRunner>>;
-using WebWidgetTestProxyType = test_runner::WebWidgetTestProxy<
-    RenderWidget,
-    int32_t,
-    CompositorDependencies*,
-    blink::WebPopupType,
-    const ScreenInfo&,
-    bool,
-    bool,
-    bool,
-    scoped_refptr<base::SingleThreadTaskRunner>>;
-using WebFrameTestProxyType =
-    test_runner::WebFrameTestProxy<RenderFrameImpl,
-                                   RenderFrameImpl::CreateParams>;
+using WebViewTestProxyType = test_runner::WebViewTestProxy<RenderViewImpl>;
+using WebWidgetTestProxyType = test_runner::WebWidgetTestProxy<RenderWidget>;
+using WebFrameTestProxyType = test_runner::WebFrameTestProxy<RenderFrameImpl>;
 
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
