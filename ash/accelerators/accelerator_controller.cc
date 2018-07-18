@@ -677,14 +677,6 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  // TODO(dmblack): Remove. Enabling eligibility check bypass for development
-  // purposes only. We should otherwise respect the eligibility rules below.
-  if (chromeos::switches::IsAssistantEnabled()) {
-    Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
-        AssistantSource::kHotkey);
-    return;
-  }
-
   switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
