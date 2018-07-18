@@ -87,7 +87,7 @@ void FrameHeader::SetHeaderHeightForPainting(int height) {
 }
 
 void FrameHeader::SchedulePaintForTitle() {
-  view_->SchedulePaintInRect(GetTitleBounds());
+  view_->SchedulePaintInRect(view_->GetMirroredRect(GetTitleBounds()));
 }
 
 void FrameHeader::SetPaintAsActive(bool paint_as_active) {
@@ -181,7 +181,8 @@ void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   if (!text.empty()) {
     canvas->DrawStringRectWithFlags(
         text, views::NativeWidgetAura::GetWindowTitleFontList(),
-        GetTitleColor(), GetTitleBounds(), gfx::Canvas::NO_SUBPIXEL_RENDERING);
+        GetTitleColor(), view_->GetMirroredRect(GetTitleBounds()),
+        gfx::Canvas::NO_SUBPIXEL_RENDERING);
   }
 }
 
@@ -249,8 +250,8 @@ void FrameHeader::LayoutHeaderInternal() {
 
 gfx::Rect FrameHeader::GetTitleBounds() const {
   views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
-  return view_->GetMirroredRect(FrameHeaderUtil::GetAvailableTitleBounds(
-      left_view, caption_button_container_, GetHeaderHeight()));
+  return FrameHeaderUtil::GetAvailableTitleBounds(
+      left_view, caption_button_container_, GetHeaderHeight());
 }
 
 FrameCaptionButton::ColorMode FrameHeader::GetButtonColorMode() {

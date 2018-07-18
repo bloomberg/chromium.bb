@@ -10,6 +10,8 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "base/i18n/rtl.h"
+#include "base/test/icu_test_util.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/test/test_views.h"
@@ -25,16 +27,16 @@ using DefaultFrameHeaderTest = AshTestBase;
 
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
-  std::unique_ptr<Widget> w = CreateTestWidget(
+  std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(w.get());
+  FrameCaptionButtonContainerView container(widget.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
-  w->SetBounds(gfx::Rect(0, 0, 500, 500));
-  w->Show();
+  widget->SetBounds(gfx::Rect(0, 0, 500, 500));
+  widget->Show();
 
-  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
-                                  &container);
+  DefaultFrameHeader frame_header(
+      widget.get(), widget->non_client_view()->frame_view(), &container);
   frame_header.SetLeftHeaderView(&window_icon);
   frame_header.LayoutHeader();
   gfx::Rect title_bounds = frame_header.GetTitleBounds();
@@ -43,13 +45,13 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
 }
 
 TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
-  std::unique_ptr<Widget> w = CreateTestWidget(
+  std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(w.get());
+  FrameCaptionButtonContainerView container(widget.get());
   FrameBackButton back;
 
-  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
-                                  &container);
+  DefaultFrameHeader frame_header(
+      widget.get(), widget->non_client_view()->frame_view(), &container);
   frame_header.SetBackButton(&back);
   frame_header.LayoutHeader();
   gfx::Rect title_bounds = frame_header.GetTitleBounds();
@@ -59,18 +61,34 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   EXPECT_EQ(0, back.bounds().x());
 }
 
+TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
+  base::test::ScopedRestoreICUDefaultLocale restore_locale;
+  std::unique_ptr<Widget> widget = CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
+  FrameCaptionButtonContainerView container(widget.get());
+
+  DefaultFrameHeader frame_header(
+      widget.get(), widget->non_client_view()->frame_view(), &container);
+  frame_header.LayoutHeader();
+  int ltr_minimum_width = frame_header.GetMinimumHeaderWidth();
+  base::i18n::SetRTLForTesting(true);
+  frame_header.LayoutHeader();
+  int rtl_minimum_width = frame_header.GetMinimumHeaderWidth();
+  EXPECT_EQ(ltr_minimum_width, rtl_minimum_width);
+}
+
 // Ensure the right frame colors are used.
 TEST_F(DefaultFrameHeaderTest, FrameColors) {
-  std::unique_ptr<Widget> w = CreateTestWidget(
+  std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(w.get());
+  FrameCaptionButtonContainerView container(widget.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
-  w->SetBounds(gfx::Rect(0, 0, 500, 500));
-  w->Show();
+  widget->SetBounds(gfx::Rect(0, 0, 500, 500));
+  widget->Show();
 
-  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
-                                  &container);
+  DefaultFrameHeader frame_header(
+      widget.get(), widget->non_client_view()->frame_view(), &container);
   // Check frame color is sensitive to mode.
   SkColor active = SkColorSetRGB(70, 70, 70);
   SkColor inactive = SkColorSetRGB(200, 200, 200);
