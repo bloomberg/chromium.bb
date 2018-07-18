@@ -819,22 +819,22 @@ bool PasswordAutofillAgent::FillSuggestion(
 
 void PasswordAutofillAgent::FillIntoFocusedField(
     bool is_password,
-    const base::string16& credential) {
-  if (!autofill_agent_.get()) {
-    return;
-  }
-  blink::WebInputElement input = autofill_agent_.get()->GetLastFocusedInput();
-  if (input.IsNull() || (!input.IsTextField() || !IsElementEditable(input))) {
+    const base::string16& credential,
+    FillIntoFocusedFieldCallback callback) {
+  if (focused_input_element_.IsNull()) {
+    std::move(callback).Run(autofill::FillingStatus::ERROR_NO_VALID_FIELD);
     return;
   }
   if (is_password) {
-    if (!input.IsPasswordFieldForAutofill()) {
+    if (!focused_input_element_.IsPasswordFieldForAutofill()) {
+      std::move(callback).Run(autofill::FillingStatus::ERROR_NOT_ALLOWED);
       return;
     }
-    FillPasswordFieldAndSave(&input, credential);
+    FillPasswordFieldAndSave(&focused_input_element_, credential);
   } else {
-    FillField(&input, credential);
+    FillField(&focused_input_element_, credential);
   }
+  std::move(callback).Run(autofill::FillingStatus::SUCCESS);
 }
 
 void PasswordAutofillAgent::FillField(blink::WebInputElement* input,
@@ -1340,6 +1340,32 @@ void PasswordAutofillAgent::OnWillSubmitForm(
   } else if (logger) {
     logger->LogMessage(Logger::STRING_FORM_IS_NOT_PASSWORD);
   }
+}
+
+void PasswordAutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
+  focused_input_element_.Reset();
+
+  if (node.IsNull() ||          // |node| is null <==> focus outside of frame.
+      !node.IsElementNode()) {  // Not a valid blink::WebElement.
+    GetPasswordManagerDriver()->FocusedInputChanged(
+        /*is_fillable=*/false, /*is_password_field=*/false);
+    return;
+  }
+
+  blink::WebElement web_element = node.ToConst<blink::WebElement>();
+  const WebInputElement* input = ToWebInputElement(&web_element);
+  if (!input) {
+    GetPasswordManagerDriver()->FocusedInputChanged(
+        /*is_fillable=*/false, /*is_password_field=*/false);
+    return;  // If the node isn't an element, don't even try to convert.
+  }
+  bool is_password = false;
+  bool is_fillable = input->IsTextField() && IsElementEditable(*input);
+  if (is_fillable) {
+    focused_input_element_ = *input;
+    is_password = focused_input_element_.IsPasswordFieldForAutofill();
+  }
+  GetPasswordManagerDriver()->FocusedInputChanged(is_fillable, is_password);
 }
 
 void PasswordAutofillAgent::OnDestruct() {

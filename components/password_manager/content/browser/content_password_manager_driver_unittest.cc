@@ -80,7 +80,8 @@ class FakePasswordAutofillAgent
   // autofill::mojom::PasswordAutofillAgent:
   MOCK_METHOD2(FillPasswordForm,
                void(int, const autofill::PasswordFormFillData&));
-  MOCK_METHOD2(FillIntoFocusedField, void(bool, const base::string16&));
+  MOCK_METHOD3(FillIntoFocusedField,
+               void(bool, const base::string16&, FillIntoFocusedFieldCallback));
 
   MOCK_METHOD0(BlacklistedFormFound, void());
 

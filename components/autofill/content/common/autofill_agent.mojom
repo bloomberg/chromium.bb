@@ -85,7 +85,8 @@ interface PasswordAutofillAgent {
   FillPasswordForm(int32 key, PasswordFormFillData form_data);
 
   // Fills the given |credential| into the last focused text input.
-  FillIntoFocusedField(bool is_password, mojo_base.mojom.String16 credential);
+  FillIntoFocusedField(bool is_password, mojo_base.mojom.String16 credential)
+      => (FillingStatus status);
 
   // Notification to start (|active| == true) or stop (|active| == false)
   // logging the decisions made about saving the password.
