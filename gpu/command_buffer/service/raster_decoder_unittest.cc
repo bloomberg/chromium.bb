@@ -548,7 +548,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */);
-    context_state_->InitializeGrContext(workarounds, nullptr);
+    context_state_->InitializeGrContext(workarounds);
 
     GpuFeatureInfo gpu_feature_info;
     gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =

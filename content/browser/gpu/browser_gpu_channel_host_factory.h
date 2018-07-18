@@ -57,7 +57,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   static void InitializeShaderDiskCacheOnIO(int gpu_client_id,
                                             const base::FilePath& cache_dir);
-  static void InitializeGrShaderDiskCacheOnIO(const base::FilePath& cache_dir);
 
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;

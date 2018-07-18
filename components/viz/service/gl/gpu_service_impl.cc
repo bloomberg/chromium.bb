@@ -28,7 +28,6 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
-#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/in_process_command_buffer.h"
@@ -703,9 +702,8 @@ void GpuServiceImpl::SetActiveURL(const GURL& url) {
 void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          uint64_t client_tracing_id,
                                          bool is_gpu_host,
-                                         bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
-  if (gpu::IsReservedClientId(client_id)) {
+  if (oopd_enabled_ && client_id == gpu::InProcessCommandBuffer::kGpuClientId) {
     std::move(callback).Run(mojo::ScopedMessagePipeHandle());
     return;
   }
@@ -719,15 +717,14 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
         },
         io_runner_, std::move(callback));
     main_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GpuServiceImpl::EstablishGpuChannel, weak_ptr_,
-                       client_id, client_tracing_id, is_gpu_host,
-                       cache_shaders_on_disk, std::move(wrap_callback)));
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::EstablishGpuChannel,
+                                  weak_ptr_, client_id, client_tracing_id,
+                                  is_gpu_host, std::move(wrap_callback)));
     return;
   }
 
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
-      client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk);
+      client_id, client_tracing_id, is_gpu_host);
 
   mojo::MessagePipe pipe;
   gpu_channel->Init(std::make_unique<gpu::SyncChannelFilteredSender>(
@@ -747,16 +744,14 @@ void GpuServiceImpl::CloseChannel(int32_t client_id) {
   gpu_channel_manager_->RemoveChannel(client_id);
 }
 
-void GpuServiceImpl::LoadedShader(int32_t client_id,
-                                  const std::string& key,
+void GpuServiceImpl::LoadedShader(const std::string& key,
                                   const std::string& data) {
   if (io_runner_->BelongsToCurrentThread()) {
-    main_runner_->PostTask(FROM_HERE,
-                           base::Bind(&GpuServiceImpl::LoadedShader, weak_ptr_,
-                                      client_id, key, data));
+    main_runner_->PostTask(FROM_HERE, base::Bind(&GpuServiceImpl::LoadedShader,
+                                                 weak_ptr_, key, data));
     return;
   }
-  gpu_channel_manager_->PopulateShaderCache(client_id, key, data);
+  gpu_channel_manager_->PopulateShaderCache(key, data);
 }
 
 void GpuServiceImpl::WakeUpGpu() {
