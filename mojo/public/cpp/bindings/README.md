@@ -1001,9 +1001,182 @@ class TableImpl : public db::mojom::Table {
 
 ## Associated Interfaces
 
-See [this document](https://www.chromium.org/developers/design-documents/mojo/associated-interfaces).
+Associated interfaces are interfaces which:
 
-TODO: Move the above doc into the repository markdown docs.
+* enable running multiple interfaces over a single message pipe while
+  preserving message ordering.
+* make it possible for the bindings to access a single message pipe from
+  multiple sequences.
+
+### Mojom
+
+A new keyword `associated` is introduced for interface pointer/request
+fields. For example:
+
+``` cpp
+interface Bar {};
+
+struct Qux {
+  associated Bar bar3;
+};
+
+interface Foo {
+  // Uses associated interface pointer.
+  SetBar(associated Bar bar1);
+  // Uses associated interface request.
+  GetBar(associated Bar& bar2);
+  // Passes a struct with associated interface pointer.
+  PassQux(Qux qux);
+  // Uses associated interface pointer in callback.
+  AsyncGetBar() => (associated Bar bar4);
+};
+```
+
+It means the interface impl/client will communicate using the same
+message pipe over which the associated interface pointer/request is
+passed.
+
+### Using associated interfaces in C++
+
+When generating C++ bindings, the associated interface pointer of `Bar` is
+mapped to `BarAssociatedPtrInfo` (which is an alias of
+`mojo::AssociatedInterfacePtrInfo<Bar>`); associated interface request to
+`BarAssociatedRequest` (which is an alias of
+`mojo::AssociatedInterfaceRequest<Bar>`).
+
+``` cpp
+// In mojom:
+interface Foo {
+  ...
+  SetBar(associated Bar bar1);
+  GetBar(associated Bar& bar2);
+  ...
+};
+
+// In C++:
+class Foo {
+  ...
+  virtual void SetBar(BarAssociatedPtrInfo bar1) = 0;
+  virtual void GetBar(BarAssociatedRequest bar2) = 0;
+  ...
+};
+```
+
+#### Passing associated interface requests
+
+Assume you have already got an `InterfacePtr<Foo> foo_ptr`, and you would like
+to call `GetBar()` on it. You can do:
+
+``` cpp
+BarAssociatedPtrInfo bar_ptr_info;
+BarAssociatedRequest bar_request = MakeRequest(&bar_ptr_info);
+foo_ptr->GetBar(std::move(bar_request));
+
+// BarAssociatedPtr is an alias of AssociatedInterfacePtr<Bar>.
+BarAssociatedPtr bar_ptr;
+bar_ptr.Bind(std::move(bar_ptr_info));
+bar_ptr->DoSomething();
+```
+
+First, the code creates an associated interface of type `Bar`. It looks very
+similar to what you would do to setup a non-associated interface. An
+important difference is that one of the two associated endpoints (either
+`bar_request` or `bar_ptr_info`) must be sent over another interface. That is
+how the interface is associated with an existing message pipe.
+
+It should be noted that you cannot call `bar_ptr->DoSomething()` before passing
+`bar_request`. This is required by the FIFO-ness guarantee: at the receiver
+side, when the message of `DoSomething` call arrives, we want to dispatch it to
+the corresponding `AssociatedBinding<Bar>` before processing any subsequent
+messages. If `bar_request` is in a subsequent message, message dispatching gets
+into a deadlock. On the other hand, as soon as `bar_request` is sent, `bar_ptr`
+is usable. There is no need to wait until `bar_request` is bound to an
+implementation at the remote side.
+
+A `MakeRequest` overload which takes an `AssociatedInterfacePtr` pointer
+(instead of an `AssociatedInterfacePtrInfo` pointer) is provided to make the
+code a little shorter. The following code achieves the same purpose:
+
+``` cpp
+BarAssociatedPtr bar_ptr;
+foo_ptr->GetBar(MakeRequest(&bar_ptr));
+bar_ptr->DoSomething();
+```
+
+The implementation of `Foo` looks like this:
+
+``` cpp
+class FooImpl : public Foo {
+  ...
+  void GetBar(BarAssociatedRequest bar2) override {
+    bar_binding_.Bind(std::move(bar2));
+    ...
+  }
+  ...
+
+  Binding<Foo> foo_binding_;
+  AssociatedBinding<Bar> bar_binding_;
+};
+```
+
+In this example, `bar_binding_`'s lifespan is tied to that of `FooImpl`. But you
+don't have to do that. You can, for example, pass `bar2` to another sequence to
+bind to an `AssociatedBinding<Bar>` there.
+
+When the underlying message pipe is disconnected (e.g., `foo_ptr` or
+`foo_binding_` is destroyed), all associated interface endpoints (e.g.,
+`bar_ptr` and `bar_binding_`) will receive a connection error.
+
+#### Passing associated interface pointers
+
+Similarly, assume you have already got an `InterfacePtr<Foo> foo_ptr`, and you
+would like to call `SetBar()` on it. You can do:
+
+``` cpp
+AssociatedBind<Bar> bar_binding(some_bar_impl);
+BarAssociatedPtrInfo bar_ptr_info;
+BarAssociatedRequest bar_request = MakeRequest(&bar_ptr_info);
+foo_ptr->SetBar(std::move(bar_ptr_info));
+bar_binding.Bind(std::move(bar_request));
+```
+
+The following code achieves the same purpose:
+
+``` cpp
+AssociatedBind<Bar> bar_binding(some_bar_impl);
+BarAssociatedPtrInfo bar_ptr_info;
+bar_binding.Bind(&bar_ptr_info);
+foo_ptr->SetBar(std::move(bar_ptr_info));
+```
+
+### Performance considerations
+
+When using associated interfaces on different sequences than the master sequence
+(where the master interface lives):
+
+* Sending messages: send happens directly on the calling sequence. So there
+  isn't sequence hopping.
+* Receiving messages: associated interfaces bound on a different sequence from
+  the master interface incur an extra sequence hop during dispatch.
+
+Therefore, performance-wise associated interfaces are better suited for
+scenarios where message receiving happens on the master sequence.
+
+### Testing
+
+Associated interfaces need to be associated with a master interface before
+they can be used. This means one end of the associated interface must be sent
+over one end of the master interface, or over one end of another associated
+interface which itself already has a master interface.
+
+If you want to test an associated interface endpoint without first
+associating it, you can use `mojo::MakeIsolatedRequest()`. This will create
+working associated interface endpoints which are not actually associated with
+anything else.
+
+### Read more
+
+* [Design: Mojo Associated Interfaces](https://docs.google.com/document/d/1nq3J_HbS-gvVfIoEhcVyxm1uY-9G_7lhD-4Kyxb1WIY/edit)
 
 ## Synchronous Calls
 
