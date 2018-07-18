@@ -52,7 +52,7 @@ public class ClientManagerTest {
                                   .getApplicationContext();
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();
         RequestThrottler.purgeAllEntriesForTesting(context);
-        mClientManager = new ClientManager(context);
+        mClientManager = new ClientManager();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

@@ -219,6 +219,7 @@ public class CustomTabsConnection {
 
     @VisibleForTesting
     SpeculationParams mSpeculation;
+    /** @deprecated Use {@link ContextUtils} instead */
     protected final Context mContext;
     @VisibleForTesting
     final ClientManager mClientManager;
@@ -242,7 +243,7 @@ public class CustomTabsConnection {
     public CustomTabsConnection() {
         super();
         mContext = ContextUtils.getApplicationContext();
-        mClientManager = new ClientManager(mContext);
+        mClientManager = new ClientManager();
         mLogRequests = CommandLine.getInstance().hasSwitch(LOG_SERVICE_REQUESTS);
     }
 
@@ -413,8 +414,9 @@ public class CustomTabsConnection {
         if (!initialized) {
             tasks.add(() -> {
                 try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.initializeBrowser()")) {
-                    initializeBrowser(mContext);
-                    ChromeBrowserInitializer.initNetworkChangeNotifier(mContext);
+                    initializeBrowser(ContextUtils.getApplicationContext());
+                    ChromeBrowserInitializer.initNetworkChangeNotifier(
+                            ContextUtils.getApplicationContext());
                     mWarmupHasBeenFinished.set(true);
                 }
             });
@@ -439,7 +441,8 @@ public class CustomTabsConnection {
         // (3)
         tasks.add(() -> {
             try (TraceEvent e = TraceEvent.scoped("InitializeViewHierarchy")) {
-                WarmupManager.getInstance().initializeViewHierarchy(mContext,
+                WarmupManager.getInstance().initializeViewHierarchy(
+                        ContextUtils.getApplicationContext(),
                         R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);
             }
         });
@@ -455,7 +458,7 @@ public class CustomTabsConnection {
                     // The throttling database uses shared preferences, that can cause a
                     // StrictMode violation on the first access. Make sure that this access is
                     // not in mayLauchUrl.
-                    RequestThrottler.loadInBackground(mContext);
+                    RequestThrottler.loadInBackground(ContextUtils.getApplicationContext());
                 }
             });
         }
@@ -837,7 +840,8 @@ public class CustomTabsConnection {
     private void maybePreconnectToRedirectEndpoint(
             CustomTabsSessionToken session, String url, Intent intent) {
         // For the preconnection to not be a no-op, we need more than just the native library.
-        if (!ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()) {
+        if (!ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
+                        .hasNativeInitializationCompleted()) {
             return;
         }
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REDIRECT_PRECONNECT)) return;
@@ -880,7 +884,8 @@ public class CustomTabsConnection {
         ThreadUtils.assertOnUiThread();
 
         if (!intent.hasExtra(PARALLEL_REQUEST_URL_KEY)) return PARALLEL_REQUEST_NO_REQUEST;
-        if (!ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()) {
+        if (!ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
+                        .hasNativeInitializationCompleted()) {
             return PARALLEL_REQUEST_FAILURE_NOT_INITIALIZED;
         }
         if (!mClientManager.getAllowParallelRequestForSession(session)) {
@@ -921,7 +926,8 @@ public class CustomTabsConnection {
         // - The referrer's origin is allowed.
         //
         // TODO(lizeb): Relax the restrictions.
-        return ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()
+        return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
+                       .hasNativeInitializationCompleted()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PARALLEL_REQUEST)
                 && mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
     }
@@ -1232,7 +1238,8 @@ public class CustomTabsConnection {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
             do {
                 ActivityManager am =
-                        (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+                        (ActivityManager) ContextUtils.getApplicationContext().getSystemService(
+                                Context.ACTIVITY_SERVICE);
                 // Extra paranoia here and below, some L 5.0.x devices seem to throw NPE somewhere
                 // in this code.
                 // See https://crbug.com/654705.
@@ -1286,7 +1293,8 @@ public class CustomTabsConnection {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED;
         }
         ConnectivityManager cm =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
         if (cm.isActiveNetworkMetered() && !shouldSpeculateLoadOnCellularForSession(session)) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED;
         }
