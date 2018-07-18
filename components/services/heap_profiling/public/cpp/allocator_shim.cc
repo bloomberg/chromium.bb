@@ -883,6 +883,9 @@ void AllocatorShimLogAlloc(AllocatorType type,
   }
 }
 
+// This function may be called post Chrome TLS destruction, so it must not use
+// Chrome TLS. It currently uses 3 classes from Chrome: base::Lock,
+// base::TimeTicks and base::ScopedPlatformFile, all of which are safe.
 void AllocatorShimLogFree(void* address) {
   SendBuffer* send_buffers = g_send_buffers.Read();
   if (!send_buffers)
