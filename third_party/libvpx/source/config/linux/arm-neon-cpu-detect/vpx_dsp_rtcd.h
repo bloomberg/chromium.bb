@@ -911,6 +911,11 @@ RTCD_EXTERN void (*vpx_hadamard_16x16)(const int16_t* src_diff,
                                        ptrdiff_t src_stride,
                                        int16_t* coeff);
 
+void vpx_hadamard_32x32_c(const int16_t* src_diff,
+                          ptrdiff_t src_stride,
+                          int16_t* coeff);
+#define vpx_hadamard_32x32 vpx_hadamard_32x32_c
+
 void vpx_hadamard_8x8_c(const int16_t* src_diff,
                         ptrdiff_t src_stride,
                         int16_t* coeff);
