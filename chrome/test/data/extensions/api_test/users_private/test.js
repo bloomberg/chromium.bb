@@ -74,6 +74,31 @@ var availableTests = [
       chrome.test.succeed();
     });
   },
+
+  function getLoginStatus() {
+    chrome.test.getConfig(chrome.test.callbackPass(function(config) {
+      // Validate the config.
+      chrome.test.assertTrue(config.hasOwnProperty("loginStatus"));
+      chrome.test.assertTrue(config.loginStatus.hasOwnProperty("isLoggedIn"));
+      chrome.test.assertTrue(
+          config.loginStatus.hasOwnProperty("isScreenLocked"));
+
+      chrome.usersPrivate.getLoginStatus(
+          chrome.test.callbackPass(function(status) {
+            chrome.test.assertEq(typeof(status), 'object');
+            chrome.test.assertTrue(status.hasOwnProperty("isLoggedIn"));
+            chrome.test.assertTrue(status.hasOwnProperty("isScreenLocked"));
+            console.log(status.isLoggedIn);
+            console.log(config.loginStatus.isLoggedIn);
+            chrome.test.assertEq(
+                status.isLoggedIn, config.loginStatus.isLoggedIn);
+            console.log(status.isScreenLocked);
+            console.log(config.loginStatus.isScreenLocked);
+            chrome.test.assertEq(
+                status.isScreenLocked, config.loginStatus.isScreenLocked);
+          }));
+    }));
+  },
 ];
 
 var testToRun = window.location.search.substring(1);
