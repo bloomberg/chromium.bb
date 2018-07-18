@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
@@ -501,6 +502,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
 void SigninScreenHandler::RegisterMessages() {
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
+  AddCallback("completeOfflineAuthentication",
+              &SigninScreenHandler::HandleCompleteOfflineAuthentication);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("showSupervisedUserCreationScreen",
               &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
@@ -1189,6 +1192,12 @@ void SigninScreenHandler::UpdateAddButtonStatus() {
 void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
                                                  const std::string& password,
                                                  bool authenticated_by_pin) {
+  AuthenticateExistingUser(account_id, password, authenticated_by_pin);
+}
+
+void SigninScreenHandler::AuthenticateExistingUser(const AccountId& account_id,
+                                                   const std::string& password,
+                                                   bool authenticated_by_pin) {
   if (!delegate_)
     return;
   DCHECK_EQ(account_id.GetUserEmail(),
@@ -1199,7 +1208,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   DCHECK(user);
   UserContext user_context;
   if (!user) {
-    LOG(ERROR) << "HandleAuthenticateUser: User not found! account type="
+    LOG(ERROR) << "AuthenticateExistingUser: User not found! account type="
                << AccountId::AccountTypeToString(account_id.GetAccountType());
     const user_manager::UserType user_type =
         (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
@@ -1224,6 +1233,28 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   delegate_->Login(user_context, SigninSpecifics());
 
   UpdatePinKeyboardState(account_id);
+}
+
+void SigninScreenHandler::HandleCompleteOfflineAuthentication(
+    const std::string& email,
+    const std::string& password) {
+  const std::string sanitized_email = gaia::SanitizeEmail(email);
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      sanitized_email, std::string() /* id */, AccountType::UNKNOWN);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (!user) {
+    LOG(ERROR)
+        << "HandleCompleteOfflineAuthentication: User not found! account type="
+        << AccountId::AccountTypeToString(account_id.GetAccountType());
+    LoginDisplayHost::default_host()->GetLoginDisplay()->ShowError(
+        IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, 1,
+        HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    return;
+  }
+
+  AuthenticateExistingUser(account_id, password,
+                           false /* authenticated_by_pin */);
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {
