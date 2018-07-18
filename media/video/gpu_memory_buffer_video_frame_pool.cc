@@ -590,9 +590,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_UNKNOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.GpuMemoryBufferVideoFramePool.UnsupportedFormat",
-          video_frame->format(), PIXEL_FORMAT_MAX + 1);
+      if (!video_frame->HasTextures()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Media.GpuMemoryBufferVideoFramePool.UnsupportedFormat",
+            video_frame->format(), PIXEL_FORMAT_MAX + 1);
+      }
       passthrough = true;
   }
   // TODO(dcastagna): Handle odd positioned video frame input, see
