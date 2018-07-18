@@ -386,7 +386,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
   Records the time taken inside of the context block, to the
   CumulativeSecondsDistribution named |name|, with the given fields.
 
-  Usage:
+  Examples:
 
   # Time the doSomething() call, with field values that are independent of the
   # results of the operation.
@@ -457,7 +457,7 @@ def SecondsTimerDecorator(name, fields=None, description=None,
                           record_on_exception=True, add_exception_field=False):
   """Decorator to time the duration of function calls.
 
-  Usage:
+  Examples:
     @SecondsTimerDecorator('timer/name', fields={'foo': 'bar'},
                            description="My timer",
                            field_spec=[ts_mon.StringField('foo')])
@@ -490,6 +490,135 @@ def SecondsTimerDecorator(name, fields=None, description=None,
                         field_spec=field_spec, scale=scale,
                         record_on_exception=record_on_exception,
                         add_exception_field=add_exception_field):
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+  return decorator
+
+
+@contextlib.contextmanager
+def SecondsInstanceTimer(name, fields=None, description=None,
+                         field_spec=_MISSING, record_on_exception=True,
+                         add_exception_field=False):
+  """Record the time of an operation to a FloatMetric.
+
+  Records the time taken inside of the context block, to the
+  Float metric named |name|, with the given fields.  This is
+  a non-cumulative metric; this represents the absolute time
+  taken for a specific block.  The duration is stored in a float
+  to provide flexibility in the future for higher accuracy.
+
+  Examples:
+
+  # Time the doSomething() call, with field values that are independent of the
+  # results of the operation.
+  with SecondsInstanceTimer('timer/name', fields={'foo': 'bar'},
+                            description="My timer",
+                            field_spec=[ts_mon.StringField('foo'),
+                                        ts_mon.BooleanField('success')]):
+    doSomething()
+
+  # Time the doSomethingElse call, with field values that depend on the results
+  # of that operation. Note that it is important that a default value is
+  # specified for these fields, in case an exception is thrown by
+  # doSomethingElse()
+  f = {'success': False, 'foo': 'bar'}
+  with SecondsInstanceTimer('timer/name', fields=f, description="My timer",
+                            field_spec=[ts_mon.StringField('foo')]) as c:
+    doSomethingElse()
+    c['success'] = True
+
+  # Incorrect Usage!
+  with SecondsInstanceTimer('timer/name', description="My timer") as c:
+    doSomething()
+    c['foo'] = bar # 'foo' is not a valid field, because no default
+                   # value for it was specified in the context constructor.
+                   # It will be silently ignored.
+
+  Args:
+    name: The name of the metric to create
+    fields: The fields of the metric to create.
+    description: A string description of the metric.
+    field_spec: A sequence of ts_mon.Field objects to specify the field schema.
+    record_on_exception: Whether to record metrics if an exception is raised.
+    add_exception_field: Whether to add a BooleanField("encountered_exception")
+        to the FieldSpec provided, and set its value to True iff an exception
+        was raised in the context.
+
+  Yields:
+    Float based metric measing the duration of execution.
+  """
+  if field_spec is not None and field_spec is not _MISSING:
+    field_spec.append(ts_mon.BooleanField('encountered_exception'))
+
+  m = FloatMetric(name, description=description, field_spec=field_spec)
+  f = dict(fields or {})
+  keys = f.keys()
+  t0 = datetime.datetime.utcnow()
+
+  error = True
+  try:
+    yield f
+    error = False
+  finally:
+    if record_on_exception and add_exception_field:
+      keys.append('encountered_exception')
+      f.setdefault('encountered_exception', error)
+    # Filter out keys that were not part of the initial key set. This is to
+    # avoid inconsistent fields.
+    # TODO(akeshet): Doing this filtering isn't super efficient. Would be better
+    # to implement some key-restricted subclass or wrapper around dict, and just
+    # yield that above rather than yielding a regular dict.
+    if record_on_exception or not error:
+      dt = (datetime.datetime.utcnow() - t0).total_seconds()
+      m.set(dt, fields={k: f[k] for k in keys})
+
+
+def SecondsInstanceTimerDecorator(name, fields=None, description=None,
+                                  field_spec=_MISSING,
+                                  record_on_exception=True,
+                                  add_exception_field=False):
+  """Decorator to time the gauge duration of function calls.
+
+  Examples:
+    @SecondsInstanceTimerDecorator('timer/name', fields={'foo': 'bar'},
+                                   description="My timer",
+                                   field_spec=[ts_mon.StringField('foo'),
+                                               ts_mon.BooleanField('success')]):
+
+    def Foo(bar):
+      return doStuff()
+
+    is equivalent to
+
+    def Foo(bar):
+      with SecondsInstanceTimer('timer/name', fields={'foo': 'bar'},
+                                description="My timer",
+                                field_spec=[ts_mon.StringField('foo'),
+                                            ts_mon.BooleanField('success')]):
+        return doStuff()
+
+  Args:
+    name: The name of the metric to create
+    fields: The fields of the metric to create
+    description: A string description of the metric.
+    field_spec: A sequence of ts_mon.Field objects to specify the field schema.
+    record_on_exception: Whether to record metrics if an exception is raised.
+    add_exception_field: Whether to add a BooleanField("encountered_exception")
+        to the FieldSpec provided, and set its value to True iff an exception
+        was raised in the context.
+
+  Returns:
+    A SecondsInstanceTimer metric decorator.
+  """
+  def decorator(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+      with SecondsInstanceTimer(name, fields=fields, description=description,
+                                field_spec=field_spec,
+                                record_on_exception=record_on_exception,
+                                add_exception_field=add_exception_field):
         return fn(*args, **kwargs)
 
     return wrapper
@@ -540,7 +669,7 @@ def Presence(name, fields=None, description=None, field_spec=_MISSING):
 class RuntimeBreakdownTimer(object):
   """Record the time of an operation and the breakdown into sub-steps.
 
-  Usage:
+  Examples:
     with RuntimeBreakdownTimer('timer/name', fields={'foo':'bar'},
                                description="My timer",
                                field_spec=[ts_mon.StringField('foo')]) as timer:

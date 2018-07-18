@@ -196,6 +196,60 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
 
     self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
 
+
+class TestSecondsInstanceTimer(cros_test_lib.MockTestCase):
+  """Tests the behavior of SecondsInstanceTimer and decorator."""
+
+  def setUp(self):
+    self._mockMetric = mock.MagicMock()
+    self.PatchObject(metrics, 'FloatMetric',
+                     return_value=self._mockMetric)
+
+  @metrics.SecondsInstanceTimerDecorator('fooname', fields={'foo': 'bar'})
+  def _DecoratedFunction(self, *args, **kwargs):
+    pass
+
+  def testDecorator(self):
+    """Test that calling a decorated function ends up emitting metric."""
+    self._DecoratedFunction(1, 2, 3, foo='bar')
+    self.assertEqual(metrics.FloatMetric.call_count, 1)
+    self.assertEqual(self._mockMetric.set.call_count, 1)
+
+  def testContextManager(self):
+    """Test that timing context manager emits a metric."""
+    with metrics.SecondsInstanceTimer('fooname'):
+      pass
+    self.assertEqual(metrics.FloatMetric.call_count, 1)
+    self.assertEqual(self._mockMetric.set.call_count, 1)
+
+  def testContextManagerWithUpdate(self):
+    """Tests that timing context manager with a field update emits metric."""
+    with metrics.SecondsInstanceTimer('fooname', fields={'foo': 'bar'}) as c:
+      c['foo'] = 'qux'
+    self._mockMetric.set.assert_called_with(mock.ANY, fields={'foo': 'qux'})
+
+  def testContextManagerWithoutUpdate(self):
+    """Tests that the default value for fields is used when not updated."""
+    # pylint: disable=unused-variable
+    with metrics.SecondsInstanceTimer('fooname', fields={'foo': 'bar'}) as c:
+      pass
+    self._mockMetric.set.assert_called_with(mock.ANY, fields={'foo': 'bar'})
+
+  def testContextManagerIgnoresInvalidField(self):
+    """Test that we ignore fields that are set with no default."""
+    with metrics.SecondsInstanceTimer('fooname', fields={'foo': 'bar'}) as c:
+      c['qux'] = 'qwert'
+    self._mockMetric.set.assert_called_with(mock.ANY, fields={'foo': 'bar'})
+
+  def testContextManagerWithException(self):
+    """Tests that we emit metrics if the timed method raised something."""
+    with self.assertRaises(AssertionError):
+      with metrics.SecondsInstanceTimer('fooname', fields={'foo': 'bar'}):
+        assert False
+
+    self._mockMetric.set.assert_called_with(mock.ANY, fields={'foo': 'bar'})
+
+
 class TestSuccessCounter(cros_test_lib.MockTestCase):
   """Tests the behavior of SecondsTimer."""
 
