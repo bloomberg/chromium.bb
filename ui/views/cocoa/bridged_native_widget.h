@@ -319,6 +319,13 @@ class VIEWS_EXPORT BridgedNativeWidget
   // has its own copy, but doesn't provide access to it).
   gfx::Rect bounds_before_fullscreen_;
 
+  // Tracks the origin of the window (from the top-left of the screen) when it
+  // was last reported to toolkit-views. Needed to trigger move notifications
+  // associated with a window resize since AppKit won't send move notifications
+  // when the top-left point of the window moves vertically. The origin of the
+  // window in AppKit coordinates is not actually changing in this case.
+  gfx::Point last_window_frame_origin_;
+
   // Whether this window wants to be fullscreen. If a fullscreen animation is in
   // progress then it might not be actually fullscreen.
   bool target_fullscreen_state_;

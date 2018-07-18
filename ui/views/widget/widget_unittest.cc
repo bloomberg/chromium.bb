@@ -949,6 +949,65 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
   EXPECT_FALSE(widget_bounds_changed());
 }
 
+namespace {
+
+class MoveTrackingTestDesktopWidgetDelegate : public TestDesktopWidgetDelegate {
+ public:
+  int move_count() const { return move_count_; }
+
+  // WidgetDelegate:
+  void OnWidgetMove() override { ++move_count_; }
+
+ private:
+  int move_count_ = 0;
+};
+
+}  // namespace
+
+// An extension to the WidgetBoundsChangedNative test above to ensure move
+// notifications propagate to the WidgetDelegate.
+TEST_F(WidgetObserverTest, OnWidgetMovedWhenOriginChangesNative) {
+  MoveTrackingTestDesktopWidgetDelegate delegate;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  delegate.InitWidget(params);
+  Widget* widget = delegate.GetWidget();
+  widget->Show();
+  widget->SetBounds(gfx::Rect(100, 100, 300, 200));
+
+  const int moves_during_init = delegate.move_count();
+
+#if defined(OS_WIN)
+  // Windows reliably notifies twice per origin change. https://crbug.com/864938
+  constexpr int kDeltaPerMove = 2;
+#else
+  constexpr int kDeltaPerMove = 1;
+#endif
+
+  // Resize without changing origin. No move.
+  widget->SetBounds(gfx::Rect(100, 100, 310, 210));
+  EXPECT_EQ(moves_during_init, delegate.move_count());
+
+  // Move without changing size. Moves.
+  widget->SetBounds(gfx::Rect(110, 110, 310, 210));
+  EXPECT_EQ(moves_during_init + kDeltaPerMove, delegate.move_count());
+
+  // Changing both moves.
+  widget->SetBounds(gfx::Rect(90, 90, 330, 230));
+  EXPECT_EQ(moves_during_init + 2 * kDeltaPerMove, delegate.move_count());
+
+  // Just grow vertically. On Mac, this changes the AppKit origin since it is
+  // from the bottom left of the screen, but there is no move as far as views is
+  // concerned.
+  widget->SetBounds(gfx::Rect(90, 90, 330, 240));
+  // No change.
+  EXPECT_EQ(moves_during_init + 2 * kDeltaPerMove, delegate.move_count());
+
+  // For a similar reason, move the widget down by the same amount that it grows
+  // vertically. The AppKit origin does not change, but it is a move.
+  widget->SetBounds(gfx::Rect(90, 100, 330, 250));
+  EXPECT_EQ(moves_during_init + 3 * kDeltaPerMove, delegate.move_count());
+}
+
 // Test correct behavior when widgets close themselves in response to visibility
 // changes.
 TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
