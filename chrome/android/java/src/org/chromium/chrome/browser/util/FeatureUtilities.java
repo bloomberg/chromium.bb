@@ -41,6 +41,7 @@ import java.util.List;
  */
 public class FeatureUtilities {
     private static final String TAG = "FeatureUtilities";
+    private static final Integer CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP = 320;
 
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
@@ -376,16 +377,20 @@ public class FeatureUtilities {
     }
 
     /**
-     * @param isTablet Whether the containing Activity is being displayed on a tablet-sized screen.
+     * @param activityContext The context for the containing activity.
      * @return Whether contextual suggestions are enabled.
      */
-    public static boolean areContextualSuggestionsEnabled(boolean isTablet) {
-        return !isTablet && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
+    public static boolean areContextualSuggestionsEnabled(Context activityContext) {
+        int smallestScreenWidth =
+                activityContext.getResources().getConfiguration().smallestScreenWidthDp;
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
+                && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
                 && isChromeModernDesignEnabled()
                 && (ChromeFeatureList.isEnabled(
                             ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
-                           || ChromeFeatureList.isEnabled(
-                                      ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
+                    || (smallestScreenWidth >= CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP
+                        && ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)));
     }
 
     /**

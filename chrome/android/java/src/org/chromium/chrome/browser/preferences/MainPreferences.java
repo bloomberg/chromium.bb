@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,8 +189,7 @@ public class MainPreferences extends PreferenceFragment
             removePreferenceIfPresent(PREF_HOMEPAGE);
         }
 
-        boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(getActivity());
-        if (FeatureUtilities.areContextualSuggestionsEnabled(isTablet)
+        if (FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
                 && EnabledStateMonitor.shouldShowSettings()) {
             Preference contextualSuggesitons = addPreferenceIfAbsent(PREF_CONTEXTUAL_SUGGESTIONS);
             setOnOffSummary(contextualSuggesitons, EnabledStateMonitor.getEnabledState());

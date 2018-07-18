@@ -1410,7 +1410,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
 
         if (supportsContextualSuggestionsBottomSheet()
-                && FeatureUtilities.areContextualSuggestionsEnabled(isTablet())) {
+                && FeatureUtilities.areContextualSuggestionsEnabled(this)) {
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
             mBottomSheet.init(coordinator, this);
