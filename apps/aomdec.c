@@ -604,6 +604,13 @@ static int main_loop(int argc, const char **argv_) {
       summary = 1;
     } else if (arg_match(&arg, &threadsarg, argi)) {
       cfg.threads = arg_parse_uint(&arg);
+#if !CONFIG_MULTITHREAD
+      if (cfg.threads > 1) {
+        die("Error: --threads=%d is not supported when CONFIG_MULTITHREAD = "
+            "0.\n",
+            cfg.threads);
+      }
+#endif
     } else if (arg_match(&arg, &rowmtarg, argi)) {
       row_mt = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &verbosearg, argi)) {
