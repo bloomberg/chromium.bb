@@ -112,7 +112,7 @@ std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
   // Clear out any non-reproducible fields.
   for (auto& report : parsed_payload->GetList()) {
     report.RemoveKey("age");
-    report.RemovePath({"report", "elapsed_time"});
+    report.RemovePath({"body", "elapsed_time"});
   }
   return parsed_payload;
 }
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
       R"json(
         [
           {
-            "report": {
+            "body": {
               "protocol": "http/1.1",
               "referrer": "",
               "sampling_fraction": 1.0,

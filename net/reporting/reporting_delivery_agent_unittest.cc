@@ -86,7 +86,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateUpload) {
     ExpectDictIntegerValue(0, *report, "age");
     ExpectDictStringValue(kType_, *report, "type");
     ExpectDictStringValue(kUrl_.spec(), *report, "url");
-    ExpectDictDictionaryValue(body, *report, "report");
+    ExpectDictDictionaryValue(body, *report, "body");
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
@@ -134,7 +134,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateSubdomainUpload) {
     ExpectDictIntegerValue(0, *report, "age");
     ExpectDictStringValue(kType_, *report, "type");
     ExpectDictStringValue(kSubdomainUrl_.spec(), *report, "url");
-    ExpectDictDictionaryValue(body, *report, "report");
+    ExpectDictDictionaryValue(body, *report, "body");
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
@@ -221,7 +221,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {
     ExpectDictIntegerValue(0, *report, "age");
     ExpectDictStringValue(kType_, *report, "type");
     ExpectDictStringValue(kUrl_.spec(), *report, "url");
-    ExpectDictDictionaryValue(body, *report, "report");
+    ExpectDictDictionaryValue(body, *report, "body");
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 

@@ -202,7 +202,7 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
   ExpectDictStringValue("network-error", *report_dict, "type");
   ExpectDictStringValue(GetFailURL().spec(), *report_dict, "url");
   base::DictionaryValue* body_dict;
-  ASSERT_TRUE(report_dict->GetDictionary("report", &body_dict));
+  ASSERT_TRUE(report_dict->GetDictionary("body", &body_dict));
 
   ExpectDictStringValue("http.response.empty", *body_dict, "type");
   ExpectDictIntegerValue(0, *body_dict, "status_code");
