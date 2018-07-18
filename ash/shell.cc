@@ -1012,6 +1012,8 @@ void Shell::Init(
         prefs::mojom::kLocalStateServiceName);
   }
 
+  tablet_mode_controller_ = std::make_unique<TabletModeController>();
+
   // Some delegates access ShellPort during their construction. Create them here
   // instead of the ShellPort constructor.
   accessibility_focus_ring_controller_ =
@@ -1108,7 +1110,6 @@ void Shell::Init(
   }
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
-  tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
   // |app_list_controller_| is put after |tablet_mode_controller_| as the former
   // uses the latter in constructor.
