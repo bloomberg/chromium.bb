@@ -297,6 +297,10 @@ const int kLocationAuthorizationStatusCount = 4;
   [self.viewController updateForNTP:YES];
 }
 
+- (void)updateLocationShareable:(BOOL)shareable {
+  [self.viewController setShareButtonEnabled:shareable];
+}
+
 #pragma mark - private
 
 // Returns a dictionary with variation headers for qualified URLs. Can be empty.

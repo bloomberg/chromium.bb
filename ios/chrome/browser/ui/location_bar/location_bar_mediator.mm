@@ -188,6 +188,7 @@
   if (isNTP) {
     [self.consumer updateAfterNavigatingToNTP];
   }
+  [self.consumer updateLocationShareable:[self isCurrentPageShareable]];
 }
 
 - (void)notifyConsumerOfChangedSecurityIcon {
@@ -226,6 +227,13 @@
 // Returns a location icon for offline pages.
 - (UIImage*)imageForOfflinePage {
   return [UIImage imageNamed:@"location_bar_offline"];
+}
+
+#pragma mark Shareability helpers
+
+- (BOOL)isCurrentPageShareable {
+  const GURL& URL = self.webState->GetLastCommittedURL();
+  return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
 }
 
 @end

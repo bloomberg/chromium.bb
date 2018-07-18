@@ -14,6 +14,11 @@
 - (void)updateLocationIcon:(UIImage*)icon
         securityStatusText:(NSString*)statusText;
 
+// Notifies the consumer about shareability of the current web page. Some web
+// pages are not considered shareable (e.g. chrome://flags), and the share
+// button for such pages should not be enabled.
+- (void)updateLocationShareable:(BOOL)shareable;
+
 // Notifies consumer to defocus the omnibox (for example on tab change).
 - (void)defocusOmnibox;
 

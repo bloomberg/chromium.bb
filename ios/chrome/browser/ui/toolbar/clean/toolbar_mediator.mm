@@ -260,7 +260,7 @@
   }
 }
 
-// Uodates the Share Menu button of the consumer.
+// Updates the Share Menu button of the consumer.
 - (void)updateShareMenuForWebState:(web::WebState*)webState {
   const GURL& URL = webState->GetLastCommittedURL();
   BOOL shareMenuEnabled =

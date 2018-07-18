@@ -45,6 +45,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // visibility.
 @property(nonatomic, assign) BOOL hideShareButtonWhileOnIncognitoNTP;
 
+// Keeps the share button enabled status. This is necessary to preserve the
+// state of the share button if it's temporarily replaced by the voice search
+// icon (in iPad multitasking).
+@property(nonatomic, assign) BOOL shareButtonEnabled;
+
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
 - (void)startVoiceSearch;
@@ -64,6 +69,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 @synthesize trailingButtonState = _trailingButtonState;
 @synthesize hideShareButtonWhileOnIncognitoNTP =
     _hideShareButtonWhileOnIncognitoNTP;
+@synthesize shareButtonEnabled = _shareButtonEnabled;
 @synthesize offsetProvider = _offsetProvider;
 
 #pragma mark - public
@@ -233,6 +239,13 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self.hideShareButtonWhileOnIncognitoNTP = isNTP;
 }
 
+- (void)setShareButtonEnabled:(BOOL)enabled {
+  _shareButtonEnabled = enabled;
+  if (self.trailingButtonState == kShareButton) {
+    self.locationBarSteadyView.trailingButton.enabled = enabled;
+  }
+}
+
 #pragma mark - LocationBarAnimatee
 
 - (void)offsetEditViewToMatchSteadyView {
@@ -340,6 +353,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
               [[UIImage imageNamed:@"location_bar_share"]
                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
+      self.locationBarSteadyView.trailingButton.accessibilityLabel =
+          l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
+      self.locationBarSteadyView.trailingButton.enabled =
+          self.shareButtonEnabled;
       break;
     };
     case kVoiceSearchButton: {
@@ -356,6 +373,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
               [[UIImage imageNamed:@"location_bar_voice"]
                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
+      self.locationBarSteadyView.trailingButton.accessibilityLabel =
+          l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);
+      self.locationBarSteadyView.trailingButton.enabled = YES;
     }
   }
 }

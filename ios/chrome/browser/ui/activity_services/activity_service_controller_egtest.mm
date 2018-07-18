@@ -85,13 +85,14 @@ id<GREYMatcher> ShareMenuCollectionView() {
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
 #endif
 
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
+  // TODO(crbug.com/864597): Reenable this test.
+  EARL_GREY_TEST_DISABLED(@"Test disabled due to changes in error pages.");
+
   // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
   // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
 
   std::map<GURL, std::string> responses;
   const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://choux");
@@ -123,13 +124,14 @@ id<GREYMatcher> ShareMenuCollectionView() {
 }
 
 - (void)testActivityServiceControllerCantPrintUnprintablePages {
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
   // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
   // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
+  // TODO(crbug.com/864597): Reenable this test.
+  EARL_GREY_TEST_DISABLED(@"Test disabled due to changes in error pages.");
 
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
@@ -158,19 +160,11 @@ id<GREYMatcher> ShareMenuCollectionView() {
 }
 
 - (void)testActivityServiceControllerIsDisabled {
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
-
   // Open an un-shareable page.
   GURL kURL("chrome://version");
   [ChromeEarlGrey loadURL:kURL];
   // Verify that the share button is disabled.
-  if (IsCompactWidth()) {
+  if (IsCompactWidth() && !IsUIRefreshPhase1Enabled()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   id<GREYMatcher> share_button = chrome_test_util::ShareButton();
@@ -180,13 +174,11 @@ id<GREYMatcher> ShareMenuCollectionView() {
 }
 
 - (void)testOpenActivityServiceControllerAndCopy {
-  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
-  // is implemented.
   // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
   // interact with the share menu.
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled until share button is implemented and "
-       "EG interaction is fixed on iOS 11");
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
 
   // Set up mock http server.
   std::map<GURL, std::string> responses;
