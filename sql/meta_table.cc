@@ -55,8 +55,7 @@ void RecordDeprecationEvent(DeprecationEventType deprecation_event) {
 
 namespace sql {
 
-MetaTable::MetaTable() : db_(NULL) {
-}
+MetaTable::MetaTable() : db_(nullptr) {}
 
 MetaTable::~MetaTable() = default;
 
@@ -147,7 +146,7 @@ bool MetaTable::Init(Connection* db, int version, int compatible_version) {
   DCHECK(!db_ && db);
   db_ = db;
 
-  // If values stored are null or missing entirely, 0 will be reported.
+  // If values stored are nullptr or missing entirely, 0 will be reported.
   // Require new clients to start with a greater initial version.
   DCHECK_GT(version, 0);
   DCHECK_GT(compatible_version, 0);
@@ -178,7 +177,7 @@ bool MetaTable::Init(Connection* db, int version, int compatible_version) {
 }
 
 void MetaTable::Reset() {
-  db_ = NULL;
+  db_ = nullptr;
 }
 
 void MetaTable::SetVersionNumber(int version) {

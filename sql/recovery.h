@@ -70,7 +70,7 @@ class SQL_EXPORT Recovery {
   // and attach the existing database to it at "corrupt".  To prevent
   // deadlock, all transactions on |connection| are rolled back.
   //
-  // Returns NULL in case of failure, with no cleanup done on the
+  // Returns nullptr in case of failure, with no cleanup done on the
   // original connection (except for breaking the transactions).  The
   // caller should Raze() or otherwise cleanup as appropriate.
   //
@@ -123,7 +123,7 @@ class SQL_EXPORT Recovery {
   //
   // NOTE(shess): Due to a flaw in the recovery virtual table, at this
   // time this code injects the DEFAULT value of the target table in
-  // locations where the recovery table returns NULL.  This is not
+  // locations where the recovery table returns nullptr.  This is not
   // entirely correct, because it happens both when there is a short
   // row (correct) but also where there is an actual NULL value
   // (incorrect).

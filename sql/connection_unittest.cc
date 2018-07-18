@@ -92,12 +92,12 @@ class ScopedScalarFunction {
       int args,
       base::RepeatingCallback<void(sqlite3_context*, int, sqlite3_value**)> cb)
       : db_(db.db_), function_name_(function_name), cb_(std::move(cb)) {
-    sqlite3_create_function_v2(db_, function_name, args, SQLITE_UTF8,
-                               this, &Run, NULL, NULL, NULL);
+    sqlite3_create_function_v2(db_, function_name, args, SQLITE_UTF8, this,
+                               &Run, nullptr, nullptr, nullptr);
   }
   ~ScopedScalarFunction() {
-    sqlite3_create_function_v2(db_, function_name_, 0, SQLITE_UTF8,
-                               NULL, NULL, NULL, NULL, NULL);
+    sqlite3_create_function_v2(db_, function_name_, 0, SQLITE_UTF8, nullptr,
+                               nullptr, nullptr, nullptr, nullptr);
   }
 
  private:
@@ -121,9 +121,7 @@ class ScopedCommitHook {
       : db_(db.db_), cb_(std::move(cb)) {
     sqlite3_commit_hook(db_, &Run, this);
   }
-  ~ScopedCommitHook() {
-    sqlite3_commit_hook(db_, NULL, NULL);
-  }
+  ~ScopedCommitHook() { sqlite3_commit_hook(db_, nullptr, nullptr); }
 
  private:
   static int Run(void* p) {
@@ -1445,7 +1443,7 @@ TEST_F(SQLConnectionTest, CollectDiagnosticInfo) {
 
   // Some other error doesn't include the statment.
   // TODO(shess): This is weak.
-  const std::string full_info = db().CollectErrorInfo(SQLITE_FULL, NULL);
+  const std::string full_info = db().CollectErrorInfo(SQLITE_FULL, nullptr);
   EXPECT_EQ(std::string::npos, full_info.find(kSimpleSql));
 
   // A table to see in the SQLITE_ERROR results.

@@ -541,7 +541,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableNullFilter) {
       "CREATE TABLE x (id INTEGER, t TEXT NOT NULL)";
 
   ASSERT_TRUE(db().Execute(kOrigSchema));
-  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (5, null)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (5, NULL)"));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (15, 'this is a test')"));
 
   // Create a lame-duck table which will not be propagated by recovery to
@@ -577,8 +577,8 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithRowid) {
   static const char kCreateSql[] =
       "CREATE TABLE x (t TEXT, id INTEGER PRIMARY KEY NOT NULL)";
   ASSERT_TRUE(db().Execute(kCreateSql));
-  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('This is a test', null)"));
-  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('That was a test', null)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('This is a test', NULL)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('That was a test', NULL)"));
 
   // Save aside a copy of the original schema and data.
   const std::string orig_schema(GetSchema(&db()));

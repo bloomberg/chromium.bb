@@ -585,11 +585,11 @@ class SQL_EXPORT Connection {
 
     // |connection| is the sql::Connection instance associated with
     // the statement, and is used for tracking outstanding statements
-    // and for error handling.  Set to NULL for invalid or untracked
-    // refs.  |stmt| is the actual statement, and should only be NULL
+    // and for error handling.  Set to nullptr for invalid or untracked
+    // refs.  |stmt| is the actual statement, and should only be null
     // to create an invalid ref.  |was_valid| indicates whether the
     // statement should be considered valid for diagnistic purposes.
-    // |was_valid| can be true for NULL |stmt| if the connection has
+    // |was_valid| can be true for a null |stmt| if the connection has
     // been forcibly closed by an error handler.
     StatementRef(Connection* connection, sqlite3_stmt* stmt, bool was_valid);
 
@@ -601,18 +601,20 @@ class SQL_EXPORT Connection {
     // for diagnostic checks.
     bool was_valid() const { return was_valid_; }
 
-    // If we've not been linked to a connection, this will be NULL.
-    // TODO(shess): connection_ can be NULL in case of GetUntrackedStatement(),
-    // which prevents Statement::OnError() from forwarding errors.
+    // If we've not been linked to a connection, this will be null.
+    //
+    // TODO(shess): connection_ can be nullptr in case of
+    // GetUntrackedStatement(), which prevents Statement::OnError() from
+    // forwarding errors.
     Connection* connection() const { return connection_; }
 
     // Returns the sqlite statement if any. If the statement is not active,
-    // this will return NULL.
+    // this will return nullptr.
     sqlite3_stmt* stmt() const { return stmt_; }
 
-    // Destroys the compiled statement and marks it NULL. The statement will
-    // no longer be active.  |forced| is used to indicate if orderly-shutdown
-    // checks should apply (see Connection::RazeAndClose()).
+    // Destroys the compiled statement and sets it to nullptr. The statement
+    // will no longer be active. |forced| is used to indicate if
+    // orderly-shutdown checks should apply (see Connection::RazeAndClose()).
     void Close(bool forced);
 
     // Check whether the current thread is allowed to make IO calls, but only
@@ -643,10 +645,10 @@ class SQL_EXPORT Connection {
 
   // Called when a sqlite function returns an error, which is passed
   // as |err|.  The return value is the error code to be reflected
-  // back to client code.  |stmt| is non-NULL if the error relates to
-  // an sql::Statement instance.  |sql| is non-NULL if the error
+  // back to client code.  |stmt| is non-null if the error relates to
+  // an sql::Statement instance.  |sql| is non-nullptr if the error
   // relates to non-statement sql code (Execute, for instance).  Both
-  // can be NULL, but both should never be set.
+  // can be null, but both should never be set.
   // NOTE(shess): Originally, the return value was intended to allow
   // error handlers to transparently convert errors into success.
   // Unfortunately, transactions are not generally restartable, so
@@ -659,7 +661,7 @@ class SQL_EXPORT Connection {
 
   // Implementation helper for GetUniqueStatement() and GetUntrackedStatement().
   // |tracking_db| is the db the resulting ref should register with for
-  // outstanding statement tracking, which should be |this| to track or NULL to
+  // outstanding statement tracking, which should be |this| to track or null to
   // not track.
   scoped_refptr<StatementRef> GetStatementImpl(
       sql::Connection* tracking_db, const char* sql) const;
@@ -751,7 +753,7 @@ class SQL_EXPORT Connection {
   bool GetMmapAltStatus(int64_t* status);
   bool SetMmapAltStatus(int64_t status);
 
-  // The actual sqlite database. Will be NULL before Init has been called or if
+  // The actual sqlite database. Will be null before Init has been called or if
   // Init resulted in an error.
   sqlite3* db_;
 

@@ -15,7 +15,7 @@
 namespace sql {
 
 // This empty constructor initializes our reference with an empty one so that
-// we don't have to NULL-check the ref_ to see if the statement is valid: we
+// we don't have to null-check the ref_ to see if the statement is valid: we
 // only have to check the ref's validity bit.
 Statement::Statement()
     : ref_(base::MakeRefCounted<Connection::StatementRef>(nullptr,
@@ -288,7 +288,7 @@ int Statement::ColumnByteLength(int col) const {
 
 const void* Statement::ColumnBlob(int col) const {
   if (!CheckValid())
-    return NULL;
+    return nullptr;
 
   return sqlite3_column_blob(ref_->stmt(), col);
 }
@@ -358,7 +358,7 @@ int Statement::CheckError(int err) {
   // Please don't add DCHECKs here, OnSqliteError() already has them.
   succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);
   if (!succeeded_ && ref_.get() && ref_->connection())
-    return ref_->connection()->OnSqliteError(err, this, NULL);
+    return ref_->connection()->OnSqliteError(err, this, nullptr);
   return err;
 }
 

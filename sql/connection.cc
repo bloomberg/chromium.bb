@@ -79,10 +79,10 @@ class ScopedWritableSchema {
  public:
   explicit ScopedWritableSchema(sqlite3* db)
       : db_(db) {
-    sqlite3_exec(db_, "PRAGMA writable_schema=1", NULL, NULL, NULL);
+    sqlite3_exec(db_, "PRAGMA writable_schema=1", nullptr, nullptr, nullptr);
   }
   ~ScopedWritableSchema() {
-    sqlite3_exec(db_, "PRAGMA writable_schema=0", NULL, NULL, NULL);
+    sqlite3_exec(db_, "PRAGMA writable_schema=0", nullptr, nullptr, nullptr);
   }
 
  private:
@@ -131,12 +131,12 @@ bool ValidAttachmentPoint(const char* attachment_point) {
 
 // Helper to get the sqlite3_file* associated with the "main" database.
 int GetSqlite3File(sqlite3* db, sqlite3_file** file) {
-  *file = NULL;
-  int rc = sqlite3_file_control(db, NULL, SQLITE_FCNTL_FILE_POINTER, file);
+  *file = nullptr;
+  int rc = sqlite3_file_control(db, nullptr, SQLITE_FCNTL_FILE_POINTER, file);
   if (rc != SQLITE_OK)
     return rc;
 
-  // TODO(shess): NULL in file->pMethods has been observed on android_dbg
+  // TODO(shess): null in file->pMethods has been observed on android_dbg
   // content_unittests, even though it should not be possible.
   // http://crbug.com/329982
   if (!*file || !(*file)->pMethods)
@@ -178,7 +178,7 @@ std::string AsUTF8ForSQL(const base::FilePath& path) {
 namespace sql {
 
 // static
-Connection::ErrorExpecterCallback* Connection::current_expecter_cb_ = NULL;
+Connection::ErrorExpecterCallback* Connection::current_expecter_cb_ = nullptr;
 
 // static
 bool Connection::IsExpectedSqliteError(int error) {
@@ -199,14 +199,14 @@ void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
 
 // static
 void Connection::SetErrorExpecter(Connection::ErrorExpecterCallback* cb) {
-  CHECK(current_expecter_cb_ == NULL);
+  CHECK(!current_expecter_cb_);
   current_expecter_cb_ = cb;
 }
 
 // static
 void Connection::ResetErrorExpecter() {
   CHECK(current_expecter_cb_);
-  current_expecter_cb_ = NULL;
+  current_expecter_cb_ = nullptr;
 }
 
 bool StatementID::operator<(const StatementID& other) const {
@@ -242,9 +242,9 @@ void Connection::StatementRef::Close(bool forced) {
     // of the function. http://crbug.com/136655.
     AssertIOAllowed();
     sqlite3_finalize(stmt_);
-    stmt_ = NULL;
+    stmt_ = nullptr;
   }
-  connection_ = NULL;  // The connection may be getting deleted.
+  connection_ = nullptr;  // The connection may be getting deleted.
 
   // Forced close is expected to happen from a statement error
   // handler.  In that case maintain the sense of |was_valid_| which
@@ -253,7 +253,7 @@ void Connection::StatementRef::Close(bool forced) {
 }
 
 Connection::Connection()
-    : db_(NULL),
+    : db_(nullptr),
       page_size_(0),
       cache_size_(0),
       exclusive_locking_(false),
@@ -266,13 +266,12 @@ Connection::Connection()
       mmap_disabled_(false),
       mmap_enabled_(false),
       total_changes_at_last_release_(0),
-      stats_histogram_(NULL),
-      commit_time_histogram_(NULL),
-      autocommit_time_histogram_(NULL),
-      update_time_histogram_(NULL),
-      query_time_histogram_(NULL),
-      clock_(new TimeSource()) {
-}
+      stats_histogram_(nullptr),
+      commit_time_histogram_(nullptr),
+      autocommit_time_histogram_(nullptr),
+      update_time_histogram_(nullptr),
+      query_time_histogram_(nullptr),
+      clock_(new TimeSource()) {}
 
 Connection::~Connection() {
   Close();
@@ -410,7 +409,7 @@ void Connection::CloseInternal(bool forced) {
       DLOG(DCHECK) << "sqlite3_close failed: " << GetErrorMessage();
     }
   }
-  db_ = NULL;
+  db_ = nullptr;
 }
 
 void Connection::Close() {
@@ -440,7 +439,7 @@ void Connection::Preload() {
   if (preload_size < 1)
     return;
 
-  sqlite3_file* file = NULL;
+  sqlite3_file* file = nullptr;
   sqlite3_int64 file_size = 0;
   int rc = GetSqlite3FileAndSize(db_, &file, &file_size);
   if (rc != SQLITE_OK)
@@ -881,7 +880,7 @@ size_t Connection::GetAppropriateMmapSize() {
     // Read more of the database looking for errors.  The VFS interface is used
     // to assure that the reads are valid for SQLite.  |g_reads_allowed| is used
     // to limit checking to 20MB per run of Chromium.
-    sqlite3_file* file = NULL;
+    sqlite3_file* file = nullptr;
     sqlite3_int64 db_size = 0;
     if (SQLITE_OK != GetSqlite3FileAndSize(db_, &file, &db_size)) {
       RecordOneEvent(EVENT_MMAP_VFS_FAILURE);
@@ -1081,7 +1080,7 @@ bool Connection::Raze() {
   // TODO(shess): Maybe it would be worthwhile to just truncate from
   // the get-go?
   if (rc == SQLITE_NOTADB || rc == SQLITE_IOERR_SHORT_READ) {
-    sqlite3_file* file = NULL;
+    sqlite3_file* file = nullptr;
     rc = GetSqlite3File(db_, &file);
     if (rc != SQLITE_OK) {
       DLOG(DCHECK) << "Failure getting file handle.";
@@ -1167,7 +1166,7 @@ bool Connection::Delete(const base::FilePath& path) {
 
   EnsureSqliteInitialized();
 
-  sqlite3_vfs* vfs = sqlite3_vfs_find(NULL);
+  sqlite3_vfs* vfs = sqlite3_vfs_find(nullptr);
   CHECK(vfs);
   CHECK(vfs->xDelete);
   CHECK(vfs->xAccess);
@@ -1315,7 +1314,7 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
   RecordOneEvent(EVENT_EXECUTE);
   int rc = SQLITE_OK;
   while ((rc == SQLITE_OK) && *sql) {
-    sqlite3_stmt *stmt = NULL;
+    sqlite3_stmt* stmt = nullptr;
     const char *leftover_sql;
 
     const base::TimeTicks before = Now();
@@ -1376,7 +1375,7 @@ bool Connection::Execute(const char* sql) {
 
   int error = ExecuteAndReturnErrorCode(sql);
   if (error != SQLITE_OK)
-    error = OnSqliteError(error, NULL, sql);
+    error = OnSqliteError(error, nullptr, sql);
 
   // This needs to be a FATAL log because the error case of arriving here is
   // that there's a malformed SQL statement. This can arise in development if
@@ -1437,14 +1436,14 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
   if (!db_)
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, poisoned_);
 
-  sqlite3_stmt* stmt = NULL;
-  int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
+  sqlite3_stmt* stmt = nullptr;
+  int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
     DCHECK_NE(rc, SQLITE_ERROR) << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
-    OnSqliteError(rc, NULL, sql);
+    OnSqliteError(rc, nullptr, sql);
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
   return base::MakeRefCounted<StatementRef>(tracking_db, stmt, true);
@@ -1452,7 +1451,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
 
 scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
     const char* sql) const {
-  return GetStatementImpl(NULL, sql);
+  return GetStatementImpl(nullptr, sql);
 }
 
 std::string Connection::GetSchema() const {
@@ -1485,8 +1484,8 @@ bool Connection::IsSQLValid(const char* sql) {
     return false;
   }
 
-  sqlite3_stmt* stmt = NULL;
-  if (sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL) != SQLITE_OK)
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
     return false;
 
   sqlite3_finalize(stmt);
@@ -1570,7 +1569,7 @@ int Connection::GetLastErrno() const {
     return -1;
 
   int err = 0;
-  if (SQLITE_OK != sqlite3_file_control(db_, NULL, SQLITE_LAST_ERRNO, &err))
+  if (SQLITE_OK != sqlite3_file_control(db_, nullptr, SQLITE_LAST_ERRNO, &err))
     return -2;
 
   return err;
@@ -1643,7 +1642,7 @@ bool Connection::OpenInternal(const std::string& file_name,
     // purposes.
     base::UmaHistogramSparse("Sqlite.OpenFailure", err);
 
-    OnSqliteError(err, NULL, "-- sqlite3_open()");
+    OnSqliteError(err, nullptr, "-- sqlite3_open()");
     bool was_poisoned = poisoned_;
     Close();
 
@@ -1681,7 +1680,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   // this to avoid the extra memory overhead.
   // This must be called immediatly after opening the database before any SQL
   // statements are run.
-  sqlite3_db_config(db_, SQLITE_DBCONFIG_LOOKASIDE, NULL, 0, 0);
+  sqlite3_db_config(db_, SQLITE_DBCONFIG_LOOKASIDE, nullptr, 0, 0);
 
   // Enable extended result codes to provide more color on I/O errors.
   // Not having extended result codes is not a fatal problem, as
@@ -1779,14 +1778,14 @@ bool Connection::OpenInternal(const std::string& file_name,
   // Database sizes seem to be bimodal, some clients have consistently small
   // databases (<20k) while other clients have a broad distribution of sizes
   // (hundreds of kilobytes to many megabytes).
-  sqlite3_file* file = NULL;
+  sqlite3_file* file = nullptr;
   sqlite3_int64 db_size = 0;
   int rc = GetSqlite3FileAndSize(db_, &file, &db_size);
   if (rc == SQLITE_OK && db_size > 16 * 1024) {
     int chunk_size = 4 * 1024;
     if (db_size > 128 * 1024)
       chunk_size = 32 * 1024;
-    sqlite3_file_control(db_, NULL, SQLITE_FCNTL_CHUNK_SIZE, &chunk_size);
+    sqlite3_file_control(db_, nullptr, SQLITE_FCNTL_CHUNK_SIZE, &chunk_size);
   }
 
   // Enable memory-mapped access.  The explicit-disable case is because SQLite

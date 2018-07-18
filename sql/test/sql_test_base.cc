@@ -38,7 +38,7 @@ void SQLTestBase::WriteJunkToDatabase(WriteJunkType type) {
   base::ScopedFILE file(base::OpenFile(
       db_path(),
       type == TYPE_OVERWRITE_AND_TRUNCATE ? "wb" : "rb+"));
-  ASSERT_TRUE(file.get() != NULL);
+  ASSERT_TRUE(file.get());
   ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
 
   const char* kJunk = "Now is the winter of our discontent.";
@@ -47,7 +47,7 @@ void SQLTestBase::WriteJunkToDatabase(WriteJunkType type) {
 
 void SQLTestBase::TruncateDatabase() {
   base::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
-  ASSERT_TRUE(file.get() != NULL);
+  ASSERT_TRUE(file);
   ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
   ASSERT_TRUE(base::TruncateFile(file.get()));
 }

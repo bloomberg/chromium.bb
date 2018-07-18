@@ -390,7 +390,7 @@ sqlite3_vfs* VFSWrapper() {
   // Return existing version if already registered.
   {
     sqlite3_vfs* vfs = sqlite3_vfs_find(kVFSName);
-    if (vfs != nullptr)
+    if (vfs)
       return vfs;
   }
 
