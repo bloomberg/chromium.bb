@@ -35,6 +35,10 @@ class ToolbarActionsBarObserverHelper;
 class ZoomLevelObserver;
 }  // namespace AppMenuControllerInternal
 
+namespace ui {
+class AcceleratorProvider;
+}  // namespace ui
+
 // The App menu has a creative layout, with buttons in menu items. There is a
 // cross-platform model for this special menu, but on the Mac it's easier to
 // get spacing and alignment precisely right using a NIB. To do that, we
@@ -108,6 +112,8 @@ class ZoomLevelObserver;
 
 // Retuns the weak reference to the BrowserActionsController.
 - (BrowserActionsController*)browserActionsController;
+
+- (ui::AcceleratorProvider*)acceleratorProvider;
 
 @end
 
