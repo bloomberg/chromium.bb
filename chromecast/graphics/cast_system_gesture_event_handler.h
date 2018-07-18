@@ -17,15 +17,18 @@ class Window;
 
 namespace gfx {
 class Point;
-class Rect;
 }  // namespace gfx
 
 namespace chromecast {
 
-// An event handler for detecting system-wide gestures performed on the screen.
-// Recognizes swipe gestures that originate from the top, left, bottom, and
-// right of the root window.
-class CastSystemGestureEventHandler : public ui::EventHandler {
+class SideSwipeDetector;
+
+// Looks for root window cast system gestures, such as tap events and edge
+// swipes, and dispatches them to interested observers. Installs an event
+// rewriter to examine touch events for side swipe gestures. Also installs
+// itself as an event handler for observing gesture tap/press events.
+class CastSystemGestureEventHandler : public ui::EventHandler,
+                                      public CastGestureHandler {
  public:
   explicit CastSystemGestureEventHandler(aura::Window* root_window);
 
@@ -37,23 +40,24 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
   // Remove the registration of a gesture handler.
   void RemoveGestureHandler(CastGestureHandler* handler);
 
-  CastSideSwipeOrigin GetDragPosition(const gfx::Point& point,
-                                      const gfx::Rect& screen_bounds) const;
-
-  void ProcessPressedEvent(ui::GestureEvent* event);
-
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  // ui::EventHandler implementation.
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // Implementation of CastGestureHandler methods which fan out to our gesture
+  // handlers.
+  bool CanHandleSwipe(CastSideSwipeOrigin swipe_origin) override;
+  void HandleSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
+                            const gfx::Point& touch_location) override;
+  void HandleSideSwipeContinue(CastSideSwipeOrigin swipe_origin,
+                               const gfx::Point& touch_location) override;
+  void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
+                          const gfx::Point& touch_location) override;
+
  private:
-  const int gesture_start_width_;
-  const int gesture_start_height_;
-  const int bottom_gesture_start_height_;
+  void ProcessPressedEvent(ui::GestureEvent* event);
 
   aura::Window* root_window_;
-  CastSideSwipeOrigin current_swipe_;
-  base::ElapsedTimer current_swipe_time_;
-
+  std::unique_ptr<SideSwipeDetector> side_swipe_detector_;
   base::flat_set<CastGestureHandler*> gesture_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSystemGestureEventHandler);
