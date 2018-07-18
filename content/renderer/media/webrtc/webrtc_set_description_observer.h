@@ -88,7 +88,8 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserverHandlerImpl
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
-      scoped_refptr<WebRtcSetDescriptionObserver> observer);
+      scoped_refptr<WebRtcSetDescriptionObserver> observer,
+      bool surface_receivers_only);
 
   // Must be called on the webrtc signaling thread internally by the handler
   // when the Set[Local/Remote]Description() operation finishes.
@@ -109,6 +110,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserverHandlerImpl
   scoped_refptr<webrtc::PeerConnectionInterface> pc_;
   scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
   scoped_refptr<WebRtcSetDescriptionObserver> observer_;
+  bool surface_receivers_only_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcSetDescriptionObserverHandlerImpl);
 };
@@ -123,7 +125,8 @@ class CONTENT_EXPORT WebRtcSetLocalDescriptionObserverHandler
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
-      scoped_refptr<WebRtcSetDescriptionObserver> observer);
+      scoped_refptr<WebRtcSetDescriptionObserver> observer,
+      bool surface_receivers_only);
 
   // webrtc::SetSessionDescriptionObserver implementation. Implementation calls
   // WebRtcSetDescriptionObserverHandlerImpl::OnSetDescriptionComplete().
@@ -136,7 +139,8 @@ class CONTENT_EXPORT WebRtcSetLocalDescriptionObserverHandler
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
-      scoped_refptr<WebRtcSetDescriptionObserver> observer);
+      scoped_refptr<WebRtcSetDescriptionObserver> observer,
+      bool surface_receivers_only);
   ~WebRtcSetLocalDescriptionObserverHandler() override;
 
   scoped_refptr<WebRtcSetDescriptionObserverHandlerImpl> handler_impl_;
@@ -154,7 +158,8 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
-      scoped_refptr<WebRtcSetDescriptionObserver> observer);
+      scoped_refptr<WebRtcSetDescriptionObserver> observer,
+      bool surface_receivers_only);
 
   // webrtc::SetRemoteDescriptionObserverInterface implementation.
   // Implementation calls
@@ -167,7 +172,8 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
-      scoped_refptr<WebRtcSetDescriptionObserver> observer);
+      scoped_refptr<WebRtcSetDescriptionObserver> observer,
+      bool surface_receivers_only);
   ~WebRtcSetRemoteDescriptionObserverHandler() override;
 
   scoped_refptr<WebRtcSetDescriptionObserverHandlerImpl> handler_impl_;
