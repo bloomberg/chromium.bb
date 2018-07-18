@@ -3995,25 +3995,6 @@
             ]
         }
     ],
-    "SpdyProxiesRequestsDelayable": [
-        {
-            "platforms": [
-                "android",
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SpdyProxiesRequestsDelayable"
-                    ]
-                }
-            ]
-        }
-    ],
     "SpeculativeLaunchServiceWorker": [
         {
             "platforms": [
