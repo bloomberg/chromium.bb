@@ -19,6 +19,7 @@ enum class AssistantSource {
   kHotkey,
   kHotword,
   kLongPressLauncher,
+  kSetup,
   kStylus,
 };
 

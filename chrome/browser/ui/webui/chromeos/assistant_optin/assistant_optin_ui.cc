@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/confirm_reject_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/get_more_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/ready_screen_handler.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "components/arc/arc_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -106,9 +109,10 @@ void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
 // AssistantOptInDialog
 
 // static
-void AssistantOptInDialog::Show() {
+void AssistantOptInDialog::Show(
+    ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
   DCHECK(!is_active);
-  AssistantOptInDialog* dialog = new AssistantOptInDialog();
+  AssistantOptInDialog* dialog = new AssistantOptInDialog(std::move(callback));
   dialog->ShowSystemDialog(true);
 }
 
@@ -117,9 +121,11 @@ bool AssistantOptInDialog::IsActive() {
   return is_active;
 }
 
-AssistantOptInDialog::AssistantOptInDialog()
+AssistantOptInDialog::AssistantOptInDialog(
+    ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIAssistantOptInURL),
-                              base::string16()) {
+                              base::string16()),
+      callback_(std::move(callback)) {
   DCHECK(!is_active);
   is_active = true;
 }
@@ -138,6 +144,15 @@ std::string AssistantOptInDialog::GetDialogArgs() const {
 
 bool AssistantOptInDialog::ShouldShowDialogTitle() const {
   return false;
+}
+
+void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  const bool completed =
+      prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
+      prefs->GetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted);
+  std::move(callback_).Run(completed);
+  SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }
 
 }  // namespace chromeos

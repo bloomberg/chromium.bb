@@ -218,7 +218,8 @@ void AssistantUiController::OnUiVisibilityChanged(bool visible,
 
 void AssistantUiController::ShowUi(AssistantSource source) {
   if (!Shell::Get()->voice_interaction_controller()->setup_completed()) {
-    assistant_setup_->StartAssistantOptInFlow();
+    assistant_setup_->StartAssistantOptInFlow(
+        /* callback= */ base::DoNothing());
     return;
   }
 

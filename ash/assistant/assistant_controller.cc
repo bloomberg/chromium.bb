@@ -19,6 +19,14 @@
 
 namespace ash {
 
+namespace {
+
+// See more details in go/cros-assistant-deeplink.
+constexpr char kRelaunchParamKey[] = "relaunch";
+constexpr char kTrue[] = "true";
+
+}  // namespace
+
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>(this)),
@@ -155,12 +163,24 @@ void AssistantController::OnDeepLinkReceived(
       // UI and behavior for Assistant.
       Shell::Get()->new_window_controller()->OpenFeedbackPage();
       break;
-    case assistant::util::DeepLinkType::kOnboarding:
-      // TODO(updowndota): Pass any |params| necessary to |assistant_setup_|
-      // that it requires to relaunch Assistant UI on completion of opt in flow.
-      assistant_setup_->StartAssistantOptInFlow();
-      assistant_ui_controller_->HideUi(AssistantSource::kDeepLink);
+    case assistant::util::DeepLinkType::kOnboarding: {
+      auto iter = params.find(kRelaunchParamKey);
+      bool relaunch = iter != params.end() && iter->second == kTrue;
+      if (relaunch) {
+        assistant_setup_->StartAssistantOptInFlow(base::BindOnce(
+            [](AssistantUiController* ui_controller, bool completed) {
+              if (completed)
+                ui_controller->ShowUi(AssistantSource::kSetup);
+            },
+            // |assistant_setup_| and |assistant_ui_controller_| are both owned
+            // by this class, so a raw pointer is safe here.
+            assistant_ui_controller_.get()));
+      } else {
+        assistant_setup_->StartAssistantOptInFlow(base::DoNothing());
+      }
+      assistant_ui_controller_->HideUi(AssistantSource::kSetup);
       break;
+    }
     case assistant::util::DeepLinkType::kUnsupported:
     case assistant::util::DeepLinkType::kExplore:
     case assistant::util::DeepLinkType::kReminders:

@@ -20,7 +20,8 @@ class AssistantSetup : public ash::mojom::AssistantSetup {
   ~AssistantSetup() override;
 
   // ash::mojom::AssistantSetup:
-  void StartAssistantOptInFlow() override;
+  void StartAssistantOptInFlow(
+      StartAssistantOptInFlowCallback callback) override;
 
  private:
   mojo::Binding<ash::mojom::AssistantSetup> binding_;
