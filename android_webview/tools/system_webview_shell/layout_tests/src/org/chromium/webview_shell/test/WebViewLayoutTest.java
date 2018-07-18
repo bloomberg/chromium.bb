@@ -234,7 +234,13 @@ public class WebViewLayoutTest {
                 }
             }
         }
-        Assert.assertEquals("Missing webview interfaces found", "", missing.toString());
+
+        if (missing.length() > 0) {
+            Assert.fail("Android WebView is missing the following declared Blink interfaces: "
+                    + missing.toString()
+                    + ". Interfaces which are intentionally not exposed in WebView need to be"
+                    + " added to not-webview-exposed.txt");
+        }
     }
 
     @Test
