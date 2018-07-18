@@ -21,10 +21,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -1877,71 +1875,40 @@ TEST_P(MessageLoopTest, WaitForIO) {
 }
 
 TEST_P(MessageLoopTest, HighResolutionTimer) {
-  Thread verification_thread("verification thread");
-  verification_thread.StartAndWaitForTesting();
-
   MessageLoop message_loop;
   Time::EnableHighResolutionTimer(true);
 
-  constexpr TimeDelta kFastTimer = TimeDelta::FromMilliseconds(31);
+  constexpr TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
   constexpr TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
-
-  // Since MessageLoop disables its vote to activate high-resolution timers the
-  // instant it's active, the high-resolution timer's activation can only be
-  // tested async. Try to make this as reliable as possible by verifying in the
-  // middle of the MessageLoop's sleep period (giving plenty of time before for
-  // it to establish the high-res timer and plenty of time after for it not to
-  // wakeup while verifying).
-  constexpr TimeDelta kVerificationDelay = kFastTimer / 2;
 
   {
     // Post a fast task to enable the high resolution timers.
     RunLoop run_loop;
     message_loop.task_runner()->PostDelayedTask(
-        FROM_HERE, BindLambdaForTesting([&]() {
-          // The loop deactivates high resolution timers the instant it's
-          // active.
-          EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
-          run_loop.Quit();
-        }),
+        FROM_HERE,
+        BindOnce(
+            [](RunLoop* run_loop) {
+              EXPECT_TRUE(Time::IsHighResolutionTimerInUse());
+              run_loop->QuitWhenIdle();
+            },
+            &run_loop),
         kFastTimer);
-
-    // Ensures the verification runs (that thread could theoretically never be
-    // scheduled -- skipping the test).
-    AtomicFlag verification_ran;
-    verification_thread.task_runner()->PostDelayedTask(
-        FROM_HERE, BindLambdaForTesting([&]() {
-          EXPECT_TRUE(Time::IsHighResolutionTimerInUse());
-          verification_ran.Set();
-        }),
-        kVerificationDelay);
-
     run_loop.Run();
-    ASSERT_TRUE(verification_ran.IsSet());
   }
   EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
   {
     // Check that a slow task does not trigger the high resolution logic.
     RunLoop run_loop;
     message_loop.task_runner()->PostDelayedTask(
-        FROM_HERE, BindLambdaForTesting([&]() {
-          // The loop deactivates high resolution timers the instant it's
-          // active.
-          EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
-          run_loop.Quit();
-        }),
+        FROM_HERE,
+        BindOnce(
+            [](RunLoop* run_loop) {
+              EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
+              run_loop->QuitWhenIdle();
+            },
+            &run_loop),
         kSlowTimer);
-
-    AtomicFlag verification_ran;
-    verification_thread.task_runner()->PostDelayedTask(
-        FROM_HERE, BindLambdaForTesting([&]() {
-          EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
-          verification_ran.Set();
-        }),
-        kVerificationDelay);
-
     run_loop.Run();
-    ASSERT_TRUE(verification_ran.IsSet());
   }
   Time::EnableHighResolutionTimer(false);
   Time::ResetHighResolutionTimerUsage();
