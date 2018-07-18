@@ -33,8 +33,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node()).InlineSum();
 
   Vector<FlexItem> flex_items;
-  for (NGLayoutInputNode child = Node().FirstChild(); child;
-       child = child.NextSibling()) {
+  for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
+       generic_child = generic_child.NextSibling()) {
+    NGBlockNode child = ToNGBlockNode(generic_child);
     if (child.IsOutOfFlowPositioned())
       continue;
 
@@ -47,17 +48,22 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     scoped_refptr<NGConstraintSpace> child_space =
         space_builder.ToConstraintSpace(child.Style().GetWritingMode());
 
+    LayoutUnit main_axis_border_and_padding =
+        ComputeBorders(*child_space, child.Style()).InlineSum() +
+        ComputePadding(*child_space, child.Style()).InlineSum();
     // ComputeMinMaxSize will layout the child if it has an orthogonal writing
     // mode. MinMaxSize will be in the container's inline direction.
     MinMaxSizeInput zero_input;
-    MinMaxSize min_max_sizes = child.ComputeMinMaxSize(
+    MinMaxSize min_max_sizes_border_box = child.ComputeMinMaxSize(
         ConstraintSpace().GetWritingMode(), zero_input, child_space.get());
 
     // Spec calls this "flex base size"
     // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
-    LayoutUnit flex_base_content_size;
+    // Blink's FlexibleBoxAlgorithm expects it to be content + scrollbar widths,
+    // but no padding or border.
+    LayoutUnit flex_base_border_box;
     if (child.Style().FlexBasis().IsAuto() && child.Style().Width().IsAuto()) {
-      flex_base_content_size = min_max_sizes.max_size;
+      flex_base_border_box = min_max_sizes_border_box.max_size;
     } else {
       Length length_to_resolve = child.Style().FlexBasis();
       if (length_to_resolve.IsAuto())
@@ -66,14 +72,15 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
       // TODO(dgrogan): Use ResolveBlockLength here for column flex boxes.
 
-      flex_base_content_size = ResolveInlineLength(
-          *child_space, child.Style(), min_max_sizes, length_to_resolve,
-          LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
+      flex_base_border_box = ResolveInlineLength(
+          *child_space, child.Style(), min_max_sizes_border_box,
+          length_to_resolve, LengthResolveType::kContentSize,
+          LengthResolvePhase::kLayout);
     }
 
-    LayoutUnit main_axis_border_and_padding =
-        ComputeBorders(*child_space, child.Style()).InlineSum() +
-        ComputePadding(*child_space, child.Style()).InlineSum();
+    LayoutUnit flex_base_content_size =
+        flex_base_border_box - main_axis_border_and_padding;
+
     LayoutUnit main_axis_margin =
         ComputeMarginsForSelf(*child_space, child.Style()).InlineSum();
 
@@ -113,7 +120,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       NGConstraintSpaceBuilder space_builder(ConstraintSpace());
       // TODO(dgrogan): Set the percentage size also.
       space_builder.SetAvailableSize(
-          {flex_item.flexed_content_size, NGSizeIndefinite});
+          {flex_item.flexed_content_size +
+               flex_item.main_axis_border_and_padding,
+           NGSizeIndefinite});
       space_builder.SetIsFixedSizeInline(true);
       scoped_refptr<NGConstraintSpace> child_space =
           space_builder.ToConstraintSpace(

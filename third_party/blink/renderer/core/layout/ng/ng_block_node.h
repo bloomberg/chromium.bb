@@ -35,7 +35,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       NGBreakToken* break_token = nullptr);
   NGLayoutInputNode NextSibling() const;
 
-  // Computes the value of min-content and max-content for this box.
+  // Computes the value of min-content and max-content for this node's border
+  // box.
   // If the underlying layout algorithm's ComputeMinMaxSize returns
   // no value, this function will synthesize these sizes using Layout with
   // special constraint spaces -- infinite available size for max content, zero
@@ -49,6 +50,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // calculating min/max for orthogonal flows. This constraint space will not be
   // passed on to children. If no constraint space is specified, a zero-sized
   // one will be used.
+  // The constraint space is also used to perform layout when this block's
+  // writing mode is orthogonal to its parent's, in which case the constraint
+  // space is not optional.
   MinMaxSize ComputeMinMaxSize(WritingMode container_writing_mode,
                                const MinMaxSizeInput&,
                                const NGConstraintSpace* = nullptr);

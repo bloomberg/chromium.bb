@@ -1300,12 +1300,11 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(
     LayoutBox& child,
     LayoutUnit child_preferred_size) {
+  // child_preferred_size includes scrollbar width.
   if (HasOrthogonalFlow(child)) {
-    // TODO(rego): Shouldn't we add the scrollbar height too?
     child.SetOverrideLogicalHeight(child_preferred_size +
                                    child.BorderAndPaddingLogicalHeight());
   } else {
-    // TODO(rego): Shouldn't we add the scrollbar width too?
     child.SetOverrideLogicalWidth(child_preferred_size +
                                   child.BorderAndPaddingLogicalWidth());
   }

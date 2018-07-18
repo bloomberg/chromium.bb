@@ -63,6 +63,8 @@ enum class TransformedWritingMode {
 class FlexItem {
  public:
   FlexItem(LayoutBox*,
+           // flex_base_content_size includes scrollbar width but not border or
+           // padding.
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_sizes,
            LayoutUnit main_axis_border_and_padding,

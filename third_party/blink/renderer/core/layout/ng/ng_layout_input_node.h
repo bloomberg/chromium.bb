@@ -72,6 +72,7 @@ class CORE_EXPORT NGLayoutInputNode {
   // Performs layout on this input node, will return the layout result.
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&, NGBreakToken*);
 
+  // Returns border box.
   MinMaxSize ComputeMinMaxSize(WritingMode,
                                const MinMaxSizeInput&,
                                const NGConstraintSpace* = nullptr);
