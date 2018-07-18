@@ -431,6 +431,10 @@ const char kFakeDriveFsLauncherSocketPath[] =
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
 
+// Forces developer tools availability, no matter what values the enterprise
+// policies DeveloperToolsDisabled and DeveloperToolsAvailability are set to.
+const char kForceDevToolsAvailable[] = "force-devtools-available";
+
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
 
