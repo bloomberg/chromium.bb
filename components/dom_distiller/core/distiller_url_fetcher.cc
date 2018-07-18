@@ -4,34 +4,27 @@
 
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 
-#include "components/data_use_measurement/core/data_use_user_data.h"
-#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-
-using net::URLFetcher;
 
 namespace dom_distiller {
 
 DistillerURLFetcherFactory::DistillerURLFetcherFactory(
-    net::URLRequestContextGetter* context_getter)
-  : context_getter_(context_getter) {
-}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory) {}
+
+DistillerURLFetcherFactory::~DistillerURLFetcherFactory() {}
 
 DistillerURLFetcher*
 DistillerURLFetcherFactory::CreateDistillerURLFetcher() const {
-  return new DistillerURLFetcher(context_getter_);
+  return new DistillerURLFetcher(url_loader_factory_);
 }
-
 
 DistillerURLFetcher::DistillerURLFetcher(
-    net::URLRequestContextGetter* context_getter)
-  : context_getter_(context_getter) {
-}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory) {}
 
 DistillerURLFetcher::~DistillerURLFetcher() {
 }
@@ -39,14 +32,16 @@ DistillerURLFetcher::~DistillerURLFetcher() {
 void DistillerURLFetcher::FetchURL(const std::string& url,
                                    const URLFetcherCallback& callback) {
   // Don't allow a fetch if one is pending.
-  DCHECK(!url_fetcher_ || !url_fetcher_->GetStatus().is_io_pending());
+  DCHECK(!url_loader_);
   callback_ = callback;
-  url_fetcher_ = CreateURLFetcher(context_getter_, url);
-  url_fetcher_->Start();
+  url_loader_ = CreateURLFetcher(url);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&DistillerURLFetcher::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
-std::unique_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
-    net::URLRequestContextGetter* context_getter,
+std::unique_ptr<network::SimpleURLLoader> DistillerURLFetcher::CreateURLFetcher(
     const std::string& url) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("dom_distiller", R"(
@@ -79,24 +74,30 @@ std::unique_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
             "Not implemented, considered not useful as no content is being "
             "uploaded; this request merely downloads the resources on the web."
         })");
-  std::unique_ptr<net::URLFetcher> fetcher =
-      URLFetcher::Create(GURL(url), URLFetcher::GET, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::DOM_DISTILLER);
-  fetcher->SetRequestContext(context_getter);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(url);
+  resource_request->method = "GET";
+
+  // TODO(crbug.com/808498): Restore the data use measurement when bug is fixed.
+  auto url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
   static const int kMaxRetries = 5;
-  fetcher->SetMaxRetriesOn5xx(kMaxRetries);
-  return fetcher;
+  url_loader->SetRetryOptions(kMaxRetries,
+                              network::SimpleURLLoader::RETRY_ON_5XX);
+
+  return url_loader;
 }
 
-void DistillerURLFetcher::OnURLFetchComplete(
-    const URLFetcher* source) {
+void DistillerURLFetcher::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
+  // The loader is not needed at this point anymore.
+  url_loader_.reset();
+
   std::string response;
-  if (source && source->GetStatus().is_success() &&
-      source->GetResponseCode() == net::HTTP_OK) {
+  if (response_body) {
     // Only copy over the data if the request was successful. Insert
     // an empty string into the proto otherwise.
-    source->GetResponseAsString(&response);
+    response = std::move(*response_body);
   }
   callback_.Run(response);
 }
