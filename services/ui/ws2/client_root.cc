@@ -15,8 +15,10 @@
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/compositor/property_change_reason.h"
 
 namespace ui {
 namespace ws2 {
@@ -26,6 +28,8 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
                        bool is_top_level)
     : window_tree_(window_tree), window_(window), is_top_level_(is_top_level) {
   window_->AddObserver(this);
+  if (window_->GetHost())
+    window->GetHost()->AddObserver(this);
   // TODO: wire up gfx::Insets() correctly below. See usage in
   // aura::ClientSurfaceEmbedder for details. Insets here are used for
   // guttering.
@@ -38,6 +42,8 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
 ClientRoot::~ClientRoot() {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
   window_->RemoveObserver(this);
+  if (window_->GetHost())
+    window_->GetHost()->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =
       aura::Env::GetInstance()
@@ -103,6 +109,26 @@ void ClientRoot::UpdatePrimarySurfaceId() {
   }
 }
 
+void ClientRoot::CheckForScaleFactorChange() {
+  if (!ShouldAssignLocalSurfaceId() ||
+      last_device_scale_factor_ == window_->layer()->device_scale_factor()) {
+    return;
+  }
+
+  HandleBoundsOrScaleFactorChange(window_->bounds());
+}
+
+void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
+  UpdatePrimarySurfaceId();
+  client_surface_embedder_->UpdateSizeAndGutters();
+  // See comments in WindowTree::SetWindowBoundsImpl() for details on
+  // why this always notifies the client.
+  window_tree_->window_tree_client_->OnWindowBoundsChanged(
+      window_tree_->TransportIdForWindow(window_), old_bounds,
+      window_->bounds(),
+      ServerWindow::GetMayBeNull(window_)->local_surface_id());
+}
+
 void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
                                          const void* key,
                                          intptr_t old) {
@@ -130,13 +156,26 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds,
                                        ui::PropertyChangeReason reason) {
-  UpdatePrimarySurfaceId();
-  client_surface_embedder_->UpdateSizeAndGutters();
-  // See comments in WindowTree::SetWindowBoundsImpl() for details on
-  // why this always notifies the client.
-  window_tree_->window_tree_client_->OnWindowBoundsChanged(
-      window_tree_->TransportIdForWindow(window), old_bounds, new_bounds,
-      ServerWindow::GetMayBeNull(window_)->local_surface_id());
+  HandleBoundsOrScaleFactorChange(old_bounds);
+}
+
+void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
+  DCHECK_EQ(window, window_);
+  DCHECK(window->GetHost());
+  window->GetHost()->AddObserver(this);
+  CheckForScaleFactorChange();
+}
+
+void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
+                                                aura::Window* new_root) {
+  DCHECK_EQ(window, window_);
+  DCHECK(window->GetHost());
+  window->GetHost()->RemoveObserver(this);
+}
+
+void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
+  // This function is also called when the device-scale-factor changes too.
+  CheckForScaleFactorChange();
 }
 
 void ClientRoot::OnFirstSurfaceActivation(

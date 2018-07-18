@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_WS2_WINDOW_SERVICE_H_
 #define SERVICES_UI_WS2_WINDOW_SERVICE_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <set>
 #include <string>
@@ -17,7 +19,6 @@
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
-#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -30,6 +31,10 @@ class Window;
 namespace client {
 class FocusClient;
 }
+}
+
+namespace display {
+class Display;
 }
 
 namespace gfx {
@@ -102,9 +107,20 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // a top-level window.
   void RequestClose(aura::Window* window);
 
+  // Called when the metrics of a display changes. It is expected the local
+  // environment call this *before* the change is applied to any
+  // WindowTreeHosts. This is necessary to ensure clients are notified of the
+  // change before the client is notified of a bounds change. To do otherwise
+  // results in the client applying bounds change with the wrong scale factor.
+  // |changed_metrics| is a bitmask of the DisplayObserver::DisplayMetric.
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics);
+
   // Returns an id useful for debugging. See ServerWindow::GetIdForDebugging()
   // for details.
   std::string GetIdForDebugging(aura::Window* window);
+
+  ScreenProvider* screen_provider() { return screen_provider_.get(); }
 
   // service_manager::Service:
   void OnStart() override;
@@ -122,7 +138,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
       base::OnceCallback<void(const std::string&)> callback);
 
   void BindClipboardHostRequest(mojom::ClipboardHostRequest request);
-  void BindScreenProviderRequest(mojom::ScreenProviderRequest request);
   void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
   void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);

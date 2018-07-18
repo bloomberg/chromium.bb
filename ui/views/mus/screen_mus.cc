@@ -47,7 +47,7 @@ ScreenMus::~ScreenMus() {
   display::Screen::SetScreenInstance(nullptr);
 }
 
-void ScreenMus::Init(service_manager::Connector* connector) {
+void ScreenMus::InitDeprecated(service_manager::Connector* connector) {
   connector->BindInterface(ui::mojom::kServiceName, &screen_provider_);
 
   ui::mojom::ScreenProviderObserverPtr observer;
@@ -70,28 +70,6 @@ void ScreenMus::Init(service_manager::Connector* connector) {
     display_list().AddDisplay(
         display::Display(0xFFFFFFFF, gfx::Rect(0, 0, 801, 802)), Type::PRIMARY);
   }
-}
-
-display::Display ScreenMus::GetDisplayNearestWindow(
-    gfx::NativeWindow window) const {
-  aura::WindowTreeHostMus* window_tree_host_mus =
-      aura::WindowTreeHostMus::ForWindow(window);
-  if (!window_tree_host_mus)
-    return GetPrimaryDisplay();
-  return window_tree_host_mus->GetDisplay();
-}
-
-gfx::Point ScreenMus::GetCursorScreenPoint() {
-  return aura::Env::GetInstance()->last_mouse_location();
-}
-
-bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
-  return window && window->IsVisible() &&
-         window->GetBoundsInScreen().Contains(GetCursorScreenPoint());
-}
-
-aura::Window* ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
-  return delegate_->GetWindowAtScreenPoint(point);
 }
 
 void ScreenMus::OnDisplaysChanged(
@@ -152,6 +130,28 @@ void ScreenMus::OnDisplaysChanged(
       initial_frame_values != WindowManagerFrameValues::instance()) {
     delegate_->OnWindowManagerFrameValuesChanged();
   }
+}
+
+display::Display ScreenMus::GetDisplayNearestWindow(
+    gfx::NativeWindow window) const {
+  aura::WindowTreeHostMus* window_tree_host_mus =
+      aura::WindowTreeHostMus::ForWindow(window);
+  if (!window_tree_host_mus)
+    return GetPrimaryDisplay();
+  return window_tree_host_mus->GetDisplay();
+}
+
+gfx::Point ScreenMus::GetCursorScreenPoint() {
+  return aura::Env::GetInstance()->last_mouse_location();
+}
+
+bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
+  return window && window->IsVisible() &&
+         window->GetBoundsInScreen().Contains(GetCursorScreenPoint());
+}
+
+aura::Window* ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
+  return delegate_->GetWindowAtScreenPoint(point);
 }
 
 }  // namespace views

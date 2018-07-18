@@ -7,6 +7,7 @@ module ui.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
+import "services/ui/public/interfaces/screen_provider.mojom";
 import "services/ui/public/interfaces/window_manager.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
@@ -596,6 +597,10 @@ interface WindowTreeClient {
 
   // See description of WindowManager for details.
   GetWindowManager(associated WindowManager& internal);
+
+  // Requests the ScreenProviderObserver from the client. See
+  // ScreenProviderObserver for details.
+  GetScreenProviderObserver(associated ScreenProviderObserver& observer);
 };
 
 // Mus provides this interface as a way for clients to connect and obtain a

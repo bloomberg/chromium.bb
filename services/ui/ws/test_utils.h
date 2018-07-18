@@ -564,6 +564,8 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
   void RequestClose(Id window_id) override;
   void GetWindowManager(
       mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) override;
+  void GetScreenProviderObserver(
+      mojom::ScreenProviderObserverAssociatedRequest observer) override;
 
   TestChangeTracker tracker_;
   mojo::Binding<mojom::WindowTreeClient> binding_;

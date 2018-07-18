@@ -178,6 +178,9 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
                               int64_t display_id,
                               aura::Window* target) override;
   aura::PropertyConverter* GetPropertyConverter() override;
+  void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+                         int64_t primary_display_id,
+                         int64_t internal_display_id) override;
 
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
