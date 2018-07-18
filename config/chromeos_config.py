@@ -3730,6 +3730,7 @@ def PayloadBuilders(site_config, boards_dict):
           '%s-payloads' % board,
           site_config.templates.payloads,
           boards=[board],
+          luci_builder=config_lib.LUCI_BUILDER_TRY,
       )
 
 
@@ -3982,6 +3983,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+      luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.SucessBuilder',
       description='Builder always passes as quickly as possible.',
   )
@@ -3993,6 +3995,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+      luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.SucessBuilder',
       description='Used by sync_stages_unittest.',
   )
@@ -4004,6 +4007,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+      luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.FailBuilder',
       description='Builder always fails as quickly as possible.',
   )
@@ -4110,6 +4114,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       boards_dict['all_boards'],
       board_configs,
       site_config.templates.unittest_stress,
+      luci_builder=config_lib.LUCI_BUILDER_TRY,
   )
 
   site_config.AddGroup(
@@ -4219,7 +4224,7 @@ def TryjobMirrors(site_config):
   """Create tryjob specialized variants of every build config.
 
   This creates a new 'tryjob' config for every existing config, unless the
-  existing config has a display_label that is already in TRYJOB_DISPLAY_LABEL.
+  existing config is already a tryjob config.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
@@ -4232,7 +4237,7 @@ def TryjobMirrors(site_config):
 
   for build_name, config in site_config.iteritems():
     # Don't mirror builds that are already tryjob safe.
-    if config.display_label in config_lib.TRYJOB_DISPLAY_LABEL:
+    if config_lib.isTryjobConfig(config):
       config.apply(hw_tests_override=None, vm_tests_override=None)
       continue
 

@@ -604,7 +604,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testTryjobConfigsDontDefineOverrides(self):
     """Make sure that no tryjob safe configs define test overrides."""
     for build_name, config in self.site_config.iteritems():
-      if config.display_label not in config_lib.TRYJOB_DISPLAY_LABEL:
+      if not config_lib.isTryjobConfig(config):
         continue
 
       self.assertIsNone(
@@ -683,7 +683,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     found_types = set()
     for _, config in self.site_config.iteritems():
-      if config.display_label in config_lib.TRYJOB_DISPLAY_LABEL:
+      if config_lib.isTryjobConfig(config):
         continue
 
       if config.master:

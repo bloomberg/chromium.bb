@@ -32,15 +32,6 @@ CONFIG_TYPE_TOOLCHAIN = 'toolchain'
 
 DISPLAY_LABEL_PRECQ = 'pre_cq'
 DISPLAY_LABEL_TRYJOB = 'tryjob'
-
-# These are the build groups against which tryjobs can be directly run. All
-# other groups MUST be production builds (ie: use their -tryjob instead)
-# TODO: crbug.com/776955 Make the above statement true.
-TRYJOB_DISPLAY_LABEL = {
-    DISPLAY_LABEL_PRECQ,
-    DISPLAY_LABEL_TRYJOB,
-}
-
 DISPLAY_LABEL_INCREMENATAL = 'incremental'
 DISPLAY_LABEL_FULL = 'full'
 DISPLAY_LABEL_CHROME_INFORMATIONAL = 'chrome_informational'
@@ -59,7 +50,9 @@ DISPLAY_LABEL_UTILITY = 'utility'
 DISPLAY_LABEL_PRODUCTION_TRYJOB = 'production_tryjob'
 
 # This list of constants should be kept in sync with GoldenEye code.
-ALL_DISPLAY_LABEL = TRYJOB_DISPLAY_LABEL | {
+ALL_DISPLAY_LABEL = {
+    DISPLAY_LABEL_PRECQ,
+    DISPLAY_LABEL_TRYJOB,
     DISPLAY_LABEL_INCREMENATAL,
     DISPLAY_LABEL_FULL,
     DISPLAY_LABEL_CHROME_INFORMATIONAL,
@@ -94,6 +87,7 @@ ALL_LUCI_BUILDER = {
     LUCI_BUILDER_STAGING,
 }
 
+
 def isTryjobConfig(build_config):
   """Is a given build config a tryjob config, or a production config?
 
@@ -103,7 +97,7 @@ def isTryjobConfig(build_config):
   Returns:
     Boolean. True if it's a tryjob config.
   """
-  return build_config.display_label in TRYJOB_DISPLAY_LABEL
+  return build_config.luci_builder in (LUCI_BUILDER_TRY, LUCI_BUILDER_PRECQ)
 
 
 # In the Json, this special build config holds the default values for all
