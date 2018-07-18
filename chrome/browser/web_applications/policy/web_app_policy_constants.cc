@@ -7,8 +7,8 @@
 namespace web_app {
 
 const char kUrlKey[] = "url";
-const char kLaunchTypeKey[] = "launch_type";
-const char kLaunchTypeWindowValue[] = "window";
-const char kLaunchTypeTabValue[] = "tab";
+const char kLaunchContainerKey[] = "launch_container";
+const char kLaunchContainerWindowValue[] = "window";
+const char kLaunchContainerTabValue[] = "tab";
 
 }  // namespace web_app
