@@ -58,11 +58,11 @@ static constexpr int kEntityImageCornerRadius = 4;
 // suggestion.
 static constexpr int kMinVerticalMargin = 1;
 
-// The margin height of a split row when MD refresh is enabled.
-static constexpr int kRefreshSplitMarginHeight = 8;
+// The margin height of a one-line suggestion row when MD Refresh is enabled.
+static constexpr int kRefreshOneLineRowMarginHeight = 8;
 
-// The margin height of a rich suggestion row.
-static constexpr int kRichSuggestionMarginHeight = 4;
+// The margin height of a two-line suggestion row when MD Refresh is enabled.
+static constexpr int kRefreshTwoLineRowMarginHeight = 4;
 
 // Returns the padding width between elements.
 int HorizontalPadding() {
@@ -106,10 +106,10 @@ gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
   // TODO(dschuyler): Consider adding a right-hand margin to each |return|.
   if (ui::MaterialDesignController::IsRefreshUi()) {
     return is_two_line
-               ? gfx::Insets(kRichSuggestionMarginHeight, kRefreshMarginLeft,
-                             kRichSuggestionMarginHeight, 0)
-               : gfx::Insets(kRefreshSplitMarginHeight, kRefreshMarginLeft,
-                             kRefreshSplitMarginHeight, 0);
+               ? gfx::Insets(kRefreshTwoLineRowMarginHeight, kRefreshMarginLeft,
+                             kRefreshTwoLineRowMarginHeight, 0)
+               : gfx::Insets(kRefreshOneLineRowMarginHeight, kRefreshMarginLeft,
+                             kRefreshOneLineRowMarginHeight, 0);
   }
 
   // Regardless of the text size, we ensure a minimum size for the content line
@@ -430,7 +430,7 @@ void OmniboxMatchCellView::Layout() {
   } else if (is_old_style_answer_) {
     LayoutOldStyleAnswer(icon_view_width, text_indent);
   } else {
-    LayoutSplit(icon_view_width, text_indent);
+    LayoutOneLineSuggestion(icon_view_width, text_indent);
   }
 }
 
@@ -487,7 +487,8 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
   }
 }
 
-void OmniboxMatchCellView::LayoutSplit(int icon_view_width, int text_indent) {
+void OmniboxMatchCellView::LayoutOneLineSuggestion(int icon_view_width,
+                                                   int text_indent) {
   gfx::Rect child_area = GetContentsBounds();
   int row_height = child_area.height();
   int y = child_area.y();
