@@ -183,6 +183,10 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
                                                &decision_details));
     EXPECT_FALSE(decision_details.IsPositive());
     EXPECT_EQ(failure_reason, decision_details.FailureReason());
+    // There should only be one reason (e.g. no duplicates).
+    EXPECT_THAT(
+        decision_details.reasons(),
+        ::testing::ElementsAre(DecisionDetails::Reason(failure_reason)));
   }
 
   // Heuristics shouldn't be considered for urgent or external tab discarding.

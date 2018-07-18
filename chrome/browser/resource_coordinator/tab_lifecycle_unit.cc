@@ -167,21 +167,37 @@ StateChangeReason DiscardReasonToStateChangeReason(DiscardReason reason) {
   }
 }
 
-void CheckFeatureUsage(SiteFeatureUsage feature_usage,
-                       DecisionDetails* details,
-                       DecisionFailureReason heuristic_failure_reason) {
-  DCHECK(details);
+struct FeatureUsageEntry {
+  SiteFeatureUsage usage;
+  DecisionFailureReason failure_reason;
+};
 
-  switch (feature_usage) {
-    case SiteFeatureUsage::kSiteFeatureInUse:
-      details->AddReason(heuristic_failure_reason);
-      return;
-    case SiteFeatureUsage::kSiteFeatureUsageUnknown:
-      details->AddReason(
-          DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION);
-      return;
-    case SiteFeatureUsage::kSiteFeatureNotInUse:
-      return;
+void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
+                       DecisionDetails* details) {
+  const FeatureUsageEntry features[] = {
+      {reader->UsesAudioInBackground(), DecisionFailureReason::HEURISTIC_AUDIO},
+      {reader->UpdatesFaviconInBackground(),
+       DecisionFailureReason::HEURISTIC_FAVICON},
+      {reader->UsesNotificationsInBackground(),
+       DecisionFailureReason::HEURISTIC_NOTIFICATIONS},
+      {reader->UpdatesTitleInBackground(),
+       DecisionFailureReason::HEURISTIC_TITLE}};
+
+  // Avoid adding 'insufficient observation' reason multiple times.
+  bool insufficient_observation = false;
+
+  const auto* last = features + base::size(features);
+  for (const auto* f = features; f != last; f++) {
+    if (f->usage == SiteFeatureUsage::kSiteFeatureInUse) {
+      details->AddReason(f->failure_reason);
+    } else if (f->usage == SiteFeatureUsage::kSiteFeatureUsageUnknown) {
+      insufficient_observation = true;
+    }
+  }
+
+  if (insufficient_observation) {
+    details->AddReason(
+        DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION);
   }
 }
 
@@ -209,17 +225,7 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
 
   // TODO(sebmarchand): Add a failure reason for when the data isn't ready yet.
 
-  CheckFeatureUsage(reader->UsesAudioInBackground(), details,
-                    DecisionFailureReason::HEURISTIC_AUDIO);
-
-  CheckFeatureUsage(reader->UpdatesFaviconInBackground(), details,
-                    DecisionFailureReason::HEURISTIC_FAVICON);
-
-  CheckFeatureUsage(reader->UsesNotificationsInBackground(), details,
-                    DecisionFailureReason::HEURISTIC_NOTIFICATIONS);
-
-  CheckFeatureUsage(reader->UpdatesTitleInBackground(), details,
-                    DecisionFailureReason::HEURISTIC_TITLE);
+  CheckFeatureUsage(reader.get(), details);
 }
 
 InterventionPolicyDatabase* GetInterventionPolicyDatabase() {

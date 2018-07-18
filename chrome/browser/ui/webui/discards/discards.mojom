@@ -26,9 +26,14 @@ struct TabDiscardsInfo {
   LifecycleUnitLoadingState loading_state;
   // The state of the LifecycleUnit.
   LifecycleUnitState state;
-  // If the tab is currently using media functionality (casting, WebRTC, playing
-  // audio, etc) this is true.
-  bool is_media;
+  // Whether the tab can be frozen.
+  bool can_freeze;
+  // List of human-readable reasons why a tab can't be frozen.
+  array<string> cannot_freeze_reasons;
+  // Whether the tab can be discarded.
+  bool can_discard;
+  // List of human-readable reasons why a tab can't be discarded.
+  array<string> cannot_discard_reasons;
   // The number of times this tab has been discarded in the current browser
   // session.
   int32 discard_count;

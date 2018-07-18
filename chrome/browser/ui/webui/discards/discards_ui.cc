@@ -122,7 +122,13 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
       info->loading_state = lifecycle_unit->GetLoadingState();
       info->state = lifecycle_unit->GetState();
-      info->is_media = tab_lifecycle_unit_external->IsMediaTab();
+      resource_coordinator::DecisionDetails freeze_details;
+      info->can_freeze = lifecycle_unit->CanFreeze(&freeze_details);
+      info->cannot_freeze_reasons = freeze_details.GetFailureReasonStrings();
+      resource_coordinator::DecisionDetails discard_details;
+      info->can_discard = lifecycle_unit->CanDiscard(
+          resource_coordinator::DiscardReason::kProactive, &discard_details);
+      info->cannot_discard_reasons = discard_details.GetFailureReasonStrings();
       info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
       info->utility_rank = rank++;
       const base::TimeTicks last_focused_time =

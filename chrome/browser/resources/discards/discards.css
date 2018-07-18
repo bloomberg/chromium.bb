@@ -92,7 +92,7 @@ table td.utility-rank-cell {
   text-align: center;
 }
 
-table td div.is-auto-discardable-link,
+table td div[is=action-link],
 table td.actions-cell {
   font-size: 0.6rem;
 }
@@ -114,4 +114,27 @@ th.sort-column div.header-cell-container::after {
 th[data-sort-reverse].sort-column div.header-cell-container::after {
   content: '▼';
   opacity: 1;
+}
+
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip {
+  background: black;
+  color: white;
+  display: none;
+  font-size: 0.75rem;
+  left: 50%;
+  margin-left: -100px;
+  margin-top: 4px;
+  padding: 4px;
+  position: absolute;
+  top: 100%;
+  width: 200px;
+  z-index: 1;
+}
+
+.tooltip-container:hover > .tooltip {
+  display: block;
 }
