@@ -657,10 +657,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
         tab.extension_app_id, is_selected_tab, tab.pinned, true,
         last_active_time, session_storage_namespace.get(),
         tab.user_agent_override, true /* from_session_restore */);
-    // Regression check: if the current tab |is_selected_tab|, it should load
-    // immediately, otherwise, tabs should not start loading right away. The
-    // focused tab will be loaded by Browser, and TabLoader will load the rest.
-    DCHECK(is_selected_tab || web_contents->GetController().NeedsReload());
 
     // RestoreTab can return nullptr if |tab| doesn't have valid data.
     if (!web_contents)

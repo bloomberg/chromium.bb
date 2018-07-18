@@ -207,7 +207,7 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
       }
     }
 
-    AddTab(restored_tab.contents(), restored_tab.is_active());
+    AddTab(restored_tab.contents());
   }
 
   StartTimerIfNeeded();
@@ -347,7 +347,7 @@ size_t TabLoader::GetMaxNewTabLoads() const {
   return tabs_to_load;
 }
 
-void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
+void TabLoader::AddTab(WebContents* contents) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
 
   // Handle tabs that have already started or finished loading.
@@ -360,15 +360,7 @@ void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
     return;
   }
 
-  // Otherwise place it in one of the |tabs_load_initiated_| or
-  // |tabs_to_load_| containers.
-  if (loading_initiated) {
-    delegate_->NotifyTabLoadStarted();
-    ++scheduled_to_load_count_;
-    tabs_load_initiated_.insert(contents);
-  } else {
-    tabs_to_load_.push_back(contents);
-  }
+  tabs_to_load_.push_back(contents);
 }
 
 void TabLoader::RemoveTab(WebContents* contents) {
