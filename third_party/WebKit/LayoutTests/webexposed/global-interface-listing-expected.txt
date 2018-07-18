@@ -9991,6 +9991,10 @@ interface XRFrameOfReference : XRCoordinateSystem
     getter bounds
     getter emulatedHeight
     method constructor
+interface XRHitResult
+    attribute @@toStringTag
+    getter hitMatrix
+    method constructor
 interface XRInputPose
     attribute @@toStringTag
     getter emulatedPosition
@@ -10033,6 +10037,7 @@ interface XRSession : EventTarget
     method getInputSources
     method requestAnimationFrame
     method requestFrameOfReference
+    method requestHitTest
     setter baseLayer
     setter depthFar
     setter depthNear

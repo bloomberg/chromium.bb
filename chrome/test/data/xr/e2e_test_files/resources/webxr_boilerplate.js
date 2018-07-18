@@ -86,7 +86,7 @@ function onRequestSession() {
       break;
     case sessionTypes.AR:
       let sessionOptions = {
-        requestAR: true,
+        environmentIntegration: true,
         outputContext: webglCanvas.getContext('xrpresent'),
       };
       xrDevice.requestSession(sessionOptions).then((session) => {

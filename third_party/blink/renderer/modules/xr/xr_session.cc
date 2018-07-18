@@ -91,10 +91,12 @@ class XRSession::XRSessionResizeObserverDelegate final
 
 XRSession::XRSession(XRDevice* device,
                      bool immersive,
+                     bool environment_integration,
                      XRPresentationContext* output_context,
                      EnvironmentBlendMode environment_blend_mode)
     : device_(device),
       immersive_(immersive),
+      environment_integration_(environment_integration),
       output_context_(output_context),
       callback_collection_(new XRFrameRequestCallbackCollection(
           device->xr()->GetExecutionContext())) {
