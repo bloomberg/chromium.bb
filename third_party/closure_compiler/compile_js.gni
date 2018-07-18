@@ -153,6 +153,7 @@ template("js_binary") {
                              "closure_flags",
                              "externs_list",
                              "extra_deps",
+                             "checks_only",
                            ])
     args = [
       "--compiler",
@@ -202,6 +203,9 @@ template("js_binary") {
     if (!defined(closure_flags)) {
       closure_flags = default_closure_args
     }
+    if (defined(checks_only) && checks_only) {
+      args += [ "--checks-only" ]
+    }
     args += [ "--flags" ] + closure_flags
     args += [
       "--externs",
@@ -227,6 +231,7 @@ template("js_type_check") {
   if (closure_compile) {
     js_binary(target_name) {
       sources = []
+      checks_only = true
       forward_variables_from(invoker, [ "deps" ])
     }
   } else {
