@@ -432,14 +432,20 @@ def shorten_union_name(union_type):
     aliases = {
         # modules/canvas2d/CanvasRenderingContext2D.idl
         'CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas': 'CanvasImageSource',
-        # modules/canvas/HTMLCanvasElementModule.idl
+        # modules/canvas/htmlcanvas/html_canvas_element_module_support_webgl2_compute.idl
+        # Due to html_canvas_element_module_support_webgl2_compute.idl and html_canvas_element_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
+        # modules/canvas/htmlcanvas/html_canvas_element_module.idl
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
         # core/imagebitmap/ImageBitmapFactories.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl
         'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',
-        # modules/offscreencanvas/OffscreenCanvasModules.idl
+        # modules/canvas/offscreencanvas/offscreen_canvas_module_support_webgl2_compute.idl.
+        # Due to offscreen_canvas_module_support_webgl2_compute.idl and offscreen_canvas_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
         'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContext': 'OffscreenRenderingContext',
+        # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext': 'OffscreenRenderingContext',
     }
 
     idl_type = union_type

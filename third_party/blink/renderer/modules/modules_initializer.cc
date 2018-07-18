@@ -83,7 +83,9 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
+#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 #include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
+#endif
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
@@ -126,8 +128,10 @@ void ModulesInitializer::Initialize() {
       std::make_unique<WebGLRenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<WebGL2RenderingContext::Factory>());
+#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<WebGL2ComputeRenderingContext::Factory>());
+#endif
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<ImageBitmapRenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
@@ -140,8 +144,10 @@ void ModulesInitializer::Initialize() {
       std::make_unique<WebGLRenderingContext::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<WebGL2RenderingContext::Factory>());
+#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<WebGL2ComputeRenderingContext::Factory>());
+#endif
 }
 
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {

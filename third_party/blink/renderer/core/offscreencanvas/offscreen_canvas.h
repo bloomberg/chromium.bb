@@ -25,10 +25,17 @@ namespace blink {
 class CanvasContextCreationAttributesCore;
 class CanvasResourceProvider;
 class ImageBitmap;
+#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 class
     OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContext;
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContext
     OffscreenRenderingContext;
+#else
+class
+    OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
+typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext
+    OffscreenRenderingContext;
+#endif
 
 class CORE_EXPORT OffscreenCanvas final
     : public EventTargetWithInlineData,

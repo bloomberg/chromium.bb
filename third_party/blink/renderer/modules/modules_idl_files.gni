@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/blink/renderer/bindings/bindings.gni")
+import("//third_party/blink/renderer/config.gni")
 
 # The paths in this file are absolute since this file is imported and the
 # file lists must be valid from multple "current directories".
@@ -366,7 +367,6 @@ modules_idl_files =
           "webgl/oes_texture_half_float.idl",
           "webgl/oes_texture_half_float_linear.idl",
           "webgl/oes_vertex_array_object.idl",
-          "webgl/webgl2_compute_rendering_context.idl",
           "webgl/webgl2_rendering_context.idl",
           "webgl/webgl_active_info.idl",
           "webgl/webgl_buffer.idl",
@@ -445,6 +445,11 @@ modules_idl_files =
           "xr/xr_webgl_layer.idl",
         ],
         "abspath")
+
+if (support_webgl2_compute_context) {
+  modules_idl_files +=
+      get_path_info([ "webgl/webgl2_compute_rendering_context.idl" ], "abspath")
+}
 
 modules_callback_function_idl_files =
     get_path_info([
@@ -688,7 +693,6 @@ modules_dependency_idl_files =
           "budget/worker_navigator_budget.idl",
           "cache_storage/window_cache_storage.idl",
           "cache_storage/worker_cache_storage.idl",
-          "canvas/htmlcanvas/html_canvas_element_module.idl",
           "canvas/canvas2d/canvas_path.idl",
           "clipboard/navigator_clipboard.idl",
           "cookie_store/service_worker_global_scope_cookie_store.idl",
@@ -737,7 +741,6 @@ modules_dependency_idl_files =
           "netinfo/worker_navigator_network_information.idl",
           "notifications/service_worker_global_scope_notifications.idl",
           "notifications/service_worker_registration_notifications.idl",
-          "canvas/offscreencanvas/offscreen_canvas_module.idl",
           "payments/html_iframe_element_payments.idl",
           "payments/payment_app_service_worker_global_scope.idl",
           "payments/payment_app_service_worker_registration.idl",
@@ -764,7 +767,6 @@ modules_dependency_idl_files =
           "vr/navigator_vr.idl",
           "wake_lock/screen_wake_lock.idl",
           "webdatabase/window_web_database.idl",
-          "webgl/webgl2_compute_rendering_context_base.idl",
           "webgl/webgl2_rendering_context_base.idl",
           "webgl/webgl_rendering_context_base.idl",
           "webgpu/window_webgpu.idl",
@@ -774,6 +776,24 @@ modules_dependency_idl_files =
           "webusb/worker_navigator_usb.idl",
         ],
         "abspath")
+
+if (support_webgl2_compute_context) {
+  modules_dependency_idl_files += get_path_info(
+          [
+            "canvas/htmlcanvas/html_canvas_element_module_support_webgl2_compute.idl",
+            "canvas/offscreencanvas/offscreen_canvas_module_support_webgl2_compute.idl",
+            "webgl/webgl2_compute_rendering_context_base.idl",
+          ],
+          "abspath")
+} else {
+  modules_dependency_idl_files +=
+      get_path_info([
+                      "canvas/htmlcanvas/html_canvas_element_module.idl",
+                      "canvas/offscreencanvas/offscreen_canvas_module.idl",
+                      "webgl/webgl2_compute_rendering_context_base.idl",
+                    ],
+                    "abspath")
+}
 
 modules_testing_dependency_idl_files =
     get_path_info(
