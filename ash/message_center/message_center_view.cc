@@ -8,6 +8,7 @@
 #include <map>
 
 #include "ash/message_center/message_center_button_bar.h"
+#include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/notifier_settings_view.h"
 #include "ash/public/cpp/ash_features.h"
@@ -212,8 +213,7 @@ MessageCenterView::MessageCenterView(
   // set the default opaque background color.
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_scroll_view_height);
-  scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
-  scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar());
 
   message_list_view_.reset(new MessageListView());
   message_list_view_->SetBorderPadding();

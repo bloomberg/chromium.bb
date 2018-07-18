@@ -5343,6 +5343,13 @@ histogram as enum -->
   <int value="2" label="Periodic"/>
 </enum>
 
+<enum name="ChromeOSMessageCenterScrollActionReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="By mouse wheel"/>
+  <int value="2" label="By touch"/>
+  <int value="3" label="By arrow key"/>
+</enum>
+
 <enum name="ChromeOSPlatformVerificationExpiryStatus">
   <summary>
     Possible results of a platform verification expiry check. See
