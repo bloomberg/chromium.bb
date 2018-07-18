@@ -441,6 +441,7 @@ cr.define('settings_people_page_sync_page', function() {
           prefs.passphraseRequired = true;
           cr.webUIListenerCallback('sync-prefs-changed', prefs);
 
+          syncPage.unifiedConsentEnabled = false;
           Polymer.dom.flush();
 
           const existingPassphraseInput =
@@ -461,6 +462,7 @@ cr.define('settings_people_page_sync_page', function() {
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
 
+      syncPage.unifiedConsentEnabled = false;
       Polymer.dom.flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
@@ -492,6 +494,7 @@ cr.define('settings_people_page_sync_page', function() {
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
 
+      syncPage.unifiedConsentEnabled = false;
       Polymer.dom.flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');

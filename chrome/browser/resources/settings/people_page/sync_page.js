@@ -581,6 +581,22 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  shouldShowExistingPassphraseBelowAccount_: function() {
+    return !!this.unifiedConsentEnabled && !!this.syncPrefs.passphraseRequired;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowExistingPassphraseInSyncSection_: function() {
+    return !this.unifiedConsentEnabled && !!this.syncPrefs.passphraseRequired;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   shouldShowSyncControls_: function() {
     return !!this.unifiedConsentEnabled && !this.syncStatus.disabled;
   },
