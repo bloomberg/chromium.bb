@@ -168,13 +168,6 @@ jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "base/intrusive_heap_unittest.cc",
-    "base/lazily_deallocated_deque_unittest.cc",
-    "base/sequence_manager_impl_unittest.cc",
-    "base/task_queue_selector_unittest.cc",
-    "base/time_domain_unittest.cc",
-    "base/work_queue_sets_unittest.cc",
-    "base/work_queue_unittest.cc",
     "child/webthread_impl_for_worker_scheduler_unittest.cc",
     "common/background_scheduler_unittest.cc",
     "common/idle_canceled_delayed_task_sweeper_unittest.cc",
@@ -220,7 +213,6 @@ source_set("perf_tests") {
   testonly = true
 
   sources = [
-    "base/sequence_manager_perftest.cc",
     "test/queueing_time_estimator_perf_test.cc",
   ]
 
