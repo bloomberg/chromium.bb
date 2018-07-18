@@ -12498,6 +12498,25 @@
 
       This policy does not apply for channel switches.''',
     },
+    {
+      'name': 'TabLifecyclesEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:69-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 460,
+      'caption': '''Enables or disables tab lifecycles''',
+      'tags': [],
+      'desc': '''The tab lifecyles feature reclaims CPU and eventually memory associated with running tabs that have not been used in a long period of time, by first throttling them, then freezing them and finally discarding them.
+
+      If the policy is set to false then tab lifecycles are disabled, and all tabs will be left running normally.
+
+      If the policy is set to true or left unspecified then tab lifecycles are enabled.''',
+    }
   ],
 
   'messages': {
@@ -12639,5 +12658,4 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 459
-}
+  'highest_id_currently_used': 460}
