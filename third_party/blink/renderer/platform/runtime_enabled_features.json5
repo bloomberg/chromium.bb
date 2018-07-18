@@ -1399,7 +1399,7 @@
     },
     {
       name: "WebXR",
-      origin_trial_feature_name: "WebXRDevice",
+      origin_trial_feature_name: "WebXRDeviceM69",
       status: "experimental",
     },
     // Subset of the GamepadExtensions wanted for WebXR, which expose VR controller
