@@ -410,12 +410,11 @@ void TabletModeController::HandleHingeRotation(
 }
 
 void TabletModeController::EnterTabletMode() {
-  // Always reset first to avoid creation before destruction of a previous
-  // object.
-  event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
-
   if (IsTabletModeWindowManagerEnabled())
     return;
+
+  DCHECK(!event_blocker_);
+  event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
 
   should_enter_tablet_mode_ = true;
 
@@ -525,7 +524,7 @@ void TabletModeController::HandleMouseAddedOrRemoved() {
     }
   }
 
-  if (has_external_mouse_ && has_external_mouse)
+  if (has_external_mouse_ == has_external_mouse)
     return;
 
   has_external_mouse_ = has_external_mouse;

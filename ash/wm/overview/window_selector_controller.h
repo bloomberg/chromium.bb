@@ -76,6 +76,8 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
  private:
   class OverviewBlurController;
   friend class WindowSelectorTest;
+  FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
+                           DisplayDisconnectionDuringOverview);
 
   // There is no need to blur or unblur the wallpaper for tests.
   static void SetDoNotChangeWallpaperBlurForTests();
