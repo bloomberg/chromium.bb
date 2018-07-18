@@ -32,35 +32,43 @@ Scripts in tools/ can use this module to start servers that are normally used
 for layout tests, outside of the layout test runner.
 """
 
-import argparse
 import logging
+import optparse
 
 from blinkpy.common.host import Host
+from blinkpy.web_tests.port.factory import configuration_options
+
+
+class RawTextHelpFormatter(optparse.IndentedHelpFormatter):
+    def format_description(self, description):
+        return description
 
 
 def main(server_constructor, input_fn=None, argv=None, description=None, **kwargs):
     input_fn = input_fn or raw_input
 
-    parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('--output-dir', type=str, default=None,
-                        help='output directory, for log files etc.')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='print more information, including port numbers')
-    args = parser.parse_args(argv)
+    parser = optparse.OptionParser(description=description, formatter=RawTextHelpFormatter())
+    parser.add_option('--output-dir', type=str, default=None,
+                      help='output directory, for log files etc.')
+    parser.add_option('-v', '--verbose', action='store_true',
+                      help='print more information, including port numbers')
+    for opt in configuration_options():
+        parser.add_option(opt)
+    options, _ = parser.parse_args(argv)
 
     logging.basicConfig()
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG if args.verbose else logging.INFO)
+    logger.setLevel(logging.DEBUG if options.verbose else logging.INFO)
 
     host = Host()
-    port_obj = host.port_factory.get()
-    if not args.output_dir:
-        args.output_dir = port_obj.default_results_directory()
+    port_obj = host.port_factory.get(options=options)
+    if not options.output_dir:
+        options.output_dir = port_obj.default_results_directory()
 
     # Create the output directory if it doesn't already exist.
-    port_obj.host.filesystem.maybe_make_directory(args.output_dir)
+    port_obj.host.filesystem.maybe_make_directory(options.output_dir)
 
-    server = server_constructor(port_obj, args.output_dir, **kwargs)
+    server = server_constructor(port_obj, options.output_dir, **kwargs)
     server.start()
     try:
         _ = input_fn('Hit any key to stop the server and exit.')
