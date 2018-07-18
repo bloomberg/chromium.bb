@@ -31,7 +31,8 @@ void ArcPlaystoreShortcutLauncherItemController::ItemSelected(
             ChromeLauncherController::instance()->profile(),
             arc::kPlayStoreAppId,
             base::Optional<std::string>() /* launch_intent */,
-            true /* deferred_launch_allowed */, display_id);
+            true /* deferred_launch_allowed */, display_id,
+            arc::UserInteractionType::APP_STARTED_FROM_SHELF);
     // ArcAppLauncher may launch Play Store in case it exists already. In this
     // case this instance of ArcPlaystoreShortcutLauncherItemController may be
     // deleted. If Play Store does not exist at this moment, then let

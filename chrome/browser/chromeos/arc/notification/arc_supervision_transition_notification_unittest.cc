@@ -76,7 +76,8 @@ TEST_P(ArcSupervisionTransitionNotificationTest, BaseFlow) {
                                     static_cast<int>(GetParam()));
 
   // Attempt to launch ARC++ app triggers notification.
-  LaunchApp(profile(), app_id, 0 /* event_flags */);
+  LaunchApp(profile(), app_id, 0 /* event_flags */,
+            UserInteractionType::NOT_USER_INITIATED);
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_app_test()->arc_app_list_prefs()->GetApp(app_id);

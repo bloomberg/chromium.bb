@@ -1657,6 +1657,22 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Failed to enable CloudDPC due to an unspecified error."/>
 </enum>
 
+<enum name="ArcUserInteraction">
+  <summary>Defines Arc User Interactions</summary>
+  <int value="0" label="Action not user initiated"/>
+  <int value="1" label="App started from launcher"/>
+  <int value="2" label="App started from launcher context menu"/>
+  <int value="3" label="App started from launcher search"/>
+  <int value="4" label="App started from launcher search context menu"/>
+  <int value="5" label="App started from launcher suggested apps"/>
+  <int value="6" label="App started from launcher suggested apps context menu"/>
+  <int value="7" label="App started from shelf"/>
+  <int value="8" label="App started from shelf context menu"/>
+  <int value="9" label="App started from settings"/>
+  <int value="10" label="Interaction with notification"/>
+  <int value="11" label="Interaction with app window"/>
+</enum>
+
 <enum name="ArcVideoDecodeAcceleratorResult">
   <summary>Defines ArcVideoDecodeAccelerator initialization status</summary>
   <int value="0" label="SUCCESS"/>

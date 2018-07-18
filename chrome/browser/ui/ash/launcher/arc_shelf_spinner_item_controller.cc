@@ -46,7 +46,8 @@ void ArcShelfSpinnerItemController::OnAppReadyChanged(
     return;
 
   // Close() destroys this object, so start launching the app first.
-  arc::LaunchApp(observed_profile_, changed_app_id, event_flags_, display_id_);
+  arc::LaunchApp(observed_profile_, changed_app_id, event_flags_,
+                 arc::UserInteractionType::APP_STARTED_FROM_SHELF, display_id_);
   Close();
 }
 
