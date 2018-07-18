@@ -221,6 +221,17 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // during pre-commit delegate callbacks, and thus must be held until the
 // navigation commits and the informatino can be used.
 @interface CRWWebControllerPendingNavigationInfo : NSObject {
+  // For back/forward navigation, WKWebView updates its back-forward history
+  // state before any navigation delegate callbacks. To ensure the correct
+  // navigation manager states are presented to WebStateObserver,
+  // WKBasedNavigationManager creates pending item and its navigation context
+  // in |webView:decidePolicyForNavigationAction| and stores it here to be
+  // associated with the corresponding WKNavigation when that information is
+  // available in |webView:didStartProvisionalNavigation|.
+  // See http://crbug.com/842151 for a bug caused by this scenario.
+  // TODO(crbug.com/661316): move navigation states management to navigation
+  // manager.
+  std::unique_ptr<web::NavigationContextImpl> _pendingBackForwardContext;
 }
 // The referrer for the page.
 @property(nonatomic, copy) NSString* referrer;
@@ -237,6 +248,18 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, assign) BOOL cancelled;
 // Whether the navigation was initiated by a user gesture.
 @property(nonatomic, assign) BOOL hasUserGesture;
+
+// Used by |webView:decidePolicyForNavigationAction| during a new back/forward
+// navigation to store the navigation context temporarily until it can be
+// associated with the WKNavigation in |webView:didStartProvisionalNavigation|.
+- (void)setPendingBackForwardContext:
+    (std::unique_ptr<web::NavigationContextImpl>)context;
+
+// Used by |webView:didStartProvisionalNavigation| to retrieve the navigation
+// context created in |webView:decidePolicyForNavigationAction| for back/forward
+// navigations.
+- (std::unique_ptr<web::NavigationContextImpl>)releasePendingBackForwardContext;
+
 @end
 
 @implementation CRWWebControllerPendingNavigationInfo
@@ -252,6 +275,16 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
     _navigationType = WKNavigationTypeOther;
   }
   return self;
+}
+
+- (void)setPendingBackForwardContext:
+    (std::unique_ptr<web::NavigationContextImpl>)context {
+  _pendingBackForwardContext = std::move(context);
+}
+
+- (std::unique_ptr<web::NavigationContextImpl>)
+    releasePendingBackForwardContext {
+  return std::move(_pendingBackForwardContext);
 }
 @end
 
@@ -4216,6 +4249,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationAction:action];
 
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      action.navigationType == WKNavigationTypeBackForward) {
+    // WKBackForwardList would have already been updated for back/forward
+    // navigation. Create the pending item here to match.
+    std::unique_ptr<web::NavigationContextImpl> context = [self
+        registerLoadRequestForURL:net::GURLWithNSURL(action.request.URL)
+           sameDocumentNavigation:NO
+                   hasUserGesture:[_pendingNavigationInfo hasUserGesture]];
+    [_pendingNavigationInfo setPendingBackForwardContext:std::move(context)];
+  }
+
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
       base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     // If this is a placeholder navigation, pass through.
@@ -4307,7 +4351,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // Loading should not start until webView.loading is changed to YES.
     _webStateImpl->SetIsLoading(false);
   }
-
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
                             : WKNavigationActionPolicyCancel);
 }
@@ -4417,6 +4460,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
+
+  // WKBasedNavigationManager creates context for back/forward navigation in
+  // decide policy delegate.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      _pendingNavigationInfo.navigationType == WKNavigationTypeBackForward) {
+    std::unique_ptr<web::NavigationContextImpl> pendingContext =
+        [_pendingNavigationInfo releasePendingBackForwardContext];
+    DCHECK(pendingContext.get());
+    if (!context) {
+      [_navigationStates setContext:std::move(pendingContext)
+                      forNavigation:navigation];
+      context = [_navigationStates contextForNavigation:navigation];
+    }
+  }
+
   if (context) {
     // This is already seen and registered navigation.
 
