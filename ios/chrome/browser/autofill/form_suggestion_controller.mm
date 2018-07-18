@@ -232,7 +232,8 @@ AutofillSuggestionState::AutofillSuggestionState(
 
   // Once the suggestions are retrieved, update the suggestions UI.
   SuggestionsReadyCompletion readyCompletion =
-      ^(NSArray* suggestions, id<FormSuggestionProvider> provider) {
+      ^(NSArray<FormSuggestion*>* suggestions,
+        id<FormSuggestionProvider> provider) {
         [weakSelf onSuggestionsReady:suggestions provider:provider];
       };
 
@@ -263,7 +264,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   passwords::RunSearchPipeline(findProviderBlocks, completion);
 }
 
-- (void)onSuggestionsReady:(NSArray*)suggestions
+- (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
                   provider:(id<FormSuggestionProvider>)provider {
   // TODO(ios): crbug.com/249916. If we can also pass in the form/field for
   // which |suggestions| are, we should check here if |suggestions| are for
