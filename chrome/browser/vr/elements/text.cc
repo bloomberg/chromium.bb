@@ -40,16 +40,14 @@ bool IsFixedWidthLayout(TextLayoutMode mode) {
   return mode == kSingleLineFixedWidth || mode == kMultiLineFixedWidth;
 }
 
-std::unique_ptr<gfx::RenderText> CreateRenderText(
-    const base::string16& text,
-    const gfx::FontList& font_list,
-    SkColor color,
-    TextAlignment text_alignment,
-    bool shadows_enabled,
-    SkColor shadow_color,
-    float shadow_size) {
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
-
+void UpdateRenderText(gfx::RenderText* render_text,
+                      const base::string16& text,
+                      const gfx::FontList& font_list,
+                      SkColor color,
+                      TextAlignment text_alignment,
+                      bool shadows_enabled,
+                      SkColor shadow_color,
+                      float shadow_size) {
   // Disable the cursor to avoid reserving width for a trailing caret.
   render_text->SetCursorEnabled(false);
 
@@ -62,6 +60,8 @@ std::unique_ptr<gfx::RenderText> CreateRenderText(
   if (shadows_enabled) {
     render_text->set_shadows(
         {gfx::ShadowValue({0, 0}, shadow_size, shadow_color)});
+  } else {
+    render_text->set_shadows({});
   }
 
   switch (text_alignment) {
@@ -83,8 +83,6 @@ std::unique_ptr<gfx::RenderText> CreateRenderText(
   render_text->SetStyle(gfx::UNDERLINE,
                         (font_style & gfx::Font::UNDERLINE) != 0);
   render_text->SetWeight(font_list.GetFontWeight());
-
-  return render_text;
 }
 
 std::set<UChar32> CollectDifferentChars(base::string16 text) {
@@ -261,11 +259,18 @@ class TextTexture : public UiTexture {
  private:
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
 
-  std::vector<std::unique_ptr<gfx::RenderText>> PrepareDrawStringRect(
-      const base::string16& text,
-      const gfx::FontList& font_list,
-      gfx::Rect* bounds,
-      const TextRenderParameters& parameters);
+  void PrepareDrawStringRect(const base::string16& text,
+                             const gfx::FontList& font_list,
+                             gfx::Rect* bounds,
+                             const TextRenderParameters& parameters);
+  void PrepareDrawWrapText(const base::string16& text,
+                           const gfx::FontList& font_list,
+                           gfx::Rect* bounds,
+                           const TextRenderParameters& parameters);
+  void PrepareDrawSingleLineText(const base::string16& text,
+                                 const gfx::FontList& font_list,
+                                 gfx::Rect* bounds,
+                                 const TextRenderParameters& parameters);
 
   gfx::SizeF size_;
   gfx::Vector2d texture_offset_;
@@ -280,7 +285,6 @@ class TextTexture : public UiTexture {
   bool cursor_enabled_ = false;
   int selection_start_ = 0;
   int selection_end_ = 0;
-  int cursor_position_cache_ = -1;
   gfx::Rect cursor_bounds_;
   bool shadows_enabled_ = false;
   std::vector<std::unique_ptr<gfx::RenderText>> lines_;
@@ -448,7 +452,7 @@ gfx::Size TextTexture::LayOutText() {
   parameters.shadows_enabled = shadows_enabled_;
   parameters.shadow_size = kTextShadowScaleFactor * font_height_dmms_;
 
-  lines_ = PrepareDrawStringRect(text_, fonts, &text_bounds, parameters);
+  PrepareDrawStringRect(text_, fonts, &text_bounds, parameters);
 
   if (cursor_enabled_) {
     DCHECK_EQ(lines_.size(), 1u);
@@ -507,90 +511,92 @@ void TextTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
   }
 }
 
-std::vector<std::unique_ptr<gfx::RenderText>>
-TextTexture::PrepareDrawStringRect(const base::string16& text,
-                                   const gfx::FontList& font_list,
-                                   gfx::Rect* bounds,
-                                   const TextRenderParameters& parameters) {
+void TextTexture::PrepareDrawStringRect(
+    const base::string16& text,
+    const gfx::FontList& font_list,
+    gfx::Rect* bounds,
+    const TextRenderParameters& parameters) {
   DCHECK(bounds);
 
-  std::vector<std::unique_ptr<gfx::RenderText>> lines;
-
-  if (parameters.wrapping_behavior == kWrappingBehaviorWrap) {
-    DCHECK(!parameters.cursor_enabled);
-
-    gfx::Rect rect(*bounds);
-    std::vector<base::string16> strings;
-    gfx::ElideRectangleText(text, font_list, bounds->width(),
-                            bounds->height() ? bounds->height() : INT_MAX,
-                            gfx::WRAP_LONG_WORDS, &strings);
-
-    int height = 0;
-    int line_height = 0;
-    for (size_t i = 0; i < strings.size(); i++) {
-      std::unique_ptr<gfx::RenderText> render_text = CreateRenderText(
-          strings[i], font_list, parameters.color, parameters.text_alignment,
-          parameters.shadows_enabled, parameters.shadow_color,
-          parameters.shadow_size);
-
-      if (i == 0) {
-        // Measure line and center text vertically.
-        line_height = render_text->GetStringSize().height();
-        rect.set_height(line_height);
-        if (bounds->height()) {
-          const int text_height = strings.size() * line_height;
-          rect += gfx::Vector2d(0, (bounds->height() - text_height) / 2);
-        }
-      }
-
-      render_text->SetDisplayRect(rect);
-      height += line_height;
-      rect += gfx::Vector2d(0, line_height);
-      lines.push_back(std::move(render_text));
-    }
-
-    // Set calculated height.
-    if (bounds->height() == 0)
-      bounds->set_height(height);
-  } else {
-    std::unique_ptr<gfx::RenderText> render_text =
-        CreateRenderText(text, font_list, parameters.color,
-                         parameters.text_alignment, parameters.shadows_enabled,
-                         parameters.shadow_color, parameters.shadow_size);
-    if (bounds->width() != 0 && !parameters.cursor_enabled)
-      render_text->SetElideBehavior(gfx::TRUNCATE);
-    if (parameters.cursor_enabled) {
-      render_text->SetCursorEnabled(true);
-
-      // We first need to scroll the text to the previous cursor position,
-      // otherwise it will be scrolled from the beginning of the text, looking
-      // like an unwanted jump of the text.
-      // TODO(acondor): Store the RenderText object so that this cache is not
-      // needed.
-      if (cursor_position_cache_ > -1) {
-        render_text->SetCursorPosition(parameters.cursor_position);
-        render_text->GetUpdatedCursorBounds();
-      }
-      cursor_position_cache_ = parameters.cursor_position;
-
-      render_text->SetCursorPosition(parameters.cursor_position);
-    }
-
-    if (bounds->width() == 0)
-      bounds->set_width(render_text->GetStringSize().width());
-    if (bounds->height() == 0)
-      bounds->set_height(render_text->GetStringSize().height());
-
-    render_text->SetDisplayRect(*bounds);
-    lines.push_back(std::move(render_text));
-  }
+  if (parameters.wrapping_behavior == kWrappingBehaviorWrap)
+    PrepareDrawWrapText(text, font_list, bounds, parameters);
+  else
+    PrepareDrawSingleLineText(text, font_list, bounds, parameters);
 
   if (parameters.shadows_enabled) {
     bounds->Inset(-parameters.shadow_size, -parameters.shadow_size);
     bounds->Offset(parameters.shadow_size, parameters.shadow_size);
   }
+}
 
-  return lines;
+void TextTexture::PrepareDrawWrapText(const base::string16& text,
+                                      const gfx::FontList& font_list,
+                                      gfx::Rect* bounds,
+                                      const TextRenderParameters& parameters) {
+  lines_.clear();
+  DCHECK(!parameters.cursor_enabled);
+
+  gfx::Rect rect(*bounds);
+  std::vector<base::string16> strings;
+  gfx::ElideRectangleText(text, font_list, bounds->width(),
+                          bounds->height() ? bounds->height() : INT_MAX,
+                          gfx::WRAP_LONG_WORDS, &strings);
+
+  int height = 0;
+  int line_height = 0;
+  for (size_t i = 0; i < strings.size(); i++) {
+    auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+    UpdateRenderText(render_text.get(), strings[i], font_list, parameters.color,
+                     parameters.text_alignment, parameters.shadows_enabled,
+                     parameters.shadow_color, parameters.shadow_size);
+
+    if (i == 0) {
+      // Measure line and center text vertically.
+      line_height = render_text->GetStringSize().height();
+      rect.set_height(line_height);
+      if (bounds->height()) {
+        const int text_height = strings.size() * line_height;
+        rect += gfx::Vector2d(0, (bounds->height() - text_height) / 2);
+      }
+    }
+
+    render_text->SetDisplayRect(rect);
+    height += line_height;
+    rect += gfx::Vector2d(0, line_height);
+    lines_.push_back(std::move(render_text));
+  }
+
+  // Set calculated height.
+  if (bounds->height() == 0)
+    bounds->set_height(height);
+}
+
+void TextTexture::PrepareDrawSingleLineText(
+    const base::string16& text,
+    const gfx::FontList& font_list,
+    gfx::Rect* bounds,
+    const TextRenderParameters& parameters) {
+  if (lines_.size() != 1) {
+    lines_.clear();
+    lines_.push_back(gfx::RenderText::CreateHarfBuzzInstance());
+  }
+
+  auto* render_text = lines_.front().get();
+  UpdateRenderText(render_text, text, font_list, parameters.color,
+                   parameters.text_alignment, parameters.shadows_enabled,
+                   parameters.shadow_color, parameters.shadow_size);
+  if (bounds->width() != 0 && !parameters.cursor_enabled)
+    render_text->SetElideBehavior(gfx::TRUNCATE);
+  if (parameters.cursor_enabled) {
+    render_text->SetCursorEnabled(true);
+    render_text->SetCursorPosition(parameters.cursor_position);
+  }
+  if (bounds->width() == 0)
+    bounds->set_width(render_text->GetStringSize().width());
+  if (bounds->height() == 0)
+    bounds->set_height(render_text->GetStringSize().height());
+
+  render_text->SetDisplayRect(*bounds);
 }
 
 }  // namespace vr

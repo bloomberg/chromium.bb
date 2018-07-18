@@ -121,6 +121,9 @@ EditedText::EditedText() {}
 EditedText::EditedText(const EditedText& other)
     : current(other.current), previous(other.previous) {}
 
+EditedText::EditedText(const TextInputInfo& new_current)
+    : current(new_current) {}
+
 EditedText::EditedText(const TextInputInfo& new_current,
                        const TextInputInfo& new_previous)
     : current(new_current), previous(new_previous) {}
