@@ -251,6 +251,27 @@ void LogShouldShouldPromptComparison(bool should_show_prompt_old,
                             outcome);
 }
 
+// Returns true if the user needs to be prompted before a password can be
+// saved (instead of automatically saving the password), based on inspecting
+// the state of |manager|.
+bool ShouldPromptUserToSavePassword(const PasswordFormManager& manager) {
+  if (IsPasswordUpdate(manager)) {
+    // Updating a credential might erase a useful stored value by accident.
+    // Always ask the user to confirm.
+    return true;
+  }
+
+  // User successfully signed-in with PSL match credentials. These credentials
+  // should be automatically saved in order to be autofilled on next login.
+  if (manager.IsPendingCredentialsPublicSuffixMatch())
+    return false;
+
+  if (manager.has_generated_password())
+    return false;
+
+  return manager.IsNewLogin();
+}
+
 }  // namespace
 
 // static
@@ -550,15 +571,17 @@ void PasswordManager::ShowManualFallbackForSaving(
       FormFetcher::State::WAITING) {
     return;
   }
-  ProvisionallySaveManager(password_form, matched_manager, nullptr);
+
+  std::unique_ptr<PasswordFormManager> manager = matched_manager->Clone();
+  PasswordForm form(password_form);
+  form.preferred = true;
+  manager->ProvisionallySave(form);
 
   // Show the fallback if a prompt or a confirmation bubble should be available.
-  bool has_generated_password =
-      provisional_save_manager_->has_generated_password();
-  if (ShouldPromptUserToSavePassword() || has_generated_password) {
-    DCHECK(provisional_save_manager_);
-    bool is_update = IsPasswordUpdate(*provisional_save_manager_);
-    client_->ShowManualFallbackForSaving(std::move(provisional_save_manager_),
+  bool has_generated_password = manager->has_generated_password();
+  if (ShouldPromptUserToSavePassword(*manager) || has_generated_password) {
+    bool is_update = IsPasswordUpdate(*manager);
+    client_->ShowManualFallbackForSaving(std::move(manager),
                                          has_generated_password, is_update);
     matched_manager->GetMetricsRecorder()->RecordShowManualFallbackForSaving(
         has_generated_password, is_update);
@@ -808,24 +831,6 @@ bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
          !new_origin.SchemeIsCryptographic();
 }
 
-bool PasswordManager::ShouldPromptUserToSavePassword() const {
-  if (IsPasswordUpdate(*provisional_save_manager_)) {
-    // Updating a credential might erase a useful stored value by accident.
-    // Always ask the user to confirm.
-    return true;
-  }
-
-  // User successfully signed-in with PSL match credentials. These credentials
-  // should be automatically saved in order to be autofilled on next login.
-  if (provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch())
-    return false;
-
-  if (provisional_save_manager_->has_generated_password())
-    return false;
-
-  return provisional_save_manager_->IsNewLogin();
-}
-
 bool PasswordManager::ShouldPromptUserToSavePasswordOld() const {
   return (provisional_save_manager_->IsNewLogin() ||
           provisional_save_manager_
@@ -957,9 +962,10 @@ void PasswordManager::OnLoginSuccessful() {
   DCHECK(!provisional_save_manager_->GetPendingCredentials()
               .only_for_fallback_saving);
 
-  LogShouldShouldPromptComparison(ShouldPromptUserToSavePasswordOld(),
-                                  ShouldPromptUserToSavePassword());
-  if (ShouldPromptUserToSavePassword()) {
+  LogShouldShouldPromptComparison(
+      ShouldPromptUserToSavePasswordOld(),
+      ShouldPromptUserToSavePassword(*provisional_save_manager_));
+  if (ShouldPromptUserToSavePassword(*provisional_save_manager_)) {
     bool empty_password = provisional_save_manager_->GetPendingCredentials()
                               .username_value.empty();
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.OfferedToSave",

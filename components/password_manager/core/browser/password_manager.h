@@ -172,6 +172,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers() {
     return form_managers_;
   }
+
+  const PasswordFormManager* provisional_save_manager() {
+    return provisional_save_manager_.get();
+  }
 #endif
 
   NavigationEntryToCheck entry_to_check() const { return entry_to_check_; }
@@ -207,12 +211,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // unwanted credentials, see http://crbug.com/571580 for details.
   bool ShouldBlockPasswordForSameOriginButDifferentScheme(
       const autofill::PasswordForm& form) const;
-
-  // Returns true if the user needs to be prompted before a password can be
-  // saved (instead of automatically saving
-  // the password), based on inspecting the state of
-  // |provisional_save_manager_|.
-  bool ShouldPromptUserToSavePassword() const;
 
   // The old version of ShouldPromptUserToSavePassword, it is left for
   // comparison and metric sending.
