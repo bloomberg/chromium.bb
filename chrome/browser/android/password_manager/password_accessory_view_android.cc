@@ -36,7 +36,6 @@ PasswordAccessoryViewAndroid::~PasswordAccessoryViewAndroid() {
 }
 
 void PasswordAccessoryViewAndroid::OnItemsAvailable(
-    const GURL& origin,
     const std::vector<AccessoryItem>& items) {
   DCHECK(!java_object_.is_null());
 

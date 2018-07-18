@@ -464,7 +464,7 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
   // If an accessory exists already, |CreateForWebContents| is a NoOp.
   PasswordAccessoryController::CreateForWebContents(web_contents());
   PasswordAccessoryController::FromWebContents(web_contents())
-      ->OnPasswordsAvailable(best_matches, origin);
+      ->SavePasswordsForOrigin(best_matches, url::Origin::Create(origin));
 #else  // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
@@ -562,17 +562,6 @@ void ChromePasswordManagerClient::DidFinishNavigation(
       this);
   web_contents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
 #endif
-}
-
-void ChromePasswordManagerClient::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID)
-  PasswordAccessoryController* accessory =
-      PasswordAccessoryController::FromWebContents(web_contents());
-  if (!accessory)
-    return;  // No accessory, no cleanup needed.
-  accessory->ClearSuggestions();
-#endif  // defined(OS_ANDROID)
 }
 
 #if !defined(OS_ANDROID)

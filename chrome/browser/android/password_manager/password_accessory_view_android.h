@@ -23,8 +23,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   ~PasswordAccessoryViewAndroid() override;
 
   // PasswordAccessoryViewInterface:
-  void OnItemsAvailable(const GURL& origin,
-                        const std::vector<AccessoryItem>& items) override;
+  void OnItemsAvailable(const std::vector<AccessoryItem>& items) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
 
   // Called from Java via JNI:
