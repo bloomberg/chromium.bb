@@ -1651,8 +1651,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleTraceBeginCHROMIUM(
 
   Bucket* category_bucket = GetBucket(category_bucket_id);
   Bucket* name_bucket = GetBucket(name_bucket_id);
-  if (!category_bucket || category_bucket->size() == 0 || !name_bucket ||
-      name_bucket->size() == 0) {
+  static constexpr size_t kMaxStrLen = 256;
+  if (!category_bucket || category_bucket->size() == 0 ||
+      category_bucket->size() > kMaxStrLen || !name_bucket ||
+      name_bucket->size() == 0 || name_bucket->size() > kMaxStrLen) {
     return error::kInvalidArguments;
   }
 

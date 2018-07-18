@@ -2284,8 +2284,10 @@ error::Error RasterDecoderImpl::HandleTraceBeginCHROMIUM(
       *static_cast<const volatile gles2::cmds::TraceBeginCHROMIUM*>(cmd_data);
   Bucket* category_bucket = GetBucket(c.category_bucket_id);
   Bucket* name_bucket = GetBucket(c.name_bucket_id);
-  if (!category_bucket || category_bucket->size() == 0 || !name_bucket ||
-      name_bucket->size() == 0) {
+  static constexpr size_t kMaxStrLen = 256;
+  if (!category_bucket || category_bucket->size() == 0 ||
+      category_bucket->size() > kMaxStrLen || !name_bucket ||
+      name_bucket->size() == 0 || name_bucket->size() > kMaxStrLen) {
     return error::kInvalidArguments;
   }
 
