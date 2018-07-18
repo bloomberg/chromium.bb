@@ -166,9 +166,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
-  // Returns the amount of space reserved for the separator in DIP.
-  int GetSeparatorLayoutWidth() const;
-
   // Retrieves the width taken the separator including padding before the
   // separator stroke, taking into account whether it is shown or not.
   int GetPrefixedSeparatorWidth() const;
@@ -178,8 +175,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // Gets the minimum size to use when the label is not shown.
   gfx::Size GetNonLabelSize() const;
-
-  float GetScaleFactor() const;
 
   // The view has been activated by a user gesture such as spacebar.
   // Returns true if some handling was performed.

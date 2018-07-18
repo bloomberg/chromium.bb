@@ -30,7 +30,12 @@
 
 namespace {
 
-// Amount of space on either side of the separator that appears after the label.
+// Amount of space reserved for the separator that appears after the icon or
+// label.
+constexpr int kSeparatorWidth = 1;
+
+// Amount of space on either side of the separator that appears after the icon
+// or label.
 constexpr int kSpaceBesideSeparator = 8;
 
 // The length of the separator's fade animation. These values are empirical.
@@ -54,9 +59,8 @@ void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
       plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
   const float x = GetLocalBounds().right() - owner_->GetEndPadding() -
                   1.0f / canvas->image_scale();
-  canvas->Draw1pxLine(gfx::PointF(x, GetLocalBounds().y()),
-                      gfx::PointF(x, GetLocalBounds().bottom()),
-                      separator_color);
+  canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
+                   gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
 }
 
 void IconLabelBubbleView::SeparatorView::OnImplicitAnimationsCompleted() {
@@ -421,19 +425,8 @@ int IconLabelBubbleView::GetInternalSpacing() const {
                    GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
 }
 
-int IconLabelBubbleView::GetSeparatorLayoutWidth() const {
-  // On scale factors < 2, we reserve 1 DIP for the 1 px separator.  For
-  // higher scale factors, we simply take the separator px out of the
-  // kSpaceBesideSeparator region before the separator, as that results in a
-  // width closer to the desired gap than if we added a whole DIP for the
-  // separator px. (For scale 2, the two methods have equal error: 1 px.)
-  return (GetScaleFactor() >= 2) ? 0 : 1;
-}
-
 int IconLabelBubbleView::GetPrefixedSeparatorWidth() const {
-  return ShouldShowSeparator()
-             ? kSpaceBesideSeparator + GetSeparatorLayoutWidth()
-             : 0;
+  return ShouldShowSeparator() ? kSeparatorWidth + kSpaceBesideSeparator : 0;
 }
 
 int IconLabelBubbleView::GetEndPadding() const {
@@ -446,14 +439,6 @@ gfx::Size IconLabelBubbleView::GetNonLabelSize() const {
   gfx::Size size(image_->GetPreferredSize());
   size.Enlarge(GetInsets().left() + GetEndPadding(), GetInsets().height());
   return size;
-}
-
-float IconLabelBubbleView::GetScaleFactor() const {
-  const views::Widget* widget = GetWidget();
-  // There may be no widget in tests, and in ash there may be no compositor if
-  // the native view of the Widget doesn't have a parent.
-  const ui::Compositor* compositor = widget ? widget->GetCompositor() : nullptr;
-  return compositor ? compositor->device_scale_factor() : 1.0f;
 }
 
 bool IconLabelBubbleView::OnActivate(const ui::Event& event) {
