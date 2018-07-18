@@ -136,7 +136,7 @@ class SQL_EXPORT Statement {
 
   // When reading a blob, you can get a raw pointer to the underlying data,
   // along with the length, or you can just ask us to copy the blob into a
-  // vector. Danger! ColumnBlob may return NULL if there is no data!
+  // vector. Danger! ColumnBlob may return nullptr if there is no data!
   int ColumnByteLength(int col) const;
   const void* ColumnBlob(int col) const;
   bool ColumnBlobAsString(int col, std::string* blob) const;
@@ -188,7 +188,7 @@ class SQL_EXPORT Statement {
 
   // The actual sqlite statement. This may be unique to us, or it may be cached
   // by the connection, which is why it's refcounted. This pointer is
-  // guaranteed non-NULL.
+  // guaranteed non-null.
   scoped_refptr<Connection::StatementRef> ref_;
 
   // Set after Step() or Run() are called, reset by Reset().  Used to

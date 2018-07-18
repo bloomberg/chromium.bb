@@ -370,7 +370,7 @@ void Recovery::Shutdown(Recovery::Disposition raze) {
   } else if (raze == POISON) {
     db_->Poison();
   }
-  db_ = NULL;
+  db_ = nullptr;
 }
 
 bool Recovery::AutoRecoverTable(const char* table_name,

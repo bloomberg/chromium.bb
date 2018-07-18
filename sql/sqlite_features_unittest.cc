@@ -38,7 +38,7 @@ using sql::test::ExecuteWithResults;
 void CaptureErrorCallback(int* error_pointer, std::string* sql_text,
                           int error, sql::Statement* stmt) {
   *error_pointer = error;
-  const char* text = stmt ? stmt->GetSQLStatement() : NULL;
+  const char* text = stmt ? stmt->GetSQLStatement() : nullptr;
   *sql_text = text ? text : "no statement available";
 }
 
@@ -339,8 +339,8 @@ TEST_F(SQLiteFeaturesTest, DISABLED_TimeMachine) {
   base::ScopedCFTypeRef<CFURLRef> journalURL(CFURLRefForPath(journal));
 
   // Not excluded to start.
-  EXPECT_FALSE(CSBackupIsItemExcluded(dbURL, NULL));
-  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, NULL));
+  EXPECT_FALSE(CSBackupIsItemExcluded(dbURL, nullptr));
+  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, nullptr));
 
   // Exclude the main database file.
   EXPECT_TRUE(base::mac::SetFileBackupExclusion(db_path()));
@@ -348,7 +348,7 @@ TEST_F(SQLiteFeaturesTest, DISABLED_TimeMachine) {
   Boolean excluded_by_path = FALSE;
   EXPECT_TRUE(CSBackupIsItemExcluded(dbURL, &excluded_by_path));
   EXPECT_FALSE(excluded_by_path);
-  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, NULL));
+  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, nullptr));
 
   EXPECT_TRUE(db().Open(db_path()));
   ASSERT_TRUE(db().Execute("INSERT INTO t VALUES (1)"));
@@ -478,9 +478,9 @@ TEST_F(SQLiteFeaturesTest, WALNoClose) {
   ASSERT_TRUE(Reopen());
   ASSERT_TRUE(db().Execute("PRAGMA journal_mode = WAL"));
   ASSERT_TRUE(db().Execute("ALTER TABLE foo ADD COLUMN c"));
-  ASSERT_EQ(
-      SQLITE_OK,
-      sqlite3_db_config(db().db_, SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, 1, NULL));
+  ASSERT_EQ(SQLITE_OK,
+            sqlite3_db_config(db().db_, SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, 1,
+                              nullptr));
   ASSERT_TRUE(GetPathExists(wal_path));
   db().Close();
   ASSERT_TRUE(GetPathExists(wal_path));
