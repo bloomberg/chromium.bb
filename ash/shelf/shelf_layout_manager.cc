@@ -28,6 +28,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -673,7 +674,9 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(
             shelf_widget_->GetNativeWindow());
-    if (!state_.IsScreenLocked() && change_work_area &&
+    bool in_overview =
+        Shell::Get()->window_selector_controller()->IsSelecting();
+    if (!in_overview && !state_.IsScreenLocked() && change_work_area &&
         (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
          display.work_area() == display.bounds())) {
       gfx::Insets insets;

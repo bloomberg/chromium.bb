@@ -410,10 +410,10 @@ void WindowSelectorController::OnSelectionEnded() {
     overview_blur_controller_->Unblur();
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
-  window_selector_->Shutdown();
+  auto* window_selector = window_selector_.release();
+  window_selector->Shutdown();
   // Don't delete |window_selector_| yet since the stack is still using it.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  window_selector_.release());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, window_selector);
   last_selection_time_ = base::Time::Now();
   Shell::Get()->NotifyOverviewModeEnded();
   is_shutting_down_ = false;
