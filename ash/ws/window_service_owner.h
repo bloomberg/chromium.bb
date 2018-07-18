@@ -58,7 +58,7 @@ class ASH_EXPORT WindowServiceOwner {
   std::unique_ptr<service_manager::ServiceContext> service_context_;
 
   // The WindowService. This is owned by |service_context_|.
-  ui::ws2::WindowService* window_service_;
+  ui::ws2::WindowService* window_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceOwner);
 };

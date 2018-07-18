@@ -106,6 +106,8 @@ static_library("test_support") {
     "server_window_test_helper.h",
     "test_change_tracker.cc",
     "test_change_tracker.h",
+    "test_screen_provider_observer.cc",
+    "test_screen_provider_observer.h",
     "test_window_service_delegate.cc",
     "test_window_service_delegate.h",
     "test_window_tree_client.cc",

@@ -344,6 +344,11 @@ WindowTreeClient::~WindowTreeClient() {
   CHECK(windows_.empty());
 }
 
+bool WindowTreeClient::WaitForDisplays() {
+  // TODO(sky): move WaitForInitialDisplays() here. https://crbug.com/837713
+  return WaitForInitialDisplays();
+}
+
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
   DCHECK(tree_);
   DCHECK(window);
@@ -907,10 +912,16 @@ void WindowTreeClient::SetWindowBoundsFromServer(
     const gfx::Rect& revert_bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   if (IsRoot(window)) {
+    // This uses GetScaleFactorForNativeView() as it's called at a time when the
+    // scale factor may not have been applied to the Compositor yet. In
+    // particular, when the scale-factor changes this is called in terms of the
+    // scale factor set on the display. It's the call to
+    // SetBoundsFromServerInPixels() that is responsible for updating the scale
+    // factor in the Compositor.
+    const float dsf = ui::GetScaleFactorForNativeView(window->GetWindow());
     GetWindowTreeHostMus(window)->SetBoundsFromServerInPixels(
         is_using_pixels() ? revert_bounds
-                          : gfx::ConvertRectToPixel(
-                                window->GetDeviceScaleFactor(), revert_bounds),
+                          : gfx::ConvertRectToPixel(dsf, revert_bounds),
         local_surface_id ? *local_surface_id : viz::LocalSurfaceId());
     return;
   }
@@ -1920,6 +1931,21 @@ void WindowTreeClient::GetWindowManager(
   window_manager_internal_.reset(
       new mojo::AssociatedBinding<ui::mojom::WindowManager>(
           this, std::move(internal)));
+}
+
+void WindowTreeClient::GetScreenProviderObserver(
+    ui::mojom::ScreenProviderObserverAssociatedRequest observer) {
+  DCHECK_EQ(Config::kMus2, config_);
+  screen_provider_observer_binding_.Bind(std::move(observer));
+}
+
+void WindowTreeClient::OnDisplaysChanged(
+    std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+    int64_t primary_display_id,
+    int64_t internal_display_id) {
+  got_initial_displays_ = true;
+  delegate_->OnDisplaysChanged(std::move(ws_displays), primary_display_id,
+                               internal_display_id);
 }
 
 void WindowTreeClient::RequestClose(ui::Id window_id) {

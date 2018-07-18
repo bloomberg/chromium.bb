@@ -6,9 +6,15 @@
 
 #include <stdint.h>
 
-#include "base/strings/string_number_conversions.h"
-#include "services/ui/common/task_runner_test_base.h"
+#include "base/run_loop.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/ws2/gpu_interface_provider.h"
+#include "services/ui/ws2/test_screen_provider_observer.h"
+#include "services/ui/ws2/window_service.h"
+#include "services/ui/ws2/window_service_test_setup.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/screen_base.h"
@@ -20,17 +26,6 @@ using display::DisplayObserver;
 namespace ui {
 namespace ws2 {
 namespace {
-
-std::string DisplayIdsToString(
-    const std::vector<mojom::WsDisplayPtr>& wm_displays) {
-  std::string display_ids;
-  for (const auto& wm_display : wm_displays) {
-    if (!display_ids.empty())
-      display_ids += " ";
-    display_ids += base::NumberToString(wm_display->display.id());
-  }
-  return display_ids;
-}
 
 // A testing screen that generates the OnDidProcessDisplayChanges() notification
 // similar to production code.
@@ -62,41 +57,7 @@ class TestScreen : public display::ScreenBase {
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
 
-class TestScreenProviderObserver : public mojom::ScreenProviderObserver {
- public:
-  TestScreenProviderObserver() = default;
-  ~TestScreenProviderObserver() override = default;
-
-  mojom::ScreenProviderObserverPtr GetPtr() {
-    mojom::ScreenProviderObserverPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // mojom::ScreenProviderObserver:
-  void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
-                         int64_t primary_display_id,
-                         int64_t internal_display_id) override {
-    displays_ = std::move(displays);
-    display_ids_ = DisplayIdsToString(displays_);
-    primary_display_id_ = primary_display_id;
-    internal_display_id_ = internal_display_id;
-  }
-
-  mojo::Binding<mojom::ScreenProviderObserver> binding_{this};
-  std::vector<mojom::WsDisplayPtr> displays_;
-  std::string display_ids_;
-  int64_t primary_display_id_ = 0;
-  int64_t internal_display_id_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestScreenProviderObserver);
-};
-
-// Mojo needs a task runner.
-using ScreenProviderTest = TaskRunnerTestBase;
-
-TEST_F(ScreenProviderTest, AddRemoveDisplay) {
+TEST(ScreenProviderTest, AddRemoveDisplay) {
   TestScreen screen;
   screen.AddDisplay(Display(111, gfx::Rect(0, 0, 640, 480)),
                     DisplayList::Type::PRIMARY);
@@ -106,41 +67,33 @@ TEST_F(ScreenProviderTest, AddRemoveDisplay) {
   TestScreenProviderObserver observer;
 
   // Adding an observer triggers an update.
-  screen_provider.AddObserver(observer.GetPtr());
-  // Wait for mojo message to observer.
-  RunUntilIdle();
-  EXPECT_EQ("111", observer.display_ids_);
-  EXPECT_EQ(111, observer.primary_display_id_);
-  EXPECT_EQ(111, observer.internal_display_id_);
-  observer.display_ids_.clear();
+  screen_provider.AddObserver(&observer);
+  EXPECT_EQ("111", observer.display_ids());
+  EXPECT_EQ(111, observer.primary_display_id());
+  EXPECT_EQ(111, observer.internal_display_id());
+  observer.display_ids().clear();
 
   // Adding a display triggers an update.
   screen.AddDisplay(Display(222, gfx::Rect(640, 0, 640, 480)),
                     DisplayList::Type::NOT_PRIMARY);
-  // Wait for mojo message to observer.
-  RunUntilIdle();
-  EXPECT_EQ("111 222", observer.display_ids_);
-  EXPECT_EQ(111, observer.primary_display_id_);
-  observer.display_ids_.clear();
+  EXPECT_EQ("111 222", observer.display_ids());
+  EXPECT_EQ(111, observer.primary_display_id());
+  observer.display_ids().clear();
 
   // Updating which display is primary triggers an update.
   screen.UpdateDisplay(Display(222, gfx::Rect(640, 0, 800, 600)),
                        DisplayList::Type::PRIMARY);
-  // Wait for mojo message to observer.
-  RunUntilIdle();
-  EXPECT_EQ("111 222", observer.display_ids_);
-  EXPECT_EQ(222, observer.primary_display_id_);
-  observer.display_ids_.clear();
+  EXPECT_EQ("111 222", observer.display_ids());
+  EXPECT_EQ(222, observer.primary_display_id());
+  observer.display_ids().clear();
 
   // Removing a display triggers an update.
   screen.RemoveDisplay(111);
-  // Wait for mojo message to observer.
-  RunUntilIdle();
-  EXPECT_EQ("222", observer.display_ids_);
-  EXPECT_EQ(222, observer.primary_display_id_);
+  EXPECT_EQ("222", observer.display_ids());
+  EXPECT_EQ(222, observer.primary_display_id());
 }
 
-TEST_F(ScreenProviderTest, SetFrameDecorationValues) {
+TEST(ScreenProviderTest, SetFrameDecorationValues) {
   // Set up a single display.
   TestScreen screen;
   screen.AddDisplay(Display(111, gfx::Rect(0, 0, 640, 480)),
@@ -152,17 +105,51 @@ TEST_F(ScreenProviderTest, SetFrameDecorationValues) {
 
   // Add an observer to the screen provider.
   TestScreenProviderObserver observer;
-  screen_provider.AddObserver(observer.GetPtr());
-  // Wait for mojo message to observer.
-  RunUntilIdle();
+  screen_provider.AddObserver(&observer);
 
   // The screen information contains the frame decoration values.
-  ASSERT_EQ(1u, observer.displays_.size());
+  ASSERT_EQ(1u, observer.displays().size());
   const mojom::FrameDecorationValuesPtr& values =
-      observer.displays_[0]->frame_decoration_values;
+      observer.displays()[0]->frame_decoration_values;
   EXPECT_EQ(gfx::Insets(1, 2, 3, 4), values->normal_client_area_insets);
   EXPECT_EQ(gfx::Insets(1, 2, 3, 4), values->maximized_client_area_insets);
   EXPECT_EQ(55u, values->max_title_bar_button_width);
+}
+
+TEST(ScreenProviderTest, DisplaysSentOnConnection) {
+  // Use |test_setup| to configure aura and other state.
+  WindowServiceTestSetup test_setup;
+
+  // Create another WindowService.
+  TestWindowServiceDelegate test_window_service_delegate;
+  std::unique_ptr<WindowService> window_service_ptr =
+      std::make_unique<WindowService>(&test_window_service_delegate, nullptr,
+                                      test_setup.focus_controller());
+  std::unique_ptr<service_manager::TestConnectorFactory> factory =
+      service_manager::TestConnectorFactory::CreateForUniqueService(
+          std::move(window_service_ptr));
+  std::unique_ptr<service_manager::Connector> connector =
+      factory->CreateConnector();
+
+  // Connect to |window_service| and ask for a new WindowTree.
+  ui::mojom::WindowTreeFactoryPtr window_tree_factory;
+  connector->BindInterface(ui::mojom::kServiceName, &window_tree_factory);
+  ui::mojom::WindowTreePtr window_tree;
+  ui::mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
+  window_tree_factory->CreateWindowTree(MakeRequest(&window_tree),
+                                        std::move(client));
+
+  TestWindowTreeClient window_tree_client;
+  mojo::Binding<mojom::WindowTreeClient> binding(&window_tree_client);
+  binding.Bind(std::move(client_request));
+
+  // Wait for all mojo messages to be processed.
+  base::RunLoop().RunUntilIdle();
+
+  // Should have gotten display information.
+  EXPECT_FALSE(
+      window_tree_client.screen_provider_observer()->display_ids().empty());
 }
 
 }  // namespace

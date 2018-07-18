@@ -297,5 +297,10 @@ void TestWindowTreeClient::RequestClose(Id window_id) {
 void TestWindowTreeClient::GetWindowManager(
     mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) {}
 
+void TestWindowTreeClient::GetScreenProviderObserver(
+    mojom::ScreenProviderObserverAssociatedRequest observer) {
+  screen_provider_observer_binding_.Bind(std::move(observer));
+}
+
 }  // namespace ws2
 }  // namespace ui

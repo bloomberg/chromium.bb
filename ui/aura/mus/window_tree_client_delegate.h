@@ -9,8 +9,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
 
@@ -62,6 +64,13 @@ class AURA_EXPORT WindowTreeClientDelegate {
                                       Window* target) = 0;
 
   virtual PropertyConverter* GetPropertyConverter() = 0;
+
+  // See ui::mojom::ScreenProviderObserver for details on this.
+  // TODO(sky): consider moving ScreenMus from views to aura.
+  virtual void OnDisplaysChanged(
+      std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+      int64_t primary_display_id,
+      int64_t internal_display_id) {}
 
  protected:
   virtual ~WindowTreeClientDelegate() {}
