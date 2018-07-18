@@ -1064,6 +1064,10 @@ DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   // Keep in sync with |fixedEntries| in |updateSubDirectories|.
   var index = util.isTeamDriveEntry(changedDirectoryEntry) ? 1 : 0;
   this.items[index].updateItemByEntry(changedDirectoryEntry);
+  if (util.isTeamDrivesGrandRoot(changedDirectoryEntry) &&
+      this.volumeInfo_.teamDriveDisplayRoot) {
+    this.setHiddenForTeamDrivesGrandRoot_(this.items[index]);
+  }
 };
 
 /**
