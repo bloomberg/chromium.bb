@@ -779,6 +779,7 @@ jumbo_static_library("extensions") {
   # have the same dependencies. Once browser_extensions is untangled from
   # browser, then we can clean up these dependencies.
   public_deps = [
+    "//chrome/browser/extensions/api:api_registration",
     "//chrome/common/extensions/api",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing/db:util",
@@ -803,7 +804,6 @@ jumbo_static_library("extensions") {
     "//chrome/browser/web_applications/extensions",
     "//chrome/common",
     "//chrome/common/extensions:mojo_bindings",
-    "//chrome/common/extensions/api:api_registration",
     "//chrome/common/extensions/api:extensions_features",
     "//chrome/common/safe_browsing:proto",
     "//chrome/services/media_gallery_util/public/cpp",
