@@ -193,6 +193,16 @@ would like to debug in a graphical environment, rather than using `lldb` at the
 command line, that is possible without building in Xcode (see
 [Debugging in Xcode](https://www.chromium.org/developers/how-tos/debugging-on-os-x/building-with-ninja-debugging-with-xcode)).
 
+Tips for printing variables from `lldb` prompt (both in Xcode or in terminal):
+* If `uptr` is a `std::unique_ptr`, the address it wraps is accessible as
+  `uptr.__ptr_.__value_`.
+* To pretty-print `base::string16`, ensure you have a `~/.lldbinit` file and
+  add the following line into it (substitute {SRC} for your actual path to the
+  root of Chromium's sources):
+```
+command script import {SRC}/tools/lldb/lldb_chrome.py
+```
+
 ## Update your checkout
 
 To update an existing checkout, you can run
