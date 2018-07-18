@@ -21,7 +21,7 @@
 namespace base {
 class Location;
 class SingleThreadTaskRunner;
-}
+}  // namespace base
 
 namespace media {
 
@@ -91,6 +91,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
                const base::android::JavaParamRef<jobject>& obj,
                const base::android::JavaParamRef<jstring>& message);
 
+  void OnGetPhotoCapabilitiesReply(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong callback_id,
+      jobject photo_capabilities);
+
   // Implement org.chromium.media.VideoCapture.nativeOnPhotoTaken.
   void OnPhotoTaken(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
@@ -99,6 +105,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   // Implement org.chromium.media.VideoCapture.nativeOnStarted.
   void OnStarted(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  // Implement
+  // org.chromium.media.VideoCapture.nativeDCheckCurrentlyOnIncomingTaskRunner.
+  void DCheckCurrentlyOnIncomingTaskRunner(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   void ConfigureForTesting();
 
@@ -152,9 +164,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   base::TimeTicks expected_next_frame_time_;
   base::TimeDelta frame_interval_;
 
-  // List of |photo_callbacks_| in flight, being served in Java side.
+  // List of callbacks for photo API in flight, being served in Java side.
   base::Lock photo_callbacks_lock_;
-  std::list<std::unique_ptr<TakePhotoCallback>> photo_callbacks_;
+  std::list<std::unique_ptr<GetPhotoStateCallback>> get_photo_state_callbacks_;
+  std::list<std::unique_ptr<TakePhotoCallback>> take_photo_callbacks_;
 
   const VideoCaptureDeviceDescriptor device_descriptor_;
   VideoCaptureFormat capture_format_;
