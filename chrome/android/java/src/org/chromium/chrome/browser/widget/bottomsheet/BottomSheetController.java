@@ -10,6 +10,7 @@ import android.view.View;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -78,19 +79,30 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     /** Whether the bottom sheet is temporarily suppressed. */
     private boolean mIsSuppressed;
 
+    /** The manager for Contextual Search to attach listeners to. */
+    private ContextualSearchManager mContextualSearchManager;
+
+    /** Whether the bottom sheet should be suppressed when Contextual Search is showing. */
+    private boolean mSuppressSheetForContextualSearch;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param tabModelSelector A tab model selector to track events on tabs open in the browser.
      * @param layoutManager A layout manager for detecting changes in the active layout.
      * @param scrim The scrim that shows when the bottom sheet is opened.
-     * @param contextualSearchManager The manager for Contextual Search to attach listeners to.
      * @param bottomSheet The bottom sheet that this class will be controlling.
+     * @param contextualSearchManager The manager for Contextual Search to attach listeners to.
+     * @param suppressSheetForContextualSearch Whether the bottom sheet should be suppressed when
+     *                                         Contextual Search is showing.
      */
     public BottomSheetController(final Activity activity, final TabModelSelector tabModelSelector,
-            final LayoutManager layoutManager, final ScrimView scrim,
-            ContextualSearchManager contextualSearchManager, BottomSheet bottomSheet) {
+            final LayoutManager layoutManager, final ScrimView scrim, BottomSheet bottomSheet,
+            ContextualSearchManager contextualSearchManager,
+            boolean suppressSheetForContextualSearch) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
+        mContextualSearchManager = contextualSearchManager;
+        mSuppressSheetForContextualSearch = suppressSheetForContextualSearch;
         mSnackbarManager = new SnackbarManager(
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
         mSnackbarManager.onStart();
@@ -203,8 +215,8 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         });
 
         // TODO(mdjones): This should be changed to a generic OverlayPanel observer.
-        if (contextualSearchManager != null) {
-            contextualSearchManager.addObserver(new ContextualSearchObserver() {
+        if (mContextualSearchManager != null && mSuppressSheetForContextualSearch) {
+            mContextualSearchManager.addObserver(new ContextualSearchObserver() {
                 @Override
                 public void onShowContextualSearch(
                         @Nullable GSAContextDisplaySelection selectionContext) {
@@ -365,6 +377,9 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     public void expandSheet() {
         if (mBottomSheet.getCurrentSheetContent() == null) return;
         mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        if (mContextualSearchManager != null) {
+            mContextualSearchManager.hideContextualSearch(OverlayPanel.StateChangeReason.UNKNOWN);
+        }
     }
 
     @Override
