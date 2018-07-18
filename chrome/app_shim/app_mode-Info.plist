@@ -26,6 +26,11 @@
        <string>@APP_MODE_SHORTCUT_URL@</string>
        <key>CrBundleIdentifier</key>
        <string>@APP_MODE_BROWSER_BUNDLE_ID@</string>
+       <key>LSEnvironment</key>
+       <dict>
+              <key>MallocNanoZone</key>
+              <string>0</string>
+       </dict>
        <key>LSMinimumSystemVersion</key>
        <string>${CHROMIUM_MIN_SYSTEM_VERSION}</string>
        <key>NSAppleScriptEnabled</key>
