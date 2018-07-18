@@ -153,7 +153,7 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
       ::fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> rt) override {}
   void SetInterfaceAddress(uint32_t nicid,
                            fuchsia::netstack::NetAddress addr,
-                           uint64_t prefixLen,
+                           uint8_t prefixLen,
                            SetInterfaceAddressCallback callback) override {}
   void SetDhcpClientStatus(uint32_t nicid,
                            bool enabled,
