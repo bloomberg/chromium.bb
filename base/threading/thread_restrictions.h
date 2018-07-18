@@ -214,6 +214,35 @@ class BASE_EXPORT ScopedDisallowBlocking {
 //
 // Avoid using this. Prefer making blocking calls from tasks posted to
 // base::TaskScheduler with base::MayBlock().
+//
+// Where unavoidable, put ScopedAllow* instances in the narrowest scope possible
+// in the caller making the blocking call but no further down. That is: if a
+// Cleanup() method needs to do a blocking call, document Cleanup() as blocking
+// and add a ScopedAllowBlocking instance in callers that can't avoid making
+// this call from a context where blocking is banned, as such:
+//   void Client::MyMethod() {
+//     (...)
+//     {
+//       // Blocking is okay here because XYZ.
+//       ScopedAllowBlocking allow_blocking;
+//       my_foo_->Cleanup();
+//     }
+//     (...)
+//   }
+//
+//   // This method can block.
+//   void Foo::Cleanup() {
+//     // Do NOT add the ScopedAllowBlocking in Cleanup() directly as that hides
+//     // its blocking nature from unknowing callers and defeats the purpose of
+//     // these checks.
+//     FlushStateToDisk();
+//   }
+//
+// Note: In rare situations where the blocking call is an implementation detail
+// (i.e. the impl makes a call that invokes AssertBlockingAllowed() but it
+// somehow knows that in practice this will not block), it might be okay to hide
+// the ScopedAllowBlocking instance in the impl with a comment explaining why
+// that's okay.
 class BASE_EXPORT ScopedAllowBlocking {
  private:
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
