@@ -701,8 +701,7 @@ void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
 bool MostVisitedSites::ShouldAddHomeTile() const {
   return max_num_sites_ > 0u &&
          homepage_client_ &&  // No platform-specific implementation - no tile.
-         homepage_client_->IsHomepageEnabled() &&
-         !homepage_client_->IsNewTabPageUsedAsHomepage() &&
+         homepage_client_->IsHomepageTileEnabled() &&
          !homepage_client_->GetHomepageUrl().is_empty() &&
          !(top_sites_ &&
            top_sites_->IsBlacklisted(homepage_client_->GetHomepageUrl()));

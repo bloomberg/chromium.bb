@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import android.text.TextUtils;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -44,13 +46,10 @@ public class MostVisitedSitesBridge
                 && FeatureUtilities.isHomepageTileEnabled()) {
             nativeSetHomepageClient(mNativeMostVisitedSitesBridge, new HomepageClient() {
                 @Override
-                public boolean isHomepageEnabled() {
-                    return HomepageManager.isHomepageEnabled();
-                }
-
-                @Override
-                public boolean isNewTabPageUsedAsHomepage() {
-                    return NewTabPage.isNTPUrl(getHomepageUrl());
+                public boolean isHomepageTileEnabled() {
+                    return HomepageManager.isHomepageEnabled()
+                            && !NewTabPage.isNTPUrl(getHomepageUrl())
+                            && !TextUtils.isEmpty(HomepageManager.getHomepageUri());
                 }
 
                 @Override

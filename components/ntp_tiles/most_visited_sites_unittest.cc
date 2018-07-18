@@ -228,14 +228,10 @@ class MockMostVisitedSitesObserver : public MostVisitedSites::Observer {
 class FakeHomepageClient : public MostVisitedSites::HomepageClient {
  public:
   FakeHomepageClient()
-      : homepage_enabled_(false),
-        ntp_is_homepage_(false),
-        homepage_url_(kHomepageUrl) {}
+      : homepage_tile_enabled_(false), homepage_url_(kHomepageUrl) {}
   ~FakeHomepageClient() override {}
 
-  bool IsHomepageEnabled() const override { return homepage_enabled_; }
-
-  bool IsNewTabPageUsedAsHomepage() const override { return ntp_is_homepage_; }
+  bool IsHomepageTileEnabled() const override { return homepage_tile_enabled_; }
 
   GURL GetHomepageUrl() const override { return homepage_url_; }
 
@@ -243,12 +239,8 @@ class FakeHomepageClient : public MostVisitedSites::HomepageClient {
     std::move(title_callback).Run(homepage_title_);
   }
 
-  void SetHomepageEnabled(bool homepage_enabled) {
-    homepage_enabled_ = homepage_enabled;
-  }
-
-  void SetNtpIsHomepage(bool ntp_is_homepage) {
-    ntp_is_homepage_ = ntp_is_homepage;
+  void SetHomepageTileEnabled(bool homepage_tile_enabled) {
+    homepage_tile_enabled_ = homepage_tile_enabled;
   }
 
   void SetHomepageUrl(GURL homepage_url) { homepage_url_ = homepage_url; }
@@ -258,8 +250,7 @@ class FakeHomepageClient : public MostVisitedSites::HomepageClient {
   }
 
  private:
-  bool homepage_enabled_;
-  bool ntp_is_homepage_;
+  bool homepage_tile_enabled_;
   GURL homepage_url_;
   base::Optional<base::string16> homepage_title_;
 };
@@ -562,7 +553,7 @@ TEST_P(MostVisitedSitesTest, ShouldRefreshBothBackends) {
 
 TEST_P(MostVisitedSitesTest, ShouldIncludeTileForHomepage) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
@@ -597,7 +588,7 @@ TEST_P(MostVisitedSitesTest, ShouldIncludeHomeTileWithUrlBeforeQueryingName) {
   // home tile with URL as title immediately and update the tiles as soon as the
   // real title was found.
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   homepage_client->SetHomepageTitle(base::UTF8ToUTF16(kHomepageTitle));
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
@@ -626,7 +617,7 @@ TEST_P(MostVisitedSitesTest, ShouldIncludeHomeTileWithUrlBeforeQueryingName) {
 
 TEST_P(MostVisitedSitesTest, ShouldUpdateHomepageTileWhenRefreshHomepageTile) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
 
   // Ensure that home tile is available as usual.
@@ -644,7 +635,7 @@ TEST_P(MostVisitedSitesTest, ShouldUpdateHomepageTileWhenRefreshHomepageTile) {
   VerifyAndClearExpectations();
 
   // Disable home page and rebuild _without_ Resync. The tile should be gone.
-  homepage_client->SetHomepageEnabled(false);
+  homepage_client->SetHomepageTileEnabled(false);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
@@ -657,7 +648,7 @@ TEST_P(MostVisitedSitesTest, ShouldUpdateHomepageTileWhenRefreshHomepageTile) {
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfNoTileRequested) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
@@ -675,7 +666,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfNoTileRequested) {
 
 TEST_P(MostVisitedSitesTest, ShouldReturnHomepageIfOneTileRequested) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(
@@ -696,7 +687,7 @@ TEST_P(MostVisitedSitesTest, ShouldReturnHomepageIfOneTileRequested) {
 
 TEST_P(MostVisitedSitesTest, ShouldHaveHomepageFirstInListWhenFull) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>((MostVisitedURLList{
@@ -725,7 +716,7 @@ TEST_P(MostVisitedSitesTest, ShouldHaveHomepageFirstInListWhenFull) {
 
 TEST_P(MostVisitedSitesTest, ShouldHaveHomepageFirstInListWhenNotFull) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>((MostVisitedURLList{
@@ -754,7 +745,7 @@ TEST_P(MostVisitedSitesTest, ShouldHaveHomepageFirstInListWhenNotFull) {
 
 TEST_P(MostVisitedSitesTest, ShouldDeduplicateHomepageWithTopSites) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(
@@ -776,30 +767,9 @@ TEST_P(MostVisitedSitesTest, ShouldDeduplicateHomepageWithTopSites) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfItIsNewTabPage) {
-  FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
-  homepage_client->SetNtpIsHomepage(true);
-  DisableRemoteSuggestions();
-  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
-      .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
-  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(mock_observer_,
-              OnURLsAvailable(Contains(
-                  Pair(SectionType::PERSONALIZED,
-                       Not(Contains(MatchesTile("", kHomepageUrl,
-                                                TileSource::HOMEPAGE)))))));
-  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
-                                                  /*num_sites=*/3);
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfThereIsNone) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(false);
+  homepage_client->SetHomepageTileEnabled(false);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
@@ -820,7 +790,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfThereIsNone) {
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfEmptyUrl) {
   const std::string kEmptyHomepageUrl;
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   homepage_client->SetHomepageUrl(GURL(kEmptyHomepageUrl));
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
@@ -839,7 +809,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfEmptyUrl) {
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfBlacklisted) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(
@@ -865,7 +835,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfBlacklisted) {
 
 TEST_P(MostVisitedSitesTest, ShouldPinHomepageAgainIfBlacklistingUndone) {
   FakeHomepageClient* homepage_client = RegisterNewHomepageClient();
-  homepage_client->SetHomepageEnabled(true);
+  homepage_client->SetHomepageTileEnabled(true);
 
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))

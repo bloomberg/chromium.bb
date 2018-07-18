@@ -35,16 +35,10 @@ public interface MostVisitedSites {
      */
     interface HomepageClient {
         /**
-         * @return True if a home page is active and set.
+         * @return True if homepage tile should be shown.
          */
         @CalledByNative("HomepageClient")
-        boolean isHomepageEnabled();
-
-        /**
-         * @return True if the new tab page was set as home page.
-         */
-        @CalledByNative("HomepageClient")
-        boolean isNewTabPageUsedAsHomepage();
+        boolean isHomepageTileEnabled();
 
         /**
          * @return The raw URL of the currently set home page.

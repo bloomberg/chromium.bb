@@ -55,8 +55,7 @@ class JavaHomepageClient : public MostVisitedSites::HomepageClient {
                      const JavaParamRef<jobject>& obj,
                      Profile* profile);
 
-  bool IsHomepageEnabled() const override;
-  bool IsNewTabPageUsedAsHomepage() const override;
+  bool IsHomepageTileEnabled() const override;
   GURL GetHomepageUrl() const override;
   void QueryHomepageTitle(TitleCallback title_callback) override;
 
@@ -117,13 +116,9 @@ void JavaHomepageClient::OnTitleEntryFound(TitleCallback title_callback,
   std::move(title_callback).Run(row.title());
 }
 
-bool JavaHomepageClient::IsHomepageEnabled() const {
-  return Java_HomepageClient_isHomepageEnabled(AttachCurrentThread(), client_);
-}
-
-bool JavaHomepageClient::IsNewTabPageUsedAsHomepage() const {
-  return Java_HomepageClient_isNewTabPageUsedAsHomepage(AttachCurrentThread(),
-                                                        client_);
+bool JavaHomepageClient::IsHomepageTileEnabled() const {
+  return Java_HomepageClient_isHomepageTileEnabled(AttachCurrentThread(),
+                                                   client_);
 }
 
 GURL JavaHomepageClient::GetHomepageUrl() const {
