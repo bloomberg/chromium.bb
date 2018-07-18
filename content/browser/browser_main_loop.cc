@@ -638,6 +638,17 @@ int BrowserMainLoop::EarlyInitialization() {
         command_line->GetSwitchValueASCII(switches::kDisableFeatures));
   }
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Up the priority of the UI thread unless it was already high (since recent
+  // versions of Android (O+) do this automatically).
+  if (base::PlatformThread::GetCurrentThreadPriority() <
+          base::ThreadPriority::DISPLAY ||
+      base::FeatureList::IsEnabled(features::kOverrideUIThreadPriority)) {
+    base::PlatformThread::SetCurrentThreadPriority(
+        base::ThreadPriority::DISPLAY);
+  }
+#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     defined(OS_ANDROID)
   // We use quite a few file descriptors for our IPC as well as disk the disk
@@ -1238,10 +1249,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
   HistogramSynchronizer::GetInstance();
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  // Up the priority of the UI thread.
-  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
-#endif
 
   // cc assumes a single client name for metrics in a process, which is
   // is inconsistent with single process mode where both the renderer and
