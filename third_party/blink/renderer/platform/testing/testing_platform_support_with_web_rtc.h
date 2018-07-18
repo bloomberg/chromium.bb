@@ -17,7 +17,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   ~MockWebRTCPeerConnectionHandler() override;
 
   bool Initialize(const WebRTCConfiguration&,
-                  const WebMediaConstraints&) override;
+                  const WebMediaConstraints&,
+                  WebRTCSdpSemantics original_sdp_semantics_value) override;
 
   void CreateOffer(const WebRTCSessionDescriptionRequest&,
                    const WebMediaConstraints&) override;

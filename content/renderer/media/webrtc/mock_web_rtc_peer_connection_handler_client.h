@@ -31,22 +31,22 @@ class MockWebRTCPeerConnectionHandlerClient
                void(webrtc::PeerConnectionInterface::SignalingState state));
   MOCK_METHOD1(DidChangeICEGatheringState, void(ICEGatheringState state));
   MOCK_METHOD1(DidChangeICEConnectionState, void(ICEConnectionState state));
-  void DidAddReceiver(
+  void DidAddReceiverPlanB(
       std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
-    DidAddReceiverForMock(&web_rtp_receiver);
+    DidAddReceiverPlanBForMock(&web_rtp_receiver);
   }
-  void DidRemoveReceiver(
+  void DidRemoveReceiverPlanB(
       std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
-    DidRemoveReceiverForMock(&web_rtp_receiver);
+    DidRemoveReceiverPlanBForMock(&web_rtp_receiver);
   }
   MOCK_METHOD1(DidAddRemoteDataChannel, void(blink::WebRTCDataChannelHandler*));
   MOCK_METHOD0(ReleasePeerConnectionHandler, void());
 
   // Move-only arguments do not play nicely with MOCK, the workaround is to
   // EXPECT_CALL with these instead.
-  MOCK_METHOD1(DidAddReceiverForMock,
+  MOCK_METHOD1(DidAddReceiverPlanBForMock,
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
-  MOCK_METHOD1(DidRemoveReceiverForMock,
+  MOCK_METHOD1(DidRemoveReceiverPlanBForMock,
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
 
   void didGenerateICECandidateWorker(

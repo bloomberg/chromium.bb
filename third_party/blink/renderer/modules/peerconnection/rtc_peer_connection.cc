@@ -487,11 +487,6 @@ RTCPeerConnection* RTCPeerConnection::Create(
       ParseConfiguration(context, rtc_configuration, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  // Override default SDP semantics if RuntimeEnabled=RTCUnifiedPlanByDefault.
-  if (!rtc_configuration.hasSdpSemantics() &&
-      RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
-    configuration.sdp_semantics = WebRTCSdpSemantics::kUnifiedPlan;
-  }
 
   // Make sure no certificates have expired.
   if (configuration.certificates.size() > 0) {
@@ -516,7 +511,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   RTCPeerConnection* peer_connection = new RTCPeerConnection(
-      context, configuration, constraints, exception_state);
+      context, std::move(configuration), constraints, exception_state);
   peer_connection->PauseIfNeeded();
   if (exception_state.HadException())
     return nullptr;
@@ -525,7 +520,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
 }
 
 RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
-                                     const WebRTCConfiguration& configuration,
+                                     WebRTCConfiguration configuration,
                                      WebMediaConstraints constraints,
                                      ExceptionState& exception_state)
     : PausableObject(context),
@@ -545,6 +540,24 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
       closed_(false),
       has_data_channels_(false),
       sdp_semantics_(configuration.sdp_semantics) {
+  // The original SDP semantics value is the value passed in by the caller,
+  // which if not specified has the value "kDefault". For |sdp_semantics_| this
+  // is translated to the actual SDP semantics used ("kPlanB" or
+  // "kUnifiedPlan"), but for the sake of UMA use counters it is of interest to
+  // know if the caller did not explicitly set it.
+  WebRTCSdpSemantics original_sdp_semantics_value = sdp_semantics_;
+  if (sdp_semantics_ == WebRTCSdpSemantics::kDefault) {
+    if (!RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
+      // By default: The default SDP semantics is: "kPlanB".
+      sdp_semantics_ = configuration.sdp_semantics = WebRTCSdpSemantics::kPlanB;
+    } else {
+      // Override default SDP semantics to "kUnifiedPlan" with
+      // RuntimeEnabled=RTCUnifiedPlanByDefault.
+      sdp_semantics_ = configuration.sdp_semantics =
+          WebRTCSdpSemantics::kUnifiedPlan;
+    }
+  }
+
   Document* document = ToDocument(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
@@ -582,7 +595,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
   document->GetFrame()->Client()->DispatchWillStartUsingPeerConnectionHandler(
       peer_handler_.get());
 
-  if (!peer_handler_->Initialize(configuration, constraints)) {
+  if (!peer_handler_->Initialize(configuration, constraints,
+                                 original_sdp_semantics_value)) {
     closed_ = true;
     stopped_ = true;
     exception_state.ThrowDOMException(
@@ -939,6 +953,12 @@ void RTCPeerConnection::setConfiguration(
 
   WebRTCConfiguration configuration = ParseConfiguration(
       ExecutionContext::From(script_state), rtc_configuration, exception_state);
+  // Overwrite "kDefault" with |sdp_semantics_| as set in the constructor to
+  // avoid duplicate logic for interpreting the default and SetConfiguration()
+  // failing if different layers have different notions of default.
+  if (configuration.sdp_semantics == blink::WebRTCSdpSemantics::kDefault) {
+    configuration.sdp_semantics = sdp_semantics_;
+  }
 
   if (exception_state.HadException())
     return;
@@ -1453,11 +1473,7 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
   DCHECK(track->Component());
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return nullptr;
-  // TODO(bugs.webrtc.org/8530): Take out WebRTCSdpSemantics::kDefault check
-  // once default is no longer interpreted as Plan B lower down.
-  if ((sdp_semantics_ == WebRTCSdpSemantics::kPlanB ||
-       sdp_semantics_ == WebRTCSdpSemantics::kDefault) &&
-      streams.size() >= 2) {
+  if (sdp_semantics_ == WebRTCSdpSemantics::kPlanB && streams.size() >= 2) {
     // TODO(hbos): Update peer_handler_ to call the AddTrack() that returns the
     // appropriate errors, and let the lower layers handle it.
     exception_state.ThrowDOMException(
@@ -1739,7 +1755,7 @@ void RTCPeerConnection::DidChangeICEConnectionState(
   ChangeIceConnectionState(new_state);
 }
 
-void RTCPeerConnection::DidAddReceiver(
+void RTCPeerConnection::DidAddReceiverPlanB(
     std::unique_ptr<WebRTCRtpReceiver> web_receiver) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
@@ -1794,7 +1810,7 @@ void RTCPeerConnection::DidAddReceiver(
       new RTCTrackEvent(rtp_receiver, rtp_receiver->track(), streams));
 }
 
-void RTCPeerConnection::DidRemoveReceiver(
+void RTCPeerConnection::DidRemoveReceiverPlanB(
     std::unique_ptr<WebRTCRtpReceiver> web_receiver) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());

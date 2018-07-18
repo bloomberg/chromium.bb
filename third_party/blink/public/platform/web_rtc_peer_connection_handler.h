@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_
 
+#include "third_party/blink/public/platform/web_rtc_configuration.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
@@ -63,7 +64,8 @@ class WebRTCPeerConnectionHandler {
   virtual ~WebRTCPeerConnectionHandler() = default;
 
   virtual bool Initialize(const WebRTCConfiguration&,
-                          const WebMediaConstraints&) = 0;
+                          const WebMediaConstraints&,
+                          WebRTCSdpSemantics original_sdp_semantics_value) = 0;
 
   virtual void CreateOffer(const WebRTCSessionDescriptionRequest&,
                            const WebMediaConstraints&) = 0;
