@@ -3596,6 +3596,8 @@ split_static_library("ui") {
       "app_list/extension_app_item.h",
       "app_list/extension_app_model_builder.cc",
       "app_list/extension_app_model_builder.h",
+      "app_list/extension_app_utils.cc",
+      "app_list/extension_app_utils.h",
       "app_list/extension_uninstaller.cc",
       "app_list/extension_uninstaller.h",
       "app_list/search/answer_card/answer_card_contents.cc",

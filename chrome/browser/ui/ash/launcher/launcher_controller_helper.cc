@@ -218,7 +218,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   }
 
   if (app_list::IsInternalApp(app_id)) {
-    app_list::OpenInternalApp(app_id, profile_);
+    app_list::OpenInternalApp(app_id, profile_, event_flags);
     return;
   }
 

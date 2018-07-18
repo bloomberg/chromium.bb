@@ -11,46 +11,68 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crx_file/id_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/synced_session.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
 
 namespace app_list {
 
+namespace {
+constexpr char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
+constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
+}  // namespace
+
 const std::vector<InternalApp>& GetInternalAppList() {
-  static const base::NoDestructor<std::vector<InternalApp>> internal_app_list({
-      {kInternalAppIdKeyboardShortcutViewer,
-       IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER, IDR_SHORTCUT_VIEWER_LOGO_192,
-       /*recommendable=*/false,
-       /*searchable=*/true,
-       /*show_in_launcher=*/false,
-       IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
+  static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
+      {{kInternalAppIdKeyboardShortcutViewer,
+        IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER, IDR_SHORTCUT_VIEWER_LOGO_192,
+        /*recommendable=*/false,
+        /*searchable=*/true,
+        /*show_in_launcher=*/false,
+        IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
-      {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS, IDR_SETTINGS_LOGO_192,
-       /*recommendable=*/true,
-       /*searchable=*/true,
-       /*show_in_launcher=*/true,
-       /*searchable_string_resource_id=*/0},
+       {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
+        IDR_SETTINGS_LOGO_192,
+        /*recommendable=*/true,
+        /*searchable=*/true,
+        /*show_in_launcher=*/true,
+        /*searchable_string_resource_id=*/0},
 
-      {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
-       IDR_PRODUCT_LOGO_256,
-       /*recommendable=*/true,
-       /*searchable=*/false,
-       /*show_in_launcher=*/false,
-       /*searchable_string_resource_id=*/0},
-  });
+       {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
+        IDR_PRODUCT_LOGO_256,
+        /*recommendable=*/true,
+        /*searchable=*/false,
+        /*show_in_launcher=*/false,
+        /*searchable_string_resource_id=*/0},
+
+       {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
+        /*recommendable=*/true,
+        /*show_in_launcher=*/true, IDS_INTERNAL_APP_CAMERA}});
   return *internal_app_list;
 }
 
@@ -77,11 +99,50 @@ int GetIconResourceIdByAppId(const std::string& app_id) {
   return app ? app->icon_resource_id : 0;
 }
 
-void OpenInternalApp(const std::string& app_id, Profile* profile) {
+void ShowCameraApp(const std::string& app_id,
+                   Profile* profile,
+                   int event_flags) {
+  std::string chrome_app_id(kChromeCameraAppId);
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(chrome_app_id);
+
+  bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
+  bool media_consolidated =
+      profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
+  AppListClientImpl* controller = AppListClientImpl::GetInstance();
+  if (arc_enabled && (!extension || media_consolidated)) {
+    // Open ARC++ camera app.
+    arc::LaunchApp(profile, kAndroidCameraAppId, event_flags,
+                   controller->GetAppListDisplayId());
+  } else if (extension) {
+    // Open Chrome camera app.
+    AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+        profile, extension, event_flags, extensions::SOURCE_APP_LAUNCHER,
+        controller->GetAppListDisplayId());
+    params.launch_id = ash::ShelfID(extension->id()).launch_id;
+    OpenApplication(params);
+  } else {
+    // Open Chrome camera app detail page in CWS.
+    const GURL store_url = net::AppendQueryParameter(
+        GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + chrome_app_id),
+        extension_urls::kWebstoreSourceField,
+        extension_urls::kLaunchSourceAppListSearch);
+    controller->OpenURL(profile, store_url, ui::PAGE_TRANSITION_LINK,
+                        ui::DispositionFromEventFlags(event_flags));
+  }
+}
+
+void OpenInternalApp(const std::string& app_id,
+                     Profile* profile,
+                     int event_flags) {
   if (app_id == kInternalAppIdKeyboardShortcutViewer) {
     keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
   } else if (app_id == kInternalAppIdSettings) {
     chrome::ShowSettingsSubPageForProfile(profile, std::string());
+  } else if (app_id == kInternalAppIdCamera) {
+    ShowCameraApp(app_id, profile, event_flags);
   }
 }
 

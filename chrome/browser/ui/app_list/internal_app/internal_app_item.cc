@@ -34,7 +34,7 @@ const char* InternalAppItem::GetItemType() const {
 }
 
 void InternalAppItem::Activate(int event_flags) {
-  app_list::OpenInternalApp(id(), profile());
+  app_list::OpenInternalApp(id(), profile(), event_flags);
 }
 
 void InternalAppItem::GetContextMenuModel(GetMenuModelCallback callback) {

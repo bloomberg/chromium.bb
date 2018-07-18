@@ -58,7 +58,9 @@ base::string16 GetInternalAppNameById(const std::string& app_id);
 int GetIconResourceIdByAppId(const std::string& app_id);
 
 // Helper function to open internal apps.
-void OpenInternalApp(const std::string& app_id, Profile* profile);
+void OpenInternalApp(const std::string& app_id,
+                     Profile* profile,
+                     int event_flags);
 
 // Returns icon associated with the |resource_id|.
 // Returns empty ImageSkia if |resource_id| is 0;
