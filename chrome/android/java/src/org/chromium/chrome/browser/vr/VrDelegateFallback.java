@@ -113,6 +113,16 @@ import org.chromium.chrome.browser.ChromeActivity;
     }
 
     @Override
+    public boolean isDaydreamReadyDevice() {
+        return false;
+    }
+
+    @Override
+    public boolean isDaydreamCurrentViewer() {
+        return false;
+    }
+
+    @Override
     public boolean isVrIntent(Intent intent) {
         return false;
     }

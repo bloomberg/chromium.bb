@@ -134,6 +134,16 @@ import org.chromium.chrome.browser.ChromeActivity;
     }
 
     @Override
+    public boolean isDaydreamReadyDevice() {
+        return VrShellDelegate.isDaydreamReadyDevice();
+    }
+
+    @Override
+    public boolean isDaydreamCurrentViewer() {
+        return VrShellDelegate.isDaydreamCurrentViewer();
+    }
+
+    @Override
     public boolean isVrIntent(Intent intent) {
         return VrIntentUtils.isVrIntent(intent);
     }

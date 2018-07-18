@@ -35,4 +35,6 @@ public interface VrDelegate {
     void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent);
     void setVrModeEnabled(Activity activity, boolean enabled);
     boolean bootsToVr();
+    boolean isDaydreamReadyDevice();
+    boolean isDaydreamCurrentViewer();
 }
