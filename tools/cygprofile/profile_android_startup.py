@@ -191,7 +191,7 @@ class AndroidProfileTool(object):
       os.path.dirname(__file__), 'memory_top_10_mobile_000.wprgo')
 
   def __init__(self, output_directory, host_profile_dir, use_wpr, urls,
-               simulate_user):
+               simulate_user, device=None):
     """Constructor.
 
     Args:
@@ -202,8 +202,12 @@ class AndroidProfileTool(object):
                   use_wpr is True.
       simulate_user: (bool) Whether to simulate a user.
     """
-    devices = device_utils.DeviceUtils.HealthyDevices()
-    self._device = devices[0]
+    if device is None:
+      devices = device_utils.DeviceUtils.HealthyDevices()
+      assert len(devices) == 1, 'Expected exactly one connected device'
+      self._device = devices[0]
+    else:
+      self._device = device_utils.DeviceUtils(device)
     self._cygprofile_tests = os.path.join(
         output_directory, 'cygprofile_unittests')
     self._host_profile_dir = host_profile_dir
