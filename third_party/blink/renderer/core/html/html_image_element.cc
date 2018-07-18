@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -562,6 +563,11 @@ KURL HTMLImageElement::Src() const {
 
 void HTMLImageElement::SetSrc(const String& value) {
   setAttribute(srcAttr, AtomicString(value));
+}
+
+void HTMLImageElement::SetSrc(const USVStringOrTrustedURL& value,
+                              ExceptionState& exception_state) {
+  setAttribute(srcAttr, value, exception_state);
 }
 
 void HTMLImageElement::setWidth(unsigned value) {

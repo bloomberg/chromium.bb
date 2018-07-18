@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/html_source_element.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_list.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
 #define SOURCE_LOG_LEVEL 3
 
@@ -122,6 +124,11 @@ void HTMLSourceElement::AddMediaQueryListListener() {
 
 void HTMLSourceElement::SetSrc(const String& url) {
   setAttribute(srcAttr, AtomicString(url));
+}
+
+void HTMLSourceElement::SetSrc(const USVStringOrTrustedURL& usvStringOrURL,
+                               ExceptionState& exception_state) {
+  setAttribute(srcAttr, usvStringOrURL, exception_state);
 }
 
 const AtomicString& HTMLSourceElement::type() const {

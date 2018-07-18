@@ -27,7 +27,7 @@
     NamedConstructor=Image(optional unsigned long width, optional unsigned long height)
 ] interface HTMLImageElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString alt;
-    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions, Reflect] attribute DOMString srcset;
     [CEReactions, Reflect] attribute DOMString sizes;
     [CEReactions, Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;

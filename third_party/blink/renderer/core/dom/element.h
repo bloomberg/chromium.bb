@@ -81,6 +81,7 @@ class StringOrTrustedHTML;
 class StringOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
+class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
 class V8ScrollStateCallback;
 
@@ -214,6 +215,11 @@ class CORE_EXPORT Element : public ContainerNode {
   // Trusted Type HTML variant
   void setAttribute(const QualifiedName&,
                     const StringOrTrustedHTML&,
+                    ExceptionState&);
+
+  // Trusted Type URL variant
+  void setAttribute(const QualifiedName&,
+                    const USVStringOrTrustedURL&,
                     ExceptionState&);
 
   static bool ParseAttributeName(QualifiedName&,
@@ -583,6 +589,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   KURL GetURLAttribute(const QualifiedName&) const;
   void GetURLAttribute(const QualifiedName&, StringOrTrustedScriptURL&) const;
+  void GetURLAttribute(const QualifiedName&, USVStringOrTrustedURL&) const;
+  void FastGetAttribute(const QualifiedName&, USVStringOrTrustedURL&) const;
   void FastGetAttribute(const QualifiedName&, StringOrTrustedHTML&) const;
 
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
