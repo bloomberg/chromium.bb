@@ -144,10 +144,8 @@ class _TsMonSink(object):
 
 def _is_ignored(server):
   """Return True if the server should be ignored for test infra prod alerts."""
-  if server.hostname.startswith('chromeos1-'):
-    return True
-  if server.hostname.startswith('chromeos3-'):
-    return True
-  if server.hostname.startswith('chromeos15-'):
-    return True
+  ignored_prefixes = ('chromeos1-', 'chromeos3-', 'chromeos9-', 'chromeos15-')
+  for prefix in ignored_prefixes:
+    if server.hostname.startswith(prefix):
+      return True
   return False
