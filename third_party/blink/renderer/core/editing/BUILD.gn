@@ -176,6 +176,7 @@ blink_core_sources("editing") {
     "iterators/text_iterator_text_state.h",
     "iterators/text_searcher_icu.cc",
     "iterators/text_searcher_icu.h",
+    "kill_ring.h",
     "layout_selection.cc",
     "layout_selection.h",
     "local_caret_rect.cc",
@@ -324,7 +325,12 @@ blink_core_sources("editing") {
   ]
 
   if (is_mac) {
-    sources += [ "commands/smart_replace_cf.cc" ]
+    sources += [
+      "commands/smart_replace_cf.cc",
+      "kill_ring_mac.mm",
+    ]
+  } else {
+    sources += [ "kill_ring_none.cc" ]
   }
 }
 

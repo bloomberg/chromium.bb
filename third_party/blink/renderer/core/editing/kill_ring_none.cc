@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL GOOGLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,54 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "third_party/blink/renderer/platform/kill_ring.h"
+#include "third_party/blink/renderer/core/editing/kill_ring.h"
 
 namespace blink {
 
-extern "C" {
+void KillRing::Append(const String&) {}
 
-// Kill ring calls. Would be better to use NSKillRing.h, but that's not
-// available as API or SPI.
-
-void _NSInitializeKillRing();
-void _NSAppendToKillRing(NSString*);
-void _NSPrependToKillRing(NSString*);
-NSString* _NSYankFromKillRing();
-void _NSNewKillRingSequence();
-void _NSSetKillRingToYankedState();
-}
-
-static void InitializeKillRingIfNeeded() {
-  static bool initialized_kill_ring = false;
-  if (!initialized_kill_ring) {
-    initialized_kill_ring = true;
-    _NSInitializeKillRing();
-  }
-}
-
-void KillRing::Append(const String& string) {
-  InitializeKillRingIfNeeded();
-  _NSAppendToKillRing(string);
-}
-
-void KillRing::Prepend(const String& string) {
-  InitializeKillRingIfNeeded();
-  _NSPrependToKillRing(string);
-}
+void KillRing::Prepend(const String&) {}
 
 String KillRing::Yank() {
-  InitializeKillRingIfNeeded();
-  return _NSYankFromKillRing();
+  return String();
 }
 
-void KillRing::StartNewSequence() {
-  InitializeKillRingIfNeeded();
-  _NSNewKillRingSequence();
-}
+void KillRing::StartNewSequence() {}
 
-void KillRing::SetToYankedState() {
-  InitializeKillRingIfNeeded();
-  _NSSetKillRingToYankedState();
-}
+void KillRing::SetToYankedState() {}
 
 }  // namespace blink
