@@ -11,6 +11,8 @@
 async_test(t => {
   const video = document.querySelector('video');
   const outerDiv = document.getElementById('outer');
+  const events = ['mousedown', 'click', 'mouseup'];
+  let eventsHandled = {};
 
   video.addEventListener('loadedmetadata', t.step_func(() => {
     const coords = getOverlayPlayButtonEdgeCoordinates();
@@ -18,7 +20,18 @@ async_test(t => {
   }), { once: true });
 
   // The tap on the edge of the overlay play button should get propagated out to the outer div.
-  outerDiv.addEventListener('click', t.done.bind(t), { once: true });
+  events.forEach(evtName => {
+    outerDiv.addEventListener(evtName, checkDone.bind(null, evtName), { once: true });
+  });
+
+  function checkDone(evtName) {
+    eventsHandled[evtName] = true;
+    for (let i = 0; i < events.length; i++) {
+      if (!eventsHandled[events[i]])
+        return;
+    }
+    t.done();
+  }
 
   function getOverlayPlayButtonEdgeCoordinates() {
     const overlayPlayBtn = mediaControlsOverlayPlayButton(video);

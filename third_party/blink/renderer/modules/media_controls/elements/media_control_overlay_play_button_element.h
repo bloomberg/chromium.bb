@@ -19,6 +19,7 @@ namespace blink {
 
 class Event;
 class MediaControlsImpl;
+class MouseEvent;
 
 class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
     : public MediaControlInputElement {
@@ -82,6 +83,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   bool KeepEventInNode(Event*) override;
 
   bool ShouldCausePlayPause(Event*) const;
+  bool IsMouseEventOnInternalButton(MouseEvent*) const;
   void MaybePlayPause();
   void MaybeJump(int);
 
