@@ -38,11 +38,6 @@
 #include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-#include "base/ios/ios_util.h"
-#include "third_party/sqlite/src/ext/icu/sqliteicu.h"
-#endif
-
 namespace {
 
 // Spin for up to a second waiting for the lock to clear when setting
@@ -829,13 +824,6 @@ bool Connection::SetMmapAltStatus(int64_t status) {
 
 size_t Connection::GetAppropriateMmapSize() {
   AssertIOAllowed();
-
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // iOS SQLite does not support memory mapping.
-    return 0;
-  }
-#endif
 
   // How much to map if no errors are found.  50MB encompasses the 99th
   // percentile of Chrome databases in the wild, so this should be good.
@@ -1711,13 +1699,6 @@ bool Connection::OpenInternal(const std::string& file_name,
       return false;
     }
   }
-
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  // The version of SQLite shipped with iOS doesn't enable ICU, which includes
-  // REGEXP support. Add it in dynamically.
-  err = sqlite3IcuInit(db_);
-  DCHECK_EQ(err, SQLITE_OK) << "Could not enable ICU support";
-#endif  // OS_IOS && USE_SYSTEM_SQLITE
 
   // If indicated, lock up the database before doing anything else, so
   // that the following code doesn't have to deal with locking.

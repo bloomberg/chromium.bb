@@ -396,9 +396,7 @@ class SQL_EXPORT Connection {
   //
   // On the SQLite version shipped with Chrome (3.21+, Oct 2017), databases can
   // be attached while a transaction is opened. However, these databases cannot
-  // be detached until the transaction is committed or aborted. On iOS, the
-  // built-in SQLite might not be older than 3.21. In that case, attaching a
-  // database while a transaction is open results in a error.
+  // be detached until the transaction is committed or aborted.
   bool AttachDatabase(const base::FilePath& other_db_path,
                       const char* attachment_point);
   bool DetachDatabase(const char* attachment_point);

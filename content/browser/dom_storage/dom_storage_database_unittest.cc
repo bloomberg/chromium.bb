@@ -354,11 +354,6 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
 
   {
     sql::test::ScopedErrorExpecter expecter;
-
-    // Old SQLite versions returned a different error code.
-    ASSERT_GE(expecter.SQLiteLibVersionNumber(), 3014000)
-        << "Chrome ships with SQLite 3.22.0+. The system SQLite version is "
-        << "only supported on iOS 10+, which ships with SQLite 3.14.0+";
     expecter.ExpectError(SQLITE_NOTADB);
 
     // Try and open the file. As it's not a database, we should end up deleting
