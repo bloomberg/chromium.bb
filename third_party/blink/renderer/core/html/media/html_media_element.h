@@ -139,6 +139,7 @@ class CORE_EXPORT HTMLMediaElement
 
   // network state
   void SetSrc(const AtomicString&);
+  void SetSrc(const USVStringOrTrustedURL&, ExceptionState&);
   const KURL& currentSrc() const { return current_src_; }
   void SetSrcObject(MediaStreamDescriptor*);
   MediaStreamDescriptor* GetSrcObject() const { return src_object_.Get(); }
