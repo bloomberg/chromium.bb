@@ -543,7 +543,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
           // Additionally, on larger (non-phone) form factors, we don't want to
           // display it in the suggestion contents either, because those devices
           // display a suggestion type icon that looks like a '='.
-          if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE)
+          if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE &&
+              !OmniboxFieldTrial::IsNewAnswerLayoutEnabled())
             match_contents.erase(0, 2);
         }
         if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP &&
