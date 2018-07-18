@@ -450,20 +450,8 @@ Request* Request::CreateRequestWithRequestOrString(
   }
 
   // "If |init|'s signal member is present, then set |signal| to it."
-  v8::Local<v8::Value> init_signal =
-      init.hasSignal() ? init.signal().V8Value() : v8::Local<v8::Value>();
-  if (!init_signal.IsEmpty()) {
-    if (init_signal->IsNull()) {
-      // This allows a null AbortSignal to override |input_request|'s, which
-      // would otherwise be used.
-      signal = nullptr;
-    } else {
-      signal = NativeValueTraits<AbortSignal>::NativeValue(
-          script_state->GetIsolate(), init_signal, exception_state);
-      if (exception_state.HadException()) {
-        return nullptr;
-      }
-    }
+  if (init.hasSignal()) {
+    signal = init.signal();
   }
 
   // "Let |r| be a new Request object associated with |request| and a new
