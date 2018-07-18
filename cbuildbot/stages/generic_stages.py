@@ -267,21 +267,6 @@ class BuilderStage(object):
       logging.info('Translating result %s to fail.' % result)
       return constants.BUILDER_STATUS_FAILED
 
-  def _ExtractOverlays(self):
-    """Extracts list of overlays into class."""
-    overlays = portage_util.FindOverlays(
-        self._run.config.overlays, buildroot=self._build_root)
-    push_overlays = portage_util.FindOverlays(
-        self._run.config.push_overlays, buildroot=self._build_root)
-
-    # Sanity checks.
-    # We cannot push to overlays that we don't rev.
-    assert set(push_overlays).issubset(set(overlays))
-    # Either has to be a master or not have any push overlays.
-    assert self._run.config.master or not push_overlays
-
-    return overlays, push_overlays
-
   def GetRepoRepository(self, **kwargs):
     """Create a new repo repository object."""
     manifest_url = self._run.options.manifest_repo_url

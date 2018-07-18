@@ -344,11 +344,6 @@ class BuilderStageTest(AbstractStageTestCase):
                'amd64-generic-paladin/builds/1234321/steps/Archive/logs/stdio')
     self.assertEqual(stage.ConstructDashboardURL(stage=stage_name), exp_url)
 
-  def test_ExtractOverlaysSmoke(self):
-    """Basic test for the _ExtractOverlays() function."""
-    stage = self.ConstructStage()
-    self.assertEqual(stage._ExtractOverlays(), ([], []))
-
   def test_PrintSmoke(self):
     """Basic test for the _Print() function."""
     stage = self.ConstructStage()

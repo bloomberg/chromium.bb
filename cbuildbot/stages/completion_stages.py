@@ -20,6 +20,7 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import metrics
+from chromite.lib import portage_util
 from chromite.lib import tree_status
 
 
@@ -879,7 +880,16 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                    'scheduled in this run. Will not publish uprevs.')
       return
 
-    overlays, push_overlays = self._ExtractOverlays()
+    overlays = portage_util.FindOverlays(
+        self._run.config.overlays, buildroot=self._build_root)
+    push_overlays = portage_util.FindOverlays(
+        self._run.config.push_overlays, buildroot=self._build_root)
+
+    # Sanity checks.
+    # We cannot push to overlays that we don't rev.
+    assert set(push_overlays).issubset(set(overlays))
+    # Either has to be a master or not have any push overlays.
+    assert self._run.config.master or not push_overlays
 
     staging_branch = None
     if self.stage_push:

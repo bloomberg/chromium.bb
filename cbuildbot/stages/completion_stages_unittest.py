@@ -29,6 +29,7 @@ from chromite.lib import cidb
 from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import portage_util
 from chromite.lib import tree_status
 
 
@@ -831,8 +832,8 @@ class PublishUprevChangesStageTest(
   def setUp(self):
     self.PatchObject(completion_stages.PublishUprevChangesStage,
                      '_GetPortageEnvVar')
-    self.PatchObject(completion_stages.PublishUprevChangesStage,
-                     '_ExtractOverlays', return_value=[['foo'], ['bar']])
+    self.PatchObject(portage_util, 'FindOverlays',
+                     side_effect=[['foo', 'bar'], ['bar']])
     self.PatchObject(prebuilts.BinhostConfWriter, 'Perform')
     self.push_mock = self.PatchObject(commands, 'UprevPush')
     self.PatchObject(generic_stages.BuilderStage, 'GetRepoRepository')
