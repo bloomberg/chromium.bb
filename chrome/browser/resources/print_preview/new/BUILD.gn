@@ -296,6 +296,7 @@ js_library("destination_dialog") {
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:list_property_update_behavior",
   ]
 }
 
