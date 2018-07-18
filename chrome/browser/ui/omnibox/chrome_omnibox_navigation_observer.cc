@@ -25,8 +25,9 @@
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -81,11 +82,10 @@ ChromeOmniboxNavigationObserver::ChromeOmniboxNavigationObserver(
       alternate_nav_match_(alternate_nav_match),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       shortcuts_backend_(ShortcutsBackendFactory::GetForProfile(profile)),
-      request_context_(nullptr),
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
   if (alternate_nav_match_.destination_url.is_valid())
-    CreateFetcher(alternate_nav_match_.destination_url);
+    CreateLoader(alternate_nav_match_.destination_url);
 
   // We need to start by listening to AllSources, since we don't know which tab
   // the navigation might occur in.
@@ -115,6 +115,11 @@ void ChromeOmniboxNavigationObserver::On404() {
     return;
   // This custom search engine is safe to delete.
   template_url_service_->Remove(template_url);
+}
+
+void ChromeOmniboxNavigationObserver::SetURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> testing_loader_factory) {
+  loader_factory_for_testing_ = std::move(testing_loader_factory);
 }
 
 void ChromeOmniboxNavigationObserver::CreateAlternateNavInfoBar() {
@@ -169,13 +174,22 @@ void ChromeOmniboxNavigationObserver::Observe(
   load_state_ = LOAD_PENDING;
   WebContentsObserver::Observe(web_contents);
 
-  // Start the alternate nav fetcher if need be.
-  if (fetcher_) {
-    request_context_ = content::BrowserContext::GetDefaultStoragePartition(
+  // Start the alternate nav loader if need be.
+  if (loader_) {
+    network::mojom::URLLoaderFactory* loader_factory = nullptr;
+    if (loader_factory_for_testing_) {
+      loader_factory = loader_factory_for_testing_.get();
+    } else {
+      loader_factory = content::BrowserContext::GetDefaultStoragePartition(
                            controller->GetBrowserContext())
-                           ->GetURLRequestContext();
-    fetcher_->SetRequestContext(request_context_);
-    fetcher_->Start();
+                           ->GetURLLoaderFactoryForBrowserProcess()
+                           .get();
+    }
+    loader_->DownloadToString(
+        loader_factory,
+        base::BindOnce(&ChromeOmniboxNavigationObserver::OnURLLoadComplete,
+                       base::Unretained(this)),
+        1u /* max_body_size */);
   }
 }
 
@@ -196,7 +210,7 @@ void ChromeOmniboxNavigationObserver::NavigationEntryCommitted(
     OnSuccessfulNavigation();
   if (load_details.http_status_code == 404)
     On404();
-  if (!fetcher_ || (fetch_state_ != FETCH_NOT_COMPLETE))
+  if (!loader_ || (fetch_state_ != FETCH_NOT_COMPLETE))
     OnAllLoadingFinished();  // deletes |this|!
 }
 
@@ -204,15 +218,12 @@ void ChromeOmniboxNavigationObserver::WebContentsDestroyed() {
   delete this;
 }
 
-void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK_EQ(fetcher_.get(), source);
-  const net::URLRequestStatus& status = source->GetStatus();
-  int response_code = source->GetResponseCode();
-  bool valid_redirect =
-      (status.status() == net::URLRequestStatus::CANCELED) &&
-      ((response_code / 100) == 3) &&
-      IsValidNavigation(alternate_nav_match_.destination_url, source->GetURL());
+void ChromeOmniboxNavigationObserver::OnURLRedirect(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
+  bool valid_redirect = IsValidNavigation(alternate_nav_match_.destination_url,
+                                          redirect_info.new_url);
   // If this is a valid redirect (not hijacked), and the redirect is from
   // http->https (no other changes), then follow it instead of assuming the
   // destination is valid.  This fixes several cases when the infobar appears
@@ -229,17 +240,41 @@ void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
   //   requests for local sites.
   if (valid_redirect &&
       OnlyChangeIsFromHTTPToHTTPS(alternate_nav_match_.destination_url,
-                                  source->GetURL())) {
-    CreateFetcher(source->GetURL());
-    fetcher_->SetRequestContext(request_context_);
-    fetcher_->Start();
+                                  redirect_info.new_url)) {
     return;
   }
-  fetch_state_ =
-      ((status.is_success() && ResponseCodeIndicatesSuccess(response_code)) ||
-       valid_redirect)
-          ? FETCH_SUCCEEDED
-          : FETCH_FAILED;
+
+  // Otherwise report results based on whether the redirect itself is valid.
+  // OnDoneWithURL() will also stop the redirect from being followed since it
+  // destroys |*loader_|.
+  //
+  // We stop-on-redirect here for a couple of reasons:
+  // * Sites with lots of redirects, especially through slow machines, take time
+  //   to follow the redirects.  This delays the appearance of the infobar,
+  //   sometimes by several seconds, which feels really broken.
+  // * Some servers behind redirects respond to HEAD with an error and GET with
+  //   a valid response, in violation of the HTTP spec.  Stop-on-redirects
+  //   reduces the number of cases where this error makes us believe there was
+  //   no server.
+  OnDoneWithURL(valid_redirect);
+}
+
+void ChromeOmniboxNavigationObserver::OnURLLoadComplete(
+    std::unique_ptr<std::string> body) {
+  int response_code = -1;
+  if (loader_->ResponseInfo() && loader_->ResponseInfo()->headers)
+    response_code = loader_->ResponseInfo()->headers->response_code();
+  // We may see ERR_INSUFFICIENT_RESOURCES here even if everything is workable
+  // if the server includes a body in response to a HEAD, as a size limit was
+  // set while fetching.
+  bool fetch_likely_ok = loader_->NetError() == net::OK ||
+                         loader_->NetError() == net::ERR_INSUFFICIENT_RESOURCES;
+  OnDoneWithURL(fetch_likely_ok && ResponseCodeIndicatesSuccess(response_code));
+}
+
+void ChromeOmniboxNavigationObserver::OnDoneWithURL(bool success) {
+  loader_ = nullptr;
+  fetch_state_ = success ? FETCH_SUCCEEDED : FETCH_FAILED;
   if (load_state_ == LOAD_COMMITTED)
     OnAllLoadingFinished();  // deletes |this|!
 }
@@ -250,7 +285,7 @@ void ChromeOmniboxNavigationObserver::OnAllLoadingFinished() {
   delete this;
 }
 
-void ChromeOmniboxNavigationObserver::CreateFetcher(
+void ChromeOmniboxNavigationObserver::CreateLoader(
     const GURL& destination_url) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("omnibox_navigation_observer", R"(
@@ -282,17 +317,13 @@ void ChromeOmniboxNavigationObserver::CreateFetcher(
             "this. More fine-grained policies are requested to be "
             "implemented (crbug.com/81226)."
         })");
-  fetcher_ = net::URLFetcher::Create(destination_url, net::URLFetcher::HEAD,
-                                     this, traffic_annotation);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-  // We stop-on-redirect for a couple of reasons:
-  // * Sites with lots of redirects, especially through slow machines, take time
-  //   to follow the redirects.  This delays the appearance of the infobar,
-  //   sometimes by several seconds, which feels really broken.
-  // * Some servers behind redirects respond to HEAD with an error and GET with
-  //   a valid response, in violation of the HTTP spec.  Stop-on-redirects
-  //   reduces the number of cases where this error makes us believe there was
-  //   no server.
-  // We do allow a certain kind of redirect; see code in OnURLFetchComplete().
-  fetcher_->SetStopOnRedirect(true);
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = destination_url;
+  request->method = "HEAD";
+  request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  loader_ =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  loader_->SetAllowHttpErrorResults(true);
+  loader_->SetOnRedirectCallback(base::BindRepeating(
+      &ChromeOmniboxNavigationObserver::OnURLRedirect, base::Unretained(this)));
 }

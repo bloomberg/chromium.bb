@@ -289,7 +289,7 @@ TEST_F(TestURLLoaderFactoryTest, SimulateResponseUrlMatch) {
       GURL(base_url), ok_status, response_head, /*content=*/""));
   EXPECT_FALSE(factory()->SimulateResponseForPendingRequest(
       GURL(base_url), ok_status, response_head, /*content=*/"",
-      TestURLLoaderFactory::kDefault));
+      TestURLLoaderFactory::kMatchDefault));
 
   EXPECT_TRUE(factory()->SimulateResponseForPendingRequest(
       GURL(base_url), ok_status, response_head, /*content=*/"",
