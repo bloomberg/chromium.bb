@@ -186,6 +186,13 @@ hyphens
 imageOrientation
 imageRendering
 inlineSize
+inset
+insetBlock
+insetBlockEnd
+insetBlockStart
+insetInline
+insetInlineEnd
+insetInlineStart
 isolation
 item
 justifyContent
