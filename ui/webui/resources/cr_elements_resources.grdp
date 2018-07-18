@@ -320,10 +320,6 @@
              file="cr_elements/paper_button_style_css.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_PAPER_INPUT_STYLE_CSS_HTML"
-             file="cr_elements/paper_input_style_css.html"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_PAPER_TABS_STYLE_CSS_HTML"
              file="cr_elements/paper_tabs_style_css.html"
              type="chrome_html"

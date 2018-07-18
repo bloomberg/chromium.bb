@@ -29,7 +29,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   violationFilter:
       Object.assign({}, SettingsAccessibilityTest.violationFilter, {
-        // Excuse Polymer paper-input elements.
+        // Excuse custom input elements.
         'aria-valid-attr-value': function(nodeResult) {
           const describerId =
               nodeResult.element.getAttribute('aria-describedby');
