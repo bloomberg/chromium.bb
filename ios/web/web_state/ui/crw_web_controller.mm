@@ -4849,12 +4849,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
       }
     }
 
-    // Handle error display states.
-    web::ErrorRetryCommand command =
-        item->error_retry_state_machine().DidFinishNavigation(webViewURL);
-    [self handleErrorRetryCommand:command
-                   navigationItem:item
-                navigationContext:context];
+    // Handle error display states. For reasons not fully understood, |item| may
+    // be nullptr. TODO(crbug.com/864769): Figure out the cause.
+    if (item) {
+      web::ErrorRetryCommand command =
+          item->error_retry_state_machine().DidFinishNavigation(webViewURL);
+      [self handleErrorRetryCommand:command
+                     navigationItem:item
+                  navigationContext:context];
+    }
   }
 
   [_navigationStates setState:web::WKNavigationState::FINISHED
