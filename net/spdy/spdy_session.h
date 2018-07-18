@@ -1099,15 +1099,19 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   const quic::QuicTransportVersionVector quic_supported_versions_;
 
   // Outside of tests, these should always be true.
-  bool enable_sending_initial_data_;
-  bool enable_ping_based_connection_checking_;
+  const bool enable_sending_initial_data_;
+  const bool enable_ping_based_connection_checking_;
 
   // If true, alt-svc headers advertising QUIC in IETF format will be supported.
-  bool support_ietf_format_quic_altsvc_;
+  const bool support_ietf_format_quic_altsvc_;
 
   // If true, this session is being made to a trusted SPDY/HTTP2 proxy that is
   // allowed to push cross-origin resources.
   const bool is_trusted_proxy_;
+
+  // If true, accept pushed streams from server.
+  // If false, reset pushed streams immediately.
+  const bool enable_push_;
 
   // True if the server has advertised WebSocket support via
   // spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL, see
