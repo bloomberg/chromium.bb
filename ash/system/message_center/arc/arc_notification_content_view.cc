@@ -259,6 +259,9 @@ ArcNotificationContentView::ArcNotificationContentView(
 
   // Create a layer as an anchor to insert surface copy during a slide.
   SetPaintToLayer();
+  // SetFillsBoundsOpaquely causes overdraw and has performance implications.
+  // See the comment in this method and --show-overdraw-feedback for detail.
+  layer()->SetFillsBoundsOpaquely(false);
   UpdatePreferredSize();
 }
 
@@ -325,6 +328,15 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
     floating_control_buttons_widget_->Show();
   else
     floating_control_buttons_widget_->Hide();
+}
+
+void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
+                                                    int bottom_radius) {
+  top_radius_ = top_radius;
+  bottom_radius_ = bottom_radius;
+
+  if (GetWidget())
+    InstallMask();
 }
 
 void ArcNotificationContentView::OnSlideChanged() {
@@ -461,6 +473,8 @@ void ArcNotificationContentView::AttachSurface() {
 
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
+
+  InstallMask();
 }
 
 void ArcNotificationContentView::ShowCopiedSurface() {
@@ -471,16 +485,63 @@ void ArcNotificationContentView::ShowCopiedSurface() {
   // |surface_copy_| is at (0, 0) in owner_->layer().
   surface_copy_->root()->SetBounds(gfx::Rect(surface_copy_->root()->size()));
   layer()->Add(surface_copy_->root());
+
+  if (!surface_copy_mask_) {
+    surface_copy_mask_ = views::Painter::CreatePaintedLayer(
+        std::make_unique<message_center::NotificationBackgroundPainter>(
+            top_radius_, bottom_radius_));
+    surface_copy_mask_->layer()->SetBounds(
+        gfx::Rect(surface_copy_->root()->size()));
+  }
+  DCHECK(!surface_copy_mask_->layer()->parent());
+  surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
+
+  // Changes the opacity instead of setting the visibility, to keep
+  // |EventFowarder| working.
   surface_->GetWindow()->layer()->SetOpacity(0.0f);
 }
 
 void ArcNotificationContentView::HideCopiedSurface() {
-  if (!surface_)
+  if (!surface_ || !surface_copy_)
     return;
   DCHECK(surface_->GetWindow());
   surface_->GetWindow()->layer()->SetOpacity(1.0f);
   Layout();
   surface_copy_.reset();
+
+  // Re-install the mask since the custom mask is unset by
+  // |::wm::RecreateLayers()| in |ShowCopiedSurface()| method.
+  InstallMask();
+}
+
+void ArcNotificationContentView::InstallMask() {
+  if (top_radius_ == 0 && bottom_radius_ == 0) {
+    SetCustomMask(nullptr);
+    return;
+  }
+
+  SetCustomMask(views::Painter::CreatePaintedLayer(
+      std::make_unique<message_center::NotificationBackgroundPainter>(
+          top_radius_, bottom_radius_)));
+}
+
+void ArcNotificationContentView::AddedToWidget() {
+  if (attached_widget_)
+    attached_widget_->RemoveObserver(this);
+
+  attached_widget_ = GetWidget();
+  attached_widget_->AddObserver(this);
+
+  // Hide the copied surface since it may be visible by OnWidgetClosing().
+  if (surface_copy_)
+    HideCopiedSurface();
+}
+
+void ArcNotificationContentView::RemovedFromWidget() {
+  if (attached_widget_) {
+    attached_widget_->RemoveObserver(this);
+    attached_widget_ = nullptr;
+  }
 }
 
 void ArcNotificationContentView::ViewHierarchyChanged(
@@ -513,28 +574,35 @@ void ArcNotificationContentView::ViewHierarchyChanged(
 void ArcNotificationContentView::Layout() {
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  views::NativeViewHost::Layout();
-
   if (!surface_ || !GetWidget())
     return;
 
-  const gfx::Rect contents_bounds = GetContentsBounds();
+  bool is_surface_visible = (surface_->GetWindow()->layer()->opacity() != 0.0f);
+  if (is_surface_visible) {
+    // |views::NativeViewHost::Layout()| can be called only when the hosted
+    // window is opaque, because that method calls
+    // |views::NativeViewHostAura::ShowWidget()| and |aura::Window::Show()|
+    // which has DCHECK the opacity of the window.
+    views::NativeViewHost::Layout();
 
-  // Scale notification surface if necessary.
-  gfx::Transform transform;
-  const gfx::Size surface_size = surface_->GetSize();
-  if (!surface_size.IsEmpty()) {
-    const float factor =
-        static_cast<float>(message_center::kNotificationWidth) /
-        surface_size.width();
-    transform.Scale(factor, factor);
+    // Scale notification surface if necessary.
+    gfx::Transform transform;
+    const gfx::Size surface_size = surface_->GetSize();
+    if (!surface_size.IsEmpty()) {
+      const float factor =
+          static_cast<float>(message_center::kNotificationWidth) /
+          surface_size.width();
+      transform.Scale(factor, factor);
+    }
+
+    // Apply the transform to the surface content so that close button can
+    // be positioned without the need to consider the transform.
+    surface_->GetContentWindow()->SetTransform(transform);
   }
 
-  // Apply the transform to the surface content so that close button can
-  // be positioned without the need to consider the transform.
-  surface_->GetContentWindow()->SetTransform(transform);
-
   if (floating_control_buttons_widget_) {
+    const gfx::Rect contents_bounds = GetContentsBounds();
+
     gfx::Rect control_buttons_bounds(contents_bounds);
     const gfx::Size button_size = control_buttons_view_.GetPreferredSize();
 
@@ -550,11 +618,22 @@ void ArcNotificationContentView::Layout() {
 
   UpdateControlButtonsVisibility();
 
-  ::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
+  if (is_surface_visible)
+    ::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
 }
 
 void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
   views::NativeViewHost::OnPaint(canvas);
+
+  SkScalar radii[8] = {top_radius_,    top_radius_,      // top-left
+                       top_radius_,    top_radius_,      // top-right
+                       bottom_radius_, bottom_radius_,   // bottom-right
+                       bottom_radius_, bottom_radius_};  // bottom-left
+
+  SkPath path;
+  path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radii,
+                    SkPath::kCCW_Direction);
+  canvas->ClipPath(path, false);
 
   if (!surface_ && item_ && !item_->GetSnapshot().isNull()) {
     // Draw the snapshot if there is no surface and the snapshot is available.
@@ -681,6 +760,17 @@ void ArcNotificationContentView::OnWindowBoundsChanged(
 
 void ArcNotificationContentView::OnWindowDestroying(aura::Window* window) {
   SetSurface(nullptr);
+}
+
+void ArcNotificationContentView::OnWidgetClosing(views::Widget* widget) {
+  // Show copied surface, since the mask doesn't work correctly with closing
+  // animation (fade-out): https://crbug.com/811634.
+  ShowCopiedSurface();
+
+  if (attached_widget_) {
+    attached_widget_->RemoveObserver(this);
+    attached_widget_ = nullptr;
+  }
 }
 
 void ArcNotificationContentView::OnItemDestroying() {

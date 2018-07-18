@@ -8,6 +8,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -49,7 +50,14 @@ void NativeViewHost::Detach() {
 }
 
 bool NativeViewHost::SetCornerRadius(int corner_radius) {
-  return native_wrapper_->SetCornerRadius(corner_radius);
+  return SetCustomMask(views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                  corner_radius)));
+}
+
+bool NativeViewHost::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
+  DCHECK(native_wrapper_);
+  return native_wrapper_->SetCustomMask(std::move(mask));
 }
 
 void NativeViewHost::SetNativeViewSize(const gfx::Size& size) {
