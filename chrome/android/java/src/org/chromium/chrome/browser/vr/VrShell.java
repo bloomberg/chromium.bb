@@ -33,6 +33,11 @@ public interface VrShell extends VrDialogManager, VrToastManager {
     void teardown();
 
     /**
+     * Returns true if VrShell UI has finished loading.
+     */
+    boolean hasUiFinishedLoading();
+
+    /**
      * Sets whether we're presenting WebVR content or not.
      */
     void setWebVrModeEnabled(boolean enabled);

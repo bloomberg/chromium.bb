@@ -804,6 +804,11 @@ public class VrShellImpl
         shutdown();
     }
 
+    @Override
+    public boolean hasUiFinishedLoading() {
+        return nativeHasUiFinishedLoading(mNativeVrShell);
+    }
+
     /**
      * Set View for the Dialog that should show up on top of the main content.
      */
@@ -1277,6 +1282,7 @@ public class VrShellImpl
             boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
             int displayWidthPixels, int displayHeightPixels, boolean pauseContent,
             boolean lowDensity, boolean isStandaloneVrDevice);
+    private native boolean nativeHasUiFinishedLoading(long nativeVrShell);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(long nativeVrShell, Tab tab);
     private native void nativeSetAndroidGestureTarget(
