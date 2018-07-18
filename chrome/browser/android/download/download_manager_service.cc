@@ -121,6 +121,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
   bool time_remaining_known = item->TimeRemaining(&time_delta);
   std::string original_url = item->GetOriginalUrl().SchemeIs(url::kDataScheme)
       ? std::string() : item->GetOriginalUrl().spec();
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(item);
   return Java_DownloadInfo_createDownloadInfo(
       env, ConvertUTF8ToJavaString(env, item->GetGuid()),
       ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
@@ -128,7 +130,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
       item->GetReceivedBytes(), item->GetTotalBytes(),
-      content::DownloadItemUtils::GetBrowserContext(item)->IsOffTheRecord(),
+      browser_context ? false : browser_context->IsOffTheRecord(),
       item->GetState(), item->PercentComplete(), item->IsPaused(),
       has_user_gesture, item->CanResume(), item->IsParallelDownload(),
       ConvertUTF8ToJavaString(env, original_url),
