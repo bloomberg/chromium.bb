@@ -27,20 +27,20 @@ class WebAppPolicyManager : public KeyedService {
   class PendingAppManager;
 
   // How the app will be launched after installation.
-  enum class LaunchType {
+  enum class LaunchContainer {
     kTab,
     kWindow,
   };
 
   struct AppInfo {
-    AppInfo(GURL url, LaunchType launch_type);
+    AppInfo(GURL url, LaunchContainer launch_container);
     AppInfo(AppInfo&& other);
     ~AppInfo();
 
     bool operator==(const AppInfo& other) const;
 
     GURL url;
-    LaunchType launch_type;
+    LaunchContainer launch_container;
 
     DISALLOW_COPY_AND_ASSIGN(AppInfo);
   };

@@ -15,15 +15,17 @@
 
 namespace web_app {
 
-WebAppPolicyManager::AppInfo::AppInfo(GURL url, LaunchType launch_type)
-    : url(std::move(url)), launch_type(launch_type) {}
+WebAppPolicyManager::AppInfo::AppInfo(GURL url,
+                                      LaunchContainer launch_container)
+    : url(std::move(url)), launch_container(launch_container) {}
 
 WebAppPolicyManager::AppInfo::AppInfo(AppInfo&& other) = default;
 
 WebAppPolicyManager::AppInfo::~AppInfo() = default;
 
 bool WebAppPolicyManager::AppInfo::operator==(const AppInfo& other) const {
-  return std::tie(url, launch_type) == std::tie(other.url, other.launch_type);
+  return std::tie(url, launch_container) ==
+         std::tie(other.url, other.launch_container);
 }
 
 WebAppPolicyManager::WebAppPolicyManager(
@@ -49,15 +51,16 @@ WebAppPolicyManager::GetAppsToInstall() {
   std::vector<AppInfo> apps_to_install;
   for (const base::Value& info : web_apps->GetList()) {
     const base::Value& url = *info.FindKey(kUrlKey);
-    const base::Value& launch_type = *info.FindKey(kLaunchTypeKey);
+    const base::Value& launch_container = *info.FindKey(kLaunchContainerKey);
 
-    DCHECK(launch_type.GetString() == kLaunchTypeWindowValue ||
-           launch_type.GetString() == kLaunchTypeTabValue);
+    DCHECK(launch_container.GetString() == kLaunchContainerWindowValue ||
+           launch_container.GetString() == kLaunchContainerTabValue);
 
     apps_to_install.emplace_back(
-        GURL(url.GetString()), launch_type.GetString() == kLaunchTypeWindowValue
-                                   ? LaunchType::kWindow
-                                   : LaunchType::kTab);
+        GURL(url.GetString()),
+        launch_container.GetString() == kLaunchContainerWindowValue
+            ? LaunchContainer::kWindow
+            : LaunchContainer::kTab);
   }
   return apps_to_install;
 }

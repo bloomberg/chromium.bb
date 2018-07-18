@@ -93,11 +93,11 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   {
     base::Value item1(base::Value::Type::DICTIONARY);
     item1.SetKey(kUrlKey, base::Value(kUrl1));
-    item1.SetKey(kLaunchTypeKey, base::Value(kLaunchTypeWindowValue));
+    item1.SetKey(kLaunchContainerKey, base::Value(kLaunchContainerWindowValue));
 
     base::Value item2(base::Value::Type::DICTIONARY);
     item2.SetKey(kUrlKey, base::Value(kUrl2));
-    item2.SetKey(kLaunchTypeKey, base::Value(kLaunchTypeTabValue));
+    item2.SetKey(kLaunchContainerKey, base::Value(kLaunchContainerTabValue));
 
     list.GetList().push_back(std::move(item1));
     list.GetList().push_back(std::move(item2));
@@ -114,9 +114,9 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
 
   std::vector<AppInfo> expected_apps_to_install;
   expected_apps_to_install.emplace_back(
-      GURL(kUrl1), WebAppPolicyManager::LaunchType::kWindow);
-  expected_apps_to_install.emplace_back(GURL(kUrl2),
-                                        WebAppPolicyManager::LaunchType::kTab);
+      GURL(kUrl1), WebAppPolicyManager::LaunchContainer::kWindow);
+  expected_apps_to_install.emplace_back(
+      GURL(kUrl2), WebAppPolicyManager::LaunchContainer::kTab);
 
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }
