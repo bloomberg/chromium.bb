@@ -2186,10 +2186,10 @@ class GENnHandler(TypeHandler):
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!%sSafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
     return error::kOutOfBounds;
   }
-"""
+""" % _Namespace()
     f.write(code)
 
   def WriteHandlerImplementation (self, func, f):
@@ -2202,10 +2202,12 @@ class GENnHandler(TypeHandler):
     f.write("  auto %(name)s_copy = std::make_unique<GLuint[]>(n);\n"
             "  GLuint* %(name)s_safe = %(name)s_copy.get();\n"
             "  std::copy(%(name)s, %(name)s + n, %(name)s_safe);\n"
-            "  if (!CheckUniqueAndNonNullIds(n, %(name)s_safe) ||\n"
+            "  if (!%(ns)sCheckUniqueAndNonNullIds(n, %(name)s_safe) ||\n"
             "      !%(func)sHelper(n, %(name)s_safe)) {\n"
             "    return error::kInvalidArguments;\n"
-            "  }\n" % {'name': param_name, 'func': func.original_name})
+            "  }\n" % {'name': param_name,
+                       'func': func.original_name,
+                       'ns': _Namespace()})
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -2636,10 +2638,10 @@ class DELnHandler(TypeHandler):
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!%sSafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
     return error::kOutOfBounds;
   }
-"""
+""" % _Namespace()
     f.write(code)
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
@@ -3314,11 +3316,13 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<%s, %d>(1, &data_size)) {
+  if (!%sGLES2Util::ComputeDataSize<%s, %d>(1, &data_size)) {
     return error::kOutOfBounds;
   }
 """
-    f.write(code % (self.GetArrayType(func), self.GetArrayCount(func)))
+    f.write(code % (_Namespace(),
+                    self.GetArrayType(func),
+                    self.GetArrayCount(func)))
     if func.IsImmediate():
       f.write("  if (data_size > immediate_data_size) {\n")
       f.write("    return error::kOutOfBounds;\n")
@@ -3341,8 +3345,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     self.WriteClientGLCallLog(func, f)
 
     if self.__NeedsToCalcDataCount(func):
-      f.write("  size_t count = GLES2Util::Calc%sDataCount(%s);\n" %
-                 (func.name, func.GetOriginalArgs()[0].name))
+      f.write("  size_t count = %sGLES2Util::Calc%sDataCount(%s);\n" %
+                 (_Namespace(), func.name, func.GetOriginalArgs()[0].name))
       f.write("  DCHECK_LE(count, %du);\n" % self.GetArrayCount(func))
     else:
       f.write("  size_t count = %d;" % self.GetArrayCount(func))
@@ -3408,8 +3412,8 @@ TEST_F(%(prefix)sImplementationTest, %(name)s) {
                  (func.GetOriginalArgs()[0].type,
                   func.GetOriginalArgs()[0].name))
       f.write("    return static_cast<uint32_t>(\n")
-      f.write("        sizeof(%s) * GLES2Util::Calc%sDataCount(%s));\n" %
-                 (self.GetArrayType(func), func.original_name,
+      f.write("        sizeof(%s) * %sGLES2Util::Calc%sDataCount(%s));\n" %
+                 (self.GetArrayType(func), _Namespace(), func.original_name,
                   func.GetOriginalArgs()[0].name))
       f.write("  }\n")
       f.write("\n")
@@ -3614,11 +3618,12 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Overrriden from TypeHandler."""
     code = """  uint32_t data_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<%s, %d>(count, &data_size)) {
+      !%sGLES2Util::ComputeDataSize<%s, %d>(count, &data_size)) {
     return error::kOutOfBounds;
   }
 """
-    f.write(code % (self.GetArrayType(func),
+    f.write(code % (_Namespace(),
+                    self.GetArrayType(func),
                     self.GetArrayCount(func)))
     if func.IsImmediate():
       f.write("  if (data_size > immediate_data_size) {\n")
@@ -4893,9 +4898,9 @@ class Argument(object):
   def GetLogArg(self):
     """Get argument appropriate for LOG macro."""
     if self.type == 'GLboolean':
-      return 'GLES2Util::GetStringBool(%s)' % self.name
+      return '%sGLES2Util::GetStringBool(%s)' % (_Namespace(), self.name)
     if self.type == 'GLenum':
-      return 'GLES2Util::GetStringEnum(%s)' % self.name
+      return '%sGLES2Util::GetStringEnum(%s)' % (_Namespace(), self.name)
     return self.name
 
   def WriteGetCode(self, f):
@@ -5250,8 +5255,8 @@ class ImmediatePointerArgument(Argument):
 
   def WriteGetCode(self, f):
     """Overridden from Argument."""
-    f.write("  volatile %s %s = GetImmediateDataAs<volatile %s>(\n" %
-            (self.type, self.name, self.type))
+    f.write("  volatile %s %s = %sGetImmediateDataAs<volatile %s>(\n" %
+            (self.type, self.name, _Namespace(), self.type))
     f.write("      c, data_size, immediate_data_size);\n")
 
   def WriteValidationCode(self, f, func):
