@@ -600,10 +600,8 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
   // Create one container to wrap the "regular" (non-footer) rows.
   views::View* body_container = new views::View();
-  views::BoxLayout* body_layout =
-      body_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical,
-          gfx::Insets(GetContentsVerticalPadding(), 0)));
+  views::BoxLayout* body_layout = body_container->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   body_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
@@ -647,9 +645,19 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   scroll_view_ = new views::ScrollView();
   scroll_view_->set_hide_horizontal_scrollbar(true);
   scroll_view_->SetContents(body_container);
-  AddChildView(scroll_view_);
-  layout_->SetFlexForView(scroll_view_, 1);
+  scroll_view_->set_draw_overflow_indicator(false);
   scroll_view_->ClipHeightTo(0, body_container->GetPreferredSize().height());
+
+  // Use an additional container to apply padding outside the scroll view.
+  // This ensures that the rounded corners appear properly by cutting them
+  // out of normal, static padding.
+  views::View* padding_wrapper = new views::View();
+  padding_wrapper->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
+  padding_wrapper->SetLayoutManager(std::make_unique<views::FillLayout>());
+  padding_wrapper->AddChildView(scroll_view_);
+  AddChildView(padding_wrapper);
+  layout_->SetFlexForView(padding_wrapper, 1);
 
   // All the remaining rows (where index >= |line_number|) are part of the
   // footer. This needs to be in its own container because it should not be
