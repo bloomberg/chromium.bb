@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_message_center_view.h"
 
+#include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"
@@ -15,7 +16,6 @@
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 
 using message_center::MessageCenter;
@@ -51,8 +51,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
-  scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar());
   scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
