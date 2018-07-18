@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/system/screen_layout_observer.h"
 #include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_bubble_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -35,6 +36,7 @@ class UnifiedSystemTrayView;
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
 class UnifiedSystemTrayBubble : public TrayBubbleBase,
                                 public views::WidgetObserver,
+                                public ash::ScreenLayoutObserver,
                                 public TimeToClickRecorder::Delegate,
                                 public TabletModeObserver {
  public:
@@ -66,6 +68,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   TrayBackgroundView* GetTray() const override;
   views::TrayBubbleView* GetBubbleView() const override;
   views::Widget* GetBubbleWidget() const override;
+
+  // ash::ScreenLayoutObserver:
+  void OnDisplayConfigurationChanged() override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -116,6 +121,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
 
   views::TrayBubbleView* bubble_view_ = nullptr;
   UnifiedSystemTrayView* unified_view_ = nullptr;
+
+ private:
+  int CalculateMaxHeight() const;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayBubble);
 };
