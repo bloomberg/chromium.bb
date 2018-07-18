@@ -198,6 +198,7 @@ Status WaitForDevToolsAndCheckVersion(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities* capabilities,
+    int wait_time,
     std::unique_ptr<DevToolsHttpClient>* user_client) {
   std::unique_ptr<DeviceMetrics> device_metrics;
   if (capabilities && capabilities->device_metrics)
@@ -215,7 +216,7 @@ Status WaitForDevToolsAndCheckVersion(
       address, context_getter, socket_factory, std::move(device_metrics),
       std::move(window_types), capabilities->page_load_strategy));
   base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(wait_time);
   Status status = client->Init(deadline - base::TimeTicks::Now());
   if (status.IsError())
     return status;
@@ -309,7 +310,7 @@ Status LaunchRemoteChromeSession(
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   status = WaitForDevToolsAndCheckVersion(
       capabilities.debugger_address, context_getter, socket_factory,
-      &capabilities, &devtools_http_client);
+      &capabilities, 60, &devtools_http_client);
   if (status.IsError()) {
     return Status(kUnknownError, "cannot connect to chrome at " +
                       capabilities.debugger_address.ToString(),
@@ -445,7 +446,7 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
     if (status.IsOk()) {
       status = WaitForDevToolsAndCheckVersion(
           NetAddress(devtools_port), context_getter, socket_factory,
-          &capabilities, &devtools_http_client);
+          &capabilities, 1, &devtools_http_client);
     }
     if (status.IsOk()) {
       break;
@@ -563,9 +564,9 @@ Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
   }
 
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
-  status = WaitForDevToolsAndCheckVersion(NetAddress(devtools_port),
-                                          context_getter, socket_factory,
-                                          &capabilities, &devtools_http_client);
+  status = WaitForDevToolsAndCheckVersion(
+      NetAddress(devtools_port), context_getter, socket_factory, &capabilities,
+      60, &devtools_http_client);
   if (status.IsError()) {
     device->TearDown();
     return status;
