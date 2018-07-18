@@ -273,8 +273,6 @@ crbug.com/591099 external/wpt/css/css-writing-modes/available-size-017.html [ Pa
 crbug.com/591099 external/wpt/css/css-writing-modes/available-size-018.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/block-flow-direction-vrl-009.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/clip-rect-vlr-009.xht [ Failure ]
-crbug.com/591099 external/wpt/css/css-writing-modes/float-vlr-013.xht [ Failure ]
-crbug.com/591099 external/wpt/css/css-writing-modes/float-vrl-012.xht [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/line-box-height-vlr-021.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/line-box-height-vlr-023.xht [ Pass ]
