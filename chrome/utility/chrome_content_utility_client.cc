@@ -81,6 +81,11 @@
 #include "chrome/utility/printing_handler.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
+#include "chrome/services/cups_ipp_validator/cups_ipp_validator_service.h"  // nogncheck
+#include "chrome/services/cups_ipp_validator/public/mojom/constants.mojom.h"  // nogncheck
+#endif
+
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
@@ -222,6 +227,16 @@ void ChromeContentUtilityClient::RegisterServices(
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory = base::BindRepeating(&UtilWinService::CreateService);
     services->emplace(chrome::mojom::kUtilWinServiceName, service_info);
+  }
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
+  {
+    service_manager::EmbeddedServiceInfo service_info;
+    service_info.factory =
+        base::BindRepeating(&CupsIppValidatorService::CreateService);
+    services->emplace(chrome::mojom::kCupsIppValidatorServiceName,
+                      service_info);
   }
 #endif
 
