@@ -463,10 +463,6 @@ base::FilePath ContentBrowserClient::GetShaderDiskCacheDirectory() {
   return base::FilePath();
 }
 
-base::FilePath ContentBrowserClient::GetGrShaderDiskCacheDirectory() {
-  return base::FilePath();
-}
-
 BrowserPpapiHost*
     ContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
   return nullptr;

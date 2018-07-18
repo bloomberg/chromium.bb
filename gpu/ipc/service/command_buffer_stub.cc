@@ -611,15 +611,7 @@ void CommandBufferStub::OnAsyncFlush(int32_t put_offset, uint32_t flush_id) {
   last_flush_id_ = flush_id;
   CommandBuffer::State pre_state = command_buffer_->GetState();
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
-
-  {
-    auto* gr_shader_cache = channel_->gpu_channel_manager()->gr_shader_cache();
-    base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
-    if (gr_shader_cache)
-      cache_use.emplace(gr_shader_cache, channel_->client_id());
-    command_buffer_->Flush(put_offset, decoder_context_.get());
-  }
-
+  command_buffer_->Flush(put_offset, decoder_context_.get());
   CommandBuffer::State post_state = command_buffer_->GetState();
 
   if (pre_state.get_offset != post_state.get_offset)

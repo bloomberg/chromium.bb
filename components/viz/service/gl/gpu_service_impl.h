@@ -182,7 +182,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void EstablishGpuChannel(int32_t client_id,
                            uint64_t client_tracing_id,
                            bool is_gpu_host,
-                           bool cache_shaders_on_disk,
                            EstablishGpuChannelCallback callback) override;
   void CloseChannel(int32_t client_id) override;
 #if defined(OS_CHROMEOS)
@@ -218,9 +217,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void GetGpuSupportedRuntimeVersion(
       GetGpuSupportedRuntimeVersionCallback callback) override;
   void RequestHDRStatus(RequestHDRStatusCallback callback) override;
-  void LoadedShader(int32_t client_id,
-                    const std::string& key,
-                    const std::string& data) override;
+  void LoadedShader(const std::string& key, const std::string& data) override;
   void WakeUpGpu() override;
   void GpuSwitched() override;
   void DestroyAllChannels() override;

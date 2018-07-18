@@ -290,7 +290,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::FilePath GetDefaultDownloadDirectory() override;
   std::string GetDefaultDownloadName() override;
   base::FilePath GetShaderDiskCacheDirectory() override;
-  base::FilePath GetGrShaderDiskCacheDirectory() override;
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
