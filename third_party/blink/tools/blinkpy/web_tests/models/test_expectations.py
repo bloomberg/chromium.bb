@@ -53,7 +53,6 @@ V8_BUG_PREFIX = 'code.google.com/p/v8/issues/detail?id='
 NAMED_BUG_PREFIX = 'Bug('
 
 MISSING_KEYWORD = 'Missing'
-NEEDS_MANUAL_REBASELINE_KEYWORD = 'NeedsManualRebaseline'
 
 
 class ParseError(Exception):
@@ -75,7 +74,6 @@ class TestExpectationParser(object):
     # FIXME: Rename these to *_KEYWORD as in MISSING_KEYWORD above, but make
     # the case studdly-caps to match the actual file contents.
     REBASELINE_MODIFIER = 'rebaseline'
-    NEEDS_MANUAL_REBASELINE_MODIFIER = 'needsmanualrebaseline'
     PASS_EXPECTATION = 'pass'
     SKIP_MODIFIER = 'skip'
     SLOW_MODIFIER = 'slow'
@@ -164,14 +162,6 @@ class TestExpectationParser(object):
             expectation_line.warnings.append(self.MISSING_BUG_WARNING)
         if self.REBASELINE_MODIFIER in expectations:
             expectation_line.warnings.append('REBASELINE should only be used for running rebaseline.py. Cannot be checked in.')
-
-        if self.NEEDS_MANUAL_REBASELINE_MODIFIER in expectations:
-            for test in expectation_line.matching_tests:
-                if self._port.reference_files(test):
-                    text_expected_filename = self._port.expected_filename(test, '.txt')
-                    if not self._port.host.filesystem.exists(text_expected_filename):
-                        expectation_line.warnings.append(
-                            'A reftest without text expectation cannot be marked as NeedsManualRebaseline')
 
         specifiers = [specifier.lower() for specifier in expectation_line.specifiers]
         if self.REBASELINE_MODIFIER in expectations and ('debug' in specifiers or 'release' in specifiers):
@@ -307,7 +297,6 @@ class TestExpectationLine(object):
         MISSING_KEYWORD: 'MISSING',
         'Pass': 'PASS',
         'Rebaseline': 'REBASELINE',
-        NEEDS_MANUAL_REBASELINE_KEYWORD: 'NEEDSMANUALREBASELINE',
         'Skip': 'SKIP',
         'Slow': 'SLOW',
         'Timeout': 'TIMEOUT',
@@ -449,7 +438,7 @@ class TestExpectationLine(object):
         if 'MISSING' in expectations:
             warnings.append(
                 '"Missing" expectations are not allowed; download new baselines '
-                '(see https://goo.gl/SHVYrZ), or as a fallback, use "NeedsManualRebaseline".')
+                '(see https://goo.gl/SHVYrZ), or as a fallback, use "SKIP".')
 
         expectation_line.bugs = bugs
         expectation_line.specifiers = specifiers
@@ -913,7 +902,6 @@ class TestExpectations(object):
         'leak': LEAK,
         'missing': MISSING,
         TestExpectationParser.SKIP_MODIFIER: SKIP,
-        TestExpectationParser.NEEDS_MANUAL_REBASELINE_MODIFIER: NEEDS_MANUAL_REBASELINE,
         TestExpectationParser.WONTFIX_MODIFIER: WONTFIX,
         TestExpectationParser.SLOW_MODIFIER: SLOW,
         TestExpectationParser.REBASELINE_MODIFIER: REBASELINE,
