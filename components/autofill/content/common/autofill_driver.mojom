@@ -133,6 +133,10 @@ interface PasswordManagerDriver {
   // username/password field is on.
   CheckSafeBrowsingReputation(
       url.mojom.Url form_action, url.mojom.Url frame_url);
+
+  // The focus changed to a different input in the same frame (e.g. tabbed from
+  // email to password field).
+  FocusedInputChanged(bool is_fillable, bool is_password_field);
 };
 
 // There is one instance of this interface per web contents in the browser
