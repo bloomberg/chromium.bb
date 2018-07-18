@@ -3346,12 +3346,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'chrome'],
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
-      # schedule='triggered',
-      # triggered_gitiles=[[
-      #     'https://chromium.googlesource.com/chromium/src',
-      #     ['regexp:refs/tags/[^/]+']
-      # ]],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='triggered',
+      triggered_gitiles=[[
+          'https://chromium.googlesource.com/chromium/src',
+          ['regexp:refs/tags/[^/]+']
+      ]],
   )
 
   # Create important configs, then non-important configs.
