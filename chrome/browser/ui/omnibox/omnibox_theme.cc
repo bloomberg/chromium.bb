@@ -249,6 +249,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey900;
 
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
+      return dark ? gfx::kGoogleGrey500 : gfx::kGoogleGrey600;
     case OmniboxPart::RESULTS_ICON:
     case OmniboxPart::RESULTS_TEXT_DIMMED:
       // This is a pre-lightened (or darkened) variant of the base text color.
