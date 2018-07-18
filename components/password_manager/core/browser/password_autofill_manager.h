@@ -55,14 +55,19 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
       int key,
       const autofill::PasswordFormFillData& fill_data);
 
-  // Handles a request from the renderer to show a popup with the given
-  // |suggestions| from the password manager. |options| should be a bitwise mask
-  // of autofill::ShowPasswordSuggestionsOptions values.
+  // Handles a request from the renderer to show a popup with the suggestions
+  // from the password manager. |options| should be a bitwise mask of
+  // autofill::ShowPasswordSuggestionsOptions values.
   void OnShowPasswordSuggestions(int key,
                                  base::i18n::TextDirection text_direction,
                                  const base::string16& typed_username,
                                  int options,
                                  const gfx::RectF& bounds);
+
+  // If there are relevant credentials for the current frame, shows them with
+  // an additional 'generation' option and returns true. Otherwise, does nothing
+  // and returns false.
+  bool MaybeShowPasswordSuggestionsWithGeneration(const gfx::RectF& bounds);
 
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();

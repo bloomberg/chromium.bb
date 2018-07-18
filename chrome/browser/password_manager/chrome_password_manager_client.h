@@ -244,6 +244,7 @@ class ChromePasswordManagerClient
       bool is_manually_triggered);
 
   gfx::RectF TransformToRootCoordinates(
+      content::RenderFrameHost* frame_host,
       const gfx::RectF& bounds_in_frame_coordinates);
 
   Profile* const profile_;

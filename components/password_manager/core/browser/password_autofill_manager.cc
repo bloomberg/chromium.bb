@@ -255,6 +255,44 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
                                       false, weak_ptr_factory_.GetWeakPtr());
 }
 
+bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
+    const gfx::RectF& bounds) {
+  if (login_to_password_info_.empty())
+    return false;
+  std::vector<autofill::Suggestion> suggestions;
+  GetSuggestions(login_to_password_info_.begin()->second, base::string16(),
+                 true /* show_all */, true /* is_password_field */,
+                 &suggestions);
+  form_data_key_ = login_to_password_info_.begin()->first;
+
+  // Add 'Generation' option.
+  autofill::Suggestion suggestion(
+      l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD),
+      std::string(), std::string(),
+      autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY);
+  suggestions.push_back(suggestion);
+
+  // Add "Manage passwords".
+  if (ShouldShowManualFallbackForPreLollipop(
+          autofill_client_->GetSyncService())) {
+    autofill::Suggestion suggestion(
+        l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS),
+        std::string(), std::string(),
+        autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+    suggestions.push_back(suggestion);
+
+    metrics_util::LogContextOfShowAllSavedPasswordsShown(
+        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
+  }
+
+  autofill_client_->ShowAutofillPopup(
+      bounds,
+      base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT
+                          : base::i18n::LEFT_TO_RIGHT,
+      suggestions, false, weak_ptr_factory_.GetWeakPtr());
+  return true;
+}
+
 void PasswordAutofillManager::DidNavigateMainFrame() {
   login_to_password_info_.clear();
 }
@@ -280,7 +318,8 @@ void PasswordAutofillManager::OnPopupHidden() {
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
-  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY)
+  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+      identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY)
     return;
   bool success =
       PreviewSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
@@ -291,13 +330,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
   autofill_client_->ExecuteCommand(identifier);
-  if (identifier != autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
-    bool success =
-        FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
-    DCHECK(success);
-  }
-
-  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
+  if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
+    password_client_->GeneratePassword();
+  } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
 
@@ -308,6 +343,10 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
       password_client_->GetMetricsRecorder().RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
       }
+  } else {
+    bool success =
+        FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
+    DCHECK(success);
   }
 
   autofill_client_->HideAutofillPopup();

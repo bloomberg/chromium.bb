@@ -84,6 +84,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
   const GURL& GetMainFrameURL() const override { return main_frame_url_; }
 
+  MOCK_METHOD0(GeneratePassword, void());
+
  private:
   MockPasswordManagerDriver driver_;
   GURL main_frame_url_;
@@ -726,6 +728,55 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
                         false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
+}
+
+TEST_F(PasswordAutofillManagerTest,
+       MaybeShowPasswordSuggestionsWithGenerationNoCredentials) {
+  auto client = std::make_unique<TestPasswordManagerClient>();
+  auto autofill_client = std::make_unique<MockAutofillClient>();
+  password_autofill_manager_.reset(new PasswordAutofillManager(
+      client->mock_driver(), autofill_client.get(), client.get()));
+
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _, _)).Times(0);
+  gfx::RectF element_bounds;
+  EXPECT_FALSE(
+      password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
+          element_bounds));
+}
+
+TEST_F(PasswordAutofillManagerTest,
+       MaybeShowPasswordSuggestionsWithGenerationSomeCredentials) {
+  auto client = std::make_unique<TestPasswordManagerClient>();
+  auto autofill_client = std::make_unique<MockAutofillClient>();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.origin = GURL("https://foo.test");
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  // Bring up the drop-down with the generaion option.
+  base::string16 generation_string =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
+  EXPECT_CALL(*autofill_client,
+              ShowAutofillPopup(
+                  element_bounds, _,
+                  SuggestionVectorValuesAre(testing::ElementsAreArray(
+                      GetSuggestionList({test_username_, generation_string}))),
+                  false, _));
+  EXPECT_TRUE(
+      password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
+          element_bounds));
+
+  // Click "Generate password".
+  EXPECT_CALL(*client, GeneratePassword());
+  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  password_autofill_manager_->DidAcceptSuggestion(
+      base::string16(), autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, 1);
 }
 
 }  // namespace password_manager
