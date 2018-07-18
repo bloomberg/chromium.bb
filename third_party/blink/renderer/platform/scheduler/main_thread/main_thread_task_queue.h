@@ -79,6 +79,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   static QueueClass QueueClassForQueueType(QueueType type);
 
+  using QueueTraitsKeyType = int;
+
   // QueueTraits represent the deferrable, throttleable, pausable, and freezable
   // properties of a MainThreadTaskQueue. For non-loading task queues, there
   // will be at most one task queue with a specific set of QueueTraits, and the
@@ -118,6 +120,17 @@ class PLATFORM_EXPORT MainThreadTaskQueue
              can_be_throttled == other.can_be_throttled &&
              can_be_paused == other.can_be_paused &&
              can_be_frozen == other.can_be_frozen;
+    }
+
+    // Return a key suitable for WTF::HashMap.
+    QueueTraitsKeyType Key() const {
+      // Start at 1; 0 and -1 are used for empty/deleted values.
+      int key = 1 << 0;
+      key |= can_be_deferred << 1;
+      key |= can_be_throttled << 2;
+      key |= can_be_paused << 3;
+      key |= can_be_frozen << 4;
+      return key;
     }
 
     bool can_be_deferred : 1;
@@ -164,6 +177,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     QueueCreationParams SetCanBeFrozen(bool value) {
       queue_traits = queue_traits.SetCanBeFrozen(value);
+      return *this;
+    }
+
+    QueueCreationParams SetQueueTraits(QueueTraits value) {
+      queue_traits = value;
       return *this;
     }
 
