@@ -157,9 +157,6 @@ public class FeedNewTabPage
 
         mStream.setHeaderViews(Arrays.asList(mNewTabPageLayout));
 
-        // TODO(skym): This is a work around for outstanding Feed bug.
-        mStream.triggerRefresh();
-
         // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
         // position that are due to layout changes after e.g. device rotation. This contrasts with
         // regular scrolling, which is observed through an OnScrollListener.
