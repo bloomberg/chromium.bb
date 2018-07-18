@@ -52,10 +52,18 @@ TEST(TaskSchedulerServiceThreadTest, MAYBE_StackHasIdentifyingFrame) {
   service_thread.FlushForTesting();
 }
 
+#if defined(OS_ANDROID)
+// The heartbeat latency report has been temporarily disabled on Android per
+// https://crbug.com/848255.
+#define MAYBE_HeartbeatLatencyReport DISABLED_HeartbeatLatencyReport
+#else
+#define MAYBE_HeartbeatLatencyReport HeartbeatLatencyReport
+#endif
+
 // Integration test verifying that a service thread running in a fully
 // integrated TaskScheduler environment results in reporting
 // HeartbeatLatencyMicroseconds metrics.
-TEST(TaskSchedulerServiceThreadIntegrationTest, HeartbeatLatencyReport) {
+TEST(TaskSchedulerServiceThreadIntegrationTest, MAYBE_HeartbeatLatencyReport) {
   ServiceThread::SetHeartbeatIntervalForTesting(TimeDelta::FromMilliseconds(1));
 
   TaskScheduler::SetInstance(

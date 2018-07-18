@@ -13,6 +13,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/task_traits.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -36,6 +37,9 @@ void ServiceThread::Init() {
   // environment, do not perform the heartbeat report in that case since it
   // relies on such an environment.
   if (task_tracker_ && TaskScheduler::GetInstance()) {
+// Seemingly causing power regression on Android, disable to see if truly at
+// fault : https://crbug.com/848255
+#if !defined(OS_ANDROID)
     // Compute the histogram every hour (with a slight offset to drift if that
     // hour tick happens to line up with specific events). Once per hour per
     // user was deemed sufficient to gather a reliable metric.
@@ -47,6 +51,7 @@ void ServiceThread::Init() {
                                           : g_heartbeat_for_testing,
         BindRepeating(&ServiceThread::PerformHeartbeatLatencyReport,
                       Unretained(this)));
+#endif
   }
 }
 
