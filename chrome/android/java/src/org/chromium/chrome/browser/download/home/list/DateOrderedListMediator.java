@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -59,7 +60,8 @@ class DateOrderedListMediator {
      * @param model            The {@link ListItemModel} to push {@code provider} into.
      */
     public DateOrderedListMediator(boolean offTheRecord, OfflineContentProvider provider,
-            DeleteController deleteController, ListItemModel model) {
+            DeleteController deleteController, SelectionDelegate<ListItem> selectionDelegate,
+            ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -92,6 +94,7 @@ class DateOrderedListMediator {
         mModel.getProperties().setShareCallback(item -> {});
         mModel.getProperties().setRemoveCallback(this::onDeleteItem);
         mModel.getProperties().setVisualsProvider(this::getVisuals);
+        mModel.getProperties().setSelectionDelegate(selectionDelegate);
     }
 
     /** Tears down this mediator. */

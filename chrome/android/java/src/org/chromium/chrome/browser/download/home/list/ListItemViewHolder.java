@@ -7,9 +7,6 @@ package org.chromium.chrome.browser.download.home.list;
 import android.support.annotation.CallSuper;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -26,10 +23,11 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.chrome.browser.download.home.view.GenericListItemView;
+import org.chromium.chrome.browser.download.home.view.ListItemView;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.TintedImageButton;
-import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -208,7 +206,6 @@ abstract class ListItemViewHolder extends ViewHolder {
     public static class GenericViewHolder extends ThumbnailAwareViewHolder {
         private final TextView mTitle;
         private final TextView mCaption;
-        private final TintedImageView mThumbnail;
 
         /**
          * Whether or not we are currently showing an icon.  This determines whether or not we
@@ -233,7 +230,6 @@ abstract class ListItemViewHolder extends ViewHolder {
 
             mTitle = (TextView) itemView.findViewById(R.id.title);
             mCaption = (TextView) itemView.findViewById(R.id.caption);
-            mThumbnail = (TintedImageView) itemView.findViewById(R.id.thumbnail);
         }
 
         // ListItemViewHolder implementation.
@@ -245,40 +241,21 @@ abstract class ListItemViewHolder extends ViewHolder {
             mTitle.setText(offlineItem.item.title);
             mCaption.setText(UiUtils.generateGenericCaption(offlineItem.item));
 
-            itemView.setOnClickListener(
-                    v -> properties.getOpenCallback().onResult(offlineItem.item));
-
             mIconId = UiUtils.getIconForItem(offlineItem.item);
-
-            if (mDrawingIcon) setThumbnailToIcon();
         }
 
         @Override
         void onVisualsChanged(ImageView view, OfflineItemVisuals visuals) {
             mDrawingIcon = visuals == null || visuals.icon == null;
 
+            GenericListItemView selectableView = (GenericListItemView) itemView;
             if (mDrawingIcon) {
-                setThumbnailToIcon();
+                if (mIconId != INVALID_ID) {
+                    selectableView.setThumbnailResource(mIconId);
+                }
             } else {
-                mThumbnail.setBackground(null);
-                mThumbnail.setTint(null);
-
-                RoundedBitmapDrawable drawable =
-                        RoundedBitmapDrawableFactory.create(view.getResources(), visuals.icon);
-                drawable.setCircular(true);
-                mThumbnail.setImageDrawable(drawable);
+                selectableView.setThumbnail(visuals.icon);
             }
-        }
-
-        private void setThumbnailToIcon() {
-            if (mIconId == INVALID_ID) return;
-
-            mThumbnail.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-            mThumbnail.getBackground().setLevel(
-                    itemView.getResources().getInteger(R.integer.list_item_level_default));
-            mThumbnail.setImageResource(mIconId);
-            mThumbnail.setTint(AppCompatResources.getColorStateList(
-                    itemView.getContext(), R.color.default_icon_color_blue));
         }
     }
 
@@ -319,9 +296,6 @@ abstract class ListItemViewHolder extends ViewHolder {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             View imageView = itemView.findViewById(R.id.thumbnail);
             imageView.setContentDescription(offlineItem.item.title);
-
-            itemView.setOnClickListener(
-                    v -> properties.getOpenCallback().onResult(offlineItem.item));
         }
 
         @Override
@@ -365,9 +339,6 @@ abstract class ListItemViewHolder extends ViewHolder {
             mTitle.setText(offlineItem.item.title);
             mCaption.setText(UiUtils.generatePrefetchCaption(offlineItem.item));
             mTimestamp.setText(UiUtils.generatePrefetchTimestamp(offlineItem.date));
-
-            itemView.setOnClickListener(
-                    v -> properties.getOpenCallback().onResult(offlineItem.item));
         }
 
         @Override
@@ -479,6 +450,12 @@ abstract class ListItemViewHolder extends ViewHolder {
 
             // If we're rebinding the same item, ignore the bind.
             if (offlineItem.id.equals(mId)) return;
+
+            ListItemView selectableView = (ListItemView) itemView;
+            selectableView.setSelectionDelegate(properties.getSelectionDelegate());
+            selectableView.setItem(item);
+            selectableView.setClickCallback(
+                    () -> properties.getOpenCallback().onResult(offlineItem));
 
             // Clear any associated bitmap from the thumbnail.
             if (mId != null) onVisualsChanged(mThumbnail, null);

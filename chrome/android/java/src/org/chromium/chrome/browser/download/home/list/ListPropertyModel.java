@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -55,6 +56,7 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
     private Callback<OfflineItem> mShareCallback;
     private Callback<OfflineItem> mRemoveCallback;
     private VisualsProvider mVisualsProvider;
+    private SelectionDelegate<ListItem> mSelectionDelegate;
 
     /** Sets whether or not item animations should be enabled. */
     public void setEnableItemAnimations(boolean enableItemAnimations) {
@@ -150,5 +152,15 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
     /** @return The provider to retrieve expensive assets for a {@link OfflineItem}. */
     public VisualsProvider getVisualsProvider() {
         return mVisualsProvider;
+    }
+
+    /** Sets the selection delegate to handle selection of list items. */
+    public void setSelectionDelegate(SelectionDelegate<ListItem> selectionDelegate) {
+        mSelectionDelegate = selectionDelegate;
+    }
+
+    /** @return The selection delegate to handle multiple item selections. */
+    public SelectionDelegate<ListItem> getSelectionDelegate() {
+        return mSelectionDelegate;
     }
 }
