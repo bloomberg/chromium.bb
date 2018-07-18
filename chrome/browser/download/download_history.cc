@@ -30,10 +30,12 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "components/download/database/switches.h"
 #include "components/download/public/common/download_item.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_database.h"
@@ -167,6 +169,14 @@ enum class ShouldUpdateHistoryResult {
 ShouldUpdateHistoryResult ShouldUpdateHistory(
     const history::DownloadRow* previous,
     const history::DownloadRow& current) {
+  // No need to update the history for incomplete download if DownloadDB is
+  // enabled.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          download::switches::kEnableDownloadDB) &&
+      current.state != history::DownloadState::COMPLETE) {
+    return ShouldUpdateHistoryResult::NO_UPDATE;
+  }
+
   // When download path is determined, Chrome should commit the history
   // immediately. Otherwise the file will be left permanently on the external
   // storage if Chrome crashes right away.
