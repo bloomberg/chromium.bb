@@ -517,6 +517,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         if (showWarningFor(SiteSettingsCategory.Type.MICROPHONE)) {
             return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.MICROPHONE);
         }
+        if (showWarningFor(SiteSettingsCategory.Type.NOTIFICATIONS)) {
+            return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.NOTIFICATIONS);
+        }
         return null;
     }
 
@@ -528,6 +531,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             setting = mSite.getPermission(PermissionInfo.Type.CAMERA);
         } else if (type == SiteSettingsCategory.Type.MICROPHONE) {
             setting = mSite.getPermission(PermissionInfo.Type.MICROPHONE);
+        } else if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
+            setting = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
         }
 
         if (setting == null) return false;

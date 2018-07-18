@@ -1168,6 +1168,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/website/LocalStorageInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/LocationCategory.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ManageSpaceActivity.java",
+  "java/src/org/chromium/chrome/browser/preferences/website/NotificationCategory.java",
   "java/src/org/chromium/chrome/browser/preferences/website/PermissionInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/SingleCategoryPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/website/SingleWebsitePreferences.java",
