@@ -26,12 +26,12 @@ namespace content {
 // This class subscribes to network change events from
 // network::mojom::NetworkChangeManager and propogates these notifications to
 // its NetworkConnectionObservers registered through
-// AddObserver()/RemoveObserver().
+// AddNetworkConnectionObserver()/RemoveNetworkConnectionObserver().
 class CONTENT_EXPORT NetworkConnectionTracker
     : public network::mojom::NetworkChangeManagerClient {
  public:
-  typedef base::OnceCallback<void(network::mojom::ConnectionType)>
-      ConnectionTypeCallback;
+  using ConnectionTypeCallback =
+      base::OnceCallback<void(network::mojom::ConnectionType)>;
 
   class CONTENT_EXPORT NetworkConnectionObserver {
    public:
@@ -40,11 +40,7 @@ class CONTENT_EXPORT NetworkConnectionTracker
     virtual void OnConnectionChanged(network::mojom::ConnectionType type) = 0;
 
    protected:
-    NetworkConnectionObserver() {}
     virtual ~NetworkConnectionObserver() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(NetworkConnectionObserver);
   };
 
   // Constructs a NetworkConnectionTracker. |callback| should return the network
@@ -77,8 +73,8 @@ class CONTENT_EXPORT NetworkConnectionTracker
   void AddNetworkConnectionObserver(NetworkConnectionObserver* observer);
 
   // Unregisters |observer| from receiving notifications.  This must be called
-  // on the same thread on which AddObserver() was called.
-  // All observers must be unregistred before |this| is destroyed.
+  // on the same thread on which AddNetworkConnectionObserver() was called.
+  // All observers must be unregistered before |this| is destroyed.
   void RemoveNetworkConnectionObserver(NetworkConnectionObserver* observer);
 
  protected:
