@@ -41,6 +41,8 @@ class PLATFORM_EXPORT CullRect {
       const IntRect& overflow_clip_rect,
       const AffineTransform& local_to_parent_transform);
 
+  const IntRect& Rect() const { return rect_; }
+
   String ToString() const { return rect_.ToString(); }
 
  private:
@@ -50,18 +52,7 @@ class PLATFORM_EXPORT CullRect {
 
   friend class CullRectTest;
 
-  // TODO(chrishtr): temporary while we implement CullRect everywhere.
-  friend class FramePainter;
-  friend class GridPainter;
-  friend class SVGForeignObjectPainter;
-  friend class SVGInlineTextBoxPainter;
-  friend class SVGPaintContext;
-  friend class SVGRootInlineBoxPainter;
-  friend class SVGShapePainter;
-  friend class TableRowPainter;
   friend class TableSectionPainter;
-  friend class ThemePainterMac;
-  friend class WebPluginContainerImpl;
 };
 
 inline bool operator==(const CullRect& a, const CullRect& b) {

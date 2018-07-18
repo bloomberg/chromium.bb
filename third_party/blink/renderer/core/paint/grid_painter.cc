@@ -48,7 +48,7 @@ void GridPainter::PaintChildren(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
   DCHECK(!layout_grid_.NeedsLayout());
 
-  LayoutRect local_visual_rect = LayoutRect(paint_info.GetCullRect().rect_);
+  LayoutRect local_visual_rect = LayoutRect(paint_info.GetCullRect().Rect());
   local_visual_rect.MoveBy(-paint_offset);
 
   Vector<LayoutUnit> column_positions = layout_grid_.ColumnPositions();
