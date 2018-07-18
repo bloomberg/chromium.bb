@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_CONTENT_THREAD_SAFE_CAPTURE_ORACLE_H_
-#define MEDIA_CAPTURE_CONTENT_THREAD_SAFE_CAPTURE_ORACLE_H_
+#ifndef MEDIA_CAPTURE_CONTENT_ANDROID_THREAD_SAFE_CAPTURE_ORACLE_H_
+#define MEDIA_CAPTURE_CONTENT_ANDROID_THREAD_SAFE_CAPTURE_ORACLE_H_
 
 #include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "media/base/video_frame.h"
+#include "base/synchronization/lock.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/content/video_capture_oracle.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
@@ -23,6 +23,7 @@ namespace media {
 
 struct VideoCaptureParams;
 class VideoFrame;
+class VideoFrameMetadata;
 
 // Thread-safe, refcounted proxy to the VideoCaptureOracle.  This proxy wraps
 // the VideoCaptureOracle, which decides which frames to capture, and a
@@ -32,16 +33,15 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
     : public base::RefCountedThreadSafe<ThreadSafeCaptureOracle> {
  public:
   ThreadSafeCaptureOracle(std::unique_ptr<VideoCaptureDevice::Client> client,
-                          const VideoCaptureParams& params,
-                          bool enable_auto_throttling);
+                          const VideoCaptureParams& params);
 
   // Called when a captured frame is available or an error has occurred.
   // If |success| is true then |frame| is valid and |timestamp| indicates when
   // the frame was painted.
   // If |success| is false, all other parameters are invalid.
-  typedef base::Callback<void(scoped_refptr<VideoFrame> frame,
-                              base::TimeTicks timestamp,
-                              bool success)>
+  typedef base::OnceCallback<void(scoped_refptr<VideoFrame> frame,
+                                  base::TimeTicks timestamp,
+                                  bool success)>
       CaptureFrameCallback;
 
   // Record a change |event| along with its |damage_rect| and |event_time|, and
@@ -59,18 +59,6 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
                                     base::TimeTicks event_time,
                                     scoped_refptr<VideoFrame>* storage,
                                     CaptureFrameCallback* callback);
-
-  base::TimeDelta min_capture_period() const {
-    return oracle_.min_capture_period();
-  }
-
-  base::TimeTicks last_time_animation_was_detected() const {
-    return oracle_.last_time_animation_was_detected();
-  }
-
-  gfx::Size max_frame_size() const {
-    return params_.requested_format.frame_size;
-  }
 
   // Returns the current capture resolution.
   gfx::Size GetCaptureSize() const;
@@ -125,4 +113,4 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_CONTENT_THREAD_SAFE_CAPTURE_ORACLE_H_
+#endif  // MEDIA_CAPTURE_CONTENT_ANDROID_THREAD_SAFE_CAPTURE_ORACLE_H_
