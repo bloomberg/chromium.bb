@@ -231,3 +231,97 @@ testcase.myFilesDisplaysAndOpensEntries = function() {
     },
   ]);
 };
+
+/**
+ * Tests My files updating its children recursively.
+ *
+ * If it doesn't update its children recursively it can cause directory tree to
+ * not show or hide sub-folders crbug.com/864453.
+ */
+testcase.myFilesUpdatesChildren = function() {
+  let appId;
+  const downloadsQuery = '#directory-tree [entry-label="Downloads"]';
+  const hiddenFolder = new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: '.hidden-folder',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: '.hidden-folder',
+    sizeText: '--',
+    typeText: 'Folder'
+  });
+  StepsRunner.run([
+    // Add a hidden folder.
+    function() {
+      // It can't be added via setupAndWaitUntilReady, because it isn't
+      // displayed and that function waits all entries to be displayed.
+      addEntries(['local'], [hiddenFolder], this.next);
+    },
+    // Open Files app on local Downloads.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
+    },
+    // Select Downloads folder.
+    function(results) {
+      appId = results.windowId;
+      const isDriveQuery = false;
+      remoteCall.callRemoteTestUtil(
+          'selectInDirectoryTree', appId, [downloadsQuery, isDriveQuery],
+          this.next);
+    },
+    // Wait for gear menu to be displayed.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
+    },
+    // Open the gear menu by clicking the gear button.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for menu to not be hidden.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
+          .then(this.next);
+    },
+    // Wait for menu item to appear.
+    function(result) {
+      remoteCall
+          .waitForElement(
+              appId, '#gear-menu-toggle-hidden-files:not([disabled])')
+          .then(this.next);
+    },
+    // Wait for menu item to appear.
+    function(result) {
+      remoteCall
+          .waitForElement(
+              appId, '#gear-menu-toggle-hidden-files:not([checked])')
+          .then(this.next);
+    },
+    // Click the menu item.
+    function(results) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files'],
+          this.next);
+    },
+    // Check the hidden folder to be displayed in RHS.
+    function(result) {
+      remoteCall
+          .waitForFiles(
+              appId,
+              TestEntryInfo.getExpectedRows([hiddenFolder, ENTRIES.beautiful]),
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Check the hidden folder to be displayed in LHS.
+    function() {
+      // Children of Downloads and named ".hidden-folder".
+      const hiddenFolderTreeQuery = downloadsQuery +
+          ' .tree-children .tree-item[entry-label=".hidden-folder"]';
+      remoteCall.waitForElement(appId, hiddenFolderTreeQuery).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
