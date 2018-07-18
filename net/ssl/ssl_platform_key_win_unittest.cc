@@ -309,8 +309,8 @@ TEST(SSLPlatformKeyCAPITest, KeyMatches) {
   ASSERT_TRUE(key);
 
   std::vector<uint16_t> expected = {
-      SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512,
-      SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256,
+      SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA256,
+      SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA512,
   };
   EXPECT_EQ(expected, key->GetAlgorithmPreferences());
 
