@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/fuchsia/config.gni")
+
 assert(is_fuchsia)
 
 # Template for FIDL libraries. Following parameters can be passed when
@@ -122,6 +124,8 @@ template("fidl_library") {
     script = "//build/gn_run_binary.py"
 
     inputs = [
+      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
+      rebase_path("$fuchsia_sdk/.hash"),
       _response_file,
     ]
 
@@ -145,6 +149,8 @@ template("fidl_library") {
     ]
 
     inputs = [
+      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
+      rebase_path("$fuchsia_sdk/.hash"),
       _json_representation,
     ]
 
