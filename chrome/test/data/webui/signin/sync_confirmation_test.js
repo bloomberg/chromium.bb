@@ -50,9 +50,9 @@ cr.define('signin_sync_confirmation', function() {
       'Personalized Google services like Google Pay',
       'Improve Chrome and its security by sending system and usage ' +
           'information to Google',
-      'Google may use content on sites you visit and browsing activity and ' +
-          'interactions to personalize Chrome and other Google services like ' +
-          'Translate, Search, and ads. You can customize this in Settings.',
+      'Google may use content on sites you visit, plus browser activity and ' +
+          'interactions, to personalize Chrome and other Google services ' +
+          'like Translate, Search, and ads. You can customize this in Settings.'
     ];
 
 
