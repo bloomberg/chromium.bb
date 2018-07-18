@@ -57,7 +57,6 @@ component("public") {
     "resume_mode.h",
     "stream_handle_input_stream.h",
     "url_download_handler_factory.h",
-    "url_download_request_handle.h",
   ]
 
   configs += [ ":components_download_implementation" ]

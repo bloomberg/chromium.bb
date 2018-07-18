@@ -48,7 +48,6 @@ source_set("internal") {
     "save_package_download_job.h",
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",
-    "url_download_request_handle.cc",
   ]
 
   public_deps = [
