@@ -10,19 +10,19 @@ selection_test(
           '<span contenteditable>^foo</span>',
         '</td></tr>',
       '</table>',
-      '<span>x|</span>This sentence should be inside the editable cell.',
+      '<span>x|</span>bar',
     '</div>',
   ],
-  'delete',
+  'delete', // "delete" adjusted the selection to ^foo|.
   [ '<div contenteditable>',
       '<table border="1" contenteditable="false">',
         '<tbody><tr><td>',
-          '<span contenteditable>|This sentence should be inside the editable cell.</span>',
+          '<span contenteditable>|</span>',
         '</td></tr></tbody>',
       '</table>',
+      '<span>x</span>bar',
     '</div>',
   ],
-  'This tests to make sure that after a deletion, merging can merge into an editable'
-+ ' region that\'s embedded in non-editable content that is collapsed by the deletion.'
+  'This tests to make sure that after a deletion, "bar" still outside of the table.'
 );
 </script>

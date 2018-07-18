@@ -20,10 +20,11 @@ selection_test(
       '<table contenteditable="false">',
         '<tbody><tr>',
           '<td>foo</td>',
-          '<td contenteditable>bar |content</td>',
+          '<td contenteditable>bar\xA0|</td>',
           '<td>qux</td>',
         '</tr></tbody>',
       '</table>',
+      'Editable <span>content</span>',
     '</div>',
   ],
   'This tests to see that selected non-editable nodes that are not in both the start'

@@ -18,6 +18,7 @@ selection_test(
         '<span>\xa0</span>',
         '<span contenteditable>|</span>',
       '</div>',
+      '<div><br></div>',
     '</div>',
   ],
   'Test stage 1, tests deleting a selection that starts at the beginning of an editable pocket'
@@ -30,6 +31,7 @@ selection_test(
         '<span>\xa0</span>',
         '<span contenteditable>|</span>',
       '</div>',
+      '<div><br></div>',
     '</div>',
   ],
   'insertText Text',
@@ -38,6 +40,7 @@ selection_test(
         '<span>\xa0</span>',
         '<span contenteditable>Text|</span>',
       '</div>',
+      '<div><br></div>',
     '</div>',
   ],
   'Test stage 2, when text is then inserted, it should be placed inside that span.'
