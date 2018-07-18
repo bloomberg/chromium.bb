@@ -241,10 +241,9 @@ void IconLabelBubbleView::Layout() {
   if (focus_ring() && !ink_drop_bounds.IsEmpty()) {
     focus_ring()->Layout();
     int radius = ink_drop_bounds.height() / 2;
-    SkRRect rect =
-        SkRRect::MakeRectXY(gfx::RectToSkRect(ink_drop_bounds), radius, radius);
     SkPath path;
-    path.addRRect(rect);
+    path.addRoundRect(gfx::RectToSkRect(GetMirroredRect(ink_drop_bounds)),
+                      radius, radius);
     focus_ring()->SetPath(path);
   }
 }
