@@ -15,6 +15,7 @@ extern const base::Feature kAutofillAddressNormalizer;
 extern const base::Feature kAutofillCacheQueryResponses;
 extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillDynamicForms;
+extern const base::Feature kAutofillEnableAccountWalletStorage;
 extern const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;

@@ -70,12 +70,7 @@ void AutofillSaveCardInfoBarDelegateMobileTest::SetUp() {
 
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
 
-  ChromeAutofillClient::CreateForWebContents(web_contents());
-  ChromeAutofillClient* autofill_client =
-      ChromeAutofillClient::FromWebContents(web_contents());
-
   personal_data_.reset(new TestPersonalDataManager());
-  personal_data_->set_database(autofill_client->GetDatabase());
   personal_data_->SetPrefService(profile()->GetPrefs());
 
   profile()->GetPrefs()->SetInteger(

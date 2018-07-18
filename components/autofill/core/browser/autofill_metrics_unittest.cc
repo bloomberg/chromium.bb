@@ -275,7 +275,6 @@ void AutofillMetricsTest::SetUp() {
   autofill_client_.SetPrefs(test::PrefServiceForTesting());
 
   personal_data_ = std::make_unique<TestPersonalDataManager>();
-  personal_data_->set_database(autofill_client_.GetDatabase());
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
   personal_data_->SetSyncServiceForTest(&sync_service_);
   autofill_driver_ = std::make_unique<TestAutofillDriver>();
@@ -2791,96 +2790,12 @@ TEST_F(AutofillMetricsTest, LogStoredCreditCardMetrics) {
       "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked", 200, 3);
 }
 
-// Test that the profile count is logged correctly.
-TEST_F(AutofillMetricsTest, StoredProfileCount) {
-  // The metric should be logged when the profiles are first loaded.
-  {
-    base::HistogramTester histogram_tester;
-    personal_data_->LoadProfiles();
-    histogram_tester.ExpectUniqueSample("Autofill.StoredProfileCount", 2, 1);
-  }
-
-  // The metric should only be logged once.
-  {
-    base::HistogramTester histogram_tester;
-    personal_data_->LoadProfiles();
-    histogram_tester.ExpectTotalCount("Autofill.StoredProfileCount", 0);
-  }
-}
-
-// Test that the local credit card count is logged correctly.
-TEST_F(AutofillMetricsTest, StoredLocalCreditCardCount) {
-  // The metric should be logged when the credit cards are first loaded.
-  {
-    base::HistogramTester histogram_tester;
-    RecreateCreditCards(true /* include_local_credit_card */,
-                        false /* include_masked_server_credit_card */,
-                        false /* include_full_server_credit_card */);
-    histogram_tester.ExpectUniqueSample("Autofill.StoredLocalCreditCardCount",
-                                        1, 1);
-  }
-
-  // The metric should only be logged once.
-  {
-    base::HistogramTester histogram_tester;
-    RecreateCreditCards(true /* include_local_credit_card */,
-                        false /* include_masked_server_credit_card */,
-                        false /* include_full_server_credit_card */);
-    histogram_tester.ExpectTotalCount("Autofill.StoredLocalCreditCardCount", 0);
-  }
-}
-
-// Test that the masked server credit card counts are logged correctly.
-TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Masked) {
-  // The metrics should be logged when the credit cards are first loaded.
-  {
-    base::HistogramTester histogram_tester;
-    RecreateCreditCards(false /* include_local_credit_card */,
-                        true /* include_masked_server_credit_card */,
-                        false /* include_full_server_credit_card */);
-    histogram_tester.ExpectUniqueSample(
-        "Autofill.StoredServerCreditCardCount.Masked", 1, 1);
-  }
-
-  // The metrics should only be logged once.
-  {
-    base::HistogramTester histogram_tester;
-    RecreateCreditCards(false /* include_local_credit_card */,
-                        true /* include_masked_server_credit_card */,
-                        true /* include_full_server_credit_card */);
-    histogram_tester.ExpectTotalCount(
-        "Autofill.StoredServerCreditCardCount.Masked", 0);
-  }
-}
-
-// Test that the unmasked (full) server credit card counts are logged correctly.
-TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Unmasked) {
-  // The metrics should be logged when the credit cards are first loaded.
-  {
-    base::HistogramTester histogram_tester;
-    RecreateCreditCards(false /* include_local_credit_card */,
-                        false /* include_masked_server_credit_card */,
-                        true /* include_full_server_credit_card */);
-    histogram_tester.ExpectUniqueSample(
-        "Autofill.StoredServerCreditCardCount.Unmasked", 1, 1);
-  }
-
-  // The metrics should only be logged once.
-  {
-    base::HistogramTester histogram_tester;
-    RecreateCreditCards(false /* include_local_credit_card */,
-                        false /* include_masked_server_credit_card */,
-                        true /* include_full_server_credit_card */);
-    histogram_tester.ExpectTotalCount(
-        "Autofill.StoredServerCreditCardCount.Unmasked", 0);
-  }
-}
-
 // Test that we correctly log when Autofill is enabled.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(true);
   personal_data_->Init(autofill_client_.GetDatabase(),
+                       /*account_database=*/nullptr,
                        autofill_client_.GetPrefs(),
                        /*identity_manager=*/nullptr,
                        /*is_off_the_record=*/false);
@@ -2892,6 +2807,7 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(false);
   personal_data_->Init(autofill_client_.GetDatabase(),
+                       /*account_database=*/nullptr,
                        autofill_client_.GetPrefs(),
                        /*identity_manager=*/nullptr,
                        /*is_off_the_record=*/false);
