@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gr_cache_controller.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
@@ -59,7 +60,8 @@ class ProgramCache;
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
 // browser process to them based on the corresponding renderer ID.
-class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
+class GPU_IPC_SERVICE_EXPORT GpuChannelManager
+    : public raster::GrShaderCache::Client {
  public:
   GpuChannelManager(const GpuPreferences& gpu_preferences,
                     GpuChannelManagerDelegate* delegate,
@@ -71,16 +73,19 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                     const GpuFeatureInfo& gpu_feature_info,
                     GpuProcessActivityFlags activity_flags);
-  ~GpuChannelManager();
+  ~GpuChannelManager() override;
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
   GpuWatchdogThread* watchdog() const { return watchdog_; }
 
   GpuChannel* EstablishChannel(int client_id,
                                uint64_t client_tracing_id,
-                               bool is_gpu_host);
+                               bool is_gpu_host,
+                               bool cache_shaders_on_disk);
 
-  void PopulateShaderCache(const std::string& key, const std::string& program);
+  void PopulateShaderCache(int32_t client_id,
+                           const std::string& key,
+                           const std::string& program);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const SyncToken& sync_token);
@@ -142,6 +147,12 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   scoped_refptr<raster::RasterDecoderContextState> GetRasterDecoderContextState(
       ContextResult* result);
   void ScheduleGrContextCleanup();
+  raster::GrShaderCache* gr_shader_cache() {
+    return gr_shader_cache_ ? &*gr_shader_cache_ : nullptr;
+  }
+
+  // raster::GrShaderCache::Client implementation.
+  void StoreShader(const std::string& key, const std::string& shader) override;
 
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
@@ -210,6 +221,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   // order to avoid having the GpuChannelManager keep the lost context state
   // alive until all clients have recovered, we use a ref-counted object and
   // allow the decoders to manage its lifetime.
+  base::Optional<raster::GrShaderCache> gr_shader_cache_;
   base::Optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<raster::RasterDecoderContextState>
       raster_decoder_context_state_;
