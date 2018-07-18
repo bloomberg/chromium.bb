@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_CACHED_AREAS_H_
 #define CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_CACHED_AREAS_H_
 
+#include <array>
 #include <map>
 #include <string>
 
@@ -78,13 +79,19 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
     DOMStorageNamespace(DOMStorageNamespace&& other);
     DOMStorageNamespace& operator=(DOMStorageNamespace&&) = default;
 
+    void CheckPrefixes() const;
+
     size_t TotalCacheSize() const;
     // Returns true if this namespace is totally unused and can be deleted.
     bool CleanUpUnusedAreas();
 
+    // TODO(dmurph): Remove the prefix & postfix after memory corruption is
+    // solved.
+    int64_t prefix;
     blink::mojom::SessionStorageNamespacePtr session_storage_namespace;
     base::flat_map<url::Origin, scoped_refptr<LocalStorageCachedArea>>
         cached_areas;
+    int64_t postfix;
 
     DISALLOW_COPY_AND_ASSIGN(DOMStorageNamespace);
   };
