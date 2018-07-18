@@ -14,6 +14,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/link_header_util/link_header_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -154,7 +155,11 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
   if (download->allowed_number_of_redirects > 0) {
     DCHECK(download->method == "HEAD");
     GURL redirect_url = ParseRedirectUrl(redirect_info);
-    if (!redirect_url.is_empty()) {
+    if (!redirect_url.is_empty() &&
+        // Do not allow cross site redirects.
+        net::registry_controlled_domains::SameDomainOrHost(
+            download->original_url, redirect_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       InitiateDownload(redirect_url, "HEAD",
                        --download->allowed_number_of_redirects,
                        std::move(download->callback));

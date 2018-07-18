@@ -178,17 +178,17 @@ TEST_F(PaymentMethodManifestDownloaderTest, AbsoluteHttpHeaderLinkUrl) {
 TEST_F(PaymentMethodManifestDownloaderTest, 300IsUnsupportedRedirect) {
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  CallRedirect(300, GURL("https://alicepay.com"));
+  CallRedirect(300, GURL("https://pay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 301And302AreSupportedRedirects) {
-  CallRedirect(301, GURL("https://alicepay.com"));
+  CallRedirect(301, GURL("https://pay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://pay.bobpay.com"));
 
-  CallRedirect(302, GURL("https://charliepay.com"));
+  CallRedirect(302, GURL("https://newpay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://newpay.bobpay.com"));
 
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
@@ -198,13 +198,13 @@ TEST_F(PaymentMethodManifestDownloaderTest, 301And302AreSupportedRedirects) {
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 302And303AreSupportedRedirects) {
-  CallRedirect(302, GURL("https://alicepay.com"));
+  CallRedirect(302, GURL("https://pay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://pay.bobpay.com"));
 
-  CallRedirect(303, GURL("https://charliepay.com"));
+  CallRedirect(303, GURL("https://newpay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://newpay.bobpay.com"));
 
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
@@ -216,23 +216,23 @@ TEST_F(PaymentMethodManifestDownloaderTest, 302And303AreSupportedRedirects) {
 TEST_F(PaymentMethodManifestDownloaderTest, 304IsUnsupportedRedirect) {
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  CallRedirect(304, GURL("https://alicepay.com"));
+  CallRedirect(304, GURL("https://pay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 305IsUnsupportedRedirect) {
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  CallRedirect(305, GURL("https://alicepay.com"));
+  CallRedirect(305, GURL("https://pay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 307And308AreSupportedRedirects) {
-  CallRedirect(307, GURL("https://alicepay.com"));
+  CallRedirect(307, GURL("https://pay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://pay.bobpay.com"));
 
-  CallRedirect(308, GURL("https://charliepay.com"));
+  CallRedirect(308, GURL("https://newpay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://newpay.bobpay.com"));
 
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
@@ -242,27 +242,33 @@ TEST_F(PaymentMethodManifestDownloaderTest, 307And308AreSupportedRedirects) {
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoMoreThanThreeRedirects) {
-  CallRedirect(301, GURL("https://alicepay.com"));
+  CallRedirect(301, GURL("https://pay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://pay.bobpay.com"));
 
-  CallRedirect(302, GURL("https://charliepay.com"));
+  CallRedirect(302, GURL("https://oldpay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://oldpay.bobpay.com"));
 
-  CallRedirect(308, GURL("https://davepay.com"));
+  CallRedirect(308, GURL("https://newpay.bobpay.com"));
 
-  EXPECT_EQ(GetOriginalURL(), GURL("https://davepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://newpay.bobpay.com"));
 
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  CallRedirect(308, GURL("https://davepay.com"));
+  CallRedirect(308, GURL("https://newpay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, InvalidRedirectUrlIsFailure) {
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  CallRedirect(308, GURL("alicepay.com"));
+  CallRedirect(308, GURL("pay.bobpay.com"));
+}
+
+TEST_F(PaymentMethodManifestDownloaderTest, NotAllowCrossSiteRedirects) {
+  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+
+  CallRedirect(301, GURL("https://alicepay.com"));
 }
 
 class WebAppManifestDownloaderTest : public testing::Test {
