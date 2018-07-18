@@ -359,7 +359,7 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   // This is non-blocking async call. |node| still can be returned to user
   // before the scheduled async task is completed.
-  context->audioWorklet()->CreateProcessor(&node->GetWorkletHandler(),
+  context->audioWorklet()->CreateProcessor(node->GetWorkletHandler(),
                                            std::move(processor_port_channel),
                                            std::move(serialized_node_options));
 
@@ -382,8 +382,8 @@ void AudioWorkletNode::FireProcessorError() {
   DispatchEvent(Event::Create(EventTypeNames::processorerror));
 }
 
-AudioWorkletHandler& AudioWorkletNode::GetWorkletHandler() const {
-  return static_cast<AudioWorkletHandler&>(Handler());
+scoped_refptr<AudioWorkletHandler> AudioWorkletNode::GetWorkletHandler() const {
+  return WrapRefCounted(&static_cast<AudioWorkletHandler&>(Handler()));
 }
 
 void AudioWorkletNode::Trace(blink::Visitor* visitor) {

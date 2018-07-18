@@ -30,7 +30,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   ~AudioWorklet() override = default;
 
-  void CreateProcessor(AudioWorkletHandler*,
+  void CreateProcessor(scoped_refptr<AudioWorkletHandler>,
                        MessagePortChannel,
                        scoped_refptr<SerializedScriptValue> node_options);
 
