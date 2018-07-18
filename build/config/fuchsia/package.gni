@@ -100,6 +100,11 @@ template("fuchsia_package") {
 
     script = "//build/gn_run_binary.py"
 
+    inputs = [
+      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
+      rebase_path("$fuchsia_sdk/.hash"),
+    ]
+
     outputs = [
       _key_file,
     ]
@@ -124,6 +129,8 @@ template("fuchsia_package") {
     ]
 
     inputs = [
+      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
+      rebase_path("$fuchsia_sdk/.hash"),
       _key_file,
     ]
 
@@ -155,6 +162,8 @@ template("fuchsia_package") {
     ]
 
     inputs = [
+      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
+      rebase_path("$fuchsia_sdk/.hash"),
       _meta_far_file,
       _archive_manifest,
     ]
