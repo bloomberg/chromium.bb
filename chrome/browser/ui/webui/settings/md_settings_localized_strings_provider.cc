@@ -1739,8 +1739,11 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
                                 base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "passphraseResetHint",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
+      l10n_util::GetStringFUTF8(
+          IsUnifiedConsentEnabled(profile)
+              ? IDS_SETTINGS_PASSPHRASE_RESET_HINT_UNIFIED_CONSENT
+              : IDS_SETTINGS_PASSPHRASE_RESET_HINT,
+          base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "passphraseRecover",
       l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
@@ -1762,7 +1765,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     LocalizedString sync_disconnect_strings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
-         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
+         IsUnifiedConsentEnabled(profile)
+             ? IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE_UNIFIED_CONSENT
+             : IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
         {"syncDisconnectDeleteProfile",
          IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
         {"syncDisconnectConfirm",
@@ -1771,11 +1776,17 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     AddLocalizedStringsBulk(html_source, sync_disconnect_strings,
                             arraysize(sync_disconnect_strings));
 
-    html_source->AddString(
-        "syncDisconnectExplanation",
-        l10n_util::GetStringFUTF8(
-            IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION,
-            base::ASCIIToUTF16(sync_dashboard_url)));
+    if (IsUnifiedConsentEnabled(profile)) {
+      html_source->AddLocalizedString(
+          "syncDisconnectExplanation",
+          IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION_UNIFIED_CONSENT);
+    } else {
+      html_source->AddString(
+          "syncDisconnectExplanation",
+          l10n_util::GetStringFUTF8(
+              IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION,
+              base::ASCIIToUTF16(sync_dashboard_url)));
+    }
   }
 #endif
 
@@ -1924,7 +1935,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION},
       {"safeBrowsingEnableProtectionDesc",
        IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC},
-      {"syncAndPersonalizationLink", IDS_SETTINGS_PRIVACY_MORE_SETTINGS},
       {"urlKeyedAnonymizedDataCollection",
        IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
       {"urlKeyedAnonymizedDataCollectionDesc",
@@ -1950,6 +1960,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
         {"spellingPref", IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT},
         {"spellingDescription",
          IDS_SETTINGS_SPELLING_DESCRIPTION_UNIFIED_CONSENT},
+        {"syncAndPersonalizationLink",
+         IDS_SETTINGS_PRIVACY_MORE_SETTINGS_UNIFIED_CONSENT},
         {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_UNIFIED_CONSENT},
         {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_DESC_UNIFIED_CONSENT},
     };
@@ -1966,6 +1978,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"linkDoctorPrefDesc", IDS_SETTINGS_EMPTY_STRING},
       {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
       {"spellingDescription", IDS_SETTINGS_SPELLING_DESCRIPTION},
+      {"syncAndPersonalizationLink", IDS_SETTINGS_PRIVACY_MORE_SETTINGS},
 #if defined(OS_CHROMEOS)
       {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA},
 #else
