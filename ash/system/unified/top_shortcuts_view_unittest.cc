@@ -16,7 +16,7 @@ using views::Button;
 
 namespace ash {
 
-// Tests manually control their session state.
+// Tests manually control their session visible.
 class TopShortcutsViewTest : public NoSessionAshTestBase {
  public:
   TopShortcutsViewTest() = default;
@@ -74,10 +74,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesNotLoggedIn) {
   SetUpView();
   EXPECT_EQ(nullptr, GetUserAvatar());
   EXPECT_FALSE(GetSignOutButton()->visible());
-  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
-  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetCollapseButton()->state());
+  EXPECT_FALSE(GetLockButton()->visible());
+  EXPECT_FALSE(GetSettingsButton()->visible());
+  EXPECT_TRUE(GetPowerButton()->visible());
+  EXPECT_TRUE(GetCollapseButton()->visible());
 }
 
 // All buttons are enabled after login.
@@ -86,10 +86,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesLoggedIn) {
   SetUpView();
   EXPECT_NE(nullptr, GetUserAvatar());
   EXPECT_TRUE(GetSignOutButton()->visible());
-  EXPECT_EQ(Button::STATE_NORMAL, GetLockButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetSettingsButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetCollapseButton()->state());
+  EXPECT_TRUE(GetLockButton()->visible());
+  EXPECT_TRUE(GetSettingsButton()->visible());
+  EXPECT_TRUE(GetPowerButton()->visible());
+  EXPECT_TRUE(GetCollapseButton()->visible());
 }
 
 // Settings buttons are disabled at the lock screen.
@@ -98,10 +98,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesLockScreen) {
   SetUpView();
   EXPECT_NE(nullptr, GetUserAvatar());
   EXPECT_TRUE(GetSignOutButton()->visible());
-  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
-  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetCollapseButton()->state());
+  EXPECT_FALSE(GetLockButton()->visible());
+  EXPECT_FALSE(GetSettingsButton()->visible());
+  EXPECT_TRUE(GetPowerButton()->visible());
+  EXPECT_TRUE(GetCollapseButton()->visible());
 }
 
 // Settings buttons are disabled when adding a second multiprofile user.
@@ -111,10 +111,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesAddingUser) {
   SetUpView();
   EXPECT_NE(nullptr, GetUserAvatar());
   EXPECT_TRUE(GetSignOutButton()->visible());
-  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
-  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetCollapseButton()->state());
+  EXPECT_FALSE(GetLockButton()->visible());
+  EXPECT_FALSE(GetSettingsButton()->visible());
+  EXPECT_TRUE(GetPowerButton()->visible());
+  EXPECT_TRUE(GetCollapseButton()->visible());
 }
 
 // Settings buttons are disabled when adding a supervised user.
@@ -127,10 +127,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesSupervisedUserFlow) {
   SetUpView();
   EXPECT_EQ(nullptr, GetUserAvatar());
   EXPECT_FALSE(GetSignOutButton()->visible());
-  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
-  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
-  EXPECT_EQ(Button::STATE_NORMAL, GetCollapseButton()->state());
+  EXPECT_FALSE(GetLockButton()->visible());
+  EXPECT_FALSE(GetSettingsButton()->visible());
+  EXPECT_TRUE(GetPowerButton()->visible());
+  EXPECT_TRUE(GetCollapseButton()->visible());
 }
 
 }  // namespace ash
