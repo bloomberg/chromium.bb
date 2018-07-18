@@ -171,6 +171,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
                       : WebFeature::kInputTypeFileInsecureOriginOpenChooser);
 
     chrome_client->OpenFileChooser(document.GetFrame(), NewFileChooser(params));
+    chrome_client->RegisterPopupOpeningObserver(this);
   }
   event->SetDefaultHandled();
 }
@@ -348,6 +349,11 @@ void FileInputType::SetFiles(FileList* files) {
 void FileInputType::FilesChosen(const Vector<FileChooserFileInfo>& files) {
   SetFiles(CreateFileList(files,
                           GetElement().FastHasAttribute(webkitdirectoryAttr)));
+  if (HasConnectedFileChooser()) {
+    DisconnectFileChooser();
+    if (auto* chrome_client = GetChromeClient())
+      chrome_client->UnregisterPopupOpeningObserver(this);
+  }
 }
 
 void FileInputType::SetFilesFromDirectory(const String& path) {
@@ -452,6 +458,14 @@ void FileInputType::HandleKeyupEvent(KeyboardEvent* event) {
     }
   }
   KeyboardClickableInputTypeView::HandleKeyupEvent(event);
+}
+
+void FileInputType::WillOpenPopup() {
+  // TODO(tkent): Should we disconnect the file chooser? crbug.com/637639
+  if (HasConnectedFileChooser()) {
+    UseCounter::Count(GetElement().GetDocument(),
+                      WebFeature::kPopupOpenWhileFileChooserOpened);
+  }
 }
 
 }  // namespace blink

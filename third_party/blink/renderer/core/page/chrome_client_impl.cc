@@ -266,6 +266,7 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
   if (!frame->GetPage() || frame->GetPage()->Paused())
     return nullptr;
 
+  NotifyPopupOpeningObservers();
   const AtomicString& frame_name =
       !EqualIgnoringASCIICase(r.FrameName(), "_blank") ? r.FrameName()
                                                        : g_empty_atom;
@@ -1120,18 +1121,17 @@ void ChromeClientImpl::SetOverscrollBehavior(
 void ChromeClientImpl::RegisterPopupOpeningObserver(
     PopupOpeningObserver* observer) {
   DCHECK(observer);
-  popup_opening_observers_.push_back(observer);
+  popup_opening_observers_.insert(observer);
 }
 
 void ChromeClientImpl::UnregisterPopupOpeningObserver(
     PopupOpeningObserver* observer) {
-  size_t index = popup_opening_observers_.Find(observer);
-  DCHECK_NE(index, kNotFound);
-  popup_opening_observers_.EraseAt(index);
+  DCHECK(popup_opening_observers_.Contains(observer));
+  popup_opening_observers_.erase(observer);
 }
 
 void ChromeClientImpl::NotifyPopupOpeningObservers() const {
-  const HeapVector<Member<PopupOpeningObserver>> observers(
+  const HeapHashSet<WeakMember<PopupOpeningObserver>> observers(
       popup_opening_observers_);
   for (const auto& observer : observers)
     observer->WillOpenPopup();
