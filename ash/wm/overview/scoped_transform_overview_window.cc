@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -190,15 +189,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
   type_ = GetWindowDimensionsType(window);
 }
 
-ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
-  if (!window_)
-    return;
-
-  // |this| may still be observering |widget|'s compositor during shutdown.
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
-  if (widget)
-    widget->GetCompositor()->RemoveObserver(this);
-}
+ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
 void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
   Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
@@ -253,49 +244,30 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     window_->layer()->SetMaskLayer(original_mask_layer_);
   }
 
-  PrepareAnimationSettings(animation_type, animation_settings);
+  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
+    auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
+        animation_type, window);
+    settings->DeferPaint();
+
+    // If current |window_| is the first MRU window covering the available
+    // workspace, add the |window_animation_observer| to its
+    // ScopedOverviewAnimationSettings in order to monitor the complete of its
+    // exiting animation.
+    if (window == GetOverviewWindow() &&
+        selector_item_->ShouldBeObservedWhenExiting()) {
+      auto window_animation_observer_weak_ptr =
+          selector_item_->window_grid()->window_animation_observer();
+      if (window_animation_observer_weak_ptr)
+        settings->AddObserver(window_animation_observer_weak_ptr.get());
+    }
+
+    animation_settings->push_back(std::move(settings));
+  }
+
   if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS &&
       animation_settings->size() > 0u) {
     animation_settings->front()->AddObserver(this);
   }
-}
-
-bool ScopedTransformOverviewWindow::HideTitleBarAndAnimate(
-    const gfx::Transform& transform,
-    OverviewAnimationType animation_type) {
-  // Defer animation until after title bar is hidden.
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
-  DCHECK(widget);
-
-  CustomFrameViewAsh* frame =
-      static_cast<CustomFrameViewAsh*>(widget->non_client_view()->frame_view());
-  if (!frame)
-    return false;
-
-  delayed_animation_data_ = base::make_optional<AnimationData>(
-      std::make_pair(transform, animation_type));
-  widget->GetCompositor()->AddObserver(this);
-  frame->SetShouldPaintHeader(false);
-  return true;
-}
-
-void ScopedTransformOverviewWindow::OnCompositingStarted(
-    ui::Compositor* compositor,
-    base::TimeTicks start_time) {
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
-  DCHECK(widget);
-  DCHECK_EQ(compositor, widget->GetCompositor());
-  widget->GetCompositor()->RemoveObserver(this);
-
-  DCHECK(delayed_animation_data_);
-  ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
-  PrepareAnimationSettings((*delayed_animation_data_).second,
-                           &animation_settings);
-  SetTransform(window()->GetRootWindow(), (*delayed_animation_data_).first);
-  selector_item_->UpdateHeaderShadowBackdrop(
-      (*delayed_animation_data_).second,
-      WindowSelectorItem::HeaderFadeAndLayoutMode::kUpdate);
-  delayed_animation_data_ = base::nullopt;
 }
 
 bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
@@ -677,30 +649,6 @@ void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
   layer->SetMaskLayer(mask_->layer());
   selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
   selector_item_->EnableBackdropIfNeeded();
-}
-
-void ScopedTransformOverviewWindow::PrepareAnimationSettings(
-    OverviewAnimationType animation_type,
-    ScopedAnimationSettings* animation_settings) {
-  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
-    auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
-        animation_type, window);
-    settings->DeferPaint();
-
-    // If current |window_| is the first MRU window covering the available
-    // workspace, add the |window_animation_observer| to its
-    // ScopedOverviewAnimationSettings in order to monitor the complete of its
-    // exiting animation.
-    if (window == GetOverviewWindow() &&
-        selector_item_->ShouldBeObservedWhenExiting()) {
-      auto window_animation_observer_weak_ptr =
-          selector_item_->window_grid()->window_animation_observer();
-      if (window_animation_observer_weak_ptr)
-        settings->AddObserver(window_animation_observer_weak_ptr.get());
-    }
-
-    animation_settings->push_back(std::move(settings));
-  }
 }
 
 }  // namespace ash
