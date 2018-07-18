@@ -1225,10 +1225,6 @@
       status: "test",
     },
     {
-      name: "StopLoadingInBackground",
-      status: "test",
-    },
-    {
       name: "StopNonTimersInBackground",
       status: "test",
     },

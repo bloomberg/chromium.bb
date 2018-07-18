@@ -1039,9 +1039,6 @@ extern const char kSpellingFeedbackFieldTrialDescription[];
 extern const char kStopInBackgroundName[];
 extern const char kStopInBackgroundDescription[];
 
-extern const char kStopLoadingInBackgroundName[];
-extern const char kStopLoadingInBackgroundDescription[];
-
 extern const char kStopNonTimersInBackgroundName[];
 extern const char kStopNonTimersInBackgroundDescription[];
 
