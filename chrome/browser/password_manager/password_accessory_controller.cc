@@ -57,8 +57,8 @@ PasswordAccessoryController::PasswordAccessoryController(
     : web_contents_(web_contents),
       view_(PasswordAccessoryViewInterface::Create(this)),
       create_dialog_factory_(
-          base::BindRepeating(&PasswordGenerationDialogViewInterface::Create)),
-      weak_factory_(this) {}
+          base::BindRepeating(&PasswordGenerationDialogViewInterface::Create)) {
+}
 
 // Additional creation functions in unit tests only:
 PasswordAccessoryController::PasswordAccessoryController(
@@ -67,8 +67,7 @@ PasswordAccessoryController::PasswordAccessoryController(
     CreateDialogFactory create_dialog_factory)
     : web_contents_(web_contents),
       view_(std::move(view)),
-      create_dialog_factory_(create_dialog_factory),
-      weak_factory_(this) {}
+      create_dialog_factory_(create_dialog_factory) {}
 
 PasswordAccessoryController::~PasswordAccessoryController() = default;
 
@@ -88,12 +87,11 @@ void PasswordAccessoryController::CreateForWebContentsForTesting(
 void PasswordAccessoryController::OnPasswordsAvailable(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const GURL& origin) {
-  const url::Origin& frame_origin =
-      web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
-  url::Origin password_origin = url::Origin::Create(origin);
-  if (!frame_origin.IsSameOriginWith(password_origin)) {
+  const url::Origin& tab_origin =
+      web_contents_->GetMainFrame()->GetLastCommittedOrigin();
+  if (!tab_origin.IsSameOriginWith(url::Origin::Create(origin))) {
     // TODO(fhorschig): Support iframes: https://crbug.com/854150.
-    return;  // Don't make passwords available across origins.
+    return;
   }
   DCHECK(view_);
   std::vector<Item> items;
@@ -127,6 +125,13 @@ void PasswordAccessoryController::OnPasswordsAvailable(
   view_->OnItemsAvailable(origin, items);
 }
 
+void PasswordAccessoryController::DidNavigateMainFrame() {
+  // Sending no passwords removes stale stuggestions and sends default options.
+  OnPasswordsAvailable(
+      /*best_matches=*/{},
+      web_contents_->GetMainFrame()->GetLastCommittedOrigin().GetURL());
+}
+
 void PasswordAccessoryController::OnAutomaticGenerationStatusChanged(
     bool available,
     const base::Optional<
@@ -151,7 +156,7 @@ void PasswordAccessoryController::OnAutomaticGenerationStatusChanged(
 
 void PasswordAccessoryController::OnFillingTriggered(
     bool is_password,
-    const base::string16& textToFill) {
+    const base::string16& textToFill) const {
   password_manager::ContentPasswordManagerDriverFactory* factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           web_contents_);
@@ -162,10 +167,7 @@ void PasswordAccessoryController::OnFillingTriggered(
   if (!driver) {
     return;
   }  // |driver| can be NULL if the tab is being closed.
-  driver->FillIntoFocusedField(
-      is_password, textToFill,
-      base::BindOnce(&PasswordAccessoryController::OnFilledIntoFocusedField,
-                     weak_factory_.GetWeakPtr()));
+  driver->FillIntoFocusedField(is_password, textToFill);
 }
 
 void PasswordAccessoryController::OnOptionSelected(
@@ -212,26 +214,6 @@ void PasswordAccessoryController::GeneratedPasswordRejected() {
 
 void PasswordAccessoryController::OnSavedPasswordsLinkClicked() {
   chrome::android::PreferencesLauncher::ShowPasswordSettings();
-}
-
-void PasswordAccessoryController::OnFilledIntoFocusedField(
-    autofill::FillingStatus status) {
-  // TODO(crbug/853766): Record success rate.
-  // TODO(fhorschig): Update UI by hiding the sheet or communicating the error.
-}
-
-void PasswordAccessoryController::ClearSuggestions() {
-  // TODO(fhorschig): This should drop suggestion for the given frame.
-  OnPasswordsAvailable(
-      /*best_matches=*/{},
-      web_contents_->GetFocusedFrame()->GetLastCommittedOrigin().GetURL());
-}
-
-void PasswordAccessoryController::RefreshSuggestionsForField(
-    bool is_fillable,
-    bool is_password_field) {
-  // TODO(crbug/853766): Record CTR metric.
-  // TODO(fhorschig): Test and implement.
 }
 
 gfx::NativeView PasswordAccessoryController::container_view() const {

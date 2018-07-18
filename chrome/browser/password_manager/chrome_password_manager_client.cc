@@ -561,18 +561,14 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   web_contents()->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
       this);
   web_contents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
-#endif
-}
-
-void ChromePasswordManagerClient::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID)
-  PasswordAccessoryController* accessory =
+#else
+  // Ensure that entries from old origins are properly cleaned up.
+  PasswordAccessoryController* password_accessory =
       PasswordAccessoryController::FromWebContents(web_contents());
-  if (!accessory)
-    return;  // No accessory, no cleanup needed.
-  accessory->ClearSuggestions();
-#endif  // defined(OS_ANDROID)
+  if (password_accessory) {
+    password_accessory->DidNavigateMainFrame();
+  }
+#endif
 }
 
 #if !defined(OS_ANDROID)
@@ -1063,25 +1059,6 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
       driver->AsWeakPtr(), observer_, web_contents(),
       web_contents()->GetNativeView());
   popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
-}
-
-void ChromePasswordManagerClient::FocusedInputChanged(bool is_fillable,
-                                                      bool is_password_field) {
-#if defined(OS_ANDROID)
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsKeyboardAccessory) &&
-      !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
-    return;  // No need to even create the bridge if it's not going to be used.
-  }
-  if (is_fillable)  // Refresh but don't create a new accessory in this case.
-    PasswordAccessoryController::CreateForWebContents(web_contents());
-  PasswordAccessoryController* accessory =
-      PasswordAccessoryController::FromWebContents(web_contents());
-  if (!accessory)
-    return;  // No accessory needs change here.
-  accessory->RefreshSuggestionsForField(is_fillable, is_password_field);
-#endif  // defined(OS_ANDROID)
 }
 
 password_manager::PasswordManager*
