@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 
 import android.os.Build;
 import android.support.test.filters.MediumTest;
@@ -25,7 +25,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
-import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 
@@ -43,23 +43,23 @@ import java.util.concurrent.Callable;
 public class WebXrVrDeviceTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
+            VrTestRuleUtils.generateDefaultTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
     private ChromeActivityTestRule mTestRule;
-    private VrTestFramework mVrTestFramework;
-    private XrTestFramework mXrTestFramework;
+    private WebXrVrTestFramework mWebXrVrTestFramework;
+    private WebVrTestFramework mWebVrTestFramework;
 
     public WebXrVrDeviceTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mTestRule);
-        mXrTestFramework = new XrTestFramework(mTestRule);
+        mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
+        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
     }
 
     /**
@@ -70,13 +70,13 @@ public class WebXrVrDeviceTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile(
+        mWebVrTestFramework.loadUrlAndAwaitInitialization(
+                WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_device_capabilities_match_expectations"),
                 PAGE_LOAD_TIMEOUT_S);
-        VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')",
-                mVrTestFramework.getFirstTabWebContents());
-        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        mWebVrTestFramework.executeStepAndWait(
+                "stepCheckDeviceCapabilities('" + Build.DEVICE + "')");
+        mWebVrTestFramework.endTest();
     }
 
     /**
@@ -91,15 +91,14 @@ public class WebXrVrDeviceTest {
         // Make Chrome think that VrCore is not installed
         VrShellDelegateUtils.setVrCoreCompatibility(VrCoreCompatibility.VR_NOT_AVAILABLE);
 
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile(
+        mWebVrTestFramework.loadUrlAndAwaitInitialization(
+                WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_device_capabilities_match_expectations"),
                 PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue(
-                VrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
-        VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('VR Orientation Device')",
-                mVrTestFramework.getFirstTabWebContents());
-        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        Assert.assertTrue(mWebVrTestFramework.xrDeviceFound());
+        mWebVrTestFramework.executeStepAndWait(
+                "stepCheckDeviceCapabilities('VR Orientation Device')");
+        mWebVrTestFramework.endTest();
         VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(null);
     }
 
@@ -113,11 +112,10 @@ public class WebXrVrDeviceTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWebXrCapabilities() throws InterruptedException {
-        mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),
                 PAGE_LOAD_TIMEOUT_S);
-        XrTestFramework.executeStepAndWait(
-                "stepCheckCapabilities('Daydream')", mXrTestFramework.getFirstTabWebContents());
-        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+        mWebXrVrTestFramework.executeStepAndWait("stepCheckCapabilities('Daydream')");
+        mWebXrVrTestFramework.endTest();
     }
 }

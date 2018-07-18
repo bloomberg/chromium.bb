@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_CHECK_INTERVAL_LONG_MS;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -26,8 +26,8 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryPage;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
-import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -48,16 +48,16 @@ public class VrBrowserControllerInputTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityXrTestRule mVrTestRule = new ChromeTabbedActivityXrTestRule();
+    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
 
-    private VrTestFramework mVrTestFramework;
+    private VrBrowserTestFramework mVrBrowserTestFramework;
     private EmulatedVrController mController;
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mVrTestRule);
-        VrTransitionUtils.forceEnterVr();
-        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
+        VrBrowserTransitionUtils.forceEnterVrBrowser();
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         mController = new EmulatedVrController(mVrTestRule.getActivity());
         mController.recenterView();
     }
@@ -80,7 +80,8 @@ public class VrBrowserControllerInputTest {
     @Test
     @MediumTest
     public void testControllerScrolling() throws InterruptedException {
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
         final RenderCoordinates coord =
                 RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
@@ -125,7 +126,8 @@ public class VrBrowserControllerInputTest {
     @Test
     @MediumTest
     public void testControllerFlingScrolling() throws InterruptedException {
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
         final RenderCoordinates coord =
                 RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
@@ -190,13 +192,13 @@ public class VrBrowserControllerInputTest {
     @Test
     @MediumTest
     public void testControllerClicksRegisterOnWebpage() throws InterruptedException {
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile(
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile(
                                     "test_controller_clicks_register_on_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
 
         mController.performControllerClick();
         ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
-                VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"));
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"));
     }
 
     /*
@@ -206,22 +208,26 @@ public class VrBrowserControllerInputTest {
     @Test
     @MediumTest
     public void testControllerScrollingNative() throws InterruptedException {
-        VrTransitionUtils.forceEnterVr();
-        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowser();
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         // Fill history with enough items to scroll
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
                 PAGE_LOAD_TIMEOUT_S);
 
         mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
@@ -255,21 +261,21 @@ public class VrBrowserControllerInputTest {
     @MediumTest
     @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
     public void testAppButtonExitsFullscreen() throws InterruptedException, TimeoutException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Enter fullscreen
-        DOMUtils.clickNode(mVrTestFramework.getFirstTabWebContents(), "fullscreen",
+        DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
-        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        Assert.assertTrue(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
+        mVrBrowserTestFramework.waitOnJavaScriptStep();
+        Assert.assertTrue(DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
 
         mController.pressReleaseAppButton();
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return !DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents());
+                    return !DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents());
                 } catch (InterruptedException | TimeoutException e) {
                     return false;
                 }

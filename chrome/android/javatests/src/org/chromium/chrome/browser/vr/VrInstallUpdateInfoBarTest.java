@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -27,7 +26,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
-import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 
@@ -46,21 +45,15 @@ import java.util.concurrent.Callable;
 public class VrInstallUpdateInfoBarTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
+            VrTestRuleUtils.generateDefaultTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
     private ChromeActivityTestRule mVrTestRule;
-    private VrTestFramework mVrTestFramework;
 
     public VrInstallUpdateInfoBarTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mVrTestRule = callable.call();
-        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mVrTestRule);
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mVrTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mVrTestRule);
     }
 
     /**
@@ -73,7 +66,7 @@ public class VrInstallUpdateInfoBarTest {
         VrShellDelegateUtils.setVrCoreCompatibility(checkerReturnCompatibility);
         View decorView = mVrTestRule.getActivity().getWindow().getDecorView();
         if (checkerReturnCompatibility == VrCoreCompatibility.VR_READY) {
-            VrInfoBarUtils.expectInfoBarPresent(mVrTestFramework, false);
+            VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE
                 || checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Out of date and missing cases are the same, but with different text
@@ -89,13 +82,13 @@ public class VrInstallUpdateInfoBarTest {
                 expectedButton = mVrTestRule.getActivity().getString(
                         R.string.vr_services_check_infobar_install_button);
             }
-            VrInfoBarUtils.expectInfoBarPresent(mVrTestFramework, true);
+            VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, true);
             TextView tempView = (TextView) decorView.findViewById(R.id.infobar_message);
             Assert.assertEquals(expectedMessage, tempView.getText().toString());
             tempView = (TextView) decorView.findViewById(R.id.button_primary);
             Assert.assertEquals(expectedButton, tempView.getText().toString());
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_SUPPORTED) {
-            VrInfoBarUtils.expectInfoBarPresent(mVrTestFramework, false);
+            VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
         } else {
             Assert.fail("Invalid VrCoreVersionChecker compatibility: "
                     + String.valueOf(checkerReturnCompatibility));

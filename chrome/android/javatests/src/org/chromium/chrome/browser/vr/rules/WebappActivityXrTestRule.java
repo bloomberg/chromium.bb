@@ -7,14 +7,11 @@ package org.chromium.chrome.browser.vr.rules;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
-import org.chromium.chrome.browser.vr.util.HeadTrackingUtils;
-import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
 
 /**
- * VR extension of WebappActivityTestRule. Applies WebappActivityTestRule then opens
+ * XR extension of WebappActivityTestRule. Applies WebappActivityTestRule then opens
  * up a WebappActivity to a blank page.
  */
 public class WebappActivityXrTestRule extends WebappActivityTestRule implements XrTestRule {
@@ -25,16 +22,8 @@ public class WebappActivityXrTestRule extends WebappActivityTestRule implements 
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                XrTestRuleUtils.ensureNoVrActivitiesDisplayed();
-                HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
-                        WebappActivityXrTestRule.this, desc);
                 startWebappActivity();
-                TestVrShellDelegate.createTestVrShellDelegate(getActivity());
-                try {
-                    base.evaluate();
-                } finally {
-                    if (isTrackerDirty()) HeadTrackingUtils.revertTracker();
-                }
+                base.evaluate();
             }
         }, desc);
     }
@@ -42,15 +31,5 @@ public class WebappActivityXrTestRule extends WebappActivityTestRule implements 
     @Override
     public SupportedActivity getRestriction() {
         return SupportedActivity.WAA;
-    }
-
-    @Override
-    public boolean isTrackerDirty() {
-        return mTrackerDirty;
-    }
-
-    @Override
-    public void setTrackerDirty() {
-        mTrackerDirty = true;
     }
 }

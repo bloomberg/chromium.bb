@@ -4,34 +4,57 @@
 
 package org.chromium.chrome.browser.vr.util;
 
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 
-import org.junit.Assert;
-
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr.VrTestFramework;
-import org.chromium.content_public.browser.WebContents;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Class containing utility functions for transitioning between different
  * states in VR, such as fullscreen, WebVR presentation, and the VR browser.
  *
+ * Methods in this class are applicable to any form of VR, e.g. they will work for both WebXR for VR
+ * and the VR Browser.
+ *
  * All the transitions in this class are performed directly through Chrome,
  * as opposed to NFC tag simulation which involves receiving an intent from
  * an outside application (VR Services).
  */
-public class VrTransitionUtils extends TransitionUtils {
+public class VrTransitionUtils {
     /**
-     * Sends a click event directly to the WebGL canvas then waits for WebVR to
-     * think that it is presenting, failing if this does not occur within the
-     * allotted time.
-     *
-     * @param cvc The ContentViewCore for the tab the canvas is in.
+     * Forces Chrome out of VR mode.
      */
-    public static void enterPresentationOrFail(WebContents webContents) {
-        enterPresentation(webContents);
-        Assert.assertTrue(VrTestFramework.pollJavaScriptBoolean(
-                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, webContents));
-        Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+    public static void forceExitVr() {
+        ThreadUtils.runOnUiThreadBlocking(() -> { VrShellDelegate.forceExitVrImmediately(); });
+    }
+
+    /**
+     * Waits until Chrome believes it is in VR.
+     * @param timeout How long to wait for VR entry before timing out and failing.
+     */
+    public static void waitForVrEntry(final int timeout) {
+        // Relatively long timeout because sometimes GVR takes a while to enter VR
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete();
+            }
+        }, timeout, POLL_CHECK_INTERVAL_SHORT_MS);
+    }
+
+    /**
+     * Waits for the black overlay that shows during VR Browser entry to be gone.
+     */
+    public static void waitForOverlayGone() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !TestVrShellDelegate.getInstance().isBlackOverlayVisible();
+            }
+        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

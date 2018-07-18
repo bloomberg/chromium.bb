@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.vr.rules;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
 
 /**
- * Interface to be implemented by *VrTestRule rules, which allows them to be
+ * Interface to be implemented by *XrTestRule rules, which allows them to be
  * conditionally skipped when used in conjunction with XrActivityRestrictionRule.
  */
 public interface XrTestRule {
@@ -15,14 +15,4 @@ public interface XrTestRule {
      * Get the XrActivityRestriction.SupportedActivity that this rule is restricted to running in.
      */
     public SupportedActivity getRestriction();
-
-    /**
-     * Whether the head tracking mode has been changed.
-     */
-    public boolean isTrackerDirty();
-
-    /**
-     * Tells the rule that the head tracking mode has been changed.
-     */
-    public void setTrackerDirty();
 }

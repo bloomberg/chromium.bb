@@ -223,7 +223,7 @@ test classes. In general, you will need to:
 * Set `@RunWith` to `ParameterizedRunner.class`
 * Add `@UseRunnerDelegate` and set it to `ChromeJUnit4RunnerDelegate.class`
 * Define `sClassParams`, annotate it with `@ClassParameter`, and set it to the
-  value returned by `XrTestRuleUtils.generateDefaultXrTestRuleParameters()`
+  value returned by `XrTestRuleUtils.generateDefaultTestRuleParameters()`
 * Define `mRuleChain` as a `RuleChain` and annotate it with `@Rule`
 * Define `mVrTestRule` as a `ChromeActivityTestRule`
 * Define `mVrTestFramework` as a `VrTestFramework` and initialize it using

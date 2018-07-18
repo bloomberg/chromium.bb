@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.VrTestFramework.NATIVE_URLS_OF_INTEREST;
-import static org.chromium.chrome.browser.vr.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.NATIVE_URLS_OF_INTEREST;
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.support.test.InstrumentationRegistry;
@@ -28,10 +28,9 @@ import org.chromium.chrome.browser.history.HistoryItemView;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
-import org.chromium.chrome.browser.vr.util.TransitionUtils;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
-import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -53,19 +52,20 @@ public class VrBrowserNavigationTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityXrTestRule mTestRule = new ChromeTabbedActivityXrTestRule();
+    public ChromeTabbedActivityVrTestRule mTestRule = new ChromeTabbedActivityVrTestRule();
 
-    private VrTestFramework mVrTestFramework;
-    private XrTestFramework mXrTestFramework;
+    private WebXrVrTestFramework mWebXrVrTestFramework;
+    private WebVrTestFramework mWebVrTestFramework;
+    private VrBrowserTestFramework mVrBrowserTestFramework;
 
     private static final String TEST_PAGE_2D_URL =
-            VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
+            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
     private static final String TEST_PAGE_2D_2_URL =
-            VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page2");
+            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page2");
     private static final String TEST_PAGE_WEBVR_URL =
-            VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page");
+            WebVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page");
     private static final String TEST_PAGE_WEBXR_URL =
-            XrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page");
+            WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page");
 
     private enum Page { PAGE_2D, PAGE_2D_2, PAGE_WEBVR, PAGE_WEBXR }
     private enum PresentationMode { NON_PRESENTING, PRESENTING }
@@ -73,10 +73,11 @@ public class VrBrowserNavigationTest {
 
     @Before
     public void setUp() throws Exception {
-        mVrTestFramework = new VrTestFramework(mTestRule);
-        mXrTestFramework = new XrTestFramework(mTestRule);
-        TransitionUtils.forceEnterVr();
-        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
+        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
+        mVrBrowserTestFramework = new VrBrowserTestFramework(mTestRule);
+        VrBrowserTransitionUtils.forceEnterVrBrowser();
+        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
     }
 
     private String getUrl(Page page) {
@@ -104,9 +105,9 @@ public class VrBrowserNavigationTest {
                 mTestRule.getActivity().getActivityTab(), new Runnable() {
                     @Override
                     public void run() {
-                        VrTestFramework.runJavaScriptOrFail(
+                        mVrBrowserTestFramework.runJavaScriptOrFail(
                                 "window.location.href = '" + getUrl(to) + "';",
-                                POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents());
+                                POLL_TIMEOUT_SHORT_MS);
                     }
                 }, POLL_TIMEOUT_LONG_MS);
     }
@@ -114,7 +115,7 @@ public class VrBrowserNavigationTest {
     private void enterFullscreenOrFail(WebContents webContents)
             throws InterruptedException, TimeoutException {
         DOMUtils.clickNode(webContents, "fullscreen", false /* goThroughRootAndroidView */);
-        TestFramework.waitOnJavaScriptStep(webContents);
+        VrBrowserTestFramework.waitOnJavaScriptStep(webContents);
         Assert.assertTrue(DOMUtils.isFullscreen(webContents));
     }
 
@@ -128,7 +129,7 @@ public class VrBrowserNavigationTest {
         Assert.assertEquals("Browser is in fullscreen",
                 fullscreenMode == FullscreenMode.FULLSCREENED, DOMUtils.isFullscreen(wc));
         // Feedback infobar should never show up during navigations.
-        VrInfoBarUtils.expectInfoBarPresent(mVrTestFramework, false);
+        VrInfoBarUtils.expectInfoBarPresent(mTestRule, false);
     }
 
     /**
@@ -138,11 +139,12 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     public void test2dTo2d() throws InterruptedException, TimeoutException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_2D_2);
 
-        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
+        assertState(mVrBrowserTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
 
         // Test that the navigations were added to history
@@ -164,7 +166,7 @@ public class VrBrowserNavigationTest {
         ThreadUtils.runOnUiThreadBlocking(() -> itemViews.get(0).onClick());
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
-        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
+        assertState(mWebXrVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -175,7 +177,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void test2dToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        impl2dToWeb(Page.PAGE_WEBVR, mVrTestFramework);
+        impl2dToWeb(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -188,10 +190,10 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void test2dToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        impl2dToWeb(Page.PAGE_WEBXR, mXrTestFramework);
+        impl2dToWeb(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void impl2dToWeb(Page page, TestFramework framework)
+    private void impl2dToWeb(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
@@ -208,7 +210,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void test2dFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        impl2dFullscreenToWeb(Page.PAGE_WEBVR, mVrTestFramework);
+        impl2dFullscreenToWeb(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -221,10 +223,10 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void test2dFullscreenToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        impl2dFullscreenToWeb(Page.PAGE_WEBXR, mXrTestFramework);
+        impl2dFullscreenToWeb(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void impl2dFullscreenToWeb(Page page, TestFramework framework)
+    private void impl2dFullscreenToWeb(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getFirstTabWebContents());
@@ -242,7 +244,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testWebVrTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webTo2dImpl(Page.PAGE_WEBVR, mVrTestFramework);
+        webTo2dImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -255,10 +257,10 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webTo2dImpl(Page.PAGE_WEBXR, mXrTestFramework);
+        webTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webTo2dImpl(Page page, TestFramework framework)
+    private void webTo2dImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
 
@@ -275,7 +277,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testWebVrToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webToWebImpl(Page.PAGE_WEBVR, mVrTestFramework);
+        webToWebImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -288,10 +290,10 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webToWebImpl(Page.PAGE_WEBXR, mXrTestFramework);
+        webToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webToWebImpl(Page page, TestFramework framework)
+    private void webToWebImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
 
@@ -308,7 +310,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testWebVrPresentingTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webPresentingTo2dImpl(Page.PAGE_WEBVR, mVrTestFramework);
+        webPresentingTo2dImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -321,13 +323,13 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrPresentingTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webPresentingTo2dImpl(Page.PAGE_WEBXR, mXrTestFramework);
+        webPresentingTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webPresentingTo2dImpl(Page page, TestFramework framework)
+    private void webPresentingTo2dImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationOrFail(framework);
+        framework.enterSessionWithUserGestureOrFail();
 
         navigateTo(Page.PAGE_2D);
 
@@ -342,7 +344,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testWebVrPresentingToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webPresentingToWebImpl(Page.PAGE_WEBVR, mVrTestFramework);
+        webPresentingToWebImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -355,13 +357,13 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrPresentingToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webPresentingToWebImpl(Page.PAGE_WEBXR, mXrTestFramework);
+        webPresentingToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webPresentingToWebImpl(Page page, TestFramework framework)
+    private void webPresentingToWebImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationOrFail(framework);
+        framework.enterSessionWithUserGestureOrFail();
 
         navigateTo(page);
 
@@ -376,7 +378,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testWebVrFullscreenTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webFullscreenTo2dImpl(Page.PAGE_WEBVR, mVrTestFramework);
+        webFullscreenTo2dImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -389,10 +391,10 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrFullscreenTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webFullscreenTo2dImpl(Page.PAGE_WEBXR, mXrTestFramework);
+        webFullscreenTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webFullscreenTo2dImpl(Page page, TestFramework framework)
+    private void webFullscreenTo2dImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getFirstTabWebContents());
@@ -410,7 +412,7 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testWebVrFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webFullscreenToWebImpl(Page.PAGE_WEBVR, mVrTestFramework);
+        webFullscreenToWebImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
     }
 
     /**
@@ -423,10 +425,10 @@ public class VrBrowserNavigationTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrFullscreenToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        webFullscreenToWebImpl(Page.PAGE_WEBXR, mXrTestFramework);
+        webFullscreenToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webFullscreenToWebImpl(Page page, TestFramework framework)
+    private void webFullscreenToWebImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getFirstTabWebContents());
@@ -445,19 +447,23 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testBackDoesntBackgroundChrome()
             throws IllegalArgumentException, InterruptedException {
-        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Back button isn't disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
         mTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_CHROME_UI);
-        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Back button isn't disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
         final Tab tab =
                 mTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_LINK);
-        Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertTrue(
+                "Back button isn't enabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mTestRule.getActivity().getTabModelSelector().closeTab(tab);
             }
         });
-        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Back button isn't disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
     }
 
     /**
@@ -466,33 +472,38 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     public void testNavigationButtons() throws IllegalArgumentException, InterruptedException {
-        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
-                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+                "Back button isn't disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse("Forward button isn't disabled.",
+                VrBrowserTransitionUtils.isForwardButtonEnabled());
         // Opening a new tab shouldn't enable the back button
         mTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_CHROME_UI);
-        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
-                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+                "Back button isn't disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse("Forward button isn't disabled.",
+                VrBrowserTransitionUtils.isForwardButtonEnabled());
         // Navigating to a new page should enable the back button
         mTestRule.loadUrl(getUrl(Page.PAGE_WEBVR));
-        Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
-        Assert.assertFalse(
-                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        Assert.assertTrue(
+                "Back button isn't enabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse("Forward button isn't disabled.",
+                VrBrowserTransitionUtils.isForwardButtonEnabled());
         // Navigating back should disable the back button and enable the forward button
-        VrTransitionUtils.navigateBack();
+        VrBrowserTransitionUtils.navigateBack();
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D));
-        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Back button isn't disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
         Assert.assertTrue(
-                "Forward button isn't enabled.", VrTransitionUtils.isForwardButtonEnabled());
+                "Forward button isn't enabled.", VrBrowserTransitionUtils.isForwardButtonEnabled());
         // Navigating forward should disable the forward button and enable the back button
-        VrTransitionUtils.navigateForward();
+        VrBrowserTransitionUtils.navigateForward();
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_WEBVR));
-        Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
-        Assert.assertFalse(
-                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        Assert.assertTrue(
+                "Back button isn't enabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse("Forward button isn't disabled.",
+                VrBrowserTransitionUtils.isForwardButtonEnabled());
     }
 
     /**
@@ -519,19 +530,20 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testRendererKilledInFullscreenStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(mVrTestFramework.getFirstTabWebContents());
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        enterFullscreenOrFail(mVrBrowserTestFramework.getFirstTabWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
 
-        mVrTestFramework.simulateRendererKilled();
+        mVrBrowserTestFramework.simulateRendererKilled();
 
         ThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
         ChromeTabUtils.waitForTabPageLoaded(tab, TEST_PAGE_2D_URL);
         ChromeTabUtils.waitForInteractable(tab);
 
-        assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
+        assertState(mVrBrowserTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 }
