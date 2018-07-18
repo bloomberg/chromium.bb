@@ -17,7 +17,6 @@ Refer to README.md for content description and update process.
  <item id="android_device_manager_socket" hash_code="37249086" type="0" content_hash_code="6436865" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_device_manager.cc"/>
  <item id="android_web_socket" hash_code="39356976" type="0" content_hash_code="12310113" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_web_socket.cc"/>
  <item id="appcache_update_job" hash_code="25790702" type="0" content_hash_code="27424887" os_list="linux,windows" file_path="content/browser/appcache/appcache_update_request_base.cc"/>
- <item id="asset_links" hash_code="89771989" type="0" content_hash_code="72216357" os_list="linux,windows" file_path="components/password_manager/core/browser/site_affiliation/asset_link_retriever.cc"/>
  <item id="autofill_query" hash_code="88863520" type="0" content_hash_code="15563339" os_list="linux,windows" file_path="components/autofill/core/browser/autofill_download_manager.cc"/>
  <item id="autofill_upload" hash_code="104798869" type="0" content_hash_code="110634763" os_list="linux,windows" file_path="components/autofill/core/browser/autofill_download_manager.cc"/>
  <item id="backdrop_collection_images_download" hash_code="34767164" type="0" content_hash_code="103835921" os_list="linux,windows" file_path="chrome/browser/search/background/ntp_background_service.cc"/>
