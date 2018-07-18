@@ -176,10 +176,6 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
       return ui::EVENT_REWRITE_CONTINUE;
     }
 
-    // Stash a copy of the event should we decide to reconstitute it later if we
-    // decide that this isn't in fact a side swipe.
-    StashEvent(*touch_event);
-
     current_swipe_ = side_swipe_origin;
 
     // Let the subscribers know about the gesture begin.
@@ -187,6 +183,11 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
 
     VLOG(1) << "side swipe gesture begin @ " << touch_location.ToString();
     current_swipe_time_ = base::ElapsedTimer();
+
+
+    // Stash a copy of the event should we decide to reconstitute it later if we
+    // decide that this isn't in fact a side swipe.
+    StashEvent(*touch_event);
 
     // And then stop the original event from propagating.
     return ui::EVENT_REWRITE_DISCARD;
