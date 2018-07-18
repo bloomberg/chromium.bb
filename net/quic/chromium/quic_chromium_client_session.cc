@@ -2384,7 +2384,7 @@ void QuicChromiumClientSession::ResetNonMigratableStreams() {
   while (it != dynamic_streams().end()) {
     QuicChromiumClientStream* stream =
         static_cast<QuicChromiumClientStream*>(it->second.get());
-    if (!stream->can_migrate()) {
+    if (!stream->can_migrate_to_cellular_network()) {
       // Close the stream in both direction by resetting the stream.
       // TODO(zhongyi): use a different error code to reset streams for
       // connection migration.

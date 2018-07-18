@@ -103,9 +103,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     // Called to notify the stream when the final incoming data is read.
     void OnFinRead();
 
-    // Prevents the connection from migrating to a new network while this
+    // Prevents the connection from migrating to a cellular network while this
     // stream is open.
-    void DisableConnectionMigration();
+    void DisableConnectionMigrationToCellularNetwork();
 
     // Sets the priority of the stream to |priority|.
     void SetPriority(spdy::SpdyPriority priority);
@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     void OnPromiseHeaderList(quic::QuicStreamId promised_id,
                              size_t frame_len,
                              const quic::QuicHeaderList& header_list);
-    bool can_migrate();
+    bool can_migrate_to_cellular_network();
 
     const NetLogWithSource& net_log() const;
 
@@ -253,11 +253,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
-  // Prevents this stream from migrating to a new network. May cause other
-  // concurrent streams within the session to also not migrate.
-  void DisableConnectionMigration();
+  // Prevents this stream from migrating to a cellular network. May be reset
+  // when connection migrates to a cellular network.
+  void DisableConnectionMigrationToCellularNetwork();
 
-  bool can_migrate() { return can_migrate_; }
+  bool can_migrate_to_cellular_network() {
+    return can_migrate_to_cellular_network_;
+  }
 
   // True if this stream is the first data stream created on this session.
   bool IsFirstStream();
@@ -289,8 +291,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
 
   quic::QuicSpdyClientSessionBase* session_;
 
-  // Set to false if this stream to not be migrated during connection migration.
-  bool can_migrate_;
+  // Set to false if this stream should not be migrated to a cellular network
+  // during connection migration.
+  bool can_migrate_to_cellular_network_;
 
   // Stores the initial header if they arrive before the handle.
   spdy::SpdyHeaderBlock initial_headers_;

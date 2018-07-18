@@ -45,7 +45,7 @@ int CalculateLoadFlags(int load_flags,
   if (disable_cache)
     load_flags |= net::LOAD_DISABLE_CACHE;
   if (disable_connection_migration)
-    load_flags |= net::LOAD_DISABLE_CONNECTION_MIGRATION;
+    load_flags |= net::LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   return load_flags;
 }
 
