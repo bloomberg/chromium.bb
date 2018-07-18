@@ -246,7 +246,7 @@ public class WebXrVrTransitionTest {
     private void presentationPromiseUnresolvedDuringDonImpl(
             String url, WebXrVrTestFramework framework) throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        framework.enterSessionWithUserGestureOrFail();
+        framework.enterSessionWithUserGestureAndWait();
         framework.endTest();
     }
 
