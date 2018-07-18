@@ -3736,11 +3736,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['cfi']),
       },
 
-      # Remove this one after crbug.com/853946 is fixed.
-      'eve-arcnext-release': {
-          'useflags': append_useflags(['-cfi']),
-      },
-
       'chell-chrome-pfq': {
           'afdo_generate': True,
           'archive_build_debug': True,
