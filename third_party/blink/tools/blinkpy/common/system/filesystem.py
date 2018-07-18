@@ -257,7 +257,10 @@ class FileSystem(object):
 
         Returns a tuple of the file and the name.
         """
-        _, temp_name = tempfile.mkstemp(suffix)
+        temp_fd, temp_name = tempfile.mkstemp(suffix)
+        # Close the OS fd opened by mkstemp as we will reopen the file with an
+        # explict encoding.
+        os.close(temp_fd)
         f = codecs.open(temp_name, 'w', 'utf8')
         return f, temp_name
 

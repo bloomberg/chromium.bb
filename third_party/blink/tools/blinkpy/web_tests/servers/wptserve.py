@@ -5,6 +5,7 @@
 """Start and stop the WPTserve servers as they're used by the layout tests."""
 
 import datetime
+import json
 import logging
 
 from blinkpy.common.path_finder import PathFinder
@@ -37,13 +38,13 @@ class WPTServe(server_base.ServerBase):
         path_to_pywebsocket = finder.path_from_chromium_base('third_party', 'pywebsocket', 'src')
         path_to_wpt_support = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt')
         path_to_wpt_root = fs.join(path_to_wpt_support, 'wpt')
-        path_to_wpt_config = fs.join(path_to_wpt_support, 'wpt.config.json')
         path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.layout_tests_dir(), 'external', 'wpt'))
         path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets', 'handlers')
+        self._config_file = self._prepare_wptserve_config(path_to_wpt_support)
         wpt_script = fs.join(path_to_wpt_root, 'wpt')
         start_cmd = [self._port_obj.host.executable,
                      '-u', wpt_script, 'serve',
-                     '--config', path_to_wpt_config,
+                     '--config', self._config_file,
                      '--doc_root', path_to_wpt_tests]
 
         # TODO(burnik): Merge with default start_cmd once we roll in websockets.
@@ -59,15 +60,31 @@ class WPTServe(server_base.ServerBase):
 
         expiration_date = datetime.date(2025, 1, 4)
         if datetime.date.today() > expiration_date - datetime.timedelta(30):
-            logging.getLogger(__name__).error(
+            _log.error(
                 'Pre-generated keys and certificates are going to be expired at %s.'
-                ' Please re-generate them by following steps in %s/README.chromium.'
-                % (expiration_date.strftime('%b %d %Y'), path_to_wpt_support))
+                ' Please re-generate them by following steps in %s/README.chromium.',
+                expiration_date.strftime('%b %d %Y'), path_to_wpt_support)
+
+    def _prepare_wptserve_config(self, path_to_wpt_support):
+        fs = self._filesystem
+        template_path = fs.join(path_to_wpt_support, 'wpt.config.json')
+        config = json.loads(fs.read_text_file(template_path))
+        config['aliases'].append({
+            'url-path': '/gen/',
+            'local-dir': self._port_obj.generated_sources_directory()
+        })
+
+        f, temp_file = fs.open_text_tempfile('.json')
+        json.dump(config, f)
+        f.close()
+        return temp_file
 
     def _stop_running_server(self):
         self._wait_for_action(self._check_and_kill_wptserve)
         if self._filesystem.exists(self._pid_file):
             self._filesystem.remove(self._pid_file)
+        if self._filesystem.exists(self._config_file):
+            self._filesystem.remove(self._config_file)
 
     def _check_and_kill_wptserve(self):
         """Tries to kill wptserve.
