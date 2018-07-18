@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Utility functions for automation nodes in Select-to-Speak.
+// Utilities for automation nodes in Select-to-Speak.
+
+/**
+ * @constructor
+ */
+let NodeUtils = function() {};
 
 /**
  * Node state. Nodes can be on-screen like normal, or they may
@@ -11,7 +16,7 @@
  * root, i.e. if they were in a window that was closed.
  * @enum {number}
  */
-const NodeState = {
+NodeUtils.NodeState = {
   NODE_STATE_INVALID: 0,
   NODE_STATE_INVISIBLE: 1,
   NODE_STATE_NORMAL: 2,
@@ -21,30 +26,30 @@ const NodeState = {
  * Gets the current visiblity state for a given node.
  *
  * @param {AutomationNode} node The starting node.
- * @return {NodeState} the current node state.
+ * @return {NodeUtils.NodeState} the current node state.
  */
-function getNodeState(node) {
+NodeUtils.getNodeState = function(node) {
   if (node === undefined || node.root === null || node.root === undefined) {
     // The node has been removed from the tree, perhaps because the
     // window was closed.
-    return NodeState.NODE_STATE_INVALID;
+    return NodeUtils.NodeState.NODE_STATE_INVALID;
   }
   // This might not be populated correctly on children nodes even if their
   // parents or roots are now invisible.
   // TODO: Update the C++ bindings to set 'invisible' automatically based
   // on parents, rather than going through parents in JS below.
   if (node.state.invisible) {
-    return NodeState.NODE_STATE_INVISIBLE;
+    return NodeUtils.NodeState.NODE_STATE_INVISIBLE;
   }
   // Walk up the tree to make sure the window it is in is not invisible.
-  var window = getNearestContainingWindow(node);
+  var window = NodeUtils.getNearestContainingWindow(node);
   if (window != null && window.state[chrome.automation.StateType.INVISIBLE]) {
-    return NodeState.NODE_STATE_INVISIBLE;
+    return NodeUtils.NodeState.NODE_STATE_INVISIBLE;
   }
   // TODO: Also need a check for whether the window is minimized,
   // which would also return NodeState.NODE_STATE_INVISIBLE.
-  return NodeState.NODE_STATE_NORMAL;
-}
+  return NodeUtils.NodeState.NODE_STATE_NORMAL;
+};
 
 /**
  * Returns true if a node should be ignored by Select-to-Speak, or if it
@@ -55,20 +60,20 @@ function getNodeState(node) {
  * @param {boolean} includeOffscreen Whether to include offscreen nodes.
  * @return {boolean} whether this node should be ignored.
  */
-function shouldIgnoreNode(node, includeOffscreen) {
-  if (isNodeInvisible(node, includeOffscreen)) {
+NodeUtils.shouldIgnoreNode = function(node, includeOffscreen) {
+  if (NodeUtils.isNodeInvisible(node, includeOffscreen)) {
     return true;
   }
-  if (!node.name || isWhitespace(node.name)) {
-    if (isTextField(node)) {
+  if (!node.name || ParagraphUtils.isWhitespace(node.name)) {
+    if (NodeUtils.isTextField(node)) {
       // Text fields may also be marked by value.
-      return !node.value || isWhitespace(node.value);
+      return !node.value || ParagraphUtils.isWhitespace(node.value);
     }
     return true;
   }
   // The node should not be ignored.
   return false;
-}
+};
 
 /**
  * Returns true if a node is invisible for any reason.
@@ -77,18 +82,21 @@ function shouldIgnoreNode(node, includeOffscreen) {
  *     as visible type nodes.
  * @return {boolean} whether this node is invisible.
  */
-function isNodeInvisible(node, includeOffscreen) {
+NodeUtils.isNodeInvisible = function(node, includeOffscreen) {
   return !node.location || node.state.invisible ||
       (node.state.offscreen && !includeOffscreen);
-}
+};
 
 /**
  * Gets the first window containing this node.
+ * @param {AutomationNode} node The node to find a window for.
+ * @return {AutomationNode|undefined} The node representing the nearest
+ *     containing window.
  */
-function getNearestContainingWindow(node) {
+NodeUtils.getNearestContainingWindow = function(node) {
   // Go upwards to root nodes' parents until we find the first window.
   if (node.root.role == RoleType.ROOT_WEB_AREA) {
-    var nextRootParent = node;
+    let nextRootParent = node;
     while (nextRootParent != null && nextRootParent.role != RoleType.WINDOW &&
            nextRootParent.root != null &&
            nextRootParent.root.role == RoleType.ROOT_WEB_AREA) {
@@ -98,12 +106,12 @@ function getNearestContainingWindow(node) {
   }
   // If the parent isn't a root web area, just walk up the tree to find the
   // nearest window.
-  var parent = node;
+  let parent = node;
   while (parent != null && parent.role != chrome.automation.RoleType.WINDOW) {
     parent = parent.parent;
   }
   return parent;
-}
+};
 
 /**
  * Gets the length of a node's name. Returns 0 if the name is
@@ -111,9 +119,9 @@ function getNearestContainingWindow(node) {
  * @param {AutomationNode} node The node for which to check the name.
  * @return {number} The length of the node's name
  */
-function nameLength(node) {
+NodeUtils.nameLength = function(node) {
   return node.name ? node.name.length : 0;
-}
+};
 
 /**
  * Returns true if a node is a text field type, but not for any other type,
@@ -121,10 +129,10 @@ function nameLength(node) {
  * @param {!AutomationNode} node The node to check
  * @return {boolean} True if the node is a text field type.
  */
-function isTextField(node) {
+NodeUtils.isTextField = function(node) {
   return node.role == RoleType.TEXT_FIELD ||
       node.role == RoleType.TEXT_FIELD_WITH_COMBO_BOX;
-}
+};
 
 /**
  * Gets the first (left-most) leaf node of a node. Returns undefined if
@@ -132,13 +140,13 @@ function isTextField(node) {
  * @param {AutomationNode} node The node to search for the first leaf.
  * @return {AutomationNode|undefined} The leaf node.
  */
-function getFirstLeafChild(node) {
+NodeUtils.getFirstLeafChild = function(node) {
   let result = node.firstChild;
   while (result && result.firstChild) {
     result = result.firstChild;
   }
   return result;
-}
+};
 
 /**
  * Gets the first (left-most) leaf node of a node. Returns undefined
@@ -146,13 +154,13 @@ function getFirstLeafChild(node) {
  * @param {AutomationNode} node The node to search for the first leaf.
  * @return {AutomationNode|undefined} The leaf node.
  */
-function getLastLeafChild(node) {
+NodeUtils.getLastLeafChild = function(node) {
   let result = node.lastChild;
   while (result && result.lastChild) {
     result = result.lastChild;
   }
   return result;
-}
+};
 
 /**
  * Finds all nodes within the subtree rooted at |node| that overlap
@@ -164,10 +172,10 @@ function getLastLeafChild(node) {
  *     populated.
  * @return {boolean} True if any matches are found.
  */
-function findAllMatching(node, rect, nodes) {
+NodeUtils.findAllMatching = function(node, rect, nodes) {
   var found = false;
   for (var c = node.firstChild; c; c = c.nextSibling) {
-    if (findAllMatching(c, rect, nodes))
+    if (NodeUtils.findAllMatching(c, rect, nodes))
       found = true;
   }
 
@@ -176,11 +184,11 @@ function findAllMatching(node, rect, nodes) {
 
   // Closure needs node.location check here to allow the next few
   // lines to compile.
-  if (shouldIgnoreNode(node, /* don't include offscreen */ false) ||
+  if (NodeUtils.shouldIgnoreNode(node, /* don't include offscreen */ false) ||
       node.location === undefined)
     return false;
 
-  if (overlaps(node.location, rect)) {
+  if (RectUtils.overlaps(node.location, rect)) {
     if (!node.children || node.children.length == 0 ||
         node.children[0].role != RoleType.INLINE_TEXT_BOX) {
       // Only add a node if it has no inlineTextBox children. If
@@ -192,7 +200,7 @@ function findAllMatching(node, rect, nodes) {
   }
 
   return false;
-}
+};
 
 /**
  * Class representing a position on the accessibility, made of a
@@ -200,7 +208,7 @@ function findAllMatching(node, rect, nodes) {
  * @typedef {{node: (!AutomationNode),
  *            offset: (number)}}
  */
-var Position;
+NodeUtils.Position;
 
 /**
  * Finds the deep equivalent node where a selection starts given a node
@@ -212,14 +220,14 @@ var Position;
  * @param {number} offset The integer offset of the selection. This is
  * similar to chrome.automation.focusOffset.
  * @param {boolean} isStart whether this is the start or end of a selection.
- * @return {!Position} The node matching the selected offset.
+ * @return {!NodeUtils.Position} The node matching the selected offset.
  */
-function getDeepEquivalentForSelection(parent, offset, isStart) {
+NodeUtils.getDeepEquivalentForSelection = function(parent, offset, isStart) {
   if (parent.children.length == 0)
     return {node: parent, offset: offset};
   // Create a stack of children nodes to search through.
   let nodesToCheck;
-  if (isTextField(parent) && parent.firstChild &&
+  if (NodeUtils.isTextField(parent) && parent.firstChild &&
       parent.firstChild.firstChild) {
     // Skip ahead.
     nodesToCheck = parent.firstChild.children.slice().reverse();
@@ -239,12 +247,12 @@ function getDeepEquivalentForSelection(parent, offset, isStart) {
       // field is selected. Ignore its contents.
       // If only part of the text field was selected, the parent type would
       // have been a text field.
-      if (!isTextField(node)) {
+      if (!NodeUtils.isTextField(node)) {
         nodesToCheck = nodesToCheck.concat(node.children.slice().reverse());
       }
       if (node.role != RoleType.LINE_BREAK &&
           (node.parent && node.parent.parent &&
-           !isTextField(node.parent.parent))) {
+           !NodeUtils.isTextField(node.parent.parent))) {
         // If this is inside a textField, or if it is a line break, don't
         // count the node itself. Otherwise it counts.
         index += 1;
@@ -253,7 +261,7 @@ function getDeepEquivalentForSelection(parent, offset, isStart) {
       if (node.role == RoleType.STATIC_TEXT ||
           node.role == RoleType.INLINE_TEXT_BOX) {
         // How many characters are in the name.
-        index += nameLength(node);
+        index += NodeUtils.nameLength(node);
       } else {
         // Add one for itself only.
         index += 1;
@@ -270,25 +278,32 @@ function getDeepEquivalentForSelection(parent, offset, isStart) {
       // normal staticText will count for itself plus one. This is probably
       // because textFields cannot be partially selected if other elements
       // outside of themselves are selected.
-      if (isTextField(node)) {
-        let leafNode =
-            isStart ? getFirstLeafChild(node) : getLastLeafChild(node);
+      if (NodeUtils.isTextField(node)) {
+        let leafNode = isStart ? NodeUtils.getFirstLeafChild(node) :
+                                 NodeUtils.getLastLeafChild(node);
         if (leafNode) {
-          return {node: leafNode, offset: isStart ? 0 : nameLength(leafNode)};
+          return {
+            node: leafNode,
+            offset: isStart ? 0 : NodeUtils.nameLength(leafNode)
+          };
         }
       }
-      let result = offset - index + nameLength(node);
+      let result = offset - index + NodeUtils.nameLength(node);
       return {node: node, offset: result > 0 ? result : 0};
     }
   }
   // We are at the end of the last node.
   // If it's a textField we skipped, go ahead and find the first (or last, if
   // !|isStart|) child, otherwise just return this node itself.
-  if (isTextField(node)) {
-    let leafNode = isStart ? getFirstLeafChild(node) : getLastLeafChild(node);
+  if (NodeUtils.isTextField(node)) {
+    let leafNode = isStart ? NodeUtils.getFirstLeafChild(node) :
+                             NodeUtils.getLastLeafChild(node);
     if (leafNode) {
-      return {node: leafNode, offset: isStart ? 0 : nameLength(leafNode)};
+      return {
+        node: leafNode,
+        offset: isStart ? 0 : NodeUtils.nameLength(leafNode)
+      };
     }
   }
-  return {node: node, offset: nameLength(node)};
-}
+  return {node: node, offset: NodeUtils.nameLength(node)};
+};

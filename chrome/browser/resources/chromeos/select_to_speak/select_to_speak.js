@@ -137,7 +137,7 @@ let SelectToSpeak = function() {
   /** @private {boolean} */
   this.readAfterClose_ = true;
 
-  /** @private {?NodeGroupItem} */
+  /** @private {?ParagraphUtils.NodeGroupItem} */
   this.currentNode_ = null;
 
   /** @private {number} */
@@ -226,9 +226,9 @@ SelectToSpeak.prototype = {
       // TODO(katie): Determine if this work-around needs to be ARC++ only. If
       // so, look for classname exoshell on the root or root parent to confirm
       // that a node is in ARC++.
-      if (!findAllMatching(root, rect, nodes) && focusedNode &&
+      if (!NodeUtils.findAllMatching(root, rect, nodes) && focusedNode &&
           focusedNode.root.role != RoleType.DESKTOP) {
-        findAllMatching(focusedNode.root, rect, nodes);
+        NodeUtils.findAllMatching(focusedNode.root, rect, nodes);
       }
       if (nodes.length == 1 &&
           nodes[0].className == SELECT_TO_SPEAK_TRAY_CLASS_NAME) {
@@ -270,10 +270,10 @@ SelectToSpeak.prototype = {
     // fix the Blink bug where focus offset is not specific enough to
     // say which node is selected and at what charOffset. See
     // https://crbug.com/803160 for more.
-    let anchorPosition =
-        getDeepEquivalentForSelection(anchorObject, anchorOffset, true);
-    let focusPosition =
-        getDeepEquivalentForSelection(focusObject, focusOffset, false);
+    let anchorPosition = NodeUtils.getDeepEquivalentForSelection(
+        anchorObject, anchorOffset, true);
+    let focusPosition = NodeUtils.getDeepEquivalentForSelection(
+        focusObject, focusOffset, false);
     let firstPosition;
     let lastPosition;
     if (anchorPosition.node === focusPosition.node) {
@@ -314,16 +314,18 @@ SelectToSpeak.prototype = {
 
   /**
    * Reads nodes between the first and last position selected by the user.
-   * @param {Position} firstPosition The first position at which to start
+   * @param {NodeUtils.Position} firstPosition The first position at which to
+   *     start reading.
+   * @param {NodeUtils.Position} lastPosition The last position at which to stop
    *     reading.
-   * @param {Position} lastPosition The last position at which to stop reading.
    * @param {AutomationNode} focusedNode The node with user focus.
    */
   readNodesInSelection_: function(firstPosition, lastPosition, focusedNode) {
     let nodes = [];
     let selectedNode = firstPosition.node;
     if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
-        !shouldIgnoreNode(selectedNode, /* include offscreen */ true)) {
+        !NodeUtils.shouldIgnoreNode(
+            selectedNode, /* include offscreen */ true)) {
       // Initialize to the first node in the list if it's valid and inside
       // of the offset bounds.
       nodes.push(selectedNode);
@@ -345,7 +347,7 @@ SelectToSpeak.prototype = {
           AutomationPredicate.leafWithText);
       if (!selectedNode) {
         break;
-      } else if (isTextField(selectedNode)) {
+      } else if (NodeUtils.isTextField(selectedNode)) {
         // Dive down into the next text node.
         // Why does leafWithText return text fields?
         selectedNode = AutomationUtil.findNextNode(
@@ -354,7 +356,8 @@ SelectToSpeak.prototype = {
         if (!selectedNode)
           break;
       }
-      if (!shouldIgnoreNode(selectedNode, /* include offscreen */ true))
+      if (!NodeUtils.shouldIgnoreNode(
+              selectedNode, /* include offscreen */ true))
         nodes.push(selectedNode);
     }
     if (nodes.length > 0) {
@@ -377,7 +380,8 @@ SelectToSpeak.prototype = {
         }
         let tab = tabs[0];
         this.readClipboardDataTimeMs_ = Date.now();
-        this.currentNode_ = new NodeGroupItem(driveAppRootNode, 0, false);
+        this.currentNode_ =
+            new ParagraphUtils.NodeGroupItem(driveAppRootNode, 0, false);
         chrome.tabs.executeScript(tab.id, {
           allFrames: true,
           matchAboutBlank: true,
@@ -577,7 +581,7 @@ SelectToSpeak.prototype = {
     this.prepareForSpeech_();
     for (var i = 0; i < nodes.length; i++) {
       let node = nodes[i];
-      let nodeGroup = buildNodeGroup(nodes, i);
+      let nodeGroup = ParagraphUtils.buildNodeGroup(nodes, i);
       if (i == 0) {
         // We need to start in the middle of a node. Remove all text before
         // the start index so that it is not spoken.
@@ -589,7 +593,8 @@ SelectToSpeak.prototype = {
           if (nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText) {
             // The first node is inlineText type. Find the start index in
             // its staticText parent.
-            let startIndexInParent = getStartCharIndexInParent(nodes[0]);
+            let startIndexInParent =
+                ParagraphUtils.getStartCharIndexInParent(nodes[0]);
             opt_startIndex += startIndexInParent;
             nodeGroup.text = ' '.repeat(opt_startIndex) +
                 nodeGroup.text.substr(opt_startIndex);
@@ -606,7 +611,8 @@ SelectToSpeak.prototype = {
         // index counting functions don't get confused.
         // This only applies to inlineText nodes.
         if (nodeGroup.nodes[nodeGroup.nodes.length - 1].hasInlineText) {
-          let startIndexInParent = getStartCharIndexInParent(nodes[i]);
+          let startIndexInParent =
+              ParagraphUtils.getStartCharIndexInParent(nodes[i]);
           opt_endIndex += startIndexInParent;
           nodeGroup.text = nodeGroup.text.substr(
               0,
@@ -946,12 +952,13 @@ SelectToSpeak.prototype = {
    * Hides the speech and focus ring states if necessary based on a node's
    * current state.
    *
-   * @param {NodeGroupItem} nodeGroupItem The node to use for updates
+   * @param {ParagraphUtils.NodeGroupItem} nodeGroupItem The node to use for
+   *     updates.
    * @param {boolean} inForeground Whether the node is in the foreground window.
    */
   updateFromNodeState_: function(nodeGroupItem, inForeground) {
-    switch (getNodeState(nodeGroupItem.node)) {
-      case NodeState.NODE_STATE_INVALID:
+    switch (NodeUtils.getNodeState(nodeGroupItem.node)) {
+      case NodeUtils.NodeState.NODE_STATE_INVALID:
         // If the node is invalid, continue speech unless readAfterClose_
         // is set to true. See https://crbug.com/818835 for more.
         if (this.readAfterClose_) {
@@ -961,14 +968,14 @@ SelectToSpeak.prototype = {
           this.stopAll_();
         }
         break;
-      case NodeState.NODE_STATE_INVISIBLE:
+      case NodeUtils.NodeState.NODE_STATE_INVISIBLE:
         // If it is invisible but still valid, just clear the focus ring.
         // Don't clear the current node because we may still use it
         // if it becomes visibile later.
         this.clearFocusRing_();
         this.visible_ = false;
         break;
-      case NodeState.NODE_STATE_NORMAL:
+      case NodeUtils.NodeState.NODE_STATE_NORMAL:
       default:
         if (inForeground && !this.visible_) {
           this.visible_ = true;
@@ -984,14 +991,15 @@ SelectToSpeak.prototype = {
   /**
    * Updates the speech and focus ring states based on a node's current state.
    *
-   * @param {NodeGroupItem} nodeGroupItem The node to use for updates
+   * @param {ParagraphUtils.NodeGroupItem} nodeGroupItem The node to use for
+   *    updates.
    */
   updateHighlightAndFocus_: function(nodeGroupItem) {
     if (!this.visible_) {
       return;
     }
     let node = nodeGroupItem.hasInlineText && this.currentNodeWord_ ?
-        findInlineTextNodeByCharacterIndex(
+        ParagraphUtils.findInlineTextNodeByCharacterIndex(
             nodeGroupItem.node, this.currentNodeWord_.start) :
         nodeGroupItem.node;
     if (this.scrollToSpokenNode_ && node.state.offscreen) {
@@ -1003,7 +1011,7 @@ SelectToSpeak.prototype = {
       // Highlight should be only for text.
       // Note that boundsForRange doesn't work on staticText.
       if (node.role == RoleType.INLINE_TEXT_BOX) {
-        let charIndexInParent = getStartCharIndexInParent(node);
+        let charIndexInParent = ParagraphUtils.getStartCharIndexInParent(node);
         chrome.accessibilityPrivate.setHighlights(
             [node.boundsForRange(
                 this.currentNodeWord_.start - charIndexInParent,
@@ -1060,8 +1068,9 @@ SelectToSpeak.prototype = {
       return;
     }
     chrome.automation.getFocus(function(focusedNode) {
-      var window = getNearestContainingWindow(evt.target);
-      var currentWindow = getNearestContainingWindow(this.currentNode_.node);
+      var window = NodeUtils.getNearestContainingWindow(evt.target);
+      var currentWindow =
+          NodeUtils.getNearestContainingWindow(this.currentNode_.node);
       var inForeground =
           currentWindow != null && window != null && currentWindow == window;
       if (!inForeground && focusedNode && currentWindow) {
@@ -1070,7 +1079,8 @@ SelectToSpeak.prototype = {
         // which received the hit test request is not part of the tree that
         // contains the actual content. In such cases, use focus to get the
         // appropriate root.
-        var focusedWindow = getNearestContainingWindow(focusedNode.root);
+        var focusedWindow =
+            NodeUtils.getNearestContainingWindow(focusedNode.root);
         inForeground = focusedWindow != null && currentWindow == focusedWindow;
       }
       this.updateFromNodeState_(this.currentNode_, inForeground);
@@ -1094,8 +1104,9 @@ SelectToSpeak.prototype = {
       return;
     }
     // Get the next word based on the event's charIndex.
-    let nextWordStart = getNextWordStart(text, charIndex, this.currentNode_);
-    let nextWordEnd = getNextWordEnd(
+    let nextWordStart =
+        WordUtils.getNextWordStart(text, charIndex, this.currentNode_);
+    let nextWordEnd = WordUtils.getNextWordEnd(
         text, opt_startIndex === undefined ? nextWordStart : opt_startIndex,
         this.currentNode_);
     // Map the next word into the node's index from the text.
@@ -1104,7 +1115,7 @@ SelectToSpeak.prototype = {
         opt_startIndex - this.currentNode_.startChar;
     let nodeEnd = Math.min(
         nextWordEnd - this.currentNode_.startChar,
-        nameLength(this.currentNode_.node));
+        NodeUtils.nameLength(this.currentNode_.node));
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
         nodeStart <= nodeEnd) {
