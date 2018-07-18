@@ -58,13 +58,13 @@ fuchsia::fonts::FontSlant ToFontSlant(SkFontStyle::Slant slant) {
 
 void UnmapMemory(const void* buffer, void* context) {
   const uintptr_t size = reinterpret_cast<uintptr_t>(context);
-  zx::vmar::root_self().unmap(reinterpret_cast<uintptr_t>(buffer), size);
+  zx::vmar::root_self()->unmap(reinterpret_cast<uintptr_t>(buffer), size);
 }
 
 sk_sp<SkData> BufferToSkData(fuchsia::mem::Buffer data) {
   uintptr_t buffer = 0;
-  zx_status_t status = zx::vmar::root_self().map(0, data.vmo, 0, data.size,
-                                                 ZX_VM_FLAG_PERM_READ, &buffer);
+  zx_status_t status = zx::vmar::root_self()->map(
+      0, data.vmo, 0, data.size, ZX_VM_FLAG_PERM_READ, &buffer);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmar_map";
     return nullptr;
