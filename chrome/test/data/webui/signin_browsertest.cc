@@ -5,8 +5,7 @@
 #include "chrome/test/data/webui/signin_browsertest.h"
 
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "chrome/common/chrome_features.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 
 SigninBrowserTest::SigninBrowserTest() {}
 
@@ -19,5 +18,7 @@ void SigninBrowserTest::EnableDice() {
 
 void SigninBrowserTest::EnableUnity() {
   EnableDice();
-  scoped_feature_list_.InitAndEnableFeature(signin::kUnifiedConsent);
+  scoped_unified_consent_ =
+      std::make_unique<unified_consent::ScopedUnifiedConsent>(
+          unified_consent::UnifiedConsentFeatureState::kEnabledNoBump);
 }

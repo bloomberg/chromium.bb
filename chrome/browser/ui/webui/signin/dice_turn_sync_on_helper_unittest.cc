@@ -37,9 +37,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/scoped_unified_consent.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -409,7 +409,7 @@ class DiceTurnSyncOnHelperTest : public DiceTurnSyncOnHelperTestBase {
   DiceTurnSyncOnHelperTest() = default;
 
  private:
-  ScopedAccountConsistencyDicePrepareMigration scoped_dice;
+  ScopedAccountConsistencyDicePrepareMigration scoped_dice_;
 };
 
 // Test class with Dice and UnifiedConsent enabled.
@@ -417,13 +417,13 @@ class DiceTurnSyncOnHelperTestWithUnifiedConsent
     : public DiceTurnSyncOnHelperTestBase {
  public:
   DiceTurnSyncOnHelperTestWithUnifiedConsent()
-      : scoped_unified_consent(
-            signin::UnifiedConsentFeatureState::kEnabledNoBump) {}
+      : scoped_unified_consent_(
+            unified_consent::UnifiedConsentFeatureState::kEnabledNoBump) {}
   ~DiceTurnSyncOnHelperTestWithUnifiedConsent() override {}
 
  private:
-  ScopedAccountConsistencyDice scoped_dice;
-  signin::ScopedUnifiedConsent scoped_unified_consent;
+  ScopedAccountConsistencyDice scoped_dice_;
+  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
 };
 
 // TestDiceTurnSyncOnHelperDelegate implementation.

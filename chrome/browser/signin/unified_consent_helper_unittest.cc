@@ -7,8 +7,10 @@
 #include "build/buildflag.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/scoped_unified_consent.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "components/unified_consent/feature.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,13 +24,11 @@ TEST(UnifiedConsentHelperTest, DiceDisabled) {
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
 
-  for (signin::UnifiedConsentFeatureState state :
-       {signin::UnifiedConsentFeatureState::kDisabled,
-        signin::UnifiedConsentFeatureState::kEnabledNoBump,
-        signin::UnifiedConsentFeatureState::kEnabledWithBump}) {
-    signin::ScopedUnifiedConsent scoped_state(state);
-    EXPECT_EQ(signin::UnifiedConsentFeatureState::kDisabled,
-              GetUnifiedConsentFeatureState(&profile));
+  for (unified_consent::UnifiedConsentFeatureState state :
+       {unified_consent::UnifiedConsentFeatureState::kDisabled,
+        unified_consent::UnifiedConsentFeatureState::kEnabledNoBump,
+        unified_consent::UnifiedConsentFeatureState::kEnabledWithBump}) {
+    unified_consent::ScopedUnifiedConsent scoped_state(state);
     EXPECT_FALSE(IsUnifiedConsentEnabled(&profile));
     EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
   }
@@ -48,33 +48,27 @@ TEST(UnifiedConsentHelperTest, FeatureState) {
   TestingProfile profile;
 
   // Unified consent is disabled by default.
-  EXPECT_EQ(signin::UnifiedConsentFeatureState::kDisabled,
-            GetUnifiedConsentFeatureState(&profile));
+  EXPECT_FALSE(IsUnifiedConsentEnabled(&profile));
+  EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
 
   // The feature state for the profile is the same as the global feature state.
   {
-    signin::ScopedUnifiedConsent scoped_disabled(
-        signin::UnifiedConsentFeatureState::kDisabled);
-    EXPECT_EQ(signin::UnifiedConsentFeatureState::kDisabled,
-              GetUnifiedConsentFeatureState(&profile));
+    unified_consent::ScopedUnifiedConsent scoped_disabled(
+        unified_consent::UnifiedConsentFeatureState::kDisabled);
     EXPECT_FALSE(IsUnifiedConsentEnabled(&profile));
     EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
   }
 
   {
-    signin::ScopedUnifiedConsent scoped_no_bump(
-        signin::UnifiedConsentFeatureState::kEnabledNoBump);
-    EXPECT_EQ(signin::UnifiedConsentFeatureState::kEnabledNoBump,
-              GetUnifiedConsentFeatureState(&profile));
+    unified_consent::ScopedUnifiedConsent scoped_no_bump(
+        unified_consent::UnifiedConsentFeatureState::kEnabledNoBump);
     EXPECT_TRUE(IsUnifiedConsentEnabled(&profile));
     EXPECT_FALSE(IsUnifiedConsentBumpEnabled(&profile));
   }
 
   {
-    signin::ScopedUnifiedConsent scoped_bump(
-        signin::UnifiedConsentFeatureState::kEnabledWithBump);
-    EXPECT_EQ(signin::UnifiedConsentFeatureState::kEnabledWithBump,
-              GetUnifiedConsentFeatureState(&profile));
+    unified_consent::ScopedUnifiedConsent scoped_bump(
+        unified_consent::UnifiedConsentFeatureState::kEnabledWithBump);
     EXPECT_TRUE(IsUnifiedConsentEnabled(&profile));
     EXPECT_TRUE(IsUnifiedConsentBumpEnabled(&profile));
   }

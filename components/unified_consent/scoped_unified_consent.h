@@ -2,30 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SCOPED_UNIFIED_CONSENT_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_SCOPED_UNIFIED_CONSENT_H_
+#ifndef COMPONENTS_UNIFIED_CONSENT_SCOPED_UNIFIED_CONSENT_H_
+#define COMPONENTS_UNIFIED_CONSENT_SCOPED_UNIFIED_CONSENT_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/unified_consent/feature.h"
 
-namespace signin {
+namespace unified_consent {
 
 // Changes the unified consent feature state while it is in scope. Useful for
 // tests.
+// Also enables the feature |switches::kSyncUserConsentSeparateType| as
+// unified consent depends on its.
 class ScopedUnifiedConsent {
  public:
   explicit ScopedUnifiedConsent(UnifiedConsentFeatureState state);
   ~ScopedUnifiedConsent();
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList sync_user_consent_separate_type_feature_list_;
+  base::test::ScopedFeatureList unified_consent_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUnifiedConsent);
 };
 
-}  // namespace signin
+}  // namespace unified_consent
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SCOPED_UNIFIED_CONSENT_H_
+#endif  // COMPONENTS_UNIFIED_CONSENT_SCOPED_UNIFIED_CONSENT_H_

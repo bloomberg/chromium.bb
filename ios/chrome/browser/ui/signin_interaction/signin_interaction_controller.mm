@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -106,7 +107,7 @@ using signin_ui::CompletionCallback;
   completionCallback_ = [completion copy];
   ios::ChromeIdentityService* identityService =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  if (base::FeatureList::IsEnabled(signin::kUnifiedConsent)) {
+  if (IsUnifiedConsentEnabled()) {
     [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
   } else if (identity) {
     DCHECK(identityService->IsValidIdentity(identity));

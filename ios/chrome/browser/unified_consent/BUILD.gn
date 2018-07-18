@@ -5,6 +5,8 @@
 source_set("unified_consent") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "feature.cc",
+    "feature.h",
     "unified_consent_service_client_impl.cc",
     "unified_consent_service_client_impl.h",
     "unified_consent_service_factory.cc",
