@@ -5,6 +5,7 @@
 #include "components/ntp_tiles/constants.h"
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_features.h"
 
 namespace ntp_tiles {
@@ -30,14 +31,22 @@ const base::Feature kNtpCustomLinks{"NewTabPageCustomLinks",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsMDIconsEnabled() {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   return base::FeatureList::IsEnabled(kNtpIcons) ||
          base::FeatureList::IsEnabled(kNtpCustomLinks) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
+#else
+  return false;
+#endif
 }
 
 bool IsMDCustomLinksEnabled() {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   return base::FeatureList::IsEnabled(kNtpCustomLinks) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
+#else
+  return false;
+#endif
 }
 
 }  // namespace ntp_tiles

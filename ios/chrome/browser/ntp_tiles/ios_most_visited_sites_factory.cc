@@ -27,6 +27,7 @@ IOSMostVisitedSitesFactory::NewForBrowserState(
       ios::TopSitesFactory::GetForBrowserState(browser_state),
       suggestions::SuggestionsServiceFactory::GetForBrowserState(browser_state),
       IOSPopularSitesFactory::NewForBrowserState(browser_state),
+      /*custom_links=*/nullptr,
       std::make_unique<ntp_tiles::IconCacherImpl>(
           ios::FaviconServiceFactory::GetForBrowserState(
               browser_state, ServiceAccessType::IMPLICIT_ACCESS),

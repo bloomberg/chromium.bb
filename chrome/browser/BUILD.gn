@@ -908,6 +908,8 @@ jumbo_split_static_library("browser") {
     "ntp_snippets/download_suggestions_provider.h",
     "ntp_snippets/ntp_snippets_metrics.cc",
     "ntp_snippets/ntp_snippets_metrics.h",
+    "ntp_tiles/chrome_custom_links_manager_factory.cc",
+    "ntp_tiles/chrome_custom_links_manager_factory.h",
     "ntp_tiles/chrome_most_visited_sites_factory.cc",
     "ntp_tiles/chrome_most_visited_sites_factory.h",
     "ntp_tiles/chrome_popular_sites_factory.cc",
