@@ -15,6 +15,7 @@ import android.view.View;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.ui.UiUtils;
 
 import java.lang.ref.WeakReference;
@@ -204,7 +205,7 @@ public class ActivityWindowAndroid
 
     private void storeCallbackData(int requestCode, IntentCallback callback, Integer errorId) {
         mOutstandingIntents.put(requestCode, callback);
-        mIntentErrors.put(
-                requestCode, errorId == null ? null : mApplicationContext.getString(errorId));
+        mIntentErrors.put(requestCode,
+                errorId == null ? null : ContextUtils.getApplicationContext().getString(errorId));
     }
 }

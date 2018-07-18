@@ -15,6 +15,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -80,8 +81,8 @@ public class VrWindowAndroid
     private class ActivityAndroidPermissionDelegate implements AndroidPermissionDelegate {
         @Override
         public boolean hasPermission(String permission) {
-            return ApiCompatibilityUtils.checkPermission(
-                           mApplicationContext, permission, Process.myPid(), Process.myUid())
+            return ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                           permission, Process.myPid(), Process.myUid())
                     == PackageManager.PERMISSION_GRANTED;
         }
 
