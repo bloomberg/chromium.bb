@@ -301,6 +301,7 @@ void AudioDecoderAndroid::CreateDecoder() {
   // Create a decoder.
   decoder_ = CastAudioDecoder::Create(
       task_runner_, config_, kDecoderSampleFormat,
+      CastAudioDecoder::OutputChannelLayoutFromConfig(config_),
       base::Bind(&AudioDecoderAndroid::OnDecoderInitialized,
                  weak_factory_.GetWeakPtr()));
 }

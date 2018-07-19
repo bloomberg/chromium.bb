@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/channel_layout.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -42,17 +43,22 @@ class CastAudioDecoder {
       const scoped_refptr<media::DecoderBufferBase>& decoded)> DecodeCallback;
 
   // Creates a CastAudioDecoder instance for the given |config|. Decoding must
-  // occur on the same thread as |task_runner|. Returns an empty scoped_ptr if
+  // occur on the same thread as |task_runner|. Returns an empty unique_ptr if
   // the decoder could not be created.
   static std::unique_ptr<CastAudioDecoder> Create(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const media::AudioConfig& config,
       OutputFormat output_format,
+      ::media::ChannelLayout output_channel_layout,
       const InitializedCallback& initialized_callback);
 
   // Given a CastAudioDecoder::OutputFormat, return the size of each sample in
   // that OutputFormat in bytes.
   static int OutputFormatSizeInBytes(CastAudioDecoder::OutputFormat format);
+
+  // Get output channel layout to be used by CastAudioDecoder from |config|.
+  static ::media::ChannelLayout OutputChannelLayoutFromConfig(
+      const AudioConfig& config);
 
   CastAudioDecoder() {}
   virtual ~CastAudioDecoder() {}

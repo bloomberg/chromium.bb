@@ -328,6 +328,7 @@ void AudioDecoderForMixer::CreateDecoder() {
   // Create a decoder.
   decoder_ = CastAudioDecoder::Create(
       task_runner_, config_, kDecoderSampleFormat,
+      ::media::CHANNEL_LAYOUT_STEREO,
       base::Bind(&AudioDecoderForMixer::OnDecoderInitialized,
                  weak_factory_.GetWeakPtr()));
 }
