@@ -153,9 +153,16 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
 Vector<uint8_t> ConvertFixedSizeArray(
     const blink::ArrayBufferOrArrayBufferView& buffer,
     unsigned length) {
-  if (buffer.GetAsArrayBufferView().View()->byteLength() != length) {
+  if (buffer.IsArrayBuffer() &&
+      (buffer.GetAsArrayBuffer()->ByteLength() != length)) {
     return Vector<uint8_t>();
   }
+
+  if (buffer.IsArrayBufferView() &&
+      buffer.GetAsArrayBufferView().View()->byteLength() != length) {
+    return Vector<uint8_t>();
+  }
+
   return ConvertTo<Vector<uint8_t>>(buffer);
 }
 
@@ -476,9 +483,9 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
     if (extensions.hasAppid()) {
       mojo_options->appid = extensions.appid();
     }
-    if (extensions.hasCableAuthenticationData()) {
+    if (extensions.hasCableAuthentication()) {
       Vector<CableAuthenticationPtr> mojo_data;
-      for (const auto& data : extensions.cableAuthenticationData()) {
+      for (const auto& data : extensions.cableAuthentication()) {
         CableAuthenticationPtr mojo_cable = CableAuthentication::From(data);
         if (mojo_cable) {
           mojo_data.push_back(std::move(mojo_cable));
