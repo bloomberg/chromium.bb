@@ -1099,6 +1099,13 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 		int passIC; /* Instruction counter */
 		PassRuleMatch patternMatch;
 		back_setBefore(table, output, &beforeAttributes);
+		if ((allUpper == 1) && (beforeAttributes & CTC_UpperCase))
+			// Capsword in progress
+			allUpper = 2;
+		else if ((allUpper == 2) && !(beforeAttributes & CTC_UpperCase) &&
+				!(beforeAttributes & CTC_CapsMode))
+			// terminate capsword
+			allUpper = 0;
 		if ((itsANumber == 2) && output->length > 0 &&
 				!(beforeAttributes & CTC_LitDigit) &&
 				!(beforeAttributes & CTC_NumericMode))

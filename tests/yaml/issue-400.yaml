@@ -163,7 +163,6 @@ tests:
   # Non-letter cancels a word in capitals
   - - ",abc%abc"
     - "ABC%abc"
-    - {xfail: true}
   # Number cancels a word in capitals
   - - ",abc#abc;abc"
     - "ABC123abc"
