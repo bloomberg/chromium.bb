@@ -65,6 +65,8 @@ static_library("impl") {
 
   if (!is_android) {
     sources += [
+      "fcm_network_handler.cc",
+      "fcm_network_handler.h",
       "fcm_sync_invalidation_listener.cc",
       "fcm_sync_invalidation_listener.h",
       "fcm_sync_network_channel.cc",
@@ -154,6 +156,7 @@ source_set("unit_tests") {
     # Non-Android tests.
     sources += [
       "fake_invalidator_unittest.cc",
+      "fcm_network_handler_unittests.cc",
       "fcm_sync_invalidation_listener_unittest.cc",
       "gcm_invalidation_bridge_unittest.cc",
       "gcm_network_channel_unittest.cc",
@@ -180,6 +183,7 @@ source_set("unit_tests") {
       "//components/signin/core/browser:test_support",
       "//components/sync_preferences:test_support",
       "//google_apis:test_support",
+      "//google_apis/gcm:gcm",
       "//net",
       "//services/identity/public/cpp:test_support",
     ]
