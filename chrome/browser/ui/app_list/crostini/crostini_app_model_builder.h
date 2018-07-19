@@ -38,6 +38,14 @@ class CrostiniAppModelBuilder
 
   void OnCrostiniEnabledChanged();
 
+  // Creates root folder for Crostini apps in case it was not created or sync
+  // item does not exist. Once it is created sync item is allocated and it will
+  // be reusedto restore root folder on demand automatically.
+  void MaybeCreateRootFolder();
+
+  // Set to true in case root folder was created on demand.
+  bool root_folder_created_ = false;
+
   // Observer Crostini installation so we can start showing The Terminal app.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
