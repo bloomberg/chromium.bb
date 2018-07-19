@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_PAGE_AGENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Page.h"
@@ -157,6 +158,11 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response setFontSizes(
       std::unique_ptr<protocol::Page::FontSizes>) override;
 
+  protocol::Response setProduceCompilationCache(bool enabled) override;
+  protocol::Response addCompilationCache(const String& url,
+                                         const String& data) override;
+  protocol::Response clearCompilationCache() override;
+
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
   void DidNavigateWithinDocument(LocalFrame*);
@@ -187,6 +193,10 @@ class CORE_EXPORT InspectorPageAgent final
                   const AtomicString&,
                   const WebWindowFeatures&,
                   bool);
+  void ConsumeCompilationCache(const ScriptSourceCode& source,
+                               v8::ScriptCompiler::CachedData**);
+  void ProduceCompilationCache(const ScriptSourceCode& source,
+                               v8::Local<v8::Script> script);
 
   // Inspector Controller API
   void Restore() override;
@@ -223,6 +233,7 @@ class CORE_EXPORT InspectorPageAgent final
   std::unique_ptr<protocol::Page::FrameResourceTree> BuildObjectForResourceTree(
       LocalFrame*);
   Member<InspectedFrames> inspected_frames_;
+  HashMap<String, Vector<char>> compilation_cache_;
   v8_inspector::V8InspectorSession* v8_session_;
   Client* client_;
   long last_script_identifier_;
