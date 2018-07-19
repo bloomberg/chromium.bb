@@ -5,6 +5,7 @@
 #import <ChromeWebView/ChromeWebView.h>
 #import <Foundation/Foundation.h>
 
+#import "base/test/ios/wait_util.h"
 #import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -18,29 +19,39 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+
 namespace ios_web_view {
 
 // Tests public methods in CWVWebView.
+//
+// Note that some methods are covered by other tests in this directory.
 class WebViewTest : public ios_web_view::WebViewIntTest {
  public:
-  std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
+  void SetUp() override {
+    test_server_->RegisterRequestHandler(base::BindRepeating(
+        &WebViewTest::CaptureRequestHandler, base::Unretained(this)));
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> CaptureRequestHandler(
       const net::test_server::HttpRequest& request) {
-    last_request_ = request;
+    if (request.relative_url == "/CaptureRequest") {
+      last_request_ = std::make_unique<net::test_server::HttpRequest>(request);
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_content(
+          "<html><body>CaptureRequestHTML</body></html>");
+      return std::move(http_response);
+    }
     return nullptr;
   }
 
-  net::test_server::HttpRequest last_request_;
+  std::unique_ptr<net::test_server::HttpRequest> last_request_;
 };
 
 // Tests +[CWVWebView setUserAgentProduct] and +[CWVWebView userAgentProduct].
 TEST_F(WebViewTest, UserAgentProduct) {
-  // Registers a custom handler to capture HTTP headers.
-  // /echoheader?User-Agent provided by EmbeddedTestServer cannot be used here
-  // because it returns content with type text/plain, but we cannot extract the
-  // content using test::WaitForWebViewContainingTextOrTimeout() because
-  // JavaScript cannot be executed on text/plain content.
-  test_server_->RegisterRequestHandler(base::BindRepeating(
-      &WebViewTest::TestRequestHandler, base::Unretained(this)));
   ASSERT_TRUE(test_server_->Start());
 
   [CWVWebView setUserAgentProduct:@"MyUserAgentProduct"];
@@ -49,15 +60,60 @@ TEST_F(WebViewTest, UserAgentProduct) {
   // Cannot use existing |web_view_| here because the change above may only
   // affect web views created after the change.
   CWVWebView* web_view = test::CreateWebView();
-  GURL url = test_server_->GetURL("/");
+  GURL url = test_server_->GetURL("/CaptureRequest");
   ASSERT_TRUE(test::LoadUrl(web_view, net::NSURLWithGURL(url)));
 
-  // Tests that the web view has sent User-Agent HTTP header with the specified
-  // product name.
-  auto user_agent_it = last_request_.headers.find("User-Agent");
-  ASSERT_NE(last_request_.headers.end(), user_agent_it);
+  // Investigates the HTTP headers captured by CaptureRequestHandler(), and
+  // tests that they include User-Agent HTTP header with the specified product
+  // name. /echoheader?User-Agent provided by EmbeddedTestServer cannot be used
+  // here because it returns content with type text/plain, but we cannot extract
+  // the content using test::WaitForWebViewContainingTextOrTimeout() because
+  // JavaScript cannot be executed on text/plain content.
+  ASSERT_NE(nullptr, last_request_.get());
+  auto user_agent_it = last_request_->headers.find("User-Agent");
+  ASSERT_NE(last_request_->headers.end(), user_agent_it);
   EXPECT_NE(std::string::npos,
             user_agent_it->second.find("MyUserAgentProduct"));
+}
+
+// Tests -[CWVWebView loadRequest:].
+TEST_F(WebViewTest, LoadRequest) {
+  ASSERT_TRUE(test_server_->Start());
+  GURL url = GetUrlForPageWithTitleAndBody("Title", "Body");
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(url)));
+  EXPECT_TRUE(test::WaitForWebViewContainingTextOrTimeout(web_view_, @"Body"));
+}
+
+// Tests -[CWVWebView reload].
+TEST_F(WebViewTest, Reload) {
+  ASSERT_TRUE(test_server_->Start());
+  GURL url = test_server_->GetURL("/CaptureRequest");
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(url)));
+
+  last_request_.reset(nullptr);
+  [web_view_ reload];
+  // Tests that a request has been sent again.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return last_request_.get() != nullptr;
+  }));
+  EXPECT_TRUE(test::WaitForWebViewContainingTextOrTimeout(
+      web_view_, @"CaptureRequestHTML"));
+}
+
+// Tests -[CWVWebView evaluateJavaScript:completionHandler:].
+TEST_F(WebViewTest, EvaluateJavaScript) {
+  ASSERT_TRUE(test_server_->Start());
+  GURL url = GetUrlForPageWithTitleAndBody("Title", "Body");
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(url)));
+
+  NSError* error = nil;
+  EXPECT_NSEQ(@"Body", test::EvaluateJavaScript(
+                           web_view_, @"document.body.textContent", &error));
+  EXPECT_NSEQ(nil, error);
+
+  // Calls a function which doesn't exist.
+  test::EvaluateJavaScript(web_view_, @"hoge()", &error);
+  EXPECT_NSNE(nil, error);
 }
 
 // TODO(crbug.com/862537): Write more tests.
