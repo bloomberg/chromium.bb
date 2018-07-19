@@ -71,6 +71,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // true the button may still not be visible.
   void SetAllowLoginAsGuest(bool allow_guest);
 
+  // Sets whether users can be added from the login screen.
+  void SetAddUserButtonEnabled(bool enable_add_user);
+
   // views::View:
   const char* GetClassName() const override;
   void OnFocus() override;

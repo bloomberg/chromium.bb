@@ -128,6 +128,8 @@ void LoginScreenClient::RemoveUser(const AccountId& account_id) {
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
   user_manager::UserManager::Get()->RemoveUser(account_id,
                                                nullptr /*delegate*/);
+  if (chromeos::LoginDisplayHost::default_host())
+    chromeos::LoginDisplayHost::default_host()->UpdateAddUserButtonStatus();
 }
 
 void LoginScreenClient::LaunchPublicSession(const AccountId& account_id,

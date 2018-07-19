@@ -1181,6 +1181,10 @@ void LoginDisplayHostWebUI::HideDialogForCaptivePortal() {}
 
 void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
 
+void LoginDisplayHostWebUI::UpdateAddUserButtonStatus() {
+  NOTREACHED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // external
 

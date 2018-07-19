@@ -75,6 +75,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(OnCancelPasswordChangedFlow, void());
   MOCK_METHOD0(ShowDialogForCaptivePortal, void());
   MOCK_METHOD0(HideDialogForCaptivePortal, void());
+  MOCK_METHOD0(UpdateAddUserButtonStatus, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

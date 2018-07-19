@@ -114,6 +114,11 @@ class LoginShelfViewTest : public LoginTestBase {
     return visible_button_count == ids.size();
   }
 
+  // Check whether the button is enabled.
+  bool IsButtonEnabled(LoginShelfView::ButtonId id) {
+    return login_shelf_view_->GetViewByID(id)->enabled();
+  }
+
   TestTrayActionClient tray_action_client_;
 
   LoginShelfView* login_shelf_view_;  // Unowned.
@@ -400,6 +405,26 @@ TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
   ExpectNotFocused(status_area);
   EXPECT_TRUE(
       login_shelf_view_->GetViewByID(LoginShelfView::kSignOut)->HasFocus());
+}
+
+TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterAddButtonStatusChange) {
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+  EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kAddUser));
+
+  login_shelf_view_->SetAddUserButtonEnabled(false /*enable_add_user*/);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+  EXPECT_FALSE(IsButtonEnabled(LoginShelfView::kAddUser));
+
+  login_shelf_view_->SetAddUserButtonEnabled(true /*enable_add_user*/);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+  EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kAddUser));
 }
 
 }  // namespace

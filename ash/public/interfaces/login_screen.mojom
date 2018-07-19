@@ -134,6 +134,9 @@ interface LoginScreen {
   // provides support for any part of login that is implemented in JS/HTML, such
   // as add user or powerwash.
   NotifyOobeDialogVisibility(bool is_visible);
+
+  // Sets whether users can be added from the login screen.
+  SetAddUserButtonEnabled(bool enable);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests

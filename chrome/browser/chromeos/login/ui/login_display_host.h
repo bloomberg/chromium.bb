@@ -202,6 +202,9 @@ class LoginDisplayHost {
   // complete). In webui login, this should be a no-op.
   virtual void HideDialogForCaptivePortal() = 0;
 
+  // Update status of add user button in the shelf.
+  virtual void UpdateAddUserButtonStatus() = 0;
+
  protected:
   LoginDisplayHost();
   virtual ~LoginDisplayHost();

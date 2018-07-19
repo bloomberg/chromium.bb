@@ -421,6 +421,13 @@ void LoginScreenController::NotifyOobeDialogVisibility(bool visible) {
       ->SetLoginDialogVisible(visible);
 }
 
+void LoginScreenController::SetAddUserButtonEnabled(bool enable) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetAddUserButtonEnabled(enable);
+}
+
 void LoginScreenController::LaunchKioskApp(const std::string& app_id) {
   login_screen_client_->LaunchKioskApp(app_id);
 }
