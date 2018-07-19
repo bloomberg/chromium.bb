@@ -50,6 +50,11 @@ class TestDelegate : public TrayInfoLabel::Delegate {
 
 class TrayInfoLabelTest : public AshTestBase {
  public:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    delegate_ = std::make_unique<TestDelegate>();
+  }
+
   void TearDown() override {
     AshTestBase::TearDown();
     label_.reset();
@@ -57,10 +62,9 @@ class TrayInfoLabelTest : public AshTestBase {
   }
 
   void CreateLabel(bool use_delegate, int message_id) {
-    if (use_delegate)
-      delegate_ = std::make_unique<TestDelegate>();
-
-    label_ = std::make_unique<TrayInfoLabel>(delegate_.get(), message_id);
+    label_ = std::make_unique<TrayInfoLabel>(
+        use_delegate ? delegate_.get() : nullptr, message_id);
+    use_delegate_ = use_delegate;
   }
 
   void ClickOnLabel(bool expect_click_was_handled) {
@@ -70,6 +74,9 @@ class TrayInfoLabelTest : public AshTestBase {
 
   void VerifyClickability(bool expected_clickable) {
     EXPECT_EQ(expected_clickable, label_->IsClickable());
+    EXPECT_EQ(expected_clickable ? views::View::FocusBehavior::ALWAYS
+                                 : views::View::FocusBehavior::NEVER,
+              label_->focus_behavior());
 
     ui::AXNodeData node_data;
     label_->GetAccessibleNodeData(&node_data);
@@ -81,7 +88,7 @@ class TrayInfoLabelTest : public AshTestBase {
   }
 
   void VerifyClicks(const std::vector<int>& expected_clicked_message_ids) {
-    if (!delegate_) {
+    if (!use_delegate_) {
       EXPECT_TRUE(expected_clicked_message_ids.empty());
       return;
     }
@@ -94,6 +101,7 @@ class TrayInfoLabelTest : public AshTestBase {
  protected:
   std::unique_ptr<TrayInfoLabel> label_;
   std::unique_ptr<TestDelegate> delegate_;
+  bool use_delegate_;
 };
 
 TEST_F(TrayInfoLabelTest, NoDelegate) {
@@ -119,9 +127,10 @@ TEST_F(TrayInfoLabelTest, PerformAction) {
   const int kClickableMessageId2 = IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED;
   const int kNonClickableMessageId = IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING;
 
-  CreateLabel(true /* use_delegate */, kClickableMessageId1);
   delegate_->AddClickableMessageId(kClickableMessageId1);
   delegate_->AddClickableMessageId(kClickableMessageId2);
+
+  CreateLabel(true /* use_delegate */, kClickableMessageId1);
   VerifyNoClicks();
 
   EXPECT_EQ(l10n_util::GetStringUTF16(kClickableMessageId1),
