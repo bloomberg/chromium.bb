@@ -699,6 +699,15 @@ def MacSpecificPages(base_name):
 
 def DirectCompositionPages(base_name):
   browser_args = ['--enable-direct-composition-layers']
+  browser_args_Underlay = browser_args + [
+    '--enable-features=DirectCompositionUnderlays']
+  browser_args_Nonroot = browser_args +[
+    '--enable-features=DirectCompositionNonrootOverlays,' +
+    'DirectCompositionUnderlays']
+  browser_args_Complex = browser_args + [
+    '--enable-features=DirectCompositionComplexOverlays,' +
+    'DirectCompositionNonrootOverlays,' +
+    'DirectCompositionUnderlays']
   return [
     PixelTestPage(
       'pixel_video_mp4.html',
@@ -713,4 +722,136 @@ def DirectCompositionPages(base_name):
       test_rect=[0, 0, 300, 300],
       revision=9,
       browser_args=browser_args),
-  ]
+
+    PixelTestPage(
+      'pixel_video_underlay.html',
+      base_name + '_DirectComposition_Underlay',
+      test_rect=[0, 0, 240, 136],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_Underlay,
+      expected_colors=[
+        {
+          'comment': 'black top left',
+          'location': [4, 4],
+          'size': [20, 20],
+          'color': [0, 0, 0],
+          'tolerance': 3
+        },
+        {
+          'comment': 'yellow top left quadrant',
+          'location': [4, 34],
+          'size': [110, 30],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        },
+        {
+          'comment': 'red top right quadrant',
+          'location': [124, 4],
+          'size': [110, 60],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        },
+        {
+          'comment': 'blue bottom left quadrant',
+          'location': [4, 72],
+          'size': [110, 60],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'green bottom right quadrant',
+          'location': [124, 72],
+          'size': [110, 60],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_nonroot.html',
+      base_name + '_DirectComposition_Nonroot',
+      test_rect=[0, 0, 240, 136],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_Nonroot,
+      expected_colors=[
+        {
+          'comment': 'black top left',
+          'location': [4, 4],
+          'size': [20, 20],
+          'color': [0, 0, 0],
+          'tolerance': 3
+        },
+        {
+          'comment': 'yellow top left quadrant',
+          'location': [4, 34],
+          'size': [110, 30],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        },
+        {
+          'comment': 'red top right quadrant',
+          'location': [124, 4],
+          'size': [110, 60],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        },
+        {
+          'comment': 'blue bottom left quadrant',
+          'location': [4, 72],
+          'size': [110, 60],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'green bottom right quadrant',
+          'location': [124, 72],
+          'size': [110, 60],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_complex_overlays.html',
+      base_name + '_DirectComposition_ComplexOverlays',
+      test_rect=[0, 0, 240, 136],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_Complex,
+      expected_colors=[
+        {
+          'comment': 'black top left',
+          'location': [4, 4],
+          'size': [20, 20],
+          'color': [0, 0, 0],
+          'tolerance': 3
+        },
+        {
+          'comment': 'yellow top left quadrant',
+          'location': [60, 10],
+          'size': [65, 30],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        },
+        {
+          'comment': 'red top right quadrant',
+          'location': [150, 45],
+          'size': [65, 30],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        },
+        {
+          'comment': 'blue bottom left quadrant',
+          'location': [30, 70],
+          'size': [65, 30],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'green bottom right quadrant',
+          'location': [130, 100],
+          'size': [65, 30],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        }
+      ]),
+    ]

@@ -334,6 +334,7 @@ group("telemetry_gpu_integration_test") {
     # For pixel_test
     "//media/test/data/bear.mp4",
     "//media/test/data/bear-vp9.webm",
+    "//media/test/data/four-colors.mp4",
   ]
 }
 
