@@ -106,6 +106,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking))
     WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(true);
 
+  if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
+    WebRuntimeFeatures::EnableBloatedRendererDetection(true);
+
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::EnableDatabase(false);
 

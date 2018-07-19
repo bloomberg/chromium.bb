@@ -55,6 +55,10 @@ const base::Feature kAudioServiceOutOfProcess{
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable bloated renderer detection.
+const base::Feature kBloatedRendererDetection{
+    "BloatedRendererDetection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows swipe left/right from touchpad change browser navigation. Currently
 // only enabled by default on CrOS.
 const base::Feature kTouchpadOverscrollHistoryNavigation {
