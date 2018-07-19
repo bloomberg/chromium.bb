@@ -44,14 +44,14 @@ class SoftwareFeatureManagerImpl : public SoftwareFeatureManager {
       SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
-      const base::Callback<void(const std::string&)>& error_callback,
+      const base::Callback<void(NetworkRequestError)>& error_callback,
       bool is_exclusive = false) override;
   void FindEligibleDevices(
       SoftwareFeature software_feature,
       const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                 const std::vector<IneligibleDevice>&)>&
           success_callback,
-      const base::Callback<void(const std::string&)>& error_callback) override;
+      const base::Callback<void(NetworkRequestError)>& error_callback) override;
 
  private:
   enum class RequestType {
@@ -63,18 +63,18 @@ class SoftwareFeatureManagerImpl : public SoftwareFeatureManager {
     // Used for SET_SOFTWARE_FEATURE Requests.
     Request(std::unique_ptr<ToggleEasyUnlockRequest> toggle_request,
             const base::Closure& set_software_success_callback,
-            const base::Callback<void(const std::string&)> error_callback);
+            const base::Callback<void(NetworkRequestError)> error_callback);
 
     // Used for FIND_ELIGIBLE_MULTIDEVICE_HOSTS Requests.
     Request(std::unique_ptr<FindEligibleUnlockDevicesRequest> find_request,
             const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                       const std::vector<IneligibleDevice>&)>
                 find_hosts_success_callback,
-            const base::Callback<void(const std::string&)> error_callback);
+            const base::Callback<void(NetworkRequestError)> error_callback);
 
     ~Request();
 
-    const base::Callback<void(const std::string&)> error_callback;
+    const base::Callback<void(NetworkRequestError)> error_callback;
 
     // Set for SET_SOFTWARE_FEATURE; unset otherwise.
     std::unique_ptr<ToggleEasyUnlockRequest> toggle_request;
@@ -96,7 +96,7 @@ class SoftwareFeatureManagerImpl : public SoftwareFeatureManager {
   void OnToggleEasyUnlockResponse(const ToggleEasyUnlockResponse& response);
   void OnFindEligibleUnlockDevicesResponse(
       const FindEligibleUnlockDevicesResponse& response);
-  void OnErrorResponse(const std::string& response);
+  void OnErrorResponse(NetworkRequestError response);
 
   CryptAuthClientFactory* crypt_auth_client_factory_;
 

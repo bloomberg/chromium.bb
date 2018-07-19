@@ -55,17 +55,18 @@ void FakeDeviceSyncClient::GetDebugInfo(
 }
 
 void FakeDeviceSyncClient::InvokePendingSetSoftwareFeatureStateCallback(
-    const base::Optional<std::string>& error_code) {
-  std::move(set_software_feature_state_callback_queue_.front()).Run(error_code);
+    mojom::NetworkRequestResult result_code) {
+  std::move(set_software_feature_state_callback_queue_.front())
+      .Run(result_code);
   set_software_feature_state_callback_queue_.pop();
 }
 
 void FakeDeviceSyncClient::InvokePendingFindEligibleDevicesCallback(
-    const base::Optional<std::string>& error_code,
+    mojom::NetworkRequestResult result_code,
     cryptauth::RemoteDeviceRefList eligible_devices,
     cryptauth::RemoteDeviceRefList ineligible_devices) {
   std::move(find_eligible_devices_callback_queue_.front())
-      .Run(error_code, eligible_devices, ineligible_devices);
+      .Run(result_code, eligible_devices, ineligible_devices);
   find_eligible_devices_callback_queue_.pop();
 }
 

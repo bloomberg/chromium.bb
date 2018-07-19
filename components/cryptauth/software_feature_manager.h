@@ -6,6 +6,7 @@
 #define COMPONENTS_CRYPTAUTH_SOFTWARE_FEATURE_MANAGER_H_
 
 #include "base/callback.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
@@ -29,7 +30,7 @@ class SoftwareFeatureManager {
       SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
-      const base::Callback<void(const std::string&)>& error_callback,
+      const base::Callback<void(NetworkRequestError)>& error_callback,
       bool is_exclusive = false) = 0;
 
   // Finds eligible devices associated with the logged-in account which support
@@ -39,7 +40,7 @@ class SoftwareFeatureManager {
       const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                 const std::vector<IneligibleDevice>&)>&
           success_callback,
-      const base::Callback<void(const std::string&)>& error_callback) = 0;
+      const base::Callback<void(NetworkRequestError)>& error_callback) = 0;
 };
 
 }  // namespace cryptauth

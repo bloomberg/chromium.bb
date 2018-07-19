@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/software_feature_manager.h"
 
@@ -30,7 +31,7 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
         SoftwareFeature software_feature,
         bool enabled,
         const base::Closure& success_callback,
-        const base::Callback<void(const std::string&)>& error_callback,
+        const base::Callback<void(NetworkRequestError)>& error_callback,
         bool is_exclusive);
     ~SetSoftwareFeatureStateArgs();
 
@@ -38,7 +39,7 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
     SoftwareFeature software_feature;
     bool enabled;
     base::Closure success_callback;
-    base::Callback<void(const std::string&)> error_callback;
+    base::Callback<void(NetworkRequestError)> error_callback;
     bool is_exclusive;
 
    private:
@@ -51,14 +52,14 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
         const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                   const std::vector<IneligibleDevice>&)>&
             success_callback,
-        const base::Callback<void(const std::string&)>& error_callback);
+        const base::Callback<void(NetworkRequestError)>& error_callback);
     ~FindEligibleDevicesArgs();
 
     SoftwareFeature software_feature;
     base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                         const std::vector<IneligibleDevice>&)>
         success_callback;
-    base::Callback<void(const std::string&)> error_callback;
+    base::Callback<void(NetworkRequestError)> error_callback;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FindEligibleDevicesArgs);
@@ -85,14 +86,14 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
       SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
-      const base::Callback<void(const std::string&)>& error_callback,
+      const base::Callback<void(NetworkRequestError)>& error_callback,
       bool is_exclusive = false) override;
   void FindEligibleDevices(
       SoftwareFeature software_feature,
       const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                 const std::vector<IneligibleDevice>&)>&
           success_callback,
-      const base::Callback<void(const std::string&)>& error_callback) override;
+      const base::Callback<void(NetworkRequestError)>& error_callback) override;
 
  private:
   Delegate* delegate_ = nullptr;

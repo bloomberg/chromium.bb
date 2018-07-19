@@ -78,13 +78,13 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
   }
 
   void InvokePendingSetSoftwareFeatureStateCallback(
-      const base::Optional<std::string>& error_code,
+      device_sync::mojom::NetworkRequestResult result_code,
       bool expected_to_notify_observer_and_start_retry_timer) {
     size_t num_failure_events_before_call =
         observer_->num_failed_backend_requests();
 
     fake_device_sync_client_->InvokePendingSetSoftwareFeatureStateCallback(
-        error_code);
+        result_code);
 
     if (expected_to_notify_observer_and_start_retry_timer) {
       EXPECT_EQ(num_failure_events_before_call + 1u,
@@ -224,7 +224,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, Success) {
   // Set device 0.
   AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
@@ -236,7 +236,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, Success) {
   // Remove device 0 such that there is no longer a host..
   AttemptToSetMultiDeviceHostOnBackend(base::nullopt);
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(base::nullopt, delegate()->GetPendingHostRequest());
@@ -248,7 +248,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, Success) {
   // Set device 1.
   AttemptToSetMultiDeviceHostOnBackend(test_devices()[1]);
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[1], delegate()->GetPendingHostRequest());
@@ -264,7 +264,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, Failure) {
   // Attempt to set device 0, but fail.
   AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
   InvokePendingSetSoftwareFeatureStateCallback(
-      "errorCode1" /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kOffline,
       true /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
@@ -275,7 +275,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, Failure) {
 
   // Simulate another failure.
   InvokePendingSetSoftwareFeatureStateCallback(
-      "errorCode2" /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kOffline,
       true /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
@@ -284,7 +284,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, Failure) {
   // Attempt to set device 1, but fail.
   AttemptToSetMultiDeviceHostOnBackend(test_devices()[1]);
   InvokePendingSetSoftwareFeatureStateCallback(
-      "errorCode3" /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kOffline,
       true /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[1], delegate()->GetPendingHostRequest());
@@ -318,7 +318,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // notify the observer or start the retry timer, since the failure was for
   // device 1's request and device 3 is the pending host request.
   InvokePendingSetSoftwareFeatureStateCallback(
-      "errorCode" /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kOffline,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[3], delegate()->GetPendingHostRequest());
@@ -328,7 +328,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // value of GetMultiDeviceHostFromBackend(), but there should still be a
   // pending request for device 3.
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   SimulateNewHostDevicesSynced(test_devices()[2] /* host_device_after_sync */,
                                false /* expected_to_fulfill_pending_request */);
@@ -338,7 +338,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
 
   // Fire the callback for device 3, and have it succeed.
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   SimulateNewHostDevicesSynced(test_devices()[3] /* host_device_after_sync */,
                                true /* expected_to_fulfill_pending_request */);
@@ -370,7 +370,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
 
   // Fire the first callback, which should successfully transition the host.
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   SimulateNewHostDevicesSynced(test_devices()[0] /* host_device_after_sync */,
                                true /* expected_to_fulfill_pending_request */);
@@ -379,7 +379,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
 
   // Fire the second callback, but have it fail. No state should be affected.
   InvokePendingSetSoftwareFeatureStateCallback(
-      "errorCode" /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kOffline,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_FALSE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetMultiDeviceHostFromBackend());
@@ -387,7 +387,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // Fire the third callback, and have it succeed. Still, no state should be
   // affected.
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_FALSE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetMultiDeviceHostFromBackend());
@@ -400,7 +400,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // Attempt to set device 0, but fail.
   AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
   InvokePendingSetSoftwareFeatureStateCallback(
-      "errorCode1" /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kOffline,
       true /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
@@ -411,7 +411,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // without the timer.
   AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
@@ -430,7 +430,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // The delegate should have started a request as soon as it was created.
   // Simulate it succeeding.
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   SimulateNewHostDevicesSynced(test_devices()[0] /* host_device_after_sync */,
                                true /* expected_to_fulfill_pending_request */);
@@ -447,7 +447,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // The delegate should have started a request as soon as it was created.
   // Simulate it succeeding.
   InvokePendingSetSoftwareFeatureStateCallback(
-      base::nullopt /* error_code */,
+      device_sync::mojom::NetworkRequestResult::kSuccess,
       false /* expected_to_notify_observer_and_start_retry_timer */);
   SimulateNewHostDevicesSynced(base::nullopt /* host_device_after_sync */,
                                true /* expected_to_fulfill_pending_request */);

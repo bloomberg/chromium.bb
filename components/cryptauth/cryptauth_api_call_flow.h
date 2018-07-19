@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/cryptauth/network_request_error.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 
 namespace cryptauth {
@@ -20,7 +21,7 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
  public:
   typedef base::Callback<void(const std::string& serialized_response)>
       ResultCallback;
-  typedef base::Callback<void(const std::string& error_message)> ErrorCallback;
+  typedef base::Callback<void(NetworkRequestError error)> ErrorCallback;
 
   CryptAuthApiCallFlow();
   ~CryptAuthApiCallFlow() override;

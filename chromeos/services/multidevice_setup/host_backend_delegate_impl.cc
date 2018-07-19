@@ -297,8 +297,8 @@ HostBackendDelegateImpl::GetHostFromDeviceSync() {
 void HostBackendDelegateImpl::OnSetSoftwareFeatureStateResult(
     cryptauth::RemoteDeviceRef device_for_request,
     bool attempted_to_enable,
-    const base::Optional<std::string>& error_code) {
-  if (!error_code)
+    device_sync::mojom::NetworkRequestResult result_code) {
+  if (result_code == device_sync::mojom::NetworkRequestResult::kSuccess)
     return;
 
   PA_LOG(WARNING) << "HostBackendDelegateImpl::"
@@ -307,7 +307,7 @@ void HostBackendDelegateImpl::OnSetSoftwareFeatureStateResult(
                   << device_for_request.GetTruncatedDeviceIdForLogs()
                   << ", Attempted to enable: "
                   << (attempted_to_enable ? "true" : "false")
-                  << ", Error code: " << *error_code;
+                  << ", Error code: " << result_code;
 
   if (!HasPendingHostRequest())
     return;

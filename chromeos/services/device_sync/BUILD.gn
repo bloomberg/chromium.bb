@@ -18,6 +18,8 @@ static_library("device_sync") {
     "device_sync_impl.h",
     "device_sync_service.cc",
     "device_sync_service.h",
+    "device_sync_type_converters.cc",
+    "device_sync_type_converters.h",
   ]
 
   public_deps = [

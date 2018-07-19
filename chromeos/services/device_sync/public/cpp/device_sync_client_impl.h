@@ -92,7 +92,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
       const base::Optional<cryptauth::RemoteDevice>& local_device_metadata);
   void OnFindEligibleDevicesCompleted(
       FindEligibleDevicesCallback callback,
-      const base::Optional<std::string>& error_code,
+      mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr response);
 
   mojom::DeviceSyncObserverPtr GenerateInterfacePtr();

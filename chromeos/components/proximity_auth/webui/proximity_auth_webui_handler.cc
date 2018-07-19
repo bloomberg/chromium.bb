@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include "base/base64url.h"
@@ -431,9 +432,12 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
 }
 
 void ProximityAuthWebUIHandler::OnCryptAuthClientError(
-    const std::string& error_message) {
-  PA_LOG(WARNING) << "CryptAuth request failed: " << error_message;
-  base::Value error_string(error_message);
+    cryptauth::NetworkRequestError error) {
+  PA_LOG(WARNING) << "CryptAuth request failed: " << error;
+
+  std::stringstream ss;
+  ss << error;
+  base::Value error_string(ss.str());
   web_ui()->CallJavascriptFunctionUnsafe("CryptAuthInterface.onError",
                                          error_string);
 }
@@ -813,25 +817,27 @@ void ProximityAuthWebUIHandler::OnForceSyncNow(bool success) {
 
 void ProximityAuthWebUIHandler::OnSetSoftwareFeatureState(
     const std::string public_key,
-    const base::Optional<std::string>& error_code) {
+    chromeos::device_sync::mojom::NetworkRequestResult result_code) {
   std::string device_id =
       cryptauth::RemoteDeviceRef::GenerateDeviceId(public_key);
 
-  if (error_code) {
-    PA_LOG(ERROR) << "Failed to set SoftwareFeature state for device: "
-                  << device_id << ", error code: " << *error_code;
-  } else {
+  if (result_code ==
+      chromeos::device_sync::mojom::NetworkRequestResult::kSuccess) {
     PA_LOG(INFO) << "Successfully set SoftwareFeature state for device: "
                  << device_id;
+  } else {
+    PA_LOG(ERROR) << "Failed to set SoftwareFeature state for device: "
+                  << device_id << ", error code: " << result_code;
   }
 }
 
 void ProximityAuthWebUIHandler::OnFindEligibleDevices(
-    const base::Optional<std::string>& error_code,
+    chromeos::device_sync::mojom::NetworkRequestResult result_code,
     cryptauth::RemoteDeviceRefList eligible_devices,
     cryptauth::RemoteDeviceRefList ineligible_devices) {
-  if (error_code) {
-    PA_LOG(ERROR) << "Failed to find eligible devices: " << *error_code;
+  if (result_code !=
+      chromeos::device_sync::mojom::NetworkRequestResult::kSuccess) {
+    PA_LOG(ERROR) << "Failed to find eligible devices: " << result_code;
     return;
   }
 

@@ -6,8 +6,6 @@ module chromeos.device_sync.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 
-const string kErrorNotInitialized = "service_not_initialized";
-
 // Enumeration of software features which can be enabled/disabled for a given
 // device. Each feature has a host and client portion; here, "host" refers to
 // the associated phone which provides the feature (at most one host per
@@ -44,6 +42,36 @@ enum SoftwareFeatureState {
   kNotSupported,
   kSupported,
   kEnabled
+};
+
+enum NetworkRequestResult {
+  // Successful network request.
+  kSuccess,
+
+  // Service was not yet initialized; could not complete request.
+  kServiceNotYetInitialized,
+
+  // Request could not be completed because the device is offline or has issues
+  // sending the HTTP request.
+  kOffline,
+
+  // Server endpoint could not be found.
+  kEndpointNotFound,
+
+  // Authentication error contacting back-end.
+  kAuthenticationError,
+
+  // Request was invalid.
+  kBadRequest,
+
+  // The server responded, but the response was not formatted correctly.
+  kResponseMalformed,
+
+  // Internal server error.
+  kInternalServerError,
+
+  // Unknown result.
+  kUnknown
 };
 
 // Used to generate rotating BLE advertisement data, which is necessary to
@@ -164,10 +192,11 @@ interface DeviceSync {
   // SoftwareFeature::EASY_UNLOCK_HOST and |enabled| = false, |public_key| is
   // ignored, because that combination of arguments disables EASY_UNLOCK_HOST on
   // all of the user's devices.
-  SetSoftwareFeatureState(string device_public_key,
-                          SoftwareFeature software_feature,
-                          bool enabled,
-                          bool is_exclusive) => (string? error_code);
+  SetSoftwareFeatureState(
+      string device_public_key,
+      SoftwareFeature software_feature,
+      bool enabled,
+      bool is_exclusive) => (NetworkRequestResult result_code);
 
   // Finds devices which are eligible for the given feature. When this function
   // is invoked, a network request will be sent to each eligible device which
@@ -178,7 +207,7 @@ interface DeviceSync {
   // to the callback; on error, it returns a valid error_code string indicating
   // the reason for failure along with a null response.
   FindEligibleDevices(SoftwareFeature software_feature) =>
-      (string? error_code, FindEligibleDevicesResponse? response);
+      (NetworkRequestResult result_code, FindEligibleDevicesResponse? response);
 
   // Functions below are implemented for chrome://proximity-auth page, which is
   // intended for debugging purposes only.

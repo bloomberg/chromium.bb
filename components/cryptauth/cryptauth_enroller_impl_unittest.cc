@@ -10,6 +10,7 @@
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
+#include "components/cryptauth/network_request_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -292,7 +293,7 @@ TEST_F(CryptAuthEnrollerTest, SetupEnrollmentApiCallError) {
 
   EXPECT_TRUE(setup_request_.get());
   ASSERT_FALSE(error_callback_.is_null());
-  error_callback_.Run("Setup enrollment failed network");
+  error_callback_.Run(NetworkRequestError::kBadRequest);
 
   EXPECT_TRUE(finish_callback_.is_null());
   ASSERT_TRUE(enroller_result_.get());
@@ -326,7 +327,7 @@ TEST_F(CryptAuthEnrollerTest, FinishEnrollmentApiCallError) {
   StartEnroller(GetDeviceInfo());
   setup_callback_.Run(GetSetupEnrollmentResponse(true));
   ASSERT_FALSE(error_callback_.is_null());
-  error_callback_.Run("finish enrollment oauth error");
+  error_callback_.Run(NetworkRequestError::kAuthenticationError);
   ASSERT_TRUE(enroller_result_.get());
   EXPECT_FALSE(*enroller_result_);
 }

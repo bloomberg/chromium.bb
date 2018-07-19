@@ -20,6 +20,7 @@
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_gcm_manager.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -91,7 +92,7 @@ class ProximityAuthWebUIHandler
   void InitEnrollmentManager();
   void InitDeviceManager();
 
-  void OnCryptAuthClientError(const std::string& error_message);
+  void OnCryptAuthClientError(cryptauth::NetworkRequestError error);
   void OnEasyUnlockToggled(const cryptauth::ToggleEasyUnlockResponse& response);
 
   void OnFoundEligibleUnlockDevices(
@@ -119,11 +120,13 @@ class ProximityAuthWebUIHandler
 
   void OnForceEnrollmentNow(bool success);
   void OnForceSyncNow(bool success);
-  void OnSetSoftwareFeatureState(const std::string public_key,
-                                 const base::Optional<std::string>& error_code);
-  void OnFindEligibleDevices(const base::Optional<std::string>&,
-                             cryptauth::RemoteDeviceRefList eligible_devices,
-                             cryptauth::RemoteDeviceRefList ineligible_devices);
+  void OnSetSoftwareFeatureState(
+      const std::string public_key,
+      chromeos::device_sync::mojom::NetworkRequestResult result_code);
+  void OnFindEligibleDevices(
+      chromeos::device_sync::mojom::NetworkRequestResult result_code,
+      cryptauth::RemoteDeviceRefList eligible_devices,
+      cryptauth::RemoteDeviceRefList ineligible_devices);
   void OnGetDebugInfo(
       chromeos::device_sync::mojom::DebugInfoPtr debug_info_ptr);
 

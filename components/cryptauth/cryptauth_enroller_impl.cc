@@ -134,7 +134,8 @@ void CryptAuthEnrollerImpl::OnSetupEnrollmentSuccess(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CryptAuthEnrollerImpl::OnSetupEnrollmentFailure(const std::string& error) {
+void CryptAuthEnrollerImpl::OnSetupEnrollmentFailure(
+    NetworkRequestError error) {
   PA_LOG(WARNING) << "SetupEnrollment API failed with error: " << error;
   callback_.Run(false);
 }
@@ -224,7 +225,7 @@ void CryptAuthEnrollerImpl::OnFinishEnrollmentSuccess(
 }
 
 void CryptAuthEnrollerImpl::OnFinishEnrollmentFailure(
-    const std::string& error) {
+    NetworkRequestError error) {
   PA_LOG(WARNING) << "FinishEnrollment API failed with error: " << error;
   callback_.Run(false);
 }

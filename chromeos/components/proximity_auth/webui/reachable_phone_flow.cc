@@ -111,7 +111,7 @@ void ReachablePhoneFlow::OnFindEligibleUnlockDevicesSuccess(
   callback_.Run(reachable_phones);
 }
 
-void ReachablePhoneFlow::OnApiCallError(const std::string& error) {
+void ReachablePhoneFlow::OnApiCallError(cryptauth::NetworkRequestError error) {
   PA_LOG(ERROR) << "Error making api call: " << error;
   callback_.Run(std::vector<cryptauth::ExternalDeviceInfo>());
 }

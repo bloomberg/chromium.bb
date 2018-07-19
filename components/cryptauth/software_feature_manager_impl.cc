@@ -45,7 +45,7 @@ SoftwareFeatureManagerImpl::Factory::BuildInstance(
 SoftwareFeatureManagerImpl::Request::Request(
     std::unique_ptr<ToggleEasyUnlockRequest> toggle_request,
     const base::Closure& set_software_success_callback,
-    const base::Callback<void(const std::string&)> error_callback)
+    const base::Callback<void(NetworkRequestError)> error_callback)
     : error_callback(error_callback),
       toggle_request(std::move(toggle_request)),
       set_software_success_callback(set_software_success_callback) {}
@@ -55,7 +55,7 @@ SoftwareFeatureManagerImpl::Request::Request(
     const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                               const std::vector<IneligibleDevice>&)>
         find_hosts_success_callback,
-    const base::Callback<void(const std::string&)> error_callback)
+    const base::Callback<void(NetworkRequestError)> error_callback)
     : error_callback(error_callback),
       find_request(std::move(find_request)),
       find_hosts_success_callback(find_hosts_success_callback) {}
@@ -74,7 +74,7 @@ void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
     SoftwareFeature software_feature,
     bool enabled,
     const base::Closure& success_callback,
-    const base::Callback<void(const std::string&)>& error_callback,
+    const base::Callback<void(NetworkRequestError)>& error_callback,
     bool is_exclusive) {
   // Note: For legacy reasons, this proto message mentions "ToggleEasyUnlock"
   // instead of "SetSoftwareFeature" in its name.
@@ -101,7 +101,7 @@ void SoftwareFeatureManagerImpl::FindEligibleDevices(
     const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                               const std::vector<IneligibleDevice>&)>&
         success_callback,
-    const base::Callback<void(const std::string&)>& error_callback) {
+    const base::Callback<void(NetworkRequestError)>& error_callback) {
   // Note: For legacy reasons, this proto message mentions "UnlockDevices"
   // instead of "MultiDeviceHosts" in its name.
   auto request = std::make_unique<FindEligibleUnlockDevicesRequest>();
@@ -170,9 +170,9 @@ void SoftwareFeatureManagerImpl::OnFindEligibleUnlockDevicesResponse(
   ProcessRequestQueue();
 }
 
-void SoftwareFeatureManagerImpl::OnErrorResponse(const std::string& response) {
+void SoftwareFeatureManagerImpl::OnErrorResponse(NetworkRequestError error) {
   current_cryptauth_client_.reset();
-  current_request_->error_callback.Run(response);
+  current_request_->error_callback.Run(error);
   current_request_.reset();
   ProcessRequestQueue();
 }

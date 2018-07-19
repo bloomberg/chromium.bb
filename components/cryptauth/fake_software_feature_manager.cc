@@ -12,7 +12,7 @@ FakeSoftwareFeatureManager::SetSoftwareFeatureStateArgs::
         SoftwareFeature software_feature,
         bool enabled,
         const base::Closure& success_callback,
-        const base::Callback<void(const std::string&)>& error_callback,
+        const base::Callback<void(NetworkRequestError)>& error_callback,
         bool is_exclusive)
     : public_key(public_key),
       software_feature(software_feature),
@@ -29,7 +29,7 @@ FakeSoftwareFeatureManager::FindEligibleDevicesArgs::FindEligibleDevicesArgs(
     const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                               const std::vector<IneligibleDevice>&)>&
         success_callback,
-    const base::Callback<void(const std::string&)>& error_callback)
+    const base::Callback<void(NetworkRequestError)>& error_callback)
     : software_feature(software_feature),
       success_callback(success_callback),
       error_callback(error_callback) {}
@@ -46,7 +46,7 @@ void FakeSoftwareFeatureManager::SetSoftwareFeatureState(
     SoftwareFeature software_feature,
     bool enabled,
     const base::Closure& success_callback,
-    const base::Callback<void(const std::string&)>& error_callback,
+    const base::Callback<void(NetworkRequestError)>& error_callback,
     bool is_exclusive) {
   set_software_feature_state_calls_.emplace_back(
       std::make_unique<SetSoftwareFeatureStateArgs>(
@@ -62,7 +62,7 @@ void FakeSoftwareFeatureManager::FindEligibleDevices(
     const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                               const std::vector<IneligibleDevice>&)>&
         success_callback,
-    const base::Callback<void(const std::string&)>& error_callback) {
+    const base::Callback<void(NetworkRequestError)>& error_callback) {
   find_eligible_multidevice_host_calls_.emplace_back(
       std::make_unique<FindEligibleDevicesArgs>(
           software_feature, success_callback, error_callback));

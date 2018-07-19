@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/cryptauth/network_request_error.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace cryptauth {
@@ -39,7 +40,7 @@ namespace cryptauth {
 // components/cryptauth/proto/cryptauth_api.proto
 class CryptAuthClient {
  public:
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  typedef base::Callback<void(NetworkRequestError)> ErrorCallback;
 
   virtual ~CryptAuthClient() {}
 
