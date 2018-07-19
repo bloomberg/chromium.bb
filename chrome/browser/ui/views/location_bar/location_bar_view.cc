@@ -898,6 +898,10 @@ void LocationBarView::RefreshFocusRing() {
       !ChromePlatformStyle::ShouldOmniboxUseFocusRing())
     return;
 
+  // Omnibox in popup windows should not display a focus ring
+  if (is_popup_mode_)
+    return;
+
   // We may not have a usable path during initialization before first layout.
   // This will be called again once there is a usable path, so early exit.
   SkPath path;
