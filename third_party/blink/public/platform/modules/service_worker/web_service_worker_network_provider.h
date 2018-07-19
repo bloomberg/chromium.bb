@@ -45,10 +45,9 @@ namespace blink {
 
 class WebURLRequest;
 
-// This interface is implemented by the client and is only called on the main
-// thread. HasControllerServiceWorker() and ControllerServiceWorkerID() are to
-// be implemented only by Frame and SharedWorker's provider as they are needed
-// only for controllee contexts (but not in controller context).
+// This interface is implemented by the embedder and is only called on the main
+// thread. Currently the embedder has implementations for service worker clients
+// (frames and shared workers), and service workers themselves.
 //
 // An instance of this class is owned by the associated loading context, e.g.
 // DocumentLoader.
@@ -56,21 +55,22 @@ class WebServiceWorkerNetworkProvider {
  public:
   virtual ~WebServiceWorkerNetworkProvider() = default;
 
-  // A request is about to be sent out, and the client may modify it. Request
-  // is writable, and changes to the URL, for example, will change the request
-  // made.
+  // A request is about to be sent out, and the embedder may modify it. The
+  // request is writable, and changes to the URL, for example, will change the
+  // request made.
   virtual void WillSendRequest(WebURLRequest&) {}
 
   // Returns an identifier of this provider.
   virtual int ProviderID() const { return -1; }
 
+  // For service worker clients.
   virtual blink::mojom::ControllerServiceWorkerMode
   IsControlledByServiceWorker() {
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   }
 
-  // Returns an identifier of the controller service worker
-  // associated with the WebDocumentLoader.
+  // For service worker clients. Returns an identifier of the controller service
+  // worker associated with the loading context.
   virtual int64_t ControllerServiceWorkerID() { return -1; }
 
   // S13nServiceWorker:
