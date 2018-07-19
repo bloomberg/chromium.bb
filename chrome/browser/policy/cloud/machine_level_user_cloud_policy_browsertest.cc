@@ -116,6 +116,20 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
 
   void SetClientId(std::string client_id) { client_id_ = client_id; }
 
+  std::string InitClientId() override {
+    NOTREACHED();
+    return std::string();
+  }
+  std::string InitEnrollmentToken() override {
+    NOTREACHED();
+    return std::string();
+  }
+  std::string InitDMToken() override {
+    NOTREACHED();
+    return std::string();
+  }
+  void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }
+
   void EnableStorage(bool storage_enabled) {
     storage_enabled_ = storage_enabled;
   }

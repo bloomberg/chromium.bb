@@ -1064,6 +1064,8 @@ jumbo_split_static_library("browser") {
     "policy/browser_dm_token_storage.h",
     "policy/browser_dm_token_storage_linux.cc",
     "policy/browser_dm_token_storage_linux.h",
+    "policy/browser_dm_token_storage_mac.h",
+    "policy/browser_dm_token_storage_mac.mm",
     "policy/browser_dm_token_storage_win.cc",
     "policy/browser_dm_token_storage_win.h",
     "policy/chrome_browser_policy_connector.cc",
