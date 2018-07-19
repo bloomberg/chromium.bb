@@ -39,6 +39,7 @@
 #include "chrome/browser/vr/pose_util.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_gl_util.h"
@@ -194,7 +195,7 @@ gvr::Rectf GetMinimalFov(const gfx::Transform& view_matrix,
                          const std::vector<const UiElement*>& elements,
                          const gvr::Rectf& recommended,
                          float z_near,
-                         Ui* ui) {
+                         UiInterface* ui) {
   Ui::FovRectangle rect =
       ui->GetMinimalFov(view_matrix, elements,
                         Ui::FovRectangle{recommended.left, recommended.right,
@@ -331,7 +332,7 @@ void WebXrPresentationState::EndPresentation() {
 }
 
 VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
-                     std::unique_ptr<Ui> ui,
+                     std::unique_ptr<UiInterface> ui,
                      gvr_context* gvr_api,
                      bool reprojected_rendering,
                      bool daydream_support,
@@ -1380,14 +1381,14 @@ void VrShellGl::HandleControllerAppButtonActivity(
         // UI state in the midst of frame rendering.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::BindRepeating(&Ui::OnAppButtonSwipePerformed,
+            base::BindRepeating(&UiInterface::OnAppButtonSwipePerformed,
                                 base::Unretained(ui_.get()), direction));
       }
     }
     if (direction == PlatformController::kSwipeDirectionNone &&
         !app_button_long_pressed_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindRepeating(&Ui::OnAppButtonClicked,
+          FROM_HERE, base::BindRepeating(&UiInterface::OnAppButtonClicked,
                                          base::Unretained(ui_.get())));
     }
   }
@@ -2039,12 +2040,11 @@ void VrShellGl::DrawWebVr() {
     CHECK(buffer);
 
     // Use an identity UV transform, the image is already oriented correctly.
-    ui_->ui_element_renderer()->DrawWebVr(buffer->local_texture,
-                                          kWebVrIdentityUvTransform, 0, 0);
+    ui_->DrawWebVr(buffer->local_texture, kWebVrIdentityUvTransform, 0, 0);
   } else {
     // Apply the UV transform from the SurfaceTexture, that's usually a Y flip.
-    ui_->ui_element_renderer()->DrawWebVr(
-        webvr_texture_id_, webvr_surface_texture_uv_transform_, 0, 0);
+    ui_->DrawWebVr(webvr_texture_id_, webvr_surface_texture_uv_transform_, 0,
+                   0);
   }
 }
 
@@ -2064,17 +2064,15 @@ void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
       content_tex_buffer_size_.height() * kContentVignetteBorder - kBorder,
       content_tex_buffer_size_.width() + 2 * kBorder,
       content_tex_buffer_size_.height() + 2 * kBorder);
-  ui_->ui_element_renderer()->DrawWebVr(
-      content_texture_id_, kContentUvTransform,
-      kBorder / content_tex_buffer_size_.width(),
-      kBorder / content_tex_buffer_size_.height());
+  ui_->DrawWebVr(content_texture_id_, kContentUvTransform,
+                 kBorder / content_tex_buffer_size_.width(),
+                 kBorder / content_tex_buffer_size_.height());
   if (draw_overlay_texture) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    ui_->ui_element_renderer()->DrawWebVr(
-        content_overlay_texture_id_, kContentUvTransform,
-        kBorder / content_tex_buffer_size_.width(),
-        kBorder / content_tex_buffer_size_.height());
+    ui_->DrawWebVr(content_overlay_texture_id_, kContentUvTransform,
+                   kBorder / content_tex_buffer_size_.width(),
+                   kBorder / content_tex_buffer_size_.height());
   }
 }
 

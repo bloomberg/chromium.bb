@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
+#include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/transform.h"
@@ -89,7 +90,8 @@ class VrTestContext : public vr::UiBrowserInterface {
   gfx::Point3F LaserOrigin() const;
   void LoadAssets();
 
-  std::unique_ptr<Ui> ui_;
+  std::unique_ptr<Ui> ui_instance_;
+  UiInterface* ui_;
   gfx::Size window_size_;
 
   gfx::Transform head_pose_;

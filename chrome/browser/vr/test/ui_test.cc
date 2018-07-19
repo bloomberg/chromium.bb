@@ -80,11 +80,12 @@ void UiTest::CreateSceneInternal(
     const UiInitialState& state,
     std::unique_ptr<MockContentInputDelegate> content_input_delegate) {
   content_input_delegate_ = content_input_delegate.get();
-  ui_ = std::make_unique<Ui>(std::move(browser_.get()),
-                             std::move(content_input_delegate), nullptr,
-                             nullptr, nullptr, state);
-  scene_ = ui_->scene();
-  model_ = ui_->model_for_test();
+  ui_instance_ = std::make_unique<Ui>(std::move(browser_.get()),
+                                      std::move(content_input_delegate),
+                                      nullptr, nullptr, nullptr, state);
+  ui_ = ui_instance_.get();
+  scene_ = ui_instance_->scene();
+  model_ = ui_instance_->model_for_test();
   model_->controller.transform.Translate3d(kStartControllerPosition);
 
   OnBeginFrame();
@@ -251,15 +252,15 @@ void UiTest::ClickElement(UiElement* element) {
   controller_model.laser_origin = origin;
 
   controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
-  ui_->input_manager()->HandleInput(current_time_, render_info,
-                                    controller_model, &reticle_model,
-                                    &input_event_list);
+  ui_instance_->input_manager()->HandleInput(current_time_, render_info,
+                                             controller_model, &reticle_model,
+                                             &input_event_list);
   OnBeginFrame();
 
   controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
-  ui_->input_manager()->HandleInput(current_time_, render_info,
-                                    controller_model, &reticle_model,
-                                    &input_event_list);
+  ui_instance_->input_manager()->HandleInput(current_time_, render_info,
+                                             controller_model, &reticle_model,
+                                             &input_event_list);
   OnBeginFrame();
 }
 
