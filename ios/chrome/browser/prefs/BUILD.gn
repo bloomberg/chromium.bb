@@ -55,6 +55,7 @@ source_set("browser_prefs") {
     "//components/sync",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/unified_consent",
     "//components/update_client",
     "//components/variations/service",
     "//components/web_resource",
