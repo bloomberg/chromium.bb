@@ -138,8 +138,7 @@ class CleanCommand(command.CliCommand):
       if not os.path.ismount(path):
         Clean(path)
       else:
-        logging.debug('Ignoring bind mounted dir: %s',
-                      self.options.path)
+        logging.debug('Ignoring bind mounted dir: %s', path)
 
     # Delete this first since many of the caches below live in the chroot.
     if self.options.chroot:

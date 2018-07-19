@@ -75,6 +75,7 @@ def main(argv):
         raise
       else:
         logging.error(e)
+        logging.error('(Re-run with --debug for more details.)')
 
     if code is not None:
       return code
