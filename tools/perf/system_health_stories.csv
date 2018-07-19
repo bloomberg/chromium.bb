@@ -102,7 +102,6 @@ browse:tools:maps,mobile,"Story that browses google maps mobile page
   directions to a chosen restaurant from search results.
   ","Mac, Linux"
 browse_accessibility:tech:codesearch,desktop,Tests scrolling an element within a page., 
-browse_accessibility:tools:gmail_compose,desktop,Tests typing a lot of text into a Gmail compose window.,All
 load:chrome:blank,all,Story that loads the about:blank page., 
 load:games:alphabetty,desktop,Load https://king.com/play/alphabetty, 
 load:games:bubbles,all,"Load ""smarty bubbles"" game on famobi.com", 
