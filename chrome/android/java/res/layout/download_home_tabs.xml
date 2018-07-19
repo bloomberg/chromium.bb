@@ -33,7 +33,7 @@
             android:id="@+id/prefetch_tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/download_manager_prefetch_tab" />
+            android:text="@string/ntp_article_suggestions_section_header" />
 
     </android.support.design.widget.TabLayout>
 

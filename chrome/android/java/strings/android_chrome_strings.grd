@@ -2429,9 +2429,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_FILES_TAB" desc="Tab text for showing the files a user explicitly downloaded.">
         My Files
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_TAB" desc="Tab text for showing downloaded popular content.">
-        Popular Content
-      </message>
       <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_CAPTION" desc="Text containing the prefetched article description.">
         <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph> - <ph name="FILE_SIZE">%2$s<ex>1.56 MB</ex></ph>
       </message>
