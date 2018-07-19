@@ -7,16 +7,16 @@
 namespace blink {
 
 OpenTypeCapsSupport::OpenTypeCapsSupport()
-    : harf_buzz_face_(nullptr),
+    : harfbuzz_face_(nullptr),
       requested_caps_(FontDescription::kCapsNormal),
       font_support_(FontSupport::kFull),
       caps_synthesis_(CapsSynthesis::kNone) {}
 
 OpenTypeCapsSupport::OpenTypeCapsSupport(
-    const HarfBuzzFace* harf_buzz_face,
+    const HarfBuzzFace* harfbuzz_face,
     FontDescription::FontVariantCaps requested_caps,
     hb_script_t script)
-    : harf_buzz_face_(harf_buzz_face),
+    : harfbuzz_face_(harfbuzz_face),
       requested_caps_(requested_caps),
       font_support_(FontSupport::kFull),
       caps_synthesis_(CapsSynthesis::kNone) {

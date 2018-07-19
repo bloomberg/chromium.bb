@@ -815,15 +815,15 @@ template <bool is_horizontal_run>
 void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
                                         unsigned start_glyph,
                                         unsigned num_glyphs,
-                                        hb_buffer_t* harf_buzz_buffer) {
+                                        hb_buffer_t* harfbuzz_buffer) {
   DCHECK_EQ(is_horizontal_run, run->IsHorizontal());
   const SimpleFontData& current_font_data = *run->font_data_;
   const hb_glyph_info_t* glyph_infos =
-      hb_buffer_get_glyph_infos(harf_buzz_buffer, nullptr);
+      hb_buffer_get_glyph_infos(harfbuzz_buffer, nullptr);
   const hb_glyph_position_t* glyph_positions =
-      hb_buffer_get_glyph_positions(harf_buzz_buffer, nullptr);
+      hb_buffer_get_glyph_positions(harfbuzz_buffer, nullptr);
   const unsigned start_cluster =
-      HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harf_buzz_buffer))
+      HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfbuzz_buffer))
           ? glyph_infos[start_glyph].cluster
           : glyph_infos[start_glyph + num_glyphs - 1].cluster;
 
@@ -881,7 +881,7 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
                             unsigned start_glyph,
                             unsigned num_glyphs,
-                            hb_buffer_t* harf_buzz_buffer) {
+                            hb_buffer_t* harfbuzz_buffer) {
   DCHECK_GT(num_glyphs, 0u);
   std::unique_ptr<ShapeResult::RunInfo> run(std::move(run_to_insert));
   DCHECK_EQ(num_glyphs, run->glyph_data_.size());
@@ -891,11 +891,11 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
     // cases, no adjustments are needed because |glyph_bounding_box_| is in
     // logical coordinates and uses alphabetic baseline.
     ComputeGlyphPositions<true>(run.get(), start_glyph, num_glyphs,
-                                harf_buzz_buffer);
+                                harfbuzz_buffer);
   } else {
     // Inserting a vertical run to a vertical result.
     ComputeGlyphPositions<false>(run.get(), start_glyph, num_glyphs,
-                                 harf_buzz_buffer);
+                                 harfbuzz_buffer);
   }
   width_ += run->width_;
   num_glyphs_ += run->NumGlyphs();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 
 #include <unicode/uscript.h>
 
@@ -124,7 +124,8 @@ INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
                         testing::Values(TextDirection::kLtr,
                                         TextDirection::kRtl));
 
-static inline ShapeResultTestInfo* TestInfo(scoped_refptr<ShapeResult>& result) {
+static inline ShapeResultTestInfo* TestInfo(
+    scoped_refptr<ShapeResult>& result) {
   return static_cast<ShapeResultTestInfo*>(result.get());
 }
 
@@ -185,7 +186,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
   };
   for (auto& test : testlist) {
     HarfBuzzShaper shaper(test.string);
-    scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+    scoped_refptr<ShapeResult> result =
+        shaper.Shape(&font, TextDirection::kLtr);
 
     EXPECT_EQ(1u, TestInfo(result)->NumberOfRunsForTesting()) << test.name;
     ASSERT_TRUE(
@@ -371,10 +373,13 @@ TEST_F(HarfBuzzShaperTest, DISABLED_ShapeArabicWithContext) {
   UChar arabic_string[] = {0x647, 0x64A};
   HarfBuzzShaper shaper(String(arabic_string, 2));
 
-  scoped_refptr<ShapeResult> combined = shaper.Shape(&font, TextDirection::kRtl);
+  scoped_refptr<ShapeResult> combined =
+      shaper.Shape(&font, TextDirection::kRtl);
 
-  scoped_refptr<ShapeResult> first = shaper.Shape(&font, TextDirection::kRtl, 0, 1);
-  scoped_refptr<ShapeResult> second = shaper.Shape(&font, TextDirection::kRtl, 1, 2);
+  scoped_refptr<ShapeResult> first =
+      shaper.Shape(&font, TextDirection::kRtl, 0, 1);
+  scoped_refptr<ShapeResult> second =
+      shaper.Shape(&font, TextDirection::kRtl, 1, 2);
 
   // Combined width should be the same when shaping the two characters
   // separately as when shaping them combined.
@@ -703,8 +708,10 @@ TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
-  scoped_refptr<ShapeResult> first = shaper.Shape(&font, direction, 0, 5);    // Hello
-  scoped_refptr<ShapeResult> second = shaper.Shape(&font, direction, 6, 11);  // World
+  scoped_refptr<ShapeResult> first =
+      shaper.Shape(&font, direction, 0, 5);  // Hello
+  scoped_refptr<ShapeResult> second =
+      shaper.Shape(&font, direction, 6, 11);  // World
 
   EXPECT_EQ(0.0f, result->PositionForOffset(0));
   ASSERT_NEAR(first->Width(), result->PositionForOffset(5), 1);
@@ -1146,7 +1153,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
 
   String string = To16Bit("ffi ff", 6);
   HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
+  scoped_refptr<ShapeResult> result =
+      shaper.Shape(&testFont, TextDirection::kLtr);
 
   EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));  // At start of string.
   EXPECT_EQ(3u, result->NextSafeToBreakOffset(1));  // At end of "ffi" ligature.
@@ -1185,7 +1193,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakPreviousLatinCommonLigatures) {
 
   String string = To16Bit("ffi ff", 6);
   HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
+  scoped_refptr<ShapeResult> result =
+      shaper.Shape(&testFont, TextDirection::kLtr);
 
   EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(6));  // At end of "ff" liga.
   EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(5));  // At end of "ff" liga.
@@ -1226,7 +1235,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   // RA and CA form ligatures, most glyph pairs have kerning.
   String string(u"ABRACADABRA");
   HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
+  scoped_refptr<ShapeResult> result =
+      shaper.Shape(&testFont, TextDirection::kLtr);
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(1));    // After CA ligature.
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));    // After CA ligature.
   EXPECT_EQ(11u, result->NextSafeToBreakOffset(7));   // At end of string.

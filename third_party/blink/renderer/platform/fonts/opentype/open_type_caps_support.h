@@ -7,8 +7,8 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harf_buzz_buffer_filler.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harfbuzz_buffer_filler.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 
 #include <hb.h>
@@ -32,7 +32,7 @@ class PLATFORM_EXPORT OpenTypeCapsSupport {
   void DetermineFontSupport(hb_script_t);
   bool SupportsOpenTypeFeature(hb_script_t, uint32_t tag) const;
 
-  const HarfBuzzFace* harf_buzz_face_;
+  const HarfBuzzFace* harfbuzz_face_;
   FontDescription::FontVariantCaps requested_caps_;
 
   enum class FontSupport {

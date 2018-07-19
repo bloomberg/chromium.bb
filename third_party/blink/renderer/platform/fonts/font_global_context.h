@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_GLOBAL_CONTEXT_H_
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 
@@ -29,7 +29,7 @@ class PLATFORM_EXPORT FontGlobalContext {
   static inline FontCache& GetFontCache() { return Get()->font_cache_; }
 
   static inline HarfBuzzFontCache& GetHarfBuzzFontCache() {
-    return Get()->harf_buzz_font_cache_;
+    return Get()->harfbuzz_font_cache_;
   }
 
   static hb_font_funcs_t* GetHarfBuzzFontFuncs() {
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT FontGlobalContext {
   ~FontGlobalContext() = default;
 
   FontCache font_cache_;
-  HarfBuzzFontCache harf_buzz_font_cache_;
+  HarfBuzzFontCache harfbuzz_font_cache_;
   hb_font_funcs_t* harfbuzz_font_funcs_;
 };
 
