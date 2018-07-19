@@ -160,6 +160,11 @@ void LoginScreenClient::LaunchArcKioskApp(const AccountId& account_id) {
   chromeos::LoginDisplayHost::default_host()->StartArcKiosk(account_id);
 }
 
+void LoginScreenClient::ShowResetScreen() {
+  chromeos::LoginDisplayHost::default_host()->StartWizard(
+      chromeos::OobeScreen::SCREEN_OOBE_RESET);
+}
+
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 }
