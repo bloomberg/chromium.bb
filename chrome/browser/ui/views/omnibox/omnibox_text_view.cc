@@ -341,6 +341,17 @@ void OmniboxTextView::AppendText(const base::string16& text, int text_type) {
     render_text_->ApplyWeight(gfx::Font::Weight::NORMAL, range);
     render_text_->ApplyColor(
         result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED), range);
+
+    // Selectively apply baseline style so that weather results will raise °F.
+    // TODO(orinj): Integrate other selected styles like red/green for stocks.
+    if (text_type == SuggestionAnswer::TOP_ALIGNED) {
+      // This usually comes from GetTextStyle (see below) but here it is known.
+      render_text_->ApplyBaselineStyle(gfx::SUPERIOR, range);
+    } else {
+      // Apply normal baseline so that later appends don't carry forward the
+      // previously applied superior baseline.
+      render_text_->ApplyBaselineStyle(gfx::NORMAL_BASELINE, range);
+    }
   } else {
     const TextStyle& text_style = GetTextStyle(text_type);
     // TODO(dschuyler): follow up on the problem of different font sizes within
