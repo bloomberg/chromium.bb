@@ -4748,23 +4748,17 @@
   <message name="IDS_HATS_DONE_BUTTON_LABEL" desc="Label used for the done button at the end of survey">
     Done
   </message>
-  <message name="IDS_ARC_CHILD_TRANSITION_TO_REGULAR_TITLE" desc="Title of the toast shown when the user tries to activate ARC app and transition to regular user is not completed.">
-    Application launch blocked
+  <message name="IDS_ARC_CHILD_TRANSITION_TITLE" desc="Title of the toast shown when the user tries to activate ARC app and transition from child to regular user or from regular to child user is not completed.">
+    Action not available
   </message>
-  <message name="IDS_ARC_CHILD_TRANSITION_TO_REGULAR_MESSAGE" desc="Message of the toast shown when the user tries to activate ARC app and transition to regular user is not completed.">
-    You cannot use Android apps while transition to regular user is in progress.
-  </message>
-  <message name="IDS_ARC_CHILD_TRANSITION_FROM_REGULAR_TITLE" desc="Title of the toast shown when the user tries to activate ARC app and transition from regular user is not completed.">
-    Application launch blocked
-  </message>
-  <message name="IDS_ARC_CHILD_TRANSITION_FROM_REGULAR_MESSAGE" desc="Message of the toast shown when the user tries to activate ARC app and transition from regular user is not completed.">
-    You cannot use Android apps while transition to child user is in progress.
+  <message name="IDS_ARC_CHILD_TRANSITION_MESSAGE" desc="Message of the toast shown when the user tries to activate ARC app and transition from child to regular user or from regular to child user is not completed.">
+    Please try again in a few moments
   </message>
   <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_HEADING" desc="Heading text in the content area of the confirmation for data removal in case ARC comes to wrong state.">
-    To use apps from Google Play, your local app data needs to be reset.
+    To use apps from Google Play, you must first restore your apps. Some data may have been lost.
   </message>
   <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON" desc="Text for the OK button of the confirmation for data removal in case ARC comes to wrong state.">
-    Clear data and restore
+    Restore apps
   </message>
   <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_TITLE" desc="Title of the confirmation for data removal in case in case ARC comes to wrong state.">
     Something went wrong
