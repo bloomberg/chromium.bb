@@ -85,6 +85,11 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
           value: autofill,
         },
         {
+          key: 'autofill.profile_enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true,
+        },
+        {
           key: 'autofill.credit_card_enabled',
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
           value: true,

@@ -75,6 +75,7 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
  protected:
   PaymentRequestIOSPaymentInstrumentLauncherTest()
       : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    test_personal_data_manager_.SetAutofillProfileEnabled(true);
     test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
     test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
   }

@@ -178,7 +178,7 @@ TEST_F(AutofillWalletDataTypeControllerTest, DatatypeDisabledWhileRunning) {
   EXPECT_EQ(syncer::DataTypeController::RUNNING, autofill_wallet_dtc_->state());
   EXPECT_FALSE(last_error_.IsSet());
   EXPECT_EQ(syncer::AUTOFILL_WALLET_DATA, last_type_);
-  GetPrefService()->SetBoolean(autofill::prefs::kAutofillCreditCardEnabled,
+  GetPrefService()->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
                                false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(last_error_.IsSet());
@@ -187,7 +187,7 @@ TEST_F(AutofillWalletDataTypeControllerTest, DatatypeDisabledWhileRunning) {
 TEST_F(AutofillWalletDataTypeControllerTest, DatatypeDisabledAtStartup) {
   SetStartExpectations();
   web_data_service_->LoadDatabase();
-  GetPrefService()->SetBoolean(autofill::prefs::kAutofillCreditCardEnabled,
+  GetPrefService()->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
                                false);
   EXPECT_EQ(syncer::DataTypeController::NOT_RUNNING,
             autofill_wallet_dtc_->state());

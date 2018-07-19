@@ -66,6 +66,7 @@ class PaymentRequestPaymentResponseHelperTest : public PlatformTest {
       : profile_(autofill::test::GetFullProfile()),
         credit_card_(autofill::test::GetCreditCard()),
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    personal_data_manager_.SetAutofillProfileEnabled(true);
     personal_data_manager_.SetAutofillCreditCardEnabled(true);
     personal_data_manager_.SetAutofillWalletImportEnabled(true);
     personal_data_manager_.AddProfile(profile_);

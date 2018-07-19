@@ -92,6 +92,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_credit_card_enabled_ = autofill_credit_card_enabled;
   }
 
+  void SetAutofillProfileEnabled(bool autofill_profile_enabled) {
+    autofill_profile_enabled_ = autofill_profile_enabled;
+  }
+
   void SetAutofillWalletImportEnabled(bool autofill_wallet_import_enabled) {
     autofill_wallet_import_enabled_ = autofill_wallet_import_enabled;
   }
