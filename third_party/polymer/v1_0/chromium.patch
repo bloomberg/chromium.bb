@@ -115,17 +115,6 @@ index 43c59653a39b..26652936735c 100644
      },
 
      _forwardItemPath: function(path, value) {
-@@ -1551,7 +1551,9 @@
-       // Assign models to the focused index.
-       this._assignModels();
-       // Get the new physical index for the focused index.
--      var fpidx = this._focusedPhysicalIndex;
-+      // TODO(scottchen): remove this patch after rolling past the fix for
-+      // this issue: https://github.com/PolymerElements/iron-list/issues/537.
-+      var fpidx = this._focusedPhysicalIndex = this._getPhysicalIndex(this._focusedVirtualIndex);
- 
-       var onScreenItem = this._physicalItems[fpidx];
-       if (!onScreenItem) {
 diff --git a/components-chromium/paper-radio-group/paper-radio-group.html b/components-chromium/paper-radio-group/paper-radio-group.html
 index f50638bf6175..d38cde355822 100644
 --- a/components-chromium/paper-radio-group/paper-radio-group.html
