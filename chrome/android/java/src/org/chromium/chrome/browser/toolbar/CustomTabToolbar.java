@@ -191,7 +191,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             Activity activity = currentTab.getWindowAndroid().getActivity().get();
             if (activity == null) return;
             PageInfoController.show(activity, currentTab, getContentPublisher(),
-                    PageInfoController.OPENED_FROM_TOOLBAR);
+                    PageInfoController.OpenedFromSource.TOOLBAR);
         });
     }
 

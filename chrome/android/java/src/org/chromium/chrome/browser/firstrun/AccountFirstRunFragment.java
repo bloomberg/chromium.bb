@@ -86,7 +86,7 @@ public class AccountFirstRunFragment
         } else {
             arguments = AccountSigninView.createArgumentsForConfirmationFlow(
                     SigninAccessPoint.START_PAGE, childAccountStatus, forceAccountTo, false,
-                    AccountSigninView.UNDO_INVISIBLE);
+                    AccountSigninView.UndoBehavior.INVISIBLE);
         }
         mView.init(arguments, this, listener);
 

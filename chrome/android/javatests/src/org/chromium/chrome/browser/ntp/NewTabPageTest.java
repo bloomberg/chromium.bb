@@ -402,8 +402,8 @@ public class NewTabPageTest {
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInNewTab() throws InterruptedException, ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
-                mTileGridLayout.getChildAt(0), ContextMenuManager.ID_OPEN_IN_NEW_TAB, false,
-                mSiteSuggestions.get(0).url);
+                mTileGridLayout.getChildAt(0), ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB,
+                false, mSiteSuggestions.get(0).url);
     }
 
     /**
@@ -415,7 +415,8 @@ public class NewTabPageTest {
     public void testOpenMostVisitedItemInIncognitoTab()
             throws InterruptedException, ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
-                mTileGridLayout.getChildAt(0), ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true,
+                mTileGridLayout.getChildAt(0),
+                ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true,
                 mSiteSuggestions.get(0).url);
     }
 
@@ -435,7 +436,7 @@ public class NewTabPageTest {
         TestTouchUtils.performLongClickOnMainSync(
                 InstrumentationRegistry.getInstrumentation(), mostVisitedItem);
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
-                mActivityTestRule.getActivity(), ContextMenuManager.ID_REMOVE, 0));
+                mActivityTestRule.getActivity(), ContextMenuManager.ContextMenuItemId.REMOVE, 0));
 
         Assert.assertTrue(mMostVisitedSites.isUrlBlacklisted(testSite.url));
     }

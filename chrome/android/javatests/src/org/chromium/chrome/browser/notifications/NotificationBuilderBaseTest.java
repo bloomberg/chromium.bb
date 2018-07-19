@@ -72,7 +72,7 @@ public class NotificationBuilderBaseTest {
                 return null;
             }
         };
-        notificationBuilder.setChannelId(ChannelDefinitions.CHANNEL_ID_BROWSER);
+        notificationBuilder.setChannelId(ChannelDefinitions.ChannelId.BROWSER);
         Bitmap fromNullIcon = notificationBuilder.ensureNormalizedIcon(null, origin);
         Assert.assertNotNull(fromNullIcon);
         Assert.assertEquals(largeIconWidthPx, fromNullIcon.getWidth());

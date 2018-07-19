@@ -150,7 +150,7 @@ public class OfflineBackgroundTaskTest {
 
         int result = new OfflineBackgroundTask().onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, mTaskFinishedCallback);
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
         // Task finished can only gets called from the native part, when async processing starts.
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
     }
@@ -175,7 +175,7 @@ public class OfflineBackgroundTaskTest {
 
         int result = new OfflineBackgroundTask().onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, mTaskFinishedCallback);
-        assertEquals(NativeBackgroundTask.LOAD_NATIVE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.LOAD_NATIVE, result);
         // Task finished can only gets called from the native part, when async processing starts.
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
     }
@@ -197,7 +197,7 @@ public class OfflineBackgroundTaskTest {
 
         int result = new OfflineBackgroundTask().onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, mTaskFinishedCallback);
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
         // Task finished can only gets called from the native part, when async processing starts.
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
     }
@@ -219,7 +219,7 @@ public class OfflineBackgroundTaskTest {
 
         int result = new OfflineBackgroundTask().onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, mTaskFinishedCallback);
-        assertEquals(NativeBackgroundTask.LOAD_NATIVE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.LOAD_NATIVE, result);
         // Task finished can only gets called from the native part, when async processing starts.
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
     }

@@ -70,13 +70,13 @@ public class ReauthenticationManagerTest {
     public void testDisplayReauthenticationFragment_Passed() {
         ReauthenticationManager.resetLastReauth();
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
 
         ReauthenticationManager.displayReauthenticationFragment(
                 R.string.lockscreen_description_view, View.NO_ID, mFragmentManager,
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
         Fragment reauthFragment =
                 mFragmentManager.findFragmentByTag(ReauthenticationManager.FRAGMENT_TAG);
         assertNotNull(reauthFragment);
@@ -87,7 +87,7 @@ public class ReauthenticationManagerTest {
         mFragmentManager.executePendingTransactions();
 
         assertTrue(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
     }
 
     /**
@@ -98,13 +98,13 @@ public class ReauthenticationManagerTest {
     public void testDisplayReauthenticationFragment_Failed() {
         ReauthenticationManager.resetLastReauth();
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
 
         ReauthenticationManager.displayReauthenticationFragment(
                 R.string.lockscreen_description_view, View.NO_ID, mFragmentManager,
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
         Fragment reauthFragment =
                 mFragmentManager.findFragmentByTag(ReauthenticationManager.FRAGMENT_TAG);
         assertNotNull(reauthFragment);
@@ -115,9 +115,9 @@ public class ReauthenticationManagerTest {
         mFragmentManager.executePendingTransactions();
 
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
     }
 
     /**
@@ -128,13 +128,13 @@ public class ReauthenticationManagerTest {
     public void testDisplayReauthenticationFragment_OneAtATimeCovered() {
         ReauthenticationManager.resetLastReauth();
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
 
         ReauthenticationManager.displayReauthenticationFragment(
                 R.string.lockscreen_description_export, View.NO_ID, mFragmentManager,
-                ReauthenticationManager.REAUTH_SCOPE_BULK);
+                ReauthenticationManager.ReauthScope.BULK);
         Fragment reauthFragment =
                 mFragmentManager.findFragmentByTag(ReauthenticationManager.FRAGMENT_TAG);
         assertNotNull(reauthFragment);
@@ -146,9 +146,9 @@ public class ReauthenticationManagerTest {
 
         // Both BULK and ONE_AT_A_TIME scopes should be covered by the BULK request above.
         assertTrue(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertTrue(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
     }
 
     /**
@@ -159,13 +159,13 @@ public class ReauthenticationManagerTest {
     public void testDisplayReauthenticationFragment_BulkNotCovered() {
         ReauthenticationManager.resetLastReauth();
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
 
         ReauthenticationManager.displayReauthenticationFragment(
                 R.string.lockscreen_description_view, View.NO_ID, mFragmentManager,
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
         Fragment reauthFragment =
                 mFragmentManager.findFragmentByTag(ReauthenticationManager.FRAGMENT_TAG);
         assertNotNull(reauthFragment);
@@ -177,8 +177,8 @@ public class ReauthenticationManagerTest {
 
         // Only ONE_AT_A_TIME scope should be covered by the ONE_AT_A_TIME request above.
         assertTrue(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME));
+                ReauthenticationManager.ReauthScope.ONE_AT_A_TIME));
         assertFalse(ReauthenticationManager.authenticationStillValid(
-                ReauthenticationManager.REAUTH_SCOPE_BULK));
+                ReauthenticationManager.ReauthScope.BULK));
     }
 }

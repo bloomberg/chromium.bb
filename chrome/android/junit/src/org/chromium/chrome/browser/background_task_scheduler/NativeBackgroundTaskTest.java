@@ -143,7 +143,7 @@ public class NativeBackgroundTaskTest {
         public TestNativeBackgroundTask(BrowserStartupController controller) {
             mBrowserStartupController = controller;
             mWasOnStartTaskWithNativeCalled = false;
-            mStartBeforeNativeResult = LOAD_NATIVE;
+            mStartBeforeNativeResult = StartBeforeNativeResult.LOAD_NATIVE;
             mNeedsReschedulingAfterStop = false;
             mStartWithNativeLatch = new CountDownLatch(1);
         }
@@ -282,7 +282,7 @@ public class NativeBackgroundTaskTest {
     @Test
     @Feature("BackgroundTaskScheduler")
     public void testOnStartTask_Done_BeforeNativeLoaded() {
-        mTask.setStartTaskBeforeNativeResult(NativeBackgroundTask.DONE);
+        mTask.setStartTaskBeforeNativeResult(NativeBackgroundTask.StartBeforeNativeResult.DONE);
         assertFalse(
                 mTask.onStartTask(RuntimeEnvironment.application, getTaskParameters(), mCallback));
 
@@ -295,7 +295,8 @@ public class NativeBackgroundTaskTest {
     @Test
     @Feature("BackgroundTaskScheduler")
     public void testOnStartTask_Reschedule_BeforeNativeLoaded() {
-        mTask.setStartTaskBeforeNativeResult(NativeBackgroundTask.RESCHEDULE);
+        mTask.setStartTaskBeforeNativeResult(
+                NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE);
         assertTrue(
                 mTask.onStartTask(RuntimeEnvironment.application, getTaskParameters(), mCallback));
 

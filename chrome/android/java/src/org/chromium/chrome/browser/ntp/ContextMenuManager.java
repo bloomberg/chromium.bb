@@ -29,19 +29,20 @@ import java.util.TreeMap;
  * Takes care of creating, closing a context menu and triaging the item clicks.
  */
 public class ContextMenuManager implements OnCloseContextMenuListener {
-    @IntDef({ID_OPEN_IN_NEW_WINDOW, ID_OPEN_IN_NEW_TAB, ID_OPEN_IN_INCOGNITO_TAB,
-            ID_SAVE_FOR_OFFLINE, ID_REMOVE, ID_LEARN_MORE})
+    @IntDef({ContextMenuItemId.OPEN_IN_NEW_WINDOW, ContextMenuItemId.OPEN_IN_NEW_TAB,
+            ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, ContextMenuItemId.SAVE_FOR_OFFLINE,
+            ContextMenuItemId.REMOVE, ContextMenuItemId.LEARN_MORE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ContextMenuItemId {}
-
-    // The order of the items will be based on the value of their ID. So if new items are added,
-    // the value of the existing ones should be modified so they stay in order.
-    public static final int ID_OPEN_IN_NEW_WINDOW = 0;
-    public static final int ID_OPEN_IN_NEW_TAB = 1;
-    public static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
-    public static final int ID_SAVE_FOR_OFFLINE = 3;
-    public static final int ID_REMOVE = 4;
-    public static final int ID_LEARN_MORE = 5;
+    public @interface ContextMenuItemId {
+        // The order of the items will be based on the value of their ID. So if new items are added,
+        // the value of the existing ones should be modified so they stay in order.
+        int OPEN_IN_NEW_WINDOW = 0;
+        int OPEN_IN_NEW_TAB = 1;
+        int OPEN_IN_INCOGNITO_TAB = 2;
+        int SAVE_FOR_OFFLINE = 3;
+        int REMOVE = 4;
+        int LEARN_MORE = 5;
+    }
 
     private final SuggestionsNavigationDelegate mNavigationDelegate;
     private final TouchEnabledDelegate mTouchEnabledDelegate;
@@ -145,22 +146,21 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         if (!delegate.isItemSupported(itemId)) return false;
 
         switch (itemId) {
-            case ID_OPEN_IN_NEW_WINDOW:
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                 return mNavigationDelegate.isOpenInNewWindowEnabled();
-            case ID_OPEN_IN_NEW_TAB:
+            case ContextMenuItemId.OPEN_IN_NEW_TAB:
                 return true;
-            case ID_OPEN_IN_INCOGNITO_TAB:
+            case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
                 return mNavigationDelegate.isOpenInIncognitoEnabled();
-            case ID_SAVE_FOR_OFFLINE: {
+            case ContextMenuItemId.SAVE_FOR_OFFLINE: {
                 String itemUrl = delegate.getUrl();
                 return itemUrl != null && OfflinePageBridge.canSavePage(itemUrl);
             }
-            case ID_REMOVE:
+            case ContextMenuItemId.REMOVE:
                 return true;
-            case ID_LEARN_MORE:
+            case ContextMenuItemId.LEARN_MORE:
                 // With Scroll to Load enabled, the Learn More link is moved into the Context Menu.
                 return SuggestionsConfig.scrollToLoad();
-
             default:
                 assert false;
                 return false;
@@ -170,12 +170,14 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     private static class MenuItemLabelMatcher {
         private static final Map<Integer, Integer> STRING_MAP = new TreeMap<Integer, Integer>() {
             {
-                put(ID_OPEN_IN_NEW_WINDOW, R.string.contextmenu_open_in_other_window);
-                put(ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab);
-                put(ID_OPEN_IN_INCOGNITO_TAB, R.string.contextmenu_open_in_incognito_tab);
-                put(ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_link);
-                put(ID_REMOVE, R.string.remove);
-                put(ID_LEARN_MORE, R.string.learn_more);
+                put(ContextMenuItemId.OPEN_IN_NEW_WINDOW,
+                        R.string.contextmenu_open_in_other_window);
+                put(ContextMenuItemId.OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab);
+                put(ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,
+                        R.string.contextmenu_open_in_incognito_tab);
+                put(ContextMenuItemId.SAVE_FOR_OFFLINE, R.string.contextmenu_save_link);
+                put(ContextMenuItemId.REMOVE, R.string.remove);
+                put(ContextMenuItemId.LEARN_MORE, R.string.learn_more);
             }
         };
     }
@@ -192,27 +194,27 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()) {
-                case ID_OPEN_IN_NEW_WINDOW:
+                case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                     mDelegate.openItem(WindowOpenDisposition.NEW_WINDOW);
                     RecordUserAction.record("Suggestions.ContextMenu.OpenItemInNewWindow");
                     return true;
-                case ID_OPEN_IN_NEW_TAB:
+                case ContextMenuItemId.OPEN_IN_NEW_TAB:
                     mDelegate.openItem(WindowOpenDisposition.NEW_BACKGROUND_TAB);
                     RecordUserAction.record("Suggestions.ContextMenu.OpenItemInNewTab");
                     return true;
-                case ID_OPEN_IN_INCOGNITO_TAB:
+                case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
                     mDelegate.openItem(WindowOpenDisposition.OFF_THE_RECORD);
                     RecordUserAction.record("Suggestions.ContextMenu.OpenItemInIncognitoTab");
                     return true;
-                case ID_SAVE_FOR_OFFLINE:
+                case ContextMenuItemId.SAVE_FOR_OFFLINE:
                     mDelegate.openItem(WindowOpenDisposition.SAVE_TO_DISK);
                     RecordUserAction.record("Suggestions.ContextMenu.DownloadItem");
                     return true;
-                case ID_REMOVE:
+                case ContextMenuItemId.REMOVE:
                     mDelegate.removeItem();
                     RecordUserAction.record("Suggestions.ContextMenu.RemoveItem");
                     return true;
-                case ID_LEARN_MORE:
+                case ContextMenuItemId.LEARN_MORE:
                     mNavigationDelegate.navigateToHelpPage();
                     RecordUserAction.record("Suggestions.ContextMenu.LearnMore");
                     return true;

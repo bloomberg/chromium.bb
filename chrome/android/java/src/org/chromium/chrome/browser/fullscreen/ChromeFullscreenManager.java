@@ -72,14 +72,14 @@ public class ChromeFullscreenManager
 
     private final ArrayList<FullscreenListener> mListeners = new ArrayList<>();
 
+    @IntDef({ControlsPosition.TOP, ControlsPosition.NONE})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CONTROLS_POSITION_TOP, CONTROLS_POSITION_NONE})
-    public @interface ControlsPosition {}
-
-    /** Controls are at the top, eg normal ChromeTabbedActivity. */
-    public static final int CONTROLS_POSITION_TOP = 0;
-    /** Controls are not present, eg FullscreenActivity. */
-    public static final int CONTROLS_POSITION_NONE = 1;
+    public @interface ControlsPosition {
+        /** Controls are at the top, eg normal ChromeTabbedActivity. */
+        int TOP = 0;
+        /** Controls are not present, eg FullscreenActivity. */
+        int NONE = 1;
+    }
 
     /**
      * A listener that gets notified of changes to the fullscreen state.
@@ -213,10 +213,10 @@ public class ChromeFullscreenManager
                 mActivity.getResources().getDimensionPixelSize(resControlContainerHeight);
 
         switch (mControlsPosition) {
-            case CONTROLS_POSITION_TOP:
+            case ControlsPosition.TOP:
                 mTopControlContainerHeight = controlContainerHeight;
                 break;
-            case CONTROLS_POSITION_NONE:
+            case ControlsPosition.NONE:
                 // Treat the case of no controls as controls always being totally offscreen.
                 mControlOffsetRatio = 1.0f;
                 break;
@@ -397,7 +397,7 @@ public class ChromeFullscreenManager
     }
 
     private void updateControlOffset() {
-        if (mControlsPosition == CONTROLS_POSITION_NONE) return;
+        if (mControlsPosition == ControlsPosition.NONE) return;
 
         float rendererControlOffset = Math.abs(mRendererTopControlOffset / getTopControlsHeight());
         final boolean isNaNRendererControlOffset = Float.isNaN(rendererControlOffset);
@@ -488,7 +488,7 @@ public class ChromeFullscreenManager
         TraceEvent.begin("FullscreenManager:updateVisuals");
 
         float offset = 0f;
-        if (mControlsPosition == CONTROLS_POSITION_TOP) {
+        if (mControlsPosition == ControlsPosition.TOP) {
             offset = getTopControlOffset();
         }
 

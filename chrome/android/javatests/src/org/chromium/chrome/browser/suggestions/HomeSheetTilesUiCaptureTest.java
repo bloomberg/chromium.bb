@@ -57,7 +57,7 @@ public class HomeSheetTilesUiCaptureTest {
     @MediumTest
     @Feature({"UiCatalogue"})
     public void testAppearance() {
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
         mScreenShooter.shoot("Appearance");
     }
@@ -66,7 +66,7 @@ public class HomeSheetTilesUiCaptureTest {
     @MediumTest
     @Feature({"UiCatalogue"})
     public void testContextMenu() {
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
         onView(withText(NtpUiCaptureTestData.getSiteSuggestions().get(0).title))
                 .perform(longClick());

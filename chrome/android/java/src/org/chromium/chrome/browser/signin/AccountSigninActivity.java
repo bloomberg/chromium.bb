@@ -45,7 +45,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
     public @interface SwitchAccountSource {
         int SIGNOUT_SIGNIN = 0;
         int SYNC_ACCOUNT_SWITCHER = 1;
-        int MAX = 2;
+        int NUM_ENTRIES = 2;
     }
 
     private @AccessPoint int mAccessPoint;
@@ -108,7 +108,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
         Intent intent = new Intent(context, AccountSigninActivity.class);
         Bundle viewArguments = AccountSigninView.createArgumentsForConfirmationFlow(accessPoint,
                 ChildAccountStatus.NOT_CHILD, selectAccount, isDefaultAccount,
-                AccountSigninView.UNDO_ABORT);
+                AccountSigninView.UndoBehavior.ABORT);
         intent.putExtras(viewArguments);
         intent.putExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, isFromPersonalizedPromo);
         return intent;
@@ -136,7 +136,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
      */
     public static void recordSwitchAccountSourceHistogram(@SwitchAccountSource int source) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Signin.SwitchSyncAccount.Source", source, SwitchAccountSource.MAX);
+                "Signin.SwitchSyncAccount.Source", source, SwitchAccountSource.NUM_ENTRIES);
     }
 
     @Override
@@ -215,13 +215,13 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
 
         final String histogram;
         switch (mSigninFlowType) {
-            case AccountSigninView.SIGNIN_FLOW_ADD_NEW_ACCOUNT:
+            case AccountSigninView.SigninFlowType.ADD_NEW_ACCOUNT:
                 histogram = "Signin.SigninCompletedAccessPoint.NewAccount";
                 break;
-            case AccountSigninView.SIGNIN_FLOW_CONFIRMATION_ONLY:
+            case AccountSigninView.SigninFlowType.CONFIRMATION_ONLY:
                 histogram = "Signin.SigninCompletedAccessPoint.WithDefault";
                 break;
-            case AccountSigninView.SIGNIN_FLOW_DEFAULT:
+            case AccountSigninView.SigninFlowType.DEFAULT:
                 histogram = "Signin.SigninCompletedAccessPoint.NotDefault";
                 break;
             default:
@@ -239,13 +239,13 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
 
         final String histogram;
         switch (mSigninFlowType) {
-            case AccountSigninView.SIGNIN_FLOW_ADD_NEW_ACCOUNT:
+            case AccountSigninView.SigninFlowType.ADD_NEW_ACCOUNT:
                 histogram = "Signin.SigninStartedAccessPoint.NewAccount";
                 break;
-            case AccountSigninView.SIGNIN_FLOW_CONFIRMATION_ONLY:
+            case AccountSigninView.SigninFlowType.CONFIRMATION_ONLY:
                 histogram = "Signin.SigninStartedAccessPoint.WithDefault";
                 break;
-            case AccountSigninView.SIGNIN_FLOW_DEFAULT:
+            case AccountSigninView.SigninFlowType.DEFAULT:
                 histogram = "Signin.SigninStartedAccessPoint.NotDefault";
                 break;
             default:

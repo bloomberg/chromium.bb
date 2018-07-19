@@ -361,7 +361,7 @@ public class VrShellImpl
         }
         if (mActivity.getBottomSheet() != null) {
             // Make sure the bottom sheet (Chrome Home) is hidden.
-            mActivity.getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+            mActivity.getBottomSheet().setSheetState(BottomSheet.SheetState.PEEK, false);
         }
 
         // Start with content rendering paused if the renderer-drawn controls are visible, as this
@@ -538,7 +538,7 @@ public class VrShellImpl
                 @Override
                 public void onSucceeded() {
                     PageInfoController.show(
-                            mActivity, tab, null, PageInfoController.OPENED_FROM_VR);
+                            mActivity, tab, null, PageInfoController.OpenedFromSource.VR);
                 }
 
                 @Override
@@ -547,7 +547,7 @@ public class VrShellImpl
             return;
         }
 
-        PageInfoController.show(mActivity, tab, null, PageInfoController.OPENED_FROM_VR);
+        PageInfoController.show(mActivity, tab, null, PageInfoController.OpenedFromSource.VR);
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when

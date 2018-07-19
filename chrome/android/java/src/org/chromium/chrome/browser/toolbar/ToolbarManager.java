@@ -118,18 +118,21 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /** A means of tracking which mechanism is being used to focus the omnibox. */
-    @IntDef({OMNIBOX_TAP, OMNIBOX_LONG_PRESS, FAKE_BOX_TAP, FAKE_BOX_LONG_PRESS, ACCELERATOR_TAP,
-            FOCUS_REASON_BOUNDARY})
+    @IntDef({OmniboxFocusReason.OMNIBOX_TAP, OmniboxFocusReason.OMNIBOX_LONG_PRESS,
+            OmniboxFocusReason.FAKE_BOX_TAP, OmniboxFocusReason.FAKE_BOX_LONG_PRESS,
+            OmniboxFocusReason.ACCELERATOR_TAP})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface OmniboxFocusReason {}
-    public static final int OMNIBOX_TAP = 0;
-    public static final int OMNIBOX_LONG_PRESS = 1;
-    public static final int FAKE_BOX_TAP = 2;
-    public static final int FAKE_BOX_LONG_PRESS = 3;
-    public static final int ACCELERATOR_TAP = 4;
-    private static final int FOCUS_REASON_BOUNDARY = 5;
+    public @interface OmniboxFocusReason {
+        int OMNIBOX_TAP = 0;
+        int OMNIBOX_LONG_PRESS = 1;
+        int FAKE_BOX_TAP = 2;
+        int FAKE_BOX_LONG_PRESS = 3;
+        int ACCELERATOR_TAP = 4;
+        int NUM_ENTRIES = 5;
+    }
     private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
-            new EnumeratedHistogramSample("Android.OmniboxFocusReason", FOCUS_REASON_BOUNDARY);
+            new EnumeratedHistogramSample(
+                    "Android.OmniboxFocusReason", OmniboxFocusReason.NUM_ENTRIES);
     private static final ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
             new ActionEvent("MobileToolbarOmniboxAcceleratorTap");
 
@@ -757,7 +760,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         if (mBottomToolbarCoordinator != null) {
             final OnClickListener searchAcceleratorListener = v -> {
-                recordOmniboxFocusReason(ACCELERATOR_TAP);
+                recordOmniboxFocusReason(OmniboxFocusReason.ACCELERATOR_TAP);
                 ACCELERATOR_BUTTON_TAP_ACTION.record();
                 setUrlBarFocus(true);
             };

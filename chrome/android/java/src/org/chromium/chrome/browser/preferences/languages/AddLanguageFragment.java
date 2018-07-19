@@ -96,7 +96,8 @@ public class AddLanguageFragment extends Fragment {
         super.onCreate(savedInstanceState);
         getActivity().setTitle(R.string.prefs_add_language);
         setHasOptionsMenu(true);
-        LanguagesManager.recordImpression(LanguagesManager.PAGE_ADD_LANGUAGE);
+        LanguagesManager.recordImpression(
+                LanguagesManager.LanguageSettingsPageType.PAGE_ADD_LANGUAGE);
     }
 
     @Override

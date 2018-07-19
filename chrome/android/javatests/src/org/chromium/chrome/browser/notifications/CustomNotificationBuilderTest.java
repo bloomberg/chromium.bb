@@ -83,7 +83,7 @@ public class CustomNotificationBuilderTest {
                                             .setTitle("title")
                                             .setBody("body")
                                             .setOrigin("origin")
-                                            .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                                            .setChannelId(ChannelDefinitions.ChannelId.SITES)
                                             .setTicker("ticker")
                                             .setDefaults(Notification.DEFAULT_ALL)
                                             .setVibrate(new long[] {100L})
@@ -150,7 +150,7 @@ public class CustomNotificationBuilderTest {
     public void testZeroActionButtons() {
         Context context = InstrumentationRegistry.getTargetContext();
         Notification notification = new CustomNotificationBuilder(context)
-                                            .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                                            .setChannelId(ChannelDefinitions.ChannelId.SITES)
                                             .build();
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ArrayList<View> buttons = new ArrayList<>();
@@ -169,7 +169,7 @@ public class CustomNotificationBuilderTest {
     public void testMaxActionButtons() {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase builder = new CustomNotificationBuilder(context)
-                                                  .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                                                  .setChannelId(ChannelDefinitions.ChannelId.SITES)
                                                   .addButtonAction(null /* iconBitmap */, "button",
                                                           createIntent(context, "ActionButtonOne"))
                                                   .addButtonAction(null /* iconBitmap */, "button",
@@ -210,7 +210,7 @@ public class CustomNotificationBuilderTest {
         actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
         Notification notification = new CustomNotificationBuilder(context)
-                                            .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                                            .setChannelId(ChannelDefinitions.ChannelId.SITES)
                                             .setLargeIcon(largeIcon)
                                             .setSmallIcon(smallIcon)
                                             .addButtonAction(actionIcon, "button",
@@ -245,7 +245,7 @@ public class CustomNotificationBuilderTest {
                         .setTitle(createString('a', maxLength + 1))
                         .setBody(createString('b', maxLength + 1))
                         .setOrigin(createString('c', maxLength + 1))
-                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
                         .setTicker(createString('d', maxLength + 1))
                         .addButtonAction(null /* iconBitmap */, createString('e', maxLength + 1),
                                 createIntent(context, "ActionButtonOne"))
@@ -303,7 +303,7 @@ public class CustomNotificationBuilderTest {
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context)
                         .setOrigin("https://www.google.com")
-                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES);
+                        .setChannelId(ChannelDefinitions.ChannelId.SITES);
 
         Notification notification = notificationBuilder.build();
 
@@ -322,7 +322,7 @@ public class CustomNotificationBuilderTest {
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context)
                         .setOrigin("https://www.chromium.org")
-                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
                         .setLargeIcon(null);
 
         Notification notification = notificationBuilder.build();
@@ -349,7 +349,7 @@ public class CustomNotificationBuilderTest {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context)
-                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
                         .addTextAction(null, "Action Title", null, "Placeholder");
 
         Notification notification = notificationBuilder.build();

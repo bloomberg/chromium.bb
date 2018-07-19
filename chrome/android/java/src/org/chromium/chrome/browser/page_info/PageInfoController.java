@@ -65,21 +65,22 @@ import java.util.Date;
  */
 public class PageInfoController
         implements ModalDialogView.Controller, SystemSettingsActivityRequiredListener {
+    @IntDef({OpenedFromSource.MENU, OpenedFromSource.TOOLBAR, OpenedFromSource.VR})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR, OPENED_FROM_VR})
-    private @interface OpenedFromSource {}
+    public @interface OpenedFromSource {
+        int MENU = 1;
+        int TOOLBAR = 2;
+        int VR = 3;
+    }
 
-    public static final int OPENED_FROM_MENU = 1;
-    public static final int OPENED_FROM_TOOLBAR = 2;
-    public static final int OPENED_FROM_VR = 3;
-
+    @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
+            OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({NOT_OFFLINE_PAGE, TRUSTED_OFFLINE_PAGE, UNTRUSTED_OFFLINE_PAGE})
-    private @interface OfflinePageState {}
-
-    public static final int NOT_OFFLINE_PAGE = 1;
-    public static final int TRUSTED_OFFLINE_PAGE = 2;
-    public static final int UNTRUSTED_OFFLINE_PAGE = 3;
+    public @interface OfflinePageState {
+        int NOT_OFFLINE_PAGE = 1;
+        int TRUSTED_OFFLINE_PAGE = 2;
+        int UNTRUSTED_OFFLINE_PAGE = 3;
+    }
 
     private final Context mContext;
     private final WindowAndroid mWindowAndroid;
@@ -145,7 +146,7 @@ public class PageInfoController
         mOfflinePageState = offlinePageState;
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
-        if (mOfflinePageState != NOT_OFFLINE_PAGE) {
+        if (mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE) {
             mOfflinePageCreationDate = offlinePageCreationDate;
         }
         mWindowAndroid = mTab.getWebContents().getTopLevelNativeWindow();
@@ -343,11 +344,11 @@ public class PageInfoController
         if (mContentPublisher != null) {
             messageBuilder.append(
                     mContext.getString(R.string.page_info_domain_hidden, mContentPublisher));
-        } else if (mOfflinePageState == TRUSTED_OFFLINE_PAGE) {
+        } else if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
             messageBuilder.append(
                     String.format(mContext.getString(R.string.page_info_connection_offline),
                             mOfflinePageCreationDate));
-        } else if (mOfflinePageState == UNTRUSTED_OFFLINE_PAGE) {
+        } else if (mOfflinePageState == OfflinePageState.UNTRUSTED_OFFLINE_PAGE) {
             // For untrusted pages, if there's a creation date, show it in the message.
             if (TextUtils.isEmpty(mOfflinePageCreationDate)) {
                 messageBuilder.append(mContext.getString(
@@ -441,7 +442,7 @@ public class PageInfoController
      * Whether website dialog is displayed for an offline page.
      */
     private boolean isShowingOfflinePage() {
-        return mOfflinePageState != NOT_OFFLINE_PAGE;
+        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE;
     }
 
     private boolean isSheet() {
@@ -466,11 +467,11 @@ public class PageInfoController
      */
     public static void show(final Activity activity, final Tab tab, final String contentPublisher,
             @OpenedFromSource int source) {
-        if (source == OPENED_FROM_MENU) {
+        if (source == OpenedFromSource.MENU) {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromMenu");
-        } else if (source == OPENED_FROM_TOOLBAR) {
+        } else if (source == OpenedFromSource.TOOLBAR) {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromToolbar");
-        } else if (source == OPENED_FROM_VR) {
+        } else if (source == OpenedFromSource.VR) {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromVR");
         } else {
             assert false : "Invalid source passed";
@@ -479,15 +480,15 @@ public class PageInfoController
         String offlinePageUrl = null;
         String offlinePageCreationDate = null;
         @OfflinePageState
-        int offlinePageState = NOT_OFFLINE_PAGE;
+        int offlinePageState = OfflinePageState.NOT_OFFLINE_PAGE;
 
         OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(tab);
         if (offlinePage != null) {
             offlinePageUrl = offlinePage.getUrl();
             if (OfflinePageUtils.isShowingTrustedOfflinePage(tab)) {
-                offlinePageState = TRUSTED_OFFLINE_PAGE;
+                offlinePageState = OfflinePageState.TRUSTED_OFFLINE_PAGE;
             } else {
-                offlinePageState = UNTRUSTED_OFFLINE_PAGE;
+                offlinePageState = OfflinePageState.UNTRUSTED_OFFLINE_PAGE;
             }
             // Get formatted creation date of the offline page. If the page was shared (so the
             // creation date cannot be acquired), make date an empty string and there will be

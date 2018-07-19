@@ -176,7 +176,7 @@ public class ContentSuggestionsNotifier {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS)
+                                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS)
                         .setContentIntent(contentIntent)
                         .setDeleteIntent(deleteIntent)
                         .setContentTitle(title)
@@ -197,7 +197,7 @@ public class ContentSuggestionsNotifier {
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.CONTENT_SUGGESTION,
-                ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
         // Set timeout.
@@ -460,10 +460,10 @@ public class ContentSuggestionsNotifier {
                                 Context.NOTIFICATION_SERVICE)),
                 ContextUtils.getApplicationContext().getResources());
         if (enabled) {
-            initializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+            initializer.ensureInitialized(ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
         } else {
             initializer.ensureInitializedAndDisabled(
-                    ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+                    ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
         }
         prefs.edit().putBoolean(PREF_CHANNEL_CREATED, true).apply();
         return true;
@@ -483,7 +483,7 @@ public class ContentSuggestionsNotifier {
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE));
-        manager.deleteNotificationChannel(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+        manager.deleteNotificationChannel(ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
         prefs.edit().remove(PREF_CHANNEL_CREATED).apply();
     }
 

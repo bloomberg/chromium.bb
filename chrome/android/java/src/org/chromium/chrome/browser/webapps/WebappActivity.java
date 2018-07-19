@@ -87,14 +87,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class WebappActivity extends SingleTabActivity {
     public static final String WEBAPP_SCHEME = "webapp";
+
     // The activity type of WebappActivity.
+    @IntDef({ActivityType.WEBAPP, ActivityType.WEBAPK, ActivityType.TWA})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ACTIVITY_TYPE_WEBAPP, ACTIVITY_TYPE_WEBAPK, ACTIVITY_TYPE_TWA})
-    public @interface ActivityType {}
-    public static final int ACTIVITY_TYPE_OTHER = -1;
-    public static final int ACTIVITY_TYPE_WEBAPP = 0;
-    public static final int ACTIVITY_TYPE_WEBAPK = 1;
-    public static final int ACTIVITY_TYPE_TWA = 2;
+    public @interface ActivityType {
+        int OTHER = -1;
+        int WEBAPP = 0;
+        int WEBAPK = 1;
+        int TWA = 2;
+    }
 
     private static final String TAG = "WebappActivity";
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
@@ -703,7 +705,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         // Disable HTML5 fullscreen in PWA fullscreen mode.
-        return new ChromeFullscreenManager(this, ChromeFullscreenManager.CONTROLS_POSITION_TOP) {
+        return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.TOP) {
             @Override
             public void enterPersistentFullscreenMode(FullscreenOptions options) {
                 if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) return;
@@ -765,8 +767,7 @@ public class WebappActivity extends SingleTabActivity {
             @Override
             public void onFaviconUpdated(Tab tab, Bitmap icon) {
                 // No need to cache the favicon if there is an icon declared in app manifest.
-                if (mWebappInfo.icon() != null) return;
-                if (icon == null) return;
+                if (mWebappInfo.icon() != null || icon == null) return;
                 if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
                         || icon.getHeight() > mLargestFavicon.getHeight()) {
                     mLargestFavicon = icon;
@@ -814,8 +815,7 @@ public class WebappActivity extends SingleTabActivity {
      *         this is a Trusted Web Activity.
      */
     public CustomTabsSessionToken getBrowserSession() {
-        if (mTrustedWebContentProvider == null) return null;
-        return mTrustedWebContentProvider.getSession();
+        return mTrustedWebContentProvider == null ? null : mTrustedWebContentProvider.getSession();
     }
 
     /**
@@ -827,9 +827,9 @@ public class WebappActivity extends SingleTabActivity {
      * by use-case.
      */
     public @ActivityType int getActivityType() {
-        if (getBrowserSession() != null) return ACTIVITY_TYPE_TWA;
-        if (getNativeClientPackageName() != null) return ACTIVITY_TYPE_WEBAPK;
-        return ACTIVITY_TYPE_WEBAPP;
+        if (getBrowserSession() != null) return ActivityType.TWA;
+        if (getNativeClientPackageName() != null) return ActivityType.WEBAPK;
+        return ActivityType.WEBAPP;
     }
 
     /**

@@ -19,7 +19,7 @@ public class UpdateTask extends NativeBackgroundTask {
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.COMPONENT_UPDATE_JOB_ID;
         UpdateScheduler.getInstance().onStartTaskBeforeNativeLoaded(callback);
-        return LOAD_NATIVE;
+        return StartBeforeNativeResult.LOAD_NATIVE;
     }
 
     @Override

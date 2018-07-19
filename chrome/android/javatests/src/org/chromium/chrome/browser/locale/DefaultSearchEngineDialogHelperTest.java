@@ -129,7 +129,7 @@ public class DefaultSearchEngineDialogHelperTest {
     @SmallTest
     @UiThreadTest
     public void testInitialState() {
-        mDialogType = LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+        mDialogType = LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
 
         RadioButtonLayout radioLayout = new RadioButtonLayout(mContext);
         Button okButton = new Button(mContext);
@@ -190,7 +190,7 @@ public class DefaultSearchEngineDialogHelperTest {
         final int maxAttempts = 3;
         boolean succeeded = false;
 
-        mDialogType = LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+        mDialogType = LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
 
         // Repeatedly create pairs of helpers and confirm that they are shuffled differently.  If
         // this test repeatedly iterates without succeeding, then something is terribly wrong.
@@ -226,7 +226,7 @@ public class DefaultSearchEngineDialogHelperTest {
     @SmallTest
     @UiThreadTest
     public void testSelectEngine() {
-        mDialogType = LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+        mDialogType = LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
 
         RadioButtonLayout radioLayout = new RadioButtonLayout(mContext);
         Button okButton = new Button(mContext);
@@ -253,7 +253,7 @@ public class DefaultSearchEngineDialogHelperTest {
     @SmallTest
     @UiThreadTest
     public void testFlipFlopSelection() {
-        mDialogType = LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+        mDialogType = LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
 
         RadioButtonLayout radioLayout = new RadioButtonLayout(mContext);
         Button okButton = new Button(mContext);

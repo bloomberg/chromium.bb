@@ -81,7 +81,7 @@ public class PaymentRequestNameTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe"});
     }
 
@@ -127,7 +127,7 @@ public class PaymentRequestNameTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Jane Jones"});
     }
 
@@ -162,7 +162,7 @@ public class PaymentRequestNameTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe"});
 
         int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS

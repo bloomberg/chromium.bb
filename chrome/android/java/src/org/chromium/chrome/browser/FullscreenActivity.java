@@ -97,8 +97,8 @@ public class FullscreenActivity extends SingleTabActivity {
     protected ChromeFullscreenManager createFullscreenManager() {
         // Create a Fullscreen manager that won't change the Tab's fullscreen state when the
         // Activity ends - we handle leaving fullscreen ourselves.
-        return new ChromeFullscreenManager(this,
-                ChromeFullscreenManager.CONTROLS_POSITION_NONE, false);
+        return new ChromeFullscreenManager(
+                this, ChromeFullscreenManager.ControlsPosition.NONE, false);
     }
 
     @Override

@@ -89,8 +89,8 @@ public class AutofillPaymentApp implements PaymentApp {
 
         if (billingAddress != null
                 && AutofillAddress.checkAddressCompletionStatus(
-                           billingAddress, AutofillAddress.IGNORE_PHONE_COMPLETENESS_CHECK)
-                        != AutofillAddress.COMPLETE) {
+                           billingAddress, AutofillAddress.CompletenessCheckType.IGNORE_PHONE)
+                        != AutofillAddress.CompletionStatus.COMPLETE) {
             billingAddress = null;
         }
 

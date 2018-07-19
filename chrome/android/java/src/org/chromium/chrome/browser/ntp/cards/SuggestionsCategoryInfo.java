@@ -110,11 +110,13 @@ public class SuggestionsCategoryInfo {
      */
     @Nullable
     public Boolean isContextMenuItemSupported(@ContextMenuItemId int menuItemId) {
-        if (menuItemId == ContextMenuManager.ID_REMOVE) return null;
+        if (menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE) return null;
 
         if (mCategory == KnownCategories.DOWNLOADS) {
-            if (menuItemId == ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB) return false;
-            if (menuItemId == ContextMenuManager.ID_SAVE_FOR_OFFLINE) return false;
+            if (menuItemId == ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB
+                    || menuItemId == ContextMenuManager.ContextMenuItemId.SAVE_FOR_OFFLINE) {
+                return false;
+            }
         }
         return true;
     }

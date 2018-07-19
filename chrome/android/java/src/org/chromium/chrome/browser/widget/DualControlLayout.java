@@ -46,13 +46,14 @@ import java.lang.annotation.RetentionPolicy;
  */
 public final class DualControlLayout extends ViewGroup {
     // When changing these values, you need to update ui/android/java/res/values/attrs.xml
-    public static final int ALIGN_START = 0;
-    public static final int ALIGN_END = 1;
-    public static final int ALIGN_APART = 2;
-
+    @IntDef({DualControlLayoutAlignment.START, DualControlLayoutAlignment.END,
+            DualControlLayoutAlignment.APART})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ALIGN_START, ALIGN_END, ALIGN_APART})
-    public @interface DualControlLayoutAlignment {}
+    public @interface DualControlLayoutAlignment {
+        int START = 0;
+        int END = 1;
+        int APART = 2;
+    }
 
     /**
      * Creates a standardized Button that can be used for DualControlLayouts showing buttons.
@@ -90,7 +91,7 @@ public final class DualControlLayout extends ViewGroup {
 
     /** Define how the controls will be laid out. */
     @DualControlLayoutAlignment
-    private int mAlignment = ALIGN_START;
+    private int mAlignment = DualControlLayoutAlignment.START;
 
     /** Margin between the controls when they're stacked.  By default, there is no margin. */
     private int mStackedMargin;
@@ -207,8 +208,10 @@ public final class DualControlLayout extends ViewGroup {
 
         int width = right - left;
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
-        boolean isPrimaryOnRight = (isRtl && mAlignment == ALIGN_START)
-                || (!isRtl && (mAlignment == ALIGN_APART || mAlignment == ALIGN_END));
+        boolean isPrimaryOnRight = (isRtl && mAlignment == DualControlLayoutAlignment.START)
+                || (!isRtl
+                           && (mAlignment == DualControlLayoutAlignment.APART
+                                      || mAlignment == DualControlLayoutAlignment.END));
 
         int primaryRight = isPrimaryOnRight
                 ? (width - rightPadding) : (mPrimaryView.getMeasuredWidth() + leftPadding);
@@ -233,7 +236,7 @@ public final class DualControlLayout extends ViewGroup {
             // Determine where to place the secondary View.
             int secondaryLeft;
             int secondaryRight;
-            if (mAlignment == ALIGN_APART) {
+            if (mAlignment == DualControlLayoutAlignment.APART) {
                 // Put the second View on the other side of the Layout from the primary View.
                 secondaryLeft = isPrimaryOnRight
                         ? leftPadding : width - rightPadding - mSecondaryView.getMeasuredWidth();
@@ -289,7 +292,8 @@ public final class DualControlLayout extends ViewGroup {
 
         // Set the alignment.
         if (a.hasValue(R.styleable.DualControlLayout_buttonAlignment)) {
-            setAlignment(a.getInt(R.styleable.DualControlLayout_buttonAlignment, ALIGN_START));
+            setAlignment(a.getInt(R.styleable.DualControlLayout_buttonAlignment,
+                    DualControlLayoutAlignment.START));
         }
 
         a.recycle();

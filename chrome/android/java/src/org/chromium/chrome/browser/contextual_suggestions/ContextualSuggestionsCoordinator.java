@@ -175,7 +175,7 @@ public class ContextualSuggestionsCoordinator {
 
     /** @return The height of the bottom sheet when it's peeking. */
     float getSheetPeekHeight() {
-        return mActivity.getBottomSheet().getSheetHeightForState(BottomSheet.SHEET_STATE_PEEK);
+        return mActivity.getBottomSheet().getSheetHeightForState(BottomSheet.SheetState.PEEK);
     }
 
     @VisibleForTesting

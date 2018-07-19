@@ -110,7 +110,7 @@ public class BottomToolbarCoordinator {
 
         mHomeButtonCoordinator.setButtonListeners(homeButtonListener, null);
         mHomeButtonCoordinator.setOverviewModeBehavior(
-                overviewModeBehavior, ToolbarButtonCoordinator.BROWSING_MODE);
+                overviewModeBehavior, ToolbarButtonCoordinator.ButtonVisibility.BROWSING_MODE);
 
         mMenuButton.setTouchListener(menuButtonListener);
     }

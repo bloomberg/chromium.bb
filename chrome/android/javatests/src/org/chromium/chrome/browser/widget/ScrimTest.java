@@ -119,7 +119,7 @@ public class ScrimTest {
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, false));
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false));
 
         assertScrimVisibility(true);
         assertTrue("A view should be obscuring the tab.",
@@ -127,7 +127,7 @@ public class ScrimTest {
         assertEquals("The scrim alpha should be 1.", 1f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, false));
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, false));
 
         assertScrimVisibility(false);
         assertFalse("Nothing should be obscuring the tab.",

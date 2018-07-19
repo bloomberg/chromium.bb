@@ -101,7 +101,7 @@ public class DownloadForegroundServiceTest {
         mNotification =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_DOWNLOADS)
+                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
                         .setSmallIcon(org.chromium.chrome.R.drawable.ic_file_download_white_24dp)
                         .setContentTitle("fakeContentTitle")
                         .setContentText("fakeContentText")

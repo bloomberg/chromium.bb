@@ -105,8 +105,8 @@ public class JavascriptTabModalDialogTest {
         Assert.assertNotNull("No dialog showing.", jsDialog);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            jsDialog.onClick(ModalDialogView.BUTTON_POSITIVE);
-            jsDialog.onClick(ModalDialogView.BUTTON_POSITIVE);
+            jsDialog.onClick(ModalDialogView.ButtonType.POSITIVE);
+            jsDialog.onClick(ModalDialogView.ButtonType.POSITIVE);
         });
 
         Assert.assertTrue("JavaScript execution should continue after closing prompt.",

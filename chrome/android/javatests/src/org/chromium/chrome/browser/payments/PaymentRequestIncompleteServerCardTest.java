@@ -69,7 +69,7 @@ public class PaymentRequestIncompleteServerCardTest implements MainActivityStart
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_NEGATIVE, mPaymentRequestTestRule.getReadyToPay());
+                ModalDialogView.ButtonType.NEGATIVE, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_secondary, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});

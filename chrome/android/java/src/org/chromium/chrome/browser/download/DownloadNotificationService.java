@@ -326,7 +326,7 @@ public class DownloadNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_DOWNLOADS)
+                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
                         .setContentTitle(
                                 context.getString(R.string.download_notification_summary_title))
                         .setSubText(context.getString(R.string.menu_downloads))
@@ -1071,7 +1071,7 @@ public class DownloadNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_DOWNLOADS)
+                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
                         .setContentTitle(
                                 DownloadUtils.getAbbreviatedFileName(title, MAX_FILE_NAME_LENGTH))
                         .setSmallIcon(iconId)
@@ -1357,7 +1357,7 @@ public class DownloadNotificationService extends Service {
                 LegacyHelpers.isLegacyOfflinePage(id)
                         ? NotificationUmaTracker.SystemNotificationType.DOWNLOAD_PAGES
                         : NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES,
-                ChannelDefinitions.CHANNEL_ID_DOWNLOADS);
+                ChannelDefinitions.ChannelId.DOWNLOADS);
 
         // Record number of other notifications when there's a new notification.
         DownloadNotificationUmaHelper.recordExistingNotificationsCountHistogram(

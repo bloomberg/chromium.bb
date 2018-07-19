@@ -59,7 +59,7 @@ public class HomeSheetUiCaptureTest {
     @Feature({"UiCatalogue"})
     public void testSignInPromo() {
         // Needs to be "Full" to for this to work on small screens in landscape.
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
 
         mActivityRule.scrollToFirstItemOfType(ItemViewType.PROMO);

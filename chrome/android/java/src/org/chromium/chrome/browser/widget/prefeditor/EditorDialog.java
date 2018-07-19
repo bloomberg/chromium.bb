@@ -222,7 +222,7 @@ public class EditorDialog
         FadingEdgeScrollView scrollView =
                 (FadingEdgeScrollView) mLayout.findViewById(R.id.scroll_view);
         scrollView.setEdgeVisibility(
-                FadingEdgeScrollView.DRAW_NO_EDGE, FadingEdgeScrollView.DRAW_FADING_EDGE);
+                FadingEdgeScrollView.EdgeType.NONE, FadingEdgeScrollView.EdgeType.FADING);
 
         // The shadow's top margin doesn't get picked up in the xml; set it programmatically.
         View shadow = mLayout.findViewById(R.id.shadow);

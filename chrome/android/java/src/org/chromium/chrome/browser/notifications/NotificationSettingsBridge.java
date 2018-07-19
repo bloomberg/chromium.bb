@@ -96,7 +96,7 @@ public class NotificationSettingsBridge {
                     mStatus == NotificationChannelStatus.BLOCKED
                             ? NotificationManager.IMPORTANCE_NONE
                             : NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setGroup(ChannelDefinitions.CHANNEL_GROUP_ID_SITES);
+            channel.setGroup(ChannelDefinitions.ChannelGroupId.SITES);
             return channel;
         }
     }

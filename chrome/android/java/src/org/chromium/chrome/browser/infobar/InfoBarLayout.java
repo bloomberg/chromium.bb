@@ -218,7 +218,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
                     getContext(), false, secondaryText, this);
         }
 
-        setBottomViews(primaryText, secondaryButton, DualControlLayout.ALIGN_END);
+        setBottomViews(
+                primaryText, secondaryButton, DualControlLayout.DualControlLayoutAlignment.END);
     }
 
     /**

@@ -150,11 +150,11 @@ public class JavascriptAppModalDialog
     @Override
     public void onClick(@ModalDialogView.ButtonType int buttonType) {
         switch (buttonType) {
-            case ModalDialogView.BUTTON_POSITIVE:
+            case ModalDialogView.ButtonType.POSITIVE:
                 confirm(mDialogView.getPromptText(), false);
                 mModalDialogManager.dismissDialog(mDialogView);
                 break;
-            case ModalDialogView.BUTTON_NEGATIVE:
+            case ModalDialogView.ButtonType.NEGATIVE:
                 cancel(false);
                 mModalDialogManager.dismissDialog(mDialogView);
                 break;

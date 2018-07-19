@@ -468,7 +468,7 @@ public class InfoBarContainer extends SwipableOverlayView {
                 @Override
                 public void onSheetStateChanged(int sheetState) {
                     if (mTab.isHidden()) return;
-                    setVisibility(sheetState == BottomSheet.SHEET_STATE_FULL ? INVISIBLE : VISIBLE);
+                    setVisibility(sheetState == BottomSheet.SheetState.FULL ? INVISIBLE : VISIBLE);
                 }
             };
             activity.getBottomSheet().addObserver(mBottomSheetObserver);

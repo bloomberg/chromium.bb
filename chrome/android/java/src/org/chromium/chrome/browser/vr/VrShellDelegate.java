@@ -100,14 +100,15 @@ public class VrShellDelegate
     /* package */ static final boolean USE_HIDE_ANIMATION =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
 
-    private static final int ENTER_VR_NOT_NECESSARY = 0;
-    private static final int ENTER_VR_CANCELLED = 1;
-    private static final int ENTER_VR_REQUESTED = 2;
-    private static final int ENTER_VR_SUCCEEDED = 3;
-
+    @IntDef({EnterVRResult.NOT_NECESSARY, EnterVRResult.CANCELLED, EnterVRResult.REQUESTED,
+            EnterVRResult.SUCCEEDED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED, ENTER_VR_SUCCEEDED})
-    private @interface EnterVRResult {}
+    private @interface EnterVRResult {
+        int NOT_NECESSARY = 0;
+        int CANCELLED = 1;
+        int REQUESTED = 2;
+        int SUCCEEDED = 3;
+    }
 
     private static final String VR_ENTRY_RESULT_ACTION =
             "org.chromium.chrome.browser.vr.VrEntryResult";
@@ -399,8 +400,8 @@ public class VrShellDelegate
         VrShellDelegate instance = getInstance();
         if (instance == null) return false;
         int result = instance.enterVrInternal();
-        if (result == ENTER_VR_CANCELLED && created_delegate) instance.destroy();
-        return result != ENTER_VR_CANCELLED;
+        if (result == EnterVRResult.CANCELLED && created_delegate) instance.destroy();
+        return result != EnterVRResult.CANCELLED;
     }
 
     /**
@@ -1396,16 +1397,16 @@ public class VrShellDelegate
             return;
         }
         switch (enterVrInternal()) {
-            case ENTER_VR_NOT_NECESSARY:
+            case EnterVRResult.NOT_NECESSARY:
                 mVrShell.setWebVrModeEnabled(true);
                 maybeSetPresentResult(true);
                 break;
-            case ENTER_VR_CANCELLED:
+            case EnterVRResult.CANCELLED:
                 maybeSetPresentResult(false);
                 break;
-            case ENTER_VR_REQUESTED:
+            case EnterVRResult.REQUESTED:
                 break;
-            case ENTER_VR_SUCCEEDED:
+            case EnterVRResult.SUCCEEDED:
                 maybeSetPresentResult(true);
                 break;
             default:
@@ -1418,12 +1419,12 @@ public class VrShellDelegate
      */
     @EnterVRResult
     private int enterVrInternal() {
-        if (mPaused) return ENTER_VR_CANCELLED;
-        if (mInVr) return ENTER_VR_NOT_NECESSARY;
+        if (mPaused) return EnterVRResult.CANCELLED;
+        if (mInVr) return EnterVRResult.NOT_NECESSARY;
 
         // Update VR support level as it can change at runtime
         maybeUpdateVrSupportLevel();
-        if (!canEnterVr()) return ENTER_VR_CANCELLED;
+        if (!canEnterVr()) return EnterVRResult.CANCELLED;
         if (getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM
                 && isDaydreamCurrentViewerInternal()) {
             // TODO(mthiesse): This is a workaround for b/66486878 (see also crbug.com/767594).
@@ -1440,7 +1441,7 @@ public class VrShellDelegate
         } else {
             enterVr(false);
         }
-        return ENTER_VR_REQUESTED;
+        return EnterVRResult.REQUESTED;
     }
 
     private void requestToExitVrInternal(OnExitVrRequestListener listener,

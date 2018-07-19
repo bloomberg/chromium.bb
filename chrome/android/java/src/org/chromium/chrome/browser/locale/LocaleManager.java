@@ -52,24 +52,25 @@ public class LocaleManager {
     public static final String SPECIAL_LOCALE_ID = "US";
 
     /** The current state regarding search engine promo dialogs. */
-    @IntDef({SEARCH_ENGINE_PROMO_SHOULD_CHECK, SEARCH_ENGINE_PROMO_CHECKED_NOT_SHOWN,
-            SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN})
+    @IntDef({SearchEnginePromoState.SHOULD_CHECK, SearchEnginePromoState.CHECKED_NOT_SHOWN,
+            SearchEnginePromoState.CHECKED_AND_SHOWN})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SearchEnginePromoState {}
-    public static final int SEARCH_ENGINE_PROMO_SHOULD_CHECK = -1;
-    public static final int SEARCH_ENGINE_PROMO_CHECKED_NOT_SHOWN = 0;
-    public static final int SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN = 1;
+    public @interface SearchEnginePromoState {
+        int SHOULD_CHECK = -1;
+        int CHECKED_NOT_SHOWN = 0;
+        int CHECKED_AND_SHOWN = 1;
+    }
 
     /** The different types of search engine promo dialogs. */
-    @IntDef({SEARCH_ENGINE_PROMO_DONT_SHOW, SEARCH_ENGINE_PROMO_SHOW_SOGOU,
-            SEARCH_ENGINE_PROMO_SHOW_EXISTING, SEARCH_ENGINE_PROMO_SHOW_NEW})
+    @IntDef({SearchEnginePromoType.DONT_SHOW, SearchEnginePromoType.SHOW_SOGOU,
+            SearchEnginePromoType.SHOW_EXISTING, SearchEnginePromoType.SHOW_NEW})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SearchEnginePromoType {}
-
-    public static final int SEARCH_ENGINE_PROMO_DONT_SHOW = -1;
-    public static final int SEARCH_ENGINE_PROMO_SHOW_SOGOU = 0;
-    public static final int SEARCH_ENGINE_PROMO_SHOW_EXISTING = 1;
-    public static final int SEARCH_ENGINE_PROMO_SHOW_NEW = 2;
+    public @interface SearchEnginePromoType {
+        int DONT_SHOW = -1;
+        int SHOW_SOGOU = 0;
+        int SHOW_EXISTING = 1;
+        int SHOW_NEW = 2;
+    }
 
     protected static final String KEY_SEARCH_ENGINE_PROMO_SHOW_STATE =
             "com.android.chrome.SEARCH_ENGINE_PROMO_SHOWN";
@@ -116,15 +117,16 @@ public class LocaleManager {
      * Default constructor.
      */
     public LocaleManager() {
-        int state = SEARCH_ENGINE_PROMO_SHOULD_CHECK;
+        @SearchEnginePromoState
+        int state = SearchEnginePromoState.SHOULD_CHECK;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             state = ContextUtils.getAppSharedPreferences().getInt(
-                    KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
+                    KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SearchEnginePromoState.SHOULD_CHECK);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-        mSearchEnginePromoCompleted = state == SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN;
+        mSearchEnginePromoCompleted = state == SearchEnginePromoState.CHECKED_AND_SHOWN;
     }
 
     /**
@@ -254,8 +256,8 @@ public class LocaleManager {
                 } else {
                     @SearchEnginePromoType
                     int promoType = getSearchEnginePromoShowType();
-                    if (promoType == SEARCH_ENGINE_PROMO_SHOW_EXISTING
-                            || promoType == SEARCH_ENGINE_PROMO_SHOW_NEW) {
+                    if (promoType == SearchEnginePromoType.SHOW_EXISTING
+                            || promoType == SearchEnginePromoType.SHOW_NEW) {
                         onUserLeavePromoDialogWithNoConfirmedChoice(promoType);
                     }
                 }
@@ -268,13 +270,14 @@ public class LocaleManager {
             return;
         }
 
+        @SearchEnginePromoType
         final int shouldShow = getSearchEnginePromoShowType();
         Callable<PromoDialog> dialogCreator;
         switch (shouldShow) {
-            case SEARCH_ENGINE_PROMO_DONT_SHOW:
+            case SearchEnginePromoType.DONT_SHOW:
                 finalizeInternalCallback.onResult(true);
                 return;
-            case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
+            case SearchEnginePromoType.SHOW_SOGOU:
                 dialogCreator = new Callable<PromoDialog>() {
                     @Override
                     public PromoDialog call() throws Exception {
@@ -283,8 +286,8 @@ public class LocaleManager {
                     }
                 };
                 break;
-            case SEARCH_ENGINE_PROMO_SHOW_EXISTING:
-            case SEARCH_ENGINE_PROMO_SHOW_NEW:
+            case SearchEnginePromoType.SHOW_EXISTING:
+            case SearchEnginePromoType.SHOW_NEW:
                 dialogCreator = new Callable<PromoDialog>() {
                     @Override
                     public PromoDialog call() throws Exception {
@@ -392,12 +395,12 @@ public class LocaleManager {
      */
     @SearchEnginePromoType
     public int getSearchEnginePromoShowType() {
-        if (!isSpecialLocaleEnabled()) return SEARCH_ENGINE_PROMO_DONT_SHOW;
+        if (!isSpecialLocaleEnabled()) return SearchEnginePromoType.DONT_SHOW;
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(PREF_PROMO_SHOWN, false)) {
-            return SEARCH_ENGINE_PROMO_DONT_SHOW;
+            return SearchEnginePromoType.DONT_SHOW;
         }
-        return SEARCH_ENGINE_PROMO_SHOW_SOGOU;
+        return SearchEnginePromoType.SHOW_SOGOU;
     }
 
     /**
@@ -427,7 +430,8 @@ public class LocaleManager {
         TemplateUrlService.getInstance().setSearchEngine(keyword);
         ContextUtils.getAppSharedPreferences()
                 .edit()
-                .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN)
+                .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE,
+                        SearchEnginePromoState.CHECKED_AND_SHOWN)
                 .apply();
         mSearchEnginePromoCompleted = true;
     }
@@ -492,15 +496,17 @@ public class LocaleManager {
                            ChromeFeatureList.SEARCH_ENGINE_PROMO_EXISTING_DEVICE)) {
             return false;
         }
-        int state = SEARCH_ENGINE_PROMO_SHOULD_CHECK;
+        @SearchEnginePromoState
+        int state = SearchEnginePromoState.SHOULD_CHECK;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             state = ContextUtils.getAppSharedPreferences().getInt(
-                    KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
+                    KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SearchEnginePromoState.SHOULD_CHECK);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-        return !mSearchEnginePromoCheckedThisSession && state == SEARCH_ENGINE_PROMO_SHOULD_CHECK;
+        return !mSearchEnginePromoCheckedThisSession
+                && state == SearchEnginePromoState.SHOULD_CHECK;
     }
 
     /**

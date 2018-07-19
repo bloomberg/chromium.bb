@@ -250,14 +250,16 @@ public class UrlBar extends AutocompleteEditText {
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public void onLongPress(MotionEvent e) {
-                        ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OMNIBOX_LONG_PRESS);
+                        ToolbarManager.recordOmniboxFocusReason(
+                                ToolbarManager.OmniboxFocusReason.OMNIBOX_LONG_PRESS);
                         performLongClick();
                     }
 
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
                         requestFocus();
-                        ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OMNIBOX_TAP);
+                        ToolbarManager.recordOmniboxFocusReason(
+                                ToolbarManager.OmniboxFocusReason.OMNIBOX_TAP);
                         return true;
                     }
                 }, ThreadUtils.getUiThreadHandler());

@@ -105,7 +105,7 @@ public abstract class CardViewHolder
 
     @Override
     public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
-        return menuItemId == ContextMenuManager.ID_REMOVE && isDismissable();
+        return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE && isDismissable();
     }
 
     @Override

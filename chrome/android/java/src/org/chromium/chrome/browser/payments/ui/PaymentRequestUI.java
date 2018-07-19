@@ -72,31 +72,24 @@ import java.util.List;
  */
 public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
         PaymentRequestSection.SectionDelegate {
-    public static final int TYPE_SHIPPING_ADDRESSES = 1;
-    public static final int TYPE_SHIPPING_OPTIONS = 2;
-    public static final int TYPE_CONTACT_DETAILS = 3;
-    public static final int TYPE_PAYMENT_METHODS = 4;
-
-    public static final int SELECTION_RESULT_ASYNCHRONOUS_VALIDATION = 1;
-    public static final int SELECTION_RESULT_EDITOR_LAUNCH = 2;
-    public static final int SELECTION_RESULT_NONE = 3;
-
+    @IntDef({DataType.SHIPPING_ADDRESSES, DataType.SHIPPING_OPTIONS, DataType.CONTACT_DETAILS,
+            DataType.PAYMENT_METHODS})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-        TYPE_SHIPPING_ADDRESSES,
-        TYPE_SHIPPING_OPTIONS,
-        TYPE_CONTACT_DETAILS,
-        TYPE_PAYMENT_METHODS
-    })
-    public @interface DataType {}
+    public @interface DataType {
+        int SHIPPING_ADDRESSES = 1;
+        int SHIPPING_OPTIONS = 2;
+        int CONTACT_DETAILS = 3;
+        int PAYMENT_METHODS = 4;
+    }
 
+    @IntDef({SelectionResult.ASYNCHRONOUS_VALIDATION, SelectionResult.EDITOR_LAUNCH,
+            SelectionResult.NONE})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-            SELECTION_RESULT_ASYNCHRONOUS_VALIDATION,
-            SELECTION_RESULT_EDITOR_LAUNCH,
-            SELECTION_RESULT_NONE,
-    })
-    public @interface SelectionResult {}
+    public @interface SelectionResult {
+        int ASYNCHRONOUS_VALIDATION = 1;
+        int EDITOR_LAUNCH = 2;
+        int NONE = 3;
+    }
 
     /**
      * The interface to be implemented by the consumer of the PaymentRequest UI.
@@ -125,18 +118,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         /**
          * Called when the user changes one of their payment options.
          *
-         * If this method returns {@link SELECTION_RESULT_ASYNCHRONOUS_VALIDATION}, then:
+         * If this method returns {@link SelectionResult.ASYNCHRONOUS_VALIDATION}, then:
          * + The added option should be asynchronously verified.
          * + The section should be disabled and a progress spinny should be shown while the option
          *   is being verified.
          * + The checkedCallback will be invoked with the results of the check and updated
          *   information.
          *
-         * If this method returns {@link SELECTION_RESULT_EDITOR_LAUNCH}, then:
+         * If this method returns {@link SelectionResult.EDITOR_LAUNCH}, then:
          * + Interaction with UI should be disabled until updateSection() is called.
          *
          * For example, if the website needs a shipping address to calculate shipping options, then
-         * calling onSectionOptionSelected(TYPE_SHIPPING_ADDRESS, option, checkedCallback) will
+         * calling onSectionOptionSelected(DataType.SHIPPING_ADDRESS, option, checkedCallback) will
          * return true. When the website updates the shipping options, the checkedCallback will be
          * invoked.
          *
@@ -152,14 +145,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         /**
          * Called when the user clicks edit icon (pencil icon) on the payment option in a section.
          *
-         * If this method returns {@link SELECTION_RESULT_ASYNCHRONOUS_VALIDATION}, then:
+         * If this method returns {@link SelectionResult.ASYNCHRONOUS_VALIDATION}, then:
          * + The edited option should be asynchronously verified.
          * + The section should be disabled and a progress spinny should be shown while the option
          *   is being verified.
          * + The checkedCallback will be invoked with the results of the check and updated
          *   information.
          *
-         * If this method returns {@link SELECTION_RESULT_EDITOR_LAUNCH}, then:
+         * If this method returns {@link SelectionResult.EDITOR_LAUNCH}, then:
          * + Interaction with UI should be disabled until updateSection() is called.
          *
          * @param optionType      Data being updated.
@@ -174,14 +167,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         /**
          * Called when the user clicks on the "Add" button for a section.
          *
-         * If this method returns {@link SELECTION_RESULT_ASYNCHRONOUS_VALIDATION}, then:
+         * If this method returns {@link SelectionResult.ASYNCHRONOUS_VALIDATION}, then:
          * + The added option should be asynchronously verified.
          * + The section should be disabled and a progress spinny should be shown while the option
          *   is being verified.
          * + The checkedCallback will be invoked with the results of the check and updated
          *   information.
          *
-         * If this method returns {@link SELECTION_RESULT_EDITOR_LAUNCH}, then:
+         * If this method returns {@link SelectionResult.EDITOR_LAUNCH}, then:
          * + Interaction with UI should be disabled until updateSection() is called.
          *
          * @param optionType      Data being updated.
@@ -385,13 +378,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 mIsClientCheckingSelection = false;
                 updateOrderSummarySection(result.getShoppingCart());
                 if (mRequestShipping) {
-                    updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
-                    updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
+                    updateSection(DataType.SHIPPING_ADDRESSES, result.getShippingAddresses());
+                    updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
                 }
                 if (mRequestContactDetails) {
-                    updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
+                    updateSection(DataType.CONTACT_DETAILS, result.getContactDetails());
                 }
-                updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
+                updateSection(DataType.PAYMENT_METHODS, result.getPaymentMethods());
                 if (mShippingAddressSectionInformation.getSelectedItem() == null) {
                     expand(mShippingAddressSection);
                 } else {
@@ -453,8 +446,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 updateOrderSummarySection(result.getShoppingCart());
 
                 if (mRequestShipping) {
-                    updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
-                    updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
+                    updateSection(DataType.SHIPPING_ADDRESSES, result.getShippingAddresses());
+                    updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
 
                     // Let the summary display a CHOOSE/ADD button for the first subsection that
                     // needs it.
@@ -465,13 +458,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 }
 
                 if (mRequestContactDetails) {
-                    updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
+                    updateSection(DataType.CONTACT_DETAILS, result.getContactDetails());
                 }
 
                 mPaymentMethodSection.setDisplaySummaryInSingleLineInNormalMode(
                         result.getPaymentMethods()
                                 .getDisplaySelectedItemSummaryInSingleLineInNormalMode());
-                updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
+                updateSection(DataType.PAYMENT_METHODS, result.getPaymentMethods());
                 updatePayButtonEnabled();
 
                 // Hide the loading indicators and show the real sections.
@@ -662,17 +655,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param section The shipping options.
      */
     public void updateSection(@DataType int whichSection, SectionInformation section) {
-        if (whichSection == TYPE_SHIPPING_ADDRESSES) {
+        if (whichSection == DataType.SHIPPING_ADDRESSES) {
             mShippingAddressSectionInformation = section;
             mShippingAddressSection.update(section);
-        } else if (whichSection == TYPE_SHIPPING_OPTIONS) {
+        } else if (whichSection == DataType.SHIPPING_OPTIONS) {
             mShippingOptionsSectionInformation = section;
             mShippingOptionSection.update(section);
             showShippingOptionSectionIfNecessary();
-        } else if (whichSection == TYPE_CONTACT_DETAILS) {
+        } else if (whichSection == DataType.CONTACT_DETAILS) {
             mContactDetailsSectionInformation = section;
             mContactDetailsSection.update(section);
-        } else if (whichSection == TYPE_PAYMENT_METHODS) {
+        } else if (whichSection == DataType.PAYMENT_METHODS) {
             mPaymentMethodSectionInformation = section;
             mPaymentMethodSection.update(section);
         }
@@ -708,23 +701,24 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @Override
     public void onEditableOptionChanged(
             final PaymentRequestSection section, EditableOption option) {
-        @SelectionResult int result = SELECTION_RESULT_NONE;
+        @SelectionResult
+        int result = SelectionResult.NONE;
         if (section == mShippingAddressSection
                 && mShippingAddressSectionInformation.getSelectedItem() != option) {
             mShippingAddressSectionInformation.setSelectedItem(option);
             result = mClient.onSectionOptionSelected(
-                    TYPE_SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
+                    DataType.SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
         } else if (section == mShippingOptionSection
                 && mShippingOptionsSectionInformation.getSelectedItem() != option) {
             mShippingOptionsSectionInformation.setSelectedItem(option);
             result = mClient.onSectionOptionSelected(
-                    TYPE_SHIPPING_OPTIONS, option, mUpdateSectionsCallback);
+                    DataType.SHIPPING_OPTIONS, option, mUpdateSectionsCallback);
         } else if (section == mContactDetailsSection) {
             mContactDetailsSectionInformation.setSelectedItem(option);
-            result = mClient.onSectionOptionSelected(TYPE_CONTACT_DETAILS, option, null);
+            result = mClient.onSectionOptionSelected(DataType.CONTACT_DETAILS, option, null);
         } else if (section == mPaymentMethodSection) {
             mPaymentMethodSectionInformation.setSelectedItem(option);
-            result = mClient.onSectionOptionSelected(TYPE_PAYMENT_METHODS, option, null);
+            result = mClient.onSectionOptionSelected(DataType.PAYMENT_METHODS, option, null);
         }
 
         updateStateFromResult(section, result);
@@ -732,24 +726,25 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     @Override
     public void onEditEditableOption(final PaymentRequestSection section, EditableOption option) {
-        @SelectionResult int result = SELECTION_RESULT_NONE;
+        @SelectionResult
+        int result = SelectionResult.NONE;
 
         assert section != mOrderSummarySection;
         assert section != mShippingOptionSection;
         if (section == mShippingAddressSection) {
             assert mShippingAddressSectionInformation.getSelectedItem() == option;
             result = mClient.onSectionEditOption(
-                    TYPE_SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
+                    DataType.SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
         }
 
         if (section == mContactDetailsSection) {
             assert mContactDetailsSectionInformation.getSelectedItem() == option;
-            result = mClient.onSectionEditOption(TYPE_CONTACT_DETAILS, option, null);
+            result = mClient.onSectionEditOption(DataType.CONTACT_DETAILS, option, null);
         }
 
         if (section == mPaymentMethodSection) {
             assert mPaymentMethodSectionInformation.getSelectedItem() == option;
-            result = mClient.onSectionEditOption(TYPE_PAYMENT_METHODS, option, null);
+            result = mClient.onSectionEditOption(DataType.PAYMENT_METHODS, option, null);
         }
 
         updateStateFromResult(section, result);
@@ -759,21 +754,23 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public void onAddEditableOption(PaymentRequestSection section) {
         assert section != mShippingOptionSection;
 
-        @SelectionResult int result = SELECTION_RESULT_NONE;
+        @SelectionResult
+        int result = SelectionResult.NONE;
         if (section == mShippingAddressSection) {
-            result = mClient.onSectionAddOption(TYPE_SHIPPING_ADDRESSES, mUpdateSectionsCallback);
+            result = mClient.onSectionAddOption(
+                    DataType.SHIPPING_ADDRESSES, mUpdateSectionsCallback);
         } else if (section == mContactDetailsSection) {
-            result = mClient.onSectionAddOption(TYPE_CONTACT_DETAILS, null);
+            result = mClient.onSectionAddOption(DataType.CONTACT_DETAILS, null);
         } else if (section == mPaymentMethodSection) {
-            result = mClient.onSectionAddOption(TYPE_PAYMENT_METHODS, null);
+            result = mClient.onSectionAddOption(DataType.PAYMENT_METHODS, null);
         }
 
         updateStateFromResult(section, result);
     }
 
     void updateStateFromResult(PaymentRequestSection section, @SelectionResult int result) {
-        mIsClientCheckingSelection = result == SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
-        mIsEditingPaymentItem = result == SELECTION_RESULT_EDITOR_LAUNCH;
+        mIsClientCheckingSelection = result == SelectionResult.ASYNCHRONOUS_VALIDATION;
+        mIsEditingPaymentItem = result == SelectionResult.EDITOR_LAUNCH;
 
         if (mIsClientCheckingSelection) {
             mSelectedSection = section;
@@ -989,7 +986,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
             // New separators appear at the top and bottom of the list.
             mPaymentContainer.setEdgeVisibility(
-                    FadingEdgeScrollView.DRAW_HARD_EDGE, FadingEdgeScrollView.DRAW_FADING_EDGE);
+                    FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
             mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, -1));
 
             // Add a link to Autofill settings.
@@ -1023,17 +1020,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 }
             });
         } else if (mSelectedSection == mShippingAddressSection) {
-            mClient.getSectionInformation(
-                    TYPE_SHIPPING_ADDRESSES, createUpdateSectionCallback(TYPE_SHIPPING_ADDRESSES));
+            mClient.getSectionInformation(DataType.SHIPPING_ADDRESSES,
+                    createUpdateSectionCallback(DataType.SHIPPING_ADDRESSES));
         } else if (mSelectedSection == mShippingOptionSection) {
-            mClient.getSectionInformation(
-                    TYPE_SHIPPING_OPTIONS, createUpdateSectionCallback(TYPE_SHIPPING_OPTIONS));
+            mClient.getSectionInformation(DataType.SHIPPING_OPTIONS,
+                    createUpdateSectionCallback(DataType.SHIPPING_OPTIONS));
         } else if (mSelectedSection == mContactDetailsSection) {
-            mClient.getSectionInformation(
-                    TYPE_CONTACT_DETAILS, createUpdateSectionCallback(TYPE_CONTACT_DETAILS));
+            mClient.getSectionInformation(DataType.CONTACT_DETAILS,
+                    createUpdateSectionCallback(DataType.CONTACT_DETAILS));
         } else if (mSelectedSection == mPaymentMethodSection) {
-            mClient.getSectionInformation(
-                    TYPE_PAYMENT_METHODS, createUpdateSectionCallback(TYPE_PAYMENT_METHODS));
+            mClient.getSectionInformation(DataType.PAYMENT_METHODS,
+                    createUpdateSectionCallback(DataType.PAYMENT_METHODS));
         } else {
             updateSectionVisibility();
         }

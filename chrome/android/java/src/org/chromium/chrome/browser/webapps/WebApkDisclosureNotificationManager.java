@@ -42,7 +42,7 @@ public class WebApkDisclosureNotificationManager {
      */
     static void maybeShowDisclosure(WebappActivity activity, WebappDataStorage storage) {
         String packageName = activity.getNativeClientPackageName();
-        boolean isTWA = (activity.getActivityType() == WebappActivity.ACTIVITY_TYPE_TWA);
+        boolean isTWA = (activity.getActivityType() == WebappActivity.ActivityType.TWA);
         boolean isNotificationAllowed = !storage.hasDismissedDisclosure()
                 && !sVisibleNotifications.contains(packageName)
                 && !WebappActionsNotificationManager.isEnabled();
@@ -65,7 +65,7 @@ public class WebApkDisclosureNotificationManager {
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
-                        false /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER);
+                        false /* preferCompat */, ChannelDefinitions.ChannelId.BROWSER);
         builder.setContentTitle(webappInfo.name())
                 .setPriorityBeforeO(NotificationCompat.PRIORITY_MIN)
                 .setSmallIcon(R.drawable.ic_chrome)
@@ -81,7 +81,7 @@ public class WebApkDisclosureNotificationManager {
                 builder.build());
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.WEBAPK,
-                ChannelDefinitions.CHANNEL_ID_BROWSER);
+                ChannelDefinitions.ChannelId.BROWSER);
     }
 
     /**

@@ -62,7 +62,7 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"jon.doe@google.com", "Jon Doe",
                 "4111111111111111", "12", "2050", "basic-card", "123", "Google", "340 Main St",
                 "CA", "Los Angeles", "90291", "US", "en", "freeShippingOption"});

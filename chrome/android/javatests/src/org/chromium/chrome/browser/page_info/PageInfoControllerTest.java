@@ -61,7 +61,7 @@ public class PageInfoControllerTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             PageInfoController.show(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), null,
-                    PageInfoController.OPENED_FROM_MENU);
+                    PageInfoController.OpenedFromSource.MENU);
         });
     }
 
@@ -79,7 +79,7 @@ public class PageInfoControllerTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), null, null,
-                    PageInfoController.NOT_OFFLINE_PAGE, null);
+                    PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE, null);
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.

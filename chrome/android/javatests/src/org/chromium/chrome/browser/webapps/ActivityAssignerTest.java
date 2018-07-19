@@ -45,8 +45,8 @@ public class ActivityAssignerTest {
     public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
         mContext = new AdvancedMockContext(ContextUtils.getApplicationContext());
-        mPreferences = new HashMap[ActivityAssigner.NAMESPACE_COUNT];
-        for (int i = 0; i < ActivityAssigner.NAMESPACE_COUNT; ++i) {
+        mPreferences = new HashMap[ActivityAssigner.ActivityAssignerNamespace.NUM_ENTRIES];
+        for (int i = 0; i < ActivityAssigner.ActivityAssignerNamespace.NUM_ENTRIES; ++i) {
             mPreferences[i] = new HashMap<String, Object>();
             mContext.addSharedPreferences(ActivityAssigner.PREF_PACKAGE[i], mPreferences[i]);
         }
@@ -64,10 +64,11 @@ public class ActivityAssignerTest {
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testEntriesCreated() {
-        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
+        ActivityAssigner assigner = ActivityAssigner.instance(
+                ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
 
         // Make sure that no webapps have been assigned to any Activities for a fresh install.
-        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
         List<ActivityAssigner.ActivityEntry> entries = assigner.getEntries();
         Assert.assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
         for (ActivityAssigner.ActivityEntry entry : entries) {
@@ -86,10 +87,12 @@ public class ActivityAssignerTest {
     public void testEntriesDownsized() {
         // Store preferences indicating that more Activities existed previously than there are now.
         int numSavedEntries = ActivityAssigner.NUM_WEBAPP_ACTIVITIES + 1;
-        createPreferences(numSavedEntries, ActivityAssigner.WEBAPP_NAMESPACE);
+        createPreferences(
+                numSavedEntries, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
 
-        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
-        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
+        ActivityAssigner assigner = ActivityAssigner.instance(
+                ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
     }
 
     /**
@@ -102,12 +105,13 @@ public class ActivityAssignerTest {
     @RetryOnFailure
     public void testCorruptedPreferences() {
         String wrongVariableType = "omgwtfbbq";
-        int index = ActivityAssigner.WEBAPP_NAMESPACE;
+        int index = ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
         mPreferences[index].clear();
         mPreferences[index].put(ActivityAssigner.PREF_NUM_SAVED_ENTRIES[index], wrongVariableType);
 
-        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
-        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
+        ActivityAssigner assigner = ActivityAssigner.instance(
+                ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
     }
 
     @Test
@@ -115,9 +119,10 @@ public class ActivityAssignerTest {
     @SmallTest
     @Feature({"Webapps"})
     public void testAssignment() {
-        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
+        ActivityAssigner assigner = ActivityAssigner.instance(
+                ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
 
-        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
 
         // Assign all of the Activities to webapps.
         // Go backwards to make sure ordering doesn't matter.
@@ -157,7 +162,7 @@ public class ActivityAssignerTest {
         Assert.assertNotSame("Webapp did not get reassigned to a new Activity.",
                 lastAssignedPreviousActivityIndex, lastAssignedCurrentActivityIndex);
 
-        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE);
     }
 
     @Test
@@ -165,8 +170,10 @@ public class ActivityAssignerTest {
     @SmallTest
     @Feature({"WebApk"})
     public void testInstance() {
-        Assert.assertNotSame(ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE),
-                ActivityAssigner.instance(ActivityAssigner.WEBAPK_NAMESPACE));
+        Assert.assertNotSame(ActivityAssigner.instance(
+                                     ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE),
+                ActivityAssigner.instance(
+                        ActivityAssigner.ActivityAssignerNamespace.WEBAPK_NAMESPACE));
     }
 
     /** Saves state indicating that a number of WebappActivities have already been saved out. */

@@ -4,10 +4,6 @@
 
 package org.chromium.chrome.browser.download.ui;
 
-import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_DATE;
-import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_HEADER;
-import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_NORMAL;
-
 import android.content.SharedPreferences.Editor;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +23,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflineContentProvider;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemViewType;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -90,7 +87,7 @@ public class DownloadHistoryAdapterTest {
 
     /**
      * Object for use in {@link #checkAdapterContents(Object...)} that corresponds to
-     * {@link #TYPE_HEADER}.
+     * {@link ItemViewType#HEADER}.
      */
     private static final Integer HEADER = -1;
 
@@ -740,14 +737,14 @@ public class DownloadHistoryAdapterTest {
         for (int i = 0; i < expectedItems.length; i++) {
             if (HEADER.equals(expectedItems[i])) {
                 Assert.assertEquals("The header should be the first item in the adapter.", 0, i);
-                Assert.assertEquals(TYPE_HEADER, mAdapter.getItemViewType(i));
+                Assert.assertEquals(ItemViewType.HEADER, mAdapter.getItemViewType(i));
             } else if (expectedItems[i] == null) {
                 // Expect a date.
                 // TODO(dfalcantara): Check what date the header is showing.
-                Assert.assertEquals(TYPE_DATE, mAdapter.getItemViewType(i));
+                Assert.assertEquals(ItemViewType.DATE, mAdapter.getItemViewType(i));
             } else {
                 // Expect a particular item.
-                Assert.assertEquals(TYPE_NORMAL, mAdapter.getItemViewType(i));
+                Assert.assertEquals(ItemViewType.NORMAL, mAdapter.getItemViewType(i));
                 Assert.assertEquals(expectedItems[i],
                         ((DownloadHistoryItemWrapper) mAdapter.getItemAt(i).second).getItem());
             }

@@ -110,7 +110,8 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
             assert secondaryText == null;
             ImageView playLogo = new ImageView(layout.getContext());
             playLogo.setImageResource(R.drawable.google_play);
-            layout.setBottomViews(primaryText, playLogo, DualControlLayout.ALIGN_APART);
+            layout.setBottomViews(
+                    primaryText, playLogo, DualControlLayout.DualControlLayoutAlignment.APART);
         }
     }
 
