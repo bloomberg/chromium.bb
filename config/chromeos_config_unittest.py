@@ -245,7 +245,7 @@ class UnifiedBuildConfigTestCase(object):
     '''
     self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
 
-    site_params = chromeos_config.SiteParameters()
+    site_params = config_lib.DefaultSiteParameters()
     defaults = chromeos_config.DefaultSettings(site_params)
     self._site_config = config_lib.SiteConfig(defaults=defaults,
                                               site_params=site_params)

@@ -794,137 +794,6 @@ def GetBoardTypeToBoardsDict(ge_build_config):
   return boards_dict
 
 
-def SiteParameters():
-  """Create the site parameters for this site.
-
-  Returns:
-    dict containing SiteParameters for ChromeOS.
-  """
-  # Chrome OS site parameters.
-  site_params = config_lib.DefaultSiteParameters()
-
-  # Helpers for constructing Chrome OS site parameters.
-  manifest_project = 'chromiumos/manifest'
-  manifest_int_project = 'chromeos/manifest-internal'
-  external_remote = 'cros'
-  internal_remote = 'cros-internal'
-  chromium_remote = 'chromium'
-  chrome_remote = 'chrome'
-  aosp_remote = 'aosp'
-  weave_remote = 'weave'
-
-  # Gerrit instance site parameters.
-  site_params.update(
-      config_lib.GerritInstanceParameters('EXTERNAL', 'chromium'))
-  site_params.update(
-      config_lib.GerritInstanceParameters('INTERNAL', 'chrome-internal'))
-  site_params.update(
-      config_lib.GerritInstanceParameters('AOSP', 'android'))
-  site_params.update(
-      config_lib.GerritInstanceParameters('WEAVE', 'weave'))
-
-  site_params.update(
-      # Parameters to define which manifests to use.
-      MANIFEST_PROJECT=manifest_project,
-      MANIFEST_INT_PROJECT=manifest_int_project,
-      MANIFEST_PROJECTS=(manifest_project, manifest_int_project),
-      MANIFEST_URL='%s/%s' % (
-          site_params['EXTERNAL_GOB_URL'], manifest_project
-      ),
-      MANIFEST_INT_URL='%s/%s' % (
-          site_params['INTERNAL_GERRIT_URL'], manifest_int_project
-      ),
-
-      # CrOS remotes specified in the manifests.
-      EXTERNAL_REMOTE=external_remote,
-      INTERNAL_REMOTE=internal_remote,
-      GOB_REMOTES={
-          site_params['EXTERNAL_GOB_INSTANCE']: external_remote,
-          site_params['INTERNAL_GOB_INSTANCE']: internal_remote
-      },
-      CHROMIUM_REMOTE=chromium_remote,
-      CHROME_REMOTE=chrome_remote,
-      AOSP_REMOTE=aosp_remote,
-      WEAVE_REMOTE=weave_remote,
-
-      # Only remotes listed in CROS_REMOTES are considered branchable.
-      # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
-      GERRIT_HOSTS={
-          external_remote: site_params['EXTERNAL_GERRIT_HOST'],
-          internal_remote: site_params['INTERNAL_GERRIT_HOST'],
-          aosp_remote: site_params['AOSP_GERRIT_HOST'],
-          weave_remote: site_params['WEAVE_GERRIT_HOST']
-      },
-      CROS_REMOTES={
-          external_remote: site_params['EXTERNAL_GOB_URL'],
-          internal_remote: site_params['INTERNAL_GOB_URL'],
-          aosp_remote: site_params['AOSP_GOB_URL'],
-          weave_remote: site_params['WEAVE_GOB_URL']
-      },
-      GIT_REMOTES={
-          chromium_remote: site_params['EXTERNAL_GOB_URL'],
-          chrome_remote: site_params['INTERNAL_GOB_URL'],
-          external_remote: site_params['EXTERNAL_GOB_URL'],
-          internal_remote: site_params['INTERNAL_GOB_URL'],
-          aosp_remote: site_params['AOSP_GOB_URL'],
-          weave_remote: site_params['WEAVE_GOB_URL']
-      },
-
-      # Prefix to distinguish internal and external changes. This is used
-      # when a user specifies a patch with "-g", when generating a key for
-      # a patch to use in our PatchCache, and when displaying a custom
-      # string for the patch.
-      CHANGE_PREFIX={
-          external_remote: site_params['EXTERNAL_CHANGE_PREFIX'],
-          internal_remote: site_params['INTERNAL_CHANGE_PREFIX'],
-      },
-
-      # List of remotes that are okay to include in the external manifest.
-      EXTERNAL_REMOTES=(
-          external_remote, chromium_remote, aosp_remote, weave_remote,
-      ),
-
-      # Mapping 'remote name' -> regexp that matches names of repositories on
-      # that remote that can be branched when creating CrOS branch.
-      # Branching script will actually create a new git ref when branching
-      # these projects. It won't attempt to create a git ref for other projects
-      # that may be mentioned in a manifest. If a remote is missing from this
-      # dictionary, all projects on that remote are considered to not be
-      # branchable.
-      BRANCHABLE_PROJECTS={
-          external_remote: r'(chromiumos|aosp)/(.+)',
-          internal_remote: r'chromeos/(.+)',
-      },
-
-      # Additional parameters used to filter manifests, create modified
-      # manifests, and to branch manifests.
-      MANIFEST_VERSIONS_GOB_URL=(
-          '%s/chromiumos/manifest-versions' % site_params['EXTERNAL_GOB_URL']
-      ),
-      MANIFEST_VERSIONS_INT_GOB_URL=(
-          '%s/chromeos/manifest-versions' % site_params['INTERNAL_GOB_URL']
-      ),
-      MANIFEST_VERSIONS_GOB_URL_TEST=(
-          '%s/chromiumos/manifest-versions-test' % (
-              site_params['EXTERNAL_GOB_URL']
-          )
-      ),
-      MANIFEST_VERSIONS_INT_GOB_URL_TEST=(
-          '%s/chromeos/manifest-versions-test' % site_params['INTERNAL_GOB_URL']
-      ),
-      MANIFEST_VERSIONS_GS_URL='gs://chromeos-manifest-versions',
-
-      # Standard directories under buildroot for cloning these repos.
-      EXTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions',
-      INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal',
-
-      # URL of the repo project.
-      REPO_URL='%s/external/repo' % site_params['EXTERNAL_GOB_URL']
-  )
-
-  return site_params
-
-
 def DefaultSettings(site_params):
   """Create the default build config values for this site.
 
@@ -4298,7 +4167,7 @@ def GetConfig():
   Returns:
     A config_lib.SiteConfig.
   """
-  site_params = SiteParameters()
+  site_params = config_lib.DefaultSiteParameters()
   defaults = DefaultSettings(site_params)
 
   ge_build_config = config_lib.LoadGEBuildConfigFromFile()
