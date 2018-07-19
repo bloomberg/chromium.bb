@@ -429,6 +429,10 @@ void LoginScreenController::LaunchArcKioskApp(const AccountId& account_id) {
   login_screen_client_->LaunchArcKioskApp(account_id);
 }
 
+void LoginScreenController::ShowResetScreen() {
+  login_screen_client_->ShowResetScreen();
+}
+
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
                                                const std::string& password,
                                                bool authenticated_by_pin,

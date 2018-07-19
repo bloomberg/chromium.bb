@@ -70,6 +70,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD0(ShowFeedback, void());
   MOCK_METHOD1(LaunchKioskApp, void(const std::string& app_id));
   MOCK_METHOD1(LaunchArcKioskApp, void(const AccountId& account_id));
+  MOCK_METHOD0(ShowResetScreen, void());
 
  private:
   bool authenticate_user_callback_result_ = true;

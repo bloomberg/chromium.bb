@@ -231,4 +231,7 @@ interface LoginScreenClient {
 
   // Launch the specific ARC++ kiosk app.
   LaunchArcKioskApp(signin.mojom.AccountId account_id);
+
+  // Show the powerwash (device reset) dialog.
+  ShowResetScreen();
 };
