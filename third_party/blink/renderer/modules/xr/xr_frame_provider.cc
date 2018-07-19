@@ -35,7 +35,7 @@ class XRFrameProviderRequestCallback
       : frame_provider_(frame_provider) {}
   ~XRFrameProviderRequestCallback() override = default;
   void Invoke(double high_res_time_ms) override {
-    frame_provider_->OnNonImmersiveVSync(high_res_time_ms / 1000.0);
+    frame_provider_->OnNonImmersiveVSync(high_res_time_ms);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -258,6 +258,20 @@ void XRFrameProvider::OnImmersiveFrameData(
     return;
   }
 
+  LocalFrame* frame = device_->xr()->GetFrame();
+  if (!frame)
+    return;
+  Document* doc = frame->GetDocument();
+  if (!doc)
+    return;
+
+  base::TimeTicks monotonic_time_now = TimeTicks() + data->time_delta;
+  double high_res_now_ms =
+      doc->Loader()
+          ->GetTiming()
+          .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
+          .InMillisecondsF();
+
   frame_pose_ = std::move(data->pose);
   frame_id_ = data->frame_id;
   buffer_mailbox_holder_ = data->buffer_holder;
@@ -271,11 +285,10 @@ void XRFrameProvider::OnImmersiveFrameData(
   // multiple frames without yielding, see crbug.com/701444.
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                           WrapWeakPersistent(this), nullptr,
-                           data->time_delta.InSecondsF()));
+                           WrapWeakPersistent(this), nullptr, high_res_now_ms));
 }
 
-void XRFrameProvider::OnNonImmersiveVSync(double timestamp) {
+void XRFrameProvider::OnNonImmersiveVSync(double high_res_now_ms) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
 
@@ -287,7 +300,7 @@ void XRFrameProvider::OnNonImmersiveVSync(double timestamp) {
 
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                           WrapWeakPersistent(this), nullptr, timestamp));
+                           WrapWeakPersistent(this), nullptr, high_res_now_ms));
 }
 
 void XRFrameProvider::OnNonImmersiveFrameData(
@@ -316,23 +329,28 @@ void XRFrameProvider::OnNonImmersiveFrameData(
 
   frame_pose_ = std::move(frame_data->pose);
 
-  double timestamp = frame_data->time_delta.InSecondsF();
+  base::TimeTicks monotonic_time_now = TimeTicks() + frame_data->time_delta;
+  double high_res_now_ms =
+      doc->Loader()
+          ->GetTiming()
+          .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
+          .InMillisecondsF();
 
   if (HasARSession()) {
     Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE,
-        WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                  WrapWeakPersistent(this), std::move(frame_data), timestamp));
+        FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                             WrapWeakPersistent(this), std::move(frame_data),
+                             high_res_now_ms));
   }
 }
 
 void XRFrameProvider::ProcessScheduledFrame(
     device::mojom::blink::XRFrameDataPtr frame_data,
-    double timestamp) {
+    double high_res_now_ms) {
   DVLOG(2) << __FUNCTION__;
 
-  TRACE_EVENT1("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
-               frame_id_);
+  TRACE_EVENT2("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
+               frame_id_, "timestamp", high_res_now_ms);
 
   if (!device_->HasDeviceAndFrameFocus() && !immersive_session_) {
     return;  // Not currently focused, so we won't expose poses (except to
@@ -366,8 +384,9 @@ void XRFrameProvider::ProcessScheduledFrame(
     // holder must be present.
     DCHECK(!frame_transport_->DrawingIntoSharedBuffer() ||
            buffer_mailbox_holder_);
-    immersive_session_->OnFrame(std::move(pose_matrix), buffer_mailbox_holder_,
-                                base::nullopt, base::nullopt);
+    immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
+                                buffer_mailbox_holder_, base::nullopt,
+                                base::nullopt);
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -398,11 +417,11 @@ void XRFrameProvider::ProcessScheduledFrame(
       // TODO(https://crbug.com/837883): only render background for
       // sessions that are using AR.
       if (frame_data) {
-        session->OnFrame(std::move(pose_matrix), base::nullopt,
+        session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
                          frame_data->buffer_holder, frame_data->buffer_size);
       } else {
-        session->OnFrame(std::move(pose_matrix), base::nullopt, base::nullopt,
-                         base::nullopt);
+        session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
+                         base::nullopt, base::nullopt);
       }
     }
   }

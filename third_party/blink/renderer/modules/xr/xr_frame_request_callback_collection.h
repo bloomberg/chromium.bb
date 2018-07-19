@@ -25,7 +25,7 @@ class XRFrameRequestCallbackCollection final
   using CallbackId = int;
   CallbackId RegisterCallback(V8XRFrameRequestCallback*);
   void CancelCallback(CallbackId);
-  void ExecuteCallbacks(XRSession*, XRFrame*);
+  void ExecuteCallbacks(XRSession*, double timestamp, XRFrame*);
 
   bool IsEmpty() const { return !callbacks_.size(); }
 

@@ -36,7 +36,7 @@ class XRFrameProvider final
 
   void RequestFrame(XRSession*);
 
-  void OnNonImmersiveVSync(double timestamp);
+  void OnNonImmersiveVSync(double high_res_now_ms);
 
   void SubmitWebGLLayer(XRWebGLLayer*, bool was_changed);
   void UpdateWebGLLayerViewports(XRWebGLLayer*);
@@ -55,7 +55,7 @@ class XRFrameProvider final
 
   void OnPresentationProviderConnectionError();
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
-                             double timestamp);
+                             double high_res_now_ms);
 
   bool HasARSession();
 

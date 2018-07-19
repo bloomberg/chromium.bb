@@ -34,6 +34,7 @@ void XRFrameRequestCallbackCollection::CancelCallback(CallbackId id) {
 }
 
 void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
+                                                        double timestamp,
                                                         XRFrame* frame) {
   // First, generate a list of callbacks to consider.  Callbacks registered from
   // this point on are considered only for the "next" frame, not this one.
@@ -49,7 +50,7 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
 
     probe::AsyncTask async_task(context_, callback);
     probe::UserCallback probe(context_, "XRRequestFrame", AtomicString(), true);
-    callback->InvokeAndReportException(session, 0, frame);
+    callback->InvokeAndReportException(session, timestamp, frame);
   }
 
   callbacks_to_invoke_.clear();
