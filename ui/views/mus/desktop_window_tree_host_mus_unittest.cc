@@ -20,6 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/test/views_test_base.h"
@@ -78,9 +79,7 @@ class ExpectsNullCursorClientDuringTearDown : public aura::WindowObserver {
     window_->AddObserver(this);
   }
 
-  ~ExpectsNullCursorClientDuringTearDown() override {
-    EXPECT_FALSE(window_);
-  }
+  ~ExpectsNullCursorClientDuringTearDown() override { EXPECT_FALSE(window_); }
 
  private:
   // aura::WindowObserver:
@@ -259,8 +258,7 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTop) {
   std::unique_ptr<Widget> widget2(CreateWidget());
   widget2->Show();
 
-  aura::test::ChangeCompletionWaiter waiter(
-      aura::ChangeType::REORDER, true);
+  aura::test::ChangeCompletionWaiter waiter(aura::ChangeType::REORDER, true);
   widget1->StackAtTop();
   waiter.Wait();
 
@@ -276,8 +274,7 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
   std::unique_ptr<Widget> widget2(CreateWidget());
   widget2->Show();
 
-  aura::test::ChangeCompletionWaiter waiter(
-      aura::ChangeType::REORDER, true);
+  aura::test::ChangeCompletionWaiter waiter(aura::ChangeType::REORDER, true);
   widget2->StackAtTop();
   waiter.Wait();
 }
@@ -290,8 +287,7 @@ TEST_F(DesktopWindowTreeHostMusTest, DISABLED_StackAbove) {
   std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
   widget2->Show();
 
-  aura::test::ChangeCompletionWaiter waiter(
-      aura::ChangeType::REORDER, true);
+  aura::test::ChangeCompletionWaiter waiter(aura::ChangeType::REORDER, true);
   widget1->StackAboveWidget(widget2.get());
   waiter.Wait();
 }
@@ -447,6 +443,17 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
   widget->UpdateWindowTitle();
   EXPECT_TRUE(window->GetProperty(aura::client::kTitleShownKey));
   EXPECT_EQ(title2, window->GetTitle());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
+  std::unique_ptr<Widget> widget = CreateWidget();
+  // Widget frame views do not participate in accessibility node hierarchy
+  // because the frame is provided by the window manager.
+  views::NonClientView* non_client_view = widget->non_client_view();
+  EXPECT_TRUE(non_client_view->GetViewAccessibility().is_ignored());
+  EXPECT_TRUE(
+      non_client_view->frame_view()->GetViewAccessibility().is_ignored());
+  EXPECT_TRUE(widget->client_view()->GetViewAccessibility().is_ignored());
 }
 
 // Used to ensure the visibility of the root window is changed before that of

@@ -22,6 +22,7 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   View* view() { return view_; }
 
   // AXAuraObjWrapper overrides.
+  bool IsIgnored() override;
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;

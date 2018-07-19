@@ -34,7 +34,6 @@ void AXTreeSourceViews::HandleAccessibleAction(const ui::AXActionData& action) {
 }
 
 bool AXTreeSourceViews::GetTreeData(ui::AXTreeData* tree_data) const {
-  tree_data->tree_id = 0;
   tree_data->loaded = true;
   tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
@@ -74,7 +73,7 @@ AXAuraObjWrapper* AXTreeSourceViews::GetParent(AXAuraObjWrapper* node) const {
 }
 
 bool AXTreeSourceViews::IsValid(AXAuraObjWrapper* node) const {
-  return node != nullptr;
+  return node && !node->IsIgnored();
 }
 
 bool AXTreeSourceViews::IsEqual(AXAuraObjWrapper* node1,

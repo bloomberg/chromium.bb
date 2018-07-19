@@ -24,6 +24,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/window_properties.h"
@@ -258,6 +259,27 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetAura);
 };
 
+// ContentsViewMus links the ash Widget's accessibility node tree with the one
+// inside a remote process app. This is needed to support focus; ash needs to
+// have "focus" on a leaf node in its Widget/View hierarchy in order for the
+// accessibility subsystem to see focused nodes in the remote app.
+class ContentsViewMus : public views::View {
+ public:
+  ContentsViewMus() = default;
+  ~ContentsViewMus() override = default;
+
+  // views::View:
+  const char* GetClassName() const override { return "ContentsViewMus"; }
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                               views::AXRemoteHost::kRemoteAXTreeID);
+    node_data->role = ax::mojom::Role::kClient;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentsViewMus);
+};
+
 class ClientViewMus : public views::ClientView {
  public:
   ClientViewMus(views::Widget* widget,
@@ -286,11 +308,6 @@ class ClientViewMus : public views::ClientView {
 
   // views::View:
   const char* GetClassName() const override { return "ClientViewMus"; }
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                               views::AXRemoteHost::kRemoteAXTreeID);
-    node_data->role = ax::mojom::Role::kClient;
-  }
 
  private:
   NonClientFrameController* frame_controller_;
@@ -389,12 +406,6 @@ void NonClientFrameController::StoreCursor(const ui::Cursor& cursor) {
       ->set_cursor(cursor);
 }
 
-NonClientFrameController::~NonClientFrameController() {
-  aura::client::GetTransientWindowClient()->RemoveObserver(this);
-  if (window_)
-    window_->RemoveObserver(this);
-}
-
 base::string16 NonClientFrameController::GetWindowTitle() const {
   if (!window_)
     return base::string16();
@@ -432,9 +443,23 @@ bool NonClientFrameController::ShouldShowWindowTitle() const {
   return window_ && window_->GetProperty(aura::client::kTitleShownKey);
 }
 
+views::Widget* NonClientFrameController::GetWidget() {
+  return widget_;
+}
+
+const views::Widget* NonClientFrameController::GetWidget() const {
+  return widget_;
+}
+
+views::View* NonClientFrameController::GetContentsView() {
+  return contents_view_;
+}
+
 views::ClientView* NonClientFrameController::CreateClientView(
     views::Widget* widget) {
-  return new ClientViewMus(widget, GetContentsView(), this);
+  DCHECK(!contents_view_);
+  contents_view_ = new ContentsViewMus();  // Owned by views hierarchy.
+  return new ClientViewMus(widget, contents_view_, this);
 }
 
 void NonClientFrameController::OnWindowPropertyChanged(aura::Window* window,
@@ -486,6 +511,12 @@ void NonClientFrameController::OnTransientChildWindowRemoved(
       DetachedTitleAreaRendererForClient::ForWindow(transient_child);
   if (renderer)
     renderer->Detach();
+}
+
+NonClientFrameController::~NonClientFrameController() {
+  aura::client::GetTransientWindowClient()->RemoveObserver(this);
+  if (window_)
+    window_->RemoveObserver(this);
 }
 
 }  // namespace ash

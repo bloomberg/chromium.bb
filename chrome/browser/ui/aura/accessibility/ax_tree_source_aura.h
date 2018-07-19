@@ -19,6 +19,7 @@ class AXTreeSourceAura : public views::AXTreeSourceViews {
   ~AXTreeSourceAura() override;
 
   // AXTreeSource:
+  bool GetTreeData(ui::AXTreeData* data) const override;
   views::AXAuraObjWrapper* GetRoot() const override;
   void SerializeNode(views::AXAuraObjWrapper* node,
                      ui::AXNodeData* out_data) const override;

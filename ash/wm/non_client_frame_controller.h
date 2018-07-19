@@ -38,9 +38,10 @@ enum class WindowType;
 
 namespace ash {
 
-// Provides the non-client frame for mus Windows.
+// Provides the non-client frame and contents view for windows created by remote
+// app processes.
 class ASH_EXPORT NonClientFrameController
-    : public views::WidgetDelegateView,
+    : public views::WidgetDelegate,
       public aura::WindowObserver,
       public aura::client::TransientWindowClientObserver {
  public:
@@ -84,16 +85,16 @@ class ASH_EXPORT NonClientFrameController
   // value provided by the associated window's aura::WindowDelegate::GetCursor.
   void StoreCursor(const ui::Cursor& cursor);
 
- private:
-  ~NonClientFrameController() override;
-
-  // views::WidgetDelegateView:
+  // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   bool CanActivate() const override;
   bool ShouldShowWindowTitle() const override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  views::View* GetContentsView() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
   // aura::WindowObserver:
@@ -108,9 +109,13 @@ class ASH_EXPORT NonClientFrameController
   void OnTransientChildWindowRemoved(aura::Window* parent,
                                      aura::Window* transient_child) override;
 
+ private:
+  ~NonClientFrameController() override;
+
   aura::WindowManagerClient* window_manager_client_;
 
   views::Widget* widget_;
+  views::View* contents_view_ = nullptr;
 
   // WARNING: as widget delays destruction there is a portion of time when this
   // is null.

@@ -17,8 +17,12 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
+
+// For external linkage.
+constexpr int AXRemoteHost::kRemoteAXTreeID;
 
 AXRemoteHost::AXRemoteHost() {
   AXAuraObjCache::GetInstance()->SetDelegate(this);
@@ -51,24 +55,28 @@ void AXRemoteHost::StartMonitoringWidget(Widget* widget) {
   widget_ = widget;
   widget_->AddObserver(this);
 
-  // Start the AX tree with the client view because the root's frame is
-  // handled by the window manager in another process.
-  AXAuraObjWrapper* client_view =
-      AXAuraObjCache::GetInstance()->GetOrCreate(widget_->client_view());
+  // The cache needs to track the root window to follow focus changes.
+  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
+  cache->OnRootWindowObjCreated(widget_->GetNativeWindow());
 
-  tree_source_ = std::make_unique<AXTreeSourceMus>(client_view);
+  // Start the AX tree with the contents view because the window frame is
+  // handled by the window manager in another process.
+  View* contents_view = widget_->widget_delegate()->GetContentsView();
+  AXAuraObjWrapper* contents_wrapper = cache->GetOrCreate(contents_view);
+
+  tree_source_ = std::make_unique<AXTreeSourceMus>(contents_wrapper);
   tree_serializer_ = std::make_unique<AuraAXTreeSerializer>(tree_source_.get());
 
-  SendEvent(client_view, ax::mojom::Event::kLoadComplete);
-
-  // TODO(jamescook): Support for initial focus.
+  SendEvent(contents_wrapper, ax::mojom::Event::kLoadComplete);
 }
 
 void AXRemoteHost::StopMonitoringWidget() {
   DCHECK(widget_);
   DCHECK(widget_->HasObserver(this));
   widget_->RemoveObserver(this);
-  AXAuraObjCache::GetInstance()->Remove(widget_->client_view());
+  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
+  cache->OnRootWindowObjDestroyed(widget_->GetNativeWindow());
+  cache->Remove(widget_->widget_delegate()->GetContentsView());
   widget_ = nullptr;
   // Delete source and serializers to save memory.
   tree_serializer_.reset();

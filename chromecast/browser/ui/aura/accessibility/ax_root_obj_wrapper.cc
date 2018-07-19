@@ -38,6 +38,10 @@ bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {
   return base::ContainsValue(children, child);
 }
 
+bool AXRootObjWrapper::IsIgnored() {
+  return false;
+}
+
 views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
   return NULL;
 }

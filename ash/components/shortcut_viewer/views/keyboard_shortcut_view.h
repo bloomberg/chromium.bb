@@ -44,6 +44,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   static views::Widget* Toggle(base::TimeTicks start_time);
 
   // views::View:
+  const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;

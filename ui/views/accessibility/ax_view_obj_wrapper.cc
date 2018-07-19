@@ -20,6 +20,10 @@ AXViewObjWrapper::AXViewObjWrapper(View* view)  : view_(view) {
 
 AXViewObjWrapper::~AXViewObjWrapper() {}
 
+bool AXViewObjWrapper::IsIgnored() {
+  return view_->GetViewAccessibility().is_ignored();
+}
+
 AXAuraObjWrapper* AXViewObjWrapper::GetParent() {
   AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
   if (view_->parent())

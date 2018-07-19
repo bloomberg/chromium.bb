@@ -160,6 +160,10 @@ views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
   return g_ksv_view->GetWidget();
 }
 
+const char* KeyboardShortcutView::GetClassName() const {
+  return "KeyboardShortcutView";
+}
+
 bool KeyboardShortcutView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK_EQ(ui::VKEY_W, accelerator.key_code());

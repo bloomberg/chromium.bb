@@ -57,6 +57,9 @@ class VIEWS_EXPORT ViewAccessibility {
 
   bool IsLeaf() const;
 
+  bool is_ignored() const { return is_ignored_; }
+  void set_is_ignored(bool ignored) { is_ignored_ = ignored; }
+
  protected:
   explicit ViewAccessibility(View* view);
 
@@ -73,6 +76,14 @@ class VIEWS_EXPORT ViewAccessibility {
   ui::AXNodeData custom_data_;
 
   bool is_leaf_;
+
+  // When true the view is ignored when generating the AX node hierarchy, but
+  // its children are included. For example, if you created a custom table with
+  // the digits 1 - 9 arranged in a 3 x 3 grid, marking the table and rows
+  // "ignored" would mean that the digits 1 - 9 would appear as if they were
+  // immediate children of the root. Likewise "internal" container views can be
+  // ignored, like a Widget's RootView, ClientView, etc.
+  bool is_ignored_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };
