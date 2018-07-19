@@ -879,7 +879,7 @@ FcCacheOffsetsValid (FcCache *cache)
         if (fs->nfont > (end - (char *) fs) / sizeof (FcPattern))
             return FcFalse;
 
-        if (fs->fonts != 0 && !FcIsEncodedOffset(fs->fonts))
+        if (!FcIsEncodedOffset(fs->fonts))
             return FcFalse;
 
         for (i = 0; i < fs->nfont; i++)
