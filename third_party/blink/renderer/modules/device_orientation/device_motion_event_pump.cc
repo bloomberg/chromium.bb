@@ -4,12 +4,19 @@
 
 #include <cmath>
 
-#include "services/device/public/cpp/generic_sensor/motion_data.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
 #include "ui/gfx/geometry/angle_conversions.h"
+
+namespace {
+
+constexpr double kDefaultPumpDelayMilliseconds =
+    blink::DeviceMotionEventPump::kDefaultPumpDelayMicroseconds / 1000;
+
+}  // namespace
 
 namespace blink {
 
@@ -56,16 +63,12 @@ void DeviceMotionEventPump::SendStopMessage() {
 }
 
 void DeviceMotionEventPump::FireEvent(TimerBase*) {
-  device::MotionData data;
-  // The device orientation spec states that interval should be in milliseconds.
-  // https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
-  data.interval = kDefaultPumpDelayMicroseconds / 1000;
-
   DCHECK(listener());
 
-  GetDataFromSharedMemory(&data);
+  DeviceMotionData* data = GetDataFromSharedMemory();
 
-  if (ShouldFireEvent(data))
+  // data is null if not all sensors are active
+  if (data)
     listener()->DidChangeDeviceMotion(data);
 }
 
@@ -75,61 +78,63 @@ bool DeviceMotionEventPump::SensorsReadyOrErrored() const {
          gyroscope_.ReadyOrErrored();
 }
 
-void DeviceMotionEventPump::GetDataFromSharedMemory(device::MotionData* data) {
-  // "Active" here means that sensor has been initialized and is either ready
-  // or not available.
-  bool accelerometer_active = true;
-  bool linear_acceleration_sensor_active = true;
-  bool gyroscope_active = true;
+DeviceMotionData* DeviceMotionEventPump::GetDataFromSharedMemory() {
+  DeviceMotionData::Acceleration* acceleration = nullptr;
+  DeviceMotionData::Acceleration* acceleration_including_gravity = nullptr;
+  DeviceMotionData::RotationRate* rotation_rate = nullptr;
 
-  if (accelerometer_.SensorReadingCouldBeRead() &&
-      (accelerometer_active = accelerometer_.reading.timestamp() != 0.0)) {
-    data->acceleration_including_gravity_x = accelerometer_.reading.accel.x;
-    data->acceleration_including_gravity_y = accelerometer_.reading.accel.y;
-    data->acceleration_including_gravity_z = accelerometer_.reading.accel.z;
-    data->has_acceleration_including_gravity_x =
-        !std::isnan(accelerometer_.reading.accel.x.value());
-    data->has_acceleration_including_gravity_y =
-        !std::isnan(accelerometer_.reading.accel.y.value());
-    data->has_acceleration_including_gravity_z =
-        !std::isnan(accelerometer_.reading.accel.z.value());
+  if (accelerometer_.SensorReadingCouldBeRead()) {
+    if (accelerometer_.reading.timestamp() == 0.0)
+      return nullptr;
+
+    acceleration_including_gravity = DeviceMotionData::Acceleration::Create(
+        !std::isnan(accelerometer_.reading.accel.x.value()),
+        accelerometer_.reading.accel.x,
+        !std::isnan(accelerometer_.reading.accel.y.value()),
+        accelerometer_.reading.accel.y,
+        !std::isnan(accelerometer_.reading.accel.z.value()),
+        accelerometer_.reading.accel.z);
+  } else {
+    acceleration_including_gravity = DeviceMotionData::Acceleration::Create(
+        false, 0.0, false, 0.0, false, 0.0);
   }
 
-  if (linear_acceleration_sensor_.SensorReadingCouldBeRead() &&
-      (linear_acceleration_sensor_active =
-           linear_acceleration_sensor_.reading.timestamp() != 0.0)) {
-    data->acceleration_x = linear_acceleration_sensor_.reading.accel.x;
-    data->acceleration_y = linear_acceleration_sensor_.reading.accel.y;
-    data->acceleration_z = linear_acceleration_sensor_.reading.accel.z;
-    data->has_acceleration_x =
-        !std::isnan(linear_acceleration_sensor_.reading.accel.x.value());
-    data->has_acceleration_y =
-        !std::isnan(linear_acceleration_sensor_.reading.accel.y.value());
-    data->has_acceleration_z =
-        !std::isnan(linear_acceleration_sensor_.reading.accel.z.value());
+  if (linear_acceleration_sensor_.SensorReadingCouldBeRead()) {
+    if (linear_acceleration_sensor_.reading.timestamp() == 0.0)
+      return nullptr;
+
+    acceleration = DeviceMotionData::Acceleration::Create(
+        !std::isnan(linear_acceleration_sensor_.reading.accel.x.value()),
+        linear_acceleration_sensor_.reading.accel.x,
+        !std::isnan(linear_acceleration_sensor_.reading.accel.y.value()),
+        linear_acceleration_sensor_.reading.accel.y,
+        !std::isnan(linear_acceleration_sensor_.reading.accel.z.value()),
+        linear_acceleration_sensor_.reading.accel.z);
+  } else {
+    acceleration = DeviceMotionData::Acceleration::Create(false, 0.0, false,
+                                                          0.0, false, 0.0);
   }
 
-  if (gyroscope_.SensorReadingCouldBeRead() &&
-      (gyroscope_active = gyroscope_.reading.timestamp() != 0.0)) {
-    data->rotation_rate_alpha = gfx::RadToDeg(gyroscope_.reading.gyro.x);
-    data->rotation_rate_beta = gfx::RadToDeg(gyroscope_.reading.gyro.y);
-    data->rotation_rate_gamma = gfx::RadToDeg(gyroscope_.reading.gyro.z);
-    data->has_rotation_rate_alpha =
-        !std::isnan(gyroscope_.reading.gyro.x.value());
-    data->has_rotation_rate_beta =
-        !std::isnan(gyroscope_.reading.gyro.y.value());
-    data->has_rotation_rate_gamma =
-        !std::isnan(gyroscope_.reading.gyro.z.value());
+  if (gyroscope_.SensorReadingCouldBeRead()) {
+    if (gyroscope_.reading.timestamp() == 0.0)
+      return nullptr;
+
+    rotation_rate = DeviceMotionData::RotationRate::Create(
+        !std::isnan(gyroscope_.reading.gyro.x.value()),
+        gfx::RadToDeg(gyroscope_.reading.gyro.x),
+        !std::isnan(gyroscope_.reading.gyro.y.value()),
+        gfx::RadToDeg(gyroscope_.reading.gyro.y),
+        !std::isnan(gyroscope_.reading.gyro.z.value()),
+        gfx::RadToDeg(gyroscope_.reading.gyro.z));
+  } else {
+    rotation_rate = DeviceMotionData::RotationRate::Create(false, 0.0, false,
+                                                           0.0, false, 0.0);
   }
 
-  data->all_available_sensors_are_active = accelerometer_active &&
-                                           linear_acceleration_sensor_active &&
-                                           gyroscope_active;
+  // The device orientation spec states that interval should be in
+  // milliseconds.
+  // https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
+  return DeviceMotionData::Create(acceleration, acceleration_including_gravity,
+                                  rotation_rate, kDefaultPumpDelayMilliseconds);
 }
-
-bool DeviceMotionEventPump::ShouldFireEvent(
-    const device::MotionData& data) const {
-  return data.all_available_sensors_are_active;
-}
-
 }  // namespace blink

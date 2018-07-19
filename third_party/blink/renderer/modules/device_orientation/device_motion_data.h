@@ -26,11 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_DATA_H_
 
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-
-namespace device {
-class MotionData;
-}
 
 namespace blink {
 
@@ -38,7 +35,8 @@ class DeviceAccelerationInit;
 class DeviceMotionEventInit;
 class DeviceRotationRateInit;
 
-class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
+class MODULES_EXPORT DeviceMotionData final
+    : public GarbageCollected<DeviceMotionData> {
  public:
   class Acceleration final
       : public GarbageCollected<DeviceMotionData::Acceleration> {
@@ -120,7 +118,6 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                   RotationRate*,
                                   double interval);
   static DeviceMotionData* Create(const DeviceMotionEventInit&);
-  static DeviceMotionData* Create(const device::MotionData&);
   void Trace(blink::Visitor*);
 
   Acceleration* GetAcceleration() const { return acceleration_.Get(); }
