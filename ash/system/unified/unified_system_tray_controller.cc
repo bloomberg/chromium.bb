@@ -128,13 +128,13 @@ void UnifiedSystemTrayController::HandleLockAction() {
 void UnifiedSystemTrayController::HandleSettingsAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
   Shell::Get()->system_tray_model()->client_ptr()->ShowSettings();
-  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandlePowerAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
   Shell::Get()->lock_state_controller()->RequestShutdown(
       ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
+  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
@@ -142,7 +142,6 @@ void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
 
   if (Shell::Get()->session_controller()->ShouldEnableSettings()) {
     model->ShowDateSettings();
-    CloseBubble();
   } else if (model->can_set_time()) {
     model->ShowSetTimeDialog();
   }
@@ -150,7 +149,6 @@ void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
 
 void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
   Shell::Get()->system_tray_model()->client_ptr()->ShowEnterpriseInfo();
-  CloseBubble();
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {

@@ -12,9 +12,13 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/widget_finder.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -107,9 +111,11 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
 
   tray->tray_event_filter()->AddBubble(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 }
 
 UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
+  Shell::Get()->activation_client()->RemoveObserver(this);
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   tray_->tray_event_filter()->RemoveBubble(this);
@@ -226,6 +232,25 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
+  tray_->CloseBubble();
+}
+
+void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
+                                                aura::Window* gained_active,
+                                                aura::Window* lost_active) {
+  if (!gained_active)
+    return;
+
+  // Don't close the bubble if a transient child is gaining or losing
+  // activation.
+  if (bubble_widget_ == GetInternalWidgetForWindow(gained_active) ||
+      ::wm::HasTransientAncestor(gained_active,
+                                 bubble_widget_->GetNativeWindow()) ||
+      (lost_active && ::wm::HasTransientAncestor(
+                          lost_active, bubble_widget_->GetNativeWindow()))) {
+    return;
+  }
+
   tray_->CloseBubble();
 }
 
