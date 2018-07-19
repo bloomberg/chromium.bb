@@ -370,7 +370,7 @@ message ContainerSshKeysResponse {
   // generated file.
   string container_public_key = 1;
 
-  // Private key for the host, counterpart fo the public key which is stored in
+  // Private key for the host, counterpart to the public key which is stored in
   // the container as an authorized host. This will be a multiline string that
   // is equivalent to the contents in the ssh-keygen generated file. This will
   // be the same for all VMs/containers.
@@ -378,4 +378,15 @@ message ContainerSshKeysResponse {
 
   // The hostname of the container.
   string hostname = 3;
+
+  // Public key of the host for verification of it as a known host. This
+  // will be a single line string equivalent to the contents in the ssh-keygen
+  // generated file.
+  string host_public_key = 4;
+
+  // Private key for the container, counterpart to the public key which is
+  // stored in the container. This will be a multiline string that
+  // is equivalent to the contents in the ssh-keygen generated file. This will
+  // be the same for all VMs/containers.
+  string container_private_key = 5;
 }
