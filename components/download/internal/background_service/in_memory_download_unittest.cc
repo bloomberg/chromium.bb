@@ -18,6 +18,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::NiceMock;
+
 namespace download {
 namespace {
 
@@ -151,7 +153,7 @@ class InMemoryDownloadTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<InMemoryDownloadImpl> download_;
-  MockDelegate mock_delegate_;
+  NiceMock<MockDelegate> mock_delegate_;
 
   // Used by SimpleURLLoader network backend.
   network::TestURLLoaderFactory url_loader_factory_;
@@ -172,6 +174,46 @@ TEST_F(InMemoryDownloadTest, DownloadTest) {
   delegate()->WaitForCompletion();
 
   EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
+  auto blob = download()->ResultAsBlob();
+  VerifyBlobData(kTestDownloadData, blob.get());
+}
+
+TEST_F(InMemoryDownloadTest, RedirectResponseHeaders) {
+  RequestParams request_params;
+  request_params.url = GURL("https://example.com/firsturl");
+  CreateDownload(request_params);
+
+  // Add a redirect.
+  net::RedirectInfo redirect_info;
+  redirect_info.new_url = GURL("https://example.com/redirect12345");
+  network::TestURLLoaderFactory::Redirects redirects = {
+      {redirect_info, network::ResourceResponseHead()}};
+
+  // Add some random header.
+  network::ResourceResponseHead response_head;
+  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  response_head.headers->AddHeader("X-Random-Test-Header: 123");
+
+  // The size must match for download as stream from SimpleUrlLoader.
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = base::size(kTestDownloadData) - 1;
+
+  url_loader_factory()->AddResponse(request_params.url, response_head,
+                                    kTestDownloadData, status, redirects);
+
+  download()->Start();
+  delegate()->WaitForCompletion();
+  EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
+
+  // Verify the response headers and URL chain. The URL chain should contain
+  // the original URL and redirect URL, and should not contain the final URL.
+  std::vector<GURL> expected_url_chain = {request_params.url,
+                                          redirect_info.new_url};
+  EXPECT_EQ(download()->url_chain(), expected_url_chain);
+  EXPECT_EQ(download()->response_headers()->raw_headers(),
+            response_head.headers->raw_headers());
+
+  // Verfiy the data persisted to disk after redirect chain.
   auto blob = download()->ResultAsBlob();
   VerifyBlobData(kTestDownloadData, blob.get());
 }
