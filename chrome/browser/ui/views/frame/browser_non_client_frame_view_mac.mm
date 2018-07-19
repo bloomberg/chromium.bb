@@ -85,10 +85,18 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
     y_offset +=
         [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
         (menu_bar_height + title_bar_height);
-    CGFloat backing_bar_height = FullscreenBackingBarHeight();
-    y_offset +=
-        std::floor((1 - [fullscreen_toolbar_controller_ toolbarFraction]) *
-                   backing_bar_height);
+
+    if (y_offset > kTabstripTopInset) {
+      // When menubar shows up, we need to update mouse tracking area.
+      NSWindow* window = GetWidget()->GetNativeWindow();
+      NSRect content_bounds = [[window contentView] bounds];
+      // Backing bar tracking area uses native coordinates.
+      CGFloat backing_bar_height = FullscreenBackingBarHeight();
+      NSRect backing_bar_area =
+          NSMakeRect(0, NSMaxY(content_bounds) - backing_bar_height - y_offset,
+                     NSWidth(content_bounds), backing_bar_height + y_offset);
+      [fullscreen_toolbar_controller_ updateToolbarFrame:backing_bar_area];
+    }
   }
 
   gfx::Rect bounds =
