@@ -21,12 +21,11 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 
+using MD = ui::MaterialDesignController;
+
 namespace {
 
 const int kWindowWidth = 500;
-const int kNonClientBorderThickness =
-    OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
-    views::NonClientFrameView::kClientEdgeThickness;
 const int kMinimizeButtonWidth = 26;
 const int kMaximizeButtonWidth = 25;
 const int kCloseButtonWidth = 43;
@@ -36,6 +35,12 @@ const int kMaximizedExtraCloseWidth =
 const int kCaptionButtonsWidth =
     kMinimizeButtonWidth + kMaximizeButtonWidth + kCloseButtonWidth;
 const int kCaptionButtonHeight = 18;
+
+int NonClientBorderThickness() {
+  return OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
+         (MD::IsRefreshUi() ? 0
+                            : views::NonClientFrameView::kClientEdgeThickness);
+}
 
 class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
  public:
@@ -239,7 +244,6 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   }
 
   void ExpectTabStripAndMinimumSize(bool caption_buttons_on_left) {
-    using MD = ui::MaterialDesignController;
     int caption_buttons_width = kCaptionButtonsWidth;
     bool show_caption_buttons = delegate_->ShouldShowCaptionButtons();
     bool maximized = delegate_->IsMaximized() || !show_caption_buttons;
@@ -256,7 +260,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
                     : OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
       tabstrip_x += caption_buttons_width + right_of_close;
     } else if (!maximized) {
-      tabstrip_x += kNonClientBorderThickness;
+      tabstrip_x += NonClientBorderThickness();
     }
     gfx::Size tabstrip_min_size(delegate_->GetTabstripPreferredSize());
     gfx::Rect tabstrip_bounds(
@@ -282,7 +286,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
         showing_caption_buttons_on_right ? kMaximizedExtraCloseWidth : 0;
     int restored_spacing =
         (caption_buttons_on_left
-             ? kNonClientBorderThickness
+             ? NonClientBorderThickness()
              : OpaqueBrowserFrameViewLayout::kFrameBorderThickness);
     if (!MD::IsRefreshUi()) {
       maximized_spacing +=
@@ -297,7 +301,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     EXPECT_EQ(tabstrip_width, tabstrip_bounds.width());
     EXPECT_EQ(tabstrip_min_size.height(), tabstrip_bounds.height());
     maximized_spacing = 0;
-    restored_spacing = 2 * kNonClientBorderThickness;
+    restored_spacing = 2 * NonClientBorderThickness();
     if (!MD::IsRefreshUi()) {
       maximized_spacing +=
           showing_caption_buttons_on_right
@@ -313,7 +317,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     EXPECT_EQ(min_width, min_size.width());
     int restored_border_height =
         OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
-        kNonClientBorderThickness;
+        NonClientBorderThickness();
     if (MD::IsRefreshUi()) {
       restored_border_height +=
           OpaqueBrowserFrameViewLayout::kRefreshNonClientExtraTopThickness;

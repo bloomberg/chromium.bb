@@ -144,6 +144,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // is dependent on whether in material refresh mode or not.
   static int GetNonClientRestoredExtraThickness();
 
+  bool HasClientEdge() const;
+
  protected:
   // Whether a specific button should be inserted on the leading or trailing
   // side.

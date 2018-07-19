@@ -421,6 +421,10 @@ bool OpaqueBrowserFrameView::IsTabStripVisible() const {
   return browser_view()->IsTabStripVisible();
 }
 
+bool OpaqueBrowserFrameView::HasClientEdge() const {
+  return layout_->HasClientEdge();
+}
+
 bool OpaqueBrowserFrameView::IsToolbarVisible() const {
   return browser_view()->IsToolbarVisible() &&
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
@@ -599,7 +603,9 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const int w = client_bounds.width();
   // If the toolbar isn't going to draw a top edge for us, draw one ourselves.
   if (!tabstrip_visible) {
-    client_bounds.Inset(-kClientEdgeThickness, -1, -kClientEdgeThickness,
+    const int edge_thickness =
+        browser_view()->HasClientEdge() ? kClientEdgeThickness : 0;
+    client_bounds.Inset(-edge_thickness, -1, -edge_thickness,
                         client_bounds.height());
     BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                         client_bounds, true);
@@ -625,24 +631,26 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
         ThemeProperties::COLOR_TOOLBAR, incognito);
   }
 
-  // Draw the client edges.
-  const gfx::ImageSkia* const right_image =
-      tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
-  const int img_w = right_image->width();
-  const int right = client_bounds.right();
-  const int bottom = std::max(y, height() - NonClientBorderThickness());
-  const int height = bottom - y;
-  canvas->TileImageInt(*right_image, right, y, img_w, height);
-  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
-                       right, bottom);
-  const gfx::ImageSkia* const bottom_image =
-      tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
-  canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
-  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
-                       x - img_w, bottom);
-  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
-                       y, img_w, height);
-  FillClientEdgeRects(x, y, w, height, true, toolbar_color, canvas);
+  if (browser_view()->HasClientEdge()) {
+    // Draw the client edges.
+    const gfx::ImageSkia* const right_image =
+        tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+    const int img_w = right_image->width();
+    const int right = client_bounds.right();
+    const int bottom = std::max(y, height() - NonClientBorderThickness());
+    const int height = bottom - y;
+    canvas->TileImageInt(*right_image, right, y, img_w, height);
+    canvas->DrawImageInt(
+        *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER), right, bottom);
+    const gfx::ImageSkia* const bottom_image =
+        tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
+    canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
+    canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
+                         x - img_w, bottom);
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE),
+                         x - img_w, y, img_w, height);
+    FillClientEdgeRects(x, y, w, height, true, toolbar_color, canvas);
+  }
 
   // For popup windows, draw location bar sides.
   SkColor location_bar_border_color =

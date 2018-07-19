@@ -75,6 +75,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the top UI should hide.
   virtual bool ShouldHideTopUIForFullscreen() const;
 
+  // Returns whether the content is painted with a client edge or not.
+  virtual bool HasClientEdge() const;
+
   // Retrieves the icon to use in the frame to indicate an incognito window.
   gfx::ImageSkia GetIncognitoAvatarIcon() const;
 
