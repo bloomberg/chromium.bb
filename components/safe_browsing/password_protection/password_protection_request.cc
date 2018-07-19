@@ -48,6 +48,12 @@ const char kEnterprisePasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.NonGaiaEnterprisePasswordEntry";
 const char kGSuiteSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.GSuiteSyncPasswordEntry";
+const char kReferrerChainSizeOfSafeVerdictHistogram[] =
+    "PasswordProtection.ReferrerChainSize.Safe";
+const char kReferrerChainSizeOfPhishingVerdictHistogram[] =
+    "PasswordProtection.ReferrerChainSize.Phishing";
+const char kReferrerChainSizeOfLowRepVerdictHistogram[] =
+    "PasswordProtection.ReferrerChainSize.LowReputation";
 
 PasswordProtectionRequest::PasswordProtectionRequest(
     WebContents* web_contents,
@@ -403,6 +409,11 @@ void PasswordProtectionRequest::Finish(
       default:
         NOTREACHED();
     }
+    int referrer_chain_size =
+        request_proto_->frames_size() > 0
+            ? request_proto_->frames(0).referrer_chain_size()
+            : 0;
+    LogReferrerChainSize(response->verdict_type(), referrer_chain_size);
   }
 
   password_protection_service_->RequestFinished(
@@ -431,6 +442,28 @@ void PasswordProtectionRequest::HandleDeferredNavigations() {
       throttle->ResumeNavigation();
   }
   throttles_.clear();
+}
+
+void PasswordProtectionRequest::LogReferrerChainSize(
+    LoginReputationClientResponse::VerdictType verdict_type,
+    int referrer_chain_size) {
+  switch (verdict_type) {
+    case LoginReputationClientResponse::SAFE:
+      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfSafeVerdictHistogram,
+                               referrer_chain_size);
+      return;
+    case LoginReputationClientResponse::LOW_REPUTATION:
+      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfLowRepVerdictHistogram,
+                               referrer_chain_size);
+      return;
+    case LoginReputationClientResponse::PHISHING:
+      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfPhishingVerdictHistogram,
+                               referrer_chain_size);
+      return;
+    case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
+      break;
+  }
+  NOTREACHED();
 }
 
 }  // namespace safe_browsing
