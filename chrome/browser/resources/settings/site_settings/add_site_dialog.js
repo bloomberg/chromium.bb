@@ -77,8 +77,7 @@ Polymer({
    * @private
    */
   onSubmit_: function() {
-    if (this.$.add.disabled)
-      return;  // Can happen when Enter is pressed.
+    assert(!this.$.add.disabled);
     this.browserProxy.setCategoryPermissionForPattern(
         this.site_, this.site_, this.category, this.contentSetting,
         this.$.incognito.checked);
