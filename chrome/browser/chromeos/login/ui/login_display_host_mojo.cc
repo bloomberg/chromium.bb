@@ -77,35 +77,35 @@ void LoginDisplayHostMojo::ShowPasswordChangedDialog(bool show_password_error,
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowPasswordChangedDialog(
       show_password_error, email);
-  dialog_->Show(false /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowWhitelistCheckFailedError() {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowWhitelistCheckFailedError();
-  dialog_->Show(true /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowUnrecoverableCrypthomeErrorDialog() {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowUnrecoverableCrypthomeErrorDialog();
-  dialog_->Show(false /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowErrorScreen(error_id);
-  dialog_->Show(false /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowSigninUI(email);
-  dialog_->Show(true /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowDialogForCaptivePortal() {
-  dialog_->Show(false /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::HideDialogForCaptivePortal() {
@@ -162,8 +162,7 @@ void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
   wizard_controller_ = std::make_unique<WizardController>();
   wizard_controller_->Init(first_screen);
 
-  // Post login screens should not be closable by escape key.
-  dialog_->Show(false /*closable_by_esc*/);
+  dialog_->Show();
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {
@@ -253,7 +252,7 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
     LoadSigninWallpaper();
   }
 
-  dialog_->Show(can_close /*closable_by_esc*/);
+  dialog_->Show();
   return;
 }
 
