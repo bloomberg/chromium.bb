@@ -532,23 +532,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     return false;
   }
 
-  // Do not discard a tab that has already been discarded. Since this is being
-  // removed there is no way to communicate that to the heuristic. Treat this
-  // as a "trivial" rejection reason for now and return with an empty decision
-  // details.
-  // TODO(fdoray): Allow tabs to be discarded more than once.
-  // https://crbug.com/794622
-  if (discard_count_ > 0) {
-#if defined(OS_CHROMEOS)
-    // On ChromeOS this can be ignored for urgent discards, where running out of
-    // memory leads to a kernel panic.
-    if (reason != DiscardReason::kUrgent)
-      return false;
-#else
-    return false;
-#endif  // defined(OS_CHROMEOS)
-  }
-
   // We deliberately run through all of the logic without early termination.
   // This ensures that the decision details lists all possible reasons that the
   // transition can be denied.
