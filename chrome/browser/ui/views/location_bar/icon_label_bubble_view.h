@@ -107,6 +107,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
 
+  // Returns true when additional padding equal to GetPrefixedSeparatorWidth()
+  // should be added to the end of the view. This is useful in the case where
+  // it's required to layout subsequent views in the same position regardless
+  // of whether the separator is shown or not.
+  virtual bool ShouldShowExtraSpace() const;
+
   // Returns a multiplier used to calculate the actual width of the view based
   // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
   // full-width view and can be used to animate the width of the view.
@@ -153,16 +159,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
-  // Returns the maximum size for the label width. The value ignores
-  // WidthMultiplier().
-  gfx::Size GetMaxSizeForLabelWidth(int label_width) const;
-
  private:
-  // Amount of padding from the leading edge of the view to the leading edge of
-  // the image, and from the trailing edge of the label (or image, if the label
-  // is invisible) to the trailing edge of the view.
-  int GetOuterPadding() const;
-
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
@@ -172,9 +169,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // Padding after the separator.
   int GetEndPadding() const;
-
-  // Gets the minimum size to use when the label is not shown.
-  gfx::Size GetNonLabelSize() const;
 
   // The view has been activated by a user gesture such as spacebar.
   // Returns true if some handling was performed.

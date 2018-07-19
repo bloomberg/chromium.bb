@@ -36,7 +36,7 @@ static constexpr int kRefreshMarginLeft = 4;
 
 // In the MD refresh or rich suggestions, x-offset of the content and
 // description text.
-static constexpr int kTextIndent = 48;
+static constexpr int kTextIndent = 47;
 
 // TODO(dschuyler): Perhaps this should be based on the font size
 // instead of hardcoded to 2 dp (e.g. by adding a space in an
