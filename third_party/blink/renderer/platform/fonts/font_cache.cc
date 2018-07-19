@@ -286,7 +286,14 @@ scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
     UChar32 lookup_char,
     const SimpleFontData* font_data_to_substitute,
     FontFallbackPriority fallback_priority) {
-  if (Character::IsPrivateUse(lookup_char))
+  // In addition to PUA, do not perform fallback for non-characters either. Some
+  // of these are sentinel characters to detect encodings and do appear on
+  // websites. More details on
+  // http://www.unicode.org/faq/private_use.html#nonchar1 - See also
+  // crbug.com/862352 where performing fallback for U+FFFE causes a memory
+  // regression.
+  if (Character::IsPrivateUse(lookup_char) ||
+      Character::IsNonCharacter(lookup_char))
     return nullptr;
   return PlatformFallbackFontForCharacter(
       description, lookup_char, font_data_to_substitute, fallback_priority);

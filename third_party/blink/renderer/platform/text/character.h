@@ -184,6 +184,7 @@ class PLATFORM_EXPORT Character {
 
   static bool IsCommonOrInheritedScript(UChar32);
   static bool IsPrivateUse(UChar32);
+  static bool IsNonCharacter(UChar32);
 
  private:
   static bool IsCJKIdeographOrSymbolSlow(UChar32);
