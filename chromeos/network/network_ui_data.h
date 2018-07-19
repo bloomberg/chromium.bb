@@ -13,59 +13,44 @@
 
 namespace base {
 class DictionaryValue;
-}
+class Value;
+}  // namespace base
 
 namespace chromeos {
 
 // Helper for accessing and setting values in the network's UI data dictionary.
 // Accessing values is done via static members that take the network as an
-// argument. In order to fill a UI data dictionary, construct an instance, set
-// up your data members, and call FillDictionary(). For example, if you have a
-// |network|:
-//
-//      NetworkUIData ui_data;
-//      ui_data.FillDictionary(network->ui_data());
+// argument.
 class CHROMEOS_EXPORT NetworkUIData {
  public:
   NetworkUIData();
   NetworkUIData(const NetworkUIData& other);
   NetworkUIData& operator=(const NetworkUIData& other);
-  explicit NetworkUIData(const base::DictionaryValue& dict);
+  explicit NetworkUIData(const base::Value& dict);
   ~NetworkUIData();
-
-  ::onc::ONCSource onc_source() const { return onc_source_; }
-
-  const base::DictionaryValue* user_settings() const {
-    return user_settings_.get();
-  }
-  void set_user_settings(std::unique_ptr<base::DictionaryValue> dict);
-
-  // Returns |onc_source_| as a string, one of kONCSource*.
-  std::string GetONCSourceAsString() const;
-
-  // Fills in |dict| with the currently configured values. This will write the
-  // keys appropriate for Network::ui_data() as defined below (kKeyXXX).
-  void FillDictionary(base::DictionaryValue* dict) const;
 
   // Creates a NetworkUIData object from |onc_source|. This function is used to
   // create the "UIData" property of the Shill configuration.
   static std::unique_ptr<NetworkUIData> CreateFromONC(
       ::onc::ONCSource onc_source);
 
-  // Key for storing source of the ONC network.
-  static const char kKeyONCSource[];
+  // Returns a |user_settings_| as a DictionaryValue*.
+  const base::DictionaryValue* GetUserSettingsDictionary() const;
 
-  // Key for storing the user settings.
-  static const char kKeyUserSettings[];
+  // Setus |user_settings_| to the provided value which must be a dictionary.
+  void SetUserSettingsDictionary(std::unique_ptr<base::Value> dict);
 
-  // Values for kKeyONCSource
-  static const char kONCSourceUserImport[];
-  static const char kONCSourceDevicePolicy[];
-  static const char kONCSourceUserPolicy[];
+  // Returns a JSON string representing currently configured values for storing
+  // in Shill.
+  std::string GetAsJson() const;
+
+  ::onc::ONCSource onc_source() const { return onc_source_; }
 
  private:
+  std::string GetONCSourceAsString() const;
+
   ::onc::ONCSource onc_source_;
-  std::unique_ptr<base::DictionaryValue> user_settings_;
+  std::unique_ptr<base::Value> user_settings_;
 };
 
 }  // namespace chromeos

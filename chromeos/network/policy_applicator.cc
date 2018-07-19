@@ -191,7 +191,7 @@ void PolicyApplicator::GetEntryCallback(
               << new_guid << " because the policy didn't change.";
     } else {
       const base::DictionaryValue* user_settings =
-          ui_data ? ui_data->user_settings() : NULL;
+          ui_data ? ui_data->GetUserSettingsDictionary() : nullptr;
       std::unique_ptr<base::DictionaryValue> new_shill_properties =
           policy_util::CreateShillConfiguration(profile_, new_guid,
                                                 &global_network_config_,
