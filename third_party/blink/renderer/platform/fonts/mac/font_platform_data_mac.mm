@@ -29,7 +29,7 @@
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/renderer/platform/fonts/font.h"
 #import "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
-#import "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#import "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #import "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #import "third_party/blink/renderer/platform/layout_test_support.h"
 #import "third_party/blink/renderer/platform/wtf/retain_ptr.h"

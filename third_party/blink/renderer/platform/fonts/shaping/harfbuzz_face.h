@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FACE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FACE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARFBUZZ_FACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARFBUZZ_FACE_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
@@ -52,7 +52,7 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
 
  public:
   static scoped_refptr<HarfBuzzFace> Create(FontPlatformData* platform_data,
-                                     uint64_t unique_id) {
+                                            uint64_t unique_id) {
     return base::AdoptRef(new HarfBuzzFace(platform_data, unique_id));
   }
   ~HarfBuzzFace();
@@ -79,9 +79,9 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   FontPlatformData* platform_data_;
   uint64_t unique_id_;
   hb_font_t* unscaled_font_;
-  HarfBuzzFontData* harf_buzz_font_data_;
+  HarfBuzzFontData* harfbuzz_font_data_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FACE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARFBUZZ_FACE_H_

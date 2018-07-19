@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 
 #include <hb.h>
 #include <unicode/uchar.h>
@@ -43,8 +43,8 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harf_buzz_buffer_filler.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harfbuzz_buffer_filler.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
@@ -953,7 +953,8 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
          (start >= pre_segmented->start && end <= pre_segmented->end));
 
   unsigned length = end - start;
-  scoped_refptr<ShapeResult> result = ShapeResult::Create(font, length, direction);
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, length, direction);
   HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
 
   RangeData range_data;
@@ -1007,8 +1008,9 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
   return result;
 }
 
-scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
-                                          TextDirection direction) const {
+scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
+    const Font* font,
+    TextDirection direction) const {
   return Shape(font, direction, 0, text_.length());
 }
 

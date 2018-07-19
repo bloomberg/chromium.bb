@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 
 #include <memory>
 
@@ -36,8 +36,8 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_font_cache.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
@@ -92,7 +92,7 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
   }
   result.stored_value->value->AddRef();
   unscaled_font_ = result.stored_value->value->HbFont();
-  harf_buzz_font_data_ = result.stored_value->value->HbFontData();
+  harfbuzz_font_data_ = result.stored_value->value->HbFontData();
 }
 
 HarfBuzzFace::~HarfBuzzFace() {
@@ -244,14 +244,14 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
 
   // Check whether computing is needed and compute for gpos/gsub.
   if (features & kKerning &&
-      harf_buzz_font_data_->space_in_gpos_ ==
+      harfbuzz_font_data_->space_in_gpos_ ==
           HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Unknown) {
     if (space == kInvalidCodepoint && !GetSpaceGlyph(unscaled_font_, space))
       return false;
     // Compute for gpos.
     hb_face_t* face = hb_font_get_face(unscaled_font_);
     DCHECK(face);
-    harf_buzz_font_data_->space_in_gpos_ =
+    harfbuzz_font_data_->space_in_gpos_ =
         hb_ot_layout_has_positioning(face) &&
                 TableHasSpace(face, glyphs.get(), HB_OT_TAG_GPOS, space)
             ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present
@@ -261,14 +261,14 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
   hb_set_clear(glyphs.get());
 
   if (features & kLigatures &&
-      harf_buzz_font_data_->space_in_gsub_ ==
+      harfbuzz_font_data_->space_in_gsub_ ==
           HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Unknown) {
     if (space == kInvalidCodepoint && !GetSpaceGlyph(unscaled_font_, space))
       return false;
     // Compute for gpos.
     hb_face_t* face = hb_font_get_face(unscaled_font_);
     DCHECK(face);
-    harf_buzz_font_data_->space_in_gsub_ =
+    harfbuzz_font_data_->space_in_gsub_ =
         hb_ot_layout_has_substitution(face) &&
                 TableHasSpace(face, glyphs.get(), HB_OT_TAG_GSUB, space)
             ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present
@@ -276,10 +276,10 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
   }
 
   return (features & kKerning &&
-          harf_buzz_font_data_->space_in_gpos_ ==
+          harfbuzz_font_data_->space_in_gpos_ ==
               HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present) ||
          (features & kLigatures &&
-          harf_buzz_font_data_->space_in_gsub_ ==
+          harfbuzz_font_data_->space_in_gsub_ ==
               HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present);
 }
 
@@ -289,7 +289,7 @@ unsigned HarfBuzzFace::UnitsPerEmFromHeadTable() {
 }
 
 bool HarfBuzzFace::ShouldSubpixelPosition() {
-  return harf_buzz_font_data_->paint_.isSubpixelText();
+  return harfbuzz_font_data_->paint_.isSubpixelText();
 }
 
 static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
@@ -420,8 +420,8 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   PaintFont paint_font;
   platform_data_->SetupPaintFont(&paint_font);
   paint_font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  harf_buzz_font_data_->range_set_ = std::move(range_set);
-  harf_buzz_font_data_->UpdateFallbackMetricsAndScale(
+  harfbuzz_font_data_->range_set_ = std::move(range_set);
+  harfbuzz_font_data_->UpdateFallbackMetricsAndScale(
       *platform_data_, paint_font.ToSkPaint(), vertical_layout);
 
   int scale =
@@ -429,7 +429,7 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   hb_font_set_scale(unscaled_font_, scale, scale);
   hb_font_set_ptem(unscaled_font_, platform_data_->size() / kCssPixelsPerPoint);
 
-  SkTypeface* typeface = harf_buzz_font_data_->paint_.getTypeface();
+  SkTypeface* typeface = harfbuzz_font_data_->paint_.getTypeface();
   int axis_count = typeface->getVariationDesignPosition(nullptr, 0);
   if (axis_count > 0) {
     Vector<SkFontArguments::VariationPosition::Coordinate> axis_values;

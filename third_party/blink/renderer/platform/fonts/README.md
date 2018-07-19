@@ -227,8 +227,8 @@ shaping.
 
 The text shaping implementation is
 in
-[shaping/harf_buzz_shaper.h](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h) and
-[shaping/harf_buzz_shaper.cc](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.cc)
+[shaping/harfbuzz_shaper.h](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h) and
+[shaping/harfbuzz_shaper.cc](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.cc)
 
 Shaping text runs is split into several
 stages: [Run segmentation](#Run-Segmentation), shaping the initial segment

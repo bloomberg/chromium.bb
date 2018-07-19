@@ -192,7 +192,7 @@ class PLATFORM_EXPORT FontPlatformData {
   WebFontRenderStyle style_;
 #endif
 
-  mutable scoped_refptr<HarfBuzzFace> harf_buzz_face_;
+  mutable scoped_refptr<HarfBuzzFace> harfbuzz_face_;
   bool is_hash_table_deleted_value_;
 #if defined(OS_WIN)
   // TODO(https://crbug.com/808221): Replace |paint_text_flags_| with |style_|.
