@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 
 namespace extensions {
 

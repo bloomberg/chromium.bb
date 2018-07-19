@@ -6,6 +6,12 @@ import("//extensions/buildflags/buildflags.gni")
 
 source_set("web_applications") {
   sources = [
+    "web_app_provider.cc",
+    "web_app_provider.h",
+    "web_app_provider_factory.cc",
+    "web_app_provider_factory.h",
+
+    # TODO(loyso): move this code (and everything other than "KEEP") elsewhere.
     "web_app.cc",
     "web_app.h",
     "web_app_chromeos.cc",
@@ -26,11 +32,15 @@ source_set("web_applications") {
   allow_circular_includes_from = [ "//chrome/browser/extensions" ]
 
   deps = [
+    # TODO(loyso): KEEP.
+    "//chrome/browser/web_applications/bookmark_apps",
+    "//chrome/common",
+    "//skia",
+
+    # TODO(loyso): move this code elsewhere.
     "//base",
     "//chrome/browser/extensions",
-    "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/browser/web_applications/components",
-    "//chrome/common",
     "//components/keyed_service/content",
     "//components/prefs",
     "//extensions/browser",
