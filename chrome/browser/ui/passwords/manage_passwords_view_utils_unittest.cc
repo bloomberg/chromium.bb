@@ -67,69 +67,69 @@ const struct {
   const char* const form_origin_url;
   bool is_smartlock_branding_enabled;
   PasswordTitleType bubble_type;
-  const char* const expected_domain_placeholder;  // "this site" or domain name
+  const char* const expected_domain_placeholder;  // domain name
   size_t expected_link_range_start;
   size_t expected_link_range_end;
 } kDomainsTestCases[] = {
     // Same domains.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     false, PasswordTitleType::SAVE_PASSWORD, "this site", 0, 0},
+     false, PasswordTitleType::SAVE_PASSWORD, "", 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     true, PasswordTitleType::SAVE_PASSWORD, "this site", 12, 29},
+     true, PasswordTitleType::SAVE_PASSWORD, "", 0, 0},
 
     // Different subdomains.
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", false,
-     PasswordTitleType::SAVE_PASSWORD, "this site", 0, 0},
+     PasswordTitleType::SAVE_PASSWORD, "", 0, 0},
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", true,
-     PasswordTitleType::SAVE_PASSWORD, "this site", 12, 29},
+     PasswordTitleType::SAVE_PASSWORD, "", 0, 0},
 
     // Different domains.
     {"https://another.org", "https://example.com:/login#form?value=3", false,
-     PasswordTitleType::SAVE_PASSWORD, "https://example.com", 0, 0},
+     PasswordTitleType::SAVE_PASSWORD, "example.com", 0, 0},
     {"https://another.org", "https://example.com/login#form?value=3", true,
-     PasswordTitleType::SAVE_PASSWORD, "https://example.com", 12, 29},
+     PasswordTitleType::SAVE_PASSWORD, "example.com", 0, 0},
 
     // Different domains and password form origin url with
     // default port for the scheme.
     {"https://another.org", "https://example.com:443/login#form?value=3", false,
-     PasswordTitleType::SAVE_PASSWORD, "https://example.com", 0, 0},
+     PasswordTitleType::SAVE_PASSWORD, "example.com", 0, 0},
     {"https://another.org", "http://example.com:80/login#form?value=3", true,
-     PasswordTitleType::SAVE_PASSWORD, "http://example.com", 12, 29},
+     PasswordTitleType::SAVE_PASSWORD, "example.com", 0, 0},
 
     // Different domains and password form origin url with
     // non-default port for the scheme.
     {"https://another.org", "https://example.com:8001/login#form?value=3",
-     false, PasswordTitleType::SAVE_PASSWORD, "https://example.com:8001", 0, 0},
+     false, PasswordTitleType::SAVE_PASSWORD, "example.com:8001", 0, 0},
     {"https://another.org", "https://example.com:8001/login#form?value=3", true,
-     PasswordTitleType::SAVE_PASSWORD, "https://example.com:8001", 12, 29},
+     PasswordTitleType::SAVE_PASSWORD, "example.com:8001", 0, 0},
 
     // Update bubble, same domains.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     false, PasswordTitleType::UPDATE_PASSWORD, "this site", 0, 0},
+     false, PasswordTitleType::UPDATE_PASSWORD, "", 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     true, PasswordTitleType::UPDATE_PASSWORD, "this site", 12, 29},
+     true, PasswordTitleType::UPDATE_PASSWORD, "", 0, 0},
 
     // Update bubble, different domains.
     {"https://another.org", "http://example.com/login#form?value=3", false,
-     PasswordTitleType::UPDATE_PASSWORD, "http://example.com", 0, 0},
+     PasswordTitleType::UPDATE_PASSWORD, "example.com", 0, 0},
     {"https://another.org", "http://example.com/login#form?value=3", true,
-     PasswordTitleType::UPDATE_PASSWORD, "http://example.com", 12, 29},
+     PasswordTitleType::UPDATE_PASSWORD, "example.com", 0, 0},
 
     // Same domains, federated credential.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     false, PasswordTitleType::SAVE_ACCOUNT, "this site", 0, 0},
+     false, PasswordTitleType::SAVE_ACCOUNT, "", 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
-     true, PasswordTitleType::SAVE_ACCOUNT, "this site", 12, 29},
+     true, PasswordTitleType::SAVE_ACCOUNT, "", 12, 29},
 
     // Different subdomains, federated credential.
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", false,
-     PasswordTitleType::SAVE_ACCOUNT, "this site", 0, 0},
+     PasswordTitleType::SAVE_ACCOUNT, "", 0, 0},
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", true,
-     PasswordTitleType::SAVE_ACCOUNT, "this site", 12, 29}};
+     PasswordTitleType::SAVE_ACCOUNT, "", 12, 29}};
 
 }  // namespace
 
@@ -159,7 +159,11 @@ TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
               title_link_range.end());
     if (kDomainsTestCases[i].bubble_type ==
         PasswordTitleType::UPDATE_PASSWORD) {
-      EXPECT_TRUE(title.find(base::ASCIIToUTF16("update")) !=
+      EXPECT_TRUE(title.find(base::ASCIIToUTF16("Update")) !=
+                  base::string16::npos);
+    } else if (kDomainsTestCases[i].bubble_type ==
+               PasswordTitleType::SAVE_PASSWORD) {
+      EXPECT_TRUE(title.find(base::ASCIIToUTF16("Save")) !=
                   base::string16::npos);
     } else {
       EXPECT_TRUE(title.find(base::ASCIIToUTF16("save")) !=

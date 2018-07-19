@@ -96,12 +96,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       state_(kOfferGeneration),
       web_contents_(web_contents),
       weak_ptr_factory_(this) {
-  base::string16 link =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-  size_t offset = 0;
-  help_text_ =
-      l10n_util::GetStringFUTF16(IDS_PASSWORD_GENERATION_PROMPT, link, &offset);
-  link_range_ = gfx::Range(offset, offset + link.length());
+  help_text_ = l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT);
 }
 
 PasswordGenerationPopupControllerImpl::
@@ -348,6 +343,6 @@ const base::string16& PasswordGenerationPopupControllerImpl::HelpText() {
   return help_text_;
 }
 
-const gfx::Range& PasswordGenerationPopupControllerImpl::HelpTextLinkRange() {
-  return link_range_;
+gfx::Range PasswordGenerationPopupControllerImpl::HelpTextLinkRange() {
+  return gfx::Range();
 }

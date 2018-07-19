@@ -106,28 +106,26 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     title_id = dialog_type == PasswordTitleType::UPDATE_PASSWORD
                    ? IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE
                    : IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE;
-    replacements.push_back(
-        url_formatter::FormatUrlForSecurityDisplay(form_origin_url));
+    replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
+        form_origin_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+  }
+  base::string16 title_link;
+  if (title_id == IDS_SAVE_ACCOUNT) {
+    title_link =
+        is_smartlock_branding_enabled
+            ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK)
+            : l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND);
+    replacements.insert(replacements.begin(), title_link);
   }
 
-  if (is_smartlock_branding_enabled) {
-    // "Google Smart Lock" should be a hyperlink.
-    base::string16 title_link =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-    replacements.insert(replacements.begin(), title_link);
-    *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
-    if (!offsets.empty()) {
-      // |offsets| can be empty when the localised string associated with
-      // |title_id| could not be found. While this situation is an error, it
-      // needs to be handled gracefully, see http://crbug.com/658902#c18.
-      *title_link_range =
-          gfx::Range(offsets[0], offsets[0] + title_link.length());
-    }
-  } else {
-    replacements.insert(
-        replacements.begin(),
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND));
-    *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
+  *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
+  if (title_id == IDS_SAVE_ACCOUNT && is_smartlock_branding_enabled &&
+      !offsets.empty()) {
+    // |offsets| can be empty when the localised string associated with
+    // |title_id| could not be found. While this situation is an error, it
+    // needs to be handled gracefully, see http://crbug.com/658902#c18.
+    *title_link_range =
+        gfx::Range(offsets[0], offsets[0] + title_link.length());
   }
 }
 

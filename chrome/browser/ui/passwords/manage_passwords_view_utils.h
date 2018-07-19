@@ -44,13 +44,7 @@ std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
 // Sets the formatted |title| in the Save Password bubble or the Update Password
 // bubble (depending on |dialog_type|). If the registry controlled domain of
 // |user_visible_url| (i.e. the one seen in the omnibox) differs from the
-// registry controlled domain of |form_origin_url|, sets
-// |IDS_SAVE_PASSWORD_TITLE| as the |title| so that it replaces "this site" in
-// title text with output of |FormatUrlForSecurityDisplay(form_origin_url)|.
-// Otherwise, sets |IDS_SAVE_PASSWORD| as the |title| having "this site".
-// If |is_smartlock_branding_enabled| is true, sets the |title_link_range| for
-// the "Google Smart Lock" text range to be set visibly as a hyperlink in the
-// dialog bubble.
+// registry controlled domain of |form_origin_url|, it adds the site name.
 void GetSavePasswordDialogTitleTextAndLinkRange(
     const GURL& user_visible_url,
     const GURL& form_origin_url,

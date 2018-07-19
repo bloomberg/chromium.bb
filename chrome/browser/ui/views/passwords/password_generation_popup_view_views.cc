@@ -173,12 +173,6 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
       new views::StyledLabel(controller_->HelpText(), this);
   help_label->SetTextContext(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE);
   help_label->SetDefaultTextStyle(STYLE_SECONDARY);
-
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.disable_line_wrapping = false;
-  help_label->AddStyleRange(controller_->HelpTextLinkRange(), link_style);
-
   help_label->SetBackground(
       views::CreateSolidBackground(kFooterBackgroundColor));
   help_label->SetBorder(
