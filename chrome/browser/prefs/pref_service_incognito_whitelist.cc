@@ -9,7 +9,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/consent_auditor/pref_names.h"
@@ -917,25 +916,6 @@ const char* incognito_whitelist[] = {
     bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
     bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
     bookmarks::prefs::kShowBookmarkBar,
-
-    // components/browsing_data/core/pref_names.h
-    browsing_data::prefs::kDeleteTimePeriod,
-    browsing_data::prefs::kDeleteTimePeriodBasic,
-    browsing_data::prefs::kDeleteBrowsingHistory,
-    browsing_data::prefs::kDeleteBrowsingHistoryBasic,
-    browsing_data::prefs::kDeleteDownloadHistory,
-    browsing_data::prefs::kDeleteCache, browsing_data::prefs::kDeleteCacheBasic,
-    browsing_data::prefs::kDeleteCookies,
-    browsing_data::prefs::kDeleteCookiesBasic,
-    browsing_data::prefs::kDeletePasswords,
-    browsing_data::prefs::kDeleteFormData,
-    browsing_data::prefs::kDeleteHostedAppsData,
-    browsing_data::prefs::kDeleteMediaLicenses,
-    browsing_data::prefs::kDeleteSiteSettings,
-    browsing_data::prefs::kLastClearBrowsingDataTime,
-    browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes,
-    browsing_data::prefs::kLastClearBrowsingDataTab,
-    browsing_data::prefs::kPreferencesMigratedToBasic,
 
     // components/certificate_transparency/pref_names.h
     certificate_transparency::prefs::kCTRequiredHosts,
