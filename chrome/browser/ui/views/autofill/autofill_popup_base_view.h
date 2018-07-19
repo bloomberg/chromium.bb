@@ -31,6 +31,12 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
                               public views::WidgetFocusChangeListener,
                               public views::WidgetObserver {
  public:
+  static const SkColor kBackgroundColor;
+  static const SkColor kSelectedBackgroundColor;
+  static const SkColor kFooterBackgroundColor;
+  static const SkColor kSeparatorColor;
+  static const SkColor kWarningColor;
+
   static int GetCornerRadius();
 
  protected:

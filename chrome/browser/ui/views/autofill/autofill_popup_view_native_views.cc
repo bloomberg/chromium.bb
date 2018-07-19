@@ -19,7 +19,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/shadow_value.h"
@@ -45,15 +44,6 @@ namespace {
 const int kAutofillPopupWidthMultiple = 12;
 const int kAutofillPopupMinWidth = 64;
 const int kAutofillPopupMaxWidth = 456;
-
-// TODO(crbug.com/831603): Determine how colors should be shared with menus
-// and/or omnibox, and how these should interact (if at all) with native
-// theme colors.
-const SkColor kAutofillPopupBackgroundColor = SK_ColorWHITE;
-const SkColor kAutofillPopupSelectedBackgroundColor = gfx::kGoogleGrey200;
-const SkColor kAutofillPopupFooterBackgroundColor = gfx::kGoogleGrey050;
-const SkColor kAutofillPopupSeparatorColor = gfx::kGoogleGrey200;
-const SkColor kAutofillPopupWarningColor = gfx::kGoogleRed600;
 
 // A space between the input element and the dropdown, so that the dropdown's
 // border doesn't look too close to the element.
@@ -350,8 +340,8 @@ AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
 std::unique_ptr<views::Background>
 AutofillPopupSuggestionView::CreateBackground() {
   return views::CreateSolidBackground(
-      is_selected_ ? kAutofillPopupSelectedBackgroundColor
-                   : kAutofillPopupBackgroundColor);
+      is_selected_ ? AutofillPopupBaseView::kSelectedBackgroundColor
+                   : AutofillPopupBaseView::kBackgroundColor);
 }
 
 int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
@@ -381,14 +371,14 @@ void AutofillPopupFooterView::CreateContent() {
       /*left=*/0,
       /*bottom=*/0,
       /*right=*/0,
-      /*color=*/kAutofillPopupSeparatorColor));
+      /*color=*/AutofillPopupBaseView::kSeparatorColor));
   AutofillPopupItemView::CreateContent();
 }
 
 std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
   return views::CreateSolidBackground(
-      is_selected_ ? kAutofillPopupSelectedBackgroundColor
-                   : kAutofillPopupFooterBackgroundColor);
+      is_selected_ ? AutofillPopupBaseView::kSelectedBackgroundColor
+                   : AutofillPopupBaseView::kFooterBackgroundColor);
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
@@ -422,7 +412,7 @@ void AutofillPopupSeparatorView::CreateContent() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kAutofillPopupSeparatorColor);
+  separator->SetColor(AutofillPopupBaseView::kSeparatorColor);
   // Add some spacing between the the previous item and the separator.
   separator->SetPreferredHeight(
       views::MenuConfig::instance().separator_thickness);
@@ -484,7 +474,7 @@ void AutofillPopupWarningView::CreateContent() {
       controller->GetElidedValueAt(line_number_),
       {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
                              ChromeTextStyle::STYLE_RED)});
-  text_label->SetEnabledColor(kAutofillPopupWarningColor);
+  text_label->SetEnabledColor(AutofillPopupBaseView::kWarningColor);
   text_label->SetMultiLine(true);
   int max_width =
       std::min(kAutofillPopupMaxWidth,
@@ -544,7 +534,7 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
   layout_->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
   CreateChildViews();
-  SetBackground(views::CreateSolidBackground(kAutofillPopupBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kBackgroundColor));
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
@@ -668,7 +658,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   if (has_footer) {
     views::View* footer_container = new views::View();
     footer_container->SetBackground(
-        views::CreateSolidBackground(kAutofillPopupFooterBackgroundColor));
+        views::CreateSolidBackground(kFooterBackgroundColor));
 
     views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));

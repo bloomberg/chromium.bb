@@ -16,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -23,6 +24,17 @@
 #include "ui/views/layout/fill_layout.h"
 
 namespace autofill {
+
+// TODO(crbug.com/831603): Determine how colors should be shared with menus
+// and/or omnibox, and how these should interact (if at all) with native
+// theme colors.
+const SkColor AutofillPopupBaseView::kBackgroundColor = SK_ColorWHITE;
+const SkColor AutofillPopupBaseView::kSelectedBackgroundColor =
+    gfx::kGoogleGrey200;
+const SkColor AutofillPopupBaseView::kFooterBackgroundColor =
+    gfx::kGoogleGrey050;
+const SkColor AutofillPopupBaseView::kSeparatorColor = gfx::kGoogleGrey200;
+const SkColor AutofillPopupBaseView::kWarningColor = gfx::kGoogleRed600;
 
 int AutofillPopupBaseView::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
