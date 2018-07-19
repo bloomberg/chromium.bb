@@ -11,6 +11,8 @@ blink_core_sources("html") {
   sources = [
     "anchor_element_metrics.cc",
     "anchor_element_metrics.h",
+    "anchor_element_metrics_sender.cc",
+    "anchor_element_metrics_sender.h",
     "canvas/canvas_async_blob_creator.cc",
     "canvas/canvas_async_blob_creator.h",
     "canvas/canvas_context_creation_attributes_core.cc",

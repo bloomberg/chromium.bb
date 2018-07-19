@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -220,12 +220,7 @@ AnchorElementMetrics::MaybeExtractMetricsClicked(
 }
 
 void AnchorElementMetrics::SendMetricsToBrowser() const {
-  LocalFrame* frame = anchor_element_->GetDocument().GetFrame();
-  DCHECK(frame);
-
-  mojom::blink::AnchorElementMetricsHostPtr service_;
-  frame->LocalFrameRoot().GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&service_));
+  DCHECK(anchor_element_->GetDocument().GetFrame());
 
   auto metrics = mojom::blink::AnchorElementMetrics::New();
   metrics->ratio_area = ratio_area_;
@@ -234,7 +229,10 @@ void AnchorElementMetrics::SendMetricsToBrowser() const {
       ratio_distance_center_to_visible_top_;
   metrics->target_url = anchor_element_->Href();
 
-  service_->UpdateAnchorElementMetrics(std::move(metrics));
+  Document* root_document =
+      anchor_element_->GetDocument().GetFrame()->LocalFrameRoot().GetDocument();
+  AnchorElementMetricsSender::From(*root_document)
+      ->SendClickedAnchorMetricsToBrowser(std::move(metrics));
 }
 
 void AnchorElementMetrics::RecordMetrics() const {
