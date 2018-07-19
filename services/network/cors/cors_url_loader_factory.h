@@ -8,13 +8,18 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
 
+class NetworkContext;
+class ResourceSchedulerClient;
+class URLLoader;
 struct ResourceRequest;
 
 namespace cors {
@@ -26,14 +31,21 @@ namespace cors {
 class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
     : public mojom::URLLoaderFactory {
  public:
-  explicit CORSURLLoaderFactory(
-      std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory);
-  // TODO(yhirano): Remove |preflight_finalizer| when the network service is
-  // fully enabled.
+  // Used by network::NetworkContext.
+  CORSURLLoaderFactory(
+      NetworkContext* context,
+      mojom::URLLoaderFactoryParamsPtr params,
+      scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
+      mojom::URLLoaderFactoryRequest request);
+  // Used by content::ResourceMessageFilter.
+  // TODO(yhirano): Remove this once when the network service is fully enabled.
   CORSURLLoaderFactory(
       std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
       const base::RepeatingCallback<void(int)>& preflight_finalizer);
   ~CORSURLLoaderFactory() override;
+
+  void OnLoaderCreated(std::unique_ptr<mojom::URLLoader> loader);
+  void DestroyURLLoader(mojom::URLLoader* loader);
 
  private:
   // Implements mojom::URLLoaderFactory.
@@ -47,14 +59,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
                                 traffic_annotation) override;
   void Clone(mojom::URLLoaderFactoryRequest request) override;
 
+  void DeleteIfNeeded();
+
   mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
+
+  // Used when constructed by NetworkContext.
+  // The NetworkContext owns |this|.
+  NetworkContext* const context_ = nullptr;
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
+  std::set<std::unique_ptr<mojom::URLLoader>, base::UniquePtrComparator>
+      loaders_;
 
   std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_;
 
+  // Used when constructed by ResourceMessageFilter.
   base::RepeatingCallback<void(int)> preflight_finalizer_;
-
-  // The factory owns the CORSURLLoader it creates.
-  mojo::StrongBindingSet<mojom::URLLoader> loader_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderFactory);
 };

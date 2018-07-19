@@ -69,17 +69,21 @@ bool NeedsPreflight(const ResourceRequest& request) {
 }  // namespace
 
 CORSURLLoader::CORSURLLoader(
+    mojom::URLLoaderRequest loader_request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
+    DeleteCallback delete_callback,
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
     const base::RepeatingCallback<void(int)>& request_finalizer)
-    : routing_id_(routing_id),
+    : binding_(this, std::move(loader_request)),
+      routing_id_(routing_id),
       request_id_(request_id),
       options_(options),
+      delete_callback_(std::move(delete_callback)),
       network_loader_factory_(network_loader_factory),
       network_client_binding_(this),
       request_(resource_request),
@@ -88,14 +92,18 @@ CORSURLLoader::CORSURLLoader(
       request_finalizer_(request_finalizer),
       traffic_annotation_(traffic_annotation),
       weak_factory_(this) {
+  binding_.set_connection_error_handler(base::BindOnce(
+      &CORSURLLoader::OnConnectionError, base::Unretained(this)));
   DCHECK(network_loader_factory_);
-  DCHECK(resource_request.request_initiator);
+}
 
+CORSURLLoader::~CORSURLLoader() = default;
+
+void CORSURLLoader::Start() {
   if (fetch_cors_flag_ &&
       request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
-    forwarding_client_->OnComplete(URLLoaderCompletionStatus(
+    HandleComplete(URLLoaderCompletionStatus(
         CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
-    forwarding_client_.reset();
     return;
   }
 
@@ -109,11 +117,8 @@ CORSURLLoader::CORSURLLoader(
       request_.url = request_.url.ReplaceComponents(replacements);
     }
   }
-
   StartRequest();
 }
-
-CORSURLLoader::~CORSURLLoader() {}
 
 void CORSURLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
@@ -123,13 +128,15 @@ void CORSURLLoader::FollowRedirect(
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
                                                    "yet. crbug.com/845683";
-  DCHECK(network_loader_);
-  DCHECK(is_waiting_follow_redirect_call_);
+  if (!network_loader_ || !is_waiting_follow_redirect_call_) {
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
+    return;
+  }
   is_waiting_follow_redirect_call_ = false;
 
-  // When the redirect mode is not "follow", the client is not expected to
+  // When the redirect mode is "error", the client is not expected to
   // call this function. Let's abort the request.
-  if (request_.fetch_redirect_mode != mojom::FetchRedirectMode::kFollow) {
+  if (request_.fetch_redirect_mode == mojom::FetchRedirectMode::kError) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
   }
@@ -144,16 +151,19 @@ void CORSURLLoader::FollowRedirect(
   // We cannot use FollowRedirect for a request with preflight (i.e., when both
   // |fetch_cors_flag_| and |NeedsPreflight(request_)| are true).
   //
-  // Additionally, when |original_fetch_cors_flag| is false and
+  // Additionally, when |original_fetch_cors_flag| is false,
   // |fetch_cors_flag_| is true and |NeedsPreflight(request)| is false, the net/
   // implementation won't attach an "origin" header on redirect, as the original
   // request didn't have one. In such a case we need to re-issue a request
   // manually in order to attach the correct origin header.
+  // For "no-cors" requests we rely on redirect logic in net/ (specifically
+  // in net/url_request/redirect_util.cc).
   if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
       !fetch_cors_flag_) {
     network_loader_->FollowRedirect(base::nullopt, base::nullopt);
     return;
   }
+  DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCORS);
 
   if (request_finalizer_)
     request_finalizer_.Run(request_id_);
@@ -343,18 +353,20 @@ void CORSURLLoader::StartRequest() {
   // |httpRequest|’s header list.
   if (fetch_cors_flag_ ||
       (request_.method != "GET" && request_.method != "HEAD")) {
-    request_.headers.SetHeader(
-        net::HttpRequestHeaders::kOrigin,
-        (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+    url::Origin empty_origin;
+    const url::Origin& origin = tainted_ || !request_.request_initiator
+                                    ? empty_origin
+                                    : *request_.request_initiator;
+    request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                               origin.Serialize());
   }
 
   if (request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
     if (!request_.request_initiator ||
         !request_.request_initiator->IsSameOriginWith(
             url::Origin::Create(request_.url))) {
-      forwarding_client_->OnComplete(URLLoaderCompletionStatus(
+      HandleComplete(URLLoaderCompletionStatus(
           CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
-      forwarding_client_.reset();
       return;
     }
   }
@@ -383,10 +395,8 @@ void CORSURLLoader::StartNetworkRequest(
     int error_code,
     base::Optional<CORSErrorStatus> status) {
   if (error_code != net::OK) {
-    forwarding_client_->OnComplete(status
-                                       ? URLLoaderCompletionStatus(*status)
-                                       : URLLoaderCompletionStatus(error_code));
-    forwarding_client_.reset();
+    HandleComplete(status ? URLLoaderCompletionStatus(*status)
+                          : URLLoaderCompletionStatus(error_code));
     return;
   }
 
@@ -396,19 +406,10 @@ void CORSURLLoader::StartNetworkRequest(
   // Binding |this| as an unretained pointer is safe because
   // |network_client_binding_| shares this object's lifetime.
   network_client_binding_.set_connection_error_handler(base::BindOnce(
-      &CORSURLLoader::OnUpstreamConnectionError, base::Unretained(this)));
+      &CORSURLLoader::OnConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
       request_, std::move(network_client), traffic_annotation_);
-}
-
-void CORSURLLoader::OnUpstreamConnectionError() {
-  // |network_client_binding_| has experienced a connection error and will no
-  // longer call any of the mojom::URLLoaderClient methods above. The client
-  // pipe to the downstream client is closed to inform it of this failure. The
-  // client should respond by closing its mojom::URLLoader pipe which will cause
-  // this object to be destroyed.
-  forwarding_client_.reset();
 }
 
 void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
@@ -419,6 +420,13 @@ void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
 
   forwarding_client_.reset();
   network_loader_.reset();
+
+  std::move(delete_callback_).Run(this);
+  // |this| is deleted here.
+}
+
+void CORSURLLoader::OnConnectionError() {
+  HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
 }
 
 }  // namespace cors

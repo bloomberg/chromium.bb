@@ -1674,7 +1674,7 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 # TODO(toyoshim, tyoshino, kinuko): Make following tests pass.
 # See crbug.com/736308 for more details. Since outofblink-cors is still under
 # development, just marking failed tests here is fine enough for tests under
-# virtual/outofblink-cors.
+# virtual/outofblink-cors and virtual/outofblink-cors-ns.
 # These are entries specific to outofblink-cors. Entries having the same
 # expectations with the base tests (without virtual/outofblink-cors, for
 # example) are not listed here.
@@ -1688,6 +1688,7 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 
 # This test crashes on some builders, passes on others, and fails on yet other builders.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Crash Failure Pass ]
+crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Crash Failure Pass ]
 
 # Timeout tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
@@ -1695,9 +1696,7 @@ crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 
 # Failing tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
-
 crbug.com/736308 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
-
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
@@ -1708,10 +1707,24 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/fetch/chromium/error-messages.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
+
 # ====== Out of Blink CORS related tests END ======
 
 crbug.com/771118 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 crbug.com/771118 virtual/outofblink-cors/external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
+crbug.com/771118 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
@@ -1790,6 +1803,7 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touc
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
+crbug.com/518987 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
 # See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
@@ -2639,6 +2653,7 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
+crbug.com/832071 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
 crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
@@ -2689,8 +2704,10 @@ crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-002.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/cross-origin-resource-policy/fetch.any.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/cross-origin-resource-policy/fetch.any.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/cross-origin-resource-policy/fetch.any.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Skip ]
 crbug.com/626703 [ Win7 ] external/wpt/preload/link-header-preload.html [ Timeout ]
@@ -2719,13 +2736,16 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-048.html [ Failure ]
@@ -2829,12 +2849,15 @@ crbug.com/626703 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action
 crbug.com/626703 [ Mac10.12 ] external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html [ Skip ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 [ Linux Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
+crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
+crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 
 # Grouped frame-policy gunk (flaky copypasta).
@@ -2850,6 +2873,7 @@ crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeo
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
@@ -3203,6 +3227,7 @@ crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
 crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
@@ -3591,14 +3616,17 @@ crbug.com/651778 external/wpt/workers/Worker_cross_origin_security_err.htm [ Tim
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
+crbug.com/691944 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
+crbug.com/595993 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
+crbug.com/595993 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
@@ -3734,8 +3762,10 @@ crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
+crbug.com/705490 virtual/outofblink-cors-ns/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 crbug.com/820334 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
+crbug.com/820334 virtual/outofblink-cors-ns/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
 crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 
@@ -3772,6 +3802,7 @@ crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-instal
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/outofblink-cors/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
+crbug.com/831509 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
@@ -3919,6 +3950,7 @@ crbug.com/757165 [ Win ] external/wpt/preload/preload-default-csp.sub.html [ Ski
 crbug.com/757165 [ Win ] external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
+crbug.com/757165 [ Win ] virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
 crbug.com/757165 [ Win ] fast/forms/file/recover-file-input-in-unposted-form.html [ Skip ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-aligned-not-aligned.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-clipped-overflowed-content.html [ Pass Failure Timeout Crash ]
@@ -4179,6 +4211,7 @@ crbug.com/802915 css3/blending/isolation-should-include-non-local-background.htm
 
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
+crbug.com/807838 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 
 # Sheriff faulures 2017-12-12
@@ -4416,6 +4449,7 @@ crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass
 
 crbug.com/840881 external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 crbug.com/840881 virtual/outofblink-cors/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
+crbug.com/840881 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 crbug.com/840881 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 
 # Sheriff 2018-04-12

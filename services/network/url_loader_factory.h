@@ -8,10 +8,8 @@
 #include <memory>
 #include <set>
 
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -22,6 +20,10 @@ class NetworkContext;
 class ResourceSchedulerClient;
 class URLLoader;
 
+namespace cors {
+class CORSURLLoaderFactory;
+}  // namespace cors
+
 // This class is an implementation of mojom::URLLoaderFactory that
 // creates a mojom::URLLoader.
 // A URLLoaderFactory has a pointer to ResourceSchedulerClient. A
@@ -31,11 +33,10 @@ class URLLoader;
 // works on each frame.
 // A URLLoaderFactory can be created with null ResourceSchedulerClient, in which
 // case requests constructed by the factory will not be throttled.
-//
-// URLLoaderFactories own all the URLLoaders they were used to create. Once
-// there are no live Mojo pipes to a URLLoaderFactory, and all URLLoaders it was
-// used to created have been destroyed, it will tell the NetworkContext that
-// owns it to destroy it.
+// The CORS related part is implemented in CORSURLLoader[Factory] until
+// kOutOfBlinkCORS and kNetworkService is fully enabled. Note that
+// NetworkContext::CreateURLLoaderFactory returns a CORSURLLoaderFactory,
+// instead of a URLLoaderFactory.
 class URLLoaderFactory : public mojom::URLLoaderFactory {
  public:
   // NOTE: |context| must outlive this instance.
@@ -43,7 +44,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
       NetworkContext* context,
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-      mojom::URLLoaderFactoryRequest request);
+      cors::CORSURLLoaderFactory* cors_url_loader_factory);
 
   ~URLLoaderFactory() override;
 
@@ -58,24 +59,18 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
                                 traffic_annotation) override;
   void Clone(mojom::URLLoaderFactoryRequest request) override;
 
-  void DestroyURLLoader(URLLoader* url_loader);
-
   static constexpr int kMaxKeepaliveConnections = 256;
   static constexpr int kMaxKeepaliveConnectionsPerProcess = 20;
   static constexpr int kMaxKeepaliveConnectionsPerProcessForFetchAPI = 10;
 
  private:
-  // If |binding_set_| and |url_loaders_| are both empty, tells the
-  // NetworkContext to destroy |this|.
-  void DeleteIfNeeded();
-
-  // The NetworkContext that owns |this|.
+  // The NetworkContext that indirectly owns |this|.
   NetworkContext* const context_;
   mojom::URLLoaderFactoryParamsPtr params_;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
-  mojo::BindingSet<mojom::URLLoaderFactory> binding_set_;
-  std::set<std::unique_ptr<URLLoader>, base::UniquePtrComparator> url_loaders_;
+  // |cors_url_loader_factory_| owns this.
+  cors::CORSURLLoaderFactory* cors_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactory);
 };

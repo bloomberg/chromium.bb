@@ -64,6 +64,7 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/expect_ct_reporter.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
@@ -82,8 +83,6 @@
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
-#include "services/network/url_loader.h"
-#include "services/network/url_loader_factory.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
 #if !defined(OS_IOS)
@@ -474,7 +473,7 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
-  url_loader_factories_.emplace(std::make_unique<URLLoaderFactory>(
+  url_loader_factories_.emplace(std::make_unique<cors::CORSURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
       std::move(request)));
 }
@@ -513,7 +512,7 @@ void NetworkContext::DisableQuic() {
 }
 
 void NetworkContext::DestroyURLLoaderFactory(
-    URLLoaderFactory* url_loader_factory) {
+    mojom::URLLoaderFactory* url_loader_factory) {
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);

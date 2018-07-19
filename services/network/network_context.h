@@ -55,7 +55,6 @@ class ExpectCTReporter;
 class NetworkService;
 class ResourceScheduler;
 class ResourceSchedulerClient;
-class URLLoaderFactory;
 class URLRequestContextBuilderMojo;
 class WebSocketFactory;
 
@@ -208,9 +207,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
-  // Destroys the specified URLLoaderFactory. Called by the URLLoaderFactory
-  // itself when it has no open pipes.
-  void DestroyURLLoaderFactory(URLLoaderFactory* url_loader_factory);
+  // Destroys the specified factory. Called by the factory itself when it has
+  // no open pipes.
+  void DestroyURLLoaderFactory(mojom::URLLoaderFactory* url_loader_factory);
 
  private:
   class ContextNetworkDelegate;
@@ -275,7 +274,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // This must be below |url_request_context_| so that the URLRequestContext
   // outlives all the URLLoaderFactories and URLLoaders that depend on it.
-  std::set<std::unique_ptr<URLLoaderFactory>, base::UniquePtrComparator>
+  std::set<std::unique_ptr<mojom::URLLoaderFactory>, base::UniquePtrComparator>
       url_loader_factories_;
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
