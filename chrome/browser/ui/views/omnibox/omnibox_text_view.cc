@@ -139,7 +139,7 @@ const gfx::FontList& GetFontForType(int text_type) {
 OmniboxTextView::OmniboxTextView(OmniboxResultView* result_view)
     : result_view_(result_view),
       font_height_(0),
-      font_size_delta_(0),
+      use_deemphasized_font_(false),
       wrap_text_lines_(false) {}
 
 OmniboxTextView::~OmniboxTextView() {}
@@ -193,17 +193,17 @@ const base::string16& OmniboxTextView::text() const {
   return render_text_->text();
 }
 
-void OmniboxTextView::SetText(const base::string16& text, int size_delta) {
+void OmniboxTextView::SetText(const base::string16& text, bool deemphasize) {
   if (cached_classifications_) {
     cached_classifications_.reset();
   } else if (render_text_ && render_text_->text() == text &&
-             size_delta == font_size_delta_) {
+             deemphasize == use_deemphasized_font_) {
     // Only exit early if |cached_classifications_| was empty,
     // i.e. the last time text was set was through this method.
     return;
   }
 
-  font_size_delta_ = size_delta;
+  use_deemphasized_font_ = deemphasize;
   render_text_.reset();
   render_text_ = CreateRenderText(text);
   UpdateLineHeight();
@@ -212,13 +212,13 @@ void OmniboxTextView::SetText(const base::string16& text, int size_delta) {
 
 void OmniboxTextView::SetText(const base::string16& text,
                               const ACMatchClassifications& classifications,
-                              int size_delta) {
+                              bool deemphasize) {
   if (render_text_ && render_text_->text() == text && cached_classifications_ &&
       classifications == *cached_classifications_ &&
-      size_delta == font_size_delta_)
+      deemphasize == use_deemphasized_font_)
     return;
 
-  font_size_delta_ = size_delta;
+  use_deemphasized_font_ = deemphasize;
 
   cached_classifications_ =
       std::make_unique<ACMatchClassifications>(classifications);
@@ -257,8 +257,8 @@ void OmniboxTextView::SetText(const base::string16& text,
 }
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
-                              int size_delta) {
-  font_size_delta_ = size_delta;
+                              bool deemphasize) {
+  use_deemphasized_font_ = deemphasize;
   cached_classifications_.reset();
   wrap_text_lines_ = line.num_text_lines() > 1;
   render_text_.reset();
@@ -315,18 +315,11 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
   render_text->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   render_text->SetCursorEnabled(false);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
-  const gfx::FontList& font =
-      views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle);
-  if (font_size_delta_ == 0) {
-    render_text->SetFontList(font);
-  } else {
-    const gfx::FontList& omnibox_font =
-        views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle);
-    render_text->SetFontList(
-        ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-            omnibox_font.GetFontSize() - gfx::FontList().GetFontSize() +
-            font_size_delta_));
-  }
+  const gfx::FontList& font = views::style::GetFont(
+      (use_deemphasized_font_ ? CONTEXT_OMNIBOX_DEEMPHASIZED
+                              : CONTEXT_OMNIBOX_PRIMARY),
+      kTextStyle);
+  render_text->SetFontList(font);
   render_text->SetText(text);
   return render_text;
 }

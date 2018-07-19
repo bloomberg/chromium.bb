@@ -37,6 +37,9 @@ enum ChromeTextContext {
   // Text that goes inside location bar decorations such as the keyword hint.
   CONTEXT_OMNIBOX_DECORATION,
 
+  // Text in omnibox answer results that is slightly smaller than primary font.
+  CONTEXT_OMNIBOX_DEEMPHASIZED,
+
   // Text for titles, body text and buttons that appear in dialogs attempting to
   // mimic the native Windows 10 look and feel.
   CONTEXT_WINDOWS10_NATIVE,

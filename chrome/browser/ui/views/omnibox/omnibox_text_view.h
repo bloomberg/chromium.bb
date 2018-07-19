@@ -48,13 +48,13 @@ class OmniboxTextView : public views::View {
   // Sets the render text with default rendering for the given |text|. The
   // |classifications| are used to style the text. An ImageLine incorporates
   // both the text and the styling.
-  // The size_delta is specified here so it can be known in advance of creating
-  // the render text. Applying later would kill bold (clear weights BreakList).
-  void SetText(const base::string16& text, int size_delta = 0);
+  // |deemphasize| specifies whether to use a slightly smaller font than normal.
+  void SetText(const base::string16& text, bool deemphasize = false);
   void SetText(const base::string16& text,
                const ACMatchClassifications& classifications,
-               int font_size_delta = 0);
-  void SetText(const SuggestionAnswer::ImageLine& line, int size_delta = 0);
+               bool deemphasize = false);
+  void SetText(const SuggestionAnswer::ImageLine& line,
+               bool deemphasize = false);
 
   // Adds the "additional" and "status" text from |line|, if any.
   void AppendExtraText(const SuggestionAnswer::ImageLine& line);
@@ -82,8 +82,10 @@ class OmniboxTextView : public views::View {
   // Font settings for this view.
   int font_height_;
 
-  // Delta (in px) from default font size.
-  int font_size_delta_;
+  // Whether to apply deemphasized font instead of primary omnibox font.
+  // TODO(orinj): Use a more general ChromeTextContext for flexibility, or
+  // otherwise clean up & unify the different ways of selecting fonts & styles.
+  bool use_deemphasized_font_;
 
   // Whether to wrap lines if the width is too narrow for the whole string.
   bool wrap_text_lines_;
