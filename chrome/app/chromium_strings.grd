@@ -310,8 +310,8 @@ Chromium is unable to recover your settings.
         </message>
       </if>
       <!-- Password generation strings -->
-      <message name="IDS_PASSWORD_GENERATION_PROMPT" desc="Autofill dropdown text describing password generation. The link text is a separate string in the translation console and appears here as placeholder text.">
-        Chromium will save this password with <ph name="SAVED_PASSWORD_LINK">$1<ex>Google Smart Lock</ex></ph>. You don’t have to remember it.
+      <message name="IDS_PASSWORD_GENERATION_PROMPT" desc="Autofill dropdown text describing password generation.">
+        Chromium will save this password in your Google Account. You won’t have to remember it.
       </message>
       <message name="IDS_PASSWORD_MANAGER_TITLE_BRAND" desc="The product name used in the title of the password bubble.">
         Chromium

@@ -39,7 +39,7 @@ class PasswordGenerationPopupController
   // Translated strings
   virtual base::string16 SuggestedText() = 0;
   virtual const base::string16& HelpText() = 0;
-  virtual const gfx::Range& HelpTextLinkRange() = 0;
+  virtual gfx::Range HelpTextLinkRange() = 0;
 
  protected:
   ~PasswordGenerationPopupController() override = default;

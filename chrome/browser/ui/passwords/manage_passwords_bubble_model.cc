@@ -262,17 +262,12 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
-    base::string16 save_confirmation_link = base::UTF8ToUTF16(
-        GURL(base::ASCIIToUTF16(
-                 password_manager::kPasswordManagerAccountDashboardURL))
-            .host());
+    base::string16 link = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
 
     size_t offset;
-    save_confirmation_text_ =
-        l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
-                                   save_confirmation_link, &offset);
-    save_confirmation_link_range_ =
-        gfx::Range(offset, offset + save_confirmation_link.length());
+    save_confirmation_text_ = l10n_util::GetStringFUTF16(
+        IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT, link, &offset);
+    save_confirmation_link_range_ = gfx::Range(offset, offset + link.length());
   }
 
   password_manager::metrics_util::UIDisplayDisposition display_disposition =

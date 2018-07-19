@@ -20,7 +20,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/range/range.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -119,7 +118,7 @@ class PasswordGenerationPopupControllerImpl
   const base::string16& password() const override;
   base::string16 SuggestedText() override;
   const base::string16& HelpText() override;
-  const gfx::Range& HelpTextLinkRange() override;
+  gfx::Range HelpTextLinkRange() override;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();
 
@@ -155,10 +154,8 @@ class PasswordGenerationPopupControllerImpl
   // Contains common popup data.
   const autofill::PopupControllerCommon controller_common_;
 
-  // Help text and the range in the text that corresponds to the saved passwords
-  // link.
+  // Help text in the footer.
   base::string16 help_text_;
-  gfx::Range link_range_;
 
   // The password value to be displayed in the UI.
   base::string16 current_password_;
