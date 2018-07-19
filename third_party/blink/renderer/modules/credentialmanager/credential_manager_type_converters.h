@@ -42,12 +42,12 @@ struct TypeConverter<blink::Credential*,
       const blink::mojom::blink::CredentialInfoPtr&);
 };
 
-// webauth::mojom::blink::Authenticator ---------------------------------------
+// blink::mojom::blink::Authenticator ---------------------------------------
 template <>
 struct TypeConverter<blink::mojom::blink::CredentialManagerError,
-                     webauth::mojom::blink::AuthenticatorStatus> {
+                     blink::mojom::blink::AuthenticatorStatus> {
   static blink::mojom::blink::CredentialManagerError Convert(
-      const webauth::mojom::blink::AuthenticatorStatus&);
+      const blink::mojom::blink::AuthenticatorStatus&);
 };
 
 template <>
@@ -56,96 +56,93 @@ struct TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView> {
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialType, String> {
-  static webauth::mojom::blink::PublicKeyCredentialType Convert(const String&);
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialType, String> {
+  static blink::mojom::blink::PublicKeyCredentialType Convert(const String&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::AuthenticatorTransport, String> {
-  static webauth::mojom::blink::AuthenticatorTransport Convert(const String&);
+struct TypeConverter<blink::mojom::blink::AuthenticatorTransport, String> {
+  static blink::mojom::blink::AuthenticatorTransport Convert(const String&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::UserVerificationRequirement,
-                     String> {
-  static webauth::mojom::blink::UserVerificationRequirement Convert(
+struct TypeConverter<blink::mojom::blink::UserVerificationRequirement, String> {
+  static blink::mojom::blink::UserVerificationRequirement Convert(
       const String&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::AttestationConveyancePreference,
+struct TypeConverter<blink::mojom::blink::AttestationConveyancePreference,
                      String> {
-  static webauth::mojom::blink::AttestationConveyancePreference Convert(
+  static blink::mojom::blink::AttestationConveyancePreference Convert(
       const String&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::AuthenticatorAttachment, String> {
-  static webauth::mojom::blink::AuthenticatorAttachment Convert(const String&);
+struct TypeConverter<blink::mojom::blink::AuthenticatorAttachment, String> {
+  static blink::mojom::blink::AuthenticatorAttachment Convert(const String&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::AuthenticatorSelectionCriteriaPtr,
+struct TypeConverter<blink::mojom::blink::AuthenticatorSelectionCriteriaPtr,
                      blink::AuthenticatorSelectionCriteria> {
-  static webauth::mojom::blink::AuthenticatorSelectionCriteriaPtr Convert(
+  static blink::mojom::blink::AuthenticatorSelectionCriteriaPtr Convert(
       const blink::AuthenticatorSelectionCriteria&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialUserEntityPtr,
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialUserEntityPtr,
                      blink::PublicKeyCredentialUserEntity> {
-  static webauth::mojom::blink::PublicKeyCredentialUserEntityPtr Convert(
+  static blink::mojom::blink::PublicKeyCredentialUserEntityPtr Convert(
       const blink::PublicKeyCredentialUserEntity&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialRpEntityPtr,
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialRpEntityPtr,
                      blink::PublicKeyCredentialRpEntity> {
-  static webauth::mojom::blink::PublicKeyCredentialRpEntityPtr Convert(
+  static blink::mojom::blink::PublicKeyCredentialRpEntityPtr Convert(
       const blink::PublicKeyCredentialRpEntity&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialDescriptorPtr,
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialDescriptorPtr,
                      blink::PublicKeyCredentialDescriptor> {
-  static webauth::mojom::blink::PublicKeyCredentialDescriptorPtr Convert(
+  static blink::mojom::blink::PublicKeyCredentialDescriptorPtr Convert(
       const blink::PublicKeyCredentialDescriptor&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialParametersPtr,
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialParametersPtr,
                      blink::PublicKeyCredentialParameters> {
-  static webauth::mojom::blink::PublicKeyCredentialParametersPtr Convert(
+  static blink::mojom::blink::PublicKeyCredentialParametersPtr Convert(
       const blink::PublicKeyCredentialParameters&);
 };
 
 template <>
-struct TypeConverter<
-    webauth::mojom::blink::PublicKeyCredentialCreationOptionsPtr,
-    blink::PublicKeyCredentialCreationOptions> {
-  static webauth::mojom::blink::PublicKeyCredentialCreationOptionsPtr Convert(
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialCreationOptionsPtr,
+                     blink::PublicKeyCredentialCreationOptions> {
+  static blink::mojom::blink::PublicKeyCredentialCreationOptionsPtr Convert(
       const blink::PublicKeyCredentialCreationOptions&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::CableAuthenticationPtr,
+struct TypeConverter<blink::mojom::blink::CableAuthenticationPtr,
                      blink::CableAuthenticationData> {
-  static webauth::mojom::blink::CableAuthenticationPtr Convert(
+  static blink::mojom::blink::CableAuthenticationPtr Convert(
       const blink::CableAuthenticationData&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::CableRegistrationPtr,
+struct TypeConverter<blink::mojom::blink::CableRegistrationPtr,
                      blink::CableRegistrationData> {
-  static webauth::mojom::blink::CableRegistrationPtr Convert(
+  static blink::mojom::blink::CableRegistrationPtr Convert(
       const blink::CableRegistrationData&);
 };
 
 template <>
-struct TypeConverter<
-    webauth::mojom::blink::PublicKeyCredentialRequestOptionsPtr,
-    blink::PublicKeyCredentialRequestOptions> {
-  static webauth::mojom::blink::PublicKeyCredentialRequestOptionsPtr Convert(
+struct TypeConverter<blink::mojom::blink::PublicKeyCredentialRequestOptionsPtr,
+                     blink::PublicKeyCredentialRequestOptions> {
+  static blink::mojom::blink::PublicKeyCredentialRequestOptionsPtr Convert(
       const blink::PublicKeyCredentialRequestOptions&);
 };
 

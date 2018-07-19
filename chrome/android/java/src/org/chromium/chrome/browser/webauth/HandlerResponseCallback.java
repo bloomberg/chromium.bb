@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.webauth;
 
-import org.chromium.webauth.mojom.GetAssertionAuthenticatorResponse;
-import org.chromium.webauth.mojom.MakeCredentialAuthenticatorResponse;
+import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
+import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
 
 /**
  * Callback for receiving responses from an internal handler.

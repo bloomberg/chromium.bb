@@ -59,7 +59,7 @@ CONTENT_EXPORT extern const char kGetType[];
 }  // namespace client_data
 
 // Implementation of the public Authenticator interface.
-class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
+class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
                                          public WebContentsObserver {
  public:
   explicit AuthenticatorImpl(RenderFrameHost* render_frame_host);
@@ -77,7 +77,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
   // Note that one AuthenticatorImpl instance can be bound to exactly one
   // interface connection at a time, and disconnected when the frame navigates
   // to a new active document.
-  void Bind(webauth::mojom::AuthenticatorRequest request);
+  void Bind(blink::mojom::AuthenticatorRequest request);
 
  private:
   friend class AuthenticatorImplTest;
@@ -101,11 +101,10 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
 
   // mojom:Authenticator
   void MakeCredential(
-      webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
+      blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
       MakeCredentialCallback callback) override;
-  void GetAssertion(
-      webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
-      GetAssertionCallback callback) override;
+  void GetAssertion(blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
+                    GetAssertionCallback callback) override;
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
 
@@ -134,13 +133,13 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
 
   void InvokeCallbackAndCleanup(
       MakeCredentialCallback callback,
-      webauth::mojom::AuthenticatorStatus status,
-      webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
+      blink::mojom::AuthenticatorStatus status,
+      blink::mojom::MakeCredentialAuthenticatorResponsePtr response,
       Focus focus_check);
   void InvokeCallbackAndCleanup(
       GetAssertionCallback callback,
-      webauth::mojom::AuthenticatorStatus status,
-      webauth::mojom::GetAssertionAuthenticatorResponsePtr response);
+      blink::mojom::AuthenticatorStatus status,
+      blink::mojom::GetAssertionAuthenticatorResponsePtr response);
   void Cleanup();
 
   std::unique_ptr<device::FidoAuthenticator> MaybeCreatePlatformAuthenticator();
@@ -154,7 +153,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
   std::string client_data_json_;
-  webauth::mojom::AttestationConveyancePreference attestation_preference_;
+  blink::mojom::AttestationConveyancePreference attestation_preference_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
 
@@ -165,7 +164,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
   bool echo_appid_extension_ = false;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
-  mojo::Binding<webauth::mojom::Authenticator> binding_;
+  mojo::Binding<blink::mojom::Authenticator> binding_;
 
   base::WeakPtrFactory<AuthenticatorImpl> weak_factory_;
 

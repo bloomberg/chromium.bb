@@ -148,6 +148,7 @@
           "autofill.mojom.AutofillDriver",
           "autofill.mojom.PasswordManagerDriver",
           "blink.mojom.AnchorElementMetricsHost",
+          "blink.mojom.Authenticator",
           "blink.mojom.BackgroundFetchService",
           "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
@@ -170,6 +171,7 @@
           "blink.mojom.TextSuggestionHost",
           "blink.mojom.UnhandledTapNotifier",
           "blink.mojom.WebBluetoothService",
+          "blink.test.mojom.VirtualAuthenticatorManager",
 
 
           // TODO(beng): figure out how to overlay test interfaces like this.
@@ -208,9 +210,7 @@
           "shape_detection.mojom.BarcodeDetectionProvider",
           "shape_detection.mojom.FaceDetectionProvider",
           "shape_detection.mojom.TextDetection",
-          "ui.mojom.Gpu",
-          "webauth.mojom.Authenticator",
-          "webauth.test.mojom.VirtualAuthenticatorManager"
+          "ui.mojom.Gpu"
         ]
       },
       "requires": {

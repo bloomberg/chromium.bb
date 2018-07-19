@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.mojo;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blink.mojom.Authenticator;
 import org.chromium.chrome.browser.installedapp.InstalledAppProviderFactory;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.webauth.AuthenticatorFactory;
@@ -15,7 +16,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.services.service_manager.InterfaceRegistry;
-import org.chromium.webauth.mojom.Authenticator;
 import org.chromium.webshare.mojom.ShareService;
 
 @SuppressWarnings("MultipleTopLevelClassesInFile")

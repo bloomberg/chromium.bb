@@ -15,9 +15,9 @@ namespace content {
 
 namespace {
 
-webauth::test::mojom::VirtualAuthenticatorPtr GetMojoPtrToVirtualAuthenticator(
+blink::test::mojom::VirtualAuthenticatorPtr GetMojoPtrToVirtualAuthenticator(
     VirtualAuthenticator* authenticator) {
-  webauth::test::mojom::VirtualAuthenticatorPtr mojo_authenticator_ptr;
+  blink::test::mojom::VirtualAuthenticatorPtr mojo_authenticator_ptr;
   authenticator->AddBinding(mojo::MakeRequest(&mojo_authenticator_ptr));
   return mojo_authenticator_ptr;
 }
@@ -37,12 +37,12 @@ ScopedVirtualAuthenticatorEnvironment::
     ~ScopedVirtualAuthenticatorEnvironment() = default;
 
 void ScopedVirtualAuthenticatorEnvironment::AddBinding(
-    webauth::test::mojom::VirtualAuthenticatorManagerRequest request) {
+    blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void ScopedVirtualAuthenticatorEnvironment::CreateAuthenticator(
-    webauth::test::mojom::VirtualAuthenticatorOptionsPtr options,
+    blink::test::mojom::VirtualAuthenticatorOptionsPtr options,
     CreateAuthenticatorCallback callback) {
   auto authenticator = std::make_unique<VirtualAuthenticator>(
       mojo::ConvertTo<::device::FidoTransportProtocol>(options->transport));
@@ -61,7 +61,7 @@ void ScopedVirtualAuthenticatorEnvironment::CreateAuthenticator(
 
 void ScopedVirtualAuthenticatorEnvironment::GetAuthenticators(
     GetAuthenticatorsCallback callback) {
-  std::vector<webauth::test::mojom::VirtualAuthenticatorPtrInfo>
+  std::vector<blink::test::mojom::VirtualAuthenticatorPtrInfo>
       mojo_authenticators;
   for (auto& authenticator : authenticators_) {
     mojo_authenticators.push_back(

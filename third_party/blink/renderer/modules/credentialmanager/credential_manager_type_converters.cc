@@ -38,32 +38,32 @@ WTF::TimeDelta AdjustTimeout(uint32_t timeout) {
 
 namespace mojo {
 
+using blink::mojom::blink::AttestationConveyancePreference;
+using blink::mojom::blink::AuthenticatorAttachment;
+using blink::mojom::blink::AuthenticatorSelectionCriteria;
+using blink::mojom::blink::AuthenticatorSelectionCriteriaPtr;
+using blink::mojom::blink::AuthenticatorStatus;
+using blink::mojom::blink::AuthenticatorTransport;
+using blink::mojom::blink::CableAuthentication;
+using blink::mojom::blink::CableAuthenticationPtr;
+using blink::mojom::blink::CableRegistration;
+using blink::mojom::blink::CableRegistrationPtr;
 using blink::mojom::blink::CredentialInfo;
 using blink::mojom::blink::CredentialInfoPtr;
 using blink::mojom::blink::CredentialType;
 using blink::mojom::blink::CredentialManagerError;
-using webauth::mojom::blink::AttestationConveyancePreference;
-using webauth::mojom::blink::AuthenticatorAttachment;
-using webauth::mojom::blink::AuthenticatorSelectionCriteria;
-using webauth::mojom::blink::AuthenticatorSelectionCriteriaPtr;
-using webauth::mojom::blink::AuthenticatorStatus;
-using webauth::mojom::blink::AuthenticatorTransport;
-using webauth::mojom::blink::CableAuthentication;
-using webauth::mojom::blink::CableAuthenticationPtr;
-using webauth::mojom::blink::CableRegistration;
-using webauth::mojom::blink::CableRegistrationPtr;
-using webauth::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
-using webauth::mojom::blink::PublicKeyCredentialDescriptor;
-using webauth::mojom::blink::PublicKeyCredentialDescriptorPtr;
-using webauth::mojom::blink::PublicKeyCredentialRpEntity;
-using webauth::mojom::blink::PublicKeyCredentialRpEntityPtr;
-using webauth::mojom::blink::PublicKeyCredentialUserEntity;
-using webauth::mojom::blink::PublicKeyCredentialUserEntityPtr;
-using webauth::mojom::blink::PublicKeyCredentialParameters;
-using webauth::mojom::blink::PublicKeyCredentialParametersPtr;
-using webauth::mojom::blink::PublicKeyCredentialRequestOptionsPtr;
-using webauth::mojom::blink::PublicKeyCredentialType;
-using webauth::mojom::blink::UserVerificationRequirement;
+using blink::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
+using blink::mojom::blink::PublicKeyCredentialDescriptor;
+using blink::mojom::blink::PublicKeyCredentialDescriptorPtr;
+using blink::mojom::blink::PublicKeyCredentialRpEntity;
+using blink::mojom::blink::PublicKeyCredentialRpEntityPtr;
+using blink::mojom::blink::PublicKeyCredentialUserEntity;
+using blink::mojom::blink::PublicKeyCredentialUserEntityPtr;
+using blink::mojom::blink::PublicKeyCredentialParameters;
+using blink::mojom::blink::PublicKeyCredentialParametersPtr;
+using blink::mojom::blink::PublicKeyCredentialRequestOptionsPtr;
+using blink::mojom::blink::PublicKeyCredentialType;
+using blink::mojom::blink::UserVerificationRequirement;
 
 // static
 CredentialInfoPtr TypeConverter<CredentialInfoPtr, blink::Credential*>::Convert(
@@ -114,33 +114,33 @@ CredentialManagerError
 TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     const AuthenticatorStatus& status) {
   switch (status) {
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
+    case blink::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
       return CredentialManagerError::NOT_ALLOWED;
-    case webauth::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
+    case blink::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
       return CredentialManagerError::UNKNOWN;
-    case webauth::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
+    case blink::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
       return CredentialManagerError::PENDING_REQUEST;
-    case webauth::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
+    case blink::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
       return CredentialManagerError::INVALID_DOMAIN;
-    case webauth::mojom::blink::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
+    case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
       return CredentialManagerError::CREDENTIAL_EXCLUDED;
-    case webauth::mojom::blink::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
+    case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
       return CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED;
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
+    case blink::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
       return CredentialManagerError::NOT_IMPLEMENTED;
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:
+    case blink::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:
       return CredentialManagerError::NOT_FOCUSED;
-    case webauth::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
+    case blink::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
       return CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED;
-    case webauth::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
+    case blink::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
       return CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS;
-    case webauth::mojom::blink::AuthenticatorStatus::
+    case blink::mojom::blink::AuthenticatorStatus::
         ANDROID_NOT_SUPPORTED_ERROR:
       return CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR;
-    case webauth::mojom::blink::AuthenticatorStatus::
+    case blink::mojom::blink::AuthenticatorStatus::
         USER_VERIFICATION_UNSUPPORTED:
       return CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED;
-    case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
+    case blink::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;
   }
@@ -255,7 +255,7 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
               blink::AuthenticatorSelectionCriteria>::
     Convert(const blink::AuthenticatorSelectionCriteria& criteria) {
   auto mojo_criteria =
-      webauth::mojom::blink::AuthenticatorSelectionCriteria::New();
+      blink::mojom::blink::AuthenticatorSelectionCriteria::New();
   mojo_criteria->authenticator_attachment =
       ConvertTo<AuthenticatorAttachment>(criteria.authenticatorAttachment());
   mojo_criteria->require_resident_key = criteria.requireResidentKey();
@@ -334,7 +334,7 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
               blink::PublicKeyCredentialCreationOptions>::
     Convert(const blink::PublicKeyCredentialCreationOptions& options) {
   auto mojo_options =
-      webauth::mojom::blink::PublicKeyCredentialCreationOptions::New();
+      blink::mojom::blink::PublicKeyCredentialCreationOptions::New();
   mojo_options->relying_party = PublicKeyCredentialRpEntity::From(options.rp());
   mojo_options->user = PublicKeyCredentialUserEntity::From(options.user());
   if (!mojo_options->relying_party | !mojo_options->user) {
@@ -383,20 +383,20 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
   }
 
   mojo_options->attestation =
-      webauth::mojom::AttestationConveyancePreference::NONE;
+      blink::mojom::AttestationConveyancePreference::NONE;
   if (options.hasAttestation()) {
     const auto& attestation = options.attestation();
     if (attestation == "none") {
       // Default value.
     } else if (attestation == "indirect") {
       mojo_options->attestation =
-          webauth::mojom::AttestationConveyancePreference::INDIRECT;
+          blink::mojom::AttestationConveyancePreference::INDIRECT;
     } else if (attestation == "direct") {
       mojo_options->attestation =
-          webauth::mojom::AttestationConveyancePreference::DIRECT;
+          blink::mojom::AttestationConveyancePreference::DIRECT;
     } else if (attestation == "enterprise") {
       mojo_options->attestation =
-          webauth::mojom::AttestationConveyancePreference::ENTERPRISE;
+          blink::mojom::AttestationConveyancePreference::ENTERPRISE;
     } else {
       return nullptr;
     }
@@ -453,7 +453,7 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
               blink::PublicKeyCredentialRequestOptions>::
     Convert(const blink::PublicKeyCredentialRequestOptions& options) {
   auto mojo_options =
-      webauth::mojom::blink::PublicKeyCredentialRequestOptions::New();
+      blink::mojom::blink::PublicKeyCredentialRequestOptions::New();
   mojo_options->challenge = ConvertTo<Vector<uint8_t>>(options.challenge());
 
   if (options.hasTimeout()) {

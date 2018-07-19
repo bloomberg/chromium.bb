@@ -22,7 +22,7 @@ VirtualAuthenticator::VirtualAuthenticator(
 VirtualAuthenticator::~VirtualAuthenticator() = default;
 
 void VirtualAuthenticator::AddBinding(
-    webauth::test::mojom::VirtualAuthenticatorRequest request) {
+    blink::test::mojom::VirtualAuthenticatorRequest request) {
   binding_set_.AddBinding(this, std::move(request));
 }
 
@@ -35,9 +35,9 @@ void VirtualAuthenticator::GetUniqueId(GetUniqueIdCallback callback) {
 }
 
 void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
-  std::vector<webauth::test::mojom::RegisteredKeyPtr> mojo_registered_keys;
+  std::vector<blink::test::mojom::RegisteredKeyPtr> mojo_registered_keys;
   for (const auto& registration : state_->registrations) {
-    auto mojo_registered_key = webauth::test::mojom::RegisteredKey::New();
+    auto mojo_registered_key = blink::test::mojom::RegisteredKey::New();
     mojo_registered_key->key_handle = registration.first;
     mojo_registered_key->counter = registration.second.counter;
     mojo_registered_key->application_parameter.assign(
@@ -51,7 +51,7 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
 }
 
 void VirtualAuthenticator::AddRegistration(
-    webauth::test::mojom::RegisteredKeyPtr registration,
+    blink::test::mojom::RegisteredKeyPtr registration,
     AddRegistrationCallback callback) {
   if (registration->application_parameter.size() != device::kRpIdHashLength) {
     std::move(callback).Run(false);

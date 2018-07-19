@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module webauth.test.mojom;
+module blink.test.mojom;
 
 import "url/mojom/url.mojom";
 import "third_party/blink/public/platform/modules/webauth/authenticator.mojom";
@@ -16,8 +16,8 @@ enum ClientToAuthenticatorProtocol {
 // Attributes that the virtual authenticator should simulate.
 struct VirtualAuthenticatorOptions {
   ClientToAuthenticatorProtocol protocol;
-  webauth.mojom.AuthenticatorTransport transport;
-  webauth.mojom.AuthenticatorAttachment attachment;
+  blink.mojom.AuthenticatorTransport transport;
+  blink.mojom.AuthenticatorAttachment attachment;
   bool has_resident_key;
   bool has_user_verification;
 };

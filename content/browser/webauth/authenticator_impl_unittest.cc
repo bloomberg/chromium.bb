@@ -38,28 +38,28 @@ namespace content {
 
 using ::testing::_;
 
+using blink::mojom::AttestationConveyancePreference;
+using blink::mojom::AuthenticatorPtr;
+using blink::mojom::AuthenticatorSelectionCriteria;
+using blink::mojom::AuthenticatorSelectionCriteriaPtr;
+using blink::mojom::AuthenticatorStatus;
+using blink::mojom::GetAssertionAuthenticatorResponsePtr;
+using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
+using blink::mojom::PublicKeyCredentialCreationOptions;
+using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
+using blink::mojom::PublicKeyCredentialDescriptor;
+using blink::mojom::PublicKeyCredentialDescriptorPtr;
+using blink::mojom::PublicKeyCredentialParameters;
+using blink::mojom::PublicKeyCredentialParametersPtr;
+using blink::mojom::PublicKeyCredentialRequestOptions;
+using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
+using blink::mojom::PublicKeyCredentialRpEntity;
+using blink::mojom::PublicKeyCredentialRpEntityPtr;
+using blink::mojom::PublicKeyCredentialType;
+using blink::mojom::PublicKeyCredentialUserEntity;
+using blink::mojom::PublicKeyCredentialUserEntityPtr;
 using cbor::CBORValue;
 using cbor::CBORReader;
-using webauth::mojom::AttestationConveyancePreference;
-using webauth::mojom::AuthenticatorPtr;
-using webauth::mojom::AuthenticatorSelectionCriteria;
-using webauth::mojom::AuthenticatorSelectionCriteriaPtr;
-using webauth::mojom::AuthenticatorStatus;
-using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
-using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
-using webauth::mojom::PublicKeyCredentialCreationOptions;
-using webauth::mojom::PublicKeyCredentialCreationOptionsPtr;
-using webauth::mojom::PublicKeyCredentialDescriptor;
-using webauth::mojom::PublicKeyCredentialDescriptorPtr;
-using webauth::mojom::PublicKeyCredentialParameters;
-using webauth::mojom::PublicKeyCredentialParametersPtr;
-using webauth::mojom::PublicKeyCredentialRequestOptions;
-using webauth::mojom::PublicKeyCredentialRequestOptionsPtr;
-using webauth::mojom::PublicKeyCredentialRpEntity;
-using webauth::mojom::PublicKeyCredentialRpEntityPtr;
-using webauth::mojom::PublicKeyCredentialType;
-using webauth::mojom::PublicKeyCredentialUserEntity;
-using webauth::mojom::PublicKeyCredentialUserEntityPtr;
 
 namespace {
 
@@ -227,7 +227,7 @@ std::vector<PublicKeyCredentialParametersPtr>
 GetTestPublicKeyCredentialParameters(int32_t algorithm_identifier) {
   std::vector<PublicKeyCredentialParametersPtr> parameters;
   auto fake_parameter = PublicKeyCredentialParameters::New();
-  fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
+  fake_parameter->type = blink::mojom::PublicKeyCredentialType::PUBLIC_KEY;
   fake_parameter->algorithm_identifier = algorithm_identifier;
   parameters.push_back(std::move(fake_parameter));
   return parameters;
@@ -236,10 +236,10 @@ GetTestPublicKeyCredentialParameters(int32_t algorithm_identifier) {
 AuthenticatorSelectionCriteriaPtr GetTestAuthenticatorSelectionCriteria() {
   auto criteria = AuthenticatorSelectionCriteria::New();
   criteria->authenticator_attachment =
-      webauth::mojom::AuthenticatorAttachment::NO_PREFERENCE;
+      blink::mojom::AuthenticatorAttachment::NO_PREFERENCE;
   criteria->require_resident_key = false;
   criteria->user_verification =
-      webauth::mojom::UserVerificationRequirement::PREFERRED;
+      blink::mojom::UserVerificationRequirement::PREFERRED;
   return criteria;
 }
 
@@ -273,7 +273,7 @@ GetTestPublicKeyCredentialRequestOptions() {
   options->challenge.assign(32, 0x0A);
   options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
   options->user_verification =
-      webauth::mojom::UserVerificationRequirement::PREFERRED;
+      blink::mojom::UserVerificationRequirement::PREFERRED;
   options->allow_credentials = GetTestAllowCredentials();
   return options;
 }
@@ -472,7 +472,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
   options->user_verification =
-      webauth::mojom::UserVerificationRequirement::REQUIRED;
+      blink::mojom::UserVerificationRequirement::REQUIRED;
   TestGetAssertionCallback callback_receiver;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
@@ -495,7 +495,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
   options->authenticator_selection->user_verification =
-      webauth::mojom::UserVerificationRequirement::REQUIRED;
+      blink::mojom::UserVerificationRequirement::REQUIRED;
 
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),
@@ -541,7 +541,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
   options->authenticator_selection->authenticator_attachment =
-      webauth::mojom::AuthenticatorAttachment::PLATFORM;
+      blink::mojom::AuthenticatorAttachment::PLATFORM;
 
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),

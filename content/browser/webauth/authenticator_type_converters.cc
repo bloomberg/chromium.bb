@@ -11,16 +11,16 @@
 
 namespace mojo {
 
-using ::webauth::mojom::PublicKeyCredentialUserEntityPtr;
-using ::webauth::mojom::PublicKeyCredentialRpEntityPtr;
-using ::webauth::mojom::AuthenticatorTransport;
-using ::webauth::mojom::PublicKeyCredentialType;
-using ::webauth::mojom::PublicKeyCredentialParametersPtr;
-using ::webauth::mojom::PublicKeyCredentialDescriptorPtr;
-using ::webauth::mojom::AuthenticatorSelectionCriteriaPtr;
-using ::webauth::mojom::AuthenticatorAttachment;
-using ::webauth::mojom::UserVerificationRequirement;
-using ::webauth::mojom::CableAuthenticationPtr;
+using ::blink::mojom::PublicKeyCredentialUserEntityPtr;
+using ::blink::mojom::PublicKeyCredentialRpEntityPtr;
+using ::blink::mojom::AuthenticatorTransport;
+using ::blink::mojom::PublicKeyCredentialType;
+using ::blink::mojom::PublicKeyCredentialParametersPtr;
+using ::blink::mojom::PublicKeyCredentialDescriptorPtr;
+using ::blink::mojom::AuthenticatorSelectionCriteriaPtr;
+using ::blink::mojom::AuthenticatorAttachment;
+using ::blink::mojom::UserVerificationRequirement;
+using ::blink::mojom::CableAuthenticationPtr;
 
 // static
 ::device::FidoTransportProtocol
@@ -88,7 +88,7 @@ TypeConverter<std::vector<::device::PublicKeyCredentialDescriptor>,
 ::device::UserVerificationRequirement
 TypeConverter<::device::UserVerificationRequirement,
               UserVerificationRequirement>::
-    Convert(const ::webauth::mojom::UserVerificationRequirement& input) {
+    Convert(const UserVerificationRequirement& input) {
   switch (input) {
     case UserVerificationRequirement::PREFERRED:
       return ::device::UserVerificationRequirement::kPreferred;

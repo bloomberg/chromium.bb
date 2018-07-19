@@ -24,12 +24,12 @@ namespace content {
 // state of the authenticator, whereas performing all cryptographic operations
 // is delegated to the VirtualFidoDevice class.
 class CONTENT_EXPORT VirtualAuthenticator
-    : public webauth::test::mojom::VirtualAuthenticator {
+    : public blink::test::mojom::VirtualAuthenticator {
  public:
   explicit VirtualAuthenticator(::device::FidoTransportProtocol transport);
   ~VirtualAuthenticator() override;
 
-  void AddBinding(webauth::test::mojom::VirtualAuthenticatorRequest request);
+  void AddBinding(blink::test::mojom::VirtualAuthenticatorRequest request);
 
   ::device::FidoTransportProtocol transport() const { return transport_; }
   const std::string& unique_id() const { return unique_id_; }
@@ -43,11 +43,11 @@ class CONTENT_EXPORT VirtualAuthenticator
   std::unique_ptr<::device::FidoDevice> ConstructDevice();
 
  protected:
-  // webauth::test::mojom::VirtualAuthenticator:
+  // blink::test::mojom::VirtualAuthenticator:
   void GetUniqueId(GetUniqueIdCallback callback) override;
 
   void GetRegistrations(GetRegistrationsCallback callback) override;
-  void AddRegistration(webauth::test::mojom::RegisteredKeyPtr registration,
+  void AddRegistration(blink::test::mojom::RegisteredKeyPtr registration,
                        AddRegistrationCallback callback) override;
   void ClearRegistrations(ClearRegistrationsCallback callback) override;
 
@@ -58,7 +58,7 @@ class CONTENT_EXPORT VirtualAuthenticator
   const ::device::FidoTransportProtocol transport_;
   const std::string unique_id_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
-  mojo::BindingSet<webauth::test::mojom::VirtualAuthenticator> binding_set_;
+  mojo::BindingSet<blink::test::mojom::VirtualAuthenticator> binding_set_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAuthenticator);
 };
