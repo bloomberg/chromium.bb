@@ -407,4 +407,23 @@ TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_float16) {
   EXPECT_TRUE(!!canvas_resource);
 }
 
+TEST_F(CanvasResourceTest, PrepareTransferableResource_SharedBitmap) {
+  testing::InSequence s;
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  scoped_refptr<CanvasResource> canvas_resource =
+      CanvasResourceSharedBitmap::Create(IntSize(10, 10), CanvasColorParams(),
+                                         nullptr,  // CanvasResourceProvider
+                                         kLow_SkFilterQuality);
+  EXPECT_TRUE(!!canvas_resource);
+  viz::TransferableResource resource;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  bool success = canvas_resource->PrepareTransferableResource(
+      &resource, &release_callback, kUnverifiedSyncToken);
+
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(resource.is_software);
+
+  release_callback->Run(gpu::SyncToken(), false);
+}
+
 }  // namespace blink
