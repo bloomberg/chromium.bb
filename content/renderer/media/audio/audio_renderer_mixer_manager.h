@@ -111,11 +111,13 @@ class CONTENT_EXPORT AudioRendererMixerManager
       // adding support for it.
       DCHECK_NE(media::AudioLatency::LATENCY_EXACT_MS, a.latency);
 
-      // Ignore effects(), format(), and frames_per_buffer(), these parameters
-      // do not affect mixer reuse.  All AudioRendererMixer units disable FIFO,
-      // so frames_per_buffer() can be safely ignored.
+      // Ignore format(), and frames_per_buffer(), these parameters do not
+      // affect mixer reuse.  All AudioRendererMixer units disable FIFO, so
+      // frames_per_buffer() can be safely ignored.
       if (a.params.channel_layout() != b.params.channel_layout())
         return a.params.channel_layout() < b.params.channel_layout();
+      if (a.params.effects() != b.params.effects())
+        return a.params.effects() < b.params.effects();
 
       if (media::AudioDeviceDescription::IsDefaultDevice(a.device_id) &&
           media::AudioDeviceDescription::IsDefaultDevice(b.device_id)) {

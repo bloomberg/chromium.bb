@@ -144,6 +144,7 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
     EXPERIMENTAL_ECHO_CANCELLER = 0x40,  // Indicates an echo canceller is
                                          // available that should only
                                          // experimentally be enabled.
+    MULTIZONE = 0x80,
   };
 
   AudioParameters();
