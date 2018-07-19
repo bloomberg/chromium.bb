@@ -143,6 +143,7 @@ bool AudioDecoderSoftwareWrapper::CreateSoftwareDecoder(
   software_decoder_ = media::CastAudioDecoder::Create(
       base::ThreadTaskRunnerHandle::Get(), config,
       media::CastAudioDecoder::kOutputSigned16,
+      media::CastAudioDecoder::OutputChannelLayoutFromConfig(config),
       base::Bind(&AudioDecoderSoftwareWrapper::OnDecoderInitialized,
                  weak_factory_.GetWeakPtr()));
   return (software_decoder_.get() != nullptr);
