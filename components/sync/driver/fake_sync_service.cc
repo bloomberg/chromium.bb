@@ -57,7 +57,6 @@ syncer::SyncService::State FakeSyncService::GetState() const {
   if (!IsFirstSetupComplete()) {
     return State::PENDING_DESIRED_CONFIGURATION;
   }
-  DCHECK(IsSyncActive());
   if (!configuration_done_) {
     return State::CONFIGURING;
   }
@@ -65,10 +64,6 @@ syncer::SyncService::State FakeSyncService::GetState() const {
 }
 
 bool FakeSyncService::IsFirstSetupComplete() const {
-  return false;
-}
-
-bool FakeSyncService::IsSyncActive() const {
   return false;
 }
 

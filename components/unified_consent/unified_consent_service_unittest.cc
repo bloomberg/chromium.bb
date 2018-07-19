@@ -23,7 +23,6 @@ class TestSyncService : public syncer::FakeSyncService {
  public:
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
   bool IsFirstSetupComplete() const override { return true; }
-  bool IsSyncActive() const override { return engine_initialized_; }
   bool IsEngineInitialized() const override { return engine_initialized_; }
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observer_ = observer;

@@ -20,7 +20,9 @@ class TestSyncService : public FakeSyncService {
   void SetDisableReasons(int disable_reasons) {
     disable_reasons_ = disable_reasons;
   }
-  void SetSyncActive(bool active) { sync_active_ = active; }
+  void SetEngineInitialized(bool initialized) {
+    engine_initialized_ = initialized;
+  }
   void SetLocalSyncEnabled(bool local) { local_sync_enabled_ = local; }
   void SetPreferredDataTypes(const ModelTypeSet& types) {
     preferred_data_types_ = types;
@@ -35,15 +37,14 @@ class TestSyncService : public FakeSyncService {
 
   // SyncService implementation.
   int GetDisableReasons() const override { return disable_reasons_; }
-  bool IsEngineInitialized() const override { return sync_active_; }
-  bool IsSyncActive() const override { return sync_active_; }
+  bool IsEngineInitialized() const override { return engine_initialized_; }
   bool IsLocalSyncEnabled() const override { return local_sync_enabled_; }
   bool IsFirstSetupComplete() const override { return true; }
   ModelTypeSet GetPreferredDataTypes() const override {
     return preferred_data_types_;
   }
   ModelTypeSet GetActiveDataTypes() const override {
-    if (!sync_active_)
+    if (!IsSyncActive())
       return ModelTypeSet();
     return active_data_types_;
   }
@@ -77,7 +78,7 @@ class TestSyncService : public FakeSyncService {
 
  private:
   int disable_reasons_ = DISABLE_REASON_PLATFORM_OVERRIDE;
-  bool sync_active_ = false;
+  bool engine_initialized_ = false;
   bool sync_cycle_complete_ = false;
   bool local_sync_enabled_ = false;
   ModelTypeSet preferred_data_types_;
@@ -124,7 +125,7 @@ TEST(SyncServiceUtilsTest,
   EXPECT_EQ(UploadState::INITIALIZING,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
-  service.SetSyncActive(true);
+  service.SetEngineInitialized(true);
   EXPECT_EQ(UploadState::INITIALIZING,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
@@ -138,7 +139,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
   TestSyncService service;
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetConfigurationDone(true);
-  service.SetSyncActive(true);
+  service.SetEngineInitialized(true);
   service.SetSyncCycleComplete(true);
 
   // Sync is enabled only for a specific model type.
@@ -162,7 +163,7 @@ TEST(SyncServiceUtilsTest,
   TestSyncService service;
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetConfigurationDone(true);
-  service.SetSyncActive(true);
+  service.SetEngineInitialized(true);
   service.SetSyncCycleComplete(true);
 
   // Sync is enabled for some model types.
@@ -185,7 +186,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
-  service.SetSyncActive(true);
+  service.SetEngineInitialized(true);
   service.SetConfigurationDone(true);
   service.SetSyncCycleComplete(true);
 
@@ -206,7 +207,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
-  service.SetSyncActive(true);
+  service.SetEngineInitialized(true);
   service.SetConfigurationDone(true);
   service.SetSyncCycleComplete(true);
 
@@ -246,7 +247,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
   service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetActiveDataTypes(ProtocolTypes());
-  service.SetSyncActive(true);
+  service.SetEngineInitialized(true);
   service.SetConfigurationDone(true);
   service.SetSyncCycleComplete(true);
 

@@ -27,12 +27,13 @@ class TestSyncService : public syncer::FakeSyncService {
   // FakeSyncService overrides.
   int GetDisableReasons() const override { return disable_reasons_; }
 
-  bool IsFirstSetupComplete() const override {
-    return is_first_setup_complete_;
+  State GetState() const override {
+    return IsFirstSetupComplete() ? State::ACTIVE
+                                  : State::PENDING_DESIRED_CONFIGURATION;
   }
 
-  bool IsSyncActive() const override {
-    return IsSyncAllowed() && is_first_setup_complete_;
+  bool IsFirstSetupComplete() const override {
+    return is_first_setup_complete_;
   }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override { return type_set_; }

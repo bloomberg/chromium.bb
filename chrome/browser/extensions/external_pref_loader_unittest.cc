@@ -31,7 +31,6 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
   // FakeSyncService:
   int GetDisableReasons() const override { return disable_reasons_; }
   bool IsFirstSetupComplete() const override { return true; }
-  bool IsSyncActive() const override { return true; }
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     switch (synced_types_) {
       case SyncedTypes::ALL:

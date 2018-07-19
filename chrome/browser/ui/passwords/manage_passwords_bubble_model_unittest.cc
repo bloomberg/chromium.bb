@@ -83,8 +83,8 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
 
   // FakeSyncService:
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+  State GetState() const override { return State::ACTIVE; }
   bool IsFirstSetupComplete() const override { return true; }
-  bool IsSyncActive() const override { return true; }
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     switch (synced_types_) {
       case SyncedTypes::ALL:
@@ -106,6 +106,8 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
 
  private:
   SyncedTypes synced_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };
 
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(

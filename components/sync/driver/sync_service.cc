@@ -22,6 +22,11 @@ bool SyncService::IsSyncAllowed() const {
          !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY);
 }
 
+bool SyncService::IsSyncActive() const {
+  State state = GetState();
+  return state == State::CONFIGURING || state == State::ACTIVE;
+}
+
 bool SyncService::HasUnrecoverableError() const {
   return HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR);
 }

@@ -88,7 +88,6 @@ class MockSyncService : public syncer::FakeSyncService {
   MOCK_CONST_METHOD0(GetDisableReasons, int());
   MOCK_CONST_METHOD0(IsEngineInitialized, bool());
   MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
-  MOCK_CONST_METHOD0(IsSyncActive, bool());
   MOCK_CONST_METHOD0(ConfigurationDone, bool());
   MOCK_CONST_METHOD0(IsLocalSyncEnabled, bool());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
@@ -162,9 +161,6 @@ class SuggestionsServiceTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*sync_service(), IsFirstSetupComplete())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*sync_service(), IsSyncActive())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*sync_service(), ConfigurationDone())
@@ -354,7 +350,6 @@ TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
   // The sync service starts out inactive.
   EXPECT_CALL(*sync_service(), IsEngineInitialized())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*sync_service(), IsSyncActive()).WillRepeatedly(Return(false));
   static_cast<SyncServiceObserver*>(suggestions_service())
       ->OnStateChanged(sync_service());
 
@@ -364,7 +359,6 @@ TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
   // Sync getting enabled should not result in a fetch.
   EXPECT_CALL(*sync_service(), IsEngineInitialized())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*sync_service(), IsSyncActive()).WillRepeatedly(Return(true));
   static_cast<SyncServiceObserver*>(suggestions_service())
       ->OnStateChanged(sync_service());
 
@@ -399,7 +393,6 @@ TEST_F(SuggestionsServiceTest, BuildUrlWithDefaultMinZeroParamForFewFeature) {
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
   EXPECT_CALL(*sync_service(), IsEngineInitialized())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*sync_service(), IsSyncActive()).WillRepeatedly(Return(false));
   static_cast<SyncServiceObserver*>(suggestions_service())
       ->OnStateChanged(sync_service());
 

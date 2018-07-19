@@ -183,12 +183,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)".
   bool IsSyncAllowed() const;
 
-  // Returns true if sync is fully initialized and active. This implies that
-  // an initial configuration has successfully completed, although there may
-  // be datatype specific, auth, or other transient errors. To see which
-  // datatypes are actually syncing, see GetActiveDataTypes() below.
-  // DEPRECATED! Use GetState instead.
-  virtual bool IsSyncActive() const = 0;
+  // DEPRECATED! Use GetState instead. Equivalent to
+  // "GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
+  // To see which datatypes are actually syncing, see GetActiveDataTypes().
+  bool IsSyncActive() const;
 
   // Returns true if the local sync backend server has been enabled through a
   // command line flag or policy. In this case sync is considered active but any

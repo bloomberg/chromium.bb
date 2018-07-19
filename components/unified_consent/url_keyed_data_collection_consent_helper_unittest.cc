@@ -37,7 +37,6 @@ class TestSyncService : public syncer::FakeSyncService {
   }
   bool IsFirstSetupComplete() const override { return true; }
   bool IsEngineInitialized() const override { return true; }
-  bool IsSyncActive() const override { return true; }
 
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override {
     if (!sync_initialized_)

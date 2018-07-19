@@ -199,8 +199,11 @@ class RecentTabsSubMenuModelTest
   void WaitForLoadFromLastSession() { content::RunAllTasksUntilIdle(); }
 
   void DisableSync() {
-    EXPECT_CALL(*mock_sync_service_, IsSyncActive())
-        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+        .WillRepeatedly(
+            Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+    EXPECT_CALL(*mock_sync_service_, GetState())
+        .WillRepeatedly(Return(syncer::SyncService::State::DISABLED));
     EXPECT_CALL(*mock_sync_service_, IsDataTypeControllerRunning(_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_sync_service_, GetOpenTabsUIDelegateMock())
@@ -208,8 +211,10 @@ class RecentTabsSubMenuModelTest
   }
 
   void EnableSync() {
-    EXPECT_CALL(*mock_sync_service_, IsSyncActive())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+        .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
+    EXPECT_CALL(*mock_sync_service_, GetState())
+        .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
     EXPECT_CALL(*mock_sync_service_,
                 IsDataTypeControllerRunning(syncer::SESSIONS))
         .WillRepeatedly(Return(true));
@@ -252,6 +257,8 @@ class RecentTabsSubMenuModelTest
   FakeSyncServiceObserverList fake_sync_service_observer_list_;
   browser_sync::ProfileSyncServiceMock* mock_sync_service_ = nullptr;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModelTest);
 };
 
 // Test disabled "Recently closed" header with no foreign tabs.
