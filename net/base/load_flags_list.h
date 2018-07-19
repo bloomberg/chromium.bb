@@ -43,6 +43,8 @@ LOAD_FLAG(DISABLE_CERT_REVOCATION_CHECKING, 1 << 5)
 
 // This load will not make any changes to cookies, including storing new
 // cookies or updating existing ones.
+// Deprecated. Use URLRequest::set_allow_credentials instead. See
+// https://crbug.com/799935.
 LOAD_FLAG(DO_NOT_SAVE_COOKIES, 1 << 6)
 
 // Do not resolve proxies. This override is used when downloading PAC files
@@ -50,10 +52,14 @@ LOAD_FLAG(DO_NOT_SAVE_COOKIES, 1 << 6)
 LOAD_FLAG(BYPASS_PROXY, 1 << 7)
 
 // This load will not send any cookies.
+// Deprecated. Use URLRequest::set_allow_credentials instead. See
+// https://crbug.com/799935.
 LOAD_FLAG(DO_NOT_SEND_COOKIES, 1 << 8)
 
 // This load will not send authentication data (user name/password)
 // to the server (as opposed to the proxy).
+// Deprecated. Use URLRequest::set_allow_credentials instead. See
+// https://crbug.com/799935.
 LOAD_FLAG(DO_NOT_SEND_AUTH_DATA, 1 << 9)
 
 // This should only be used for testing (set by HttpNetworkTransaction).

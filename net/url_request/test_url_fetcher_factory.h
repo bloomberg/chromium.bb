@@ -111,6 +111,7 @@ class TestURLFetcher : public URLFetcher {
                            bool is_last_chunk) override;
   void SetLoadFlags(int load_flags) override;
   int GetLoadFlags() const override;
+  void SetAllowCredentials(bool allow_credentials) override {}
   void SetReferrer(const std::string& referrer) override;
   void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy) override;
   void SetExtraRequestHeaders(

@@ -56,6 +56,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   void AppendChunkToUpload(const std::string& data,
                            bool is_last_chunk) override;
   void SetLoadFlags(int load_flags) override;
+  void SetAllowCredentials(bool allow_credentials) override;
   int GetLoadFlags() const override;
   void SetReferrer(const std::string& referrer) override;
   void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy) override;
