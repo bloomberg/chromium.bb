@@ -10,7 +10,7 @@
 
 std::unique_ptr<ntp_tiles::CustomLinksManager>
 ChromeCustomLinksManagerFactory::NewForProfile(Profile* profile) {
-  if (!ntp_tiles::IsMDCustomLinksEnabled()) {
+  if (!ntp_tiles::IsCustomLinksEnabled()) {
     return nullptr;
   }
   return std::make_unique<ntp_tiles::CustomLinksManagerImpl>(

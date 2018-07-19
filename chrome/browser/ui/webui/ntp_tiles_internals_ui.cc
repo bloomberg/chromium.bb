@@ -88,7 +88,7 @@ bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(
       return false;
 #endif
     case ntp_tiles::TileSource::CUSTOM_LINKS:
-      return ntp_tiles::IsMDCustomLinksEnabled();
+      return ntp_tiles::IsCustomLinksEnabled();
   }
   NOTREACHED();
   return false;

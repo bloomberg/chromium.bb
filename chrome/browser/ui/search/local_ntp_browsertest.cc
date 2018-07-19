@@ -543,7 +543,10 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
 class LocalNTPMDTest : public LocalNTPTest {
  public:
   LocalNTPMDTest()
-      : LocalNTPTest({features::kUseGoogleLocalNtp, features::kNtpUIMd}, {}) {}
+      : LocalNTPTest(
+            /*enabled_features=*/{features::kUseGoogleLocalNtp,
+                                  ntp_tiles::kNtpIcons},
+            /*disabled_features=*/{ntp_tiles::kNtpCustomLinks}) {}
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -589,6 +592,37 @@ IN_PROC_BROWSER_TEST_F(LocalNTPMDTest, LoadsMDIframe) {
   EXPECT_EQ(total_favicons, succeeded_favicons);
   EXPECT_EQ(0, failed_favicons);
 }
+
+class LocalNTPCustomLinksTest : public LocalNTPTest {
+ public:
+  LocalNTPCustomLinksTest()
+      : LocalNTPTest(
+            /*enabled_features=*/{features::kUseGoogleLocalNtp,
+                                  features::kNtpUIMd, ntp_tiles::kNtpIcons,
+                                  ntp_tiles::kNtpCustomLinks},
+            /*disabled_features=*/{}) {}
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, ShowsAddCustomLinkButton) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Get the iframe and check that the tiles loaded correctly.
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  // Check if only one add button exists in the iframe.
+  bool has_add_button = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "document.querySelectorAll('.md-add-icon').length == 1",
+      &has_add_button));
+  EXPECT_TRUE(has_add_button);
+}
+
+// TODO(851293): Add test for not showing add button when at max links.
 
 // A minimal implementation of an interstitial page.
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {

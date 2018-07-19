@@ -469,7 +469,8 @@ body.background-image .md-tile:active .md-title {
   width: var(--md-icon-size);
 }
 
-.md-fallback-background {
+.md-fallback-background,
+.md-add-background {
   align-items: center;
   background-color: rgb(136, 136, 136);
   border-radius: 50%;
@@ -487,6 +488,16 @@ body.background-image .md-tile:active .md-title {
   line-height: var(--md-fallback-letter-size);
   text-align: center;
   width: var(--md-fallback-letter-size);
+}
+
+.md-add-background {
+  background-color: rgb(241, 243, 244);
+}
+
+.md-add-icon {
+  background: url(chrome-search://most-visited/add_link.svg) no-repeat center;
+  height: var(--md-favicon-size);
+  width: var(--md-favicon-size);
 }
 
 .md-title {

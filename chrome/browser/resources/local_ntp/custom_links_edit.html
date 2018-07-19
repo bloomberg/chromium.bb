@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="edit.css">
+  <script src="edit.js"></script>
+</head>
+<body>
+  <dialog id="edit-link-dialog">
+    <div class="dialog-title">Edit shortcut</div>
+    <div class="field-container">
+      <div class="field-title">Name</div>
+      <input class="field-input" autocomplete="no" tabindex="0"></input>
+    </div>
+    <div class="field-container">
+      <div class="field-title">URL</div>
+      <input class="field-input" autocomplete="url" tabindex="0"></input>
+    </div>
+    <div class="buttons-container">
+      <span>
+        <button id="delete" class="secondary">Remove</button>
+      </span>
+      <span class="right">
+        <button id="cancel" class="secondary">Cancel</button>
+        <button id="done" class="primary">Done</button>
+      </span>
+    </div>
+  </dialog>
+</body>
+</html>

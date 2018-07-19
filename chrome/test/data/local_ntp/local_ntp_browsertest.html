@@ -51,60 +51,63 @@
         <!-- The container for the tiles. The MV iframe goes in here. -->
         <div id="mv-tiles"></div>
         <!-- Notification shown when a tile is blacklisted. -->
-        <div id="mv-notice" class="mv-notice-hide">
-          <span id="mv-msg"></span>
-          <!-- Links in the notification. -->
-          <span id="mv-notice-links">
-            <span id="mv-undo" tabIndex="1"></span>
-            <span id="mv-restore" tabIndex="1"></span>
-            <button id="mv-notice-x" tabIndex="1" class="mv-x"></button>
-          </span>
+        <div id="mv-notice-container">
+          <div id="mv-notice" class="mv-notice-hide" role="alert">
+            <span id="mv-msg"></span>
+            <!-- Links in the notification. -->
+            <span id="mv-notice-links">
+              <span id="mv-undo" class="ripple" tabindex="0" role="button"></span>
+              <span id="mv-restore" class="ripple" tabindex="0" role="button">
+              </span>
+              <div id="mv-notice-x" tabindex="0" role="button"></div>
+            </span>
+          </div>
         </div>
       </div>
       <div id="attribution"><div id="attribution-text"></div></div>
 
-    <div id="edit-bg" hidden>
-      <button id="edit-bg-gear"></button>
-    </div>
-  </div>
-
-  <dialog div id="edit-bg-dialog">
-    <div id="edit-bg-title"></div>
-    <div id="edit-bg-google-photos" class="bg-option" tabindex="0">
-      <div class="bg-option-img"></div>
-      <div id="edit-bg-google-photos-text" class="bg-option-text"></div>
-    </div>
-    <div id="edit-bg-default-wallpapers" class="bg-option" tabindex="0">
-      <div class="bg-option-img"></div>
-      <div id="edit-bg-default-wallpapers-text" class="bg-option-text">
+      <div id="edit-bg" hidden>
+        <button id="edit-bg-gear"></button>
       </div>
     </div>
-    <div id="edit-bg-upload-image" class="bg-option" tabindex="0">
-      <div class="bg-option-img"></div>
-      <div id="edit-bg-upload-image-text" class="bg-option-text"></div>
-    </div>
-    <div id="edit-bg-restore-default" class="bg-option" tabindex="0">
-      <div class="bg-option-img"></div>
-      <div id="edit-bg-restore-default-text" class="bg-option-text"></div>
-    </div>
-  </dialog>
 
-  <dialog id="bg-sel-menu">
-    <div id="bg-sel-title-bar">
-    <div id="bg-sel-back"></div>
-    <div id="bg-sel-title"></div>
-    </div>
-    <div id="bg-sel-tiles"></div>
-    <div id="bg-sel-footer">
-      <label id="bg-daily-refresh" class="switch">
-        <input type="checkbox">
-        <span class="toggle"></span>
-      </label>
-      <div id="bg-sel-refresh-text"></div>
-      <div id="bg-sel-footer-cancel" class="bg-sel-footer-button ripple" tabindex="0"></div>
-      <div id="bg-sel-footer-done" class="bg-sel-footer-button ripple"></div>
-    </div>
-  </dialog>
+    <dialog div id="edit-bg-dialog">
+      <div id="edit-bg-title"></div>
+      <div id="edit-bg-google-photos" class="bg-option" tabindex="0">
+        <div class="bg-option-img"></div>
+        <div id="edit-bg-google-photos-text" class="bg-option-text"></div>
+      </div>
+      <div id="edit-bg-default-wallpapers" class="bg-option" tabindex="0">
+        <div class="bg-option-img"></div>
+        <div id="edit-bg-default-wallpapers-text" class="bg-option-text">
+        </div>
+      </div>
+      <div id="edit-bg-upload-image" class="bg-option" tabindex="0">
+        <div class="bg-option-img"></div>
+        <div id="edit-bg-upload-image-text" class="bg-option-text"></div>
+      </div>
+      <div id="edit-bg-restore-default" class="bg-option" tabindex="0">
+        <div class="bg-option-img"></div>
+        <div id="edit-bg-restore-default-text" class="bg-option-text"></div>
+      </div>
+    </dialog>
+
+    <dialog id="bg-sel-menu">
+      <div id="bg-sel-title-bar">
+      <div id="bg-sel-back"></div>
+      <div id="bg-sel-title"></div>
+      </div>
+      <div id="bg-sel-tiles"></div>
+      <div id="bg-sel-footer">
+        <label id="bg-daily-refresh" class="switch">
+          <input type="checkbox">
+          <span class="toggle"></span>
+        </label>
+        <div id="bg-sel-refresh-text"></div>
+        <div id="bg-sel-footer-cancel" class="bg-sel-footer-button ripple" tabindex="0"></div>
+        <div id="bg-sel-footer-done" class="bg-sel-footer-button ripple"></div>
+      </div>
+    </dialog>
 
     <dialog id="voice-overlay-dialog" class="overlay-dialog">
       <div id="voice-overlay" class="overlay-hidden">
@@ -136,6 +139,9 @@
         </div>
       </div>
     </dialog>
+
+    <iframe id="custom-links-edit" name="custom-links-edit"
+            src="chrome-search://most-visited/edit.html"></iframe>
   </template>
 </head>
 <body>

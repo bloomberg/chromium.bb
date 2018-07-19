@@ -572,7 +572,7 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
 
 void MostVisitedSites::BuildCustomLinks(
     const std::vector<CustomLinksManager::Link>& links) {
-  DCHECK(IsMDCustomLinksEnabled());
+  DCHECK(IsCustomLinksEnabled());
 
   NTPTilesVector tiles;
   size_t num_tiles = std::min(links.size(), max_num_sites_);
