@@ -117,6 +117,7 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
         FROM_HERE, base::TimeDelta::FromSeconds(30), this,
         &GpuCommandBufferMemoryTracker::LogMemoryStatsPeriodic);
   }
+  ~GpuCommandBufferMemoryTracker() override { LogMemoryStatsShutdown(); }
 
   void TrackMemoryAllocatedChange(uint64_t delta) override { size_ += delta; }
 
@@ -129,8 +130,6 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
   }
 
  private:
-  ~GpuCommandBufferMemoryTracker() override { LogMemoryStatsShutdown(); }
-
   void LogMemoryStatsPeriodic() { GPU_COMMAND_BUFFER_MEMORY_BLOCK("Periodic"); }
   void LogMemoryStatsShutdown() { GPU_COMMAND_BUFFER_MEMORY_BLOCK("Shutdown"); }
   void LogMemoryStatsPressure(
@@ -871,9 +870,9 @@ void CommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-gles2::MemoryTracker* CommandBufferStub::CreateMemoryTracker(
+std::unique_ptr<gles2::MemoryTracker> CommandBufferStub::CreateMemoryTracker(
     const GPUCreateCommandBufferConfig init_params) const {
-  return new GpuCommandBufferMemoryTracker(
+  return std::make_unique<GpuCommandBufferMemoryTracker>(
       channel_, command_buffer_id_.GetUnsafeValue(),
       init_params.attribs.context_type, channel_->task_runner());
 }

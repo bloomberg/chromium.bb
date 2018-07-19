@@ -53,7 +53,6 @@ RasterDecoderTestBase::InitState::~InitState() = default;
 RasterDecoderTestBase::RasterDecoderTestBase()
     : surface_(nullptr),
       context_(nullptr),
-      memory_tracker_(nullptr),
       client_texture_id_(106),
       shared_memory_id_(0),
       shared_memory_offset_(0),
@@ -187,7 +186,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       new gles2::FeatureInfo(init.workarounds, gpu_feature_info);
 
   group_ = scoped_refptr<gles2::ContextGroup>(new gles2::ContextGroup(
-      gpu_preferences_, false, &mailbox_manager_, memory_tracker_,
+      gpu_preferences_, false, &mailbox_manager_, nullptr /* memory_tracker */,
       &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
       bind_generates_resource, &image_manager_, nullptr /* image_factory */,
       nullptr /* progress_reporter */, gpu_feature_info,

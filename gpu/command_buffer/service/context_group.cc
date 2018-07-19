@@ -63,7 +63,7 @@ ContextGroup::ContextGroup(
     const GpuPreferences& gpu_preferences,
     bool supports_passthrough_command_decoders,
     MailboxManager* mailbox_manager,
-    const scoped_refptr<MemoryTracker>& memory_tracker,
+    std::unique_ptr<MemoryTracker> memory_tracker,
     ShaderTranslatorCache* shader_translator_cache,
     FramebufferCompletenessCache* framebuffer_completeness_cache,
     const scoped_refptr<FeatureInfo>& feature_info,
@@ -75,7 +75,7 @@ ContextGroup::ContextGroup(
     ServiceDiscardableManager* discardable_manager)
     : gpu_preferences_(gpu_preferences),
       mailbox_manager_(mailbox_manager),
-      memory_tracker_(memory_tracker),
+      memory_tracker_(std::move(memory_tracker)),
       shader_translator_cache_(shader_translator_cache),
 #if defined(OS_MACOSX)
       // Framebuffer completeness is not cacheable on OS X because of dynamic

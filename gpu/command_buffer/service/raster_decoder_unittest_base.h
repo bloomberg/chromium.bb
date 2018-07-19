@@ -43,7 +43,6 @@ namespace gpu {
 
 namespace gles2 {
 class ImageManager;
-class MemoryTracker;
 class MockCopyTextureResourceManager;
 }  // namespace gles2
 
@@ -134,9 +133,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
                            const char** str,
                            GLsizei count_in_header,
                            char str_end);
-  void set_memory_tracker(gles2::MemoryTracker* memory_tracker) {
-    memory_tracker_ = memory_tracker;
-  }
 
   void AddExpectationsForVertexAttribManager();
   void AddExpectationsForBindVertexArrayOES();
@@ -249,7 +245,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   gles2::TraceOutputter outputter_;
   std::unique_ptr<MockRasterDecoder> mock_decoder_;
   std::unique_ptr<RasterDecoder> decoder_;
-  gles2::MemoryTracker* memory_tracker_;
 
   GLuint client_texture_id_;
 

@@ -60,7 +60,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   ContextGroup(const GpuPreferences& gpu_preferences,
                bool supports_passthrough_command_decoders,
                MailboxManager* mailbox_manager,
-               const scoped_refptr<MemoryTracker>& memory_tracker,
+               std::unique_ptr<MemoryTracker> memory_tracker,
                ShaderTranslatorCache* shader_translator_cache,
                FramebufferCompletenessCache* framebuffer_completeness_cache,
                const scoped_refptr<FeatureInfo>& feature_info,
@@ -253,7 +253,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // than refer to the one passed in to the constructor.
   const GpuPreferences gpu_preferences_;
   MailboxManager* mailbox_manager_;
-  scoped_refptr<MemoryTracker> memory_tracker_;
+  std::unique_ptr<MemoryTracker> memory_tracker_;
   ShaderTranslatorCache* shader_translator_cache_;
   FramebufferCompletenessCache* framebuffer_completeness_cache_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
