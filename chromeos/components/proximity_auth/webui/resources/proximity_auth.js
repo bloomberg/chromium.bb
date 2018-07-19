@@ -247,6 +247,8 @@ class DeviceListController {
         remoteDevice['friendlyDeviceName'];
     t.querySelector('.device-id').textContent =
         remoteDevice['publicKeyTruncated'];
+    t.querySelector('.software-features').textContent =
+        remoteDevice['featureStates'];
     t.querySelector('.is-unlock-key').textContent = isUnlockKey;
     t.querySelector('.supports-mobile-hotspot').textContent = hasMobileHotspot;
     t.querySelector('.is-arc-plus-plus-enrollment').textContent =

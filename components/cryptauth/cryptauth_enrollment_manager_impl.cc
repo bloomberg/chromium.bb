@@ -5,6 +5,7 @@
 #include "components/cryptauth/cryptauth_enrollment_manager_impl.h"
 
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include "base/base64url.h"
@@ -14,6 +15,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/pref_names.h"
+#include "components/cryptauth/proto/enum_string_util.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/cryptauth/sync_scheduler_impl.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -49,6 +51,23 @@ std::unique_ptr<SyncScheduler> CreateSyncScheduler(
       delegate, base::TimeDelta::FromDays(kEnrollmentRefreshPeriodDays),
       base::TimeDelta::FromMinutes(kEnrollmentBaseRecoveryPeriodMinutes),
       kEnrollmentMaxJitterRatio, "CryptAuth Enrollment");
+}
+
+std::string GenerateSupportedFeaturesString(const GcmDeviceInfo& info) {
+  std::stringstream ss;
+  ss << "[";
+
+  bool logged_feature = false;
+  for (int i = 0; i < info.supported_software_features_size(); ++i) {
+    logged_feature = true;
+    ss << info.supported_software_features(i) << ", ";
+  }
+
+  if (logged_feature)
+    ss.seekp(-2, ss.cur);  // Remove last ", " from the stream.
+
+  ss << "]";
+  return ss.str();
 }
 
 }  // namespace
@@ -314,8 +333,9 @@ void CryptAuthEnrollmentManagerImpl::DoCryptAuthEnrollmentWithKeys() {
   PA_LOG(INFO) << "Making enrollment:\n"
                << "  public_key: " << public_key_b64 << "\n"
                << "  invocation_reason: " << invocation_reason << "\n"
-               << "  gcm_registration_id: "
-               << device_info.gcm_registration_id();
+               << "  gcm_registration_id: " << device_info.gcm_registration_id()
+               << "  supported features: "
+               << GenerateSupportedFeaturesString(device_info);
 
   cryptauth_enroller_ = enroller_factory_->CreateInstance();
   cryptauth_enroller_->Enroll(

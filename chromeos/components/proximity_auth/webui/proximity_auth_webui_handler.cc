@@ -23,10 +23,12 @@
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/proto/enum_string_util.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
+#include "components/cryptauth/software_feature_state.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -35,6 +37,16 @@
 namespace proximity_auth {
 
 namespace {
+
+constexpr const cryptauth::SoftwareFeature kAllSoftareFeatures[] = {
+    cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+    cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
+    cryptauth::SoftwareFeature::EASY_UNLOCK_HOST,
+    cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
+    cryptauth::SoftwareFeature::MAGIC_TETHER_HOST,
+    cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
+    cryptauth::SoftwareFeature::SMS_CONNECT_HOST,
+    cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT};
 
 // Keys in the JSON representation of a log message.
 const char kLogMessageTextKey[] = "text";
@@ -77,6 +89,7 @@ const char kExternalDeviceMobileHotspot[] = "hasMobileHotspot";
 const char kExternalDeviceIsArcPlusPlusEnrollment[] = "isArcPlusPlusEnrollment";
 const char kExternalDeviceIsPixelPhone[] = "isPixelPhone";
 const char kExternalDeviceConnectionStatus[] = "connectionStatus";
+const char kExternalDeviceFeatureStates[] = "featureStates";
 const char kExternalDeviceRemoteState[] = "remoteState";
 
 // The possible values of the |kExternalDeviceConnectionStatus| field.
@@ -102,6 +115,30 @@ std::unique_ptr<base::DictionaryValue> CreateSyncStateDictionary(
   sync_state->SetBoolean(kSyncStateOperationInProgress,
                          is_enrollment_in_progress);
   return sync_state;
+}
+
+std::string GenerateFeaturesString(const cryptauth::RemoteDeviceRef& device) {
+  std::stringstream ss;
+  ss << "{";
+
+  bool logged_feature = false;
+  for (const auto& software_feature : kAllSoftareFeatures) {
+    cryptauth::SoftwareFeatureState state =
+        device.GetSoftwareFeatureState(software_feature);
+
+    // Only log features with values.
+    if (state == cryptauth::SoftwareFeatureState::kNotSupported)
+      continue;
+
+    logged_feature = true;
+    ss << software_feature << ": " << state << ", ";
+  }
+
+  if (logged_feature)
+    ss.seekp(-2, ss.cur);  // Remove last ", " from the stream.
+
+  ss << "}";
+  return ss.str();
 }
 
 }  // namespace
@@ -710,6 +747,8 @@ ProximityAuthWebUIHandler::RemoteDeviceToDictionary(
                              cryptauth::SoftwareFeatureState::kSupported);
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);
+  dictionary->SetString(kExternalDeviceFeatureStates,
+                        GenerateFeaturesString(remote_device));
 
   // TODO(crbug.com/852836): Add kExternalDeviceIsArcPlusPlusEnrollment and
   // kExternalDeviceIsPixelPhone values to the dictionary once RemoteDevice

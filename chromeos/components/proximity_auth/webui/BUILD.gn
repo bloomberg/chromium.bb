@@ -29,6 +29,8 @@ static_library("webui") {
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth",
+    "//components/cryptauth/proto",
+    "//components/cryptauth/proto:util",
     "//components/prefs",
     "//components/resources",
     "//content/public/browser",
