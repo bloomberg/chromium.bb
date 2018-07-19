@@ -39,6 +39,10 @@ struct CONTENT_EXPORT BackgroundFetchInitializationData {
   std::vector<std::string> active_fetch_guids;
   std::string ui_title;
 
+  // The error, if any, when getting the registration data.
+  blink::mojom::BackgroundFetchError error =
+      blink::mojom::BackgroundFetchError::NONE;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchInitializationData);
 };
 
@@ -82,10 +86,6 @@ class GetInitializationDataTask : public DatabaseTask {
 
   // Map from the unique_id to the initialization data.
   InitializationDataMap initialization_data_map_;
-
-  // The error to report with |callback_|.
-  blink::mojom::BackgroundFetchError error_ =
-      blink::mojom::BackgroundFetchError::NONE;
 
   base::WeakPtrFactory<GetInitializationDataTask>
       weak_factory_;  // Keep as last.
