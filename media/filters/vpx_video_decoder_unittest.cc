@@ -297,7 +297,9 @@ TEST_F(VpxVideoDecoderTest, FrameValidAfterPoolDestruction) {
 }
 
 // The test stream uses profile 2, which needs high bit depth support in libvpx.
-#if !defined(LIBVPX_NO_HIGH_BIT_DEPTH)
+// On ARM we fail to decode the final, duplicate frame, so there is no point in
+// running this test (https://crbug.com/864458).
+#if !defined(LIBVPX_NO_HIGH_BIT_DEPTH) && !defined(ARCH_CPU_ARM_FAMILY)
 TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
   // Initialize with dummy data, we could read it from the test clip, but it's
   // not necessary for this test.
@@ -309,37 +311,27 @@ TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
   FFmpegGlue glue(&protocol);
   ASSERT_TRUE(glue.OpenContext());
 
-  AVPacket packet;
+  AVPacket packet = {};
   while (av_read_frame(glue.format_context(), &packet) >= 0) {
-    if (Decode(DecoderBuffer::CopyFrom(packet.data, packet.size)) !=
-        DecodeStatus::OK) {
-      av_packet_unref(&packet);
-      break;
-    }
+    DecodeStatus decode_status =
+        Decode(DecoderBuffer::CopyFrom(packet.data, packet.size));
     av_packet_unref(&packet);
+    if (decode_status != DecodeStatus::OK)
+      break;
   }
 
-  // Android returns 25 frames while other platforms return 26 for some reason;
-  // we don't really care about the exact number.
-  ASSERT_GE(output_frames_.size(), 25u);
-
-  scoped_refptr<VideoFrame> last_frame = output_frames_.back();
-
-  // Duplicate frame is actually two before the last in this bitstream.
-  scoped_refptr<VideoFrame> dupe_frame =
-      output_frames_[output_frames_.size() - 3];
-
-#if !defined(OS_ANDROID)
-  // Android doesn't seem to expose this bug, but the rest of the test is still
-  // reasonable to complete even on Android.
   ASSERT_EQ(output_frames_.size(), 26u);
+
+  // The final frame is a duplicate of the third-from-final one.
+  scoped_refptr<VideoFrame> last_frame = output_frames_[25];
+  scoped_refptr<VideoFrame> dupe_frame = output_frames_[23];
+
   EXPECT_EQ(last_frame->data(VideoFrame::kYPlane),
             dupe_frame->data(VideoFrame::kYPlane));
   EXPECT_EQ(last_frame->data(VideoFrame::kUPlane),
             dupe_frame->data(VideoFrame::kUPlane));
   EXPECT_EQ(last_frame->data(VideoFrame::kVPlane),
             dupe_frame->data(VideoFrame::kVPlane));
-#endif
 
   // This will release all frames held by the memory pool, but should not
   // release |last_frame| since we still have a ref despite sharing the same
@@ -352,6 +344,6 @@ TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
   memset(last_frame->data(VideoFrame::kYPlane), 0,
          last_frame->row_bytes(VideoFrame::kYPlane));
 }
-#endif  // !defined(LIBVPX_NO_HIGH_BIT_DEPTH)
+#endif  // !defined(LIBVPX_NO_HIGH_BIT_DEPTH) && !defined(ARCH_CPU_ARM_FAMILY)
 
 }  // namespace media
