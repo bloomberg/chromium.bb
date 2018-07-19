@@ -120,10 +120,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
  protected:
   ~MediaStreamAudioProcessor() override;
 
-  // True if AEC3 is used, false if it's not or no AEC is used at all. Used for
-  // verification in tests.
-  bool using_aec3_ = false;
-
  private:
   friend class MediaStreamAudioProcessorTest;
 

@@ -48,6 +48,9 @@
 
 namespace content {
 
+using blink::WebMediaStreamSource;
+using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
+
 namespace {
 
 void CopyFirstString(const blink::StringConstraint& constraint,
@@ -102,39 +105,48 @@ bool IsValidVideoContentSource(const std::string& source) {
 void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
   MediaStreamAudioSource* source_impl =
       static_cast<MediaStreamAudioSource*>(source->GetExtraData());
-  bool sw_echo_cancellation = false, auto_gain_control = false,
-       noise_supression = false, system_echo_cancellation = false;
+
+  // If the source is a processed source, get the properties from it.
   if (ProcessedLocalAudioSource* processed_source =
           ProcessedLocalAudioSource::From(source_impl)) {
     AudioProcessingProperties properties =
         processed_source->audio_processing_properties();
-    sw_echo_cancellation = properties.EchoCancellationIsWebRtcProvided();
-    auto_gain_control = properties.goog_auto_gain_control;
-    noise_supression = properties.goog_noise_suppression;
-    // The ECHO_CANCELLER flag will be set if either:
-    // - The device advertises the ECHO_CANCELLER flag and
-    //   echo_cancellation_type is kEchoCancellationDisabled or
-    //   kEchoCancellationAec2 (that is, system ec is disabled);
-    //   or if
-    // - The device advertises the EXPERIMENTAL_ECHO_CANCELLER flag and
-    //   echo_cancellation_type is kEchoCancellationSystem.
-    // See: ProcessedLocalAudioSource::EnsureSourceIsStarted().
-    const media::AudioParameters& params = processed_source->device().input;
-    system_echo_cancellation =
+    WebMediaStreamSource::EchoCancellationMode echo_cancellation_mode;
+
+    switch (properties.echo_cancellation_type) {
+      case EchoCancellationType::kEchoCancellationDisabled:
+        echo_cancellation_mode =
+            WebMediaStreamSource::EchoCancellationMode::kDisabled;
+        break;
+      case EchoCancellationType::kEchoCancellationAec2:
+        echo_cancellation_mode =
+            WebMediaStreamSource::EchoCancellationMode::kBrowser;
+        break;
+      case EchoCancellationType::kEchoCancellationAec3:
+        echo_cancellation_mode =
+            WebMediaStreamSource::EchoCancellationMode::kAec3;
+        break;
+      case EchoCancellationType::kEchoCancellationSystem:
+        echo_cancellation_mode =
+            WebMediaStreamSource::EchoCancellationMode::kSystem;
+        break;
+    }
+
+    source->SetAudioProcessingProperties(echo_cancellation_mode,
+                                         properties.goog_auto_gain_control,
+                                         properties.goog_noise_suppression);
+  } else {
+    // If the source is not a processed source, it could still support system
+    // echo cancellation. Surface that if it does.
+    media::AudioParameters params = source_impl->GetAudioParameters();
+    const WebMediaStreamSource::EchoCancellationMode echo_cancellation_mode =
         params.IsValid() &&
-        (params.effects() & media::AudioParameters::ECHO_CANCELLER);
+                (params.effects() & media::AudioParameters::ECHO_CANCELLER)
+            ? WebMediaStreamSource::EchoCancellationMode::kSystem
+            : WebMediaStreamSource::EchoCancellationMode::kDisabled;
+
+    source->SetAudioProcessingProperties(echo_cancellation_mode, false, false);
   }
-
-  using blink::WebMediaStreamSource;
-  const WebMediaStreamSource::EchoCancellationMode echo_cancellation_mode =
-      system_echo_cancellation
-          ? WebMediaStreamSource::EchoCancellationMode::kHardware
-          : sw_echo_cancellation
-                ? WebMediaStreamSource::EchoCancellationMode::kSoftware
-                : WebMediaStreamSource::EchoCancellationMode::kDisabled;
-
-  source->SetAudioProcessingProperties(echo_cancellation_mode,
-                                       auto_gain_control, noise_supression);
 }
 
 }  // namespace
@@ -869,9 +881,11 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.echo_cancellation = {true, false};
-  capabilities.echo_cancellation_type.reserve(2);
+  capabilities.echo_cancellation_type.reserve(3);
   capabilities.echo_cancellation_type.emplace_back(
       blink::WebString::FromASCII(blink::kEchoCancellationTypeBrowser));
+  capabilities.echo_cancellation_type.emplace_back(
+      blink::WebString::FromASCII(blink::kEchoCancellationTypeAec3));
   if (device.input.effects() &
       (media::AudioParameters::ECHO_CANCELLER |
        media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {

@@ -38,6 +38,8 @@ struct CONTENT_EXPORT AudioProcessingProperties {
     kEchoCancellationDisabled,
     // The WebRTC-provided AEC2 echo canceller.
     kEchoCancellationAec2,
+    // The WebRTC-provided AEC3 echo canceller.
+    kEchoCancellationAec3,
     // System echo canceller, for example an OS-provided or hardware echo
     // canceller.
     kEchoCancellationSystem

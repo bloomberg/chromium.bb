@@ -73,6 +73,7 @@ void MaybeEmitNamedBoolean(StringBuilder& builder,
 }  // namespace
 
 const char kEchoCancellationTypeBrowser[] = "browser";
+const char kEchoCancellationTypeAec3[] = "aec3";
 const char kEchoCancellationTypeSystem[] = "system";
 
 class WebMediaConstraintsPrivate final

@@ -72,7 +72,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     kReadyStateEnded = 2
   };
 
-  enum class EchoCancellationMode { kDisabled, kSoftware, kHardware };
+  enum class EchoCancellationMode { kDisabled, kBrowser, kAec3, kSystem };
 
   static MediaStreamSource* Create(const String& id,
                                    StreamType,

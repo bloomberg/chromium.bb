@@ -74,7 +74,7 @@ class WebMediaStreamSource {
     kReadyStateEnded = 2
   };
 
-  enum class EchoCancellationMode { kDisabled, kSoftware, kHardware };
+  enum class EchoCancellationMode { kDisabled, kBrowser, kAec3, kSystem };
 
   struct Capabilities {
     // WebVector is used to store an optional range for the below numeric
