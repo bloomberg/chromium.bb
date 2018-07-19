@@ -8,6 +8,11 @@ import("//build/config/v8_target_cpu.gni")
 # MIPS code is being compiled.  But they can also be relevant in the
 # other contexts when the code will change its behavior based on the
 # cpu it wants to generate code for.
+declare_args() {
+  # MIPS MultiMedia Instruction compilation flag.
+  mips_use_mmi = false
+}
+
 if (current_cpu == "mipsel" || v8_current_cpu == "mipsel" ||
     current_cpu == "mips" || v8_current_cpu == "mips") {
   declare_args() {
