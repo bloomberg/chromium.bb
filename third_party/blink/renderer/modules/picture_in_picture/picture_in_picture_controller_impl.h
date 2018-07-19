@@ -59,7 +59,7 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
                              ScriptPromiseResolver*) override;
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
-  void OnPictureInPictureControlClicked() override;
+  void OnPictureInPictureControlClicked(const WebString& control_id) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
 

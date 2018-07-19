@@ -55,6 +55,9 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Rect GetCloseControlsBounds();
   gfx::Rect GetPlayPauseControlsBounds();
 
+  // Send the message that a custom control on |this| has been clicked.
+  void ClickCustomControl(const std::string& control_id);
+
  private:
   // Gets the internal |ui::Layer| of the controls.
   ui::Layer* GetControlsBackgroundLayer();

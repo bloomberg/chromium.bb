@@ -36,7 +36,8 @@ class PictureInPictureWindowControllerImpl
   // PictureInPictureWindowController:
   CONTENT_EXPORT gfx::Size Show() override;
   CONTENT_EXPORT void Close(bool should_pause_video) override;
-  CONTENT_EXPORT void ClickCustomControl() override;
+  CONTENT_EXPORT void ClickCustomControl(
+      const std::string& control_id) override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;

@@ -554,9 +554,10 @@ void HTMLVideoElement::PictureInPictureStopped() {
       .OnExitedPictureInPicture(nullptr);
 }
 
-void HTMLVideoElement::PictureInPictureControlClicked() {
+void HTMLVideoElement::PictureInPictureControlClicked(
+    const WebString& control_id) {
   PictureInPictureController::From(GetDocument())
-      .OnPictureInPictureControlClicked();
+      .OnPictureInPictureControlClicked(control_id);
 }
 
 WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {

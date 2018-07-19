@@ -107,7 +107,8 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateVolumeMultiplierUpdate(int player_id, double multiplier);
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnPictureInPictureModeEnded(int player_id);
-  void OnPictureInPictureControlClicked(int player_id);
+  void OnPictureInPictureControlClicked(int player_id,
+                                        const std::string& control_id);
   void OnPictureInPictureModeEndedAck(int player_id, int request_id);
   void OnPictureInPictureModeStartedAck(int player_id,
                                         int request_id,

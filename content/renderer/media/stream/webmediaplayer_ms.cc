@@ -922,7 +922,8 @@ void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
   NOTIMPLEMENTED();
 }
 
-void WebMediaPlayerMS::OnPictureInPictureControlClicked() {
+void WebMediaPlayerMS::OnPictureInPictureControlClicked(
+    const std::string& control_id) {
   NOTIMPLEMENTED();
 }
 

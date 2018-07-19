@@ -136,8 +136,9 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void PictureInPictureStopped() = 0;
 
   // Informs that a custom Picture-in-Picture control was clicked for the media
-  // element.
-  virtual void PictureInPictureControlClicked() = 0;
+  // element. |control_id| is the identifier for its custom control. This is
+  // defined by the site that calls the web API.
+  virtual void PictureInPictureControlClicked(const WebString& control_id) = 0;
 
   // Returns whether the media element has native controls. It does not mean
   // that the controls are currently visible.

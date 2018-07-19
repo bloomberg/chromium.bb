@@ -50,7 +50,9 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
       const WebString& remote_device_friendly_name) override {}
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) override {}
   void PictureInPictureStopped() override { NOTREACHED(); }
-  void PictureInPictureControlClicked() override { NOTREACHED(); }
+  void PictureInPictureControlClicked(const WebString& control_id) override {
+    NOTREACHED();
+  }
 
  private:
   HTMLAudioElement(Document&);

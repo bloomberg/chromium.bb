@@ -162,21 +162,19 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
     resolver->Resolve();
 }
 
-void PictureInPictureControllerImpl::OnPictureInPictureControlClicked() {
+void PictureInPictureControllerImpl::OnPictureInPictureControlClicked(
+    const WebString& control_id) {
   DCHECK(GetSupplementable());
 
   // Bail out if document is not active.
   if (!GetSupplementable()->IsActive())
     return;
 
-  // TODO(crbug/856251): Allow for different strings to be passed in here.
-  // Current string is a placeholder.
   if (RuntimeEnabledFeatures::PictureInPictureControlEnabled() &&
       picture_in_picture_element_) {
     picture_in_picture_element_->DispatchEvent(
         PictureInPictureControlEvent::Create(
-            EventTypeNames::pictureinpicturecontrolclick,
-            "placeholder_event_name"));
+            EventTypeNames::pictureinpicturecontrolclick, control_id));
   }
 }
 

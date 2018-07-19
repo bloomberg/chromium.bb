@@ -78,7 +78,10 @@ class WebMediaPlayerDelegate {
     virtual void OnPictureInPictureModeEnded() = 0;
 
     // Called when a custom control is clicked on the Picture-in-Picture window.
-    virtual void OnPictureInPictureControlClicked() = 0;
+    // |control_id| is the identifier for its custom control. This is defined by
+    // the site that calls the web API.
+    virtual void OnPictureInPictureControlClicked(
+        const std::string& control_id) = 0;
   };
 
   // Returns true if the host frame is hidden or closed.

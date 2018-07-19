@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
 
+#include <string>
 #include "content/common/content_export.h"
 
 namespace gfx {
@@ -38,7 +39,7 @@ class PictureInPictureWindowController {
   virtual gfx::Size Show() = 0;
 
   virtual void Close(bool should_pause_video) = 0;
-  virtual void ClickCustomControl() = 0;
+  virtual void ClickCustomControl(const std::string& control_id) = 0;
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
