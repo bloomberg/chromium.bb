@@ -75,6 +75,14 @@ MediaPerceptionPrivateSetStateFunction::Run() {
     return RespondNow(Error("Status must be RUNNING to set configuration."));
   }
 
+  // Check that whiteboard configuration is only provided with SetState RUNNING.
+  if (params->state.whiteboard &&
+      params->state.status !=
+          extensions::api::media_perception_private::STATUS_RUNNING) {
+    return RespondNow(Error(
+        "Status must be RUNNING to set whiteboard configuration."));
+  }
+
   MediaPerceptionAPIManager* manager =
       MediaPerceptionAPIManager::Get(browser_context());
   manager->SetState(

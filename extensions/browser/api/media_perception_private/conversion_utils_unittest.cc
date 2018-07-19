@@ -28,6 +28,16 @@ const int kVideoStreamWidthForVideoCapture = 640;
 const int kVideoStreamHeightForVideoCapture = 360;
 const int kVideoStreamFrameRateForVideoCapture = 5;
 
+constexpr float kWhiteboardTopLeftX = 0.001;
+constexpr float kWhiteboardTopLeftY = 0.0015;
+constexpr float kWhiteboardTopRightX = 0.9;
+constexpr float kWhiteboardTopRightY = 0.002;
+constexpr float kWhiteboardBottomLeftX = 0.0018;
+constexpr float kWhiteboardBottomLeftY = 0.88;
+constexpr float kWhiteboardBottomRightX = 0.85;
+constexpr float kWhiteboardBottomRightY = 0.79;
+constexpr float kWhiteboardAspectRatio = 1.76;
+
 void InitializeVideoStreamParam(media_perception::VideoStreamParam& param,
                                 const std::string& id,
                                 int width,
@@ -151,6 +161,16 @@ void InitializeFakeFramePerception(const int index,
   detection->set_motion_detected_likelihood(0.2);
   detection->set_light_condition(mri::VideoHumanPresenceDetection::BLACK_FRAME);
   detection->set_light_condition_likelihood(0.3);
+}
+
+std::unique_ptr<media_perception::Point> MakePointIdl(float x, float y) {
+  std::unique_ptr<media_perception::Point> point =
+      std::make_unique<media_perception::Point>();
+
+  point->x = std::make_unique<double>(x);
+  point->y = std::make_unique<double>(y);
+
+  return point;
 }
 
 void ValidateFramePerceptionResult(
@@ -356,6 +376,23 @@ void ValidateFakeImageFrameData(
   EXPECT_EQ(image_frame_result.format, media_perception::IMAGE_FORMAT_JPEG);
 }
 
+void ValidatePointIdl(std::unique_ptr<media_perception::Point>& point,
+                      float x,
+                      float y) {
+  ASSERT_TRUE(point);
+  ASSERT_TRUE(point->x);
+  EXPECT_EQ(*point->x, x);
+  ASSERT_TRUE(point->y);
+  EXPECT_EQ(*point->y, y);
+}
+
+void ValidatePointProto(const mri::Point& point, float x, float y) {
+  ASSERT_TRUE(point.has_x());
+  EXPECT_EQ(point.x(), x);
+  ASSERT_TRUE(point.has_y());
+  EXPECT_EQ(point.y(), y);
+}
+
 }  // namespace
 
 // Verifies that the data is converted successfully and as expected in each of
@@ -427,11 +464,38 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
   mri::State state;
   state.set_status(mri::State::RUNNING);
   state.set_configuration(kTestConfiguration);
+
+  state.mutable_whiteboard()->mutable_top_left()->set_x(kWhiteboardTopLeftX);
+  state.mutable_whiteboard()->mutable_top_left()->set_y(kWhiteboardTopLeftY);
+  state.mutable_whiteboard()->mutable_top_right()->set_x(kWhiteboardTopRightX);
+  state.mutable_whiteboard()->mutable_top_right()->set_y(kWhiteboardTopRightY);
+  state.mutable_whiteboard()->mutable_bottom_left()->set_x(
+      kWhiteboardBottomLeftX);
+  state.mutable_whiteboard()->mutable_bottom_left()->set_y(
+      kWhiteboardBottomLeftY);
+  state.mutable_whiteboard()->mutable_bottom_right()->set_x(
+      kWhiteboardBottomRightX);
+  state.mutable_whiteboard()->mutable_bottom_right()->set_y(
+      kWhiteboardBottomRightY);
+  state.mutable_whiteboard()->set_aspect_ratio(kWhiteboardAspectRatio);
+
   media_perception::State state_result =
       media_perception::StateProtoToIdl(state);
   EXPECT_EQ(state_result.status, media_perception::STATUS_RUNNING);
   ASSERT_TRUE(state_result.configuration);
   EXPECT_EQ(*state_result.configuration, kTestConfiguration);
+
+  ASSERT_TRUE(state_result.whiteboard);
+  ValidatePointIdl(state_result.whiteboard->top_left, kWhiteboardTopLeftX,
+                   kWhiteboardTopLeftY);
+  ValidatePointIdl(state_result.whiteboard->top_right, kWhiteboardTopRightX,
+                   kWhiteboardTopRightY);
+  ValidatePointIdl(state_result.whiteboard->bottom_left, kWhiteboardBottomLeftX,
+                   kWhiteboardBottomLeftY);
+  ValidatePointIdl(state_result.whiteboard->bottom_right,
+                   kWhiteboardBottomRightX, kWhiteboardBottomRightY);
+  ASSERT_TRUE(state_result.whiteboard->aspect_ratio);
+  EXPECT_EQ(*state_result.whiteboard->aspect_ratio, kWhiteboardAspectRatio);
 
   state.set_status(mri::State::STARTED);
   state.set_device_context(kTestDeviceContext);
@@ -458,10 +522,36 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
 
   state.status = media_perception::STATUS_RUNNING;
   state.configuration = std::make_unique<std::string>(kTestConfiguration);
+  state.whiteboard = std::make_unique<media_perception::Whiteboard>();
+  state.whiteboard->top_left =
+      MakePointIdl(kWhiteboardTopLeftX, kWhiteboardTopLeftY);
+  state.whiteboard->top_right =
+      MakePointIdl(kWhiteboardTopRightX, kWhiteboardTopRightY);
+  state.whiteboard->bottom_left =
+      MakePointIdl(kWhiteboardBottomLeftX, kWhiteboardBottomLeftY);
+  state.whiteboard->bottom_right =
+      MakePointIdl(kWhiteboardBottomRightX, kWhiteboardBottomRightY);
+  state.whiteboard->aspect_ratio =
+      std::make_unique<double>(kWhiteboardAspectRatio);
   state_proto = StateIdlToProto(state);
   EXPECT_EQ(state_proto.status(), mri::State::RUNNING);
   ASSERT_TRUE(state_proto.has_configuration());
   EXPECT_EQ(state_proto.configuration(), kTestConfiguration);
+  ASSERT_TRUE(state_proto.has_whiteboard());
+  ASSERT_TRUE(state_proto.whiteboard().has_top_left());
+  ValidatePointProto(state_proto.whiteboard().top_left(), kWhiteboardTopLeftX,
+                     kWhiteboardTopLeftY);
+  ASSERT_TRUE(state_proto.whiteboard().has_top_right());
+  ValidatePointProto(state_proto.whiteboard().top_right(), kWhiteboardTopRightX,
+                     kWhiteboardTopRightY);
+  ASSERT_TRUE(state_proto.whiteboard().has_bottom_left());
+  ValidatePointProto(state_proto.whiteboard().bottom_left(),
+                     kWhiteboardBottomLeftX, kWhiteboardBottomLeftY);
+  ASSERT_TRUE(state_proto.whiteboard().has_bottom_right());
+  ValidatePointProto(state_proto.whiteboard().bottom_right(),
+                     kWhiteboardBottomRightX, kWhiteboardBottomRightY);
+  ASSERT_TRUE(state_proto.whiteboard().has_aspect_ratio());
+  EXPECT_EQ(state_proto.whiteboard().aspect_ratio(), kWhiteboardAspectRatio);
 
   state.status = media_perception::STATUS_SUSPENDED;
   state.device_context = std::make_unique<std::string>(kTestDeviceContext);

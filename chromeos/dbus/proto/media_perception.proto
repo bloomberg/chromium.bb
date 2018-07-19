@@ -75,6 +75,10 @@ message State {
   // Media analytics configuration. It can only be used when setting state to
   // RUNNING.
   optional string configuration = 4;
+
+  // Corners and aspect ratio of the whiteboard in the image frame. Should only
+  // be set when setting state to running and configuration to whiteboard.
+  optional Whiteboard whiteboard = 5;
 }
 
 // This is the output of the MediaPerceptionSinkCalculator.
@@ -328,4 +332,22 @@ message Distance {
   optional DistanceUnits units = 1;
 
   optional float magnitude = 2;
+}
+
+// The parameters for a whiteboard in the image frame.
+message Whiteboard {
+  // The top left corner of the whiteboard in the image frame.
+  optional Point top_left = 1;
+
+  // The top right corner of the whiteboard in the image frame.
+  optional Point top_right = 2;
+
+  // The bottom left corner of the whiteboard in the image frame.
+  optional Point bottom_left = 3;
+
+  // The bottom right corner of the whiteboard in the image frame.
+  optional Point bottom_right = 4;
+
+  // The physical aspect ratio of the whiteboard.
+  optional float aspect_ratio = 5;
 }
