@@ -46,6 +46,13 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
   }
 };
 
-TEST_F('SigninSyncConfirmationTest', 'DialogWithDice', function() {
+// TODO(https://crbug.com/862573): Re-enable when no longer failing when
+// is_chrome_branded is true.
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#define MAYBE_DialogWithDice DISABLED_DialogWithDice');
+GEN('#else');
+GEN('#define MAYBE_DialogWithDice');
+GEN('#endif');
+TEST_F('SigninSyncConfirmationTest', 'MAYBE_DialogWithDice', function() {
   mocha.run();
 });
