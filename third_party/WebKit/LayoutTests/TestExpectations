@@ -4677,3 +4677,5 @@ crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-dec
 
 crbug.com/865371 [ Mac ]  external/wpt/webaudio/the-audio-api/the-pannernode-interface/panner-distance-clamping.html [ Failure Pass ]
 crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
+
+crbug.com/865755 [ Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Failure Pass ]
