@@ -8,12 +8,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_features.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 
@@ -86,9 +88,9 @@ MaterialDesignController::Mode MaterialDesignController::mode_ =
 void MaterialDesignController::Initialize() {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
   CHECK(!is_mode_initialized_);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTopChromeMD);
+      command_line->GetSwitchValueASCII(switches::kTopChromeMD);
 
   bool force_material_refresh = false;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -125,8 +127,18 @@ void MaterialDesignController::Initialize() {
     SetMode(DefaultMode());
   }
 
+  // Ideally, there would be a more general, "initialize random stuff here"
+  // function into which these things and a call to this function can be placed.
+  // TODO(crbug.com/864544)
   if (IsRefreshUi())
     color_utils::SetDarkestColor(gfx::kGoogleGrey900);
+
+  double animation_duration_scale;
+  if (base::StringToDouble(
+          command_line->GetSwitchValueASCII(switches::kAnimationDurationScale),
+          &animation_duration_scale)) {
+    gfx::LinearAnimation::SetDurationScale(animation_duration_scale);
+  }
 }
 
 // static

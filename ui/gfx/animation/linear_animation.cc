@@ -12,6 +12,12 @@
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
+namespace {
+
+double g_duration_scale_factor = 1.0;
+
+}  // namespace
+
 namespace gfx {
 
 static base::TimeDelta CalculateInterval(int frame_rate) {
@@ -58,11 +64,17 @@ void LinearAnimation::End() {
 }
 
 void LinearAnimation::SetDuration(base::TimeDelta duration) {
-  duration_ = duration;
+  duration_ = duration * g_duration_scale_factor;
   if (duration_ < timer_interval())
     duration_ = timer_interval();
   if (is_animating())
     SetStartTime(container()->last_tick_time());
+}
+
+// static
+void LinearAnimation::SetDurationScale(const double scale_factor) {
+  if (scale_factor >= 0.0)
+    g_duration_scale_factor = scale_factor;
 }
 
 void LinearAnimation::Step(base::TimeTicks time_now) {
