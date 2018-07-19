@@ -173,7 +173,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
       InterfaceId id,
       const base::Optional<DisconnectReason>& reason) override;
 
-  void OnPipeConnectionError();
+  void OnPipeConnectionError(bool force_async_dispatch);
 
   // Specifies whether we are allowed to directly call into
   // InterfaceEndpointClient (given that we are already on the same sequence as
