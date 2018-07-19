@@ -3,5 +3,6 @@
 # found in the LICENSE file.
 
 declare_args() {
-  enable_feed_in_chrome = is_android
+  # Temporarily compile out Feed while M69 branches to avoid bloating binary.
+  enable_feed_in_chrome = false
 }
