@@ -8279,6 +8279,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
             OEM folder
           </message>
+          <message name="IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME" desc="The default name for the Linux (Crostini) apps folder in the App Launcher">
+            Linux apps
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
@@ -8312,6 +8315,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
             OEM Folder
+          </message>
+          <message name="IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME" desc="The default name for the Linux (Crostini) apps folder in the App Launcher">
+            Linux Apps
           </message>
         </if>
       </if>
