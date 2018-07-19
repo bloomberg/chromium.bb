@@ -171,20 +171,16 @@ class BASE_EXPORT SequenceManagerImpl
   // selector interface is unaware of those.  This struct keeps track off all
   // task related state needed to make pairs of TakeTask() / DidRunTask() work.
   struct ExecutingTask {
-    ExecutingTask(internal::TaskQueueImpl::Task&& task,
+    ExecutingTask(internal::TaskQueueImpl::Task&& pending_task,
                   internal::TaskQueueImpl* task_queue,
                   TaskQueue::TaskTiming task_timing)
-        : pending_task(std::move(task)),
+        : pending_task(std::move(pending_task)),
           task_queue(task_queue),
-          task_timing(task_timing),
-          task_type(pending_task.task_type()) {}
+          task_timing(task_timing) {}
 
     internal::TaskQueueImpl::Task pending_task;
     internal::TaskQueueImpl* task_queue = nullptr;
     TaskQueue::TaskTiming task_timing;
-    // Save task metadata to use in after running a task as |pending_task|
-    // won't be available then.
-    int task_type;
   };
 
   struct MainThreadOnly {
@@ -289,10 +285,6 @@ class BASE_EXPORT SequenceManagerImpl
   void CleanUpQueues();
 
   bool ShouldRecordCPUTimeForTask();
-
-  // Helper to terminate all scoped trace events to allow starting new ones
-  // in TakeTask().
-  Optional<PendingTask> TakeTaskImpl();
 
   // Determines if wall time or thread time should be recorded for the next
   // task.
