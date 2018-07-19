@@ -31,6 +31,52 @@
 namespace file_manager {
 namespace file_tasks {
 
+namespace {
+
+constexpr base::TimeDelta kIconLoadTimeout =
+    base::TimeDelta::FromMilliseconds(100);
+constexpr size_t kIconSizeInDip = 16;
+
+GURL GeneratePNGDataUrl(const SkBitmap& sk_bitmap) {
+  std::vector<unsigned char> output;
+  gfx::PNGCodec::EncodeBGRASkBitmap(sk_bitmap, false /* discard_transparency */,
+                                    &output);
+  std::string encoded;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(output.data()),
+                        output.size()),
+      &encoded);
+  return GURL("data:image/png;base64," + encoded);
+}
+
+void OnAppIconsLoaded(Profile* profile,
+                      const std::vector<std::string>& app_ids,
+                      ui::ScaleFactor scale_factor,
+                      std::vector<FullTaskDescriptor>* result_list,
+                      base::OnceClosure completion_closure,
+                      const std::vector<gfx::ImageSkia>& icons) {
+  DCHECK(!app_ids.empty());
+  DCHECK_EQ(app_ids.size(), icons.size());
+
+  float scale = ui::GetScaleForScaleFactor(scale_factor);
+
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  for (size_t i = 0; i < app_ids.size(); ++i) {
+    result_list->push_back(FullTaskDescriptor(
+        TaskDescriptor(app_ids[i], TASK_TYPE_CROSTINI_APP,
+                       kCrostiniAppActionID),
+        registry_service->GetRegistration(app_ids[i])->Name(),
+        extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
+        GeneratePNGDataUrl(icons[i].GetRepresentation(scale).sk_bitmap()),
+        false /* is_default */, false /* is_generic */));
+  }
+
+  std::move(completion_closure).Run();
+}
+
+}  // namespace
+
 void FindCrostiniTasks(Profile* profile,
                        const std::vector<extensions::EntryInfo>& entries,
                        std::vector<FullTaskDescriptor>* result_list,
@@ -43,6 +89,8 @@ void FindCrostiniTasks(Profile* profile,
   std::set<std::string> target_mime_types;
   for (const extensions::EntryInfo& entry : entries)
     target_mime_types.insert(entry.mime_type);
+
+  std::vector<std::string> result_app_ids;
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
@@ -62,16 +110,20 @@ void FindCrostiniTasks(Profile* profile,
     }
     if (had_unsupported_mime_type)
       continue;
-
-    // TODO(timloh): Add support for Crostini icons
-    result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(app_id, TASK_TYPE_CROSTINI_APP, kCrostiniAppActionID),
-        registration.Name(),
-        extensions::api::file_manager_private::Verb::VERB_OPEN_WITH, GURL(),
-        false /* is_default */, false /* is_generic */));
+    result_app_ids.push_back(app_id);
   }
 
-  std::move(completion_closure).Run();
+  if (result_app_ids.empty()) {
+    std::move(completion_closure).Run();
+    return;
+  }
+
+  ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactors().back();
+
+  LoadIcons(
+      profile, result_app_ids, kIconSizeInDip, scale_factor, kIconLoadTimeout,
+      base::BindOnce(OnAppIconsLoaded, profile, result_app_ids, scale_factor,
+                     result_list, std::move(completion_closure)));
 }
 
 void ExecuteCrostiniTask(
