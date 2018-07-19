@@ -172,6 +172,7 @@ fuchsia_sdk_fidl_pkg("gfx") {
   ]
   deps = [
     ":images",
+    ":vectorial",
   ]
 }
 
@@ -298,6 +299,15 @@ fuchsia_sdk_fidl_pkg("sys") {
   ]
   deps = [
     ":mem",
+  ]
+}
+
+fuchsia_sdk_fidl_pkg("vectorial") {
+  namespace = "fuchsia.ui"
+  namespace_path = "fuchsia/ui"
+  sources = [
+    "commands.fidl",
+    "events.fidl",
   ]
 }
 
