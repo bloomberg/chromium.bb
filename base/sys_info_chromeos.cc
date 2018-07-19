@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/utsname.h>
 
 #include "base/environment.h"
 #include "base/files/file.h"
@@ -18,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
@@ -175,6 +177,23 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* bugfix_version) {
   return GetChromeOSVersionInfo().GetVersionNumbers(
       major_version, minor_version, bugfix_version);
+}
+
+// static
+std::string SysInfo::OperatingSystemVersion() {
+  int32_t major, minor, bugfix;
+  GetChromeOSVersionInfo().GetVersionNumbers(&major, &minor, &bugfix);
+  return base::StringPrintf("%d.%d.%d", major, minor, bugfix);
+}
+
+// static
+std::string SysInfo::KernelVersion() {
+  struct utsname info;
+  if (uname(&info) < 0) {
+    NOTREACHED();
+    return std::string();
+  }
+  return std::string(info.release);
 }
 
 // static
