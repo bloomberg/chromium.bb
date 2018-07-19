@@ -10,8 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -82,12 +80,6 @@ void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
 
 void GoogleAssistantHandler::HandleTurnOnGoogleAssistant(
     const base::ListValue* args) {
-  if (chromeos::switches::IsAssistantEnabled()) {
-    if (!chromeos::AssistantOptInDialog::IsActive())
-      chromeos::AssistantOptInDialog::Show();
-    return;
-  }
-
   auto* service =
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (service)

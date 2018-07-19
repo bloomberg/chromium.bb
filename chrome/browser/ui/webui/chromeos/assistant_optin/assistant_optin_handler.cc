@@ -242,8 +242,10 @@ void AssistantOptInHandler::OnActivityControlOptInResult(bool opted_in) {
                        weak_factory_.GetWeakPtr()));
   } else {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted, false);
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                      false);
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     CallJSOrDefer("closeDialog");
   }
 }
@@ -314,8 +316,10 @@ void AssistantOptInHandler::OnGetSettingsResponse(const std::string& settings) {
     // No need to consent. Move to the next screen.
     activity_control_needed_ = false;
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted, true);
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                      true);
     prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     ShowNextScreen();
   } else {
     AddSettingZippy("settings",
@@ -349,9 +353,10 @@ void AssistantOptInHandler::OnUpdateSettingsResponse(
     } else if (activity_control_needed_) {
       activity_control_needed_ = false;
       PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-      prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted,
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                         true);
       prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     }
   }
 

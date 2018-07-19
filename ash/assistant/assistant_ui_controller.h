@@ -35,10 +35,6 @@ namespace ash {
 class AssistantContainerView;
 class AssistantController;
 
-namespace mojom {
-class AssistantSetup;
-}  // namespace mojom
-
 class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantControllerObserver,
@@ -55,9 +51,6 @@ class ASH_EXPORT AssistantUiController
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
-
-  // Provides a pointer to the |assistant_setup| owned by AssistantController.
-  void SetAssistantSetup(mojom::AssistantSetup* assistant_setup);
 
   // Returns the underlying model.
   const AssistantUiModel* model() const { return &assistant_ui_model_; }
@@ -116,9 +109,6 @@ class ASH_EXPORT AssistantUiController
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
-
-  // Owned by AssistantController.
-  mojom::AssistantSetup* assistant_setup_ = nullptr;
 
   AssistantUiModel assistant_ui_model_;
 

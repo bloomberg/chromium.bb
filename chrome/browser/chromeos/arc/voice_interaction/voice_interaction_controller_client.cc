@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
@@ -108,7 +109,9 @@ void VoiceInteractionControllerClient::NotifySetupCompleted() {
   DCHECK(profile_);
   PrefService* prefs = profile_->GetPrefs();
   bool completed =
-      prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted);
+      chromeos::switches::IsAssistantEnabled()
+          ? prefs->GetBoolean(prefs::kVoiceInteractionActivityControlAccepted)
+          : prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted);
   voice_interaction_controller_->NotifySetupCompleted(completed);
 }
 
@@ -147,11 +150,19 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
-  pref_change_registrar_->Add(
-      prefs::kArcVoiceInteractionValuePropAccepted,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifySetupCompleted,
-          base::Unretained(this)));
+  if (chromeos::switches::IsAssistantEnabled()) {
+    pref_change_registrar_->Add(
+        prefs::kVoiceInteractionActivityControlAccepted,
+        base::BindRepeating(
+            &VoiceInteractionControllerClient::NotifySetupCompleted,
+            base::Unretained(this)));
+  } else {
+    pref_change_registrar_->Add(
+        prefs::kArcVoiceInteractionValuePropAccepted,
+        base::BindRepeating(
+            &VoiceInteractionControllerClient::NotifySetupCompleted,
+            base::Unretained(this)));
+  }
   pref_change_registrar_->Add(
       prefs::kVoiceInteractionEnabled,
       base::BindRepeating(
