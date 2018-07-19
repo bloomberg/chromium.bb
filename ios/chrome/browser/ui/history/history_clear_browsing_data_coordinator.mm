@@ -49,7 +49,7 @@
   self.historyClearBrowsingDataNavigationController =
       [[TableViewNavigationController alloc]
           initWithTable:clearBrowsingDataTableViewController];
-  self.historyClearBrowsingDataNavigationController.toolbarHidden = NO;
+  self.historyClearBrowsingDataNavigationController.toolbarHidden = YES;
   // Stacks on top of history "bubble" for non-compact devices.
   self.historyClearBrowsingDataNavigationController.transitioningDelegate =
       self;
