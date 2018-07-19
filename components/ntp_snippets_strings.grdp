@@ -18,7 +18,7 @@
   </if>
 
   <if expr="not use_titlecase">
-    <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
+    <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page." formatter_data="android_java">
       Articles for you
     </message>
   </if>
