@@ -1833,6 +1833,8 @@ void WebMediaPlayerImpl::OnDurationChange() {
     return;
 
   client_->DurationChanged();
+  if (watch_time_reporter_)
+    watch_time_reporter_->OnDurationChanged(GetPipelineMediaDuration());
 }
 
 void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
@@ -2855,6 +2857,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       media_metrics_provider_.get(),
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
   watch_time_reporter_->OnVolumeChange(volume_);
+  watch_time_reporter_->OnDurationChanged(GetPipelineMediaDuration());
 
   if (delegate_->IsFrameHidden())
     watch_time_reporter_->OnHidden();

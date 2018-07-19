@@ -1770,6 +1770,12 @@ be describing additional metrics about the same event.
       activation on the page or without a user initiated same-domain navigation.
     </summary>
   </metric>
+  <metric name="Duration">
+    <summary>
+      Duration in milliseconds, rounded to the most significant digit, of the
+      media being played. May be missing if the duration is unknown or infinite.
+    </summary>
+  </metric>
   <metric name="HasAudio">
     <summary>
       Boolean value indicating the presence of audio.

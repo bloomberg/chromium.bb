@@ -209,6 +209,10 @@ class WatchTimeReporterTest
       parent_->OnSetAutoplayInitiated(value);
     }
 
+    void OnDurationChanged(base::TimeDelta duration) override {
+      parent_->OnDurationChanged(duration);
+    }
+
    private:
     WatchTimeReporterTest* parent_;
 
@@ -580,6 +584,7 @@ class WatchTimeReporterTest
   MOCK_METHOD1(OnUpdateSecondaryProperties,
                void(mojom::SecondaryPlaybackPropertiesPtr));
   MOCK_METHOD1(OnSetAutoplayInitiated, void(bool));
+  MOCK_METHOD1(OnDurationChanged, void(base::TimeDelta));
 
   const bool has_video_;
   const bool has_audio_;
@@ -682,6 +687,23 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
   CycleReportingTimer();
 
   EXPECT_WATCH_TIME_FINALIZED();
+  wtr_.reset();
+}
+
+TEST_P(WatchTimeReporterTest, WatchTimeReporterDuration) {
+  constexpr base::TimeDelta kDuration1 = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kDuration2 = base::TimeDelta::FromSeconds(10);
+  Initialize(true, true, kSizeJustRight);
+
+  EXPECT_CALL(*this, OnDurationChanged(kDuration1))
+      .Times((has_audio_ && has_video_) ? 3 : 2);
+  wtr_->OnDurationChanged(kDuration1);
+  CycleReportingTimer();
+
+  EXPECT_CALL(*this, OnDurationChanged(kDuration2))
+      .Times((has_audio_ && has_video_) ? 3 : 2);
+  wtr_->OnDurationChanged(kDuration2);
+  CycleReportingTimer();
   wtr_.reset();
 }
 
