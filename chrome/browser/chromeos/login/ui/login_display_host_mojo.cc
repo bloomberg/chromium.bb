@@ -162,10 +162,8 @@ void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
   wizard_controller_ = std::make_unique<WizardController>();
   wizard_controller_->Init(first_screen);
 
-  // Post login screens (aside from powerwash) should not be closable by escape
-  // key.
-  bool closable_by_esc = first_screen == OobeScreen::SCREEN_OOBE_RESET;
-  dialog_->Show(closable_by_esc);
+  // Post login screens should not be closable by escape key.
+  dialog_->Show(false /*closable_by_esc*/);
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {
@@ -192,14 +190,6 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
                                   weak_factory_.GetWeakPtr(), context));
     return;
   }
-
-  if (signin_screen_started_) {
-    dialog_->Hide();
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
-    return;
-  }
-
-  signin_screen_started_ = true;
 
   existing_user_controller_ = std::make_unique<ExistingUserController>();
   login_display_->set_delegate(existing_user_controller_.get());
@@ -260,11 +250,6 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
       GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
     LoadWallpaper(*prefilled_account);
   } else {
-    // Restore the gaia screen if the OOBE dialog is currently occupied by a
-    // wizard.
-    if (GetOobeUI()->current_screen() != OobeScreen::SCREEN_GAIA_SIGNIN)
-      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
-
     LoadSigninWallpaper();
   }
 

@@ -155,11 +155,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Updates UI when version info is changed.
   std::unique_ptr<MojoVersionInfoDispatcher> version_info_updater_;
 
-  // Set to true on the first call to OnStartSignInScreen. Never reset to false.
-  // This is used to avoid doing redundant work (e.g. LockScreen::Show()) if the
-  // login screen is already showing and OnStartSignInScreen is called again.
-  bool signin_screen_started_ = false;
-
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);
