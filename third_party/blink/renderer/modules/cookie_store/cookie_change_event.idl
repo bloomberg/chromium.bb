@@ -14,6 +14,6 @@
   SecureContext,
   Constructor(DOMString type, optional CookieChangeEventInit eventInitDict)
 ] interface CookieChangeEvent : Event {
-  [Measure] readonly attribute CookieList changed;
-  [Measure] readonly attribute CookieList deleted;
+  [MeasureAs=CookieStoreAPI] readonly attribute CookieList changed;
+  [MeasureAs=CookieStoreAPI] readonly attribute CookieList deleted;
 };

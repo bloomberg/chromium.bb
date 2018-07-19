@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store_delete_options.h"
@@ -234,6 +235,9 @@ ScriptPromise CookieStore::getAll(ScriptState* script_state,
 ScriptPromise CookieStore::getAll(ScriptState* script_state,
                                   const CookieStoreGetOptions& options,
                                   ExceptionState& exception_state) {
+  UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                    WebFeature::kCookieStoreAPI);
+
   return DoRead(script_state, options, &CookieStore::GetAllForUrlToGetAllResult,
                 exception_state);
 }
@@ -249,6 +253,9 @@ ScriptPromise CookieStore::get(ScriptState* script_state,
 ScriptPromise CookieStore::get(ScriptState* script_state,
                                const CookieStoreGetOptions& options,
                                ExceptionState& exception_state) {
+  UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                    WebFeature::kCookieStoreAPI);
+
   return DoRead(script_state, options, &CookieStore::GetAllForUrlToGetResult,
                 exception_state);
 }
@@ -274,12 +281,18 @@ ScriptPromise CookieStore::set(ScriptState* script_state,
 ScriptPromise CookieStore::set(ScriptState* script_state,
                                const CookieStoreSetExtraOptions& options,
                                ExceptionState& exception_state) {
+  UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                    WebFeature::kCookieStoreAPI);
+
   return DoWrite(script_state, options, exception_state);
 }
 
 ScriptPromise CookieStore::Delete(ScriptState* script_state,
                                   const String& name,
                                   ExceptionState& exception_state) {
+  UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                    WebFeature::kCookieStoreAPI);
+
   CookieStoreSetExtraOptions set_options;
   set_options.setName(name);
   set_options.setValue(g_empty_string);
@@ -306,6 +319,9 @@ ScriptPromise CookieStore::subscribeToChanges(
     const HeapVector<CookieStoreGetOptions>& subscriptions,
     ExceptionState& exception_state) {
   DCHECK(GetExecutionContext()->IsServiceWorkerGlobalScope());
+
+  UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                    WebFeature::kCookieStoreAPI);
 
   Vector<blink::mojom::blink::CookieChangeSubscriptionPtr>
       backend_subscriptions;
@@ -349,6 +365,9 @@ ScriptPromise CookieStore::getChangeSubscriptions(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK(GetExecutionContext()->IsServiceWorkerGlobalScope());
+
+  UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                    WebFeature::kCookieStoreAPI);
 
   if (!subscription_backend_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
