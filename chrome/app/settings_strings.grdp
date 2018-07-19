@@ -3567,6 +3567,9 @@
   <message name="IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing open tabs between multiple browser instances.">
     Open Tabs
   </message>
+  <message name="IDS_DRIVE_SUGGEST_PREF" desc="The documentation string of the 'Show Drive Results in Omnibox' preference - short description">
+    Google Drive search suggestions
+  </message>
   <message name="IDS_SETTINGS_USER_EVENTS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables recording user events.">
     Activity and interactions
   </message>

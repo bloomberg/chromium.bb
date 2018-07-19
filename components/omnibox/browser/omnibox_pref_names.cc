@@ -6,6 +6,10 @@
 
 namespace omnibox {
 
+// A client-side toggle for document (Drive) suggestions.
+// Also gated by a feature and server-side Admin Panel controls.
+const char kDocumentSuggestEnabled[] = "documentsuggest.enabled";
+
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 

@@ -12,6 +12,8 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +22,10 @@ namespace {
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
-      : template_url_service_(new TemplateURLService(nullptr, 0)) {}
+      : template_url_service_(new TemplateURLService(nullptr, 0)) {
+    pref_service_.registry()->RegisterBooleanPref(
+        omnibox::kDocumentSuggestEnabled, true);
+  }
 
   bool SearchSuggestEnabled() const override { return true; }
 
@@ -96,26 +101,56 @@ TEST_F(DocumentProviderTest, CheckFeatureBehindFlag) {
       fake_prefs, is_incognito, is_authenticated, template_url_service));
 }
 
-TEST_F(DocumentProviderTest, CheckFeaturePrerequisites) {
+TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoIncognito) {
   PrefService* fake_prefs = client_->GetPrefs();
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
-
-  // Make sure feature is turned on when prereqs are met, then turn them off
-  // one at a time and ensure each defeats the feature.
   bool is_incognito = false;
   bool is_authenticated = true;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+
+  // Feature starts enabled.
   EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
       fake_prefs, is_incognito, is_authenticated, template_url_service));
 
-  // Don't allow in incognito mode.
+  // Feature should be disabled in incognito.
   is_incognito = true;
   EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
       fake_prefs, is_incognito, is_authenticated, template_url_service));
-  is_incognito = false;
+}
 
-  // Don't allow if Google is not DSE.
+TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteClientSettingOff) {
+  PrefService* fake_prefs = client_->GetPrefs();
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
+  bool is_incognito = false;
+  bool is_authenticated = true;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+
+  // Feature starts enabled.
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
+      fake_prefs, is_incognito, is_authenticated, template_url_service));
+
+  // Disabling toggle in chrome://settings should be respected.
+  fake_prefs->SetBoolean(omnibox::kDocumentSuggestEnabled, false);
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
+      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  fake_prefs->SetBoolean(omnibox::kDocumentSuggestEnabled, true);
+}
+
+TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
+  PrefService* fake_prefs = client_->GetPrefs();
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
+  bool is_incognito = false;
+  bool is_authenticated = true;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+
+  // Feature starts enabled.
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
+      fake_prefs, is_incognito, is_authenticated, template_url_service));
+
+  // Switching default search disables it.
   TemplateURLData data;
   data.SetShortName(base::ASCIIToUTF16("t"));
   data.SetURL("https://www.notgoogle.com/?q={searchTerms}");
@@ -129,10 +164,6 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisites) {
   template_url_service->SetUserSelectedDefaultSearchProvider(
       default_template_url_);
   template_url_service->Remove(new_default_provider);
-
-  // Prereqs are met again; verify we're able to get suggestions.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
