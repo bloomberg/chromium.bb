@@ -2895,10 +2895,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
 
-// A filename suggestion specified via a @download attribute should be effective
-// if the final download URL is in the same origin as the initial download URL.
-// Test that this holds even if there are cross origin redirects in the middle
-// of the redirect chain.
+// A filename suggestion specified via a @download attribute should not be
+// effective if there are cross origin redirects in the middle of the redirect
+// chain.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadAttributeSameOriginRedirect) {
   net::EmbeddedTestServer origin_one;
@@ -2941,8 +2940,56 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
 
-  EXPECT_EQ(FILE_PATH_LITERAL("suggested-filename"),
+  EXPECT_EQ(FILE_PATH_LITERAL("download"),
             downloads[0]->GetTargetFilePath().BaseName().value());
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
+}
+
+// A file type that Blink can handle should not be downloaded if there are cross
+// origin redirects in the middle of the redirect chain.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeSameOriginRedirectNavigation) {
+  net::EmbeddedTestServer origin_one;
+  net::EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
+
+  // The download-attribute.html page contains an anchor element whose href is
+  // set to the value of the query parameter (specified as |target| in the URL
+  // below). The suggested filename for the anchor is 'suggested-filename'. When
+  // the page is loaded, a script simulates a click on the anchor, triggering a
+  // download of the target URL.
+  //
+  // We construct two test servers; origin_one and origin_two. Once started, the
+  // server URLs will differ by the port number. Therefore they will be in
+  // different origins.
+  GURL download_url = origin_one.GetURL("/ping");
+  GURL referrer_url = origin_one.GetURL(
+      std::string("/download-attribute.html?target=") + download_url.spec());
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  // <origin_one>/download-attribute.html initiates a download of
+  // <origin_one>/ping, which redirects to <origin_two>/download. The latter
+  // serves an HTML document.
+  origin_one.RegisterRequestHandler(
+      CreateRedirectHandler("/ping", origin_two.GetURL("/download")));
+  origin_two.RegisterRequestHandler(
+      CreateBasicResponseHandler("/download", net::HTTP_OK, base::StringPairs(),
+                                 "text/html", "<title>hello</title>"));
+
+  origin_one.StartAcceptingConnections();
+  origin_two.StartAcceptingConnections();
+
+  base::string16 expected_title(base::UTF8ToUTF16("hello"));
+  TitleWatcher observer(shell()->web_contents(), expected_title);
+  NavigateToURL(shell(), referrer_url);
+  ASSERT_EQ(expected_title, observer.WaitAndGetTitle());
+
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(0u, downloads.size());
+
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }

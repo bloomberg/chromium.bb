@@ -227,6 +227,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(
   create_info->connection_info = request()->response_info().connection_info;
   create_info->url_chain = request()->url_chain();
   create_info->referrer_url = GURL(request()->referrer());
+  create_info->referrer_policy = request()->referrer_policy();
   create_info->result = result;
   create_info->is_new_download = is_new_download_;
   create_info->guid = guid_;

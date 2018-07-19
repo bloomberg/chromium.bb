@@ -119,6 +119,24 @@ void InitializeDownloadTabInfoOnUIThread(
 void DeleteOnUIThread(
     std::unique_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info) {}
 
+void NavigateOnUIThread(
+    const GURL& url,
+    const std::vector<GURL> url_chain,
+    const Referrer& referrer,
+    bool has_user_gesture,
+    const ResourceRequestInfo::WebContentsGetter& wc_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  WebContents* web_contents = wc_getter.Run();
+  if (web_contents) {
+    NavigationController::LoadURLParams params(url);
+    params.has_user_gesture = has_user_gesture;
+    params.referrer = referrer;
+    params.redirect_chain = url_chain;
+    web_contents->GetController().LoadURLWithParams(params);
+  }
+}
+
 }  // namespace
 
 DownloadResourceHandler::DownloadResourceHandler(
@@ -182,8 +200,17 @@ void DownloadResourceHandler::OnRequestRedirected(
   url::Origin new_origin(url::Origin::Create(redirect_info.new_url));
   if (!follow_cross_origin_redirects_ &&
       !first_origin_.IsSameOriginWith(new_origin)) {
-    // TODO(jochen): Abort download and instead navigate.
-    DVLOG(1) << "Download encountered cross origin redirect.";
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &NavigateOnUIThread, redirect_info.new_url, request()->url_chain(),
+            Referrer(GURL(redirect_info.new_referrer),
+                     Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                         redirect_info.new_referrer_policy)),
+            GetRequestInfo()->HasUserGesture(),
+            GetRequestInfo()->GetWebContentsGetterForRequest()));
+    controller->Cancel();
+    return;
   }
   if (core_.OnRequestRedirected()) {
     controller->Resume();

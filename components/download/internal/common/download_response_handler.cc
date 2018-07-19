@@ -64,6 +64,7 @@ DownloadResponseHandler::DownloadResponseHandler(
       url_chain_(std::move(url_chain)),
       method_(resource_request->method),
       referrer_(resource_request->referrer),
+      referrer_policy_(resource_request->referrer_policy),
       is_transient_(is_transient),
       fetch_error_body_(fetch_error_body),
       follow_cross_origin_redirects_(follow_cross_origin_redirects),
@@ -132,6 +133,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->connection_info = head.connection_info;
   create_info->url_chain = url_chain_;
   create_info->referrer_url = referrer_;
+  create_info->referrer_policy = referrer_policy_;
   create_info->transient = is_transient_;
   create_info->response_headers = head.headers;
   create_info->offset = create_info->save_info->offset;
@@ -151,8 +153,13 @@ void DownloadResponseHandler::OnReceiveRedirect(
   if (!follow_cross_origin_redirects_ &&
       !first_origin_.IsSameOriginWith(
           url::Origin::Create(redirect_info.new_url))) {
-    // TODO(jochen): Abort download and instead navigate.
-    DVLOG(1) << "Download encountered cross origin redirect.";
+    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT;
+    url_chain_.push_back(redirect_info.new_url);
+    method_ = redirect_info.new_method;
+    referrer_ = GURL(redirect_info.new_referrer);
+    referrer_policy_ = redirect_info.new_referrer_policy;
+    OnComplete(network::URLLoaderCompletionStatus(net::OK));
+    return;
   }
   if (is_partial_request_) {
     // A redirect while attempting a partial resumption indicates a potential
@@ -165,6 +172,7 @@ void DownloadResponseHandler::OnReceiveRedirect(
   url_chain_.push_back(redirect_info.new_url);
   method_ = redirect_info.new_method;
   referrer_ = GURL(redirect_info.new_referrer);
+  referrer_policy_ = redirect_info.new_referrer_policy;
   delegate_->OnReceiveRedirect();
 }
 

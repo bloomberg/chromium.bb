@@ -374,7 +374,10 @@ void InProgressDownloadManager::StartDownload(
     const DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK(info);
 
-  if (info->is_new_download && info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (info->is_new_download &&
+      (info->result == DOWNLOAD_INTERRUPT_REASON_NONE ||
+       info->result ==
+           DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT)) {
     if (delegate_ && delegate_->InterceptDownload(*info)) {
       GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
       return;
