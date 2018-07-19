@@ -7,7 +7,8 @@
 [
     Constructor(USBDevice device, octet configurationValue),
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB),
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    SecureContext
 ] interface USBConfiguration {
     readonly attribute octet configurationValue;
     readonly attribute DOMString? configurationName;
