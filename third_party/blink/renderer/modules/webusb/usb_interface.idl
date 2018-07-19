@@ -7,7 +7,8 @@
 [
     Constructor(USBConfiguration configuration, octet interfaceNumber),
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB),
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    SecureContext
 ] interface USBInterface {
     readonly attribute octet interfaceNumber;
     readonly attribute USBAlternateInterface? alternate;
