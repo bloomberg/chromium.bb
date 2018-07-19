@@ -214,7 +214,7 @@ void SigninManager::DoSignOut(
     return;
   }
 
-  if (prohibit_signout_) {
+  if (IsSignoutProhibited()) {
     DVLOG(1) << "Ignoring attempt to sign out while signout is prohibited";
     return;
   }
