@@ -5,6 +5,7 @@
 #include "media/mojo/services/watch_time_recorder.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/hash.h"
 #include "base/metrics/histogram_functions.h"
@@ -310,6 +311,10 @@ void WatchTimeRecorder::SetAutoplayInitiated(bool value) {
   autoplay_initiated_ = value;
 }
 
+void WatchTimeRecorder::OnDurationChanged(base::TimeDelta duration) {
+  duration_ = duration;
+}
+
 void WatchTimeRecorder::UpdateUnderflowCount(int32_t count) {
   underflow_count_ = count;
 }
@@ -322,6 +327,22 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   if (!ukm_recorder)
     return;
 
+  // Round duration to the most significant digit in milliseconds for privacy.
+  base::Optional<uint64_t> clamped_duration_ms;
+  if (duration_ != kNoTimestamp && duration_ != kInfiniteDuration) {
+    clamped_duration_ms = duration_.InMilliseconds();
+    if (duration_ > base::TimeDelta::FromSeconds(1)) {
+      // Turns 54321 => 10000.
+      const uint64_t base =
+          std::pow(10, static_cast<uint64_t>(std::log10(*clamped_duration_ms)));
+      // Turns 54321 => 4321.
+      const uint64_t modulus = *clamped_duration_ms % base;
+      // Turns 54321 => 50000 and 55321 => 60000
+      clamped_duration_ms =
+          *clamped_duration_ms - modulus + (modulus < base / 2 ? 0 : base);
+    }
+  }
+
   for (auto& ukm_record : ukm_records_) {
     const int32_t source_id = ukm_recorder->GetNewSourceID();
 
@@ -333,6 +354,8 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     builder.SetIsBackground(properties_->is_background);
     builder.SetIsMuted(properties_->is_muted);
     builder.SetPlayerID(player_id_);
+    if (clamped_duration_ms.has_value())
+      builder.SetDuration(*clamped_duration_ms);
 
     bool recorded_all_metric = false;
     for (auto& kv : ukm_record.aggregate_watch_time_info) {

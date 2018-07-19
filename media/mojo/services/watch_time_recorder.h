@@ -37,7 +37,7 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   void UpdateSecondaryProperties(
       mojom::SecondaryPlaybackPropertiesPtr secondary_properties) override;
   void SetAutoplayInitiated(bool value) override;
-
+  void OnDurationChanged(base::TimeDelta duration) override;
   void UpdateUnderflowCount(int32_t count) override;
 
  private:
@@ -100,6 +100,7 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
 
   int underflow_count_ = 0;
   PipelineStatus pipeline_status_ = PIPELINE_OK;
+  base::TimeDelta duration_ = kNoTimestamp;
 
   base::Optional<bool> autoplay_initiated_;
 

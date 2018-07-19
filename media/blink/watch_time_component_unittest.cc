@@ -26,6 +26,7 @@ class WatchTimeInterceptor : public mojom::WatchTimeRecorder {
       UpdateSecondaryProperties,
       void(mojom::SecondaryPlaybackPropertiesPtr secondary_properties));
   MOCK_METHOD1(SetAutoplayInitiated, void(bool));
+  MOCK_METHOD1(OnDurationChanged, void(base::TimeDelta));
 };
 
 class WatchTimeComponentTest : public testing::Test {

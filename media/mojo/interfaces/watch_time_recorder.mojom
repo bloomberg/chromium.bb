@@ -74,6 +74,12 @@ interface WatchTimeRecorder {
   // starts but the reporter is created before.
   SetAutoplayInitiated(bool value);
 
+  // Updates the duration maintained by the recorder. May be called any number
+  // of times during playback. Duration is rounded to the most significant digit
+  // when greater than 1 second for privacy protection. E.g., 14s will become
+  // 10s, and 15s will become 20s. May be called any number of times.
+  OnDurationChanged(mojo_base.mojom.TimeDelta duration);
+
   // Indicates that an underflow event has occurred while collecting watch time.
   // Used to report mean values for rebuffering metrics. As with watch time,
   // this is an absolute count and not relative since the last call.

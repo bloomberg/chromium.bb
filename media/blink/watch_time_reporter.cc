@@ -287,6 +287,14 @@ void WatchTimeReporter::SetAutoplayInitiated(bool autoplay_initiated) {
     muted_reporter_->SetAutoplayInitiated(autoplay_initiated);
 }
 
+void WatchTimeReporter::OnDurationChanged(base::TimeDelta duration) {
+  recorder_->OnDurationChanged(duration);
+  if (background_reporter_)
+    background_reporter_->OnDurationChanged(duration);
+  if (muted_reporter_)
+    muted_reporter_->OnDurationChanged(duration);
+}
+
 void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
   if (HandlePropertyChange<bool>(on_battery_power, reporting_timer_.IsRunning(),
                                  power_component_.get()) ==

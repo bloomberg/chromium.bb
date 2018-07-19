@@ -143,6 +143,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // times with different values.
   void SetAutoplayInitiated(bool autoplay_initiated);
 
+  // Updates the duration maintained by the recorder. May be called any number
+  // of times during playback.
+  void OnDurationChanged(base::TimeDelta duration);
+
  private:
   friend class WatchTimeReporterTest;
 
