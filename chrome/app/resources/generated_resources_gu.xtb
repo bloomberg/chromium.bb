@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">વ્હાઇટલિસ્ટ કરેલ વપરાશકર્તાઓને વાંચો અને બદલો</translation>
 <translation id="1206407435587370571">તમારા Chromebookનું અન્વેષણ કરો</translation>
 <translation id="1209796539517632982">સ્વયંચાલિત નામ સર્વર્સ</translation>
-<translation id="1210982357925844241"><ph name="SAVED_PASSWORDS_LINK" /> પર સાચવેલા પાસવર્ડ જુઓ અને મેનેજ કરો</translation>
 <translation id="1211364473545090084">છુપી વિંડો વડે, તમારો બ્રાઉઝિંગ ઇતિહાસ સાચવ્યા વિના વેબનો ઉપયોગ કરો</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> ફિંગરપ્રિન્ટ સેટ અપ</translation>
 <translation id="1215411991991485844">નવી પૃષ્ઠભૂમિ ઍપ્લિકેશન ઉમેરી છે</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     આગલી સ્ક્રીન પર, આ સમસ્યાને ઠીક કરવામાં અમારી સહાય કરવા માટે કૃપા કરીને પ્રતિસાદ મોકલો.</translation>
 <translation id="121783623783282548">પાસવર્ડ્સ મેળ ખાતા નથી.</translation>
-<translation id="1218015446623563536">Linux ડિલીટ કરો</translation>
 <translation id="1218860753635451122">"હું સંમત છું" બટનને ક્લિક કરીને, તમે આ Google સેવાઓ માટે ઉપર વર્ણવેલ પ્રક્રિયા સાથે સંમત થાઓ છો.</translation>
 <translation id="122082903575839559">પ્રમાણપત્ર હસ્તાક્ષર અલ્ગોરિધમ</translation>
 <translation id="1221024147024329929">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD2 </translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751"><ph name="HOST" />ના પૉપ-અપ અને રીડાયરેક્ટને હંમેશાં મંજૂરી આપો</translation>
 <translation id="126710816202626562">અનુવાદ ભાષા:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">તમારા ડિફૉલ્ટ શોધ એંજિનમાં ઍડ્રેસ બાર અને શોધ બૉક્સની શોધો અને અમુક કુકી મોકલે છે</translation>
 <translation id="127138278192656016">સિંક અને બધી સેવાઓનો ઉપયોગ કરો</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1272242203003205253">તમને સહાય કરવા માટે, Google પાર્ટનર તમારા આસિસ્ટંટ સાથે કાર્ય કરે છે</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">આ માલિક એકાઉન્ટે બહુવિધ સાઇન-ઇન સત્રમાં પ્રથમ સાઇન-ઇન કરનાર એકાઉન્ટ થવું જોઈએ.</translation>
 <translation id="1503914375822320413">કૉપિ ઑપરેશન નિષ્ફળ થયું, અનપેક્ષિત ભૂલ: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> ને દૂર કરો</translation>
-<translation id="1504682556807808151">શું તમે ઇચ્છો છો કે <ph name="PASSWORD_MANAGER_BRAND" /> આ સાઇટ માટે તમારો પાસવર્ડ સાચવે?</translation>
 <translation id="1505091014076919009">ઍપ અને વેબસાઇટમાંથી સાઇન ઇન કરેલ તમારા બધા Google એકાઉન્ટને અહીં મેનેજ કરી શકાય છે.</translation>
 <translation id="1506061864768559482">શોધ એન્જિન</translation>
 <translation id="1507170440449692343">આ પૃષ્ઠને તમારા કૅમેરાને ઍક્સેસ કરવાથી અવરોધિત કરવામાં આવ્યું છે.</translation>
@@ -355,7 +351,6 @@
 <translation id="1511388193702657997">તમારા વેબ પાસવર્ડ્સને સાચવવાની ઓફર કરો</translation>
 <translation id="1512210426710821809">આને રદ કરવાની એકમાત્ર રીત છે <ph name="IDS_SHORT_PRODUCT_OS_NAME" />ને ફરીથી ઇન્સ્ટૉલ કરવી</translation>
 <translation id="151501797353681931">સફારીમાંથી આયાત કરેલું</translation>
-<translation id="1520605251886806589">Google તમે મુલાકાત લીધેલ સાઇટના કન્ટેન્ટનો તથા બ્રાઉઝિંગ પ્રવૃત્તિ અને ક્રિયાપ્રતિક્રિયાનો ઉપયોગ Chrome અને બીજી Google સેવાઓ જેમ કે અનુવાદ, શોધ, અને જાહેરાતોને વ્યક્તિગત બનાવવા માટે કરી શકે છે. તમે સેટિંગમાં કોઈપણ સમયે તેને કસ્ટમાઇઝ કરી શકો છો.</translation>
 <translation id="1521442365706402292">પ્રમાણપત્રો મેનેજ કરો</translation>
 <translation id="152234381334907219">ક્યારેય ન સચવાયેલું</translation>
 <translation id="1524430321211440688">કીબોર્ડ</translation>
@@ -997,6 +992,7 @@
 <translation id="2509495747794740764">સ્કેલ પ્રમાણ, 10 અને 200 ની વચ્ચેની કોઈ સંખ્યા હોવી આવશ્યક છે.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">ફોર્મ સ્વતઃભરો</translation>
+<translation id="2513403576141822879">ગોપનીયતા, સુરક્ષા, અને ડેટા સંગ્રહથી સંબંધિત વધુ સેટિંગ માટે, <ph name="BEGIN_LINK" />સિંક અને Google સેવાઓ<ph name="END_LINK" /> જુઓ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">સ્કૅન કરો</translation>
 <translation id="2518024842978892609">તમારા ક્લાઇન્ટ પ્રમાણપત્રોનો ઉપયોગ કરો</translation>
@@ -1032,7 +1028,6 @@
 <translation id="2564520396658920462">AppleScript મારફતે JavaScriptની અમલ બજવણી બંધ છે. તેને મેનૂ બારમાંથી ચાલુ કરવા માટે, Apple ઇવેન્ટમાંથી જુઓ &gt; ડેવલપર &gt; JavaScriptને મંજૂરી આપો પર જાઓ. વધુ માહિતી માટે: https://support.google.com/chrome/?p=applescript ની મુલાકાત લો</translation>
 <translation id="2564653188463346023">વધારેલ જોડણીની તપાસ</translation>
 <translation id="2566124945717127842">તમારા <ph name="IDS_SHORT_PRODUCT_NAME" /> ઉપકરણને નવાની જેમ ફરીથી સેટ કરવા માટે પાવરવૉશ કરો.</translation>
-<translation id="2567257616420533738">પાસવર્ડ સાચવેલ છે. <ph name="SAVED_PASSWORDS_LINK" /> પર સાચવેલા પાસવર્ડ જુઓ અને મેનેજ કરો</translation>
 <translation id="2568774940984945469">માહિતી બાર સંગ્રહક</translation>
 <translation id="2570454805927264159">તમારા આસિસ્ટંટનો સૌથી વધુ લાભ મેળવો</translation>
 <translation id="257088987046510401">થીમ્સ</translation>
@@ -1838,7 +1833,6 @@
 <translation id="3792890930871100565">પ્રિંટર્સ ડિસ્કનેક્ટ કરો</translation>
 <translation id="3796648294839530037">મનપસંદ નેટવર્ક્સ:</translation>
 <translation id="3797900183766075808">“<ph name="SEARCH_TERMS" />” માટે <ph name="SEARCH_ENGINE" /> માં &amp;શોધ કરો</translation>
-<translation id="3798133693323981089">શોધ અને વેબ ઍડ્રેસને આપમેળે પૂર્ણ કરો</translation>
 <translation id="3798449238516105146">સંસ્કરણ</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;તમામ URLને ખોલો}=1{&amp;બુકમાર્ક ખોલો}one{&amp;તમામ (#) URLને ખોલો}other{&amp;તમામ (#) URLને ખોલો}}</translation>
 <translation id="3800806661949714323">તમામ બતાવો (ભલામણ કરેલ)</translation>
@@ -2478,9 +2472,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Chrome વેબ દુકાનમાંથી નહીં.</translation>
 <translation id="4871370605780490696">બુકમાર્ક ઉમેરો</translation>
-<translation id="4871833665870725367">શું તમે ઇચ્છો છો કે <ph name="ORIGIN" /> માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>
 <translation id="4873312501243535625">મીડિયા ફાઇલ તપાસનાર</translation>
-<translation id="4875622588773761625">શું તમે ઇચ્છો છો કે આ સાઇટ માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>
 <translation id="4876273079589074638">આ ક્રેશની તપાસ કરવામાં અને તેને ઠીક કરવામાં અમારાં એન્જિનિયરોની સહાય કરો. જો તમે કરી શકો તેમ હોય તો ચોક્કસ પગલાંની સૂચિ બનાવો. કોઈપણ વિગત નાની નથી હોતી!</translation>
 <translation id="4876895919560854374">સ્ક્રીન લૉક કરો અને અનલૉક કરો</translation>
 <translation id="4877017884043316611">Chromebox સાથે જોડી કરો</translation>
@@ -3035,7 +3027,6 @@
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5669691691057771421">નવો PIN દાખલ કરો</translation>
 <translation id="5671641761787789573">છબીઓ અવરોધિત</translation>
-<translation id="5673076758299428095">Linux બંધ કરો</translation>
 <translation id="5677503058916217575">પૃષ્ઠ ભાષા:</translation>
 <translation id="5677928146339483299">અવરોધિત</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> ને વાંચવા લખવાની ઍક્સેસ મંજૂર કરવામાં આવી છે.</translation>
@@ -4313,6 +4304,7 @@
 <translation id="7701869757853594372">વપરાશકર્તા હેન્ડલ્સ</translation>
 <translation id="7702907602086592255">ડોમેન</translation>
 <translation id="7704305437604973648">કાર્ય</translation>
+<translation id="7704317875155739195">શોધ અને URLsને આપમેળે પૂર્ણ કરો</translation>
 <translation id="7704521324619958564">Play સ્ટોર ખોલો</translation>
 <translation id="7705276765467986571">બુકમાર્ક મૉડેલ લોડ કરી શકાયું નથી. </translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4980,7 +4972,6 @@
 <translation id="8712637175834984815">સમજાઈ ગયું</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />સિસ્ટમ માહિતી<ph name="END_LINK1" /> મોકલો</translation>
 <translation id="8714154114375107944">સમર્થન સમાપ્ત થયું</translation>
-<translation id="871476437400413057">Google સાચવેલ પાસવર્ડ્સ</translation>
 <translation id="8714838604780058252">પૃષ્ઠભૂમિ ગ્રાફિક્સ</translation>
 <translation id="8715480913140015283">બૅકગ્રાઉન્ડ ટૅબ તમારા કૅમેરાનો ઉપયોગ કરી રહ્યું છે</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> ડાઉનલોડ નિષ્ફળ થયું</translation>
@@ -5061,7 +5052,6 @@
 <translation id="8830796635868321089">વર્તમાન પ્રોક્સી સેટિંગ્સનો ઉપયોગ કરીને અપડેટ ચકાસણી નિષ્ફળ થયું. કૃપા કરીને તમારી <ph name="PROXY_SETTINGS_LINK_START" />પ્રોક્સી સેટિંગ્સ<ph name="PROXY_SETTINGS_LINK_END" /> સમાયોજિત કરો.</translation>
 <translation id="8834039744648160717">નેટવર્ક ગોઠવણી, <ph name="USER_EMAIL" /> દ્વારા નિયંત્રિત થાય છે.</translation>
 <translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />'ના સભ્યો આ આઇટમની કૉપિનો ઍક્સેસ મેળવશે.</translation>
-<translation id="8837103518490433332">શું તમે ઇચ્છો છો કે <ph name="ORIGIN" /> માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ સાચવે?</translation>
 <translation id="8838770651474809439">હૅમ્બર્ગર</translation>
 <translation id="883911313571074303">છબીમાં ટીકા કરો</translation>
 <translation id="8844690305858050198">પૂર્ણ થયું! નુકસાનકારક સૉફ્ટવેર કાઢી નાખ્યું. એક્સ્ટેન્શન ફરી ચાલુ કરવા માટે, &lt;a href="chrome://extensions"&gt;એક્સ્ટેન્શન&lt;/a&gt;ની મુલાકાત લો.</translation>
@@ -5069,7 +5059,6 @@
 <translation id="8846141544112579928">કીબોર્ડ માટે શોધ કરી રહ્યું છે...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">$1 વડે ફાઇલો ખોલવા માટે, પહેલા Linux Files ફોલ્ડરમાં કૉપિ કરો.</translation>
-<translation id="8858798938034909167"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> પર કોઈપણ ઉપકરણમાંથી તમારા પાસવર્ડ્સ ઍક્સેસ કરો</translation>
 <translation id="8859057652521303089">તમારી ભાષા પસંદ કરો:</translation>
 <translation id="8859174528519900719">સબફ્રેમ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel સ્પ્રેડશીટ</translation>
@@ -5105,6 +5094,7 @@
 <translation id="8909833622202089127">સાઇટ તમારા સ્થાનને ટ્રૅક કરી રહી છે</translation>
 <translation id="8910146161325739742">તમારી સ્ક્રીન શેર કરો</translation>
 <translation id="8910222113987937043">તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ પરના ફેરફારો હવે તમારો અસ્તિત્વમાંનો ડેટા, તમારા Google એકાઉન્ટમાં સંગ્રહિત રહેશે અને તે <ph name="BEGIN_LINK" />Google ડેશબોર્ડ<ph name="END_LINK" /> પર સંચાલિત કરવામાં આવી શકે છે.</translation>
+<translation id="8912362522468806198">Google એકાઉન્ટ</translation>
 <translation id="8912793549644936705">ખેંચો</translation>
 <translation id="8915370057835397490">સૂચનને લોડ કરી રહ્યું છે</translation>
 <translation id="8916476537757519021">છુપો મોડ સબફ્રેમ: <ph name="SUBFRAME_SITE" /></translation>

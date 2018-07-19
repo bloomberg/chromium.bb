@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">Nutzer auf der weißen Liste lesen und ändern</translation>
 <translation id="1206407435587370571">Ihr Chromebook kennenlernen</translation>
 <translation id="1209796539517632982">Automatische Wahl des Nameservers</translation>
-<translation id="1210982357925844241">Sie können gespeicherte Passwörter unter <ph name="SAVED_PASSWORDS_LINK" /> aufrufen und verwalten</translation>
 <translation id="1211364473545090084">In einem Inkognitofenster können Sie surfen, ohne dass Ihr Browserverlauf gespeichert wird</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> Fingerabdrücke eingerichtet</translation>
 <translation id="1215411991991485844">Neue Hintergrund-App hinzugefügt</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     Auf dem nächsten Bildschirm können Sie uns Feedback geben und uns damit bei der Lösung des Problems helfen.</translation>
 <translation id="121783623783282548">Die Passwörter stimmen nicht überein.</translation>
-<translation id="1218015446623563536">Linux löschen</translation>
 <translation id="1218860753635451122">Wenn Sie auf die Schaltfläche "Ich stimme zu" klicken, willigen Sie in die oben für diese Google-Dienste beschriebene Verarbeitung Ihrer Daten ein.</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 mit RSA-Verschlüsselung</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">Pop-ups und Weiterleitungen von <ph name="HOST" /> immer zulassen</translation>
 <translation id="126710816202626562">Zielsprache:</translation>
 <translation id="126768002343224824">16-fach</translation>
-<translation id="1271317946095246719">Suchanfragen, die in die Adressleiste und das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet</translation>
 <translation id="127138278192656016">Synchronisierung und alle Dienste verwenden</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272242203003205253">Google-Partner arbeiten mit Assistant zusammen, um Ihnen im Alltag zu helfen</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">Dieses Inhaberkonto muss in einer Sitzung mit Mehrfachanmeldung das erste angemeldete Konto sein.</translation>
 <translation id="1503914375822320413">Unerwarteter Fehler beim Kopieren: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> entfernen</translation>
-<translation id="1504682556807808151">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website speichern?</translation>
 <translation id="1505091014076919009">Hier können alle Ihre angemeldeten Google-Konten von Apps und Websites verwaltet werden.</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="1507170440449692343">Diese Seite darf nicht auf Ihre Kamera zugreifen.</translation>
@@ -355,7 +351,6 @@
 <translation id="1511388193702657997">Speicherung Ihrer Webpasswörter anbieten</translation>
 <translation id="1512210426710821809">Dies kann nur durch eine Neuinstallation von <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> rückgängig gemacht werden</translation>
 <translation id="151501797353681931">Von Safari importiert</translation>
-<translation id="1520605251886806589">Google kann die Inhalte der von Ihnen besuchten Websites, Browseraktivitäten und andere Interaktionen nutzen, um Chrome und andere Google-Dienste wie Übersetzer, die Google-Suche und Werbung zu personalisieren. Dies kann in den Einstellungen geändert werden.</translation>
 <translation id="1521442365706402292">Zertifikate verwalten</translation>
 <translation id="152234381334907219">Nie speichern für...</translation>
 <translation id="1524430321211440688">Tastatur</translation>
@@ -998,6 +993,7 @@
 <translation id="2509495747794740764">Der Wert für die Skalierung muss zwischen 10 und 200 liegen.</translation>
 <translation id="2509566264613697683">8-fach</translation>
 <translation id="2512222046227390255">Formulare automatisch ausfüllen</translation>
+<translation id="2513403576141822879">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Suchen</translation>
 <translation id="2518024842978892609">Clientzertifikate verwenden</translation>
@@ -1033,7 +1029,6 @@
 <translation id="2564520396658920462">Die Ausführung von JavaScript über AppleScript ist deaktiviert. Wenn Sie diese Funktion aktivieren möchten, gehen Sie zu "Ansicht" &gt; "Entwickler" &gt; "JavaScript von Apple Events erlauben". Weitere Informationen finden Sie unter https://support.google.com/chrome/?p=applescript.</translation>
 <translation id="2564653188463346023">Erweiterte Rechtschreibprüfung</translation>
 <translation id="2566124945717127842">Durch einen Powerwash wird Ihr <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät auf den Werkszustand zurückgesetzt.</translation>
-<translation id="2567257616420533738">Passwort gespeichert. Sie können gespeicherte Passwörter unter <ph name="SAVED_PASSWORDS_LINK" /> aufrufen und verwalten</translation>
 <translation id="2568774940984945469">Infoleisten-Container</translation>
 <translation id="2570454805927264159">Google Assistant optimal nutzen</translation>
 <translation id="257088987046510401">Designs</translation>
@@ -1838,7 +1833,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3792890930871100565">Druckerverbindungen trennen</translation>
 <translation id="3796648294839530037">Bevorzugte Netzwerke:</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> nach "<ph name="SEARCH_TERMS" />" durchsuchen</translation>
-<translation id="3798133693323981089">Suchanfragen und Webadressen automatisch vervollständigen</translation>
 <translation id="3798449238516105146">Version</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{Alle &amp;öffnen}=1{Lesezeichen &amp;öffnen}other{Alle (#) &amp;öffnen}}</translation>
 <translation id="3800806661949714323">Alle anzeigen (empfohlen)</translation>
@@ -2478,9 +2472,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Nicht aus dem Chrome Web Store</translation>
 <translation id="4871370605780490696">Lesezeichen hinzufügen</translation>
-<translation id="4871833665870725367">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für <ph name="ORIGIN" /> aktualisieren?</translation>
 <translation id="4873312501243535625">Mediendatei-Prüfung</translation>
-<translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="4876273079589074638">Unterstützen Sie unsere Entwickler beim Untersuchen und Beheben dieses Absturzes. Beschreiben Sie möglichst genau alle Schritte. Kein noch so kleines Detail ist überflüssig!</translation>
 <translation id="4876895919560854374">Bildschirm sperren und entsperren</translation>
 <translation id="4877017884043316611">Mit Chromebox koppeln</translation>
@@ -2490,7 +2482,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4882473678324857464">Fokus auf Lesezeichen</translation>
-<translation id="4882831918239250449">Festlegen, wie Ihr Browserverlauf zur Personalisierung verwendet wird, z. B. bei der Suche und bei Werbung</translation>
+<translation id="4882831918239250449">Legen Sie fest, wie Ihr Browserverlauf zur Personalisierung verwendet wird, z. B. bei der Suche und bei Werbung</translation>
 <translation id="4883178195103750615">Lesezeichen in HTML-Datei exportieren...</translation>
 <translation id="4883436287898674711">Alle <ph name="WEBSITE_1" />-Websites</translation>
 <translation id="48838266408104654">&amp;Taskmanager</translation>
@@ -3033,7 +3025,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5669267381087807207">Wird aktiviert...</translation>
 <translation id="5669691691057771421">Neue PIN eingeben</translation>
 <translation id="5671641761787789573">Bilder blockiert</translation>
-<translation id="5673076758299428095">Linux herunterfahren</translation>
 <translation id="5677503058916217575">Sprache der Seite:</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5678550637669481956">Lese- und Schreibzugriff auf <ph name="VOLUME_NAME" /> wurde zugelassen.</translation>
@@ -4311,6 +4302,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7701869757853594372">NUTZER-Handles</translation>
 <translation id="7702907602086592255">Domain</translation>
 <translation id="7704305437604973648">Aufgabe</translation>
+<translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
 <translation id="7704521324619958564">Play Store öffnen</translation>
 <translation id="7705276765467986571">Lesezeichen-Modell konnte nicht geladen werden.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4985,7 +4977,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8712637175834984815">Alles klar</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />Systeminformation<ph name="END_LINK1" /> senden</translation>
 <translation id="8714154114375107944">Support eingestellt</translation>
-<translation id="871476437400413057">In Google gespeicherte Passwörter</translation>
 <translation id="8714838604780058252">Hintergrundgrafiken</translation>
 <translation id="8715480913140015283">Ein Tab im Hintergrund verwendet Ihre Kamera</translation>
 <translation id="8719653885894320876">Fehler beim Download von <ph name="PLUGIN_NAME" /></translation>
@@ -5066,7 +5057,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8830796635868321089">Mit den aktuellen Proxyeinstellungen ist bei der Suche nach Updates ein Fehler aufgetreten. Passen Sie Ihre <ph name="PROXY_SETTINGS_LINK_START" />Proxyeinstellungen<ph name="PROXY_SETTINGS_LINK_END" /> an.</translation>
 <translation id="8834039744648160717">Die Netzwerkkonfiguration wird von <ph name="USER_EMAIL" /> festgelegt.</translation>
 <translation id="8834164572807951958">Mitglieder von "<ph name="DESTINATION_NAME" />" erhalten Zugriff auf die Kopie dieser Elemente.</translation>
-<translation id="8837103518490433332">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für <ph name="ORIGIN" /> speichern?</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Bild mit Anmerkung versehen</translation>
 <translation id="8844690305858050198">Fertig! Die schädliche Software wurde entfernt. Sie können Ihre Erweiterungen jetzt wieder aktivieren, indem Sie die &lt;a href="chrome://extensions"&gt;Erweiterungen&lt;/a&gt; aufrufen.</translation>
@@ -5074,7 +5064,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8846141544112579928">Suche nach Tastatur läuft...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">Um Dateien mit "$1" zu öffnen, kopieren Sie sie zuerst in den Linux-Ordner.</translation>
-<translation id="8858798938034909167">Greifen Sie auf jedem Gerät über <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> auf alle Ihre Passwörter zu</translation>
 <translation id="8859057652521303089">Sprache auswählen:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel-Tabelle</translation>
@@ -5110,6 +5099,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8909833622202089127">Die Website verfolgt Ihren Standort</translation>
 <translation id="8910146161325739742">Bildschirm freigeben</translation>
 <translation id="8910222113987937043">Änderungen an Ihrem Verlauf sowie an Ihren Lesezeichen, Passwörtern und sonstigen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Bereits in Ihrem Google-Konto gespeicherte Daten bleiben dort erhalten und können über das <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" /> verwaltet werden.</translation>
+<translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8912793549644936705">Strecken</translation>
 <translation id="8915370057835397490">Vorschläge werden geladen</translation>
 <translation id="8916476537757519021">Inkognito-Subframe: <ph name="SUBFRAME_SITE" /></translation>

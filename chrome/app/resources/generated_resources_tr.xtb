@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">Beyaz listedeki kullanıcıları okuma ve değiştirme</translation>
 <translation id="1206407435587370571">Chromebook'unuzu keşfedin</translation>
 <translation id="1209796539517632982">Otomatik ad sunucuları</translation>
-<translation id="1210982357925844241">Kayıtlı şifreleri <ph name="SAVED_PASSWORDS_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="1211364473545090084">Gizli pencere sayesinde göz atma geçmişinizi kaydetmeden web'i kullanın</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> parmak izi ayarlandı</translation>
 <translation id="1215411991991485844">Yeni arka plan uygulaması eklendi</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     Sorunu düzeltmemize yardımcı olmak için lütfen bir sonraki ekranda geri bildirim gönderin.</translation>
 <translation id="121783623783282548">Şifreler eşleşmiyor.</translation>
-<translation id="1218015446623563536">Linux'ı Silin</translation>
 <translation id="1218860753635451122">"Kabul Ediyorum" düğmesini tıklayarak bu Google hizmetleri ile ilgili yukarıda açıklanan işlemleri kabul etmiş olursunuz.</translation>
 <translation id="122082903575839559">Sertifika İmza Algoritması</translation>
 <translation id="1221024147024329929">PKCS #1 RSA Şifrelemeli MD2</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751"><ph name="HOST" /> sitesindeki pop-up'lara ve yönlendirmelere her zaman izin ver</translation>
 <translation id="126710816202626562">Çeviri dili:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">Adres çubuğundan ve arama kutusundan aramaları ve bazı çerezleri varsayılan arama motorunuza gönderir</translation>
 <translation id="127138278192656016">Senkronizasyonu ve tüm hizmetleri kullan</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1272242203003205253">Google İş Ortakları size yardımcı olmak için Asistanınızla birlikte çalışır</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">Bu sahip hesabının bir çoklu oturumda ilk oturum açan hesap olması gerekir.</translation>
 <translation id="1503914375822320413">Kopyalama işlemi başarısız oldu, beklenmeyen hata: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> sitesini kaldır</translation>
-<translation id="1504682556807808151">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından kaydedilmesini ister misiniz?</translation>
 <translation id="1505091014076919009">Uygulama ve web sitelerinde oturum açtığınız tüm Google hesapları burada yönetilebilir.</translation>
 <translation id="1506061864768559482">Arama motoru</translation>
 <translation id="1507170440449692343">Bu sayfanın kameranıza erişimi engellenmiştir.</translation>
@@ -358,7 +354,6 @@
 <translation id="1511388193702657997">Web şifrelerinizin kaydedilmesi önerilir</translation>
 <translation id="1512210426710821809">Bunu geri almanın tek yolu <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistemini yeniden yüklemektir</translation>
 <translation id="151501797353681931">Safari'den Aktarıldı</translation>
-<translation id="1520605251886806589">Chrome ve diğer Google hizmetlerini (Çeviri, Arama ve reklamlar gibi) kişiselleştirmek için Google, ziyaret ettiğiniz sitelerdeki içeriği, göz atma etkinliğinizi ve etkileşimlerinizi kullanabilir. Bunu Ayarlar'da özelleştirebilirsiniz.</translation>
 <translation id="1521442365706402292">Sertifikaları yönet</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyenler</translation>
 <translation id="1524430321211440688">Klavye</translation>
@@ -1001,6 +996,7 @@
 <translation id="2509495747794740764">Ölçek değeri, 10 - 200 arasında bir sayı olmalı.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">Formları otomatik doldurma</translation>
+<translation id="2513403576141822879">Gizlilik, güvenlik ve veri toplamayla ilgili daha fazla ayar için <ph name="BEGIN_LINK" />Senkronizasyon ve Google hizmetleri<ph name="END_LINK" /> konusuna bakın</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Tara</translation>
 <translation id="2518024842978892609">İstemci sertifikalarınızı kullanma</translation>
@@ -1036,7 +1032,6 @@
 <translation id="2564520396658920462">JavaScript'i AppleScript üzerinden çalıştırma seçeneği kapalı. Bunu açmak için menü çubuğundan Görünüm &gt; Geliştirici &gt; Apple Events'ten JavaScript'e izin ver'e gidin. Daha fazla bilgi için: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Geliştirilmiş yazım denetimi</translation>
 <translation id="2566124945717127842"><ph name="IDS_SHORT_PRODUCT_NAME" /> cihazınızı yeni alındığı günkü haline sıfırlamak için Powerwash'ı kullanın.</translation>
-<translation id="2567257616420533738">Şifre kaydedildi. Kayıtlı şifreleri <ph name="SAVED_PASSWORDS_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="2568774940984945469">Bilgi Çubuğu Kapsayıcı</translation>
 <translation id="2570454805927264159">Asistanınızdan en iyi şekilde yararlanın</translation>
 <translation id="257088987046510401">Temalar</translation>
@@ -1842,7 +1837,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3792890930871100565">Yazıcıların bağlantısını kes</translation>
 <translation id="3796648294839530037">Sık Kullanılan Ağlar:</translation>
 <translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" İçin <ph name="SEARCH_ENGINE" /> &amp;Üzerinde Arama Yap</translation>
-<translation id="3798133693323981089">Aramaları ve web adreslerini otomatik tamamlama</translation>
 <translation id="3798449238516105146">Sürüm</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{Tümünü &amp;Aç}=1{Yer İşaretini &amp;Aç}other{Tümünü &amp;Aç (#)}}</translation>
 <translation id="3800806661949714323">Tümünü göster (önerilen)</translation>
@@ -2482,9 +2476,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Chrome Web Mağazası'ndan değil.</translation>
 <translation id="4871370605780490696">Yer işaretlerine ekleyin</translation>
-<translation id="4871833665870725367"><ph name="PASSWORD_MANAGER_BRAND" /> uygulamasının <ph name="ORIGIN" /> için kullandığınız şifreyi güncellemesini ister misiniz?</translation>
 <translation id="4873312501243535625">Medya Dosyası Denetleyicisi</translation>
-<translation id="4875622588773761625">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini ister misiniz?</translation>
 <translation id="4876273079589074638">Mühendislerimizin kilitlenme olayı araştırmalarına ve düzeltmelerine yardımcı olun. Yapabilirseniz adımları tam olarak listeleyin. Hiçbir ayrıntıyı atlamayın!</translation>
 <translation id="4876895919560854374">Ekranı kilitleme ve kilidini açma</translation>
 <translation id="4877017884043316611">Chromebox ile eşleştirme</translation>
@@ -3038,7 +3030,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5669691691057771421">Yeni PIN'i girin</translation>
 <translation id="5671641761787789573">Resimler engellendi</translation>
-<translation id="5673076758299428095">Linux'ı Kapat</translation>
 <translation id="5677503058916217575">Sayfanın dili:</translation>
 <translation id="5677928146339483299">Engellendi</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> birimine okuma ve yazma erişimi izni verildi.</translation>
@@ -3203,8 +3194,8 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5921745308587794300">Pencereyi döndür</translation>
 <translation id="5924047253200400718">Yardım alın<ph name="SCANNING_STATUS" /></translation>
 <translation id="5924527146239595929">Yeni bir fotoğraf çekin veya mevcut bir fotoğrafı ya da simgeyi seçin.
-          <ph name="LINE_BREAK" />
-          Bu resim, Chromebook oturum açma ekranında ve kilit ekranında gösterilir.</translation>
+    <ph name="LINE_BREAK" />
+    Bu resim, Chromebook oturum açma ekranında ve kilit ekranında gösterilir.</translation>
 <translation id="5925147183566400388">Sertifika Uygulama Bildirimi İşaretçisi</translation>
 <translation id="592880897588170157">PDF dosyalarını Chrome'da otomatik olarak açmak yerine indir</translation>
 <translation id="5931146425219109062">Ziyaret ettiğiniz web sitelerindeki tüm verilerinizi okuma ve değiştirme</translation>
@@ -4316,6 +4307,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7701869757853594372">KULLANICI İşleyicileri</translation>
 <translation id="7702907602086592255">Alan adı</translation>
 <translation id="7704305437604973648">Görev</translation>
+<translation id="7704317875155739195">Aramaları ve URL'leri otomatik tamamla</translation>
 <translation id="7704521324619958564">Play Store'u aç</translation>
 <translation id="7705276765467986571">Yer işareti modeli yüklenemedi.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4988,7 +4980,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8712637175834984815">Anlaşıldı</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />Sistem bilgilerini<ph name="END_LINK1" /> gönder</translation>
 <translation id="8714154114375107944">Artık desteklenmiyor</translation>
-<translation id="871476437400413057">Google tarafından kaydedilen şifreler</translation>
 <translation id="8714838604780058252">Arka plan grafikleri</translation>
 <translation id="8715480913140015283">Arka plan sekmesi kameranızı kullanıyor</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> indirilemedi</translation>
@@ -5069,7 +5060,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8830796635868321089">Mevcut proxy ayarları kullanılarak yapılan güncelleme kontrolü başarısız oldu. Lütfen <ph name="PROXY_SETTINGS_LINK_START" />proxy ayarlarınızı<ph name="PROXY_SETTINGS_LINK_END" /> düzenleyin.</translation>
 <translation id="8834039744648160717">Ağ yapılandırması, <ph name="USER_EMAIL" /> tarafından kontrol ediliyor.</translation>
 <translation id="8834164572807951958">"<ph name="DESTINATION_NAME" />" hedefinin üyeleri, bu öğelerin kopyasına erişim hakkı kazanacaktır.</translation>
-<translation id="8837103518490433332"><ph name="ORIGIN" /> için kullandığınız şifrenin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından kaydedilmesini ister misiniz?</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Resme açıklama ekle</translation>
 <translation id="8844690305858050198">Bitti! Zararlı yazılım kaldırıldı. Uzantıları tekrar açmak için &lt;a href="chrome://extensions"&gt;Uzantılar&lt;/a&gt; sayfasını ziyaret edin.</translation>
@@ -5077,7 +5067,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8846141544112579928">Klavye aranıyor...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">Dosyaları $1 ile açmak için öncelikle Linux Dosyaları klasörüne kopyalayın.</translation>
-<translation id="8858798938034909167">Şifrelerinize herhangi bir cihazdan <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> adresini ziyaret ederek erişebilirsiniz.</translation>
 <translation id="8859057652521303089">Dilinizi seçin:</translation>
 <translation id="8859174528519900719">Alt çerçeve: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel e-tablosu</translation>
@@ -5113,6 +5102,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8909833622202089127">Site, konumunuzu izliyor</translation>
 <translation id="8910146161325739742">Ekranınızı paylaşın</translation>
 <translation id="8910222113987937043">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ilgili değişiklikler artık Google Hesabınızla senkronize edilmez. Ancak mevcut verileriniz Google Hesabınızda kalmaya devam eder ve <ph name="BEGIN_LINK" />Google Hesap Özeti<ph name="END_LINK" />'nde yönetilebilir.</translation>
+<translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8912793549644936705">Uzat</translation>
 <translation id="8915370057835397490">Öneriler yükleniyor</translation>
 <translation id="8916476537757519021">Gizli Alt Çerçeve: <ph name="SUBFRAME_SITE" /></translation>

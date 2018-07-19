@@ -142,7 +142,6 @@
 <translation id="1205489148908752564">ಅನುಮತಿಪಟ್ಟಿ ಮಾಡಿದ ಬಳಕೆದಾರರನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="1206407435587370571">ನಿಮ್ಮ Chromebook ಅನ್ನು ಎಕ್ಸ್‌ಫ್ಲೋರ್‌ ಮಾಡಿ</translation>
 <translation id="1209796539517632982">ಸ್ವಯಂಚಾಲಿತ ಹೆಸರು ಸರ್ವರ್‌ಗಳು</translation>
-<translation id="1210982357925844241">ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು <ph name="SAVED_PASSWORDS_LINK" /> ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="1211364473545090084">ಅದೃಶ್ಯ ವಿಂಡೋ ಮೂಲಕ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಉಳಿಸದೆಯೇ ವೆಬ್ ಬಳಸಿ</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> ಬೆರಳಚ್ಚುಗಳನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ</translation>
 <translation id="1215411991991485844">ಹೊಸ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ</translation>
@@ -153,7 +152,6 @@
      <ph name="BR" />
      ಮುಂದಿನ ಪರದೆಯಲ್ಲಿ, ಸಮಸ್ಯೆಯನ್ನು ಬಗೆಹರಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು ದಯವಿಟ್ಟು ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ.</translation>
 <translation id="121783623783282548">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದುತ್ತಿಲ್ಲ.</translation>
-<translation id="1218015446623563536">Linux ಅಳಿಸಿ</translation>
 <translation id="1218860753635451122">ಈ Google ಸೇವೆಗಳಿಗಾಗಿ "ನಾನು ಒಪ್ಪುತ್ತೇನೆ" ಬಟನ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡುವುದರ ಮೂಲಕ, ನೀವು ಮೇಲೆ ವಿವರಿಸಿರುವ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುವಿಕೆಗೆ ಒಪ್ಪುತ್ತೀರಿ.</translation>
 <translation id="122082903575839559">ಪ್ರಮಾಣಪತ್ರ ಸಹಿ ಅಲ್ಗಾರಿದಮ್</translation>
 <translation id="1221024147024329929">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 MD2</translation>
@@ -186,7 +184,6 @@
 <translation id="1260451001046713751"><ph name="HOST" /> ನಿಂದ ಪಾಪ್-ಅಪ್‍ಗಳು ಮತ್ತು ಮರುನಿರ್ದೇಶನಗಳನ್ನು ಯಾವಾಗಲೂ ಅನುಮತಿಸಿ</translation>
 <translation id="126710816202626562">ಅನುವಾದ ಭಾಷೆ:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">ವಿಳಾಸ ಪಟ್ಟಿ ಮತ್ತು ಹುಡುಕಾಟ ಬಾಕ್ಸ್‌ನಿಂದ ಕೆಲವು ಹುಡುಕಾಟಗಳನ್ನು ಮತ್ತು ಕೆಲವು ಕುಕೀಗಳನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="127138278192656016">ಸಿಂಕ್ ಮತ್ತು ಎಲ್ಲಾ ಸೇವೆಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="1272079795634619415">ನಿಲ್ಲಿಸಿ</translation>
 <translation id="1272242203003205253">ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು, Google ಪಾಲುದಾರರು ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ನೊಂದಿಗೆ ಕೆಲಸ ಮಾಡುತ್ತಾರೆ</translation>
@@ -337,7 +334,6 @@
 <translation id="1503394326855300303">ಬಹು ಸೈನ್-ಇನ್ ಸೆಷನ್‌ನಲ್ಲಿ ಈ ಮಾಲೀಕರ ಖಾತೆಯೇ ಮೊದಲ ಸೈನ್-ಇನ್ ಮಾಡಿದ ಖಾತೆ ಆಗಿರಬೇಕು.</translation>
 <translation id="1503914375822320413">ನಕಲು ಕಾರ್ಯಾಚರಣೆ ವಿಫಲವಾಗಿದೆ, ಅನಿರೀಕ್ಷಿತ ದೋಷ: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="1504682556807808151">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಈ ಸೈಟ್‌ಗಾಗಿ <ph name="PASSWORD_MANAGER_BRAND" /> ಗೆ ಉಳಿಸಬೇಕೇ?</translation>
 <translation id="1505091014076919009">ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳ ಮೂಲಕ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದ Google ಖಾತೆಗಳನ್ನು ಇಲ್ಲಿ ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="1506061864768559482">ಹುಡುಕಾಟ ಎಂಜಿನ್</translation>
 <translation id="1507170440449692343">ನಿಮ್ಮ ಕ್ಯಾಮೆರಾವನ್ನು ಪ್ರವೇಶಿಸುವುದರಿಂದ ಈ ಪುಟವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
@@ -355,7 +351,6 @@
 <translation id="1511388193702657997">ನಿಮ್ಮ ವೆಬ್ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸುವ ಸೂಚನೆ</translation>
 <translation id="1512210426710821809">ಇದನ್ನು ರದ್ದುಗೊಳಿಸಲು ಇರುವ ಏಕೈಕ ಮಾರ್ಗವೆಂದರೆ <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ಅನ್ನು ಮರುಸ್ಥಾಪಿಸುವುದು</translation>
 <translation id="151501797353681931">Safari ಯಿಂದ ಆಮದು ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="1520605251886806589">ಅನುವಾದ, ಹುಡುಕಾಟ ಮತ್ತು ಜಾಹೀರಾತುಗಳಂತಹ ಇತರ Google ಸೇವೆಗಳನ್ನು ಮತ್ತು Chrome ಅನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನೀವು ಭೇಟಿ ನೀಡುವ ಸೈಟ್‌ಗಳಲ್ಲಿನ ವಿಷಯ, ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಗಳು ಹಾಗೂ ಸಂವಾದಗಳನ್ನು Google ಬಳಸಬಹುದು. ಇದನ್ನು ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕಸ್ಟಮೈಸ್‌ ಮಾಡಬಹುದು.</translation>
 <translation id="1521442365706402292">ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="152234381334907219">ಎಂದಿಗೂ ಉಳಿಸಿಲ್ಲ</translation>
 <translation id="1524430321211440688">ಕೀಬೋರ್ಡ್</translation>
@@ -998,6 +993,7 @@
 <translation id="2509495747794740764">ಸ್ಕೇಲ್ ಪ್ರಮಾಣವು 10 ಮತ್ತು 200 ನಡುವಿನ ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">ಫಾರ್ಮ್‌ಗಳನ್ನು ಸ್ವಯಂಭರ್ತಿ ಮಾಡಿ</translation>
+<translation id="2513403576141822879">ಗೌಪ್ಯತೆ, ಸುರಕ್ಷತೆ ಮತ್ತು ಡೇಟಾ ಸಂಗ್ರಹಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಹೆಚ್ಚಿನ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗಾಗಿ <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳನ್ನು<ph name="END_LINK" /> ನೋಡಿ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">ಸ್ಕ್ಯಾನ್</translation>
 <translation id="2518024842978892609">ನಿಮ್ಮ ಕ್ಲೈಂಟ್ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಬಳಸಿ</translation>
@@ -1033,7 +1029,6 @@
 <translation id="2564520396658920462">JavaScript ಅನ್ನು AppleScript ಮೂಲಕ ಎಕ್ಸಿಕ್ಯೂಟ್ ಮಾಡುವ ಸೌಲಭ್ಯವನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ. ಅದನ್ನು ಆನ್ ಮಾಡಲು, ಮೆನು ಬಾರ್‌ ಮೂಲಕ, ವೀಕ್ಷಣೆ &gt; ಡೆವಲಪರ್ &gt; Apple ಈವೆಂಟ್‌ಗಳಿಂದ JavaScript ಅನ್ನು ಅನುಮತಿಸಿಗೆ ಹೋಗಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ಇಲ್ಲಿಗೆ ಭೇಟಿ ನೀಡಿ: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">ವರ್ಧಿತ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ</translation>
 <translation id="2566124945717127842">ಹೊಸದರಂತೆ ಮಾಡುವುದಕ್ಕಾಗಿ ನಿಮ್ಮ <ph name="IDS_SHORT_PRODUCT_NAME" /> ಸಾಧನವನ್ನು ಮರುಹೊಂದಿಸಲು ಪವರ್‌ವಾಶ್ ಮಾಡಿ.</translation>
-<translation id="2567257616420533738">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು <ph name="SAVED_PASSWORDS_LINK" /> ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="2568774940984945469">ಮಾಹಿತಿಪಟ್ಟಿಯ ಕಂಟೇನರ್</translation>
 <translation id="2570454805927264159">ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ನಿಂದ ಹೆಚ್ಚಿನ ಪ್ರಯೋಜನ ಪಡೆಯಿರಿ</translation>
 <translation id="257088987046510401">ಥೀಮ್‌ಗಳು</translation>
@@ -1839,7 +1834,6 @@
 <translation id="3792890930871100565">ಮುದ್ರಕಗಳನ್ನು ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಿ</translation>
 <translation id="3796648294839530037">ಮೆಚ್ಚಿನ ನೆಟ್‌ವರ್ಕ್‌ಗಳು:</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> ಗಾಗಿ '<ph name="SEARCH_TERMS" />' &amp;ಹುಡುಕಿ</translation>
-<translation id="3798133693323981089">ಹುಡುಕಾಟಗಳು ಮತ್ತು ವೆಬ್ ವಿಳಾಸಗಳನ್ನು ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸಿ</translation>
 <translation id="3798449238516105146">ಆವೃತ್ತಿ</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ}=1{&amp;ಬುಕ್‌ಮಾರ್ಕ್ ತರೆಯಿರಿ}one{&amp;ಎಲ್ಲಾ (#) ಅನ್ನು ತೆರೆಯಿರಿ}other{&amp;ಎಲ್ಲಾ (#) ಅನ್ನು ತೆರೆಯಿರಿ}}</translation>
 <translation id="3800806661949714323">ಎಲ್ಲಾ ತೋರಿಸು (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
@@ -2480,9 +2474,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Chrome ವೆಬ್ ಅಂಗಡಿಯಿಂದ ಅಲ್ಲ.</translation>
 <translation id="4871370605780490696">ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸು</translation>
-<translation id="4871833665870725367">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು <ph name="PASSWORD_MANAGER_BRAND" /> ಅವರು <ph name="ORIGIN" /> ಗೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4873312501243535625">ಮಾಧ್ಯಮ ಫೈಲ್ ಪರೀಕ್ಷಕ</translation>
-<translation id="4875622588773761625">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ <ph name="PASSWORD_MANAGER_BRAND" /> ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4876273079589074638">ಈ ಕ್ರ್ಯಾಶ್ ಕುರಿತು ತನಿಖೆ ನಡೆಸಿ, ಅದನ್ನು ಸರಿಪಡಿಸಲು ನಮ್ಮ ಎಂಜಿನಿಯರ್‌ಗಳಿಗೆ ಸಹಾಯ ಮಾಡಿ. ಸಾಧ್ಯವಿದ್ದರೆ, ನಿಖರವಾದ ಹೆಜ್ಜೆಗಳನ್ನು ಪಟ್ಟಿ ಮಾಡಿ. ಯಾವುದೇ ವಿವರವನ್ನು ತೀರಾ ಗೌಣವೆಂದು ನಿರ್ಲಕ್ಷಿಸಬೇಡಿ!</translation>
 <translation id="4876895919560854374">ಪರದೆಯನ್ನು ಲಾಕ್ ಮತ್ತು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="4877017884043316611">Chromebox ಜೊತೆ ಜೋಡಿಸಿ</translation>
@@ -3037,7 +3029,6 @@
 <translation id="5669267381087807207">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5669691691057771421">ಹೊಸ ಪಿನ್ ನಮೂದಿಸಿ</translation>
 <translation id="5671641761787789573">ಚಿತ್ರಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
-<translation id="5673076758299428095">Linux ಅನ್ನು ಸ್ಥಗಿತಗೊಳಿಸಿ</translation>
 <translation id="5677503058916217575">ಪುಟದ ಭಾಷೆ:</translation>
 <translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> ಗೆ ಓದಲು ಮತ್ತು ಬರೆಯಲು ಪ್ರವೇಶವನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ.</translation>
@@ -4310,6 +4301,7 @@
 <translation id="7701869757853594372">ಬಳಕೆದಾರರು ನಿರ್ವಹಿಸುತ್ತಾರೆ</translation>
 <translation id="7702907602086592255">ಡೊಮೇನ್</translation>
 <translation id="7704305437604973648">ಕಾರ್ಯ</translation>
+<translation id="7704317875155739195">ಸ್ವಯಂಪೂರ್ಣ ಹುಡುಕಾಟಗಳು ಮತ್ತು URLಗಳು</translation>
 <translation id="7704521324619958564">Play ಸ್ಟೋರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7705276765467986571">ಬುಕ್‌ಮಾರ್ಕ್ ಮಾದರಿಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಿಲ್ಲ.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4979,7 +4971,6 @@
 <translation id="8712637175834984815">ಅರ್ಥವಾಯಿತು</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />ಸಿಸ್ಟಂ ಮಾಹಿತಿಯನ್ನು<ph name="END_LINK1" /> ಕಳುಹಿಸಿ</translation>
 <translation id="8714154114375107944">ಬೆಂಬಲವು ಅಂತ್ಯಗೊಂಡಿದೆ</translation>
-<translation id="871476437400413057">Google ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="8714838604780058252">ಹಿನ್ನೆಲೆ ಗ್ರಾಫಿಕ್ಸ್</translation>
 <translation id="8715480913140015283">ಹಿನ್ನೆಲೆ ಟ್ಯಾಬ್ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> ಡೌನ್‌ಲೋಡ್ ವಿಫಲಗೊಂಡಿದೆ</translation>
@@ -5060,7 +5051,6 @@
 <translation id="8830796635868321089">ಪ್ರಸ್ತುತ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ನವೀಕರಣದ ಪರಿಶೀಲನೆ ವಿಫಲಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ <ph name="PROXY_SETTINGS_LINK_START" />ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="PROXY_SETTINGS_LINK_END" /> ಹೊಂದಿಸಿ.</translation>
 <translation id="8834039744648160717"><ph name="USER_EMAIL" /> ಮೂಲಕ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ನಿಯಂತ್ರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8834164572807951958">ಈ ಐಟಂಗಳನ್ನು ನಕಲಿಸಲು '<ph name="DESTINATION_NAME" />' ನ ಸದಸ್ಯರು ಪ್ರವೇಶವನ್ನು ಪಡೆದುಕೊಂಡಿರುತ್ತಾರೆ.</translation>
-<translation id="8837103518490433332">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು <ph name="ORIGIN" /> ಗಾಗಿ <ph name="PASSWORD_MANAGER_BRAND" /> ಗೆ ಉಳಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="8838770651474809439">ಹ್ಯಾಂಬರ್ಗರ್</translation>
 <translation id="883911313571074303">ಚಿತ್ರವನ್ನು ಟಿಪ್ಪಣಿ ಮಾಡಿ</translation>
 <translation id="8844690305858050198">ಮುಗಿದಿದೆ! ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ವಿಸ್ತರಣೆಗಳನ್ನು ಪುನಃ ಆನ್ ಮಾಡಲು, &lt;a href="chrome://extensions"&gt;ವಿಸ್ತರಣೆಗಳು&lt;/a&gt; ಎಂಬಲ್ಲಿಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
@@ -5068,7 +5058,6 @@
 <translation id="8846141544112579928">ಕೀಬೋರ್ಡ್‍ಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">$1 ಮೂಲಕ ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲು, ಮೊದಲು Linux ಫೈಲ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ನಕಲಿಸಿ.</translation>
-<translation id="8858798938034909167"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಯಾವುದೇ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="8859057652521303089">ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆ ಮಾಡಿ:</translation>
 <translation id="8859174528519900719">ಉಪಫ್ರೇಮ್‌: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel ಸ್ಪ್ರೆಡ್‌ಶೀಟ್</translation>
@@ -5104,6 +5093,7 @@
 <translation id="8909833622202089127">ನಿಮ್ಮ ಸ್ಧಳವನ್ನು ಸೈಟ್‌ ಟ್ರ್ಯಾಕ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="8910146161325739742">ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="8910222113987937043">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಮಾಡಲಾಗುವ ಬದಲಾವಣೆಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್‌ ಮಾಡಲಾಗುವುದಿಲ್ಲ. ಆದಾಗ್ಯೂ, ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿಯೇ ಇರುತ್ತದೆ ಮತ್ತು <ph name="BEGIN_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌<ph name="END_LINK" />ನಲ್ಲಿ ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>
+<translation id="8912362522468806198">Google ಖಾತೆ</translation>
 <translation id="8912793549644936705">ಎಳೆದಿರುವುದು</translation>
 <translation id="8915370057835397490">ಸಲಹೆಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8916476537757519021">ಅದೃಶ್ಯ ಉಪಫ್ರೇಮ್: <ph name="SUBFRAME_SITE" /></translation>

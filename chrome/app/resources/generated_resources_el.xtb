@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">Ανάγνωση και αλλαγή λίστας επιτρεπόμενων χρηστών</translation>
 <translation id="1206407435587370571">Εξερεύνηση του Chromebook</translation>
 <translation id="1209796539517632982">Αυτόματοι διακομιστές ονομάτων</translation>
-<translation id="1210982357925844241">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="1211364473545090084">Χρησιμοποιήστε τον ιστό χωρίς να αποθηκεύσετε το ιστορικό περιήγησής σας με ένα παράθυρο για ανώνυμη περιήγηση</translation>
 <translation id="1213037489357051291">Ρυθμίστηκαν <ph name="NUM_FINGERPRINTS" /> δακτυλικά αποτυπώματα</translation>
 <translation id="1215411991991485844">Προστέθηκε νέα εφαρμογή παρασκηνίου</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     Στην επόμενη οθόνη, σας προτείνουμε να μας στείλετε περισσότερες πληροφορίες για να μπορέσουμε να διορθώσουμε το πρόβλημα.</translation>
 <translation id="121783623783282548">Δεν ταιριάζουν οι κωδικοί πρόσβασης.</translation>
-<translation id="1218015446623563536">Διαγραφή Linux</translation>
 <translation id="1218860753635451122">Εάν κάνετε κλικ στο κουμπί "Συμφωνώ", αποδέχεστε την επεξεργασία που περιγράφεται παραπάνω για αυτές τις υπηρεσίες Google.</translation>
 <translation id="122082903575839559">Αλγόριθμος υπογραφής πιστοποιητικού</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 με κρυπτογράφηση RSA</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">Να εμφανίζονται πάντα αναδυόμενα παράθυρα από <ph name="HOST" /></translation>
 <translation id="126710816202626562">Γλώσσα μετάφρασης:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">Αποστέλλει αναζητήσεις από τη γραμμή διευθύνσεων και το πλαίσιο αναζήτησης και ορισμένα cookie στην προεπιλεγμένη μηχανή αναζήτησης</translation>
 <translation id="127138278192656016">Χρήση συγχρονισμού και όλων των υπηρεσιών</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1272242203003205253">Οι Συνεργάτες Google μαζί με τον Βοηθό σας είναι διαθέσιμοι για την εξυπηρέτησή σας</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">Αυτός ο λογαριασμός κατόχου θα πρέπει να είναι ο πρώτος συνδεδεμένος λογαριασμός σε μια περίοδο σύνδεσης πολλαπλών συνδέσεων.</translation>
 <translation id="1503914375822320413">Αποτυχία λειτουργίας αντιγραφής, μη αναμενόμενο σφάλμα: $1</translation>
 <translation id="150411034776756821">Κατάργηση ιστοτόπου <ph name="SITE" /></translation>
-<translation id="1504682556807808151">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να αποθηκεύσει τον κωδικό πρόσβασής σας γι' αυτόν τον ιστότοπο;</translation>
 <translation id="1505091014076919009">Μπορείτε να διαχειριστείτε από εδώ όλους τους Λογαριασμούς Google στους οποίους έχετε συνδεθεί από εφαρμογές και ιστοτόπους.</translation>
 <translation id="1506061864768559482">Μηχανή αναζήτησης</translation>
 <translation id="1507170440449692343">Αυτή η σελίδα δεν έχει πρόσβαση στην κάμερά σας.</translation>
@@ -358,7 +354,6 @@
 <translation id="1511388193702657997">Πρόταση αποθήκευσης των κωδικών σας πρόσβασης στον ιστό</translation>
 <translation id="1512210426710821809">Ο μόνος τρόπος να αναιρέσετε αυτήν την ενέργεια είναι να επανεγκαταστήσετε το <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Εισήχθησαν Από το Safari</translation>
-<translation id="1520605251886806589">Η Google μπορεί να χρησιμοποιεί το περιεχόμενο σε ιστοτόπους που επισκέπτεστε, καθώς και τη δραστηριότητα περιήγησης και τις αλληλεπιδράσεις, για την εξατομίκευση του Chrome και άλλων υπηρεσιών Google, όπως η Μετάφραση, η Αναζήτηση και οι διαφημίσεις. Μπορείτε να προσαρμόσετε αυτήν την επιλογή στις Ρυθμίσεις.</translation>
 <translation id="1521442365706402292">Διαχείριση πιστοποιητικών</translation>
 <translation id="152234381334907219">Δεν έγινε ποτέ αποθήκευση</translation>
 <translation id="1524430321211440688">Πληκτρολόγιο</translation>
@@ -1001,6 +996,7 @@
 <translation id="2509495747794740764">Η κλίμακα πρέπει να είναι αριθμός μεταξύ του 10 και του 200.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">Συμπληρώστε αυτόματα φόρμες</translation>
+<translation id="2513403576141822879">Για περισσότερες ρυθμίσεις που σχετίζονται με το απόρρητο, την ασφάλεια και τη συλλογή δεδομένων, ανατρέξτε στην ενότητα <ph name="BEGIN_LINK" />Συγχρονισμός και υπηρεσίες Google<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Σάρωση</translation>
 <translation id="2518024842978892609">Χρήση των πιστοποιητικών πελάτη σας</translation>
@@ -1036,7 +1032,6 @@
 <translation id="2564520396658920462">Η εκτέλεση JavaScript μέσω του AppleScript είναι απενεργοποιημένη. Για να την ενεργοποιήσετε, από τη γραμμή μενού, μεταβείτε στο μενού Προβολή &gt; Προγραμματιστής &gt; Να επιτρέπεται η JavaScript από τα Apple Events. Για περισσότερες πληροφορίες: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Ενισχυμένος ορθογραφικός έλεγχος</translation>
 <translation id="2566124945717127842">Το Powerwash θα επαναφέρει τη συσκευή σας <ph name="IDS_SHORT_PRODUCT_NAME" /> και θα την κάνει σαν καινούρια.</translation>
-<translation id="2567257616420533738">Ο κωδικός πρόσβασης αποθηκεύτηκε. Δείτε και διαχειριστείτε τους αποθηκευμένους κωδικούς πρόσβασης στη διεύθυνση <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Υποδοχέας γραμμής πληροφοριών</translation>
 <translation id="2570454805927264159">Αξιοποιήστε πλήρως τον Βοηθό σας</translation>
 <translation id="257088987046510401">Θέματα</translation>
@@ -1842,7 +1837,6 @@
 <translation id="3792890930871100565">Αποσύνδεση εκτυπωτών</translation>
 <translation id="3796648294839530037">Αγαπημένα δίκτυα:</translation>
 <translation id="3797900183766075808">&amp;Αναζήτηση <ph name="SEARCH_ENGINE" /> για "<ph name="SEARCH_TERMS" />"</translation>
-<translation id="3798133693323981089">Αυτόματη συμπλήρωση αναζητήσεων και διευθύνσεων ιστού</translation>
 <translation id="3798449238516105146">Έκδοση</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Άνοιγμα όλων}=1{&amp;Άνοιγμα σελιδοδείκτη}other{&amp;Άνοιγμα όλων (#)}}</translation>
 <translation id="3800806661949714323">Εμφάνιση όλων (συνιστάται)</translation>
@@ -2482,9 +2476,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Όχι από το Chrome Web Store.</translation>
 <translation id="4871370605780490696">Προσθήκη σελιδοδείκτη</translation>
-<translation id="4871833665870725367">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να ενημερώσει τον κωδικό πρόσβασής σας για το <ph name="ORIGIN" />;</translation>
 <translation id="4873312501243535625">Εργαλείο ελέγχου αρχείων πολυμέσων</translation>
-<translation id="4875622588773761625">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να ενημερώσει τον κωδικό πρόσβασής σας για αυτόν τον ιστότοπο;</translation>
 <translation id="4876273079589074638">Βοηθήστε τους τεχνικούς μας να ερευνήσουν και να διορθώσουν αυτό το σφάλμα. Παραθέστε με ακρίβεια τα βήματα που ακολουθήσατε, αν αυτό είναι δυνατόν. Όλες οι λεπτομέρειες είναι σημαντικές!</translation>
 <translation id="4876895919560854374">Κλείδωμα και ξεκλείδωμα της οθόνης</translation>
 <translation id="4877017884043316611">Σύζευξη με Chromebox</translation>
@@ -3038,7 +3030,6 @@
 <translation id="5669267381087807207">Ενεργοποίηση</translation>
 <translation id="5669691691057771421">Εισαγωγή νέου κωδικού PIN</translation>
 <translation id="5671641761787789573">Οι εικόνες αποκλείστηκαν</translation>
-<translation id="5673076758299428095">Τερματισμός λειτουργίας Linux</translation>
 <translation id="5677503058916217575">Γλώσσα σελίδας:</translation>
 <translation id="5677928146339483299">Αποκλεισμένος</translation>
 <translation id="5678550637669481956">Παραχωρήθηκε πρόσβαση ανάγνωσης και εγγραφής σε <ph name="VOLUME_NAME" />.</translation>
@@ -4316,6 +4307,7 @@
 <translation id="7701869757853594372">Χειρισμοί ΧΡΗΣΤΗ</translation>
 <translation id="7702907602086592255">Τομέας</translation>
 <translation id="7704305437604973648">Εργασία</translation>
+<translation id="7704317875155739195">Αυτόματη συμπλήρωση αναζητήσεων και URL</translation>
 <translation id="7704521324619958564">Άνοιγμα Play Store</translation>
 <translation id="7705276765467986571">Δεν ήταν δυνατή η φόρτωση μοντέλου σελιδοδείκτη.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4989,7 +4981,6 @@
 <translation id="8712637175834984815">Κατάλαβα!</translation>
 <translation id="8713570323158206935">Αποστολή <ph name="BEGIN_LINK1" />πληροφοριών συστήματος<ph name="END_LINK1" /></translation>
 <translation id="8714154114375107944">Τέλος υποστήριξης</translation>
-<translation id="871476437400413057">Κωδικοί πρόσβασης που έχουν αποθηκευτεί από το Google</translation>
 <translation id="8714838604780058252">Γραφικά φόντου</translation>
 <translation id="8715480913140015283">Η καρτέλα "Ιστορικό" χρησιμοποιεί την κάμερά σας</translation>
 <translation id="8719653885894320876">Η λήψη της προσθήκης <ph name="PLUGIN_NAME" /> απέτυχε</translation>
@@ -5068,7 +5059,6 @@
 <translation id="8830796635868321089">Ο έλεγχος ενημερώσεων απέτυχε με τη χρήση των τρέχοντων ρυθμίσεων του διακομιστή μεσολάβησης. Διαμορφώστε τις <ph name="PROXY_SETTINGS_LINK_START" />ρυθμίσεις του διακομιστή μεσολάβησης<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8834039744648160717">Η διαμόρφωση δικτύου ελέγχεται από τον χρήστη <ph name="USER_EMAIL" />.</translation>
 <translation id="8834164572807951958">Τα μέλη του "<ph name="DESTINATION_NAME" />" θα αποκτήσουν πρόσβαση στο αντίγραφο αυτών των στοιχείων.</translation>
-<translation id="8837103518490433332">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να αποθηκεύσει τον κωδικό πρόσβασής σας για τον ιστότοπο <ph name="ORIGIN" />;</translation>
 <translation id="8838770651474809439">Χάμπουργκερ</translation>
 <translation id="883911313571074303">Σχολιασμός εικόνας</translation>
 <translation id="8844690305858050198">Η διαδικασία ολοκληρώθηκε! Το επιβλαβές λογισμικό καταργήθηκε. Για να ενεργοποιήσετε ξανά τις επεκτάσεις, μεταβείτε στις &lt;a href="chrome://extensions"&gt;Επεκτάσεις.&lt;/a&gt;</translation>
@@ -5076,7 +5066,6 @@
 <translation id="8846141544112579928">Αναζήτηση για πληκτρολόγιο…</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">Προκειμένου να ανοίξετε αρχεία χρησιμοποιώντας την εφαρμογή $1, πρώτα αντιγράψτε τα στον φάκελο "Αρχεία Linux".</translation>
-<translation id="8858798938034909167">Αποκτήστε πρόσβαση στους κωδικούς πρόσβασης από οποιαδήποτε συσκευή στο <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="8859057652521303089">Επιλέξτε τη γλώσσα σας:</translation>
 <translation id="8859174528519900719">Υποπλαίσιο: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Υπολογιστικό φύλλο Excel</translation>
@@ -5112,6 +5101,7 @@
 <translation id="8909833622202089127">Ο ιστότοπος παρακολουθεί την τοποθεσία σας</translation>
 <translation id="8910146161325739742">Μοιραστείτε την οθόνη σας</translation>
 <translation id="8910222113987937043">Οι αλλαγές στους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με τον Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα θα παραμείνουν αποθηκευμένα στον Λογαριασμό σας Google και η διαχείρισή τους μπορεί να γίνεται στον <ph name="BEGIN_LINK" />Πίνακα ελέγχου Google<ph name="END_LINK" />.</translation>
+<translation id="8912362522468806198">Λογαριασμός Google</translation>
 <translation id="8912793549644936705">Επέκταση</translation>
 <translation id="8915370057835397490">Φόρτωση πρότασης</translation>
 <translation id="8916476537757519021">Υποπλαίσιο ανώνυμης περιήγησης: <ph name="SUBFRAME_SITE" /></translation>

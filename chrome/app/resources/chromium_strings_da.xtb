@@ -243,7 +243,6 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8897323336392112261">Den styrer også, hvilken side der vises, når du åbner Chromium eller klikker på knappen Startside.</translation>
 <translation id="8907580949721785412">Chromium forsøger at vise adgangskoder. Angiv din Windows-adgangskode for at tillade dette.</translation>
 <translation id="8941642502866065432">Chromium kunne ikke opdateres</translation>
-<translation id="8968921422458636175">Chromium gemmer adgangskoden via <ph name="SAVED_PASSWORD_LINK" />. Du behøver ikke at huske den.</translation>
 <translation id="8974095189086268230">Chromium OS er realiseret af yderligere <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8985587603644336029">Nogen har tidligere logget ind på Chromium som <ph name="ACCOUNT_EMAIL_LAST" /> på denne computer. Hvis dette ikke er din konto, skal du oprette en nye Chromium-bruger for at holde oplysningerne adskilt.
 

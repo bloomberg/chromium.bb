@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">Lesezeichen und Webprotokoll</translation>
 <translation id="1513858653616922153">Passwort löschen</translation>
 <translation id="1516229014686355813">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>
-<translation id="1521008027388393450">Beliebte Inhalte</translation>
 <translation id="1539064842193522527">Link in Chrome geöffnet</translation>
 <translation id="1549000191223877751">Zu anderem Fenster wechseln</translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">Verbundenes Gerät</translation>
 <translation id="1571304935088121812">Nutzernamen kopieren</translation>
 <translation id="1612196535745283361">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. Der Standortzugriff ist <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
+<translation id="162035744160882748">Synchronisierung, Personalisierung und andere Google-Dienste aktivieren</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 ausgewähltes Element entfernen}other{# ausgewählte Elemente entfernen}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="1868024384445905608">In Chrome sind Downloads jetzt noch schneller</translation>
+<translation id="1878302395768190018">Diese Option lässt sich jederzeit in den Chrome-Einstellungen anpassen</translation>
 <translation id="1880072593381090678">Beliebte Seiten aus Chrome</translation>
 <translation id="1883903952484604915">Meine Dateien</translation>
 <translation id="1887786770086287077">Der Standortzugriff ist für dieses Gerät deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="311456632243022227">Mehrere Links in Chrome geöffnet</translation>
 <translation id="3115898365077584848">Informationen anzeigen</translation>
-<translation id="3129938255108848489">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
 <translation id="3148434565183091099">Melden Sie sich in Chrome an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3157842584138209013">Über die Schaltfläche "Weitere Optionen" können Sie sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
+<translation id="385051799172605136">Zurück</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
@@ -371,6 +372,7 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> verwendet</translation>
 <translation id="4181841719683918333">Sprachen</translation>
+<translation id="4192273449750167573">Einstellungen auf dem nächsten Bildschirm überprüfen</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4198423547019359126">Keine verfügbaren Speicherorte für Downloads</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
@@ -390,6 +392,7 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4404568932422911380">Keine Lesezeichen</translation>
 <translation id="4409723563706114196">Vervollständigungen für Seiten verwenden</translation>
 <translation id="4412992751769744546">Cookies Dritter zulassen</translation>
+<translation id="4419556793104466535">Synchronisierung, Personalisierung und mehr steuern</translation>
 <translation id="4432792777822557199">Seiten auf <ph name="SOURCE_LANGUAGE" /> werden ab jetzt auf <ph name="TARGET_LANGUAGE" /> übersetzt</translation>
 <translation id="4434045419905280838">Pop-ups und Weiterleitungen</translation>
 <translation id="4445444302979002552">Vorhersagedienste verwenden, um Vorschläge für Suchbegriffe und Websites zu erhalten 
@@ -496,6 +499,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5224771365102442243">Mit Video</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
+<translation id="5240817131241497236">Die Einstellungen für die Synchronisierung, Personalisierung und andere Google-Dienste in Chrome wurden geändert. Dadurch könnten auch Ihre aktuellen Einstellungen geändert worden sein.</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
 <translation id="5284584623296338184">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
@@ -683,6 +687,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion ähnliche Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
+<translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
 <translation id="6710213216561001401">Zurück</translation>
@@ -697,6 +702,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6846298663435243399">Wird geladen…</translation>
+<translation id="685040365210406336">Keine Änderungen vornehmen</translation>
 <translation id="6850409657436465440">Download noch in Bearbeitung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> Tabs geschlossen</translation>
 <translation id="6864459304226931083">Bild herunterladen</translation>
@@ -818,6 +824,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
+<translation id="7832327313660264358">Die mit Google synchronisierten Daten und die verwendeten Funktionen ändern sich nicht</translation>
 <translation id="7837721118676387834">Automatische Wiedergabe stummgeschalteter Videos für eine bestimmte Website zulassen.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="784934925303690534">Zeitraum</translation>
@@ -859,7 +866,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8105951947646329362">Ähnliche Seiten vorschlagen</translation>
 <translation id="8116925261070264013">Stummgeschaltet</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
-<translation id="8160722851663543621">Suchanfragen, die in die Adressleiste oder das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet</translation>
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8186512483418048923">Noch <ph name="FILES" /> Dateien</translation>
 <translation id="8190358571722158785">1 Tag übrig</translation>

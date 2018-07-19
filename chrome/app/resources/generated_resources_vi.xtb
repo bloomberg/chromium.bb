@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">Đọc và thay đổi người dùng trong danh sách trắng</translation>
 <translation id="1206407435587370571">Khám phá Chromebook của bạn</translation>
 <translation id="1209796539517632982">Máy chủ có tên tự động</translation>
-<translation id="1210982357925844241">Xem và quản lý mật khẩu đã lưu tại <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="1211364473545090084">Duyệt web mà không lưu lịch sử bằng cửa sổ ẩn danh</translation>
 <translation id="1213037489357051291">Đã thiết lập <ph name="NUM_FINGERPRINTS" /> vân tay</translation>
 <translation id="1215411991991485844">Đã thêm ứng dụng nền mới</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     Trên màn hình tiếp theo, vui lòng gửi phản hồi để giúp chúng tôi khắc phục sự cố.</translation>
 <translation id="121783623783282548">Mật khẩu không khớp.</translation>
-<translation id="1218015446623563536">Xóa Linux</translation>
 <translation id="1218860753635451122">Bằng việc nhấp vào nút "Tôi đồng ý", bạn đồng ý với quy trình xử lý mô tả ở trên cho các dịch vụ này của Google.</translation>
 <translation id="122082903575839559">Thuật toán Chữ ký Chứng chỉ</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Với Mã hóa RSA</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">Luôn cho phép cửa sổ bật lên và liên kết chuyển hướng từ <ph name="HOST" /></translation>
 <translation id="126710816202626562">Ngôn ngữ dịch:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">Gửi tìm kiếm từ thanh địa chỉ và hộp tìm kiếm cũng như một số cookie đến công cụ tìm kiếm mặc định của bạn</translation>
 <translation id="127138278192656016">Sử dụng tùy chọn đồng bộ hóa và tất cả dịch vụ</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1272242203003205253">Đối tác của Google hợp tác với Trợ lý để trợ giúp bạn</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">Tài khoản của chủ sở hữu này phải là tài khoản đăng nhập đầu tiên trong phiên đăng nhập nhiều tài khoản.</translation>
 <translation id="1503914375822320413">Thao tác sao chép không thành công, lỗi không mong đợi: $1</translation>
 <translation id="150411034776756821">Xóa <ph name="SITE" /></translation>
-<translation id="1504682556807808151">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> lưu mật khẩu của mình cho trang web này không?</translation>
 <translation id="1505091014076919009">Bạn có thể quản lý tất cả các tài khoản Google đã đăng nhập của mình từ các ứng dụng và trang web tại đây.</translation>
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
 <translation id="1507170440449692343">Trang này đã bị chặn truy cập máy ảnh của bạn.</translation>
@@ -358,7 +354,6 @@
 <translation id="1511388193702657997">Đề xuất lưu mật khẩu web của bạn</translation>
 <translation id="1512210426710821809">Cách duy nhất để hoàn tác hành động này là cài đặt lại <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Đã nhập Từ Safari</translation>
-<translation id="1520605251886806589">Google có thể sử dụng nội dung trên các trang web bạn truy cập, hoạt động duyệt web và các hoạt động tương tác để cá nhân hóa Chrome cũng như các dịch vụ khác của Google, chẳng hạn như Dịch, Tìm kiếm và quảng cáo. Bạn có thể tùy chỉnh phần này trong mục Cài đặt.</translation>
 <translation id="1521442365706402292">Quản lý chứng chỉ</translation>
 <translation id="152234381334907219">Không bao giờ lưu</translation>
 <translation id="1524430321211440688">Bàn phím</translation>
@@ -539,7 +534,7 @@
 <translation id="1782530111891678861">Thay đổi chế độ HUD cảm ứng</translation>
 <translation id="1784849162047402014">Thiết bị sắp hết dung lượng đĩa</translation>
 <translation id="1786636458339910689">Drive Nhóm</translation>
-<translation id="1792161662640298233">Đang xác minh Khóa bảo mật</translation>
+<translation id="1792161662640298233">Xác minh Khóa bảo mật</translation>
 <translation id="1792619191750875668">Màn hình mở rộng</translation>
 <translation id="1794791083288629568">Gửi phản hồi để giúp chúng tôi khắc phục sự cố này.</translation>
 <translation id="1795214765651529549">Sử dụng chủ đề Cổ điển</translation>
@@ -1001,6 +996,7 @@
 <translation id="2509495747794740764">Số tỷ lệ phải là một số giữa 10 và 200.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">Tự động điền biểu mẫu</translation>
+<translation id="2513403576141822879">Bạn có thể xem thêm tùy chọn cài đặt liên quan đến quyền riêng tư, bảo mật và hoạt động thu thập dữ liệu trong phần <ph name="BEGIN_LINK" />Đồng bộ hóa và dịch vụ của Google<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Quét</translation>
 <translation id="2518024842978892609">Sử dụng chứng chỉ ứng dụng</translation>
@@ -1036,7 +1032,6 @@
 <translation id="2564520396658920462">Tùy chọn thực thi JavaScript qua AppleScript đã bị tắt. Để bật tùy chọn này, từ thanh menu, hãy chuyển đến Xem&gt; Nhà phát triển &gt; Cho phép JavaScript từ Apple Events. Để biết thêm thông tin, hãy truy cập vào https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Kiểm tra lỗi chính tả nâng cao</translation>
 <translation id="2566124945717127842">Powerwash để đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> của bạn giống như mới.</translation>
-<translation id="2567257616420533738">Đã lưu mật khẩu. Xem và quản lý mật khẩu đã lưu tại <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Bộ chứa Thanh thông tin</translation>
 <translation id="2570454805927264159">Khai thác tối đa Trợ lý của bạn</translation>
 <translation id="257088987046510401">Chủ đề</translation>
@@ -1084,7 +1079,7 @@
 <translation id="2633199387167390344"><ph name="NAME" /> đang sử dụng <ph name="USAGE" /> MB dung lượng đĩa.</translation>
 <translation id="2633212996805280240">Xóa "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> không thể hoàn tất cài đặt nhưng sẽ tiếp tục chạy từ hình ảnh đĩa của trình duyệt này.</translation>
-<translation id="2633326789677284179">Tìm tên in trên mặt sau khóa</translation>
+<translation id="2633326789677284179">Tìm tên in trên mặt sau của khóa</translation>
 <translation id="2635276683026132559">Ký</translation>
 <translation id="2636625531157955190">Chrome không thể truy cập hình ảnh.</translation>
 <translation id="2638087589890736295">Yêu cầu cụm mật khẩu để bắt đầu đồng bộ hóa</translation>
@@ -1842,7 +1837,6 @@
 <translation id="3792890930871100565">Ngắt kết nối máy in</translation>
 <translation id="3796648294839530037">Mạng yêu thích:</translation>
 <translation id="3797900183766075808">&amp;Tìm kiếm trên <ph name="SEARCH_ENGINE" /> cho “<ph name="SEARCH_TERMS" />”</translation>
-<translation id="3798133693323981089">Tự động hoàn thành tìm kiếm và địa chỉ web</translation>
 <translation id="3798449238516105146">Phiên bản</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Mở tất cả}=1{&amp;Mở dấu trang}other{&amp;Mở tất cả (#)}}</translation>
 <translation id="3800806661949714323">Hiển thị tất cả (được đề xuất)</translation>
@@ -2482,9 +2476,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Không phải từ Cửa hàng Chrome trực tuyến.</translation>
 <translation id="4871370605780490696">Thêm dấu trang</translation>
-<translation id="4871833665870725367">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của bạn cho <ph name="ORIGIN" /> không?</translation>
 <translation id="4873312501243535625">Trình kiểm tra tệp phương tiện</translation>
-<translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="4876273079589074638">Giúp các kỹ sư của chúng tôi điều tra và khắc phục trục trặc này. Liệt kê các bước chính xác nếu bạn có thể. Không cần liệt kê quá chi tiết!</translation>
 <translation id="4876895919560854374">Khóa và mở khóa màn hình</translation>
 <translation id="4877017884043316611">Ghép nối với Chromebox</translation>
@@ -2494,7 +2486,7 @@
 <translation id="4880827082731008257">Lịch sử tìm kiếm</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4882473678324857464">Lấy tiêu điểm dấu trang</translation>
-<translation id="4882831918239250449">Kiểm soát cách chúng tôi sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm, quảng cáo và các dịch vụ khác của Google</translation>
+<translation id="4882831918239250449">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm, quảng cáo và các dịch vụ khác</translation>
 <translation id="4883178195103750615">Xuất dấu trang sang tệp  HTML...</translation>
 <translation id="4883436287898674711">Tất cả trang web <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Trình quản lý Tác vụ</translation>
@@ -3037,7 +3029,6 @@
 <translation id="5669267381087807207">Đang kích hoạt</translation>
 <translation id="5669691691057771421">Nhập mã PIN mới</translation>
 <translation id="5671641761787789573">Đã chặn hình ảnh</translation>
-<translation id="5673076758299428095">Tắt Linux</translation>
 <translation id="5677503058916217575">Ngôn ngữ trang:</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5678550637669481956">Quyền truy cập đọc và ghi vào <ph name="VOLUME_NAME" /> đã được cấp.</translation>
@@ -4315,6 +4306,7 @@
 <translation id="7701869757853594372">Xử lý NGƯỜI DÙNG</translation>
 <translation id="7702907602086592255">Miền</translation>
 <translation id="7704305437604973648">Tác vụ</translation>
+<translation id="7704317875155739195">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
 <translation id="7704521324619958564">Mở Cửa hàng Play</translation>
 <translation id="7705276765467986571">Không thể tải mô hình dấu trang.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4988,7 +4980,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8712637175834984815">Bỏ qua</translation>
 <translation id="8713570323158206935">Gửi <ph name="BEGIN_LINK1" />thông tin hệ thống<ph name="END_LINK1" /></translation>
 <translation id="8714154114375107944">Kết thúc hỗ trợ</translation>
-<translation id="871476437400413057">Các mật khẩu đã lưu trên Google</translation>
 <translation id="8714838604780058252">Đồ họa nền</translation>
 <translation id="8715480913140015283">Tab nền đang sử dụng máy ảnh</translation>
 <translation id="8719653885894320876">Không tải <ph name="PLUGIN_NAME" /> xuống được</translation>
@@ -5069,7 +5060,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8830796635868321089">Kiểm tra cập nhật không thành công khi sử dụng cài đặt proxy hiện tại. Vui lòng điều chỉnh <ph name="PROXY_SETTINGS_LINK_START" />cài đặt proxy<ph name="PROXY_SETTINGS_LINK_END" /> của bạn.</translation>
 <translation id="8834039744648160717">Cấu hình mạng do <ph name="USER_EMAIL" /> kiểm soát.</translation>
 <translation id="8834164572807951958">Thành viên của '<ph name="DESTINATION_NAME" />' sẽ có quyền truy cập vào bản sao của các tệp này.</translation>
-<translation id="8837103518490433332">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> lưu mật khẩu của bạn cho <ph name="ORIGIN" /> không?</translation>
 <translation id="8838770651474809439">Bánh hamburger</translation>
 <translation id="883911313571074303">Chú thích hình ảnh</translation>
 <translation id="8844690305858050198">Xong! Đã xóa phần mềm độc hại. Để bật lại tiện ích, hãy truy cập vào mục &lt;a href="chrome://extensions"&gt;Tiện ích.&lt;/a&gt;</translation>
@@ -5077,7 +5067,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8846141544112579928">Đang tìm kiếm bàn phím...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">Để mở tệp bằng $1, trước tiên, hãy sao chép sang thư mục Tệp Linux.</translation>
-<translation id="8858798938034909167">Truy cập mật khẩu của bạn từ mọi thiết bị tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="8859057652521303089">Chọn ngôn ngữ:</translation>
 <translation id="8859174528519900719">Khung phụ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Bảng tính Excel</translation>
@@ -5113,6 +5102,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8909833622202089127">Trang web đang theo dõi vị trí của bạn</translation>
 <translation id="8910146161325739742">Chia sẻ màn hình của bạn</translation>
 <translation id="8910222113987937043">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ không được đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong Tài khoản Google và có thể được quản lý trên <ph name="BEGIN_LINK" />Trang tổng quan Google<ph name="END_LINK" />.</translation>
+<translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8912793549644936705">Kéo dãn</translation>
 <translation id="8915370057835397490">Đang tải đề xuất</translation>
 <translation id="8916476537757519021">Khung ẩn danh phụ: <ph name="SUBFRAME_SITE" /></translation>

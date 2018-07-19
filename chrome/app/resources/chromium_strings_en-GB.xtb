@@ -220,6 +220,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7962572577636132072">Chromium updates automatically so you always have the freshest version.</translation>
 <translation id="7975919845073681630">This is a secondary installation of Chromium, and cannot be made your default browser.</translation>
 <translation id="7979877361127045932">Hide in Chromium menu</translation>
+<translation id="8013436988911883588">Once Chromium has access, websites will be able to ask you for access.</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
 <translation id="8157153840442649507">Chromium is displayed in this language</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
@@ -245,7 +246,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8897323336392112261">It also controls what page is shown when you start Chromium or click the Home button.</translation>
 <translation id="8907580949721785412">Chromium is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="8941642502866065432">Can't update Chromium</translation>
-<translation id="8968921422458636175">Chromium will save this password with <ph name="SAVED_PASSWORD_LINK" />. You don’t have to remember it.</translation>
 <translation id="8974095189086268230">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8985587603644336029">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. If that isn't your account, create a new Chromium user to keep your information separate.
 

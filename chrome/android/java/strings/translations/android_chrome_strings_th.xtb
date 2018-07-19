@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">บุ๊กมาร์กและประวัติเว็บ</translation>
 <translation id="1513858653616922153">ลบรหัสผ่าน</translation>
 <translation id="1516229014686355813">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณปิดฟีเจอร์นี้ในได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
-<translation id="1521008027388393450">เนื้อหายอดนิยม</translation>
 <translation id="1539064842193522527">เปิดลิงก์ใน Chrome แล้ว</translation>
 <translation id="1549000191223877751">ย้ายไปยังหน้าต่างอื่น</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
+<translation id="162035744160882748">เปิดการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{นำ 1 รายการที่เลือกออก}other{นำ # รายการที่เลือกออก}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">เหตุการณ์ด้านความปลอดภัย</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="1868024384445905608">ตอนนี้ Chrome ดาวน์โหลดไฟล์ได้เร็วขึ้นแล้ว</translation>
+<translation id="1878302395768190018">ปรับแต่งการตั้งค่านี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
 <translation id="1880072593381090678">หน้ายอดนิยมจาก Chrome</translation>
 <translation id="1883903952484604915">ไฟล์ของฉัน</translation>
 <translation id="1887786770086287077">ตอนนี้ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="311456632243022227">เปิดหลายลิงก์ใน Chrome แล้ว</translation>
 <translation id="3115898365077584848">แสดงข้อมูล</translation>
-<translation id="3129938255108848489">แสดงคำแนะนำหน้าที่คล้ายกันเมื่อไม่พบหน้าเว็บ</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3148434565183091099">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3157842584138209013">ดูปริมาณอินเทอร์เน็ตที่คุณประหยัดไปได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">จัดการ</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
+<translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
@@ -371,6 +372,7 @@
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4179980317383591987">ใช้ไปแล้ว <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">ภาษา</translation>
+<translation id="4192273449750167573">ตรวจสอบการตั้งค่าในหน้าจอถัดไป</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
@@ -390,6 +392,7 @@
 <translation id="4404568932422911380">ไม่มีบุ๊กมาร์ก</translation>
 <translation id="4409723563706114196">ใช้การคาดคะเนหน้า</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
+<translation id="4419556793104466535">ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และอื่นๆ</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
 <translation id="4445444302979002552">ใช้บริการการคาดคะเนเพื่อแนะนำข้อความค้นหาและเว็บไซต์</translation>
@@ -495,6 +498,7 @@
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5224771365102442243">มีวิดีโอ</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
+<translation id="5240817131241497236">การตั้งค่าที่ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google ใน Chrome มีการเปลี่ยนแปลง ซึ่งอาจส่งผลต่อการตั้งค่าปัจจุบันของคุณ</translation>
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
 <translation id="528192093759286357">ลากจากด้านบน แล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="5284584623296338184">การเปลี่ยนแปลงบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะไม่ซิงค์กับบัญชี Google ของคุณอีกต่อไป อย่างไรก็ตาม ข้อมูลที่คุณมีจะยังคงจัดเก็บอยู่ในบัญชี Google ของคุณ</translation>
@@ -682,6 +686,7 @@
 <translation id="666268767214822976">ใช้บริการการคาดคะเนเพื่อแสดงคำค้นหาที่เกี่ยวข้องและเว็บไซต์ยอดนิยมขณะที่คุณพิมพ์ในแถบที่อยู่เว็บ</translation>
 <translation id="666731172850799929">เปิดใน <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Chrome</translation>
+<translation id="6697492270171225480">แสดงคำแนะนำหน้าที่คล้ายกันเมื่อไม่พบหน้าเว็บ</translation>
 <translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
@@ -696,6 +701,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6846298663435243399">กำลังโหลด…</translation>
+<translation id="685040365210406336">ไม่เปลี่ยนแปลง</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
@@ -817,6 +823,7 @@
 <translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
+<translation id="7832327313660264358">ข้อมูลที่คุณซิงค์กับ Google และฟีเจอร์ที่ใช้จะไม่เปลี่ยนแปลง</translation>
 <translation id="7837721118676387834">อนุญาตให้เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติสำหรับบางเว็บไซต์</translation>
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="784934925303690534">ช่วงเวลา</translation>
@@ -858,7 +865,6 @@
 <translation id="8105951947646329362">แนะนำหน้าเว็บที่เกี่ยวข้อง</translation>
 <translation id="8116925261070264013">ปิดเสียง</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
-<translation id="8160722851663543621">ส่งการค้นหาจากแถบที่อยู่และช่องค้นหารวมถึงคุกกี้บางรายการไปยังเครื่องมือค้นหาเริ่มต้น</translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
 <translation id="8186512483418048923">เหลืออีก <ph name="FILES" /> ไฟล์</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>

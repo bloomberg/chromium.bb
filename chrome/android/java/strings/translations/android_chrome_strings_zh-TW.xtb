@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">書籤與網頁記錄</translation>
 <translation id="1513858653616922153">刪除密碼</translation>
 <translation id="1516229014686355813">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便比對內容) 傳送給 Google 搜尋。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
-<translation id="1521008027388393450">熱門內容</translation>
 <translation id="1539064842193522527">連結已在 Chrome 中開啟</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">連結的裝置</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
+<translation id="162035744160882748">啟用同步處理、個人化功能和其他 Google 服務</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 個選取的項目}other{移除 # 個選取的項目}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">安全性事件</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="1868024384445905608">Chrome 現在的檔案下載速度更快了</translation>
+<translation id="1878302395768190018">你隨時可在 Chrome 設定中自訂這項設定</translation>
 <translation id="1880072593381090678">Chrome 常用網頁</translation>
 <translation id="1883903952484604915">我的檔案</translation>
 <translation id="1887786770086287077">這部裝置的位置資訊存取權已關閉。請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中予以開啟。</translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="311456632243022227">多個連結已在 Chrome 中開啟</translation>
 <translation id="3115898365077584848">顯示資訊</translation>
-<translation id="3129938255108848489">找不到網頁時顯示類似的網頁建議</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3148434565183091099">如要在所有裝置上使用您的書籤，請登入 Chrome。</translation>
 <translation id="3157842584138209013">如要查看節省的數據用量，請點選 [更多選項] 按鈕</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
+<translation id="385051799172605136">返回</translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
@@ -371,6 +372,7 @@
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">語言</translation>
+<translation id="4192273449750167573">在下一個畫面中查看你的設定</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
@@ -390,6 +392,7 @@
 <translation id="4404568932422911380">沒有書籤</translation>
 <translation id="4409723563706114196">使用網頁預測功能</translation>
 <translation id="4412992751769744546">允許第三方 Cookie</translation>
+<translation id="4419556793104466535">管理同步處理、個人化功能等更多設定</translation>
 <translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">彈出式視窗與重新導向</translation>
 <translation id="4445444302979002552">運用預測服務取得建議的搜尋字詞和網站</translation>
@@ -495,6 +498,7 @@
 <translation id="5222676887888702881">登出</translation>
 <translation id="5224771365102442243">含有影片</translation>
 <translation id="5233638681132016545">新增分頁</translation>
+<translation id="5240817131241497236">Chrome 的同步處理、個人化功能和其他 Google 服務控制設定已變更。這可能影響你目前的設定。</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="5284584623296338184">您更改過的書籤、歷史記錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
@@ -682,6 +686,7 @@
 <translation id="666268767214822976">啟用預測查詢字串服務，讓您在網址列中輸入查詢內容時，能夠即時看到相關查詢和熱門網站</translation>
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="666981079809192359">Chrome 隱私權聲明</translation>
+<translation id="6697492270171225480">找不到網頁時顯示類似的網頁建議</translation>
 <translation id="6697947395630195233">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6710213216561001401">返回</translation>
@@ -696,6 +701,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6846298663435243399">載入中…</translation>
+<translation id="685040365210406336">不進行任何變更</translation>
 <translation id="6850409657436465440">下載作業仍在進行中</translation>
 <translation id="6850830437481525139">關閉了 <ph name="TAB_COUNT" /> 個分頁</translation>
 <translation id="6864459304226931083">下載圖片</translation>
@@ -817,6 +823,7 @@
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7810647596859435254">選擇開啟工具…</translation>
+<translation id="7832327313660264358">同步處理至 Google 的資料和你所使用的功能不會有所改變</translation>
 <translation id="7837721118676387834">允許特定網站自動播放靜音的影片。</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="784934925303690534">時間範圍</translation>
@@ -858,7 +865,6 @@
 <translation id="8105951947646329362">建議相關的網頁</translation>
 <translation id="8116925261070264013">已設為靜音</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
-<translation id="8160722851663543621">將網址列和搜尋框中的搜尋字詞以及部分 Cookie 傳送給你的預設搜尋引擎</translation>
 <translation id="8168435359814927499">內容</translation>
 <translation id="8186512483418048923">還剩 <ph name="FILES" /> 個檔案</translation>
 <translation id="8190358571722158785">還剩 1 天</translation>
