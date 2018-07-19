@@ -64,6 +64,13 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                                  int options,
                                  const gfx::RectF& bounds);
 
+  // If there are relevant credentials for the current frame show them and
+  // return true. Otherwise, return false.
+  // This is currently used for cases in which the automatic generation
+  // option is offered through a different UI surface than the popup
+  // (e.g. via the keyboard accessory on Android).
+  bool MaybeShowPasswordSuggestions(const gfx::RectF& bounds);
+
   // If there are relevant credentials for the current frame, shows them with
   // an additional 'generation' option and returns true. Otherwise, does nothing
   // and returns false.

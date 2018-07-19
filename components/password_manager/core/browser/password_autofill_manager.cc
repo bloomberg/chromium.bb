@@ -255,6 +255,20 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
                                       false, weak_ptr_factory_.GetWeakPtr());
 }
 
+bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
+    const gfx::RectF& bounds) {
+  if (login_to_password_info_.empty())
+    return false;
+  // TODO(crbug.com/865469): Get text direction from the renderer.
+  OnShowPasswordSuggestions(login_to_password_info_.begin()->first,
+                            base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT
+                                                : base::i18n::LEFT_TO_RIGHT,
+                            base::string16(),
+                            autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD,
+                            bounds);
+  return true;
+}
+
 bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
     const gfx::RectF& bounds) {
   if (login_to_password_info_.empty())
