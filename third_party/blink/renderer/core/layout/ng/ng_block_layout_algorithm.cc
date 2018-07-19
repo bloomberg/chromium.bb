@@ -1954,12 +1954,16 @@ void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
   for (const auto& request : requests) {
     switch (request.algorithm_type) {
       case NGBaselineAlgorithmType::kAtomicInline:
+        if (Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline())
+          break;
+
         for (unsigned i = container_builder_.Children().size(); i--;) {
           if (AddBaseline(request, container_builder_.Children()[i].get(),
                           container_builder_.Offsets()[i].block_offset))
             break;
         }
         break;
+
       case NGBaselineAlgorithmType::kFirstLine:
         for (unsigned i = 0; i < container_builder_.Children().size(); i++) {
           if (AddBaseline(request, container_builder_.Children()[i].get(),
