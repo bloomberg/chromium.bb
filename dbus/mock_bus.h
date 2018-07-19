@@ -62,6 +62,11 @@ class MockBus : public Bus {
                                            const DBusObjectPathVTable* vtable,
                                            void* user_data,
                                            DBusError* error));
+  MOCK_METHOD4(TryRegisterFallback,
+               bool(const ObjectPath& object_path,
+                    const DBusObjectPathVTable* vtable,
+                    void* user_data,
+                    DBusError* error));
   MOCK_METHOD1(UnregisterObjectPath, void(const ObjectPath& object_path));
   MOCK_METHOD0(GetDBusTaskRunner, base::TaskRunner*());
   MOCK_METHOD0(GetOriginTaskRunner, base::TaskRunner*());
