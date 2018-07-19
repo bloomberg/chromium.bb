@@ -678,7 +678,7 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
 
     mojom::WindowTreeHostFactoryPtr factory;
     // TODO: figure out better way to isolate this!
-    connector()->BindInterface("test_ws", &factory);
+    connector()->BindInterface("ui", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
     wt_client1_ = std::make_unique<TestWindowTreeClient2>();

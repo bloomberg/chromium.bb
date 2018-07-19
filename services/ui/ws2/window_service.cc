@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ui/common/switches.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/server_window.h"
@@ -20,9 +21,19 @@
 #include "services/ui/ws2/window_tree_factory.h"
 #include "ui/aura/env.h"
 #include "ui/base/mojo/clipboard_host.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ui {
 namespace ws2 {
+
+namespace {
+
+// A placeholder to prevent test crashes on unbound requests.
+void BindEventInjectorRequest(ui::mojom::EventInjectorRequest request) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+}  // namespace
 
 WindowService::WindowService(
     WindowServiceDelegate* delegate,
@@ -44,6 +55,13 @@ WindowService::WindowService(
   aura::Env::GetInstance()->CreateMouseLocationManager();
 
   input_device_server_.RegisterAsObserver();
+
+  // This property should be registered by the PropertyConverter constructor,
+  // but that would create a dependency cycle between ui/wm and ui/aura.
+  property_converter_.RegisterPrimitiveProperty(
+      ::wm::kShadowElevationKey,
+      ui::mojom::WindowManager::kShadowElevation_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
 WindowService::~WindowService() {
@@ -140,6 +158,9 @@ void WindowService::OnStart() {
   registry_with_source_info_.AddInterface<mojom::WindowTreeFactory>(
       base::BindRepeating(&WindowService::BindWindowTreeFactoryRequest,
                           base::Unretained(this)));
+
+  // Placeholder to prevent test crashes on unbound requests.
+  registry_.AddInterface(base::BindRepeating(&BindEventInjectorRequest));
 
   // |gpu_interface_provider_| may be null in tests.
   if (gpu_interface_provider_) {

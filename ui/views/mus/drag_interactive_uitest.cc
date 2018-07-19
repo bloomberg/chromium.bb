@@ -145,7 +145,8 @@ void DragTest_Part1(int64_t display_id,
       base::BindOnce(&DragTest_Part2, display_id, quit_closure));
 }
 
-TEST_F(DragTestInteractive, DragTest) {
+// TODO(http://crbug.com/864616): Hangs indefinitely in mus with ws2.
+TEST_F(DragTestInteractive, DISABLED_DragTest) {
   Widget* source_widget = CreateTopLevelFramelessPlatformWidget();
   View* source_view = new DraggableView;
   source_widget->SetContentsView(source_view);
