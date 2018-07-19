@@ -19,7 +19,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/wm/core/shadow_types.h"
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
@@ -76,14 +75,6 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kRenderTitleAreaProperty,
       ui::mojom::WindowManager::kRenderParentTitleArea_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  // This property is already registered by MusClient in Chrome, but not in Ash.
-  if (!property_converter->IsTransportNameRegistered(
-          ui::mojom::WindowManager::kShadowElevation_Property)) {
-    property_converter->RegisterPrimitiveProperty(
-        ::wm::kShadowElevationKey,
-        ui::mojom::WindowManager::kShadowElevation_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  }
   property_converter->RegisterPrimitiveProperty(
       kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property,
       base::BindRepeating(&IsValidShelfItemType));

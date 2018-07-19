@@ -203,7 +203,7 @@ test("views_mus_unittests") {
   data_deps = [
     ":views_mus_tests_catalog_copy",
     "//services/ui/ime/test_ime_driver",
-    "//services/ui/test_wm",
+    "//services/ui/test_ws",
   ]
 
   if (is_win) {
@@ -269,7 +269,7 @@ test("views_mus_interactive_ui_tests") {
 
   data_deps = [
     ":views_mus_tests_catalog_copy",
-    "//services/ui/test_wm",
+    "//services/ui/test_ws",
   ]
 
   if (is_win) {
@@ -305,8 +305,7 @@ catalog("views_mus_tests_catalog") {
   ]
 
   standalone_services = [
-    "//services/ui:manifest",
-    "//services/ui/test_wm:manifest",
+    "//services/ui/test_ws:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
   ]
 }

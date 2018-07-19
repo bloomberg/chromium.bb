@@ -158,7 +158,8 @@ TEST_F(DesktopWindowTreeHostMusTest, Capture) {
                          ->capture_window());
 }
 
-TEST_F(DesktopWindowTreeHostMusTest, Deactivate) {
+// TODO(http://crbug.com/864614): Fails flakily in mus with ws2.
+TEST_F(DesktopWindowTreeHostMusTest, DISABLED_Deactivate) {
   std::unique_ptr<Widget> widget1(CreateWidget());
   widget1->Show();
 
@@ -281,7 +282,8 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
   waiter.Wait();
 }
 
-TEST_F(DesktopWindowTreeHostMusTest, StackAbove) {
+// TODO(http://crbug.com/864615): Fails consistently in mus with ws2.
+TEST_F(DesktopWindowTreeHostMusTest, DISABLED_StackAbove) {
   std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
   widget1->Show();
 

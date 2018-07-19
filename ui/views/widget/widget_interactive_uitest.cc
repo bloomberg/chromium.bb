@@ -621,6 +621,10 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
 // Tests mouse move outside of the window into the "resize controller" and back
 // will still generate an OnMouseEntered and OnMouseExited event..
 TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
+  // TODO(http://crbug.com/864787): Crashes flakily in mus with ws2.
+  if (IsMus())
+    return;
+
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   toplevel->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1337,6 +1341,10 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
 
 // Test that window state is not changed after getting out of full screen.
 TEST_F(WidgetTestInteractive, MAYBE_ExitFullscreenRestoreState) {
+  // TODO(http://crbug.com/864618): Fails flakily in mus with ws2.
+  if (IsMus())
+    return;
+
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   toplevel->Show();
