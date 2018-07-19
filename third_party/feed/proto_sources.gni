@@ -4,6 +4,7 @@
 
 feed_lib_proto_sources = [
   "src/src/main/proto/com/google/android/libraries/feed/api/proto/stream_data.proto",
+  "src/src/main/proto/com/google/android/libraries/feed/basicstream/internal/proto/stream_saved_instance_state.proto",
   "src/src/main/proto/search/now/ui/action/feed_action.proto",
   "src/src/main/proto/search/now/ui/action/feed_action_payload.proto",
   "src/src/main/proto/search/now/ui/action/piet_extensions.proto",
@@ -16,7 +17,6 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/ui/piet/images.proto",
   "src/src/main/proto/search/now/ui/piet/piet.proto",
   "src/src/main/proto/search/now/ui/piet/piet_android_support.proto",
-  "src/src/main/proto/search/now/ui/piet/piet_web_support.proto",
   "src/src/main/proto/search/now/ui/piet/rounded_corners.proto",
   "src/src/main/proto/search/now/ui/piet/shadows.proto",
   "src/src/main/proto/search/now/ui/piet/styles.proto",
