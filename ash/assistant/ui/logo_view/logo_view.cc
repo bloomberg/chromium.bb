@@ -51,11 +51,14 @@ void LogoView::SetState(BaseLogoView::State state, bool animate) {
     case BaseLogoView::State::kUndefined:
       animator_state = StateModel::State::kUndefined;
       break;
+    case BaseLogoView::State::kListening:
+      animator_state = StateModel::State::kListening;
+      break;
     case BaseLogoView::State::kMicFab:
       animator_state = StateModel::State::kMicFab;
       break;
-    case BaseLogoView::State::kListening:
-      animator_state = StateModel::State::kListening;
+    case BaseLogoView::State::kMoleculeWavy:
+      animator_state = StateModel::State::kMoleculeWavy;
       break;
     case BaseLogoView::State::kUserSpeaks:
       animator_state = StateModel::State::kUserSpeaks;

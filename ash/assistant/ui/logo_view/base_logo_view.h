@@ -16,6 +16,7 @@ class BaseLogoView : public views::View {
     kUndefined,
     kListening,
     kMicFab,
+    kMoleculeWavy,
     kUserSpeaks,
   };
 

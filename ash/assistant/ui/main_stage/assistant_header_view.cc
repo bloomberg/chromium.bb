@@ -12,13 +12,11 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -73,12 +71,12 @@ void AssistantHeaderView::InitLayout() {
   layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  // Icon.
-  views::ImageView* icon = new views::ImageView();
-  icon->SetImage(gfx::CreateVectorIcon(kAssistantIcon, kIconSizeDip));
-  icon->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  icon->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  AddChildView(icon);
+  // Molecule icon.
+  BaseLogoView* molecule_icon = BaseLogoView::Create();
+  molecule_icon->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  molecule_icon->SetState(BaseLogoView::State::kMoleculeWavy,
+                          /*animate=*/false);
+  AddChildView(molecule_icon);
 
   // Greeting label.
   greeting_label_ = new views::Label(
