@@ -16,11 +16,11 @@ namespace blink {
 class LocalFrame;
 class ResourceFetcher;
 
-// IdlenessDetector observes network request count everytime a load is
-// finshed after DOMContentLoadedEventEnd is fired, and emit network almost idle
-// signal when there are no more than 2 network connection active in 0.5 second,
-// and emit network idle signal when there is 0 network connection active in 0.5
-// second.
+// IdlenessDetector observes the resource request count every time a load is
+// finshed after DOMContentLoadedEventEnd is fired. It emits a network almost
+// idle signal when there are no more than 2 network connections active in 0.5
+// seconds, and a network idle signal when there are 0 network connections
+// active in 0.5 seconds.
 class CORE_EXPORT IdlenessDetector
     : public GarbageCollectedFinalized<IdlenessDetector>,
       public base::sequence_manager::TaskTimeObserver {

@@ -20,7 +20,7 @@ class LayoutObjectCounter;
 class PaintTiming;
 
 // FirstMeaningfulPaintDetector observes layout operations during page load
-// until network stable (2 seconds of no network activity), and computes the
+// until network stable (0.5 seconds of no network activity), and computes the
 // layout-based First Meaningful Paint.
 // See https://goo.gl/vpaxv6 and http://goo.gl/TEiMi4 for more details.
 class CORE_EXPORT FirstMeaningfulPaintDetector
