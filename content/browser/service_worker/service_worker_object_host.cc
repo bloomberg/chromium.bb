@@ -54,7 +54,7 @@ void DispatchExtendableMessageEventAfterStartWorker(
     request_id = worker->StartRequest(ServiceWorkerMetrics::EventType::MESSAGE,
                                       std::move(callback));
   }
-  worker->event_dispatcher()->DispatchExtendableMessageEvent(
+  worker->endpoint()->DispatchExtendableMessageEvent(
       std::move(event), worker->CreateSimpleEventCallback(request_id));
 }
 

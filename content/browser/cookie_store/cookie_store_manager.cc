@@ -514,7 +514,7 @@ void CookieStoreManager::DispatchChangeEvent(
   int request_id = active_version->StartRequest(
       ServiceWorkerMetrics::EventType::COOKIE_CHANGE, base::DoNothing());
 
-  active_version->event_dispatcher()->DispatchCookieChangeEvent(
+  active_version->endpoint()->DispatchCookieChangeEvent(
       cookie, cause, active_version->CreateSimpleEventCallback(request_id));
 }
 

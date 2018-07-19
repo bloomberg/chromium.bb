@@ -268,7 +268,7 @@ void DispatchAbortPaymentEvent(
       browser_context, ServiceWorkerMetrics::EventType::ABORT_PAYMENT,
       active_version, std::move(callback));
 
-  active_version->event_dispatcher()->DispatchAbortPaymentEvent(
+  active_version->endpoint()->DispatchAbortPaymentEvent(
       invocation_callbacks->CreateInterfacePtrAndBind(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
@@ -297,7 +297,7 @@ void DispatchCanMakePaymentEvent(
       browser_context, ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
       active_version, std::move(callback));
 
-  active_version->event_dispatcher()->DispatchCanMakePaymentEvent(
+  active_version->endpoint()->DispatchCanMakePaymentEvent(
       std::move(event_data), invocation_callbacks->CreateInterfacePtrAndBind(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
@@ -328,7 +328,7 @@ void DispatchPaymentRequestEvent(
       browser_context, ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
       active_version, std::move(callback));
 
-  active_version->event_dispatcher()->DispatchPaymentRequestEvent(
+  active_version->endpoint()->DispatchPaymentRequestEvent(
       std::move(event_data), invocation_callbacks->CreateInterfacePtrAndBind(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }

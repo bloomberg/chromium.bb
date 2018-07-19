@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(falken): Merge this file to service_worker.mojom.
+
 module content.mojom;
 
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
@@ -52,23 +54,38 @@ struct ExtendableMessageEvent {
 };
 
 // The number of seconds for which a 'push' event should be allowed to run.
-// This is not in the spec but for Chromium specific internal timeouts. Each
-// event dispatched to service workers has 5 minutes timeout in the Chrome
+// This is not in the spec but for a Chrome-specific timeout. Each
+// event dispatched to service workers has a 5 minute timeout in the Chrome
 // implementation, but this makes the timeout for push events shorter.
 const int32 kPushEventTimeoutSeconds = 90;
 
-// An interface for dispatching events to a ServiceWorker. This interface is
-// implemented by ServiceWorkerContextClient that lives in the renderer-side
-// to dispatch events from the browser-side.
+// An interface for talking to a running service worker thread. The browser
+// process uses this interface to request the renderer to do things like
+// dispatch events to the service worker. This interface is bound on the
+// service worker thread and is implemented by ServiceWorkerContextClient.
 //
-// Those events expecting such response
-// (blink.mojom.ServiceWorkerEventStatus, mojo_base.mojom.Time) are considered
-// 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback can be used
-// to create the callback for these.
-interface ServiceWorkerEventDispatcher {
+// This is the master interface for the Mojo message pipe between the browser
+// process and the service worker thread in the renderer process. Other service
+// worker-related interfaces bound on the service worker thread are associated
+// with this interface. These include:
+// - ServiceWorkerHost for this service worker.
+// - ServiceWorkerRegistrationObject(Host) for this service worker's
+//   self.registration property.
+// - ServiceWorkerObjects(Host) for that registration's properties.
+//
+// A similar (but non-associated) interface is ControllerServiceWorker. That
+// interface is used by service worker clients (inside renderer processes) to
+// talk directly to their controller service worker, without going through the
+// browser.
+//
+// USAGE TIP: Those DispatchEvent* messages expecting a
+// (blink.mojom.ServiceWorkerEventStatus, mojo_base.mojom.Time) callback are
+// considered 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback
+// can be used to create the callback for these.
+interface ServiceWorker {
   // The first message sent on this interface. It is used to associate service
   // worker-related interfaces together on the service worker thread, as
-  // ServiceWorkerEventDispatcher is the first interface available on the
+  // ServiceWorker is the first interface available on the
   // service worker thread. It establishes the |service_worker_host| connection
   // and passes information used to populate
   // ServiceWorkerGlobalScope#registration object. JavaScript execution of the
@@ -173,8 +190,7 @@ interface ServiceWorkerEventDispatcher {
 
   // Pings the service worker to check if it is responsive. If the callback is
   // not called within a certain period of time, the browser will terminate the
-  // worker. Unlike the other functions in this interface, Ping() does not
-  // dispatch an event.
+  // worker.
   Ping() => ();
 
   // S13nServiceWorker:

@@ -18,7 +18,7 @@
 #include "ipc/ipc_message_macros.h"
 
 // TODO(https://crbug.com/841329): Delete this legacy IPC code, use a pure
-// mojo struct instead from ServiceWorkerEventDispatcher mojo interface.
+// mojo struct instead from ServiceWorker mojo interface.
 IPC_ENUM_TRAITS_MAX_VALUE(content::PlatformNotificationData::Direction,
                           content::PlatformNotificationData::DIRECTION_LAST)
 

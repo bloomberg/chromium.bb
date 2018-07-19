@@ -94,7 +94,7 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent(
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
-  service_worker_version->event_dispatcher()->DispatchBackgroundFetchAbortEvent(
+  service_worker_version->endpoint()->DispatchBackgroundFetchAbortEvent(
       developer_id, unique_id, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
@@ -118,7 +118,7 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent(
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
-  service_worker_version->event_dispatcher()->DispatchBackgroundFetchClickEvent(
+  service_worker_version->endpoint()->DispatchBackgroundFetchClickEvent(
       developer_id, state,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
@@ -144,7 +144,7 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
-  service_worker_version->event_dispatcher()->DispatchBackgroundFetchFailEvent(
+  service_worker_version->endpoint()->DispatchBackgroundFetchFailEvent(
       developer_id, unique_id, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
@@ -170,7 +170,7 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchedEvent(
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
-  service_worker_version->event_dispatcher()->DispatchBackgroundFetchedEvent(
+  service_worker_version->endpoint()->DispatchBackgroundFetchedEvent(
       developer_id, unique_id, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }

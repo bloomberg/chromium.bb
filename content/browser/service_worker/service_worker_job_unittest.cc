@@ -483,7 +483,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -949,7 +949,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       const GURL& scope,
       const GURL& script,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -1011,7 +1011,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     started_workers_.insert(embedded_worker_id);
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
-        std::move(dispatcher_request), std::move(controller_request),
+        std::move(service_worker_request), std::move(controller_request),
         std::move(instance_host), std::move(provider_info),
         std::move(installed_scripts_info));
   }
@@ -1089,7 +1089,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       const GURL& scope,
       const GURL& script,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -1108,7 +1108,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
     }
     UpdateJobTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
-        std::move(dispatcher_request), std::move(controller_request),
+        std::move(service_worker_request), std::move(controller_request),
         std::move(instance_host), std::move(provider_info),
         std::move(installed_scripts_info));
   }
@@ -1610,8 +1610,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
             blink::mojom::ServiceWorkerEventStatus::COMPLETED) {}
 
   void OnInstallEvent(
-      mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
-          callback) override {
+      mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
     if (!install_callback_.is_null())
       install_callback_.Run();
     std::move(callback).Run(install_event_result_, has_fetch_handler_,
@@ -1619,8 +1618,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   }
 
   void OnActivateEvent(
-      mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
-          callback) override {
+      mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
     std::move(callback).Run(activate_event_result_, base::Time::Now());
   }
 

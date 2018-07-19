@@ -52,8 +52,8 @@ class ExtendableMessageEventTestHelper : public EmbeddedWorkerTestHelper {
 
   void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
-      mojom::ServiceWorkerEventDispatcher::
-          DispatchExtendableMessageEventCallback callback) override {
+      mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback)
+      override {
     events_.push_back(std::move(event));
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                             base::Time::Now());
@@ -77,7 +77,7 @@ class FailToStartWorkerTestHelper : public ExtendableMessageEventTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,

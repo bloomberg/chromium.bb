@@ -145,8 +145,7 @@ int NextTraceId() {
   return trace_id;
 }
 
-void OnEventDispatcherConnectionError(
-    base::WeakPtr<EmbeddedWorkerInstance> embedded_worker) {
+void OnConnectionError(base::WeakPtr<EmbeddedWorkerInstance> embedded_worker) {
   if (!embedded_worker)
     return;
 
@@ -660,7 +659,7 @@ bool ServiceWorkerVersion::FinishExternalRequest(
 ServiceWorkerVersion::SimpleEventCallback
 ServiceWorkerVersion::CreateSimpleEventCallback(int request_id) {
   // The weak reference to |this| is safe because storage of the callbacks, the
-  // inflight responses of the ServiceWorkerEventDispatcher, is owned by |this|.
+  // inflight responses of mojom::ServiceWorker messages, is owned by |this|.
   return base::BindOnce(&ServiceWorkerVersion::OnSimpleEventFinished,
                         base::Unretained(this), request_id);
 }
@@ -1486,12 +1485,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
     installed_scripts_sender_->Start();
   }
 
-  params->dispatcher_request = mojo::MakeRequest(&event_dispatcher_);
+  params->service_worker_request = mojo::MakeRequest(&service_worker_ptr_);
   // TODO(horo): These CHECKs are for debugging crbug.com/759938.
-  CHECK(event_dispatcher_.is_bound());
-  CHECK(params->dispatcher_request.is_pending());
-  event_dispatcher_.set_connection_error_handler(base::BindOnce(
-      &OnEventDispatcherConnectionError, embedded_worker_->AsWeakPtr()));
+  CHECK(service_worker_ptr_.is_bound());
+  CHECK(params->service_worker_request.is_pending());
+  service_worker_ptr_.set_connection_error_handler(
+      base::BindOnce(&OnConnectionError, embedded_worker_->AsWeakPtr()));
   blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host;
   binding_.Close();
   binding_.Bind(mojo::MakeRequest(&service_worker_host));
@@ -1499,7 +1498,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       context_->GetLiveRegistration(registration_id_);
   DCHECK(registration);
   provider_host->SetDocumentUrl(script_url());
-  event_dispatcher_->InitializeGlobalScope(
+  service_worker_ptr_->InitializeGlobalScope(
       std::move(service_worker_host),
       provider_host->CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
@@ -1664,9 +1663,10 @@ void ServiceWorkerVersion::PingWorker() {
   // TODO(horo): This CHECK is for debugging crbug.com/759938.
   CHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
         running_status() == EmbeddedWorkerStatus::RUNNING);
-  // base::Unretained here is safe because event_dispatcher is owned by |this|.
-  event_dispatcher()->Ping(base::BindOnce(
-      &ServiceWorkerVersion::OnPongFromWorker, base::Unretained(this)));
+  // base::Unretained here is safe because endpoint() is owned by
+  // |this|.
+  endpoint()->Ping(base::BindOnce(&ServiceWorkerVersion::OnPongFromWorker,
+                                  base::Unretained(this)));
 }
 
 void ServiceWorkerVersion::OnPingTimeout() {
@@ -1933,7 +1933,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   inflight_requests_.Clear();
   request_timeouts_.clear();
   external_request_uuid_to_request_id_.clear();
-  event_dispatcher_.reset();
+  service_worker_ptr_.reset();
   controller_ptr_.reset();
   DCHECK(!controller_request_.is_pending());
   installed_scripts_sender_.reset();

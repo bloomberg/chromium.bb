@@ -245,7 +245,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -257,8 +257,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
         instance_host_ptr_map_[embedded_worker_id].Bind(
             std::move(instance_host));
         // Just keep the connection alive.
-        event_dispatcher_request_map_[embedded_worker_id] =
-            std::move(dispatcher_request);
+        service_worker_request_map_[embedded_worker_id] =
+            std::move(service_worker_request);
         controller_request_map_[embedded_worker_id] =
             std::move(controller_request);
         break;
@@ -271,7 +271,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
-            pause_after_download, std::move(dispatcher_request),
+            pause_after_download, std::move(service_worker_request),
             std::move(controller_request), std::move(instance_host),
             std::move(provider_info), std::move(installed_scripts_info));
         break;
@@ -298,9 +298,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       int /* embedded_worker_id */,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       instance_host_ptr_map_;
-  std::map<int /* embedded_worker_id */,
-           mojom::ServiceWorkerEventDispatcherRequest>
-      event_dispatcher_request_map_;
+  std::map<int /* embedded_worker_id */, mojom::ServiceWorkerRequest>
+      service_worker_request_map_;
   std::map<int /* embedded_worker_id */, mojom::ControllerServiceWorkerRequest>
       controller_request_map_;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
@@ -836,8 +835,8 @@ class MessageReceiverControlEvents : public MessageReceiver {
 
   void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
-      mojom::ServiceWorkerEventDispatcher::
-          DispatchExtendableMessageEventCallback callback) override {
+      mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback)
+      override {
     EXPECT_FALSE(extendable_message_event_callback_);
     extendable_message_event_callback_ = std::move(callback);
   }
@@ -853,7 +852,7 @@ class MessageReceiverControlEvents : public MessageReceiver {
     return !extendable_message_event_callback_.is_null();
   }
 
-  mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
+  mojom::ServiceWorker::DispatchExtendableMessageEventCallback
   TakeExtendableMessageEventCallback() {
     return std::move(extendable_message_event_callback_);
   }
@@ -863,7 +862,7 @@ class MessageReceiverControlEvents : public MessageReceiver {
   }
 
  private:
-  mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
+  mojom::ServiceWorker::DispatchExtendableMessageEventCallback
       extendable_message_event_callback_;
   base::OnceClosure stop_worker_callback_;
 };
@@ -881,7 +880,7 @@ class ServiceWorkerRequestTimeoutTest : public ServiceWorkerVersionTest {
         ->has_extendable_message_event_callback();
   }
 
-  mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
+  mojom::ServiceWorker::DispatchExtendableMessageEventCallback
   TakeExtendableMessageEventCallback() {
     return static_cast<MessageReceiverControlEvents*>(helper_.get())
         ->TakeExtendableMessageEventCallback();
@@ -909,7 +908,7 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
 
   // Dispatch a dummy event whose response will be received by SWVersion.
   EXPECT_FALSE(has_extendable_message_event_callback());
-  version_->event_dispatcher()->DispatchExtendableMessageEvent(
+  version_->endpoint()->DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEvent::New(),
       version_->CreateSimpleEventCallback(request_id));
 

@@ -217,7 +217,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
     params->pause_after_download = false;
     params->is_installed = false;
 
-    params->dispatcher_request = CreateEventDispatcher();
+    params->service_worker_request = CreateServiceWorker();
     params->controller_request = CreateController();
     params->installed_scripts_info = GetInstalledScriptsInfoPtr();
     return params;
@@ -236,9 +236,9 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
                           base::Unretained(this));
   }
 
-  mojom::ServiceWorkerEventDispatcherRequest CreateEventDispatcher() {
-    dispatchers_.emplace_back();
-    return mojo::MakeRequest(&dispatchers_.back());
+  mojom::ServiceWorkerRequest CreateServiceWorker() {
+    service_workers_.emplace_back();
+    return mojo::MakeRequest(&service_workers_.back());
   }
 
   mojom::ControllerServiceWorkerRequest CreateController() {
@@ -276,7 +276,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   }
 
   // Mojo endpoints.
-  std::vector<mojom::ServiceWorkerEventDispatcherPtr> dispatchers_;
+  std::vector<mojom::ServiceWorkerPtr> service_workers_;
   std::vector<mojom::ControllerServiceWorkerPtr> controllers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
       installed_scripts_managers_;
@@ -306,7 +306,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -320,7 +320,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
     }
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(dispatcher_request),
+        pause_after_download, std::move(service_worker_request),
         std::move(controller_request), std::move(instance_host),
         std::move(provider_info), std::move(installed_scripts_info));
   }
@@ -915,7 +915,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -924,7 +924,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
     had_cache_storage_ = !!provider_info->cache_storage;
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(dispatcher_request),
+        pause_after_download, std::move(service_worker_request),
         std::move(controller_request), std::move(instance_host),
         std::move(provider_info), std::move(installed_scripts_info));
   }

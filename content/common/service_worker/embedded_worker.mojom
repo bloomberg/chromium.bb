@@ -51,8 +51,8 @@ struct EmbeddedWorkerStartParams {
   // Used to set up fetch requests.
   RendererPreferences renderer_preferences;
 
-  // Used to dispatch events from (via) the browser process.
-  ServiceWorkerEventDispatcher& dispatcher_request;
+  // Used to talk to the service worker from the browser process.
+  ServiceWorker& service_worker_request;
   // S13nServiceWorker: cloned and passed to each controllee to directly
   // dispatch events from the controllees.
   ControllerServiceWorker& controller_request;

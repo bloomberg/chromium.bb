@@ -696,7 +696,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
     scoped_refptr<network::SharedURLLoaderFactory> factory,
     blink::mojom::CacheStoragePtrInfo cache_storage) {
   DCHECK(context_);
-  DCHECK(params->dispatcher_request.is_pending());
+  DCHECK(params->service_worker_request.is_pending());
   DCHECK(params->controller_request.is_pending());
   DCHECK(!instance_host_binding_.is_bound());
   instance_host_binding_.Bind(mojo::MakeRequest(&params->instance_host));
