@@ -35,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -1720,6 +1721,17 @@ TEST_F(LockContentsViewKeyboardUnitTest, UserSwapFocusesBigView) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::VKEY_RETURN, 0);
   EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
+}
+
+TEST_F(LockContentsViewKeyboardUnitTest, PowerwashShortcutShowsResetScreen) {
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client, ShowResetScreen()).Times(1);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(
+      ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace ash

@@ -829,7 +829,6 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI",
                                LoginDisplayHostWebUI::kShowLoginWebUIid,
                                "ShowAddUser");
-
   std::string email;
   // |args| can be null if it's OOBE.
   if (args)
@@ -837,6 +836,7 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   set_populated_email(email);
   if (!email.empty())
     SendReauthReason(AccountId::FromUserEmail(email));
+
   OnShowAddUser();
 }
 
