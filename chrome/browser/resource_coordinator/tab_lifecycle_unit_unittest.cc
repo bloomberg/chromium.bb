@@ -32,6 +32,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -76,10 +77,6 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
 class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
  protected:
   using TabLifecycleUnit = TabLifecycleUnitSource::TabLifecycleUnit;
-
-  // This is an internal class so that it is also friends with
-  // TabLifecycleUnitTest.
-  class ScopedEnterpriseOptOut;
 
   TabLifecycleUnitTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
     observers_.AddObserver(&observer_);
@@ -156,24 +153,10 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
   std::unique_ptr<UsageClock> usage_clock_;
 
  private:
-  // So that the main thread looks like the UI thread as expected.
   TestTabStripModelDelegate tab_strip_model_delegate_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitTest);
-};
-
-class TabLifecycleUnitTest::ScopedEnterpriseOptOut {
- public:
-  ScopedEnterpriseOptOut() {
-    TabLifecycleUnitSource::GetInstance()->SetTabLifecyclesEnterprisePolicy(
-        false);
-  }
-
-  ~ScopedEnterpriseOptOut() {
-    TabLifecycleUnitSource::GetInstance()->SetTabLifecyclesEnterprisePolicy(
-        true);
-  }
 };
 
 void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
@@ -621,46 +604,6 @@ TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
   ::testing::Mock::VerifyAndClear(&observer);
 
   tab_lifecycle_unit.RemoveObserver(&observer);
-}
-
-TEST_F(TabLifecycleUnitTest, CannotDiscardIfEnterpriseOptOutUsed) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
-
-  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
-
-  {
-    ScopedEnterpriseOptOut enterprise_opt_out;
-    ExpectCanDiscardFalseAllReasons(
-        &tab_lifecycle_unit,
-        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
-  }
-
-  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
-}
-
-TEST_F(TabLifecycleUnitTest, CannotFreezeIfEnterpriseOptOutUsed) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
-  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
-                                                   LoadingState::LOADED);
-
-  DecisionDetails decision_details;
-  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
-
-  {
-    ScopedEnterpriseOptOut enterprise_opt_out;
-    decision_details.Clear();
-    EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
-    EXPECT_FALSE(decision_details.IsPositive());
-    EXPECT_EQ(DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT,
-              decision_details.FailureReason());
-  }
-
-  decision_details.Clear();
-  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
 }
 
 }  // namespace resource_coordinator

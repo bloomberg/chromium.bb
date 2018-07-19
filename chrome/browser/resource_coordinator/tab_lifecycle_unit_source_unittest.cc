@@ -22,10 +22,7 @@
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -681,56 +678,6 @@ TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenTimeout) {
   tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
       content::ReloadType::NORMAL, false);
   ::testing::Mock::VerifyAndClear(&tab_observer_);
-}
-
-namespace {
-
-class MockOnPrefChanged {
- public:
-  MockOnPrefChanged() = default;
-  ~MockOnPrefChanged() = default;
-
-  MOCK_METHOD1(OnPrefChanged, void(bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockOnPrefChanged);
-};
-
-}  // namespace
-
-TEST(TabLifecylesEnterprisePreferenceMonitor, ObservesChanges) {
-  TestingPrefServiceSimple pref_service;
-  pref_service.registry()->RegisterBooleanPref(prefs::kTabLifecyclesEnabled,
-                                               true);
-
-  ::testing::StrictMock<MockOnPrefChanged> obs;
-
-  // Create a monitor that dispatches to the mock. The constructor should have
-  // checked the value and it should return the default.
-  EXPECT_CALL(obs, OnPrefChanged(true));
-  TabLifecylesEnterprisePreferenceMonitor monitor(
-      &pref_service, base::BindRepeating(&MockOnPrefChanged::OnPrefChanged,
-                                         base::Unretained(&obs)));
-  ::testing::Mock::VerifyAndClear(&obs);
-
-  // Set the preference in an unmanaged way to false. The preference should
-  // still be true.
-  EXPECT_CALL(obs, OnPrefChanged(true));
-  pref_service.SetUserPref(prefs::kTabLifecyclesEnabled,
-                           std::make_unique<base::Value>(false));
-  ::testing::Mock::VerifyAndClear(&obs);
-
-  // Set the preference in a managed way to false.
-  EXPECT_CALL(obs, OnPrefChanged(false));
-  pref_service.SetManagedPref(prefs::kTabLifecyclesEnabled,
-                              std::make_unique<base::Value>(false));
-  ::testing::Mock::VerifyAndClear(&obs);
-
-  // Set the preference in a managed way to true.
-  EXPECT_CALL(obs, OnPrefChanged(true));
-  pref_service.SetManagedPref(prefs::kTabLifecyclesEnabled,
-                              std::make_unique<base::Value>(true));
-  ::testing::Mock::VerifyAndClear(&obs);
 }
 
 }  // namespace resource_coordinator
