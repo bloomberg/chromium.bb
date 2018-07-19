@@ -7,13 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
+#include "components/omnibox/browser/autocomplete_match_type.h"
+
 // Describes an object that accepts a left image for the omnibox. The left image
 // is used for showing the current selected suggestion icon, when the
 // suggestions popup is visible.
 @protocol OmniboxLeftImageConsumer
 
 // The |imageId| is a resource id.
-- (void)setLeftImageId:(int)imageId;
+- (void)setLeftImageForAutocompleteType:(AutocompleteMatchType::Type)type;
 
 @end
 

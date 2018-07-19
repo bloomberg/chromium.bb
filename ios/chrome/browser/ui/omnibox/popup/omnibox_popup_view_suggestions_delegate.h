@@ -13,7 +13,8 @@ enum class WindowOpenDisposition;
 class OmniboxPopupViewSuggestionsDelegate {
  public:
   // Called whenever the topmost suggestion image has changed.
-  virtual void OnTopmostSuggestionImageChanged(int imageId) = 0;
+  virtual void OnTopmostSuggestionImageChanged(
+      AutocompleteMatchType::Type type) = 0;
   // Called when results are updated.
   virtual void OnResultsChanged(const AutocompleteResult& result) = 0;
   // Called whenever the popup is scrolled.

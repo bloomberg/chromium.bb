@@ -897,10 +897,6 @@ bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
   return [[field_ text] rangeOfString:objectReplacementChar].length > 0;
 }
 
-void OmniboxViewIOS::SetLeftImage(int imageId) {
-  [left_image_consumer_ setLeftImageId:imageId];
-}
-
 void OmniboxViewIOS::HideKeyboardAndEndEditing() {
   [field_ resignFirstResponder];
 
@@ -959,8 +955,9 @@ void OmniboxViewIOS::EmphasizeURLComponents() {
 
 #pragma mark - OmniboxPopupViewSuggestionsDelegate
 
-void OmniboxViewIOS::OnTopmostSuggestionImageChanged(int imageId) {
-  this->SetLeftImage(imageId);
+void OmniboxViewIOS::OnTopmostSuggestionImageChanged(
+    AutocompleteMatchType::Type type) {
+  [left_image_consumer_ setLeftImageForAutocompleteType:type];
 }
 
 void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {

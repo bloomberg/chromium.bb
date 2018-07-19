@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -315,8 +316,10 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
 
 #pragma mark - OmniboxLeftImageConsumer
 
-- (void)setLeftImageId:(int)imageId {
-  [self setPlaceholderImage:imageId];
+- (void)setLeftImageForAutocompleteType:(AutocompleteMatchType::Type)type {
+  int image_id = GetIconForAutocompleteMatchType(type, /* is_starred */ false,
+                                                 /* is_incognito */ false);
+  [self setPlaceholderImage:image_id];
 }
 
 @end
