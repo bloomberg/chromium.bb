@@ -31,6 +31,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 using blink::WebAXObject;
 using blink::WebDocument;
@@ -457,8 +458,20 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
                                    block.AccessibilityIsIgnored())) {
       block = block.ParentObject();
     }
-    if (!block.IsDetached() && !block.Equals(obj)) {
+    if (!block.IsDetached() && !block.Equals(obj))
       serializer_.DeleteClientSubtree(block);
+
+    // Whenever there's a change within a table, invalidate the
+    // whole table so that row and cell indexes are recomputed.
+    ax::mojom::Role role = AXRoleFromBlink(obj.Role());
+    if (ui::IsTableLikeRole(role) || role == ax::mojom::Role::kRow ||
+        ui::IsCellOrTableHeaderRole(role)) {
+      auto table = obj;
+      while (!table.IsDetached() &&
+             !ui::IsTableLikeRole(AXRoleFromBlink(table.Role())))
+        table = table.ParentObject();
+      if (!table.IsDetached())
+        serializer_.DeleteClientSubtree(table);
     }
 
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
