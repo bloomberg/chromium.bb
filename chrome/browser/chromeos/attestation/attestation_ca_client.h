@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/dbus/attestation_constants.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace chromeos {

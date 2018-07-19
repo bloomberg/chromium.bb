@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_ATTESTATION_ATTESTATION_CONSTANTS_H_
-#define CHROMEOS_ATTESTATION_ATTESTATION_CONSTANTS_H_
+#ifndef CHROMEOS_DBUS_ATTESTATION_CONSTANTS_H_
+#define CHROMEOS_DBUS_ATTESTATION_CONSTANTS_H_
 
 #include "chromeos/chromeos_export.h"
 
@@ -62,8 +62,8 @@ enum AttestationStatus {
 };
 
 enum PrivacyCAType {
-  DEFAULT_PCA,    // The Google-operated Privacy CA.
-  TEST_PCA,       // The test version of the Google-operated Privacy CA.
+  DEFAULT_PCA,  // The Google-operated Privacy CA.
+  TEST_PCA,     // The test version of the Google-operated Privacy CA.
 };
 
 // A key name for the Enterprise Machine Key.  This key should always be stored
@@ -85,4 +85,4 @@ CHROMEOS_EXPORT extern const char kContentProtectionKeyPrefix[];
 }  // namespace attestation
 }  // namespace chromeos
 
-#endif  // CHROMEOS_ATTESTATION_ATTESTATION_CONSTANTS_H_
+#endif  // CHROMEOS_DBUS_ATTESTATION_CONSTANTS_H_

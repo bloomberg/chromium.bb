@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/cryptohome/signed_secret.pb.h"
+#include "chromeos/dbus/cryptohome/signed_secret.pb.h"
 #include "chromeos/login/auth/key.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"

@@ -4,7 +4,7 @@
 
 #include "extensions/browser/api/media_perception_private/conversion_utils.h"
 
-#include "chromeos/media_perception/media_perception.pb.h"
+#include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_perception = extensions::api::media_perception_private;
