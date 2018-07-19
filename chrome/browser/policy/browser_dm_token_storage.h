@@ -29,6 +29,7 @@ class BrowserDMTokenStorage {
   using StoreCallback = base::OnceCallback<void(bool success)>;
 
   // Returns the global singleton object. Must be called from the UI thread.
+  // This implementation is platform dependant.
   static BrowserDMTokenStorage* Get();
   // Returns a client ID unique to the machine. Virtual for tests.
   virtual std::string RetrieveClientId();
@@ -69,15 +70,15 @@ class BrowserDMTokenStorage {
 
   // Gets the client ID and stores it in |client_id_|. This implementation is
   // platform dependant.
-  virtual std::string InitClientId();
+  virtual std::string InitClientId() = 0;
   // Gets the enrollment token and stores it in |enrollment_token_|. This
   // implementation is platform dependant.
-  virtual std::string InitEnrollmentToken();
+  virtual std::string InitEnrollmentToken() = 0;
   // Gets the DM token and stores it in |dm_token_|. This implementation is
   // platform dependant.
-  virtual std::string InitDMToken();
+  virtual std::string InitDMToken() = 0;
   // Saves the DM token. This implementation is platform dependant.
-  virtual void SaveDMToken(const std::string& token);
+  virtual void SaveDMToken(const std::string& token) = 0;
 
   // Will be called after the DM token is stored.
   StoreCallback store_callback_;

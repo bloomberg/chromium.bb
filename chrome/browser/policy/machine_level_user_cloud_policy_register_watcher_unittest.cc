@@ -38,10 +38,21 @@ class FakeDMTokenStorage : public BrowserDMTokenStorage {
   std::string RetrieveDMToken() override { return dm_token_; }
   std::string RetrieveEnrollmentToken() override { return enrollment_token_; }
   std::string RetrieveClientId() override { return kClientId; }
-  void StoreDMToken(const std::string& dm_token,
-                    StoreCallback callback) override {
+
+  std::string InitClientId() override {
     NOTREACHED();
+    return std::string();
   }
+  std::string InitEnrollmentToken() override {
+    NOTREACHED();
+    return std::string();
+  }
+  std::string InitDMToken() override {
+    NOTREACHED();
+    return std::string();
+  }
+
+  void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }
 
   void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
   void set_enrollment_token(const std::string& enrollment_token) {

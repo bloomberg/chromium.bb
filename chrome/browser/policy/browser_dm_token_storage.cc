@@ -28,19 +28,6 @@ namespace policy {
 // static
 BrowserDMTokenStorage* BrowserDMTokenStorage::storage_for_testing_ = nullptr;
 
-// Static function that can't be overridden. Implementation is only compiled for
-// non-supported platforms.
-#if !defined(OS_WIN) && !defined(OS_LINUX)
-// static
-BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
-  if (storage_for_testing_)
-    return storage_for_testing_;
-
-  static base::NoDestructor<BrowserDMTokenStorage> storage;
-  return storage.get();
-}
-#endif
-
 BrowserDMTokenStorage::BrowserDMTokenStorage() : is_initialized_(false) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
@@ -115,31 +102,6 @@ void BrowserDMTokenStorage::OnDMTokenStored(bool success) {
 
   if (!store_callback_.is_null())
     std::move(store_callback_).Run(success);
-}
-
-// Stub implementation. This function will become virtual pure once Mac & Linux
-// implementations are done.
-std::string BrowserDMTokenStorage::InitClientId() {
-  return std::string();
-}
-
-// Stub implementation. This function will become virtual pure once Mac & Linux
-// implementations are done.
-std::string BrowserDMTokenStorage::InitEnrollmentToken() {
-  return std::string();
-}
-
-// Stub implementation. This function will become virtual pure once Mac & Linux
-// implementations are done.
-std::string BrowserDMTokenStorage::InitDMToken() {
-  return std::string();
-}
-
-// Stub implementation. This function will become virtual pure once Mac & Linux
-// implementations are done.
-void BrowserDMTokenStorage::SaveDMToken(const std::string& token) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(store_callback_), false));
 }
 
 }  // namespace policy

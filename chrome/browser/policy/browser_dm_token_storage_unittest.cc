@@ -41,6 +41,8 @@ class MockBrowserDMTokenStorage : public BrowserDMTokenStorage {
   std::string InitEnrollmentToken() override { return test_enrollment_token_; }
   std::string InitDMToken() override { return test_dm_token_; }
 
+  void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }
+
   void set_test_client_id(std::string test_client_id) {
     test_client_id_ = test_client_id;
   }
@@ -89,47 +91,6 @@ TEST_F(BrowserDMTokenStorageTest, RetrieveDMToken) {
   // The DM token should be cached in memory and not read from the system again.
   storage.set_test_dm_token(kDMToken2);
   EXPECT_EQ(kDMToken1, storage.RetrieveDMToken());
-}
-
-class TestStoreDMTokenDelegate {
- public:
-  TestStoreDMTokenDelegate() : called_(false), success_(true) {}
-  ~TestStoreDMTokenDelegate() {}
-
-  void OnDMTokenStored(bool success) {
-    run_loop_.Quit();
-    called_ = true;
-    success_ = success;
-  }
-
-  bool WasCalled() {
-    bool was_called = called_;
-    called_ = false;
-    return was_called;
-  }
-
-  bool success() { return success_; }
-
-  void Wait() { run_loop_.Run(); }
-
- private:
-  bool called_;
-  bool success_;
-  base::RunLoop run_loop_;
-};
-
-TEST_F(BrowserDMTokenStorageTest, StoreDMToken) {
-  MockBrowserDMTokenStorage storage;
-  TestStoreDMTokenDelegate delegate;
-
-  storage.StoreDMToken(
-      kDMToken1, base::BindOnce(&TestStoreDMTokenDelegate::OnDMTokenStored,
-                                base::Unretained(&delegate)));
-
-  delegate.Wait();
-
-  EXPECT_TRUE(delegate.WasCalled());
-  EXPECT_FALSE(delegate.success());
 }
 
 }  // namespace policy
