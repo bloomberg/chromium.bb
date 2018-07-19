@@ -5,7 +5,7 @@
 // https://w3c.github.io/payment-request/#payererrorfields-dictionary
 
 dictionary PayerErrorFields {
-    DOMString payerEmailError;
-    DOMString payerNameError;
-    DOMString payerPhoneError;
+    DOMString email;
+    DOMString name;
+    DOMString phone;
 };
