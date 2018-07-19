@@ -21,9 +21,10 @@ bool CalculateCORSFlag(const ResourceRequest& request) {
       request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS) {
     return false;
   }
+  // CORS needs a proper origin (including a unique opaque origin). If the
+  // request doesn't have one, CORS should not work.
+  DCHECK(request.request_initiator);
   url::Origin url_origin = url::Origin::Create(request.url);
-  if (!request.request_initiator.has_value())
-    return true;
   url::Origin security_origin(request.request_initiator.value());
   return !security_origin.IsSameOriginWith(url_origin);
 }
@@ -284,7 +285,7 @@ void CORSURLLoader::OnReceiveRedirect(
   // |request|’s current url’s origin and |request|’s origin is not same origin
   // with |request|’s current url’s origin, then set |request|’s tainted origin
   // flag.
-  if (!request_.request_initiator ||
+  if (request_.request_initiator &&
       (!url::Origin::Create(redirect_info.new_url)
             .IsSameOriginWith(url::Origin::Create(request_.url)) &&
        !request_.request_initiator->IsSameOriginWith(
@@ -353,17 +354,16 @@ void CORSURLLoader::StartRequest() {
   // |httpRequest|’s header list.
   if (fetch_cors_flag_ ||
       (request_.method != "GET" && request_.method != "HEAD")) {
-    url::Origin empty_origin;
-    const url::Origin& origin = tainted_ || !request_.request_initiator
-                                    ? empty_origin
-                                    : *request_.request_initiator;
-    request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
-                               origin.Serialize());
+    if (request_.request_initiator) {
+      request_.headers.SetHeader(
+          net::HttpRequestHeaders::kOrigin,
+          (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+    }
   }
 
   if (request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
-    if (!request_.request_initiator ||
-        !request_.request_initiator->IsSameOriginWith(
+    DCHECK(request_.request_initiator);
+    if (!request_.request_initiator->IsSameOriginWith(
             url::Origin::Create(request_.url))) {
       HandleComplete(URLLoaderCompletionStatus(
           CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));

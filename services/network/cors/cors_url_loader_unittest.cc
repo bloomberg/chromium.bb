@@ -251,6 +251,135 @@ class CORSURLLoaderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderTest);
 };
 
+TEST_F(CORSURLLoaderTest, SameOriginWithoutInitiator) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kSameOrigin;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, NoCORSWithoutInitiator) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, CORSWithoutInitiator) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, NavigateWithoutInitiator) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther1) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther2) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther3) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
 TEST_F(CORSURLLoaderTest, SameOriginRequest) {
   const GURL url("http://example.com/foo.png");
   CreateLoaderAndStart(url.GetOrigin(), url,
@@ -292,7 +421,7 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithNoCORSModeAndPatchMethod) {
   const GURL url("http://other.com/foo.png");
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
   request.method = "PATCH";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);

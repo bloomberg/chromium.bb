@@ -62,6 +62,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
 
   void DeleteIfNeeded();
 
+  static bool IsSane(const ResourceRequest& request);
+
   mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
 
   // Used when constructed by NetworkContext.
