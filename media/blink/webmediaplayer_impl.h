@@ -788,6 +788,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // removing |cast_impl_|.
   bool using_media_player_renderer_ = false;
 
+  // Set whenever the demuxer encounters an HLS file.
+  // This flag is distinct from |using_media_player_renderer_|, because on older
+  // devices we might use MediaPlayerRenderer for non HLS playback.
+  bool demuxer_found_hls_ = false;
+
   // Called sometime after the media is suspended in a playing state in
   // OnFrameHidden(), causing the state to change to paused.
   base::OneShotTimer background_pause_timer_;

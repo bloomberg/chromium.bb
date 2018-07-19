@@ -1126,6 +1126,12 @@ bool WebMediaPlayerImpl::DidGetOpaqueResponseFromServiceWorker() const {
 }
 
 bool WebMediaPlayerImpl::HasSingleSecurityOrigin() const {
+  if (demuxer_found_hls_) {
+    // HLS manifests might pull segments from a different origin. We can't know
+    // for sure, so we conservatively say no here.
+    return false;
+  }
+
   if (data_source_)
     return data_source_->HasSingleOrigin();
   return true;
@@ -1530,6 +1536,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 
 #if defined(OS_ANDROID)
   if (status == PipelineStatus::DEMUXER_ERROR_DETECTED_HLS) {
+    demuxer_found_hls_ = true;
+
     renderer_factory_selector_->SetUseMediaPlayer(true);
 
     pipeline_controller_.Stop();
