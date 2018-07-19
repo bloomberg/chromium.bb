@@ -71,10 +71,10 @@ void VrGLThread::Init() {
   auto ui = std::make_unique<Ui>(this, this, keyboard_delegate_.get(),
                                  text_input_delegate_.get(),
                                  audio_delegate_.get(), ui_initial_state_);
-  text_input_delegate_->SetRequestFocusCallback(
-      base::BindRepeating(&Ui::RequestFocus, base::Unretained(ui.get())));
-  text_input_delegate_->SetRequestUnfocusCallback(
-      base::BindRepeating(&Ui::RequestUnfocus, base::Unretained(ui.get())));
+  text_input_delegate_->SetRequestFocusCallback(base::BindRepeating(
+      &UiInterface::RequestFocus, base::Unretained(ui.get())));
+  text_input_delegate_->SetRequestUnfocusCallback(base::BindRepeating(
+      &UiInterface::RequestUnfocus, base::Unretained(ui.get())));
   if (keyboard_delegate_.get()) {
     keyboard_delegate_->SetUiInterface(ui.get());
     text_input_delegate_->SetUpdateInputCallback(

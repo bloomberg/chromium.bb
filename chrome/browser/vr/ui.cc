@@ -188,10 +188,6 @@ void Ui::OnUiRequestedNavigation() {
   model_->pop_mode(kModeEditingOmnibox);
 }
 
-void Ui::SetFloorHeight(float floor_height) {
-  model_->floor_height = floor_height;
-}
-
 void Ui::SetSpeechRecognitionEnabled(bool enabled) {
   if (enabled) {
     model_->speech.recognition_result.clear();
@@ -650,6 +646,14 @@ void Ui::UpdateSceneTextures() {
 
 void Ui::Draw(const vr::RenderInfo& info) {
   ui_renderer_->Draw(info);
+}
+
+void Ui::DrawWebVr(int texture_data_handle,
+                   const float (&uv_transform)[16],
+                   float xborder,
+                   float yborder) {
+  ui_element_renderer_->DrawWebVr(texture_data_handle, uv_transform, xborder,
+                                  yborder);
 }
 
 void Ui::DrawWebVrOverlayForeground(const vr::RenderInfo& info) {

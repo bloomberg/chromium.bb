@@ -5,14 +5,9 @@
 #include "chrome/browser/vr/test/ui_pixel_test.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
-#include "chrome/browser/vr/ui_browser_interface.h"
-#include "chrome/browser/vr/ui_input_manager.h"
-#include "chrome/browser/vr/ui_renderer.h"
-#include "chrome/browser/vr/ui_scene.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gl/gl_bindings.h"
@@ -92,12 +87,11 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
 
   InputEventList input_event_list;
   ReticleModel reticle_model;
-  EXPECT_TRUE(
-      ui_->scene()->OnBeginFrame(base::TimeTicks(), render_info.head_pose));
-  ui_->input_manager()->HandleInput(MsToTicks(1), render_info, controller_model,
-                                    &reticle_model, &input_event_list);
+  EXPECT_TRUE(ui_->OnBeginFrame(base::TimeTicks(), render_info.head_pose));
+  ui_->HandleInput(MsToTicks(1), render_info, controller_model, &reticle_model,
+                   &input_event_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
-  ui_->ui_renderer()->Draw(render_info);
+  ui_->Draw(render_info);
 
   // We produce GL errors while rendering. Clear them all so that we can check
   // for errors of subsequent calls.

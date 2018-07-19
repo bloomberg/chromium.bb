@@ -96,8 +96,8 @@ class ContentElementSceneTest : public UiTest {
         std::make_unique<StrictMock<MockTextInputDelegate>>();
 
     input_forwarder_ = std::make_unique<TestPlatformInputHandler>();
-    ui_->GetContentInputDelegateForTest()->SetPlatformInputHandlerForTest(
-        input_forwarder_.get());
+    ui_instance_->GetContentInputDelegateForTest()
+        ->SetPlatformInputHandlerForTest(input_forwarder_.get());
 
     auto* content =
         static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
@@ -204,7 +204,7 @@ class ContentElementInputEditingTest : public UiTest {
     text_input_delegate_ =
         std::make_unique<StrictMock<MockTextInputDelegate>>();
     input_forwarder_ = std::make_unique<TestPlatformInputHandler>();
-    content_delegate_ = ui_->GetContentInputDelegateForTest();
+    content_delegate_ = ui_instance_->GetContentInputDelegateForTest();
     content_delegate_->SetPlatformInputHandlerForTest(input_forwarder_.get());
 
     content_ =

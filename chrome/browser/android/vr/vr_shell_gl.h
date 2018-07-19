@@ -68,7 +68,7 @@ class GraphicsDelegate;
 class MailboxToSurfaceBridge;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
-class Ui;
+class UiInterface;
 class VrController;
 class VrShell;
 
@@ -267,7 +267,7 @@ class WebXrPresentationState {
 class VrShellGl : public device::mojom::VRPresentationProvider {
  public:
   VrShellGl(GlBrowserInterface* browser_interface,
-            std::unique_ptr<Ui> ui,
+            std::unique_ptr<UiInterface> ui,
             gvr_context* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
@@ -524,7 +524,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   std::unique_ptr<WebXrPresentationState> webxr_ = nullptr;
 
-  std::unique_ptr<Ui> ui_;
+  std::unique_ptr<UiInterface> ui_;
 
   bool web_vr_mode_ = false;
   bool ready_to_draw_ = false;

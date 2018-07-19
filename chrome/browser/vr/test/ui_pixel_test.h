@@ -45,7 +45,7 @@ class UiPixelTest : public testing::Test {
   GLuint content_texture_ = 0;
   GLuint content_overlay_texture_ = 0;
   gfx::Size frame_buffer_size_;
-  std::unique_ptr<Ui> ui_;
+  std::unique_ptr<UiInterface> ui_;
 };
 
 }  // namespace vr

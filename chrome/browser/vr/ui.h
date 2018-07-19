@@ -18,10 +18,11 @@
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_initial_state.h"
+#include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_test_input.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
@@ -45,7 +46,7 @@ struct ReticleModel;
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
+class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      PlatformInputHandler* content_input_forwarder,
@@ -63,6 +64,14 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
 
   ~Ui() override;
 
+  void OnUiRequestedNavigation();
+
+  void ReinitializeForTest(const UiInitialState& ui_initial_state);
+  ContentInputDelegate* GetContentInputDelegateForTest() {
+    return content_input_delegate_.get();
+  }
+
+  void Dump(bool include_bindings);
   // TODO(crbug.com/767957): Refactor to hide these behind the UI interface.
   UiScene* scene() { return scene_.get(); }
   UiElementRenderer* ui_element_renderer() {
@@ -70,9 +79,9 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   }
   UiRenderer* ui_renderer() { return ui_renderer_.get(); }
   UiInputManager* input_manager() { return input_manager_.get(); }
+  Model* model_for_test() { return model_.get(); }
 
-  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
-
+ private:
   // BrowserUiInterface
   void SetWebVrMode(bool enabled) override;
   void SetFullscreen(bool enabled) override;
@@ -106,110 +115,89 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
 
-  bool CanSendWebVrVSync();
-
+  // UiInterface
+  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() override;
+  bool CanSendWebVrVSync() override;
   void SetAlertDialogEnabled(bool enabled,
                              PlatformUiInputDelegate* delegate,
                              float width,
-                             float height);
+                             float height) override;
   void SetContentOverlayAlertDialogEnabled(bool enabled,
                                            PlatformUiInputDelegate* delegate,
                                            float width_percentage,
-                                           float height_percentage);
-  void SetAlertDialogSize(float width, float height);
+                                           float height_percentage) override;
+  void SetAlertDialogSize(float width, float height) override;
   void SetContentOverlayAlertDialogSize(float width_percentage,
-                                        float height_percentage);
-  void SetDialogLocation(float x, float y);
-  void SetDialogFloating(bool floating);
-  void ShowPlatformToast(const base::string16& text);
-  void CancelPlatformToast();
-  bool ShouldRenderWebVr();
-
+                                        float height_percentage) override;
+  void SetDialogLocation(float x, float y) override;
+  void SetDialogFloating(bool floating) override;
+  void ShowPlatformToast(const base::string16& text) override;
+  void CancelPlatformToast() override;
+  bool ShouldRenderWebVr() override;
   void OnGlInitialized(
       unsigned int content_texture_id,
       UiElementRenderer::TextureLocation content_location,
       unsigned int content_overlay_texture_id,
       UiElementRenderer::TextureLocation content_overlay_location,
-      unsigned int ui_texture_id);
+      unsigned int ui_texture_id) override;
 
-  void OnPause();
-  void OnAppButtonClicked();
-  void OnAppButtonSwipePerformed(PlatformController::SwipeDirection direction);
+  void OnPause() override;
+  void OnAppButtonClicked() override;
+  void OnAppButtonSwipePerformed(
+      PlatformController::SwipeDirection direction) override;
   void OnControllerUpdated(const ControllerModel& controller_model,
-                           const ReticleModel& reticle_model);
-  void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
-  void OnWebVrFrameAvailable();
-  void OnWebVrTimedOut();
-  void OnWebVrTimeoutImminent();
-  bool IsControllerVisible() const;
-  bool IsAppButtonLongPressed() const;
-  bool SkipsRedrawWhenNotDirty() const;
-  void OnSwapContents(int new_content_id);
-  void OnContentBoundsChanged(int width, int height);
-  void OnUiRequestedNavigation();
-  void SetFloorHeight(float floor_height);
+                           const ReticleModel& reticle_model) override;
+  void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
+  void OnWebVrFrameAvailable() override;
+  void OnWebVrTimedOut() override;
+  void OnWebVrTimeoutImminent() override;
+  bool IsControllerVisible() const override;
+  bool IsAppButtonLongPressed() const override;
+  bool SkipsRedrawWhenNotDirty() const override;
+  void OnSwapContents(int new_content_id) override;
+  void OnContentBoundsChanged(int width, int height) override;
 
-  Model* model_for_test() { return model_.get(); }
-
-  void ReinitializeForTest(const UiInitialState& ui_initial_state);
-  ContentInputDelegate* GetContentInputDelegateForTest() {
-    return content_input_delegate_.get();
-  }
-
-  void Dump(bool include_bindings);
-
-  // Keyboard input related.
-  void RequestFocus(int element_id);
-  void RequestUnfocus(int element_id);
-  void OnInputEdited(const EditedText& info) override;
-  void OnInputCommitted(const EditedText& info) override;
-  void OnKeyboardHidden() override;
-
-  void AcceptDoffPromptForTesting();
+  void AcceptDoffPromptForTesting() override;
   void PerformControllerActionForTesting(
       ControllerTestInput controller_input,
-      std::queue<ControllerModel>& controller_model_queue);
+      std::queue<ControllerModel>& controller_model_queue) override;
 
-  bool IsContentVisibleAndOpaque();
-  bool IsContentOverlayTextureEmpty();
-  void SetContentUsesQuadLayer(bool uses_quad_buffers);
-  gfx::Transform GetContentWorldSpaceTransform();
+  bool IsContentVisibleAndOpaque() override;
+  bool IsContentOverlayTextureEmpty() override;
+  void SetContentUsesQuadLayer(bool uses_quad_buffers) override;
+  gfx::Transform GetContentWorldSpaceTransform() override;
 
-  bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&);
-  bool SceneHasDirtyTextures() const;
-  void UpdateSceneTextures();
-  void Draw(const RenderInfo& render_info);
-  void DrawWebVrOverlayForeground(const RenderInfo& render_info);
-  UiScene::Elements GetWebVrOverlayElementsToDraw();
+  bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&) override;
+  bool SceneHasDirtyTextures() const override;
+  void UpdateSceneTextures() override;
+  void Draw(const RenderInfo& render_info) override;
+  void DrawWebVr(int texture_data_handle,
+                 const float (&uv_transform)[16],
+                 float xborder,
+                 float yborder) override;
+  void DrawWebVrOverlayForeground(const RenderInfo& render_info) override;
+  UiScene::Elements GetWebVrOverlayElementsToDraw() override;
   gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
-                                    const gfx::RectF& texture_rect);
+                                    const gfx::RectF& texture_rect) override;
+
   void HandleInput(base::TimeTicks current_time,
                    const RenderInfo& render_info,
                    const ControllerModel& controller_model,
                    ReticleModel* reticle_model,
-                   InputEventList* input_event_list);
+                   InputEventList* input_event_list) override;
 
-  // This function calculates the minimal FOV (in degrees) which covers all
-  // visible |elements| as if it was viewing from fov_recommended. For example,
-  // if fov_recommended is {20.f, 20.f, 20.f, 20.f}. And all elements appear on
-  // screen within a FOV of {-11.f, 19.f, 9.f, 9.f} if we use fov_recommended.
-  // Ideally, the calculated minimal FOV should be the same. In practice, the
-  // elements might get clipped near the edge sometimes due to float precison.
-  // To fix this, we add a small margin (1 degree) to all directions. So the
-  // |out_fov| set by this function should be {-10.f, 20.f, 10.f, 10.f} in the
-  // example case.
-  // Using a smaller FOV could improve the performance a lot while we are
-  // showing UIs on top of WebVR content.
-  struct FovRectangle {
-    float left;
-    float right;
-    float bottom;
-    float top;
-  };
   FovRectangle GetMinimalFov(const gfx::Transform& view_matrix,
                              const std::vector<const UiElement*>& elements,
                              const FovRectangle& fov_recommended,
-                             float z_near);
+                             float z_near) override;
+
+  void RequestFocus(int element_id) override;
+  void RequestUnfocus(int element_id) override;
+
+  // KeyboardUiInterface
+  void OnInputEdited(const EditedText& info) override;
+  void OnInputCommitted(const EditedText& info) override;
+  void OnKeyboardHidden() override;
 
  private:
   void OnSpeechRecognitionEnded();

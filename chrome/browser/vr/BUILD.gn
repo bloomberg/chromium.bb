@@ -230,6 +230,7 @@ component("vr_common") {
     "ui_initial_state.h",
     "ui_input_manager.cc",
     "ui_input_manager.h",
+    "ui_interface.h",
     "ui_renderer.cc",
     "ui_renderer.h",
     "ui_scene.cc",
