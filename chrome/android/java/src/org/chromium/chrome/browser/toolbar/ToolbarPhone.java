@@ -2549,7 +2549,8 @@ public class ToolbarPhone extends ToolbarLayout
     private boolean hideShadowForInterstitial() {
         return mLocationBar.useModernDesign() && getToolbarDataProvider() != null
                 && getToolbarDataProvider().getTab() != null
-                && getToolbarDataProvider().getTab().isShowingInterstitialPage();
+                && (getToolbarDataProvider().getTab().isShowingInterstitialPage()
+                           || getToolbarDataProvider().getTab().isShowingErrorPage());
     }
 
     private @VisualState int computeVisualState(boolean isInTabSwitcherMode) {
