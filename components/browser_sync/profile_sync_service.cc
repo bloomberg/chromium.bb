@@ -810,8 +810,6 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   // false.
   DCHECK(CanConfigureDataTypes() || IsSetupInProgress());
 
-  DCHECK(IsSyncActive());
-
   if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
     return State::CONFIGURING;
   }
@@ -1307,12 +1305,6 @@ ProfileSyncService::GetSetupInProgressHandle() {
   return std::make_unique<syncer::SyncSetupInProgressHandle>(
       base::BindRepeating(&ProfileSyncService::OnSetupInProgressHandleDestroyed,
                           weak_factory_.GetWeakPtr()));
-}
-
-bool ProfileSyncService::IsSyncActive() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return engine_initialized_ && data_type_manager_ &&
-         data_type_manager_->state() != DataTypeManager::STOPPED;
 }
 
 bool ProfileSyncService::IsLocalSyncEnabled() const {

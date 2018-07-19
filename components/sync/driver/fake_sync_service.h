@@ -42,7 +42,6 @@ class FakeSyncService : public SyncService {
   int GetDisableReasons() const override;
   State GetState() const override;
   bool IsFirstSetupComplete() const override;
-  bool IsSyncActive() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;

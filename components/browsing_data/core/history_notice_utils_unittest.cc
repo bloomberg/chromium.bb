@@ -25,7 +25,16 @@ namespace {
 class TestSyncService : public syncer::FakeSyncService {
  public:
   // Getters (FakeSyncService implementation). ---------------------------------
-  bool IsSyncActive() const override { return sync_active_; }
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+
+  State GetState() const override {
+    return IsFirstSetupComplete() ? State::ACTIVE
+                                  : State::PENDING_DESIRED_CONFIGURATION;
+  }
+
+  bool IsFirstSetupComplete() const override {
+    return is_first_setup_complete_;
+  }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     return active_data_types_;
@@ -36,8 +45,8 @@ class TestSyncService : public syncer::FakeSyncService {
   }
 
   // Setters. ------------------------------------------------------------------
-  void set_sync_active(bool active) {
-    sync_active_ = active;
+  void set_first_setup_complete(bool complete) {
+    is_first_setup_complete_ = complete;
   }
 
   void set_active_data_types(syncer::ModelTypeSet data_types) {
@@ -49,9 +58,9 @@ class TestSyncService : public syncer::FakeSyncService {
   }
 
  private:
+  bool is_first_setup_complete_ = false;
   syncer::ModelTypeSet active_data_types_;
   bool using_secondary_passphrase_ = false;
-  bool sync_active_ = false;
 };
 
 }  // namespace
@@ -107,7 +116,7 @@ TEST_F(HistoryNoticeUtilsTest, NotSyncing) {
 }
 
 TEST_F(HistoryNoticeUtilsTest, SyncingWithWrongParameters) {
-  sync_service()->set_sync_active(true);
+  sync_service()->set_first_setup_complete(true);
 
   // Regardless of the state of the web history...
   history_service()->SetWebAndAppActivityEnabled(true);
@@ -127,7 +136,7 @@ TEST_F(HistoryNoticeUtilsTest, SyncingWithWrongParameters) {
 
 TEST_F(HistoryNoticeUtilsTest, WebHistoryStates) {
   // If history Sync is active...
-  sync_service()->set_sync_active(true);
+  sync_service()->set_first_setup_complete(true);
   sync_service()->set_active_data_types(syncer::ModelTypeSet::All());
 
   // ...the result is true if both web history queries return true...

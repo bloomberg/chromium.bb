@@ -112,8 +112,8 @@ class ClearBrowsingDataCollectionViewControllerTest
 // Tests ClearBrowsingDataCollectionViewControllerTest is set up with all
 // appropriate items and sections.
 TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestModel) {
-  EXPECT_CALL(*mock_sync_service_, IsSyncActive())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
   CreateController();
   CheckController();
 
@@ -146,8 +146,8 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestModel) {
 
 TEST_F(ClearBrowsingDataCollectionViewControllerTest,
        TestItemsSignedInSyncOff) {
-  EXPECT_CALL(*mock_sync_service_, IsSyncActive())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
   signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
   CreateController();
   CheckController();
@@ -174,7 +174,10 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
 
 TEST_F(ClearBrowsingDataCollectionViewControllerTest,
        TestItemsSignedInSyncActiveHistoryOff) {
-  EXPECT_CALL(*mock_sync_service_, IsSyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
+  EXPECT_CALL(*mock_sync_service_, GetState())
+      .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
   EXPECT_CALL(*mock_sync_service_, GetActiveDataTypes())
       .WillRepeatedly(Return(syncer::ModelTypeSet()));
   EXPECT_CALL(*mock_sync_service_, IsUsingSecondaryPassphrase())

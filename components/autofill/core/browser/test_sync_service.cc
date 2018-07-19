@@ -42,10 +42,6 @@ bool TestSyncService::IsUsingSecondaryPassphrase() const {
   return is_using_secondary_passphrase_;
 }
 
-bool TestSyncService::IsSyncActive() const {
-  return is_sync_active_;
-}
-
 const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
   return auth_error_;
 }

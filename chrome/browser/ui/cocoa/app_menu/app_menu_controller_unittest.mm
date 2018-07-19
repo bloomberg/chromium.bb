@@ -159,8 +159,8 @@ class AppMenuControllerTest : public CocoaProfileTest {
   }
 
   void EnableSync() {
-    EXPECT_CALL(*mock_sync_service_, IsSyncActive())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_, GetState())
+        .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
     EXPECT_CALL(*mock_sync_service_,
                 IsDataTypeControllerRunning(syncer::SESSIONS))
         .WillRepeatedly(Return(true));

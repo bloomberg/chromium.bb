@@ -234,7 +234,6 @@ class ProfileSyncService : public syncer::SyncService,
   int GetDisableReasons() const override;
   State GetState() const override;
   bool IsFirstSetupComplete() const override;
-  bool IsSyncActive() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;

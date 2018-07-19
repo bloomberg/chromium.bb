@@ -103,8 +103,8 @@ TEST_F(ClearBrowsingDataManagerTest, TestModel) {
 // but sync is off.
 TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
   // Ensure that sync is not running.
-  EXPECT_CALL(*mock_sync_service_, IsSyncActive())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
   signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
 
