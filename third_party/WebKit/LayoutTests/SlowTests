@@ -401,3 +401,5 @@ crbug.com/833215 external/wpt/accelerometer/Accelerometer.https.html [ Slow ]
 crbug.com/861670 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ Slow ] 
 
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
+
+crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
