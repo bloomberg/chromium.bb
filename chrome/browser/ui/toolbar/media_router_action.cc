@@ -96,8 +96,7 @@ void MediaRouterAction::SetDelegate(ToolbarActionViewDelegate* delegate) {
 }
 
 gfx::Image MediaRouterAction::GetIcon(content::WebContents* web_contents,
-                                      const gfx::Size& size,
-                                      ToolbarActionButtonState state) {
+                                      const gfx::Size& size) {
   return gfx::Image(
       gfx::CreateVectorIcon(*current_icon_, GetIconColor(*current_icon_)));
 }

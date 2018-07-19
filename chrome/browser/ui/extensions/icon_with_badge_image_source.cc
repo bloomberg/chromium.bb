@@ -14,13 +14,17 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/grit/theme_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/shadow_value.h"
+#include "ui/gfx/skia_paint_util.h"
 
 namespace {
 
@@ -33,6 +37,16 @@ gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
                                     skia::ImageOperations::RESIZE_BEST,
                                     width_px, width_px),
       target_scale);
+}
+
+float GetBlockedActionBadgeRadius() {
+#if defined(OS_MACOSX)
+  // Cocoa. Note: this doesn't look great on Cocoa. But runtime host
+  // permissions are expected to be launched after MacViews for top-chrome.
+  if (!base::FeatureList::IsEnabled(features::kViewsBrowserWindows))
+    return 11.4f;
+#endif
+  return 12.0f;
 }
 
 }  // namespace
@@ -193,26 +207,37 @@ void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
 
 void IconWithBadgeImageSource::PaintBlockedActionDecoration(
     gfx::Canvas* canvas) {
-  SkColor fill_color;
-  switch (state_) {
-    case ToolbarActionButtonState::kNormal:
-      fill_color = SK_ColorWHITE;
-      break;
-    case ToolbarActionButtonState::kHovered:
-      fill_color = gfx::kGoogleGrey200;
-      break;
-    case ToolbarActionButtonState::kPressed:
-      fill_color = gfx::kGoogleGrey300;
-      break;
-  }
+  // To match the CSS notion of blur (spread outside the bounding box) to the
+  // Skia notion of blur (spread outside and inside the bounding box), we have
+  // to double the CSS-based blur values.
+  constexpr int kBlurCorrection = 2;
 
+  constexpr int kKeyShadowOpacity = 0x4D;  // 30%
+  const gfx::ShadowValue key_shadow(
+      gfx::Vector2d(0, 1), kBlurCorrection * 2 /*blur*/,
+      SkColorSetA(gfx::kGoogleGrey800, kKeyShadowOpacity));
+
+  constexpr int kAmbientShadowOpacity = 0x26;  // 15%
+  const gfx::ShadowValue ambient_shadow(
+      gfx::Vector2d(0, 2), kBlurCorrection * 6 /*blur*/,
+      SkColorSetA(gfx::kGoogleGrey800, kAmbientShadowOpacity));
+
+  const float blocked_action_badge_radius = GetBlockedActionBadgeRadius();
+
+  // Sanity checking.
   const gfx::Rect icon_rect = GetIconAreaRect();
+  DCHECK_LE(2 * blocked_action_badge_radius, icon_rect.width());
+  DCHECK_EQ(icon_rect.width(), icon_rect.height());
+
   cc::PaintFlags paint_flags;
   paint_flags.setStyle(cc::PaintFlags::kFill_Style);
   paint_flags.setAntiAlias(true);
-  paint_flags.setColor(fill_color);
-  canvas->DrawCircle(icon_rect.CenterPoint(), icon_rect.width() / 2,
-                     paint_flags);
+  paint_flags.setColor(SK_ColorWHITE);
+  paint_flags.setLooper(
+      gfx::CreateShadowDrawLooper({key_shadow, ambient_shadow}));
+
+  canvas->DrawCircle(gfx::PointF(icon_rect.CenterPoint()),
+                     blocked_action_badge_radius, paint_flags);
 }
 
 gfx::Rect IconWithBadgeImageSource::GetIconAreaRect() const {
