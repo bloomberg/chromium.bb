@@ -68,9 +68,8 @@ void DeviceMotionDispatcher::StopListening() {
   last_device_motion_data_.Clear();
 }
 
-void DeviceMotionDispatcher::DidChangeDeviceMotion(
-    const device::MotionData& motion) {
-  last_device_motion_data_ = DeviceMotionData::Create(motion);
+void DeviceMotionDispatcher::DidChangeDeviceMotion(DeviceMotionData* motion) {
+  last_device_motion_data_ = motion;
   NotifyControllers();
 }
 

@@ -36,10 +36,6 @@
 #include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-namespace device {
-class MotionData;
-}
-
 namespace blink {
 
 class DeviceMotionData;
@@ -61,7 +57,7 @@ class DeviceMotionDispatcher final
   const DeviceMotionData* LatestDeviceMotionData();
 
   // Inherited from WebDeviceMotionListener.
-  void DidChangeDeviceMotion(const device::MotionData&) override;
+  void DidChangeDeviceMotion(DeviceMotionData*) override;
 
   void Trace(blink::Visitor*) override;
 

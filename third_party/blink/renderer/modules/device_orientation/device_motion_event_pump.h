@@ -10,11 +10,9 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_sensor_event_pump.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
-namespace device {
-class MotionData;
-}
-
 namespace blink {
+
+class DeviceMotionData;
 
 class MODULES_EXPORT DeviceMotionEventPump
     : public DeviceSensorEventPump<blink::WebDeviceMotionListener> {
@@ -40,9 +38,7 @@ class MODULES_EXPORT DeviceMotionEventPump
   // DeviceSensorEventPump:
   bool SensorsReadyOrErrored() const override;
 
-  void GetDataFromSharedMemory(device::MotionData* data);
-
-  bool ShouldFireEvent(const device::MotionData& data) const;
+  DeviceMotionData* GetDataFromSharedMemory();
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPump);
 };

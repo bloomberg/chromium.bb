@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 
-#include "services/device/public/cpp/generic_sensor/motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_acceleration_init.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_init.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate_init.h"
@@ -124,25 +123,6 @@ DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit& init) {
           ? DeviceMotionData::RotationRate::Create(init.rotationRate())
           : nullptr,
       init.interval());
-}
-
-DeviceMotionData* DeviceMotionData::Create(const device::MotionData& data) {
-  return DeviceMotionData::Create(
-      DeviceMotionData::Acceleration::Create(
-          data.has_acceleration_x, data.acceleration_x, data.has_acceleration_y,
-          data.acceleration_y, data.has_acceleration_z, data.acceleration_z),
-      DeviceMotionData::Acceleration::Create(
-          data.has_acceleration_including_gravity_x,
-          data.acceleration_including_gravity_x,
-          data.has_acceleration_including_gravity_y,
-          data.acceleration_including_gravity_y,
-          data.has_acceleration_including_gravity_z,
-          data.acceleration_including_gravity_z),
-      DeviceMotionData::RotationRate::Create(
-          data.has_rotation_rate_alpha, data.rotation_rate_alpha,
-          data.has_rotation_rate_beta, data.rotation_rate_beta,
-          data.has_rotation_rate_gamma, data.rotation_rate_gamma),
-      data.interval);
 }
 
 DeviceMotionData::DeviceMotionData() : interval_(0) {}
