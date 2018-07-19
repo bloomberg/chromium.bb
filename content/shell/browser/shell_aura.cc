@@ -43,6 +43,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   if (!headless_)
     platform_->ShowWindow();
   platform_->ResizeWindow(gfx::Size(width, height));
+  window_ = platform_->host()->window();
 }
 
 void Shell::PlatformSetContents() {

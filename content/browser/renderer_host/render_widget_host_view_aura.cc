@@ -895,8 +895,9 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
   selection_controller_client_->OnScrollCompleted();
 }
 
-gfx::Vector2d RenderWidgetHostViewAura::GetOffsetFromRootSurface() {
-  return window_->GetBoundsInRootWindow().OffsetFromOrigin();
+void RenderWidgetHostViewAura::TransformPointToRootSurface(gfx::PointF* point) {
+  aura::Window::ConvertPointToTarget(window_, window_->GetRootWindow(), point);
+  window_->GetRootWindow()->transform().TransformPoint(point);
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
