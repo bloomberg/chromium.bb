@@ -287,7 +287,7 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
       .WillOnce(Return(media::VideoFrame::CreateFrame(
           media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
           gfx::Size(8, 8), base::TimeDelta())));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
   EXPECT_CALL(*provider_, PutCurrentFrame());
   EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
@@ -296,6 +296,8 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
+  EXPECT_CALL(*provider_, GetCurrentFrame()).Times(0);
   submitter_->UpdateSubmissionState(false);
   scoped_task_environment_.RunUntilIdle();
 

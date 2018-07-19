@@ -92,6 +92,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void StartSubmitting();
   void UpdateSubmissionStateInternal();
   void SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
+  void SubmitEmptyFrame();
 
   // Pulls frame and submits it to compositor.
   // Used in cases like PaintSingleFrame, which occurs before video rendering
@@ -113,6 +114,11 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // If we are not on screen, we should not submit.
   bool should_submit_ = false;
   media::VideoRotation rotation_;
+
+  // Size of the video frame being submitted. It is set the first time a frame
+  // is submitted and is expected to never change aftewards. Used to send an
+  // empty frame when the video is out of view.
+  gfx::Rect frame_size_;
 
   THREAD_CHECKER(media_thread_checker_);
 
