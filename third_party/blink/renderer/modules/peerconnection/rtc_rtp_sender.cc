@@ -241,16 +241,17 @@ ToRtpParameters(const RTCRtpSendParameters& parameters) {
 
 RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
                            std::unique_ptr<WebRTCRtpSender> sender,
+                           String kind,
                            MediaStreamTrack* track,
                            MediaStreamVector streams)
     : pc_(pc),
       sender_(std::move(sender)),
+      kind_(std::move(kind)),
       track_(track),
       streams_(std::move(streams)) {
   DCHECK(pc_);
   DCHECK(sender_);
-  DCHECK(track_);
-  kind_ = track->kind();
+  DCHECK(!track || kind_ == track->kind());
 }
 
 MediaStreamTrack* RTCRtpSender::track() {
@@ -267,8 +268,10 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
     return promise;
   }
   WebMediaStreamTrack web_track;
-  if (with_track)
+  if (with_track) {
+    pc_->RegisterTrack(with_track);
     web_track = with_track->Component();
+  }
   ReplaceTrackRequest* request =
       new ReplaceTrackRequest(this, with_track, resolver);
   sender_->ReplaceTrack(web_track, request);
@@ -407,6 +410,10 @@ void RTCRtpSender::SetTrack(MediaStreamTrack* track) {
 
 MediaStreamVector RTCRtpSender::streams() const {
   return streams_;
+}
+
+void RTCRtpSender::set_streams(MediaStreamVector streams) {
+  streams_ = std::move(streams);
 }
 
 RTCDTMFSender* RTCRtpSender::dtmf() {

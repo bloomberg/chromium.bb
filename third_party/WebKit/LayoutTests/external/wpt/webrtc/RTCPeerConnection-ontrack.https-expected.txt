@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL setRemoteDescription should trigger ontrack event when the MSID of the stream is is parsed. RTCRtpTransceiver is not defined
+FAIL setRemoteDescription should trigger ontrack event when the MSID of the stream is is parsed. assert_true: Expect trackEvent.transceiver to be defined and is instance of RTCRtpTransceiver expected true got false
 PASS setRemoteDescription() with m= line of recvonly direction should not trigger track event
-FAIL addTrack() should cause remote connection to fire ontrack when setRemoteDescription() RTCRtpTransceiver is not defined
+FAIL addTrack() should cause remote connection to fire ontrack when setRemoteDescription() assert_true: Expect trackEvent.transceiver to be defined and is instance of RTCRtpTransceiver expected true got false
 FAIL addTransceiver('video') should cause remote connection to fire ontrack when setRemoteDescription() pc1.addTransceiver is not a function
 FAIL addTransceiver() with inactive direction should not cause remote connection to fire ontrack when setRemoteDescription() pc1.addTransceiver is not a function
 Harness: the test ran to completion.

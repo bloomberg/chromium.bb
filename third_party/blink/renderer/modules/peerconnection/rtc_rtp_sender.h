@@ -30,6 +30,7 @@ class RTCRtpSender final : public ScriptWrappable {
   // https://github.com/w3c/webrtc-pc/issues/1712
   RTCRtpSender(RTCPeerConnection*,
                std::unique_ptr<WebRTCRtpSender>,
+               String kind,
                MediaStreamTrack*,
                MediaStreamVector streams);
 
@@ -46,16 +47,17 @@ class RTCRtpSender final : public ScriptWrappable {
   void SetTrack(MediaStreamTrack*);
   void ClearLastReturnedParameters();
   MediaStreamVector streams() const;
+  void set_streams(MediaStreamVector streams);
 
   void Trace(blink::Visitor*) override;
 
  private:
   Member<RTCPeerConnection> pc_;
   std::unique_ptr<WebRTCRtpSender> sender_;
-  Member<MediaStreamTrack> track_;
-  // The spec says that "kind" should be looked up in transceiver, but
-  // keeping it in sender at least until transceiver is implemented.
+  // The spec says that "kind" should be looked up in transceiver, but keeping
+  // a copy here as long as we support Plan B.
   String kind_;
+  Member<MediaStreamTrack> track_;
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
   base::Optional<RTCRtpSendParameters> last_returned_parameters_;

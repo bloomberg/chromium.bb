@@ -778,8 +778,8 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         tracker_(tracker),
         action_(action),
         sdp_semantics_(sdp_semantics) {
-    // TODO(hbos): Support kUnifiedPlan. https://crbug.com/777617
-    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kPlanB);
+    DCHECK(sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
+           sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan);
   }
 
   void OnSetDescriptionComplete(
@@ -804,8 +804,6 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         ProcessStateChangesPlanB(std::move(states));
       } else {
         DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
-        // TODO(hbos): Exercise this codepath. https://crbug.com/777617
-        NOTREACHED();
         ProcessStateChangesUnifiedPlan(std::move(states));
       }
 
@@ -843,6 +841,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   }
 
   void ProcessStateChangesPlanB(WebRtcSetDescriptionObserver::States states) {
+    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kPlanB);
     // Determine which receivers have been removed before processing the
     // removal as to not invalidate the iterator.
     std::vector<RTCRtpReceiver*> removed_receivers;
@@ -886,6 +885,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 
   void ProcessStateChangesUnifiedPlan(
       WebRtcSetDescriptionObserver::States states) {
+    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
     handler_->OnModifyTransceivers(
         std::move(states.transceiver_states),
         action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION);
@@ -1278,15 +1278,14 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       new WebRtcSetDescriptionObserverImpl(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
-          // TODO(hbos): Pass the value of |sdp_semantics_| when "kUnifiedPlan"
-          // behavior is supported. https://crbug.com/777617
-          blink::WebRTCSdpSemantics::kPlanB));
+          sdp_semantics_));
 
+  bool surface_receivers_only =
+      (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB);
   scoped_refptr<webrtc::SetSessionDescriptionObserver> webrtc_observer(
       WebRtcSetLocalDescriptionObserverHandler::Create(
           task_runner_, signaling_thread(), native_peer_connection_,
-          track_adapter_map_, content_observer,
-          true /* surface_receivers_only*/)
+          track_adapter_map_, content_observer, surface_receivers_only)
           .get());
 
   signaling_thread()->PostTask(
@@ -1348,15 +1347,15 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
       new WebRtcSetDescriptionObserverImpl(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
-          // TODO(hbos): Pass the value of |sdp_semantics_| when "kUnifiedPlan"
-          // behavior is supported. https://crbug.com/777617
-          blink::WebRTCSdpSemantics::kPlanB));
+          sdp_semantics_));
 
+  bool surface_receivers_only =
+      (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB);
   rtc::scoped_refptr<webrtc::SetRemoteDescriptionObserverInterface>
       webrtc_observer(WebRtcSetRemoteDescriptionObserverHandler::Create(
                           task_runner_, signaling_thread(),
                           native_peer_connection_, track_adapter_map_,
-                          content_observer, true /* surface_receivers_only*/)
+                          content_observer, surface_receivers_only)
                           .get());
 
   signaling_thread()->PostTask(
@@ -1593,10 +1592,7 @@ RTCPeerConnectionHandler::AddTrack(
   std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver;
   const blink::WebRTCRtpSender* web_sender = nullptr;
   const blink::WebRTCRtpReceiver* web_receiver = nullptr;
-  // TODO(hbos): Exercise the "else" codepath if "kUnifiedPlan" is used.
-  // https://crbug.com/777617
-  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
-      sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan) {
+  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
     // Plan B: Create sender only.
     DCHECK(transceiver_state.sender_state());
     auto webrtc_sender = transceiver_state.sender_state()->webrtc_sender();
@@ -1610,8 +1606,6 @@ RTCPeerConnectionHandler::AddTrack(
     web_transceiver = std::make_unique<RTCRtpSenderOnlyTransceiver>(
         rtp_senders_.back()->ShallowCopy());
   } else {
-    // TODO(hbos): Exercise this codepath. https://crbug.com/777617
-    NOTREACHED();
     DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
     // Unified Plan: Create or recycle a transceiver.
     auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
@@ -1643,15 +1637,10 @@ void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
   if (error_or_sender->ok()) {
     auto sender = error_or_sender->value();
-    // TODO(hbos): Exercise the "else" codepath if "kUnifiedPlan" is used.
-    // https://crbug.com/777617
-    if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
-        sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan) {
+    if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
       transceivers = {new SurfaceSenderStateOnly(sender)};
     } else {
       DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
-      // TODO(hbos): Exercise this codepath. https://crbug.com/777617
-      NOTREACHED();
       rtc::scoped_refptr<webrtc::RtpTransceiverInterface>
           transceiver_for_sender = nullptr;
       for (const auto& transceiver :
@@ -1673,10 +1662,7 @@ webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
-  // TODO(hbos): Exercise the "else" codepath if "kUnifiedPlan" is used.
-  // https://crbug.com/777617
-  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
-      sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan) {
+  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
     if (RemoveTrackPlanB(web_sender)) {
       // In Plan B, null indicates success.
       std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver = nullptr;
@@ -1687,13 +1673,12 @@ RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE);
   }
   DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
-  // TODO(hbos): Exercise this codepath. https://crbug.com/777617
-  NOTREACHED();
   return RemoveTrackUnifiedPlan(web_sender);
 }
 
 bool RTCPeerConnectionHandler::RemoveTrackPlanB(
     blink::WebRTCRtpSender* web_sender) {
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kPlanB);
   auto web_track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
@@ -1723,6 +1708,7 @@ webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
     blink::WebRTCRtpSender* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER);
@@ -2024,8 +2010,6 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     std::vector<RtpTransceiverState> transceiver_states,
     bool is_remote_description) {
   DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
-  // TODO(hbos): Exercise this codepath. https://crbug.com/777617
-  NOTREACHED();
   std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> web_transceivers(
       transceiver_states.size());
   for (size_t i = 0; i < transceiver_states.size(); ++i) {

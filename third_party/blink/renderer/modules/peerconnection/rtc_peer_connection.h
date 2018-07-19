@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/platform/async_method_runner.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -174,6 +175,7 @@ class MODULES_EXPORT RTCPeerConnection final
       MediaStreamTrack* selector);
   ScriptPromise PromiseBasedGetStats(ScriptState*, MediaStreamTrack* selector);
 
+  const HeapVector<Member<RTCRtpTransceiver>>& getTransceivers() const;
   const HeapVector<Member<RTCRtpSender>>& getSenders() const;
   const HeapVector<Member<RTCRtpReceiver>>& getReceivers() const;
   RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
@@ -291,6 +293,60 @@ class MODULES_EXPORT RTCPeerConnection final
       const WebRTCRtpSender& web_sender);
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
+  HeapVector<Member<RTCRtpTransceiver>>::iterator FindTransceiver(
+      const WebRTCRtpTransceiver& web_transceiver);
+
+  // Creates or updates the sender such that it is up-to-date with the
+  // WebRTCRtpSender in all regards *except for streams*. The web sender only
+  // knows of stream IDs; updating the stream objects requires additional logic
+  // which is different depending on context, e.g:
+  // - If created/updated with addTrack(), the streams were supplied as
+  //   arguments.
+  // The web sender's web track must already have a correspondent blink track in
+  // |tracks_|. The caller is responsible for ensuring this with
+  // RegisterTrack(), e.g:
+  // - On addTrack(), the track is supplied as an argument.
+  RTCRtpSender* CreateOrUpdateSender(std::unique_ptr<WebRTCRtpSender>,
+                                     String kind);
+  // Creates or updates the receiver such that it is up-to-date with the
+  // WebRTCRtpReceiver in all regards *except for streams*. The web receiver
+  // only knows of stream IDs; updating the stream objects requires additional
+  // logic which is different depending on context, e.g:
+  // - If created/updated with setRemoteDescription(), there is an algorithm for
+  //   processing the addition/removal of remote tracks which includes how to
+  //   create and update the associated streams set.
+  RTCRtpReceiver* CreateOrUpdateReceiver(std::unique_ptr<WebRTCRtpReceiver>);
+  // Creates or updates the transceiver such that it, including its sender and
+  // receiver, are up-to-date with the WebRTCRtpTransceiver in all regerds
+  // *except for sender and receiver streams*. The web sender and web receiver
+  // only knows of stream IDs; updating the stream objects require additional
+  // logic which is different depending on context. See above.
+  RTCRtpTransceiver* CreateOrUpdateTransceiver(
+      std::unique_ptr<WebRTCRtpTransceiver>);
+
+  // https://w3c.github.io/webrtc-pc/#process-remote-track-addition
+  void ProcessAdditionOfRemoteTrack(
+      RTCRtpTransceiver* transceiver,
+      const WebVector<WebString>& stream_ids,
+      HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+          add_list,
+      HeapVector<Member<RTCRtpTransceiver>>* track_events);
+  // https://w3c.github.io/webrtc-pc/#process-remote-track-removal
+  void ProcessRemovalOfRemoteTrack(
+      RTCRtpTransceiver* transceiver,
+      HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+          remove_list,
+      HeapVector<Member<MediaStreamTrack>>* mute_tracks);
+  // Update the |receiver->streams()| to the streams indicated by |stream_ids|,
+  // adding to |remove_list| and |add_list| accordingly.
+  // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams
+  void SetAssociatedMediaStreams(
+      RTCRtpReceiver* receiver,
+      const WebVector<WebString>& stream_ids,
+      HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+          remove_list,
+      HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+          add_list);
 
   // Sets the signaling state synchronously, and dispatches a
   // signalingstatechange event synchronously or asynchronously depending on
@@ -340,8 +396,15 @@ class MODULES_EXPORT RTCPeerConnection final
   // includes tracks of |rtp_senders_| and |rtp_receivers_|.
   HeapHashMap<WeakMember<MediaStreamComponent>, WeakMember<MediaStreamTrack>>
       tracks_;
+  // In Plan B, senders and receivers exist independently of one another.
+  // In Unified Plan, all senders and receivers are the sender-receiver pairs of
+  // transceivers.
+  // TODO(hbos): When Plan B is removed, remove |rtp_senders_| and
+  // |rtp_receivers_| since these are part of |transceivers_|.
+  // https://crbug.com/857004
   HeapVector<Member<RTCRtpSender>> rtp_senders_;
   HeapVector<Member<RTCRtpReceiver>> rtp_receivers_;
+  HeapVector<Member<RTCRtpTransceiver>> transceivers_;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
 

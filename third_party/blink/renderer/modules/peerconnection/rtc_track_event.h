@@ -15,6 +15,7 @@ namespace blink {
 class MediaStream;
 class MediaStreamTrack;
 class RTCRtpReceiver;
+class RTCRtpTransceiver;
 class RTCTrackEventInit;
 
 // https://w3c.github.io/webrtc-pc/#rtctrackevent
@@ -26,11 +27,13 @@ class RTCTrackEvent final : public Event {
                                const RTCTrackEventInit& eventInitDict);
   RTCTrackEvent(RTCRtpReceiver*,
                 MediaStreamTrack*,
-                const HeapVector<Member<MediaStream>>&);
+                const HeapVector<Member<MediaStream>>&,
+                RTCRtpTransceiver*);
 
   RTCRtpReceiver* receiver() const;
   MediaStreamTrack* track() const;
   HeapVector<Member<MediaStream>> streams() const;
+  RTCRtpTransceiver* transceiver() const;
 
   void Trace(blink::Visitor*) override;
 
@@ -41,6 +44,7 @@ class RTCTrackEvent final : public Event {
   Member<RTCRtpReceiver> receiver_;
   Member<MediaStreamTrack> track_;
   HeapVector<Member<MediaStream>> streams_;
+  Member<RTCRtpTransceiver> transceiver_;
 };
 
 }  // namespace blink

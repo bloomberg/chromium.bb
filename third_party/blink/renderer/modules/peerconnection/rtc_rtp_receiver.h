@@ -34,14 +34,12 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   const WebRTCRtpReceiver& web_receiver() const;
   MediaStreamVector streams() const;
+  void set_streams(MediaStreamVector streams);
   void UpdateSourcesIfNeeded();
 
   void Trace(blink::Visitor*) override;
 
  private:
-#if DCHECK_IS_ON()
-  bool StateMatchesWebReceiver() const;
-#endif  // DCHECK_IS_ON()
   void SetContributingSourcesNeedsUpdating();
 
   std::unique_ptr<WebRTCRtpReceiver> receiver_;

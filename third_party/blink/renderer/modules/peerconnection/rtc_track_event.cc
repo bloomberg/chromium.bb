@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_track_event_init.h"
 
 namespace blink {
@@ -21,18 +22,21 @@ RTCTrackEvent::RTCTrackEvent(const AtomicString& type,
     : Event(type, eventInitDict),
       receiver_(eventInitDict.receiver()),
       track_(eventInitDict.track()),
-      streams_(eventInitDict.streams()) {
+      streams_(eventInitDict.streams()),
+      transceiver_(eventInitDict.transceiver()) {
   DCHECK(receiver_);
   DCHECK(track_);
 }
 
 RTCTrackEvent::RTCTrackEvent(RTCRtpReceiver* receiver,
                              MediaStreamTrack* track,
-                             const HeapVector<Member<MediaStream>>& streams)
+                             const HeapVector<Member<MediaStream>>& streams,
+                             RTCRtpTransceiver* transceiver)
     : Event(EventTypeNames::track, Bubbles::kNo, Cancelable::kNo),
       receiver_(receiver),
       track_(track),
-      streams_(streams) {
+      streams_(streams),
+      transceiver_(transceiver) {
   DCHECK(receiver_);
   DCHECK(track_);
 }
@@ -49,10 +53,15 @@ HeapVector<Member<MediaStream>> RTCTrackEvent::streams() const {
   return streams_;
 }
 
+RTCRtpTransceiver* RTCTrackEvent::transceiver() const {
+  return transceiver_;
+}
+
 void RTCTrackEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(receiver_);
   visitor->Trace(track_);
   visitor->Trace(streams_);
+  visitor->Trace(transceiver_);
   Event::Trace(visitor);
 }
 

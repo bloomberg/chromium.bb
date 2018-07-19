@@ -7,6 +7,5 @@ dictionary RTCTrackEventInit : EventInit {
     required RTCRtpReceiver        receiver;
     required MediaStreamTrack      track;
              sequence<MediaStream> streams = [];
-    // TODO(hbos): When RTCRtpTransceiver is supported, add:
-    // required RTCRtpTransceiver     transceiver;
+    required RTCRtpTransceiver     transceiver;
 };
