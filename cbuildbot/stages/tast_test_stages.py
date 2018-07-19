@@ -41,8 +41,8 @@ FAILURE_BAD_RESULTS = '** Failed to read results from %s: %s **'
 # Prefix for results download link.
 RESULTS_LINK_PREFIX = 'results: '
 
-# Prefix for results link for flaky tests.
-FLAKY_PREFIX = 'flaky: '
+# Prefix for results link for informational tests.
+INFORMATIONAL_PREFIX = 'informational: '
 
 # Name of JSON file containing individual tests' results written by the tast
 # command to the results dir.
@@ -53,8 +53,8 @@ RESULTS_NAME_KEY = 'name'
 RESULTS_ERRORS_KEY = 'errors'
 RESULTS_ATTR_KEY = 'attr'
 
-# Attribute used to label flaky tests.
-RESULTS_FLAKY_ATTR = 'flaky'
+# Attribute used to label informational tests.
+RESULTS_INFORMATIONAL_ATTR = 'informational'
 
 # Directory written within main results dir by tast command containing per-test
 # results.
@@ -140,7 +140,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     """Runs multiple test suites sequentially.
 
     Args:
-      suites: List of TestVMTestConfig objects describing suites to run.
+      suites: List of TastVMTestConfig objects describing suites to run.
       base_chroot_results_dir: Base results directory relative to chroot.
 
     Raises:
@@ -255,16 +255,16 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
         with open(results_path, 'r') as f:
           for test in json.load(f):
             if test[RESULTS_ERRORS_KEY]:
-              flaky = RESULTS_FLAKY_ATTR in test.get(RESULTS_ATTR_KEY, [])
-
               name = test[RESULTS_NAME_KEY]
+              informational = (RESULTS_INFORMATIONAL_ATTR in
+                               test.get(RESULTS_ATTR_KEY, []))
               test_url = os.path.join(
                   url_base, suite_name, RESULTS_TESTS_DIR, name)
-              desc = FLAKY_PREFIX + name if flaky else name
+              desc = INFORMATIONAL_PREFIX + name if informational else name
               self.PrintDownloadLink(test_url, text_to_display=desc)
 
-              # Ignore the failure if the test was marked flaky.
-              if not flaky:
+              # Ignore the failure if the test was marked informational.
+              if not informational:
                 num_failed += 1
       except Exception as e:
         raise failures_lib.TestFailure(FAILURE_BAD_RESULTS %
