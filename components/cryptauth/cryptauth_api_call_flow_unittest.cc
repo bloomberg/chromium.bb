@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
+#include "components/cryptauth/network_request_error.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -62,9 +63,9 @@ class CryptAuthApiCallFlowTest
     result_.reset(new std::string(result));
   }
 
-  void OnError(const std::string& error_message) {
-    EXPECT_FALSE(error_message_);
-    error_message_.reset(new std::string(error_message));
+  void OnError(NetworkRequestError network_error) {
+    EXPECT_FALSE(network_error_);
+    network_error_.reset(new NetworkRequestError(network_error));
   }
 
   void CheckCryptAuthHttpRequest(const std::string& serialized_request) {
@@ -105,7 +106,7 @@ class CryptAuthApiCallFlowTest
 
   net::TestURLFetcher* url_fetcher_;
   std::unique_ptr<std::string> result_;
-  std::unique_ptr<std::string> error_message_;
+  std::unique_ptr<NetworkRequestError> network_error_;
 
  private:
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
@@ -119,14 +120,14 @@ TEST_F(CryptAuthApiCallFlowTest, RequestSuccess) {
   StartApiCallFlow();
   CompleteCurrentRequest(net::OK, net::HTTP_OK, kSerializedResponseProto);
   EXPECT_EQ(kSerializedResponseProto, *result_);
-  EXPECT_FALSE(error_message_);
+  EXPECT_FALSE(network_error_);
 }
 
 TEST_F(CryptAuthApiCallFlowTest, RequestFailure) {
   StartApiCallFlow();
   CompleteCurrentRequest(net::ERR_FAILED, 0, std::string());
   EXPECT_FALSE(result_);
-  EXPECT_EQ("Request failed", *error_message_);
+  EXPECT_EQ(NetworkRequestError::kOffline, *network_error_);
 }
 
 TEST_F(CryptAuthApiCallFlowTest, RequestStatus500) {
@@ -134,7 +135,7 @@ TEST_F(CryptAuthApiCallFlowTest, RequestStatus500) {
   CompleteCurrentRequest(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
                          "CryptAuth Meltdown.");
   EXPECT_FALSE(result_);
-  EXPECT_EQ("HTTP status: 500", *error_message_);
+  EXPECT_EQ(NetworkRequestError::kInternalServerError, *network_error_);
 }
 
 // The empty string is a valid protocol buffer message serialization.
@@ -142,7 +143,7 @@ TEST_F(CryptAuthApiCallFlowTest, RequestWithNoBody) {
   StartApiCallFlowWithRequest(std::string());
   CompleteCurrentRequest(net::OK, net::HTTP_OK, kSerializedResponseProto);
   EXPECT_EQ(kSerializedResponseProto, *result_);
-  EXPECT_FALSE(error_message_);
+  EXPECT_FALSE(network_error_);
 }
 
 // The empty string is a valid protocol buffer message serialization.
@@ -150,7 +151,7 @@ TEST_F(CryptAuthApiCallFlowTest, ResponseWithNoBody) {
   StartApiCallFlow();
   CompleteCurrentRequest(net::OK, net::HTTP_OK, std::string());
   EXPECT_EQ(std::string(), *result_);
-  EXPECT_FALSE(error_message_);
+  EXPECT_FALSE(network_error_);
 }
 
 }  // namespace cryptauth

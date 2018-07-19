@@ -4,5 +4,7 @@ hansberry@chromium.org
 
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
+per-file *_type_converter*.*=set noparent
+per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
 # COMPONENT: UI>ProximityAuth

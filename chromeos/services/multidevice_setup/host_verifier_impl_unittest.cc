@@ -121,7 +121,7 @@ class MultiDeviceSetupHostVerifierImplTest : public testing::Test {
 
   void VerifyFindEligibleDevicesCalled() {
     fake_device_sync_client_->InvokePendingFindEligibleDevicesCallback(
-        base::nullopt /* error_code */,
+        device_sync::mojom::NetworkRequestResult::kSuccess,
         cryptauth::RemoteDeviceRefList() /* eligible_devices */,
         cryptauth::RemoteDeviceRefList() /* ineligible_devices */);
   }

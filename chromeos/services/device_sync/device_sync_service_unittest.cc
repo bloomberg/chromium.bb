@@ -667,12 +667,12 @@ class DeviceSyncServiceTest : public testing::Test {
     return fake_software_feature_manager_factory_->instance();
   }
 
-  std::unique_ptr<base::Optional<std::string>>
+  std::unique_ptr<mojom::NetworkRequestResult>
   GetLastSetSoftwareFeatureStateResponseAndReset() {
     return std::move(last_set_software_feature_state_response_);
   }
 
-  std::unique_ptr<std::pair<base::Optional<std::string>,
+  std::unique_ptr<std::pair<mojom::NetworkRequestResult,
                             mojom::FindEligibleDevicesResponsePtr>>
   GetLastFindEligibleDevicesResponseAndReset() {
     return std::move(last_find_eligible_devices_response_);
@@ -699,13 +699,15 @@ class DeviceSyncServiceTest : public testing::Test {
         cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST, true /* enabled */,
         true /* is_exclusive */);
     auto last_set_response = GetLastSetSoftwareFeatureStateResponseAndReset();
-    EXPECT_EQ(mojom::kErrorNotInitialized, *last_set_response);
+    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+              *last_set_response);
 
     // Likewise, FindEligibleDevices() should also return a struct with the same
     // error code.
     CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
     auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
-    EXPECT_EQ(mojom::kErrorNotInitialized, last_find_response->first);
+    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+              last_find_response->first);
     EXPECT_FALSE(last_find_response->second /* response */);
 
     // GetDebugInfo() returns a null DebugInfo before initialization.
@@ -876,34 +878,34 @@ class DeviceSyncServiceTest : public testing::Test {
   }
 
   void OnSetSoftwareFeatureStateCompleted(
-      const base::Optional<std::string>& error_code) {
+      mojom::NetworkRequestResult result_code) {
     EXPECT_FALSE(last_set_software_feature_state_response_);
     last_set_software_feature_state_response_ =
-        std::make_unique<base::Optional<std::string>>(error_code);
+        std::make_unique<mojom::NetworkRequestResult>(result_code);
   }
 
   void OnSetSoftwareFeatureStateCompletedSynchronously(
       base::OnceClosure quit_closure,
-      const base::Optional<std::string>& error_code) {
-    OnSetSoftwareFeatureStateCompleted(error_code);
+      mojom::NetworkRequestResult result_code) {
+    OnSetSoftwareFeatureStateCompleted(result_code);
     std::move(quit_closure).Run();
   }
 
   void OnFindEligibleDevicesCompleted(
-      const base::Optional<std::string>& error_code,
+      mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr response) {
     EXPECT_FALSE(last_find_eligible_devices_response_);
     last_find_eligible_devices_response_ =
-        std::make_unique<std::pair<base::Optional<std::string>,
+        std::make_unique<std::pair<mojom::NetworkRequestResult,
                                    mojom::FindEligibleDevicesResponsePtr>>(
-            error_code, std::move(response));
+            result_code, std::move(response));
   }
 
   void OnFindEligibleDevicesCompletedSynchronously(
       base::OnceClosure quit_closure,
-      const base::Optional<std::string>& error_code,
+      mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr response) {
-    OnFindEligibleDevicesCompleted(error_code, std::move(response));
+    OnFindEligibleDevicesCompleted(result_code, std::move(response));
     std::move(quit_closure).Run();
   }
 
@@ -951,9 +953,9 @@ class DeviceSyncServiceTest : public testing::Test {
   bool last_force_sync_now_result_;
   base::Optional<cryptauth::RemoteDeviceList> last_synced_devices_result_;
   base::Optional<cryptauth::RemoteDevice> last_local_device_metadata_result_;
-  std::unique_ptr<base::Optional<std::string>>
+  std::unique_ptr<mojom::NetworkRequestResult>
       last_set_software_feature_state_response_;
-  std::unique_ptr<std::pair<base::Optional<std::string>,
+  std::unique_ptr<std::pair<mojom::NetworkRequestResult,
                             mojom::FindEligibleDevicesResponsePtr>>
       last_find_eligible_devices_response_;
   base::Optional<mojom::DebugInfo> last_debug_info_result_;
@@ -1138,7 +1140,7 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState) {
   base::RunLoop().RunUntilIdle();
   auto last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_FALSE(*last_response /* error_code */);
+  EXPECT_EQ(device_sync::mojom::NetworkRequestResult::kSuccess, *last_response);
 
   // Disable BETTER_TOGETHER_HOST for device 0.
   CallSetSoftwareFeatureState(test_devices()[0].public_key,
@@ -1154,11 +1156,12 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState) {
   EXPECT_FALSE(GetLastSetSoftwareFeatureStateResponseAndReset());
 
   // Now, invoke the error callback.
-  set_software_calls[1]->error_callback.Run("error");
+  set_software_calls[1]->error_callback.Run(
+      cryptauth::NetworkRequestError::kOffline);
   base::RunLoop().RunUntilIdle();
   last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_EQ("error", *last_response /* error_code */);
+  EXPECT_EQ(mojom::NetworkRequestResult::kOffline, *last_response);
 }
 
 TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
@@ -1188,7 +1191,8 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
   base::RunLoop().RunUntilIdle();
   auto last_response = GetLastFindEligibleDevicesResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_FALSE(last_response->first /* error_code */);
+  EXPECT_EQ(device_sync::mojom::NetworkRequestResult::kSuccess,
+            last_response->first);
   EXPECT_EQ(last_response->second->eligible_devices,
             cryptauth::RemoteDeviceList(test_devices().begin(),
                                         test_devices().begin()));
@@ -1206,11 +1210,12 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
   EXPECT_FALSE(GetLastFindEligibleDevicesResponseAndReset());
 
   // Now, invoke the error callback.
-  find_eligible_calls[1]->error_callback.Run("error");
+  find_eligible_calls[1]->error_callback.Run(
+      cryptauth::NetworkRequestError::kOffline);
   base::RunLoop().RunUntilIdle();
   last_response = GetLastFindEligibleDevicesResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_EQ("error", last_response->first /* error_code */);
+  EXPECT_EQ(mojom::NetworkRequestResult::kOffline, last_response->first);
   EXPECT_FALSE(last_response->second /* response */);
 }
 

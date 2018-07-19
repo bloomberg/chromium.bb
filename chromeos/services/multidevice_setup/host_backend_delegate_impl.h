@@ -79,7 +79,7 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   void OnSetSoftwareFeatureStateResult(
       cryptauth::RemoteDeviceRef device_for_request,
       bool attempted_to_enable,
-      const base::Optional<std::string>& error_code);
+      device_sync::mojom::NetworkRequestResult result_code);
 
   EligibleHostDevicesProvider* eligible_host_devices_provider_;
   PrefService* pref_service_;

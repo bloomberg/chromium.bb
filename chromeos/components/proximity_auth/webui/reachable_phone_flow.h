@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/cryptauth/network_request_error.h"
 
 namespace cryptauth {
 class CryptAuthClient;
@@ -47,7 +48,7 @@ class ReachablePhoneFlow {
 
  private:
   // Callback when a CryptAuth API fails.
-  void OnApiCallError(const std::string& error);
+  void OnApiCallError(cryptauth::NetworkRequestError error);
 
   // Callback for the SyncTickle CryptAuth request.
   void OnSyncTickleSuccess(

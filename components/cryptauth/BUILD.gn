@@ -57,6 +57,8 @@ static_library("cryptauth") {
     "gcm_device_info_provider.h",
     "local_device_data_provider.cc",
     "local_device_data_provider.h",
+    "network_request_error.cc",
+    "network_request_error.h",
     "pref_names.cc",
     "pref_names.h",
     "raw_eid_generator.h",

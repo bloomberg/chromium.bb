@@ -340,7 +340,7 @@ class DeviceSyncClientImplTest : public testing::Test {
   }
 
   void CallSetSoftwareFeatureState(
-      const base::Optional<std::string>& expected_error_code) {
+      mojom::NetworkRequestResult expected_result_code) {
     base::RunLoop run_loop;
 
     client_->SetSoftwareFeatureState(
@@ -354,14 +354,14 @@ class DeviceSyncClientImplTest : public testing::Test {
     SendPendingMojoMessages();
 
     fake_device_sync_->InvokePendingSetSoftwareFeatureStateCallback(
-        expected_error_code);
+        expected_result_code);
     run_loop.Run();
 
-    EXPECT_EQ(expected_error_code, set_software_feature_state_error_code_);
+    EXPECT_EQ(expected_result_code, set_software_feature_state_result_code_);
   }
 
   void CallFindEligibleDevices(
-      const base::Optional<std::string>& expected_error_code,
+      mojom::NetworkRequestResult expected_result_code,
       cryptauth::RemoteDeviceList expected_eligible_devices,
       cryptauth::RemoteDeviceList expected_ineligible_devices) {
     base::RunLoop run_loop;
@@ -375,12 +375,12 @@ class DeviceSyncClientImplTest : public testing::Test {
     SendPendingMojoMessages();
 
     fake_device_sync_->InvokePendingFindEligibleDevicesCallback(
-        expected_error_code,
+        expected_result_code,
         mojom::FindEligibleDevicesResponse::New(expected_eligible_devices,
                                                 expected_ineligible_devices));
     run_loop.Run();
 
-    EXPECT_EQ(expected_error_code,
+    EXPECT_EQ(expected_result_code,
               std::get<0>(find_eligible_devices_error_code_and_response_));
     VerifyRemoteDeviceRefListAndRemoteDeviceListAreEqual(
         std::get<1>(find_eligible_devices_error_code_and_response_),
@@ -454,8 +454,9 @@ class DeviceSyncClientImplTest : public testing::Test {
 
   base::Optional<bool> force_enrollment_now_completed_success_;
   base::Optional<bool> force_sync_now_completed_success_;
-  base::Optional<std::string> set_software_feature_state_error_code_;
-  std::tuple<base::Optional<std::string>,
+  base::Optional<mojom::NetworkRequestResult>
+      set_software_feature_state_result_code_;
+  std::tuple<mojom::NetworkRequestResult,
              cryptauth::RemoteDeviceRefList,
              cryptauth::RemoteDeviceRefList>
       find_eligible_devices_error_code_and_response_;
@@ -475,18 +476,18 @@ class DeviceSyncClientImplTest : public testing::Test {
 
   void OnSetSoftwareFeatureStateCompleted(
       base::OnceClosure callback,
-      const base::Optional<std::string>& error_code) {
-    set_software_feature_state_error_code_ = error_code;
+      mojom::NetworkRequestResult result_code) {
+    set_software_feature_state_result_code_ = result_code;
     std::move(callback).Run();
   }
 
   void OnFindEligibleDevicesCompleted(
       base::OnceClosure callback,
-      const base::Optional<std::string>& error_code,
+      mojom::NetworkRequestResult result_code,
       cryptauth::RemoteDeviceRefList eligible_devices,
       cryptauth::RemoteDeviceRefList ineligible_devices) {
     find_eligible_devices_error_code_and_response_ =
-        std::make_tuple(error_code, eligible_devices, ineligible_devices);
+        std::make_tuple(result_code, eligible_devices, ineligible_devices);
     std::move(callback).Run();
   }
 
@@ -671,7 +672,7 @@ TEST_F(DeviceSyncClientImplTest, TestGetSyncedDevices_DeviceRemovedFromCache) {
 TEST_F(DeviceSyncClientImplTest, TestSetSoftwareFeatureState) {
   InitializeClient();
 
-  CallSetSoftwareFeatureState("error_code");
+  CallSetSoftwareFeatureState(mojom::NetworkRequestResult::kSuccess);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_NoErrorCode) {
@@ -683,14 +684,16 @@ TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_NoErrorCode) {
       {test_remote_device_list_[2], test_remote_device_list_[3],
        test_remote_device_list_[4]});
 
-  CallFindEligibleDevices(base::nullopt, expected_eligible_devices,
+  CallFindEligibleDevices(mojom::NetworkRequestResult::kSuccess,
+                          expected_eligible_devices,
                           expected_ineligible_devices);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_ErrorCode) {
   InitializeClient();
 
-  CallFindEligibleDevices("error_code", cryptauth::RemoteDeviceList(),
+  CallFindEligibleDevices(mojom::NetworkRequestResult::kEndpointNotFound,
+                          cryptauth::RemoteDeviceList(),
                           cryptauth::RemoteDeviceList());
 }
 

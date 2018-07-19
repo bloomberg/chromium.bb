@@ -19,6 +19,7 @@
 #include "components/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
 #include "components/cryptauth/mock_sync_scheduler.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/cryptauth/software_feature_state.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -756,7 +757,7 @@ TEST_F(CryptAuthDeviceManagerImplTest, ForceSyncFailsThenSucceeds) {
               OnSyncFinishedProxy(
                   CryptAuthDeviceManager::SyncResult::FAILURE,
                   CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED));
-  error_callback_.Run("404");
+  error_callback_.Run(NetworkRequestError::kEndpointNotFound);
   EXPECT_EQ(old_sync_time, device_manager_->GetLastSyncTime());
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));
@@ -797,7 +798,7 @@ TEST_F(CryptAuthDeviceManagerImplTest, PeriodicSyncFailsThenSucceeds) {
               OnSyncFinishedProxy(
                   CryptAuthDeviceManager::SyncResult::FAILURE,
                   CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED));
-  error_callback_.Run("401");
+  error_callback_.Run(NetworkRequestError::kAuthenticationError);
   EXPECT_EQ(old_sync_time, device_manager_->GetLastSyncTime());
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));

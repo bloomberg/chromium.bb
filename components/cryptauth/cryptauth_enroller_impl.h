@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/cryptauth_enroller.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
@@ -47,12 +48,12 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // Callbacks for SetupEnrollment.
   void OnSetupEnrollmentSuccess(
       const SetupEnrollmentResponse& response);
-  void OnSetupEnrollmentFailure(const std::string& error);
+  void OnSetupEnrollmentFailure(NetworkRequestError error);
 
   // Callbacks for FinishEnrollment.
   void OnFinishEnrollmentSuccess(
       const FinishEnrollmentResponse& response);
-  void OnFinishEnrollmentFailure(const std::string& error);
+  void OnFinishEnrollmentFailure(NetworkRequestError error);
 
   // Callbacks for SecureMessageDelegate operations.
   void OnKeyPairGenerated(const std::string& public_key,

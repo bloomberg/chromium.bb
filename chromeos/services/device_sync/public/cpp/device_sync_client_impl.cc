@@ -218,12 +218,12 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
 
 void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
     FindEligibleDevicesCallback callback,
-    const base::Optional<std::string>& error_code,
+    mojom::NetworkRequestResult result_code,
     mojom::FindEligibleDevicesResponsePtr response) {
   cryptauth::RemoteDeviceRefList eligible_devices;
   cryptauth::RemoteDeviceRefList ineligible_devices;
 
-  if (!error_code) {
+  if (result_code == mojom::NetworkRequestResult::kSuccess) {
     std::transform(
         response->eligible_devices.begin(), response->eligible_devices.end(),
         std::back_inserter(eligible_devices), [this](const auto& device) {
@@ -237,7 +237,7 @@ void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
         });
   }
 
-  std::move(callback).Run(error_code, eligible_devices, ineligible_devices);
+  std::move(callback).Run(result_code, eligible_devices, ineligible_devices);
 }
 
 mojom::DeviceSyncObserverPtr DeviceSyncClientImpl::GenerateInterfacePtr() {

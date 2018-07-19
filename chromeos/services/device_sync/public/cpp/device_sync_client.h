@@ -39,7 +39,7 @@ class DeviceSyncClient {
   };
 
   using FindEligibleDevicesCallback =
-      base::OnceCallback<void(const base::Optional<std::string>&,
+      base::OnceCallback<void(mojom::NetworkRequestResult,
                               cryptauth::RemoteDeviceRefList,
                               cryptauth::RemoteDeviceRefList)>;
 

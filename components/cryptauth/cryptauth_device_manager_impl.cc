@@ -652,7 +652,7 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesSuccess(
 }
 
 void CryptAuthDeviceManagerImpl::OnGetMyDevicesFailure(
-    const std::string& error) {
+    NetworkRequestError error) {
   PA_LOG(ERROR) << "GetMyDevices API failed: " << error;
   pref_service_->SetBoolean(prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure,
                             true);

@@ -40,9 +40,9 @@ class FakeDeviceSync : public DeviceSyncBase {
       const base::Optional<std::vector<cryptauth::RemoteDevice>>&
           remote_devices);
   void InvokePendingSetSoftwareFeatureStateCallback(
-      const base::Optional<std::string>& error_code);
+      mojom::NetworkRequestResult result_code);
   void InvokePendingFindEligibleDevicesCallback(
-      const base::Optional<std::string>& error_code,
+      mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr find_eligible_devices_response_ptr);
   void InvokePendingGetDebugInfoCallback(mojom::DebugInfoPtr debug_info_ptr);
 

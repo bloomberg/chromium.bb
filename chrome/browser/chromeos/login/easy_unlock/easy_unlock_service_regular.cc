@@ -755,19 +755,22 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
 }
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
-    const std::string& error_message) {
+    cryptauth::NetworkRequestError error) {
+  PA_LOG(WARNING) << "ToggleEasyUnlock call failed: " << error;
   DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  OnTurnOffEasyUnlockFailure(error_message);
+  OnTurnOffEasyUnlockFailure();
 }
 
 void EasyUnlockServiceRegular::OnTurnOffEasyUnlockCompleted(
-    const base::Optional<std::string>& error_code) {
+    device_sync::mojom::NetworkRequestResult result_code) {
   DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
 
-  if (error_code)
-    OnTurnOffEasyUnlockFailure(*error_code);
-  else
+  if (result_code != device_sync::mojom::NetworkRequestResult::kSuccess) {
+    PA_LOG(WARNING) << "ToggleEasyUnlock call failed: " << result_code;
+    OnTurnOffEasyUnlockFailure();
+  } else {
     OnTurnOffEasyUnlockSuccess();
+  }
 }
 
 void EasyUnlockServiceRegular::OnTurnOffEasyUnlockSuccess() {
@@ -794,9 +797,7 @@ void EasyUnlockServiceRegular::OnTurnOffEasyUnlockSuccess() {
   registrar_.RemoveAll();
 }
 
-void EasyUnlockServiceRegular::OnTurnOffEasyUnlockFailure(
-    const std::string& error_message) {
-  LOG(WARNING) << "Failed to turn off Smart Lock: " << error_message;
+void EasyUnlockServiceRegular::OnTurnOffEasyUnlockFailure() {
   LogToggleFeatureDisableResult(SmartLockResult::FAILURE);
   SetTurnOffFlowStatus(FAIL);
 }

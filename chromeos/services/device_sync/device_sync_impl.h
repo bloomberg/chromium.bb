@@ -12,6 +12,7 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_gcm_manager.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/remote_device_provider.h"
 #include "components/signin/core/browser/account_info.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
@@ -150,23 +151,23 @@ class DeviceSyncImpl : public DeviceSyncBase,
       const std::string& public_key) const;
 
   void OnSetSoftwareFeatureStateSuccess(
-      const base::RepeatingCallback<void(const base::Optional<std::string>&)>&
+      const base::RepeatingCallback<void(mojom::NetworkRequestResult)>&
           callback);
   void OnSetSoftwareFeatureStateError(
-      const base::RepeatingCallback<void(const base::Optional<std::string>&)>&
+      const base::RepeatingCallback<void(mojom::NetworkRequestResult)>&
           callback,
-      const std::string& error);
+      cryptauth::NetworkRequestError error);
   void OnFindEligibleDevicesSuccess(
       const base::RepeatingCallback<
-          void(const base::Optional<std::string>&,
+          void(mojom::NetworkRequestResult,
                mojom::FindEligibleDevicesResponsePtr)>& callback,
       const std::vector<cryptauth::ExternalDeviceInfo>& eligible_devices,
       const std::vector<cryptauth::IneligibleDevice>& ineligible_devices);
   void OnFindEligibleDevicesError(
       const base::RepeatingCallback<
-          void(const base::Optional<std::string>&,
+          void(mojom::NetworkRequestResult,
                mojom::FindEligibleDevicesResponsePtr)>& callback,
-      const std::string& error);
+      cryptauth::NetworkRequestError error);
 
   void SetPrefConnectionDelegateForTesting(
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);

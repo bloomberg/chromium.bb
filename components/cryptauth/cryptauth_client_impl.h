@@ -27,8 +27,6 @@ namespace cryptauth {
 // messages. CryptAuthClient will fill this field for all requests.
 class CryptAuthClientImpl : public CryptAuthClient {
  public:
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
-
   // Creates the client using |url_request_context| to make the HTTP request
   // through |api_call_flow|. The |device_classifier| argument contains basic
   // device information of the caller (e.g. version and device type).
@@ -98,7 +96,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
       const std::string& serialized_response);
 
   // Called when the current API call fails at any step.
-  void OnApiCallFailed(const std::string& error_message);
+  void OnApiCallFailed(NetworkRequestError error);
 
   // Constructs and executes the actual HTTP request.
   std::unique_ptr<CryptAuthApiCallFlow> api_call_flow_;

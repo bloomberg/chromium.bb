@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_gcm_manager.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/sync_scheduler.h"
 
@@ -94,7 +95,7 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
 
   // Callback when |cryptauth_client_| completes with the response.
   void OnGetMyDevicesSuccess(const GetMyDevicesResponse& response);
-  void OnGetMyDevicesFailure(const std::string& error);
+  void OnGetMyDevicesFailure(NetworkRequestError error);
 
   // Used to determine the time.
   base::Clock* clock_;

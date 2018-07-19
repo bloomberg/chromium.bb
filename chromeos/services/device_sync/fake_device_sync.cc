@@ -33,16 +33,17 @@ void FakeDeviceSync::InvokePendingGetSyncedDevicesCallback(
 }
 
 void FakeDeviceSync::InvokePendingSetSoftwareFeatureStateCallback(
-    const base::Optional<std::string>& error_code) {
-  std::move(set_software_feature_state_callback_queue_.front()).Run(error_code);
+    mojom::NetworkRequestResult result_code) {
+  std::move(set_software_feature_state_callback_queue_.front())
+      .Run(result_code);
   set_software_feature_state_callback_queue_.pop();
 }
 
 void FakeDeviceSync::InvokePendingFindEligibleDevicesCallback(
-    const base::Optional<std::string>& error_code,
+    mojom::NetworkRequestResult result_code,
     mojom::FindEligibleDevicesResponsePtr find_eligible_devices_response_ptr) {
   std::move(find_eligible_devices_callback_queue_.front())
-      .Run(error_code, std::move(find_eligible_devices_response_ptr));
+      .Run(result_code, std::move(find_eligible_devices_response_ptr));
   find_eligible_devices_callback_queue_.pop();
 }
 

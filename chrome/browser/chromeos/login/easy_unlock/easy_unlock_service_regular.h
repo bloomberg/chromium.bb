@@ -19,6 +19,7 @@
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -139,13 +140,13 @@ class EasyUnlockServiceRegular
   // Callback for ToggleEasyUnlock CryptAuth API.
   void OnToggleEasyUnlockApiComplete(
       const cryptauth::ToggleEasyUnlockResponse& response);
-  void OnToggleEasyUnlockApiFailed(const std::string& error_message);
+  void OnToggleEasyUnlockApiFailed(cryptauth::NetworkRequestError error);
 
   void OnTurnOffEasyUnlockCompleted(
-      const base::Optional<std::string>& error_code);
+      device_sync::mojom::NetworkRequestResult result_code);
 
   void OnTurnOffEasyUnlockSuccess();
-  void OnTurnOffEasyUnlockFailure(const std::string& error_message);
+  void OnTurnOffEasyUnlockFailure();
 
   // Called with the user's credentials (e.g. username and password) after the
   // user reauthenticates to begin setup.

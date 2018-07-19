@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/switches.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
@@ -256,8 +257,9 @@ void CryptAuthClientImpl::MakeApiCall(
     const ErrorCallback& error_callback,
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   if (has_call_started_) {
-    error_callback.Run(
-        "Client has been used for another request. Do not reuse.");
+    PA_LOG(ERROR) << "CryptAuthClientImpl::MakeApiCall(): Tried to make an API "
+                  << "call, but the client had already been used.";
+    NOTREACHED();
     return;
   }
   has_call_started_ = true;
@@ -271,8 +273,9 @@ void CryptAuthClientImpl::MakeApiCall(
 
   std::string serialized_request;
   if (!request_copy.SerializeToString(&serialized_request)) {
-    error_callback.Run(std::string("Failed to serialize ") +
-                       request_proto.GetTypeName() + " proto.");
+    PA_LOG(ERROR) << "CryptAuthClientImpl::MakeApiCall(): Failure serializing "
+                  << "request proto.";
+    NOTREACHED();
     return;
   }
 
@@ -301,7 +304,7 @@ void CryptAuthClientImpl::OnAccessTokenFetched(
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
-    OnApiCallFailed("Failed to get a valid access token.");
+    OnApiCallFailed(NetworkRequestError::kAuthenticationError);
     return;
   }
   access_token_used_ = access_token_info.token;
@@ -321,14 +324,14 @@ void CryptAuthClientImpl::OnFlowSuccess(
     const std::string& serialized_response) {
   ResponseProto response;
   if (!response.ParseFromString(serialized_response)) {
-    OnApiCallFailed("Failed to parse response proto.");
+    OnApiCallFailed(NetworkRequestError::kResponseMalformed);
     return;
   }
   result_callback.Run(response);
 };
 
-void CryptAuthClientImpl::OnApiCallFailed(const std::string& error_message) {
-  error_callback_.Run(error_message);
+void CryptAuthClientImpl::OnApiCallFailed(NetworkRequestError error) {
+  error_callback_.Run(error);
 }
 
 // CryptAuthClientFactoryImpl
