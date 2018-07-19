@@ -1297,7 +1297,6 @@ class DnsTransactionImpl : public DnsTransaction,
   // Clears and cancels all non-completed attempts. If |leave_attempt| is not
   // null, it is not cleared even if complete.
   void ClearAttempts(const DnsAttempt* leave_attempt) {
-    std::unique_ptr<DnsAttempt> completed_result;
     for (auto it = attempts_.begin(); it != attempts_.end();) {
       if (!(*it)->is_completed() && it->get() != leave_attempt) {
         it = attempts_.erase(it);
