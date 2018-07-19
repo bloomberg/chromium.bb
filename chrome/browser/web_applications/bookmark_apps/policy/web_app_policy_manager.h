@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_POLICY_WEB_APP_POLICY_MANAGER_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_POLICY_WEB_APP_POLICY_MANAGER_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_POLICY_WEB_APP_POLICY_MANAGER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_POLICY_WEB_APP_POLICY_MANAGER_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -22,7 +21,7 @@ namespace web_app {
 // which apps need to be installed, uninstalled, and updated. It uses
 // WebAppPolicyManager::PendingAppManager to actually install, uninstall,
 // and update apps.
-class WebAppPolicyManager : public KeyedService {
+class WebAppPolicyManager {
  public:
   class PendingAppManager;
 
@@ -55,7 +54,7 @@ class WebAppPolicyManager : public KeyedService {
       PrefService* pref_service,
       std::unique_ptr<PendingAppManager> pending_app_manager);
 
-  ~WebAppPolicyManager() override;
+  ~WebAppPolicyManager();
 
   const PendingAppManager& pending_app_manager() {
     return *pending_app_manager_;
@@ -89,4 +88,4 @@ class WebAppPolicyManager::PendingAppManager {
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_POLICY_WEB_APP_POLICY_MANAGER_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_POLICY_WEB_APP_POLICY_MANAGER_H_
