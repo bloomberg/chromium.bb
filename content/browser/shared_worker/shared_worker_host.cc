@@ -141,6 +141,11 @@ void SharedWorkerHost::Start(
   devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(
       this, &pause_on_start, &devtools_worker_token);
 
+  RendererPreferences renderer_preferences;
+  GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
+      RenderProcessHost::FromID(process_id_)->GetBrowserContext(),
+      &renderer_preferences);
+
   // Set up content settings interface.
   blink::mojom::WorkerContentSettingsProxyPtr content_settings;
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
@@ -183,9 +188,9 @@ void SharedWorkerHost::Start(
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
-      std::move(content_settings), std::move(service_worker_provider_info),
-      std::move(script_loader_factory), std::move(factory_bundle),
-      std::move(host), std::move(worker_request_),
+      renderer_preferences, std::move(content_settings),
+      std::move(service_worker_provider_info), std::move(script_loader_factory),
+      std::move(factory_bundle), std::move(host), std::move(worker_request_),
       std::move(interface_provider));
 
   // Monitor the lifetime of the worker.

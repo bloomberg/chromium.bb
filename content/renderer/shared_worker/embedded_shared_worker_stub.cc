@@ -194,6 +194,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     mojom::SharedWorkerInfoPtr info,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
+    const RendererPreferences& renderer_preferences,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
@@ -206,7 +207,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     : binding_(this, std::move(request)),
       host_(std::move(host)),
       name_(info->name),
-      url_(info->url) {
+      url_(info->url),
+      renderer_preferences_(renderer_preferences) {
   impl_ = blink::WebSharedWorker::Create(this);
   if (pause_on_start) {
     // Pause worker context when it starts and wait until either DevTools client
@@ -375,11 +377,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       loader_factories_->Clone();
 
-  // TODO(crbug.com/853085): Send the preference from the browser process.
-  RendererPreferences renderer_preferences;
-
   auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
-      std::move(renderer_preferences), std::move(worker_client_request),
+      std::move(renderer_preferences_), std::move(worker_client_request),
       std::move(worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), loader_factories_->Clone(),
       std::move(fallback_factory),
