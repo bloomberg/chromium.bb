@@ -47,14 +47,6 @@ Polymer({
     },
 
     /**
-     * Flag that enables MD-OOBE.
-     */
-    enabled: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Accessibility options status.
      * @type {!OobeTypes.A11yStatuses}
      */
@@ -111,6 +103,11 @@ Polymer({
    * This is called when UI strings are changed.
    */
   updateLocalizedContent: function() {
+    this.languages = loadTimeData.getValue('languageList');
+    this.keyboards = loadTimeData.getValue('inputMethodsList');
+    this.timezones = loadTimeData.getValue('timezoneList');
+    this.highlightStrength = loadTimeData.getValue('highlightStrength');
+
     this.$.networkSelectionScreen.i18nUpdateLocale();
     this.$.welcomeScreen.i18nUpdateLocale();
     this.i18nUpdateLocale();
