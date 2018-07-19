@@ -266,8 +266,12 @@ void RemoveWhitelistedEntries(
       *blacklisted_modules,
       [&module_list_filter](const third_party_dlls::PackedListModule& module) {
         return module_list_filter.IsWhitelisted(
-            reinterpret_cast<const char*>(&module.basename_hash[0]),
-            reinterpret_cast<const char*>(&module.code_id_hash[0]));
+            base::StringPiece(
+                reinterpret_cast<const char*>(&module.basename_hash[0]),
+                sizeof(module.basename_hash)),
+            base::StringPiece(
+                reinterpret_cast<const char*>(&module.code_id_hash[0]),
+                sizeof(module.code_id_hash)));
       });
 }
 
