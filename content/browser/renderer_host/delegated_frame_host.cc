@@ -440,7 +440,25 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 // DelegatedFrameHost, ImageTransportFactoryObserver implementation:
 
 void DelegatedFrameHost::OnLostResources() {
-  EvictDelegatedFrame();
+  // TODO(kylechar): This isn't called consistently without OOP-D. It's tied to
+  // losing the shared main thread context which is only used on Chrome OS.
+
+  // With OOP-D renderer surface was destroyed if the GPU process crashed.
+  // Without OOP-D the renderer surface may use invalid resources so we evict
+  // it. Reset the fallback Surface but leave the primary so we embed the
+  // renderer surface as soon as it gets created again.
+  if (HasFallbackSurface()) {
+    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+        viz::SurfaceId());
+  }
+
+  if (HasSavedFrame()) {
+    // Without OOP-D evict the renderer surface so OnFirstSurfaceActivation()
+    // fires when the renderer submits a new CompositorFrame.
+    if (!enable_viz_)
+      GetHostFrameSinkManager()->EvictSurfaces({GetCurrentSurfaceId()});
+    frame_evictor_->DiscardedFrame();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

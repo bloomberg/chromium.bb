@@ -323,6 +323,16 @@ void VizProcessTransportFactory::DisableGpuCompositing(
 void VizProcessTransportFactory::OnGpuProcessLost() {
   // Reconnect HostFrameSinkManager to new GPU process.
   ConnectHostFrameSinkManager();
+
+  // If we're using GPU compositing then OnLostResources() will get triggered by
+  // the loss of the shared context. If we're using software compositing there
+  // is no shared context so trigger OnLostResources() from here.
+  if (is_gpu_compositing_disabled()) {
+    // TODO(kylechar): Split OnLostResources() into OnLostSharedContext() and
+    // OnLostGpuProcess() to differentiate between the two cases.
+    for (auto& observer : observer_list_)
+      observer.OnLostResources();
+  }
 }
 
 void VizProcessTransportFactory::OnEstablishedGpuChannel(
