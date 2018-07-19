@@ -13,6 +13,7 @@
 
 namespace resource_coordinator {
 
+class LifecycleUnitSourceBase;
 class UsageClock;
 
 using ::mojom::LifecycleUnitState;
@@ -21,11 +22,13 @@ using ::mojom::LifecycleUnitStateChangeReason;
 // Base class for a LifecycleUnit.
 class LifecycleUnitBase : public LifecycleUnit {
  public:
-  explicit LifecycleUnitBase(content::Visibility visibility,
+  explicit LifecycleUnitBase(LifecycleUnitSourceBase* source,
+                             content::Visibility visibility,
                              UsageClock* usage_clock);
   ~LifecycleUnitBase() override;
 
   // LifecycleUnit:
+  LifecycleUnitSource* GetSource() const override;
   int32_t GetID() const override;
   base::TimeTicks GetWallTimeWhenHidden() const override;
   base::TimeDelta GetChromeUsageTimeWhenHidden() const override;
@@ -54,7 +57,9 @@ class LifecycleUnitBase : public LifecycleUnit {
 
   // Notifies observers that the LifecycleUnit is being destroyed. This is
   // invoked by derived classes rather than by the base class to avoid notifying
-  // observers when the LifecycleUnit has been partially destroyed.
+  // observers when the LifecycleUnit has been partially destroyed. This also
+  // forwards the notification to the lifecycle unit source via
+  // LifecycleUnitSourceBase.
   void OnLifecycleUnitDestroyed();
 
  private:
@@ -62,6 +67,9 @@ class LifecycleUnitBase : public LifecycleUnit {
 
   // A unique id representing this LifecycleUnit.
   const int32_t id_ = ++next_id_;
+
+  // The source that owns this lifecycle unit. This can be nullptr.
+  LifecycleUnitSourceBase* source_;
 
   // Current state of this LifecycleUnit.
   LifecycleUnitState state_ = LifecycleUnitState::ACTIVE;

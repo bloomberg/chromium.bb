@@ -4,8 +4,10 @@
 
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
@@ -14,6 +16,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace resource_coordinator {
@@ -100,6 +105,27 @@ void TabLifecycleUnitSource::SetFocusedTabStripModelForTesting(
   UpdateFocusedTab();
 }
 
+void TabLifecycleUnitSource::OnFirstLifecycleUnitCreated() {
+  // In production builds monitor the policy override of the lifecycles feature.
+  // This class owns the monitor so it is okay to use base::Unretained. Note
+  // that tests often don't have a local_state pref service available.
+  if (!g_browser_process->local_state())
+    return;
+
+  tab_lifecycles_enterprise_preference_monitor_ =
+      std::make_unique<TabLifecylesEnterprisePreferenceMonitor>(
+          g_browser_process->local_state(),
+          base::BindRepeating(
+              &TabLifecycleUnitSource::SetTabLifecyclesEnterprisePolicy,
+              base::Unretained(this)));
+}
+
+void TabLifecycleUnitSource::OnAllLifecycleUnitsDestroyed() {
+  // This needs to be freed before shutdown as PrefChangeRegistrars can't exist
+  // at shutdown. Tear it down when there are no more tabs being monitored.
+  tab_lifecycles_enterprise_preference_monitor_.reset();
+}
+
 TabLifecycleUnitSource::TabLifecycleUnit*
 TabLifecycleUnitSource::GetTabLifecycleUnit(
     content::WebContents* web_contents) const {
@@ -158,7 +184,8 @@ void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
     TabLifecycleUnitHolder::CreateForWebContents(contents);
     auto* holder = TabLifecycleUnitHolder::FromWebContents(contents);
     holder->set_lifecycle_unit(std::make_unique<TabLifecycleUnit>(
-        &tab_lifecycle_observers_, usage_clock_, contents, tab_strip_model));
+        this, &tab_lifecycle_observers_, usage_clock_, contents,
+        tab_strip_model));
     TabLifecycleUnit* lifecycle_unit = holder->lifecycle_unit();
     if (GetFocusedTabStripModel() == tab_strip_model && foreground)
       UpdateFocusedTabTo(lifecycle_unit);
@@ -236,6 +263,43 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
   // TODO(fdoray): This may want to filter for the navigation_id.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
+}
+
+void TabLifecycleUnitSource::SetTabLifecyclesEnterprisePolicy(bool enabled) {
+  tab_lifecycles_enterprise_policy_ = enabled;
+}
+
+TabLifecylesEnterprisePreferenceMonitor::
+    TabLifecylesEnterprisePreferenceMonitor(
+        PrefService* pref_service,
+        OnPreferenceChangedCallback callback)
+    : pref_service_(pref_service), callback_(callback) {
+  // Create a registrar to track changes to the setting.
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service_);
+  pref_change_registrar_->Add(
+      prefs::kTabLifecyclesEnabled,
+      base::BindRepeating(&TabLifecylesEnterprisePreferenceMonitor::GetPref,
+                          base::Unretained(this)));
+
+  // Do an initial check of the value.
+  GetPref();
+}
+
+TabLifecylesEnterprisePreferenceMonitor::
+    ~TabLifecylesEnterprisePreferenceMonitor() = default;
+
+void TabLifecylesEnterprisePreferenceMonitor::GetPref() {
+  bool enabled = true;
+
+  // If the preference is set to false by enterprise policy then disable the
+  // lifecycles feature.
+  const PrefService::Preference* pref =
+      pref_service_->FindPreference(prefs::kTabLifecyclesEnabled);
+  if (pref->IsManaged() && !pref->GetValue()->GetBool())
+    enabled = false;
+
+  callback_.Run(enabled);
 }
 
 }  // namespace resource_coordinator
