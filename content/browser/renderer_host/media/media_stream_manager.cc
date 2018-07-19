@@ -55,7 +55,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
-#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/create_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "url/gurl.h"
@@ -487,7 +487,7 @@ MediaStreamManager::MediaStreamManager(
           video_capture::uma::BROWSER_USING_LEGACY_CAPTURE);
       video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
           std::make_unique<media::VideoCaptureSystemImpl>(
-              media::VideoCaptureDeviceFactory::CreateFactory(
+              media::CreateVideoCaptureDeviceFactory(
                   BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));

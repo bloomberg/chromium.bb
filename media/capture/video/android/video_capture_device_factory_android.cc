@@ -154,11 +154,4 @@ bool VideoCaptureDeviceFactoryAndroid::IsLegacyOrDeprecatedDevice(
       AttachCurrentThread(), id));
 }
 
-// static
-VideoCaptureDeviceFactory*
-VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return new VideoCaptureDeviceFactoryAndroid();
-}
-
 }  // namespace media
