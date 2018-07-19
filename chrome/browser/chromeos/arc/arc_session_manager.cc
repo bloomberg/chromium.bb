@@ -1006,6 +1006,9 @@ void ArcSessionManager::StopArc() {
     profile_->GetPrefs()->SetBoolean(prefs::kArcPaiStarted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcFastAppReinstallStarted, false);
+    profile_->GetPrefs()->SetInteger(
+        prefs::kArcSupervisionTransition,
+        static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
   }
   ShutdownSession();
   if (support_host_)

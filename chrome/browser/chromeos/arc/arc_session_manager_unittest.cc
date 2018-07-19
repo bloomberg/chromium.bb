@@ -622,6 +622,39 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOff) {
   arc_session_manager()->Shutdown();
 }
 
+TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
+  profile()->GetPrefs()->SetInteger(
+      prefs::kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+
+  // Initialize ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+
+  EXPECT_EQ(
+      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
+      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+
+  // Child started graduation.
+  profile()->GetPrefs()->SetInteger(
+      prefs::kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+  // Simulate ARC shutdown.
+  arc_session_manager()->RequestDisable();
+  EXPECT_EQ(
+      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
+      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+
+  arc_session_manager()->Shutdown();
+}
+
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
