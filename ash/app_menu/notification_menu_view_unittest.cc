@@ -127,6 +127,21 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
     return notification;
   }
 
+  message_center::Notification UpdateNotification(
+      const std::string& notification_id,
+      const base::string16& title,
+      const base::string16& message) {
+    const message_center::NotifierId notifier_id(
+        message_center::NotifierId::APPLICATION, kTestAppId);
+    message_center::Notification notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
+        message, gfx::Image(), base::ASCIIToUTF16("www.test.org"), GURL(),
+        notifier_id, message_center::RichNotificationData(),
+        nullptr /* delegate */);
+    notification_menu_view_->UpdateNotificationItemView(notification);
+    return notification;
+  }
+
   void CheckDisplayedNotification(
       const message_center::Notification& notification) {
     // Check whether the notification and view contents match.
@@ -331,6 +346,33 @@ TEST_F(NotificationMenuViewTest, OutOfBoundsClick) {
   notification_menu_view()->GetWidget()->OnMouseEvent(&out_of_bounds_release);
 
   EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+}
+
+// Tests updating notifications that do and do not exist.
+TEST_F(NotificationMenuViewTest, UpdateNotification) {
+  // Add a notification.
+  const std::string notification_id = "notification_id";
+  AddNotification(notification_id, base::ASCIIToUTF16("title"),
+                  base::ASCIIToUTF16("message"));
+  // Send an updated notification with a matching |notification_id|.
+  const message_center::Notification updated_notification =
+      UpdateNotification(notification_id, base::ASCIIToUTF16("new_title"),
+                         base::ASCIIToUTF16("new_message"));
+
+  // The displayed notification's contents should have changed to match the
+  // updated notification.
+  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(1, test_api()->GetItemViewCount());
+  CheckDisplayedNotification(updated_notification);
+
+  // Send an updated notification for a notification which doesn't yet exist.
+  UpdateNotification("Bad notification", base::ASCIIToUTF16("Bad Title"),
+                     base::ASCIIToUTF16("Bad Message"));
+
+  // Test that the displayed notification has not been changed.
+  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(1, test_api()->GetItemViewCount());
+  CheckDisplayedNotification(updated_notification);
 }
 
 }  // namespace ash

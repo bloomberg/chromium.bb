@@ -22,6 +22,10 @@ namespace message_center {
 class ProportionalImageView;
 }
 
+namespace views {
+class Label;
+}
+
 namespace ash {
 
 // The view which contains the details of a notification.
@@ -46,6 +50,11 @@ class APP_MENU_EXPORT NotificationItemView : public views::View {
 
   ~NotificationItemView() override;
 
+  // Updates the contents of the view.
+  void UpdateContents(const base::string16& title,
+                      const base::string16& message,
+                      const gfx::Image& icon);
+
   // views::View overrides:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
@@ -65,6 +74,12 @@ class APP_MENU_EXPORT NotificationItemView : public views::View {
   // Holds the notification's icon. Owned by the views hierarchy.
   message_center::ProportionalImageView* proportional_icon_view_ = nullptr;
 
+  // Shows the title, owned by the views hierarchy.
+  views::Label* title_label_ = nullptr;
+
+  // Shows the message, owned by the views hierarchy.
+  views::Label* message_label_ = nullptr;
+
   // Owned by AppMenuModelAdapter. Used to activate notifications.
   Delegate* const delegate_;
 
@@ -72,8 +87,8 @@ class APP_MENU_EXPORT NotificationItemView : public views::View {
   std::unique_ptr<message_center::SlideOutController> slide_out_controller_;
 
   // Notification properties.
-  const base::string16 title_;
-  const base::string16 message_;
+  base::string16 title_;
+  base::string16 message_;
 
   // The identifier used by MessageCenter to identify this notification.
   const std::string notification_id_;

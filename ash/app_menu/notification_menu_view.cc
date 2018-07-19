@@ -71,6 +71,24 @@ void NotificationMenuView::AddNotificationItemView(
   header_view_->UpdateCounter(notification_item_views_.size());
 }
 
+void NotificationMenuView::UpdateNotificationItemView(
+    const message_center::Notification& notification) {
+  // Find the view which corresponds to |notification|.
+  auto notification_iter = std::find_if(
+      notification_item_views_.begin(), notification_item_views_.end(),
+      [&notification](
+          const std::unique_ptr<NotificationItemView>& notification_item_view) {
+        return notification_item_view->notification_id() == notification.id();
+      });
+
+  if (notification_iter == notification_item_views_.end())
+    return;
+
+  (*notification_iter)
+      ->UpdateContents(notification.title(), notification.message(),
+                       notification.icon());
+}
+
 void NotificationMenuView::RemoveNotificationItemView(
     const std::string& notification_id) {
   // Find the view which corresponds to |notification_id|.

@@ -44,6 +44,11 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
   void AddNotificationItemView(
       const message_center::Notification& notification);
 
+  // Updates the NotificationItemView corresponding to |notification|, replacing
+  // the contents if they have changed.
+  void UpdateNotificationItemView(
+      const message_center::Notification& notification);
+
   // Removes the NotificationItemView associated with |notification_id| and
   // if it is the currently displayed NotificationItemView, replaces it with the
   // next one if available.

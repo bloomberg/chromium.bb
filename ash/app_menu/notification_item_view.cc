@@ -70,25 +70,17 @@ NotificationItemView::NotificationItemView(
       views::BoxLayout::Orientation::kVertical));
   AddChildView(text_container_);
 
-  const int maximum_text_length_px =
-      views::MenuConfig::instance().touchable_menu_width -
-      kNotificationHorizontalPadding - kIconHorizontalPadding * 2 -
-      kProportionalIconViewSize.width();
-  views::Label* title_label = new views::Label(
-      gfx::ElideText(title_, views::Label::GetDefaultFontList(),
-                     maximum_text_length_px, gfx::ElideBehavior::ELIDE_TAIL));
-  title_label->SetEnabledColor(kNotificationTitleTextColor);
-  title_label->SetLineHeight(kNotificationItemTextLineHeight);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_container_->AddChildView(title_label);
+  title_label_ = new views::Label(title_);
+  title_label_->SetEnabledColor(kNotificationTitleTextColor);
+  title_label_->SetLineHeight(kNotificationItemTextLineHeight);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_container_->AddChildView(title_label_);
 
-  views::Label* message_label = new views::Label(
-      gfx::ElideText(message_, views::Label::GetDefaultFontList(),
-                     maximum_text_length_px, gfx::ElideBehavior::ELIDE_TAIL));
-  message_label->SetEnabledColor(kNotificationMessageTextColor);
-  message_label->SetLineHeight(kNotificationItemTextLineHeight);
-  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_container_->AddChildView(message_label);
+  message_label_ = new views::Label(message_);
+  message_label_->SetEnabledColor(kNotificationMessageTextColor);
+  message_label_->SetLineHeight(kNotificationItemTextLineHeight);
+  message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_container_->AddChildView(message_label_);
 
   proportional_icon_view_ =
       new message_center::ProportionalImageView(kProportionalIconViewSize);
@@ -99,6 +91,21 @@ NotificationItemView::NotificationItemView(
 
 NotificationItemView::~NotificationItemView() = default;
 
+void NotificationItemView::UpdateContents(const base::string16& title,
+                                          const base::string16& message,
+                                          const gfx::Image& icon) {
+  if (title_ != title) {
+    title_ = title;
+    title_label_->SetText(title_);
+  }
+  if (message_ != message) {
+    message_ = message;
+    message_label_->SetText(message_);
+  }
+  proportional_icon_view_->SetImage(icon.AsImageSkia(),
+                                    kProportionalIconViewSize);
+}
+
 gfx::Size NotificationItemView::CalculatePreferredSize() const {
   return gfx::Size(views::MenuConfig::instance().touchable_menu_width,
                    kNotificationItemViewHeight);
@@ -106,11 +113,18 @@ gfx::Size NotificationItemView::CalculatePreferredSize() const {
 
 void NotificationItemView::Layout() {
   gfx::Insets insets = GetInsets();
-  const gfx::Size text_container_preferred_size =
-      text_container_->GetPreferredSize();
+  // Enforce |text_container_| width, if necessary the labels will elide as a
+  // result of |text_container_| being too small to hold the full width of its
+  // children labels.
+  const gfx::Size text_container_size(
+      views::MenuConfig::instance().touchable_menu_width -
+          kNotificationHorizontalPadding - kIconHorizontalPadding * 2 -
+          kProportionalIconViewSize.width(),
+      title_label_->GetPreferredSize().height() +
+          message_label_->GetPreferredSize().height());
   text_container_->SetBounds(insets.left(), insets.top(),
-                             text_container_preferred_size.width(),
-                             text_container_preferred_size.height());
+                             text_container_size.width(),
+                             text_container_size.height());
 
   proportional_icon_view_->SetBounds(
       width() - insets.right() - kProportionalIconViewSize.width(),

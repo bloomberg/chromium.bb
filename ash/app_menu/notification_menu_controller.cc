@@ -46,6 +46,22 @@ void NotificationMenuController::OnNotificationAdded(
   notification_menu_view_->AddNotificationItemView(*notification);
 }
 
+void NotificationMenuController::OnNotificationUpdated(
+    const std::string& notification_id) {
+  if (!notification_menu_view_)
+    return;
+
+  message_center::Notification* notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          notification_id);
+
+  DCHECK(notification);
+  if (notification->notifier_id().id != app_id_)
+    return;
+
+  notification_menu_view_->UpdateNotificationItemView(*notification);
+}
+
 void NotificationMenuController::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
