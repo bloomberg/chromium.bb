@@ -8,19 +8,16 @@
  */
 var moduleListDataFormat = {
   'moduleList': [{
-    'type': 'The type of module found',
     'type_description':
         'The type of module (string), defaults to blank for regular modules',
-    'status': 'The module status',
     'location': 'The module path, not including filename',
     'name': 'The name of the module',
     'product_name': 'The name of the product the module belongs to',
     'description': 'The module description',
     'version': 'The module version',
     'digital_signer': 'The signer of the digital certificate for the module',
-    'recommended_action': 'The help tips bitmask',
-    'possible_resolution': 'The help tips in string form',
-    'help_url': 'The link to the Help Center article'
+    'code_id': 'The code id of the module',
+    'third_party_module_status': 'The module status'
   }]
 };
 
