@@ -104,6 +104,8 @@ public class LocationBarLayout extends FrameLayout
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
 
+    private final int mLightScrimColor;
+
     /** Params that control how the location bar interacts with the scrim. */
     private ScrimParams mScrimParams;
 
@@ -384,6 +386,8 @@ public class LocationBarLayout extends FrameLayout
 
         LayoutInflater.from(context).inflate(layoutId, this, true);
 
+        mLightScrimColor = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.omnibox_focused_fading_background_color_light);
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
@@ -2041,6 +2045,11 @@ public class LocationBarLayout extends FrameLayout
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
 
         if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
+            mScrimParams.backgroundColor =
+                    useModernDesign() && !mIsTablet && !mToolbarDataProvider.isIncognito()
+                    ? mLightScrimColor
+                    : null;
+
             // If the location bar is shown in the NTP, the toolbar will eventually trigger a
             // fade in.
             mScrim.showScrim(mScrimParams);
