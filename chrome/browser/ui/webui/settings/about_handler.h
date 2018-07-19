@@ -22,7 +22,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
-#include "chromeos/system/version_loader.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {

@@ -9,7 +9,7 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chromeos/assistant/internal/internal_constants.h"
-#include "chromeos/system/version_loader.h"
+#include "chromeos/dbus/util/version_loader.h"
 
 namespace chromeos {
 namespace assistant {

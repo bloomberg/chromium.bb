@@ -49,6 +49,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"

@@ -131,6 +131,7 @@
 #include "chromeos/dbus/services/virtual_file_request_service_provider.h"
 #include "chromeos/dbus/services/vm_applications_service_provider.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login_event_recorder.h"

@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "chromeos/system/version_loader.h"
 
 namespace chromeos {
 namespace assistant {

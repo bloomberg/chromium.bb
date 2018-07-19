@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/system/version_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace device {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SYSTEM_VERSION_LOADER_H_
-#define CHROMEOS_SYSTEM_VERSION_LOADER_H_
+#ifndef CHROMEOS_DBUS_UTIL_VERSION_LOADER_H_
+#define CHROMEOS_DBUS_UTIL_VERSION_LOADER_H_
 
 #include <string>
 
@@ -55,4 +55,4 @@ CHROMEOS_EXPORT bool IsRollback(const std::string& current_version,
 }  // namespace version_loader
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SYSTEM_VERSION_LOADER_H_
+#endif  // CHROMEOS_DBUS_UTIL_VERSION_LOADER_H_
