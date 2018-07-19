@@ -342,7 +342,7 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
   }
 
   {
-    // Adding two ARC IMEs.
+    // Adding two ARC IMEs. One is already enabled.
     std::vector<mojom::ImeInfoPtr> info_array;
     info_array.push_back(info1.Clone());
     info_array.push_back(info2.Clone());
@@ -356,6 +356,12 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
     EXPECT_EQ(android_ime_id2, ceiu::GetComponentIDByInputMethodID(
                                    std::get<1>(added_extensions[0])[1].id()));
     EXPECT_EQ(display_name2, std::get<1>(added_extensions[0])[1].name());
+
+    // Already enabled IME should be added to the pref automatically.
+    const std::string& arc_ime_id2 = std::get<1>(added_extensions[0])[1].id();
+    EXPECT_EQ(arc_ime_id2,
+              profile()->GetPrefs()->GetString(prefs::kLanguageEnabledImes));
+
     added_extensions.clear();
   }
 }

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -108,6 +109,7 @@ void ArcInputMethodManagerService::OnActiveImeChanged(
 
 void ArcInputMethodManagerService::OnImeInfoChanged(
     std::vector<mojom::ImeInfoPtr> ime_info_array) {
+  using chromeos::input_method::InputMethodDescriptor;
   using chromeos::input_method::InputMethodDescriptors;
   using chromeos::input_method::InputMethodManager;
 
@@ -121,8 +123,14 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
 
   // Convert ime_info_array to InputMethodDescriptors.
   InputMethodDescriptors descriptors;
-  for (const auto& ime_info : ime_info_array)
-    descriptors.push_back(BuildInputMethodDescriptor(ime_info.get()));
+  std::vector<std::string> enabled_input_method_ids;
+  for (const auto& ime_info : ime_info_array) {
+    const InputMethodDescriptor& descriptor =
+        BuildInputMethodDescriptor(ime_info.get());
+    descriptors.push_back(descriptor);
+    if (ime_info->enabled)
+      enabled_input_method_ids.push_back(descriptor.id());
+  }
   if (descriptors.empty()) {
     // If no ARC IME is installed, remove ARC IME entry from preferences.
     RemoveArcIMEFromPrefs();
@@ -131,6 +139,22 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   // Add the proxy IME entry to InputMethodManager if any ARC IME is installed.
   state->AddInputMethodExtension(proxy_ime_extension_id_, descriptors,
                                  proxy_ime_engine_.get());
+
+  // Enabled IMEs that are already enabled in the container.
+  const std::string active_ime_ids =
+      profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
+  std::vector<std::string> active_ime_list = base::SplitString(
+      active_ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  // TODO(crbug.com/845079): We should keep the order of the IMEs as same as in
+  // chrome://settings
+  for (const auto& input_method_id : enabled_input_method_ids) {
+    if (std::find(active_ime_list.begin(), active_ime_list.end(),
+                  input_method_id) == active_ime_list.end()) {
+      active_ime_list.push_back(input_method_id);
+    }
+  }
+  profile_->GetPrefs()->SetString(prefs::kLanguageEnabledImes,
+                                  base::JoinString(active_ime_list, ","));
 }
 
 void ArcInputMethodManagerService::ImeMenuListChanged() {
