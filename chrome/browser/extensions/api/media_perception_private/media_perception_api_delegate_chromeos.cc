@@ -10,6 +10,12 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 namespace extensions {
 
@@ -57,6 +63,21 @@ void MediaPerceptionAPIDelegateChromeOS::LoadCrOSComponent(
       component_updater::CrOSComponentManager::MountPolicy::kMount,
       component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
       base::BindOnce(OnLoadComponent, std::move(load_callback)));
+}
+
+void MediaPerceptionAPIDelegateChromeOS::
+    BindDeviceFactoryProviderToVideoCaptureService(
+        video_capture::mojom::DeviceFactoryProviderPtr* provider) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // In unit test environments, there may not be any connector.
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (!connection)
+    return;
+  service_manager::Connector* connector = connection->GetConnector();
+  if (!connector)
+    return;
+  connector->BindInterface(video_capture::mojom::kServiceName, provider);
 }
 
 }  // namespace extensions

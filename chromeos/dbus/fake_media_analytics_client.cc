@@ -107,8 +107,9 @@ void FakeMediaAnalyticsClient::GetDiagnostics(
 void FakeMediaAnalyticsClient::BootstrapMojoConnection(
     base::ScopedFD file_descriptor,
     VoidDBusMethodCallback callback) {
+  // Fake that the mojo connection has been successfully established.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), false));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeMediaAnalyticsClient::OnGetDiagnostics(

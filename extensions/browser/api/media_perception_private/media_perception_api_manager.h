@@ -12,8 +12,10 @@
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
+#include "chromeos/services/media_perception/public/mojom/connector.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/media_perception_private.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 namespace extensions {
 
@@ -98,6 +100,14 @@ class MediaPerceptionAPIManager
   // Callbacks for Upstart command to start media analytics process.
   void UpstartStartProcessCallback(APIComponentProcessStateCallback callback,
                                    bool succeeded);
+
+  // Sends a Mojo IPC message pipe invitation to the media analytics process.
+  void SendMojoInvitation(APIComponentProcessStateCallback callback);
+
+  // Callback for BootstrapMojoConnection D-Bus method calls to the media
+  // analytics process.
+  void OnBootstrapMojoConnection(APIComponentProcessStateCallback callback,
+                                 bool succeeded);
 
   // This callback includes a mri::State so that the API manager can immediately
   // set the state of rtanalytics after start-up.

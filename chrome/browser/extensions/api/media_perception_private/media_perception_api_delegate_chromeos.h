@@ -20,6 +20,8 @@ class MediaPerceptionAPIDelegateChromeOS
   void LoadCrOSComponent(
       const api::media_perception_private::ComponentType& type,
       LoadCrOSComponentCallback load_callback) override;
+  void BindDeviceFactoryProviderToVideoCaptureService(
+      video_capture::mojom::DeviceFactoryProviderPtr* provider) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionAPIDelegateChromeOS);

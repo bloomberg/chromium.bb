@@ -57,7 +57,10 @@ namespace mediaPerceptionPrivate {
     SERVICE_BUSY_LAUNCHING,
 
     // The component is not installed properly.
-    SERVICE_NOT_INSTALLED
+    SERVICE_NOT_INSTALLED,
+
+    // Failed to establish a Mojo connection to the service.
+    MOJO_CONNECTION_FAILURE
   };
 
   enum ComponentType {
