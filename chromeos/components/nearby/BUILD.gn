@@ -10,6 +10,7 @@ static_library("nearby") {
     "count_down_latch_impl.h",
     "hash_utils_impl.cc",
     "hash_utils_impl.h",
+    "settable_future_impl.h",
   ]
 
   deps = [
@@ -25,6 +26,7 @@ source_set("unit_tests") {
   sources = [
     "count_down_latch_impl_unittests.cc",
     "hash_utils_impl_unittests.cc",
+    "settable_future_impl_unittests.cc",
   ]
 
   deps = [
