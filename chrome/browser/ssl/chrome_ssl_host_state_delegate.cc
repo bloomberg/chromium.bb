@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -70,17 +69,11 @@ constexpr int kRecurrentInterstitialDefaultResetTime =
 // overidden by a field trial group.  See https://crbug.com/487270.
 const uint64_t kDeltaDefaultExpirationInSeconds = UINT64_C(604800);
 
-// Field trial information
-const char kRevertCertificateErrorDecisionsFieldTrialName[] =
-    "RevertCertificateErrorDecisions";
-const char kForgetAtSessionEndGroup[] = "Session";
-
 // Keys for the per-site error + certificate finger to judgment content
 // settings map.
 const char kSSLCertDecisionCertErrorMapKey[] = "cert_exceptions_map";
 const char kSSLCertDecisionExpirationTimeKey[] = "decision_expiration_time";
 const char kSSLCertDecisionVersionKey[] = "version";
-const char kSSLCertDecisionGUIDKey[] = "guid";
 
 const int kDefaultSSLCertDecisionVersion = 1;
 
@@ -181,17 +174,6 @@ GURL GetSecureGURLForHost(const std::string& host) {
   return GURL(url);
 }
 
-// By default, certificate exception decisions are remembered for one week.
-// However, there is a field trial group for the "old" style of certificate
-// decision memory that expires decisions at session end. ExpireAtSessionEnd()
-// returns |true| if and only if the user is in that field trial group.
-bool ExpireAtSessionEnd() {
-  std::string group_name = base::FieldTrialList::FindFullName(
-      kRevertCertificateErrorDecisionsFieldTrialName);
-  return !group_name.empty() &&
-         group_name.compare(kForgetAtSessionEndGroup) == 0;
-}
-
 std::string GetKey(const net::X509Certificate& cert, int error) {
   // Since a security decision will be made based on the fingerprint, Chrome
   // should use the SHA-256 fingerprint for the certificate.
@@ -264,22 +246,10 @@ bool HostFilterToPatternFilter(
 const base::Feature kRecurrentInterstitialFeature{
     "RecurrentInterstitialFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If |should_remember_ssl_decisions_| is
-// FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END, that means that all invalid
-// certificate proceed decisions should be forgotten when the session ends. To
-// simulate that, Chrome keeps track of a guid to represent the current browser
-// session and stores it in decision entries. See the comment for
-// |current_expiration_guid_| for more information.
 ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
     : clock_(new base::DefaultClock()),
-      profile_(profile),
-      current_expiration_guid_(base::GenerateGUID()) {
+      profile_(profile) {
   MigrateOldSettings(HostContentSettingsMapFactory::GetForProfile(profile));
-  if (ExpireAtSessionEnd())
-    should_remember_ssl_decisions_ =
-        FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END;
-  else
-    should_remember_ssl_decisions_ = REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA;
 }
 
 ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() {
@@ -626,9 +596,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   // NULL.
   // - Expired and |create_entries| is CREATE_DICTIONARY_ENTRIES, update the
   // expiration time.
-  if (should_remember_ssl_decisions_ !=
-          FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END &&
-      decision_expiration.ToInternalValue() <= now.ToInternalValue()) {
+  if (decision_expiration.ToInternalValue() <= now.ToInternalValue()) {
     *expired_previous_decision = true;
 
     if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
@@ -642,19 +610,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     // better to store the value as a string.
     dict->SetString(kSSLCertDecisionExpirationTimeKey,
                     base::Int64ToString(expiration_time.ToInternalValue()));
-  } else if (should_remember_ssl_decisions_ ==
-             FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END) {
-    if (dict->HasKey(kSSLCertDecisionGUIDKey)) {
-      std::string old_expiration_guid;
-      success = dict->GetString(kSSLCertDecisionGUIDKey, &old_expiration_guid);
-      if (old_expiration_guid.compare(current_expiration_guid_) != 0) {
-        *expired_previous_decision = true;
-        expired = true;
-      }
-    }
   }
-
-  dict->SetString(kSSLCertDecisionGUIDKey, current_expiration_guid_);
 
   // Extract the map of certificate fingerprints to errors from the setting.
   base::DictionaryValue* cert_error_dict = NULL;  // Will be owned by dict

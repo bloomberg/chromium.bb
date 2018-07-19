@@ -92,16 +92,6 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
     DO_NOT_CREATE_DICTIONARY_ENTRIES
   };
 
-  // Specifies whether user SSL error decisions should be forgetten at the end
-  // of this current session (the old style of remembering decisions), or
-  // whether they should be remembered across session restarts for a specified
-  // length of time, deteremined by
-  // |default_ssl_cert_decision_expiration_delta_|.
-  enum RememberSSLExceptionDecisionsDisposition {
-    FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END,
-    REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA
-  };
-
   // Returns a dictionary of certificate fingerprints and errors that have been
   // allowed as exceptions by the user.
   //
@@ -122,7 +112,6 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
       bool* expired_previous_decision);
 
   std::unique_ptr<base::Clock> clock_;
-  RememberSSLExceptionDecisionsDisposition should_remember_ssl_decisions_;
   Profile* profile_;
 
   // A BrokenHostEntry is a pair of (host, child_id) that indicates the host
@@ -137,29 +126,6 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // Hosts which have been contaminated with content with certificate errors in
   // the specific process.
   std::set<BrokenHostEntry> ran_content_with_cert_errors_hosts_;
-
-  // This is a GUID to mark this unique session. Whenever a certificate decision
-  // expiration is set, the GUID is saved as well so Chrome can tell if it was
-  // last set during the current session. This is used by the
-  // FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END experimental group to
-  // determine if the expired_previous_decision bit should be set on queries.
-  //
-  // Why not just iterate over the set of current extensions and mark them all
-  // as expired when the session starts, rather than storing a GUID for the
-  // current session? Glad you asked! Unfortunately, content settings does not
-  // currently support iterating over all current *compound* content setting
-  // values (iteration only works for simple content settings). While this could
-  // be added, it would be a fair amount of work for what amounts to a temporary
-  // measurement problem, so it's not worth the complexity.
-  //
-  // TODO(jww): This is only used by the default and disable groups of the
-  // certificate memory decisions experiment to tell if a decision has expired
-  // since the last session. Since this is only used for UMA purposes, this
-  // should be removed after the experiment has finished, and a call to Clear()
-  // should be added to the constructor and destructor for members of the
-  // FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END groups. See
-  // https://crbug.com/418631 for more details.
-  const std::string current_expiration_guid_;
 
   // Tracks how many times an error page has been shown for a given error, up
   // to a certain threshold value.
