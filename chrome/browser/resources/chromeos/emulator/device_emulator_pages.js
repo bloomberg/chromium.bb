@@ -15,6 +15,7 @@ Polymer({
     selectedPage: {
       type: Number,
       value: 0,
+      observer: 'onSelectedPageChange_',
     },
   },
 
@@ -29,5 +30,10 @@ Polymer({
   /** @private */
   onMenuButtonTap_: function() {
     this.$.drawer.toggle();
+  },
+
+  /** @private */
+  onSelectedPageChange_: function() {
+    this.$.drawer.closeDrawer();
   },
 });
