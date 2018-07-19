@@ -34,6 +34,10 @@ bool IsMDIconsEnabled() {
   return ntp_tiles::IsMDIconsEnabled();
 }
 
+bool IsCustomLinksEnabled() {
+  return ntp_tiles::IsCustomLinksEnabled();
+}
+
 bool IsCustomBackgroundsEnabled() {
   return base::FeatureList::IsEnabled(kNtpBackgrounds) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);

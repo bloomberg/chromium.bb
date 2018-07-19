@@ -40,7 +40,7 @@ bool IsMDIconsEnabled() {
 #endif
 }
 
-bool IsMDCustomLinksEnabled() {
+bool IsCustomLinksEnabled() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   return base::FeatureList::IsEnabled(kNtpCustomLinks) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);

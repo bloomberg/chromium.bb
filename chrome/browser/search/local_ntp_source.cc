@@ -231,6 +231,8 @@ std::string GetConfigData(bool is_google, const GURL& google_base_url) {
   config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
 
   if (is_google) {
+    config_data.SetBoolean("isCustomLinksEnabled",
+                           features::IsCustomLinksEnabled());
     config_data.SetBoolean("isCustomBackgroundsEnabled",
                            features::IsCustomBackgroundsEnabled());
   }

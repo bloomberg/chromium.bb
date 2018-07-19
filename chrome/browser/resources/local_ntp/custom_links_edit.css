@@ -1,0 +1,87 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#edit-link-dialog::backdrop {
+  background-color: rgba(255, 255, 255, .75);
+}
+
+#edit-link-dialog {
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  bottom: 0;
+  box-shadow:
+      0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  font-family: 'Roboto', arial, sans-serif;
+  margin: auto;
+  padding: 16px;
+  top: 0;
+  width: 320px;
+  z-index: 10000;
+}
+
+#edit-link-dialog > div {
+  width: 100%;
+}
+
+.dialog-title {
+  font-size: 15px;
+  line-height: 24px;
+  margin-bottom: 16px;
+}
+
+.field-container {
+  margin-bottom: 16px;
+}
+
+.field-title {
+  color: rgb(154, 160, 166);
+  font-size: 10px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+input {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 8px;
+  background-color: rgb(232, 234, 237);
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  height: 32px;
+  line-height: 24px;
+  width: calc(100% - 16px);
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.buttons-container .right {
+}
+
+button {
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  height: 32px;
+  padding: 0 16px;
+}
+
+button.primary {
+  background-color: rgb(26, 115, 232);
+  color: white;
+}
+
+button.secondary {
+  background-color: white;
+  border: 1px solid rgb(218,220,224);
+  color: rgb(26, 115, 232);
+}
+
+#cancel {
+  margin-right: 8px;
+}

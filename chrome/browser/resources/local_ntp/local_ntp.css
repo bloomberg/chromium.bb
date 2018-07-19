@@ -75,6 +75,10 @@ body.inited {
   display: block;
 }
 
+body.hidden {
+  overflow: hidden;
+}
+
 /* Button defaults vary by platform. Reset CSS so that the NTP can use buttons
  * as a kind of clickable div. */
 button {
@@ -665,6 +669,20 @@ html[dir=rtl] #attribution,
   border: none;
   height: 100%;
   width: 100%;
+}
+
+#custom-links-edit {
+  border: none;
+  display: none;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 10000;
+}
+
+#custom-links-edit.show {
+  display: block;
 }
 
 #one-google {

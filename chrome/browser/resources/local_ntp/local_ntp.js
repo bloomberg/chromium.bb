@@ -75,6 +75,9 @@ var CLASSES = {
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   FADE: 'fade',  // Enables opacity transition on logo and doodle.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
+  SHOW_EDIT_DIALOG: 'show',          // Displays the edit custom link dialog.
+  HIDE_BODY_OVERFLOW: 'hidden',      // Prevents scrolling while the edit custom
+                                     // link dialog is open.
   // Applies float animations to the Most Visited notification
   FLOAT_UP: 'float-up',
   // Applies ripple animation to the element on click
@@ -106,6 +109,7 @@ var CLASSES = {
 var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
+  CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   FAKEBOX: 'fakebox',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
@@ -634,6 +638,17 @@ function setFakeboxVisibility(show) {
 
 
 /**
+ * @param {boolean} show True if do show the edit custom link dialog and disable
+ *  scrolling.
+ */
+function setEditCustomLinkDialogVisibility(show) {
+  $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
+      .classList.toggle(CLASSES.SHOW_EDIT_DIALOG, show);
+  document.body.classList.toggle(CLASSES.HIDE_BODY_OVERFLOW, show);
+}
+
+
+/**
  * @param {!Element} element The element to register the handler for.
  * @param {number} keycode The keycode of the key to register.
  * @param {!Function} handler The key handler to register.
@@ -647,7 +662,7 @@ function registerKeyHandler(element, keycode, handler) {
 
 
 /**
- * Event handler for messages from the most visited iframe.
+ * Event handler for messages from the most visited and edit custom link iframe.
  * @param {Event} event Event received.
  */
 function handlePostMessage(event) {
@@ -681,6 +696,10 @@ function handlePostMessage(event) {
     document.body.style.setProperty('--logo-iframe-height', height);
     document.body.style.setProperty('--logo-iframe-width', width);
     document.body.style.setProperty('--logo-iframe-resize-duration', duration);
+  } else if (cmd === 'startEditLink') {
+    setEditCustomLinkDialogVisibility(true);
+  } else if (cmd === 'closeDialog') {
+    setEditCustomLinkDialogVisibility(false);
   }
 }
 
@@ -957,6 +976,10 @@ function init() {
     args.push('enableMD=1');
   }
 
+  if (configData.isCustomLinksEnabled) {
+    args.push('enableCustomLinks=1');
+  }
+
   // Create the most visited iframe.
   var iframe = document.createElement('iframe');
   iframe.id = IDS.TILES_IFRAME;
@@ -969,6 +992,8 @@ function init() {
     reloadTiles();
     sendThemeInfoToMostVisitedIframe();
   };
+
+  // TODO(851293): Add translated title attribute to edit custom link iframe.
 
   window.addEventListener('message', handlePostMessage);
 

@@ -18,8 +18,11 @@ extern const base::Feature kNtpUIMd;
 // Returns whether the Material Design UI is enabled on the New Tab Page.
 bool IsMDUIEnabled();
 
-// Returns whether New Tab Page Custom Link Icons are enabled.
+// Returns whether the Material Design UI for Most Visited is enabled.
 bool IsMDIconsEnabled();
+
+// Returns whether New Tab Page custom links are enabled.
+bool IsCustomLinksEnabled();
 
 // Returns whether New Tab Page Background Selection is enabled.
 bool IsCustomBackgroundsEnabled();

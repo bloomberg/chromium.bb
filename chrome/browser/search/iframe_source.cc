@@ -29,6 +29,8 @@ std::string IframeSource::GetMimeType(
     return "text/css";
   if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII))
     return "text/html";
+  if (base::EndsWith(path, ".svg", base::CompareCase::INSENSITIVE_ASCII))
+    return "image/svg+xml";
   return std::string();
 }
 

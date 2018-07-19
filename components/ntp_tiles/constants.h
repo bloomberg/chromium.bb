@@ -40,7 +40,7 @@ extern const base::Feature kNtpCustomLinks;
 bool IsMDIconsEnabled();
 
 // Returns whether the custom links is enabled.
-bool IsMDCustomLinksEnabled();
+bool IsCustomLinksEnabled();
 
 }  // namespace ntp_tiles
 
