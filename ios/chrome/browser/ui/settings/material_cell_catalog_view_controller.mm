@@ -578,6 +578,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)accountControlItem {
   AccountControlItem* item = [[AccountControlItem alloc]
       initWithType:ItemTypeAccountControlDynamicHeight];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.image = [UIImage imageNamed:@"settings_sync"];
   item.text = @"Account Sync Settings";
   item.detailText = @"Detail text";
@@ -588,6 +589,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)accountControlItemWithExtraLongText {
   AccountControlItem* item = [[AccountControlItem alloc]
       initWithType:ItemTypeAccountControlDynamicHeight];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.image = [ChromeIcon infoIcon];
   item.text = @"Account Control Settings";
   item.detailText =
