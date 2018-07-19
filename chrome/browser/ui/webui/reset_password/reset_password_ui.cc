@@ -12,6 +12,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -94,6 +95,14 @@ safe_browsing::ReusedPasswordType GetPasswordType(
   return safe_browsing::PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
 }
 
+// Properly format host name based on text direction.
+base::string16 GetFormattedHostName(const std::string host_name) {
+  base::string16 host = url_formatter::IDNToUnicode(host_name);
+  if (base::i18n::IsRTL())
+    base::i18n::WrapStringWithLTRFormatting(&host);
+  return host;
+}
+
 }  // namespace
 
 ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
@@ -154,11 +163,12 @@ void ResetPasswordUI::PopulateStrings(content::WebContents* web_contents,
         known_password_type ? WARNING_NO_ORG_NAME : GENERIC_NO_ORG_NAME,
         STRING_TYPE_COUNT);
   } else {
+    base::string16 formatted_org_name = GetFormattedHostName(org_name);
     explanation_paragraph_string = l10n_util::GetStringFUTF16(
         known_password_type
             ? IDS_RESET_PASSWORD_WARNING_EXPLANATION_PARAGRAPH_WITH_ORG_NAME
             : IDS_RESET_PASSWORD_EXPLANATION_PARAGRAPH_WITH_ORG_NAME,
-        base::UTF8ToUTF16(org_name));
+        formatted_org_name);
     base::UmaHistogramEnumeration(
         kStringTypeUMAName,
         known_password_type ? WARNING_WITH_ORG_NAME : GENERIC_WITH_ORG_NAME,
