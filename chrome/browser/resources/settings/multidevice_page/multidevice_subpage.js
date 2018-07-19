@@ -42,7 +42,11 @@ Polymer({
     pageContentData: Object,
   },
 
-  showIndividualFeatures_: function() {
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowIndividualFeatures_: function() {
     return this.pageContentData.mode ===
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },

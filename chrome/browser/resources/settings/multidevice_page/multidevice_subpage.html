@@ -29,13 +29,13 @@
       </cr-toggle>
     </div>
     <template is="dom-if"
-        if="[[showIndividualFeatures_(pageContentData)]]"
+        if="[[shouldShowIndividualFeatures_(pageContentData)]]"
         restamp>
       <div class="feature-item-container">
         <settings-multidevice-feature-item icon-name="settings:smart-lock"
             subpage-route="[[routes.LOCK_SCREEN]]"
-            feature-name-id="multideviceSmartLockItemTitle"
-            feature-summary-id="multideviceAndroidMessagesItemSummary">
+            feature-name="$i18n{multideviceSmartLockItemTitle}"
+            feature-summary-html="$i18n{multideviceSmartLockItemSummary}">
         </settings-multidevice-feature-item>
       </div>
     </template>

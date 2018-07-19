@@ -15,22 +15,19 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-feature-item',
 
-  behaviors: [I18nBehavior],
-
   properties: {
     /**
-     * This is the ID of the localized string representing the name of the
-     * feature.
+     * The localized string representing the name of the feature.
      * @type {string}
      */
-    featureNameId: String,
+    featureName: String,
 
     /**
-     * This is the ID of the localized string providing a description or useful
-     * status information concertning the feature.
+     * The localized string providing a description or useful status information
+     * concertning the feature.
      * @type {string}
      */
-    featureSummaryId: String,
+    featureSummaryHtml: String,
 
     /**
      * The full icon name used provided by the containing iron-iconset-svg
@@ -48,30 +45,29 @@ Polymer({
     subpageRoute: Object,
   },
 
-  /** @private @return {string} */
-  getFeatureName_: function() {
-    return this.i18nAdvanced(this.featureNameId);
-  },
-
-  /** @private @return {string} */
-  getSubLabelInnerHtml_: function() {
-    return this.i18nAdvanced(this.featureSummaryId);
-  },
-
-  /** @private @return {boolean} */
+  /**
+   * @return {boolean}
+   * @private
+   */
   hasSubpageClickHandler_: function() {
     return !!this.subpageRoute;
   },
 
+  /** @private */
   onChangeToggle_: function() {
     // TODO (jordynass): Trigger the correct workflow.
     console.log('Toggle changed');
   },
 
   /** @private */
-  handleItemClick_: function() {
+  handleItemClick_: function(event) {
     if (!this.subpageRoute)
       return;
+
+    // We do not navigate away if the click was on a link.
+    if (event.path[0].tagName === 'A')
+      return;
+
     settings.navigateTo(this.subpageRoute);
-  }
+  },
 });
