@@ -59,7 +59,6 @@ namespace content {
 class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
 class LocalStorageCachedAreas;
-class PlatformEventObserverBase;
 class ThreadSafeSender;
 class WebDatabaseObserverImpl;
 
@@ -199,14 +198,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
 
-  // Set the PlatformEventObserverBase in |platform_event_observers_| associated
-  // with |type| to |observer|. If there was already an observer associated to
-  // the given |type|, it will be replaced.
-  // Note that |observer| will be owned by this object after the call.
-  void SetPlatformEventObserverForTesting(
-      blink::WebPlatformEventType type,
-      std::unique_ptr<PlatformEventObserverBase> observer);
-
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
   // SetSandboxEnabledForTesting(false) _before_ creating any instances
@@ -257,11 +248,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // TODO(crbug.com/850997): Remove when Device*EventPump classes are
   // moved to blink
-  void InitDeviceSensorEventPump(blink::WebPlatformEventType type,
-                                 blink::WebPlatformEventListener* listener);
-
-  // TODO(crbug.com/850997): Remove when Device*EventPump classes are
-  // moved to blink
   void StopDeviceSensorEventPump(blink::WebPlatformEventType type);
 
   // Ensure that the WebDatabaseHost has been initialized.
@@ -298,9 +284,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
-
-  base::IDMap<std::unique_ptr<PlatformEventObserverBase>>
-      platform_event_observers_;
 
   // NOT OWNED
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
