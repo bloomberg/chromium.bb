@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
@@ -27,6 +28,7 @@
 using autofill::FieldPropertiesFlags;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
+using base::string16;
 
 namespace password_manager {
 
@@ -497,33 +499,45 @@ void ParseUsingBaseHeuristics(
   return;
 }
 
+string16 GetPlatformSpecificIdentifier(const FormFieldData& field) {
+#if defined(OS_IOS)
+  return field.id;
+#else
+  return field.name;
+#endif
+}
+
 // Set username and password fields in |password_form| based on
 // |significant_fields| .
 void SetFields(const SignificantFields& significant_fields,
                PasswordForm* password_form) {
   password_form->has_renderer_ids = true;
   if (significant_fields.username) {
-    password_form->username_element = significant_fields.username->name;
+    password_form->username_element =
+        GetPlatformSpecificIdentifier(*significant_fields.username);
     password_form->username_value = significant_fields.username->value;
     password_form->username_element_renderer_id =
         significant_fields.username->unique_renderer_id;
   }
 
   if (significant_fields.password) {
-    password_form->password_element = significant_fields.password->name;
+    password_form->password_element =
+        GetPlatformSpecificIdentifier(*significant_fields.password);
     password_form->password_value = significant_fields.password->value;
     password_form->password_element_renderer_id =
         significant_fields.password->unique_renderer_id;
   }
 
   if (significant_fields.new_password) {
-    password_form->new_password_element = significant_fields.new_password->name;
+    password_form->new_password_element =
+        GetPlatformSpecificIdentifier(*significant_fields.new_password);
     password_form->new_password_value = significant_fields.new_password->value;
   }
 
   if (significant_fields.confirmation_password) {
     password_form->confirmation_password_element =
-        significant_fields.confirmation_password->name;
+        GetPlatformSpecificIdentifier(
+            *significant_fields.confirmation_password);
   }
 }
 
