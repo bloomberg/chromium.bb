@@ -360,30 +360,16 @@ camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
-  var label;
+  this.recordMode_ = !this.recordMode_;
   var toggleRecord = document.querySelector('#toggle-record');
-  if (this.recordMode_) {
-    this.recordMode_ = false;
-    toggleRecord.classList.remove('toggle-off');
-    label = 'toggleRecordOnButton';
-  } else {
-    this.recordMode_ = true;
-    toggleRecord.classList.add('toggle-off');
-    label = 'toggleRecordOffButton';
-  }
-  this.updateButtonLabel_(toggleRecord, label);
+  toggleRecord.classList.toggle('toggle-off', this.recordMode_);
+  this.updateButtonLabel_(toggleRecord,
+      this.recordMode_ ? 'toggleRecordOffButton' : 'toggleRecordOnButton');
 
   var takePictureButton = document.querySelector('#take-picture');
-  if (this.recordMode_) {
-    takePictureButton.classList.add('motion-picture');
-    label = 'recordVideoStartButton';
-  } else {
-    takePictureButton.classList.remove('motion-picture');
-    label = 'takePictureButton';
-  }
-  this.updateButtonLabel_(takePictureButton, label);
-
-  document.querySelector('#toggle-timer').hidden = this.recordMode_;
+  takePictureButton.classList.toggle('motion-picture', this.recordMode_);
+  this.updateButtonLabel_(takePictureButton,
+      this.recordMode_ ? 'recordVideoStartButton' : 'takePictureButton');
 
   this.stop_();
 };
@@ -568,7 +554,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
   this.updateToolbar_();
 
   var toggleTimer = document.querySelector('#toggle-timer');
-  var tickCounter = (!toggleTimer.hidden && toggleTimer.checked) ? 6 : 1;
+  var tickCounter = toggleTimer.checked ? 6 : 1;
   var onTimerTick = function() {
     tickCounter--;
     if (tickCounter == 0) {
