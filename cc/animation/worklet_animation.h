@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_WORKLET_ANIMATION_H_
 #define CC_ANIMATION_WORKLET_ANIMATION_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
@@ -13,6 +14,10 @@
 #include "cc/trees/property_tree.h"
 
 namespace cc {
+
+namespace {
+FORWARD_DECLARE_TEST(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe);
+}  // namespace
 
 class AnimationOptions;
 class ScrollTimeline;
@@ -67,6 +72,16 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   void RemoveKeyframeModel(int keyframe_model_id) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WorkletAnimationTest,
+                           NonImplInstanceDoesNotTickKeyframe);
+  WorkletAnimation(int cc_animation_id,
+                   WorkletAnimationId worklet_animation_id,
+                   const std::string& name,
+                   std::unique_ptr<ScrollTimeline> scroll_timeline,
+                   std::unique_ptr<AnimationOptions> options,
+                   bool is_controlling_instance,
+                   std::unique_ptr<KeyframeEffect> effect);
+
   ~WorkletAnimation() override;
 
   // Returns the current time to be passed into the underlying AnimationWorklet.
@@ -98,9 +113,14 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   std::unique_ptr<AnimationOptions> options_;
 
-  base::TimeDelta local_time_;
+  // Local time is used as an input to the keyframe effect of this animation.
+  // The value comes from the user script that runs inside the animation worklet
+  // global scope.
+  base::Optional<base::TimeDelta> local_time_;
 
   base::Optional<base::TimeTicks> start_time_;
+  // Last current time used for updatig. We use this to skip updating if current
+  // time has not changed since last update.
   base::Optional<double> last_current_time_;
 
   State state_;

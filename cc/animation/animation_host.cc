@@ -307,34 +307,34 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
                                    const ScrollTree& scroll_tree,
                                    bool is_active_tree) {
   TRACE_EVENT0("cc", "AnimationHost::TickAnimations");
-  bool did_animate = false;
+  // Notes on ordering between a) ticking mutator b) ticking animations: Since
+  // (a) is currently synchronous by doing a, b in that order we ensure worklet
+  // animation output state is up-to-date before having that output actually
+  // take effect in (b). This gaurantees worklet animation output takes effect
+  // in the same impl frame that it was mutated.
+  // TODO(crbug.com/834452): We will need a different approach when we make (a)
+  // asynchronous but until then this simple ordering is sufficient.
 
-  if (NeedsTickAnimations()) {
-    TRACE_EVENT_INSTANT0("cc", "NeedsTickAnimations", TRACE_EVENT_SCOPE_THREAD);
-    AnimationsList ticking_animations_copy = ticking_animations_;
-    for (auto& it : ticking_animations_copy)
-      it->Tick(monotonic_time);
+  if (!NeedsTickAnimations())
+    return false;
 
-    did_animate = true;
-  }
+  TRACE_EVENT_INSTANT0("cc", "NeedsTickAnimations", TRACE_EVENT_SCOPE_THREAD);
 
   // TODO(majidvp): At the moment we call this for both active and pending
   // trees similar to other animations. However our final goal is to only call
   // it once, ideally after activation, and only when the input
   // to an active timeline has changed. http://crbug.com/767210
-  did_animate |= TickMutator(monotonic_time, scroll_tree, is_active_tree);
+  TickMutator(monotonic_time, scroll_tree, is_active_tree);
 
-  return did_animate;
+  AnimationsList ticking_animations_copy = ticking_animations_;
+  for (auto& it : ticking_animations_copy)
+    it->Tick(monotonic_time);
+
+  return true;
 }
 
 void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
                                          const ScrollTree& scroll_tree) {
-  // TODO(majidvp) For now the logic simply generates an update when at least
-  // one animation needs updating but this is inefficient. We need a more
-  // fine-grained approach based on invalidating individual ScrollTimelines and
-  // then ticking the animations attached to those timelines. To make
-  // this happen we probably need to move "ticking" animations to timeline.
-
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
   TickMutator(monotonic_time, scroll_tree, true /* is_active_tree */);

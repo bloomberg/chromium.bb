@@ -21,6 +21,12 @@ namespace cc {
 
 namespace {
 
+class MockKeyframeEffect : public KeyframeEffect {
+ public:
+  MockKeyframeEffect() : KeyframeEffect(0) {}
+  MOCK_METHOD1(Tick, void(base::TimeTicks monotonic_time));
+};
+
 class WorkletAnimationTest : public AnimationTimelinesTest {
  public:
   WorkletAnimationTest() = default;
@@ -56,6 +62,22 @@ class MockScrollTimeline : public ScrollTimeline {
   MOCK_CONST_METHOD2(CurrentTime, double(const ScrollTree&, bool));
 };
 
+TEST_F(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe) {
+  std::unique_ptr<MockKeyframeEffect> effect =
+      std::make_unique<MockKeyframeEffect>();
+  MockKeyframeEffect* mock_effect = effect.get();
+
+  scoped_refptr<WorkletAnimation> worklet_animation =
+      WrapRefCounted(new WorkletAnimation(
+          1, worklet_animation_id_, "test_name", nullptr, nullptr,
+          false /* not impl instance*/, std::move(effect)));
+
+  EXPECT_CALL(*mock_effect, Tick(_)).Times(0);
+  worklet_animation->SetOutputState(
+      {worklet_animation_id_, base::TimeDelta::FromSecondsD(1)});
+  worklet_animation->Tick(base::TimeTicks());
+}
+
 TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
   AttachWorkletAnimation();
 
@@ -83,7 +105,6 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
   client_impl_.ExpectOpacityPropertyMutated(
       element_id_, ElementListType::ACTIVE, expected_opacity);
 }
-
 // Tests that verify interaction of AnimationHost with LayerTreeMutator.
 // TODO(majidvp): Perhaps moves these to AnimationHostTest.
 TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
