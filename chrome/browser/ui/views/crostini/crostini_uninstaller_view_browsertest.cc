@@ -7,26 +7,23 @@
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
-#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/window/dialog_client_view.h"
 
-class CrostiniUninstallerViewBrowserTest : public DialogBrowserTest {
+class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
  public:
   class WaitingFakeConciergeClient : public chromeos::FakeConciergeClient {
    public:
@@ -64,17 +61,6 @@ class CrostiniUninstallerViewBrowserTest : public DialogBrowserTest {
                                 CrostiniUISurface::kSettings);
   }
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalCrostiniUI);
-    DialogBrowserTest::SetUp();
-  }
-
-  void SetUpOnMainThread() override {
-    browser()->profile()->GetPrefs()->SetBoolean(
-        crostini::prefs::kCrostiniEnabled, true);
-  }
-
   CrostiniUninstallerView* ActiveView() {
     return CrostiniUninstallerView::GetActiveViewForTesting();
   }
@@ -97,7 +83,6 @@ class CrostiniUninstallerViewBrowserTest : public DialogBrowserTest {
   WaitingFakeConciergeClient* waiting_fake_concierge_client_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniUninstallerViewBrowserTest);
 };

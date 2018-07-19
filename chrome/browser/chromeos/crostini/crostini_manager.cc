@@ -25,12 +25,14 @@
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/image_loader_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
+#include "net/base/network_change_notifier.h"
 
 namespace crostini {
 
@@ -143,27 +145,8 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     }
 
-    if (chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
-      // Running in test. We still PostTask to prevent races between
-      // observers aborting.
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(
-              &CrostiniRestarter::InstallImageLoaderFinishedOnUIThread,
-              base::WrapRefCounted(this),
-              component_updater::CrOSComponentManager::Error::NONE,
-              base::FilePath()));
-      return;
-    }
-    auto* cros_component_manager =
-        g_browser_process->platform_part()->cros_component_manager();
-    DCHECK(cros_component_manager);
-    cros_component_manager->Load(
-        "cros-termina",
-        component_updater::CrOSComponentManager::MountPolicy::kMount,
-        component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
-        base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
-                       base::WrapRefCounted(this)));
+    crostini_manager->InstallTerminaComponent(base::BindOnce(
+        &CrostiniRestarter::LoadComponentFinished, base::WrapRefCounted(this)));
   }
 
   void AddObserver(CrostiniManager::RestartObserver* observer) {
@@ -196,26 +179,10 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     restarter_service_->RunPendingCallbacks(this, result);
   }
 
-  static void InstallImageLoaderFinished(
-      scoped_refptr<CrostiniRestarter> restarter,
-      component_updater::CrOSComponentManager::Error error,
-      const base::FilePath& result) {
-    DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (restarter->is_aborted_)
-      return;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinishedOnUIThread,
-                       restarter, error, result));
-  }
-
-  void InstallImageLoaderFinishedOnUIThread(
-      component_updater::CrOSComponentManager::Error error,
-      const base::FilePath& result) {
+  void LoadComponentFinished(bool is_successful) {
     ConciergeClientResult client_result =
-        error == component_updater::CrOSComponentManager::Error::NONE
-            ? ConciergeClientResult::SUCCESS
-            : ConciergeClientResult::CONTAINER_START_FAILED;
+        is_successful ? ConciergeClientResult::SUCCESS
+                      : ConciergeClientResult::CONTAINER_START_FAILED;
     // Tell observers.
     for (auto& observer : observer_list_) {
       observer.OnComponentLoaded(client_result);
@@ -223,9 +190,6 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     if (is_aborted_)
       return;
     if (client_result != ConciergeClientResult::SUCCESS) {
-      LOG(ERROR)
-          << "Failed to install the cros-termina component with error code: "
-          << static_cast<int>(error);
       FinishRestart(client_result);
       return;
     }
@@ -447,10 +411,94 @@ CrostiniManager::~CrostiniManager() {}
 
 // static
 bool CrostiniManager::IsCrosTerminaInstalled() {
-  return !g_browser_process->platform_part()
-              ->cros_component_manager()
-              ->GetCompatiblePath("cros-termina")
+  // |component_manager| can be nullptr in tests.
+  auto* component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  return component_manager &&
+         !component_manager
+              ->GetCompatiblePath(imageloader::kTerminaComponentName)
               .empty();
+}
+
+void CrostiniManager::MaybeUpgradeCrostini(Profile* profile) {
+  if (!IsCrostiniAllowedForProfile(profile) || !IsCrosTerminaInstalled()) {
+    return;
+  }
+  termina_update_check_needed_ = true;
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    // Can't do a component Load with kForce when offline.
+    VLOG(1) << "Not online, so can't check now for cros-termina upgrade.";
+    return;
+  }
+  InstallTerminaComponent(base::DoNothing());
+}
+
+namespace {
+void InstallTerminaComponentLoaderCallback(
+    CrostiniManager::BoolCallback callback,
+    component_updater::CrOSComponentManager::Error error,
+    const base::FilePath& result) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  bool is_successful =
+      error == component_updater::CrOSComponentManager::Error::NONE;
+
+  if (!is_successful) {
+    LOG(ERROR)
+        << "Failed to install the cros-termina component with error code: "
+        << static_cast<int>(error);
+  }
+  // Hop to the UI thread to update state and run |callback|.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(callback), is_successful));
+}
+}  // namespace
+
+void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
+  if (chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
+    // Running in test. We still PostTask to prevent races.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       true, true));
+    return;
+  }
+  auto* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  DCHECK(cros_component_manager);
+
+  using UpdatePolicy = component_updater::CrOSComponentManager::UpdatePolicy;
+  UpdatePolicy update_policy;
+  if (termina_update_check_needed_ &&
+      !net::NetworkChangeNotifier::IsOffline()) {
+    // Don't use kForce all the time because it generates traffic to
+    // ComponentUpdaterService.
+    update_policy = UpdatePolicy::kForce;
+  } else {
+    update_policy = UpdatePolicy::kDontForce;
+  }
+
+  cros_component_manager->Load(
+      imageloader::kTerminaComponentName,
+      component_updater::CrOSComponentManager::MountPolicy::kMount,
+      update_policy,
+      base::BindOnce(
+          InstallTerminaComponentLoaderCallback,
+          base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         update_policy == UpdatePolicy::kForce)));
+}
+
+void CrostiniManager::OnInstallTerminaComponent(BoolCallback callback,
+                                                bool is_update_checked,
+                                                bool is_successful) {
+  if (is_successful && is_update_checked) {
+    VLOG(1) << "cros-termina update check successful.";
+    termina_update_check_needed_ = false;
+  }
+  std::move(callback).Run(is_successful);
 }
 
 void CrostiniManager::StartConcierge(StartConciergeCallback callback) {

@@ -7,66 +7,26 @@
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
-#include "components/prefs/pref_service.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/window/dialog_client_view.h"
 
-// ChromeBrowserMainExtraParts used to install a MockNetworkChangeNotifier.
-class ChromeBrowserMainExtraPartsNetFactoryInstaller
-    : public ChromeBrowserMainExtraParts {
- public:
-  ChromeBrowserMainExtraPartsNetFactoryInstaller() = default;
-  ~ChromeBrowserMainExtraPartsNetFactoryInstaller() override {
-    // |network_change_notifier_| needs to be destroyed before |net_installer_|.
-    network_change_notifier_.reset();
-  }
-
-  net::test::MockNetworkChangeNotifier* network_change_notifier() {
-    return network_change_notifier_.get();
-  }
-
-  // ChromeBrowserMainExtraParts:
-  void PreEarlyInitialization() override {}
-  void PostMainMessageLoopStart() override {
-    ASSERT_TRUE(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
-    net_installer_ =
-        std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
-    network_change_notifier_ =
-        std::make_unique<net::test::MockNetworkChangeNotifier>();
-    network_change_notifier_->SetConnectionType(
-        net::NetworkChangeNotifier::CONNECTION_WIFI);
-  }
-
- private:
-  std::unique_ptr<net::test::MockNetworkChangeNotifier>
-      network_change_notifier_;
-  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest> net_installer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsNetFactoryInstaller);
-};
-
-class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
+class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
  public:
   class WaitingFakeConciergeClient : public chromeos::FakeConciergeClient {
    public:
@@ -105,26 +65,6 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
                               CrostiniUISurface::kSettings);
   }
 
-  // BrowserTestBase:
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override {
-    ChromeBrowserMainParts* chrome_browser_main_parts =
-        static_cast<ChromeBrowserMainParts*>(browser_main_parts);
-    extra_parts_ = new ChromeBrowserMainExtraPartsNetFactoryInstaller();
-    chrome_browser_main_parts->AddParts(extra_parts_);
-  }
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalCrostiniUI);
-    DialogBrowserTest::SetUp();
-  }
-
-  void SetUpOnMainThread() override {
-    browser()->profile()->GetPrefs()->SetBoolean(
-        crostini::prefs::kCrostiniEnabled, true);
-  }
-
   CrostiniInstallerView* ActiveView() {
     return CrostiniInstallerView::GetActiveViewForTesting();
   }
@@ -140,12 +80,8 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
  protected:
   // Owned by chromeos::DBusThreadManager
   WaitingFakeConciergeClient* waiting_fake_concierge_client_ = nullptr;
-  // Owned by content::Browser
-  ChromeBrowserMainExtraPartsNetFactoryInstaller* extra_parts_ = nullptr;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerViewBrowserTest);
 };
 
@@ -186,8 +122,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
 
 IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {
   base::HistogramTester histogram_tester;
-  extra_parts_->network_change_notifier()->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
 
   ShowUi("default");
   EXPECT_NE(nullptr, ActiveView());

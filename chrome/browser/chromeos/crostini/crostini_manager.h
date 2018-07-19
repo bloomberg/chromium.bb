@@ -87,13 +87,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
  public:
   using ConciergeClientCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
+  using BoolCallback = base::OnceCallback<void(bool)>;
 
   // The type of the callback for CrostiniManager::StartConcierge.
-  using StartConciergeCallback =
-      base::OnceCallback<void(bool is_service_available)>;
+  using StartConciergeCallback = BoolCallback;
   // The type of the callback for CrostiniManager::StopConcierge.
-  using StopConciergeCallback = StartConciergeCallback;
-
+  using StopConciergeCallback = BoolCallback;
   // The type of the callback for CrostiniManager::StartTerminaVm.
   using StartTerminaVmCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::CreateDiskImage.
@@ -155,6 +154,13 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Generate AppLaunchParams for the Crostini terminal application.
   static AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile);
+
+  // Upgrades cros-termina component if the current version is not compatible.
+  void MaybeUpgradeCrostini(Profile* profile);
+
+  // Installs the current version of cros-termina component. Attempts to apply
+  // pending upgrades if a MaybeUpgradeCrostini failed.
+  void InstallTerminaComponent(BoolCallback callback);
 
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
@@ -371,6 +377,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
                 StopVmCallback callback,
                 base::Optional<vm_tools::concierge::StopVmResponse> reply);
 
+  // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
+  // the UI thread.
+  void OnInstallTerminaComponent(BoolCallback callback,
+                                 bool is_update_checked,
+                                 bool is_successful);
+
   // Callback for CrostiniClient::StartConcierge. Called after the
   // DebugDaemon service method finishes.
   void OnStartConcierge(StartConciergeCallback callback, bool success);
@@ -418,13 +430,14 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       CreateDiskImageCallback callback,
       int64_t free_disk_size);
 
+  bool skip_restart_for_testing_ = false;
+  bool termina_update_check_needed_ = false;
+
   // Pending StartContainer callbacks are keyed by <owner_id, vm_name,
   // container_name> string tuples.
   std::multimap<std::tuple<std::string, std::string, std::string>,
                 StartContainerCallback>
       start_container_callbacks_;
-
-  bool skip_restart_for_testing_ = false;
 
   // Pending ShutdownContainer callbacks are keyed by <owner_id, vm_name,
   // container_name> string tuples.
