@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRYPTAUTH_SOFTWARE_FEATURE_STATE_H_
 #define COMPONENTS_CRYPTAUTH_SOFTWARE_FEATURE_STATE_H_
 
+#include <ostream>
+
 namespace cryptauth {
 
 enum class SoftwareFeatureState {
@@ -12,6 +14,9 @@ enum class SoftwareFeatureState {
   kSupported = 1,
   kEnabled = 2
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const SoftwareFeatureState& state);
 
 }  // namespace cryptauth
 
