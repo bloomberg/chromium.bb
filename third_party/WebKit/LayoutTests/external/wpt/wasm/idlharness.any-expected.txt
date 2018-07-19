@@ -1,6 +1,10 @@
 This is a testharness.js-based test.
-Found 89 tests; 19 PASS, 70 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 93 tests; 19 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS wasm-js-api interfaces.
+FAIL WebAssembly namespace: operation validate(BufferSource) assert_true: property should be enumerable expected true got false
+FAIL WebAssembly namespace: operation compile(BufferSource) assert_true: property should be enumerable expected true got false
+FAIL WebAssembly namespace: operation instantiate(BufferSource, object) assert_true: property should be enumerable expected true got false
+FAIL WebAssembly namespace: operation instantiate(Module, object) assert_true: property should be enumerable expected true got false
 FAIL Module interface: existence and properties of interface object assert_own_property: self does not have own property "Module" expected property "Module" missing
 FAIL Module interface object length assert_own_property: self does not have own property "Module" expected property "Module" missing
 FAIL Module interface object name assert_own_property: self does not have own property "Module" expected property "Module" missing
