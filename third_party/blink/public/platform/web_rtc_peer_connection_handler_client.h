@@ -42,6 +42,7 @@ namespace blink {
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
 class WebRTCRtpReceiver;
+class WebRTCRtpTransceiver;
 
 class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
  public:
@@ -74,6 +75,9 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual void DidChangeICEConnectionState(ICEConnectionState) = 0;
   virtual void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
   virtual void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
+  virtual void DidModifyTransceivers(
+      std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
+      bool is_remote_description) = 0;
   virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
   virtual void ReleasePeerConnectionHandler() = 0;
   virtual void ClosePeerConnection();

@@ -21,12 +21,15 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   static uintptr_t last_id_;
 
  public:
-  DummyWebRTCRtpSender() : id_(++last_id_) {}
+  DummyWebRTCRtpSender(WebMediaStreamTrack track)
+      : id_(++last_id_), track_(std::move(track)) {}
   ~DummyWebRTCRtpSender() override {}
 
   uintptr_t Id() const override { return id_; }
-  WebMediaStreamTrack Track() const override { return WebMediaStreamTrack(); }
-  WebVector<WebString> StreamIds() const override { return {}; }
+  WebMediaStreamTrack Track() const override { return track_; }
+  WebVector<WebString> StreamIds() const override {
+    return std::vector<WebString>({WebString::FromUTF8("DummyStringId")});
+  }
   void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) override {}
   std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
     return nullptr;
@@ -39,15 +42,19 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
                      WebRTCVoidRequest) override {}
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override {}
 
+  void set_track(WebMediaStreamTrack track) { track_ = std::move(track); }
+
  private:
   const uintptr_t id_;
+  WebMediaStreamTrack track_;
 };
 
 uintptr_t DummyWebRTCRtpSender::last_id_ = 0;
 
 class DummyRTCRtpTransceiver : public WebRTCRtpTransceiver {
  public:
-  DummyRTCRtpTransceiver() {}
+  DummyRTCRtpTransceiver(WebMediaStreamTrack track)
+      : track_(std::move(track)) {}
   ~DummyRTCRtpTransceiver() override {}
 
   WebRTCRtpTransceiverImplementationType ImplementationType() const override {
@@ -56,7 +63,7 @@ class DummyRTCRtpTransceiver : public WebRTCRtpTransceiver {
   uintptr_t Id() const override { return 0u; }
   WebString Mid() const override { return WebString(); }
   std::unique_ptr<WebRTCRtpSender> Sender() const override {
-    return std::make_unique<DummyWebRTCRtpSender>();
+    return std::make_unique<DummyWebRTCRtpSender>(track_);
   }
   std::unique_ptr<WebRTCRtpReceiver> Receiver() const override {
     return nullptr;
@@ -74,6 +81,9 @@ class DummyRTCRtpTransceiver : public WebRTCRtpTransceiver {
       const override {
     return base::nullopt;
   }
+
+ private:
+  WebMediaStreamTrack track_;
 };
 
 }  // namespace
@@ -131,15 +141,17 @@ void MockWebRTCPeerConnectionHandler::GetStats(
     std::unique_ptr<WebRTCStatsReportCallback>) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
-MockWebRTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack&,
+MockWebRTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
                                           const WebVector<WebMediaStream>&) {
   std::unique_ptr<WebRTCRtpTransceiver> transceiver =
-      std::make_unique<DummyRTCRtpTransceiver>();
+      std::make_unique<DummyRTCRtpTransceiver>(track);
   return transceiver;
 }
 
-bool MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender*) {
-  return true;
+webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender* sender) {
+  static_cast<DummyWebRTCRtpSender*>(sender)->set_track(WebMediaStreamTrack());
+  return std::unique_ptr<WebRTCRtpTransceiver>(nullptr);
 }
 
 WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::CreateDataChannel(

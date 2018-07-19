@@ -804,8 +804,9 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         ProcessStateChangesPlanB(std::move(states));
       } else {
         DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
-        // TODO(hbos): Implement kUnifiedPlan behavior. https://crbug.com/777617
+        // TODO(hbos): Exercise this codepath. https://crbug.com/777617
         NOTREACHED();
+        ProcessStateChangesUnifiedPlan(std::move(states));
       }
 
       if (tracker_) {
@@ -881,6 +882,13 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
       }
     }
     return true;
+  }
+
+  void ProcessStateChangesUnifiedPlan(
+      WebRtcSetDescriptionObserver::States states) {
+    handler_->OnModifyTransceivers(
+        std::move(states.transceiver_states),
+        action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION);
   }
 
   base::WeakPtr<RTCPeerConnectionHandler> handler_;
@@ -1581,19 +1589,40 @@ RTCPeerConnectionHandler::AddTrack(
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
   DCHECK_EQ(transceiver_states.size(), 1u);
   auto transceiver_state = std::move(transceiver_states[0]);
-  DCHECK(transceiver_state.sender_state());
-  auto webrtc_sender = transceiver_state.sender_state()->webrtc_sender();
-  DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) ==
-         rtp_senders_.end());
-  RtpSenderState sender_state = transceiver_state.MoveSenderState();
-  DCHECK(sender_state.is_initialized());
 
-  rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
-      native_peer_connection_, track_adapter_map_, std::move(sender_state)));
+  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver;
+  const blink::WebRTCRtpSender* web_sender = nullptr;
+  const blink::WebRTCRtpReceiver* web_receiver = nullptr;
+  // TODO(hbos): Exercise the "else" codepath if "kUnifiedPlan" is used.
+  // https://crbug.com/777617
+  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
+      sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan) {
+    // Plan B: Create sender only.
+    DCHECK(transceiver_state.sender_state());
+    auto webrtc_sender = transceiver_state.sender_state()->webrtc_sender();
+    DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) ==
+           rtp_senders_.end());
+    RtpSenderState sender_state = transceiver_state.MoveSenderState();
+    DCHECK(sender_state.is_initialized());
+    rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
+        native_peer_connection_, track_adapter_map_, std::move(sender_state)));
+    web_sender = rtp_senders_.back().get();
+    web_transceiver = std::make_unique<RTCRtpSenderOnlyTransceiver>(
+        rtp_senders_.back()->ShallowCopy());
+  } else {
+    // TODO(hbos): Exercise this codepath. https://crbug.com/777617
+    NOTREACHED();
+    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+    // Unified Plan: Create or recycle a transceiver.
+    auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
+    web_sender = transceiver->content_sender();
+    web_receiver = transceiver->content_receiver();
+    web_transceiver = std::move(transceiver);
+  }
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack,
-        rtp_senders_.back().get(), nullptr);
+        web_sender, web_receiver);
   }
   for (const auto& stream_id : rtp_senders_.back()->state().stream_ids()) {
     if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 1u) {
@@ -1601,9 +1630,6 @@ RTCPeerConnectionHandler::AddTrack(
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
     }
   }
-  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
-      std::make_unique<RTCRtpSenderOnlyTransceiver>(
-          rtp_senders_.back()->ShallowCopy());
   return web_transceiver;
 }
 
@@ -1616,16 +1642,58 @@ void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
   *error_or_sender = native_peer_connection_->AddTrack(track, stream_ids);
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
   if (error_or_sender->ok()) {
-    auto webrtc_sender = error_or_sender->value();
-    transceivers = {new SurfaceSenderStateOnly(webrtc_sender)};
+    auto sender = error_or_sender->value();
+    // TODO(hbos): Exercise the "else" codepath if "kUnifiedPlan" is used.
+    // https://crbug.com/777617
+    if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
+        sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan) {
+      transceivers = {new SurfaceSenderStateOnly(sender)};
+    } else {
+      DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+      // TODO(hbos): Exercise this codepath. https://crbug.com/777617
+      NOTREACHED();
+      rtc::scoped_refptr<webrtc::RtpTransceiverInterface>
+          transceiver_for_sender = nullptr;
+      for (const auto& transceiver :
+           native_peer_connection_->GetTransceivers()) {
+        if (transceiver->sender() == sender) {
+          transceiver_for_sender = transceiver;
+          break;
+        }
+      }
+      DCHECK(transceiver_for_sender);
+      transceivers = {transceiver_for_sender};
+    }
   }
   transceiver_state_surfacer->Initialize(track_adapter_map_,
                                          std::move(transceivers));
 }
 
-bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
+webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
+  // TODO(hbos): Exercise the "else" codepath if "kUnifiedPlan" is used.
+  // https://crbug.com/777617
+  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
+      sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan) {
+    if (RemoveTrackPlanB(web_sender)) {
+      // In Plan B, null indicates success.
+      std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver = nullptr;
+      return std::move(web_transceiver);
+    }
+    // TODO(hbos): Surface RTCError from third_party/webrtc when
+    // peerconnectioninterface.h is updated. https://crbug.com/webrtc/9534
+    return webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE);
+  }
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  // TODO(hbos): Exercise this codepath. https://crbug.com/777617
+  NOTREACHED();
+  return RemoveTrackUnifiedPlan(web_sender);
+}
+
+bool RTCPeerConnectionHandler::RemoveTrackPlanB(
+    blink::WebRTCRtpSender* web_sender) {
   auto web_track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
@@ -1640,9 +1708,6 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
         this, PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
         (*it).get(), nullptr);
   }
-  // TODO(hbos): In Unified Plan, senders are never removed. The lower layer
-  // needs to tell us what to do with the sender: Update its states and/or
-  // remove it. https://crbug.com/799030
   std::vector<std::string> stream_ids = (*it)->state().stream_ids();
   rtp_senders_.erase(it);
   for (const auto& stream_id : stream_ids) {
@@ -1652,6 +1717,68 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
     }
   }
   return true;
+}
+
+webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
+    blink::WebRTCRtpSender* web_sender) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  auto it = FindSender(web_sender->Id());
+  if (it == rtp_senders_.end())
+    return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER);
+  const auto& sender = *it;
+  auto webrtc_sender = sender->state().webrtc_sender();
+
+  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
+                                                      signaling_thread());
+  bool result;
+  RunSynchronousClosureOnSignalingThread(
+      base::BindRepeating(
+          &RTCPeerConnectionHandler::RemoveTrackUnifiedPlanOnSignalingThread,
+          base::Unretained(this), base::RetainedRef(webrtc_sender),
+          base::Unretained(&transceiver_state_surfacer),
+          base::Unretained(&result)),
+      "RemoveTrackUnifiedPlanOnSignalingThread");
+  DCHECK(transceiver_state_surfacer.is_initialized());
+  if (!result) {
+    // Don't leave the surfacer in a pending state.
+    transceiver_state_surfacer.ObtainStates();
+    // TODO(hbos): Surface RTCError from third_party/webrtc when
+    // peerconnectioninterface.h is updated. https://crbug.com/webrtc/9534
+    return webrtc::RTCError(webrtc::RTCErrorType::INTERNAL_ERROR);
+  }
+
+  auto transceiver_states = transceiver_state_surfacer.ObtainStates();
+  DCHECK_EQ(transceiver_states.size(), 1u);
+  auto transceiver_state = std::move(transceiver_states[0]);
+
+  // Return the update transceiver state.
+  auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
+  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
+      std::move(transceiver);
+  return web_transceiver;
+}
+
+void RTCPeerConnectionHandler::RemoveTrackUnifiedPlanOnSignalingThread(
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+    TransceiverStateSurfacer* transceiver_state_surfacer,
+    bool* result) {
+  *result = native_peer_connection_->RemoveTrack(sender);
+  std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
+  if (*result) {
+    rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver_for_sender =
+        nullptr;
+    for (const auto& transceiver : native_peer_connection_->GetTransceivers()) {
+      if (transceiver->sender() == sender) {
+        transceiver_for_sender = transceiver;
+        break;
+      }
+    }
+    DCHECK(transceiver_for_sender);
+    transceivers = {transceiver_for_sender};
+  }
+  transceiver_state_surfacer->Initialize(track_adapter_map_,
+                                         std::move(transceivers));
 }
 
 void RTCPeerConnectionHandler::CloseClientPeerConnection() {
@@ -1893,6 +2020,28 @@ void RTCPeerConnectionHandler::OnRemoveReceiverPlanB(uintptr_t receiver_id) {
     client_->DidRemoveReceiverPlanB(std::move(receiver));
 }
 
+void RTCPeerConnectionHandler::OnModifyTransceivers(
+    std::vector<RtpTransceiverState> transceiver_states,
+    bool is_remote_description) {
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  // TODO(hbos): Exercise this codepath. https://crbug.com/777617
+  NOTREACHED();
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> web_transceivers(
+      transceiver_states.size());
+  for (size_t i = 0; i < transceiver_states.size(); ++i) {
+    // TODO(hbos): Figure out if a transceiver was added, modified, removed or
+    // stayed the same and use the |peer_connection_tracker_| to track
+    // transceiver updates for debugging aid in chrome://webrtc-internals.
+    // https://crbug.com/864912
+    web_transceivers[i] =
+        CreateOrUpdateTransceiver(std::move(transceiver_states[i]));
+  }
+  if (!is_closed_) {
+    client_->DidModifyTransceivers(std::move(web_transceivers),
+                                   is_remote_description);
+  }
+}
+
 void RTCPeerConnectionHandler::OnDataChannel(
     std::unique_ptr<RtcDataChannelHandler> handler) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -1988,6 +2137,54 @@ RTCPeerConnectionHandler::FindSender(uintptr_t id) {
       return it;
   }
   return rtp_senders_.end();
+}
+
+std::vector<std::unique_ptr<RTCRtpTransceiver>>::iterator
+RTCPeerConnectionHandler::FindTransceiver(uintptr_t id) {
+  for (auto it = rtp_transceivers_.begin(); it != rtp_transceivers_.end();
+       ++it) {
+    if ((*it)->Id() == id)
+      return it;
+  }
+  return rtp_transceivers_.end();
+}
+
+std::unique_ptr<RTCRtpTransceiver>
+RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
+    RtpTransceiverState transceiver_state) {
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK(transceiver_state.is_initialized());
+  DCHECK(transceiver_state.sender_state());
+  DCHECK(transceiver_state.receiver_state());
+  auto webrtc_transceiver = transceiver_state.webrtc_transceiver();
+  auto webrtc_sender = transceiver_state.sender_state()->webrtc_sender();
+  auto webrtc_receiver = transceiver_state.receiver_state()->webrtc_receiver();
+
+  std::unique_ptr<RTCRtpTransceiver> transceiver;
+  auto it = FindTransceiver(RTCRtpTransceiver::GetId(webrtc_transceiver.get()));
+  if (it == rtp_transceivers_.end()) {
+    // Create a new transceiver, including a sender and a receiver.
+    transceiver = std::make_unique<RTCRtpTransceiver>(
+        native_peer_connection_, track_adapter_map_,
+        std::move(transceiver_state));
+    rtp_transceivers_.push_back(transceiver->ShallowCopy());
+    DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) ==
+           rtp_senders_.end());
+    rtp_senders_.push_back(transceiver->content_sender()->ShallowCopy());
+    uintptr_t receiver_id = RTCRtpReceiver::getId(webrtc_receiver.get());
+    DCHECK(rtp_receivers_.find(receiver_id) == rtp_receivers_.end());
+    rtp_receivers_.insert(std::make_pair(
+        receiver_id, transceiver->content_receiver()->ShallowCopy()));
+  } else {
+    // Update the transceiver. This also updates the sender and receiver.
+    transceiver = (*it)->ShallowCopy();
+    transceiver->set_state(std::move(transceiver_state));
+    DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) !=
+           rtp_senders_.end());
+    DCHECK(rtp_receivers_.find(RTCRtpReceiver::getId(webrtc_receiver.get())) !=
+           rtp_receivers_.end());
+  }
+  return transceiver;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
