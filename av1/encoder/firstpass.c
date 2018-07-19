@@ -486,6 +486,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   int mb_row, mb_col;
   MACROBLOCK *const x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
+  const SequenceHeader *const seq_params = &cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   TileInfo tile;
@@ -524,7 +525,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   double intra_factor;
   double brightness_factor;
   BufferPool *const pool = cm->buffer_pool;
-  const int qindex = find_fp_qindex(cm->bit_depth);
+  const int qindex = find_fp_qindex(seq_params->bit_depth);
   const int mb_scale = mi_size_wide[BLOCK_16X16];
 
   int *raw_motion_err_list;
@@ -555,11 +556,11 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   set_first_pass_params(cpi);
   av1_set_quantizer(cm, qindex);
 
-  av1_setup_block_planes(&x->e_mbd, cm->subsampling_x, cm->subsampling_y,
-                         num_planes);
+  av1_setup_block_planes(&x->e_mbd, seq_params->subsampling_x,
+                         seq_params->subsampling_y, num_planes);
 
   av1_setup_src_planes(x, cpi->source, 0, 0, num_planes);
-  av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, new_yv12, 0, 0, 0,
+  av1_setup_dst_planes(xd->plane, seq_params->sb_size, new_yv12, 0, 0, 0,
                        num_planes);
 
   if (!frame_is_intra_only(cm)) {
@@ -654,14 +655,14 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
         image_data_start_row = mb_row;
       }
 
-      if (cm->use_highbitdepth) {
-        switch (cm->bit_depth) {
+      if (seq_params->use_highbitdepth) {
+        switch (seq_params->bit_depth) {
           case AOM_BITS_8: break;
           case AOM_BITS_10: this_error >>= 4; break;
           case AOM_BITS_12: this_error >>= 8; break;
           default:
             assert(0 &&
-                   "cm->bit_depth should be AOM_BITS_8, "
+                   "seq_params->bit_depth should be AOM_BITS_8, "
                    "AOM_BITS_10 or AOM_BITS_12");
             return;
         }
@@ -674,7 +675,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       else
         intra_factor += 1.0;
 
-      if (cm->use_highbitdepth)
+      if (seq_params->use_highbitdepth)
         level_sample = CONVERT_TO_SHORTPTR(x->plane[0].src.buf)[0];
       else
         level_sample = x->plane[0].src.buf[0];
@@ -1156,10 +1157,10 @@ static int get_twopass_worst_quality(const AV1_COMP *cpi,
     for (q = rc->best_quality; q < rc->worst_quality; ++q) {
       const double factor = calc_correction_factor(
           av_err_per_mb, ERR_DIVISOR - ediv_size_correction, FACTOR_PT_LOW,
-          FACTOR_PT_HIGH, q, cpi->common.bit_depth);
+          FACTOR_PT_HIGH, q, cpi->common.seq_params.bit_depth);
       const int bits_per_mb = av1_rc_bits_per_mb(
           INTER_FRAME, q, factor * speed_term * group_weight_factor,
-          cpi->common.bit_depth);
+          cpi->common.seq_params.bit_depth);
       if (bits_per_mb <= target_norm_bits_per_mb) break;
     }
 
@@ -1377,7 +1378,7 @@ static double calc_frame_boost(AV1_COMP *cpi, const FIRSTPASS_STATS *this_frame,
                                double this_frame_mv_in_out, double max_boost) {
   double frame_boost;
   const double lq = av1_convert_qindex_to_q(
-      cpi->rc.avg_frame_qindex[INTER_FRAME], cpi->common.bit_depth);
+      cpi->rc.avg_frame_qindex[INTER_FRAME], cpi->common.seq_params.bit_depth);
   const double boost_q_correction = AOMMIN((0.5 + (lq * 0.015)), 1.5);
   int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
                                                        : cpi->common.MBs;
@@ -2905,10 +2906,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Set a maximum and minimum interval for the GF group.
   // If the image appears almost completely static we can extend beyond this.
   {
-    int int_max_q = (int)(av1_convert_qindex_to_q(twopass->active_worst_quality,
-                                                  cpi->common.bit_depth));
-    int int_lbq = (int)(av1_convert_qindex_to_q(rc->last_boosted_qindex,
-                                                cpi->common.bit_depth));
+    int int_max_q = (int)(av1_convert_qindex_to_q(
+        twopass->active_worst_quality, cpi->common.seq_params.bit_depth));
+    int int_lbq = (int)(av1_convert_qindex_to_q(
+        rc->last_boosted_qindex, cpi->common.seq_params.bit_depth));
 
     active_min_gf_interval = rc->min_gf_interval + AOMMIN(2, int_max_q / 200);
     if (active_min_gf_interval > rc->max_gf_interval)
@@ -3909,7 +3910,7 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
     twopass->baseline_active_worst_quality = tmp_q;
     rc->ni_av_qi = tmp_q;
     rc->last_q[INTER_FRAME] = tmp_q;
-    rc->avg_q = av1_convert_qindex_to_q(tmp_q, cm->bit_depth);
+    rc->avg_q = av1_convert_qindex_to_q(tmp_q, cm->seq_params.bit_depth);
     rc->avg_frame_qindex[INTER_FRAME] = tmp_q;
     rc->last_q[KEY_FRAME] = (tmp_q + cpi->oxcf.best_allowed_q) / 2;
     rc->avg_frame_qindex[KEY_FRAME] = rc->last_q[KEY_FRAME];

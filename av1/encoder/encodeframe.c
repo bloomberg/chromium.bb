@@ -4037,7 +4037,8 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
   // Copy data over into macro block data structures.
   av1_setup_src_planes(x, cpi->source, 0, 0, num_planes);
 
-  av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y, num_planes);
+  av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
+                         cm->seq_params.subsampling_y, num_planes);
 }
 
 static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
@@ -4135,7 +4136,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   this_tile->tctx = *cm->fc;
   td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 
-  cfl_init(&td->mb.e_mbd.cfl, cm);
+  cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 
   av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
 
@@ -4677,8 +4678,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
 
           compute_global_motion_feature_based(
-              model, cpi->source, ref_buf[frame], cpi->common.bit_depth,
-              inliers_by_motion, params_by_motion, RANSAC_NUM_MOTIONS);
+              model, cpi->source, ref_buf[frame],
+              cpi->common.seq_params.bit_depth, inliers_by_motion,
+              params_by_motion, RANSAC_NUM_MOTIONS);
 
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
             if (inliers_by_motion[i] == 0) continue;
@@ -5096,8 +5098,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   }
 
   if (!is_inter) {
-    xd->cfl.is_chroma_reference = is_chroma_reference(
-        mi_row, mi_col, bsize, cm->subsampling_x, cm->subsampling_y);
+    xd->cfl.is_chroma_reference =
+        is_chroma_reference(mi_row, mi_col, bsize, cm->seq_params.subsampling_x,
+                            cm->seq_params.subsampling_y);
     xd->cfl.store_y = store_cfl_required(cm, xd);
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {

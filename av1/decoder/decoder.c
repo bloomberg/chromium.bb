@@ -109,7 +109,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   pbi->decoding_first_frame = 1;
   pbi->common.buffer_pool = pool;
 
-  cm->bit_depth = AOM_BITS_8;
+  cm->seq_params.bit_depth = AOM_BITS_8;
   cm->dequant_bit_depth = AOM_BITS_8;
 
   cm->alloc_mi = av1_dec_alloc_mi;
@@ -168,7 +168,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   if (pbi->thread_data) {
     for (int worker_idx = 0; worker_idx < pbi->max_threads - 1; worker_idx++) {
       DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
-      const int use_highbd = pbi->common.use_highbitdepth ? 1 : 0;
+      const int use_highbd = pbi->common.seq_params.use_highbitdepth ? 1 : 0;
       av1_free_mc_tmp_buf(thread_data->td, use_highbd);
       aom_free(thread_data->td);
     }
@@ -207,7 +207,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 #if CONFIG_ACCOUNTING
   aom_accounting_clear(&pbi->accounting);
 #endif
-  const int use_highbd = pbi->common.use_highbitdepth ? 1 : 0;
+  const int use_highbd = pbi->common.seq_params.use_highbitdepth ? 1 : 0;
   av1_free_mc_tmp_buf(&pbi->td, use_highbd);
 
   aom_free(pbi);

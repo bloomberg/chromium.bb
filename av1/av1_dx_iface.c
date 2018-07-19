@@ -1019,7 +1019,7 @@ static aom_codec_err_t ctrl_get_bit_depth(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
-      *bit_depth = cm->bit_depth;
+      *bit_depth = cm->seq_params.bit_depth;
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;
@@ -1055,8 +1055,9 @@ static aom_codec_err_t ctrl_get_img_format(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
 
-      *img_fmt = get_img_format(cm->subsampling_x, cm->subsampling_y,
-                                cm->use_highbitdepth);
+      *img_fmt = get_img_format(cm->seq_params.subsampling_x,
+                                cm->seq_params.subsampling_y,
+                                cm->seq_params.use_highbitdepth);
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;

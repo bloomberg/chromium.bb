@@ -769,7 +769,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_y_size_cdf[bsize_ctx],
                        PALETTE_SIZES);
-      write_palette_colors_y(xd, pmi, cm->bit_depth, w);
+      write_palette_colors_y(xd, pmi, cm->seq_params.bit_depth, w);
     }
   }
 
@@ -786,7 +786,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_uv_size_cdf[bsize_ctx],
                        PALETTE_SIZES);
-      write_palette_colors_uv(xd, pmi, cm->bit_depth, w);
+      write_palette_colors_uv(xd, pmi, cm->seq_params.bit_depth, w);
     }
   }
 }
@@ -1421,8 +1421,8 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
     for (blk_col = col >> pd->subsampling_x; blk_col < unit_width;
          blk_col += bkw) {
       pack_txb_tokens(w, cm, x, tok, tok_end, xd, mbmi, plane, plane_bsize,
-                      cm->bit_depth, *block, blk_row, blk_col, max_tx_size,
-                      token_stats);
+                      cm->seq_params.bit_depth, *block, blk_row, blk_col,
+                      max_tx_size, token_stats);
       *block += step;
     }
   }
@@ -1778,7 +1778,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
   }
 
   if (num_planes > 1) {
-    int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
+    int s = AOMMIN(cm->seq_params.subsampling_x, cm->seq_params.subsampling_y);
     if (s && !chroma_none) {
       aom_wb_write_bit(wb, cm->rst_info[1].restoration_unit_size !=
                                cm->rst_info[0].restoration_unit_size);
@@ -2019,7 +2019,7 @@ static void encode_quantization(const AV1_COMMON *const cm,
   if (num_planes > 1) {
     int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
                         (cm->u_ac_delta_q != cm->v_ac_delta_q);
-    if (cm->separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
+    if (cm->seq_params.separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
     write_delta_q(wb, cm->u_dc_delta_q);
     write_delta_q(wb, cm->u_ac_delta_q);
     if (diff_uv_delta) {
@@ -2031,7 +2031,7 @@ static void encode_quantization(const AV1_COMMON *const cm,
   if (cm->using_qmatrix) {
     aom_wb_write_literal(wb, cm->qm_y, QM_LEVEL_BITS);
     aom_wb_write_literal(wb, cm->qm_u, QM_LEVEL_BITS);
-    if (!cm->separate_uv_delta_q)
+    if (!cm->seq_params.separate_uv_delta_q)
       assert(cm->qm_u == cm->qm_v);
     else
       aom_wb_write_literal(wb, cm->qm_v, QM_LEVEL_BITS);
@@ -2425,80 +2425,82 @@ static void write_profile(BITSTREAM_PROFILE profile,
   aom_wb_write_literal(wb, profile, PROFILE_BITS);
 }
 
-static void write_bitdepth(AV1_COMMON *const cm,
+static void write_bitdepth(const SequenceHeader *const seq_params,
                            struct aom_write_bit_buffer *wb) {
   // Profile 0/1: [0] for 8 bit, [1]  10-bit
   // Profile   2: [0] for 8 bit, [10] 10-bit, [11] - 12-bit
-  aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_8 ? 0 : 1);
-  if (cm->profile == PROFILE_2 && cm->bit_depth != AOM_BITS_8) {
-    aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_10 ? 0 : 1);
+  aom_wb_write_bit(wb, seq_params->bit_depth == AOM_BITS_8 ? 0 : 1);
+  if (seq_params->profile == PROFILE_2 && seq_params->bit_depth != AOM_BITS_8) {
+    aom_wb_write_bit(wb, seq_params->bit_depth == AOM_BITS_10 ? 0 : 1);
   }
 }
 
-static void write_color_config(AV1_COMMON *const cm,
+static void write_color_config(const SequenceHeader *const seq_params,
                                struct aom_write_bit_buffer *wb) {
-  write_bitdepth(cm, wb);
-  const int is_monochrome = cm->seq_params.monochrome;
+  write_bitdepth(seq_params, wb);
+  const int is_monochrome = seq_params->monochrome;
   // monochrome bit
-  if (cm->profile != PROFILE_1)
+  if (seq_params->profile != PROFILE_1)
     aom_wb_write_bit(wb, is_monochrome);
   else
     assert(!is_monochrome);
-  if (cm->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
-      cm->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
-      cm->matrix_coefficients == AOM_CICP_MC_UNSPECIFIED) {
+  if (seq_params->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
+      seq_params->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
+      seq_params->matrix_coefficients == AOM_CICP_MC_UNSPECIFIED) {
     aom_wb_write_bit(wb, 0);  // No color description present
   } else {
     aom_wb_write_bit(wb, 1);  // Color description present
-    aom_wb_write_literal(wb, cm->color_primaries, 8);
-    aom_wb_write_literal(wb, cm->transfer_characteristics, 8);
-    aom_wb_write_literal(wb, cm->matrix_coefficients, 8);
+    aom_wb_write_literal(wb, seq_params->color_primaries, 8);
+    aom_wb_write_literal(wb, seq_params->transfer_characteristics, 8);
+    aom_wb_write_literal(wb, seq_params->matrix_coefficients, 8);
   }
   if (is_monochrome) {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
-    aom_wb_write_bit(wb, cm->color_range);
+    aom_wb_write_bit(wb, seq_params->color_range);
     return;
   }
-  if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
-      cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
-      cm->matrix_coefficients ==
+  if (seq_params->color_primaries == AOM_CICP_CP_BT_709 &&
+      seq_params->transfer_characteristics == AOM_CICP_TC_SRGB &&
+      seq_params->matrix_coefficients ==
           AOM_CICP_MC_IDENTITY) {  // it would be better to remove this
                                    // dependency too
-    assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
-    assert(cm->profile == PROFILE_1 ||
-           (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12));
+    assert(seq_params->subsampling_x == 0 && seq_params->subsampling_y == 0);
+    assert(seq_params->profile == PROFILE_1 ||
+           (seq_params->profile == PROFILE_2 &&
+            seq_params->bit_depth == AOM_BITS_12));
   } else {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
-    aom_wb_write_bit(wb, cm->color_range);
-    if (cm->profile == PROFILE_0) {
+    aom_wb_write_bit(wb, seq_params->color_range);
+    if (seq_params->profile == PROFILE_0) {
       // 420 only
-      assert(cm->subsampling_x == 1 && cm->subsampling_y == 1);
-    } else if (cm->profile == PROFILE_1) {
+      assert(seq_params->subsampling_x == 1 && seq_params->subsampling_y == 1);
+    } else if (seq_params->profile == PROFILE_1) {
       // 444 only
-      assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
-    } else if (cm->profile == PROFILE_2) {
-      if (cm->bit_depth == AOM_BITS_12) {
+      assert(seq_params->subsampling_x == 0 && seq_params->subsampling_y == 0);
+    } else if (seq_params->profile == PROFILE_2) {
+      if (seq_params->bit_depth == AOM_BITS_12) {
         // 420, 444 or 422
-        aom_wb_write_bit(wb, cm->subsampling_x);
-        if (cm->subsampling_x == 0) {
-          assert(cm->subsampling_y == 0 &&
+        aom_wb_write_bit(wb, seq_params->subsampling_x);
+        if (seq_params->subsampling_x == 0) {
+          assert(seq_params->subsampling_y == 0 &&
                  "4:4:0 subsampling not allowed in AV1");
         } else {
-          aom_wb_write_bit(wb, cm->subsampling_y);
+          aom_wb_write_bit(wb, seq_params->subsampling_y);
         }
       } else {
         // 422 only
-        assert(cm->subsampling_x == 1 && cm->subsampling_y == 0);
+        assert(seq_params->subsampling_x == 1 &&
+               seq_params->subsampling_y == 0);
       }
     }
-    if (cm->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
-      assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
+    if (seq_params->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
+      assert(seq_params->subsampling_x == 0 && seq_params->subsampling_y == 0);
     }
-    if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
-      aom_wb_write_literal(wb, cm->chroma_sample_position, 2);
+    if (seq_params->subsampling_x == 1 && seq_params->subsampling_y == 1) {
+      aom_wb_write_literal(wb, seq_params->chroma_sample_position, 2);
     }
   }
-  aom_wb_write_bit(wb, cm->separate_uv_delta_q);
+  aom_wb_write_bit(wb, seq_params->separate_uv_delta_q);
 }
 
 static void write_timing_info_header(AV1_COMMON *const cm,
@@ -2609,8 +2611,8 @@ static void write_film_grain_params(AV1_COMP *cpi,
     pars->chroma_scaling_from_luma = 0;  // for monochrome override to 0
 
   if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma ||
-      ((cm->subsampling_x == 1) && (cm->subsampling_y == 1) &&
-       (pars->num_y_points == 0))) {
+      ((cm->seq_params.subsampling_x == 1) &&
+       (cm->seq_params.subsampling_y == 1) && (pars->num_y_points == 0))) {
     pars->num_cb_points = 0;
     pars->num_cr_points = 0;
   } else {
@@ -3509,7 +3511,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
 
-  write_profile(cm->profile, &wb);
+  write_profile(cm->seq_params.profile, &wb);
 
   // Still picture or not
   aom_wb_write_bit(&wb, cm->seq_params.still_picture);
@@ -3563,7 +3565,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   }
   write_sequence_header(cpi, &wb);
 
-  write_color_config(cm, &wb);
+  write_color_config(&cm->seq_params, &wb);
 
   aom_wb_write_bit(&wb, cm->film_grain_params_present);
 

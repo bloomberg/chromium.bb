@@ -202,16 +202,16 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   // Verify rb has been configured to report errors.
   assert(rb->error_handler);
 
-  cm->profile = av1_read_profile(rb);
-  if (cm->profile > PROFILE_2) {
-    cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
-    return 0;
-  }
-
   // Use a local variable to store the information as we decode. At the end,
   // if no errors have occurred, cm->seq_params is updated.
   SequenceHeader sh = cm->seq_params;
   SequenceHeader *const seq_params = &sh;
+
+  seq_params->profile = av1_read_profile(rb);
+  if (seq_params->profile > PROFILE_2) {
+    cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+    return 0;
+  }
 
   // Still picture or not
   seq_params->still_picture = aom_rb_read_bit(rb);
@@ -273,7 +273,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
           (cm->timing_info.equal_picture_interval ||
            cm->op_params[i].decoder_model_param_present_flag)) {
         cm->op_params[i].bitrate = max_level_bitrate(
-            cm->profile, major_minor_to_seq_level_idx(seq_params->level[i]),
+            seq_params->profile,
+            major_minor_to_seq_level_idx(seq_params->level[i]),
             seq_params->tier[i]);
         // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass
         // the check
@@ -328,14 +329,14 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   av1_read_sequence_header(cm, rb, seq_params);
 
-  av1_read_color_config(cm, rb, pbi->allow_lowbitdepth, seq_params);
-  if (!(cm->subsampling_x == 0 && cm->subsampling_y == 0) &&
-      !(cm->subsampling_x == 1 && cm->subsampling_y == 1) &&
-      !(cm->subsampling_x == 1 && cm->subsampling_y == 0)) {
+  av1_read_color_config(rb, pbi->allow_lowbitdepth, seq_params, &cm->error);
+  if (!(seq_params->subsampling_x == 0 && seq_params->subsampling_y == 0) &&
+      !(seq_params->subsampling_x == 1 && seq_params->subsampling_y == 1) &&
+      !(seq_params->subsampling_x == 1 && seq_params->subsampling_y == 0)) {
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Only 4:4:4, 4:2:2 and 4:2:0 are currently supported, "
                        "%d %d subsampling is not supported.\n",
-                       cm->subsampling_x, cm->subsampling_y);
+                       seq_params->subsampling_x, seq_params->subsampling_y);
   }
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
@@ -435,15 +436,15 @@ static void alloc_tile_list_buffer(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
   const int tile_width_in_pixels = cm->tile_width * MI_SIZE;
   const int tile_height_in_pixels = cm->tile_height * MI_SIZE;
-  const int ssy = cm->subsampling_y;
-  const int ssx = cm->subsampling_x;
+  const int ssy = cm->seq_params.subsampling_y;
+  const int ssx = cm->seq_params.subsampling_x;
   const int num_planes = av1_num_planes(cm);
   const size_t yplane_tile_size = tile_height_in_pixels * tile_width_in_pixels;
   const size_t uvplane_tile_size =
       (num_planes > 1)
           ? (tile_height_in_pixels >> ssy) * (tile_width_in_pixels >> ssx)
           : 0;
-  const size_t tile_size = (cm->use_highbitdepth ? 2 : 1) *
+  const size_t tile_size = (cm->seq_params.use_highbitdepth ? 2 : 1) *
                            (yplane_tile_size + 2 * uvplane_tile_size);
   pbi->tile_list_size = tile_size * (pbi->tile_count_minus_1 + 1);
 
@@ -464,8 +465,8 @@ static void copy_decoded_tile_to_tile_list_buffer(AV1Decoder *pbi,
   AV1_COMMON *const cm = &pbi->common;
   const int tile_width_in_pixels = cm->tile_width * MI_SIZE;
   const int tile_height_in_pixels = cm->tile_height * MI_SIZE;
-  const int ssy = cm->subsampling_y;
-  const int ssx = cm->subsampling_x;
+  const int ssy = cm->seq_params.subsampling_y;
+  const int ssx = cm->seq_params.subsampling_x;
   const int num_planes = av1_num_planes(cm);
 
   // Copy decoded tile to the tile list output buffer.
