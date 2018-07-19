@@ -145,37 +145,15 @@ class LevelDbWriteBatch : public BlockingModelTypeStoreImpl::WriteBatch {
 
 }  // namespace
 
-// static
-std::unique_ptr<BlockingModelTypeStoreImpl>
-BlockingModelTypeStoreImpl::CreateStore(ModelType type,
-                                        const std::string& path,
-                                        base::Optional<ModelError>* error) {
-  scoped_refptr<ModelTypeStoreBackend> backend =
-      ModelTypeStoreBackend::GetOrCreateBackend(path,
-                                                /*env=*/nullptr, error);
-  if (error->has_value()) {
-    return nullptr;
-  }
-  return base::WrapUnique<BlockingModelTypeStoreImpl>(
-      new BlockingModelTypeStoreImpl(type, backend));
-}
-
-// static
-std::unique_ptr<BlockingModelTypeStoreImpl>
-BlockingModelTypeStoreImpl::CreateInMemoryStoreForTest(ModelType type) {
-  std::unique_ptr<leveldb::Env> env =
-      ModelTypeStoreBackend::CreateInMemoryEnv();
-
-  std::string path;
-  env->GetTestDirectory(&path);
-  path += "/in-memory";
-
-  base::Optional<ModelError> error;
-  scoped_refptr<ModelTypeStoreBackend> backend =
-      ModelTypeStoreBackend::GetOrCreateBackend(path, std::move(env), &error);
-  DCHECK(!error.has_value());
-  return base::WrapUnique<BlockingModelTypeStoreImpl>(
-      new BlockingModelTypeStoreImpl(type, backend));
+BlockingModelTypeStoreImpl::BlockingModelTypeStoreImpl(
+    ModelType type,
+    scoped_refptr<ModelTypeStoreBackend> backend)
+    : type_(type),
+      backend_(backend),
+      data_prefix_(FormatDataPrefix(type)),
+      metadata_prefix_(FormatMetaPrefix(type)),
+      global_metadata_key_(FormatGlobalMetadataKey(type)) {
+  DCHECK(backend_);
 }
 
 BlockingModelTypeStoreImpl::~BlockingModelTypeStoreImpl() {
@@ -280,17 +258,6 @@ BlockingModelTypeStoreImpl::DeleteAllDataAndMetadata() {
 std::unique_ptr<BlockingModelTypeStoreImpl::WriteBatch>
 BlockingModelTypeStoreImpl::CreateWriteBatchForType(ModelType type) {
   return std::make_unique<LevelDbWriteBatch>(type);
-}
-
-BlockingModelTypeStoreImpl::BlockingModelTypeStoreImpl(
-    ModelType type,
-    scoped_refptr<ModelTypeStoreBackend> backend)
-    : type_(type),
-      backend_(backend),
-      data_prefix_(FormatDataPrefix(type)),
-      metadata_prefix_(FormatMetaPrefix(type)),
-      global_metadata_key_(FormatGlobalMetadataKey(type)) {
-  DCHECK(backend_);
 }
 
 }  // namespace syncer

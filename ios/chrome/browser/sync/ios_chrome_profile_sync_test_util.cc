@@ -37,7 +37,6 @@ CreateProfileSyncServiceParamsForTest(
       sync_client ? std::move(sync_client)
                   : std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::DoNothing();
-  init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   init_params.debug_identifier = browser_state->GetDebugName();

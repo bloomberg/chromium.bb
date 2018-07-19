@@ -405,10 +405,10 @@ jumbo_static_library("sync") {
     "model/model_error.h",
     "model/model_type_change_processor.cc",
     "model/model_type_change_processor.h",
-    "model/model_type_store.cc",
     "model/model_type_store.h",
     "model/model_type_store_base.cc",
     "model/model_type_store_base.h",
+    "model/model_type_store_service.h",
     "model/model_type_sync_bridge.cc",
     "model/model_type_sync_bridge.h",
     "model/mutable_data_batch.cc",
@@ -440,6 +440,8 @@ jumbo_static_library("sync") {
     "model_impl/model_type_store_backend.h",
     "model_impl/model_type_store_impl.cc",
     "model_impl/model_type_store_impl.h",
+    "model_impl/model_type_store_service_impl.cc",
+    "model_impl/model_type_store_service_impl.h",
     "model_impl/processor_entity_tracker.cc",
     "model_impl/processor_entity_tracker.h",
     "model_impl/sync_metadata_store_change_list.cc",
@@ -550,6 +552,7 @@ jumbo_static_library("sync") {
     "//base",
     "//components/sync/protocol",
     "//net",
+    "//third_party/leveldatabase",
     "//url",
   ]
   deps = [
@@ -574,7 +577,6 @@ jumbo_static_library("sync") {
     "//sql",
     "//third_party/cacheinvalidation",
     "//third_party/crc32c",
-    "//third_party/leveldatabase",
     "//third_party/zlib",
     "//third_party/zlib/google:compression_utils",
     "//ui/base",
@@ -745,6 +747,8 @@ static_library("test_support_model") {
     "model/sync_change_processor_wrapper_for_test.h",
     "model/sync_error_factory_mock.cc",
     "model/sync_error_factory_mock.h",
+    "model/test_model_type_store_service.cc",
+    "model/test_model_type_store_service.h",
   ]
 
   defines = [ "SYNC_TEST" ]

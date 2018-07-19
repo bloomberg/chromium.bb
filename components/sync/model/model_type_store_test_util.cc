@@ -7,8 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model_impl/blocking_model_type_store_impl.h"
+#include "components/sync/model_impl/model_type_store_backend.h"
+#include "components/sync/model_impl/model_type_store_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -55,26 +58,11 @@ class ForwardingModelTypeStore : public ModelTypeStore {
 // static
 std::unique_ptr<ModelTypeStore>
 ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
-  base::RunLoop loop;
-  std::unique_ptr<ModelTypeStore> store;
-
-  ModelTypeStore::CreateInMemoryStoreForTest(
+  return std::make_unique<ModelTypeStoreImpl>(
       type,
-      base::BindOnce(
-          [](base::RunLoop* loop, std::unique_ptr<ModelTypeStore>* out_store,
-             const base::Optional<ModelError>& error,
-             std::unique_ptr<ModelTypeStore> in_store) {
-            EXPECT_FALSE(error) << error->ToString();
-            *out_store = std::move(in_store);
-            loop->Quit();
-          },
-          &loop, &store));
-
-  // Force the initialization to run now, synchronously.
-  loop.Run();
-
-  EXPECT_TRUE(store);
-  return store;
+      std::make_unique<BlockingModelTypeStoreImpl>(
+          type, ModelTypeStoreBackend::GetOrCreateInMemoryForTest()),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 // static

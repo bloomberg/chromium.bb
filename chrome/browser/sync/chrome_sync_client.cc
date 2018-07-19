@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
@@ -278,6 +279,11 @@ base::FilePath ChromeSyncClient::GetLocalSyncBackendFolder() {
 #endif  // defined(OS_WIN)
 
   return local_sync_backend_folder;
+}
+
+syncer::ModelTypeStoreService* ChromeSyncClient::GetModelTypeStoreService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return ModelTypeStoreServiceFactory::GetForProfile(profile_);
 }
 
 bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {

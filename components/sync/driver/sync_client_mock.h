@@ -20,6 +20,7 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetSyncService, SyncService*());
   MOCK_METHOD0(GetPrefService, PrefService*());
   MOCK_METHOD0(GetLocalSyncBackendFolder, base::FilePath());
+  MOCK_METHOD0(GetModelTypeStoreService, syncer::ModelTypeStoreService*());
   MOCK_METHOD0(GetBookmarkModel, bookmarks::BookmarkModel*());
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());

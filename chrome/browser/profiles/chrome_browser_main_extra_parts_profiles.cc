@@ -70,6 +70,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -234,6 +235,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   ConsentAuditorFactory::GetInstance();
+  ContentSuggestionsServiceFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
   data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
@@ -260,6 +262,11 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  feature_engagement::BookmarkTrackerFactory::GetInstance();
+  feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
+  feature_engagement::NewTabTrackerFactory::GetInstance();
+#endif
   feature_engagement::TrackerFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   GAIAInfoUpdateServiceFactory::GetInstance();
@@ -302,17 +309,14 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
-  NTPResourceCacheFactory::GetInstance();
 #endif
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  feature_engagement::BookmarkTrackerFactory::GetInstance();
-  feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
-  feature_engagement::NewTabTrackerFactory::GetInstance();
-#endif
-  ContentSuggestionsServiceFactory::GetInstance();
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopProfileSessionDurationsServiceFactory::GetInstance();
+#endif
+  ModelTypeStoreServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  NTPResourceCacheFactory::GetInstance();
 #endif
   PasswordStoreFactory::GetInstance();
 #if !defined(OS_ANDROID)

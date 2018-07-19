@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 #include "components/sync/driver/sync_client.h"
+#include "components/sync/model/model_type_store_service.h"
 
 class Profile;
 
@@ -41,6 +42,7 @@ class ChromeSyncClient : public syncer::SyncClient {
   syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
+  syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;

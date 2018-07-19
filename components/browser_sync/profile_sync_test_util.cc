@@ -47,6 +47,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
  public:
   BundleSyncClient(syncer::SyncApiComponentFactory* factory,
                    PrefService* pref_service,
+                   syncer::ModelTypeStoreService* model_type_store_service,
                    sync_sessions::SyncSessionsClient* sync_sessions_client,
                    autofill::PersonalDataManager* personal_data_manager,
                    const base::Callback<base::WeakPtr<syncer::SyncableService>(
@@ -67,6 +68,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
   syncer::SyncService* GetSyncService() override;
+  syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
   history::HistoryService* GetHistoryService() override;
@@ -74,6 +76,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
 
  private:
   PrefService* const pref_service_;
+  syncer::ModelTypeStoreService* const model_type_store_service_;
   sync_sessions::SyncSessionsClient* const sync_sessions_client_;
   autofill::PersonalDataManager* const personal_data_manager_;
   const base::Callback<base::WeakPtr<syncer::SyncableService>(
@@ -91,6 +94,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
 BundleSyncClient::BundleSyncClient(
     syncer::SyncApiComponentFactory* factory,
     PrefService* pref_service,
+    syncer::ModelTypeStoreService* model_type_store_service,
     sync_sessions::SyncSessionsClient* sync_sessions_client,
     autofill::PersonalDataManager* personal_data_manager,
     const base::Callback<base::WeakPtr<syncer::SyncableService>(
@@ -103,6 +107,7 @@ BundleSyncClient::BundleSyncClient(
     history::HistoryService* history_service)
     : syncer::FakeSyncClient(factory),
       pref_service_(pref_service),
+      model_type_store_service_(model_type_store_service),
       sync_sessions_client_(sync_sessions_client),
       personal_data_manager_(personal_data_manager),
       get_syncable_service_callback_(get_syncable_service_callback),
@@ -168,6 +173,10 @@ BundleSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   }
 }
 
+syncer::ModelTypeStoreService* BundleSyncClient::GetModelTypeStoreService() {
+  return model_type_store_service_;
+}
+
 history::HistoryService* BundleSyncClient::GetHistoryService() {
   if (history_service_)
     return history_service_;
@@ -230,9 +239,9 @@ std::unique_ptr<syncer::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
   return std::make_unique<BundleSyncClient>(
       bundle_->component_factory(), bundle_->pref_service(),
-      bundle_->sync_sessions_client(), personal_data_manager_,
-      get_syncable_service_callback_, get_sync_service_callback_,
-      get_bookmark_model_callback_,
+      &bundle_->model_type_store_service_, bundle_->sync_sessions_client(),
+      personal_data_manager_, get_syncable_service_callback_,
+      get_sync_service_callback_, get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
       activate_model_creation_ ? base::SequencedTaskRunnerHandle::Get()
                                : nullptr,
@@ -282,17 +291,12 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
   init_params.network_time_update_callback = base::DoNothing();
-  if (!base_directory_.IsValid())
-    EXPECT_TRUE(base_directory_.CreateUniqueTempDir());
-  init_params.base_directory = base_directory_.GetPath();
   init_params.url_request_context = url_request_context();
   init_params.url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_);
   init_params.debug_identifier = "dummyDebugName";
   init_params.channel = version_info::Channel::UNKNOWN;
-  init_params.model_type_store_factory =
-      syncer::ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest();
 
   return init_params;
 }

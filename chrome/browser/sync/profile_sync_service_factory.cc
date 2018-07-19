@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 
+#include <string>
 #include <utility>
 
 #include "base/memory/singleton.h"
@@ -178,7 +179,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
-  init_params.base_directory = profile->GetPath();
   init_params.url_request_context = profile->GetRequestContext();
   init_params.url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)

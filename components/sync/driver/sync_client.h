@@ -45,6 +45,7 @@ class SyncSessionsClient;
 namespace syncer {
 
 class LocalDeviceInfoProvider;
+class ModelTypeStoreService;
 class SyncService;
 class SyncableService;
 
@@ -67,6 +68,8 @@ class SyncClient {
 
   // Returns the current profile's preference service.
   virtual PrefService* GetPrefService() = 0;
+
+  virtual ModelTypeStoreService* GetModelTypeStoreService() = 0;
 
   // Returns the path to the folder used for storing the local sync database.
   // It is only used when sync is running against a local backend.

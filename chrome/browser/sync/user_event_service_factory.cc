@@ -9,12 +9,14 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/user_events/no_op_user_event_service.h"
 #include "components/sync/user_events/user_event_service_impl.h"
@@ -38,6 +40,7 @@ UserEventServiceFactory::UserEventServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "UserEventService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   // TODO(vitaliii): This is missing
   // DependsOn(ProfileSyncServiceFactory::GetInstance()), which we can't
   // simply add because ProfileSyncServiceFactory itself depends on this
@@ -58,8 +61,8 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
   }
 
   syncer::OnceModelTypeStoreFactory store_factory =
-      browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-          profile->GetPath());
+      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
+
   auto change_processor =
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::USER_EVENTS,

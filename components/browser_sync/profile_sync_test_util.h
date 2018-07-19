@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -20,6 +19,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/model/test_model_type_store_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -169,6 +169,7 @@ class ProfileSyncServiceBundle {
  private:
   scoped_refptr<base::SequencedTaskRunner> db_thread_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  syncer::TestModelTypeStoreService model_type_store_service_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;
   FakeSigninManagerType signin_manager_;
@@ -185,7 +186,6 @@ class ProfileSyncServiceBundle {
   // once the rest of the sync engine is migrated to network service.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  base::ScopedTempDir base_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);
 };

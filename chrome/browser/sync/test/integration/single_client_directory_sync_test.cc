@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/syncable/directory.h"
 #include "sql/test/test_helpers.h"
 #include "url/gurl.h"
@@ -76,7 +77,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                        StopThenDisableDeletesDirectory) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
-  FilePath directory_path = sync_service->GetDirectoryPathForTest();
+  FilePath directory_path = sync_service->GetSyncClient()
+                                ->GetModelTypeStoreService()
+                                ->GetSyncDataPath();
   ASSERT_TRUE(FolderContainsFiles(directory_path));
   sync_service->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
 
@@ -109,7 +112,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   WaitForExistingTasksOnLoop(sync_loop);
 
   // Now corrupt the database.
-  const FilePath directory_path(sync_service->GetDirectoryPathForTest());
+  FilePath directory_path = sync_service->GetSyncClient()
+                                ->GetModelTypeStoreService()
+                                ->GetSyncDataPath();
   const FilePath sync_db(directory_path.Append(
       syncer::syncable::Directory::kSyncDatabaseFilename));
   ASSERT_TRUE(sql::test::CorruptSizeInHeaderWithLock(sync_db));

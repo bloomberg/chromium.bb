@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
+#include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,7 +96,8 @@ class SyncedPrintersManagerTest : public testing::Test {
       : manager_(SyncedPrintersManager::Create(
             &profile_,
             std::make_unique<PrintersSyncBridge>(
-                base::Bind(&syncer::ModelTypeStore::CreateInMemoryStoreForTest),
+                syncer::ModelTypeStoreTestUtil::
+                    FactoryForInMemoryStoreForTest(),
                 base::BindRepeating(
                     base::IgnoreResult(&base::debug::DumpWithoutCrashing))))) {
     base::RunLoop().RunUntilIdle();

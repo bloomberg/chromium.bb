@@ -9,11 +9,13 @@
 
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/consent_auditor/consent_sync_bridge_impl.h"
@@ -21,11 +23,13 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
+#include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 
@@ -53,6 +57,7 @@ ConsentAuditorFactory::ConsentAuditorFactory()
     : BrowserStateKeyedServiceFactory(
           "ConsentAuditor",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(IOSUserEventServiceFactory::GetInstance());
 }
 
@@ -67,8 +72,8 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
   syncer::UserEventService* user_event_service = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
     syncer::OnceModelTypeStoreFactory store_factory =
-        browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-            browser_state->GetStatePath());
+        ModelTypeStoreServiceFactory::GetForBrowserState(ios_browser_state)
+            ->GetStoreFactory();
     auto change_processor =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
             syncer::USER_CONSENTS,

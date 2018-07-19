@@ -6,11 +6,8 @@
 
 #include <utility>
 
-#include "base/files/file_path.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/synchronization/lock.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -34,6 +31,10 @@ const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
 
 namespace {
 
+// Used as a singleton instance for tests, such that two stores that coexist
+// share the same backend (and hence, the same data).
+ModelTypeStoreBackend* in_memory_instance_for_test_ = nullptr;
+
 StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
     const leveldb::Status& status) {
   if (status.ok())
@@ -51,103 +52,50 @@ StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
   return STORE_INIT_RESULT_UNKNOWN;
 }
 
-// BackendMap tracks created ModelTypeStoreBackends ensuring at most one backend
-// exists for a given path. BackendMap keeps non-owning pointer to backend
-// allowing backend lifetime to be controlled by consumers. Since backends can
-// run concurrently on different threads all map operations are guarded by lock.
-class BackendMap {
- public:
-  BackendMap() = default;
-
-  // Returns backend reference or nullptr if backend for |path| is not in the
-  // map.
-  scoped_refptr<ModelTypeStoreBackend> GetBackend(
-      const std::string& path) const;
-  // Adds backend into the map ensuring it wasn't added before.
-  void SetBackend(const std::string& path, ModelTypeStoreBackend* backend);
-  void EraseBackend(const std::string& path);
-
- private:
-  mutable base::Lock lock_;
-
-  std::unordered_map<std::string, ModelTypeStoreBackend*> backends_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackendMap);
-};
-
-base::LazyInstance<BackendMap>::Leaky backend_map = LAZY_INSTANCE_INITIALIZER;
-
-scoped_refptr<ModelTypeStoreBackend> BackendMap::GetBackend(
-    const std::string& path) const {
-  base::AutoLock scoped_lock(lock_);
-  auto it = backends_.find(path);
-  return (it == backends_.end()) ? nullptr : it->second;
-}
-
-void BackendMap::SetBackend(const std::string& path,
-                            ModelTypeStoreBackend* backend) {
-  base::AutoLock scoped_lock(lock_);
-  DCHECK(backends_.find(path) == backends_.end());
-  backends_[path] = backend;
-}
-
-void BackendMap::EraseBackend(const std::string& path) {
-  base::AutoLock scoped_lock(lock_);
-  backends_.erase(path);
-}
-
 }  // namespace
 
-ModelTypeStoreBackend::ModelTypeStoreBackend(const std::string& path)
-    : path_(path) {}
-
-ModelTypeStoreBackend::~ModelTypeStoreBackend() {
-  backend_map.Get().EraseBackend(path_);
-}
-
-std::unique_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
-  return leveldb_chrome::NewMemEnv("ModelTypeStore");
-}
-
 // static
-scoped_refptr<ModelTypeStoreBackend> ModelTypeStoreBackend::GetOrCreateBackend(
-    const std::string& path,
-    std::unique_ptr<leveldb::Env> env,
-    base::Optional<ModelError>* error) {
-  error->reset();
+scoped_refptr<ModelTypeStoreBackend>
+ModelTypeStoreBackend::GetOrCreateInMemoryForTest() {
+  if (in_memory_instance_for_test_) {
+    return in_memory_instance_for_test_;
+  }
+
+  std::unique_ptr<leveldb::Env> env =
+      leveldb_chrome::NewMemEnv("ModelTypeStore");
+
+  std::string test_directory_str;
+  env->GetTestDirectory(&test_directory_str);
+  const base::FilePath path = base::FilePath::FromUTF8Unsafe(test_directory_str)
+                                  .Append(FILE_PATH_LITERAL("in-memory"));
+
   scoped_refptr<ModelTypeStoreBackend> backend =
-      backend_map.Get().GetBackend(path);
-  if (backend) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(backend->sequence_checker_);
-    return backend;
-  }
+      new ModelTypeStoreBackend(std::move(env));
+  in_memory_instance_for_test_ = backend.get();
 
-  backend = new ModelTypeStoreBackend(path);
-
-  *error = backend->Init(path, std::move(env));
-
-  if (!error->has_value()) {
-    backend_map.Get().SetBackend(path, backend.get());
-  } else {
-    backend = nullptr;
-  }
-
+  base::Optional<ModelError> error = backend->Init(path);
+  DCHECK(!error);
   return backend;
 }
 
+// static
+scoped_refptr<ModelTypeStoreBackend>
+ModelTypeStoreBackend::CreateUninitialized() {
+  return new ModelTypeStoreBackend(/*env=*/nullptr);
+}
+
 base::Optional<ModelError> ModelTypeStoreBackend::Init(
-    const std::string& path,
-    std::unique_ptr<leveldb::Env> env) {
+    const base::FilePath& path) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(!IsInitialized());
+  const std::string path_str = path.AsUTF8Unsafe();
 
-  env_ = std::move(env);
-
-  leveldb::Status status = OpenDatabase(path, env_.get());
+  leveldb::Status status = OpenDatabase(path_str, env_.get());
   if (status.IsCorruption()) {
     DCHECK(db_ == nullptr);
-    status = DestroyDatabase(path, env_.get());
+    status = DestroyDatabase(path_str, env_.get());
     if (status.ok())
-      status = OpenDatabase(path, env_.get());
+      status = OpenDatabase(path_str, env_.get());
     if (status.ok())
       RecordStoreInitResultHistogram(
           STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION);
@@ -174,6 +122,22 @@ base::Optional<ModelError> ModelTypeStoreBackend::Init(
   }
   RecordStoreInitResultHistogram(STORE_INIT_RESULT_SUCCESS);
   return base::nullopt;
+}
+
+bool ModelTypeStoreBackend::IsInitialized() const {
+  return db_ != nullptr;
+}
+
+ModelTypeStoreBackend::ModelTypeStoreBackend(std::unique_ptr<leveldb::Env> env)
+    : env_(std::move(env)) {
+  // It's OK to construct this class in a sequence and Init() it elsewhere.
+  sequence_checker_.DetachFromSequence();
+}
+
+ModelTypeStoreBackend::~ModelTypeStoreBackend() {
+  if (this == in_memory_instance_for_test_) {
+    in_memory_instance_for_test_ = nullptr;
+  }
 }
 
 leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
@@ -274,6 +238,16 @@ ModelTypeStoreBackend::DeleteDataAndMetadataForPrefix(
              : base::Optional<ModelError>({FROM_HERE, status.ToString()});
 }
 
+base::Optional<ModelError> ModelTypeStoreBackend::MigrateForTest(
+    int64_t current_version,
+    int64_t desired_version) {
+  return Migrate(current_version, desired_version);
+}
+
+int64_t ModelTypeStoreBackend::GetStoreVersionForTest() {
+  return GetStoreVersion();
+}
+
 int64_t ModelTypeStoreBackend::GetStoreVersion() {
   DCHECK(db_);
   leveldb::ReadOptions read_options;
@@ -323,11 +297,6 @@ void ModelTypeStoreBackend::RecordStoreInitResultHistogram(
     StoreInitResultForHistogram result) {
   UMA_HISTOGRAM_ENUMERATION(kStoreInitResultHistogramName, result,
                             STORE_INIT_RESULT_COUNT);
-}
-
-// static
-bool ModelTypeStoreBackend::BackendExistsForTest(const std::string& path) {
-  return backend_map.Get().GetBackend(path) != nullptr;
 }
 
 }  // namespace syncer
