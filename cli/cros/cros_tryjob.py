@@ -257,11 +257,10 @@ def FindUserEmail(options):
   return git.GetProjectUserEmail(cwd)
 
 
-def PushLocalPatches(site_config, local_patches, user_email, dryrun=False):
+def PushLocalPatches(local_patches, user_email, dryrun=False):
   """Push local changes to a remote ref, and generate args to send.
 
   Args:
-    site_config: config_lib.SiteConfig containing all config info.
     local_patches: patch_pool.local_patches from verified patch_pool.
     user_email: Unique id for user submitting this tryjob.
     dryrun: Is this a dryrun? If so, don't really push.
@@ -288,7 +287,7 @@ def PushLocalPatches(site_config, local_patches, user_email, dryrun=False):
 
     # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.
     tag = constants.EXTERNAL_PATCH_TAG
-    if checkout['remote'] == site_config.params.INTERNAL_REMOTE:
+    if checkout['remote'] == config_lib.GetSiteParams().INTERNAL_REMOTE:
       tag = constants.INTERNAL_PATCH_TAG
 
     extra_args.append('--remote-patches=%s:%s:%s:%s:%s'
@@ -311,8 +310,7 @@ def RunRemote(site_config, options, patch_pool, staging=False):
 
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
-  args += PushLocalPatches(
-      site_config, patch_pool.local_patches, user_email)
+  args += PushLocalPatches(patch_pool.local_patches, user_email)
 
   email_template = None
   if options.debug:

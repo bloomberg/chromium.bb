@@ -32,8 +32,6 @@ from chromite.lib import portage_util
 from chromite.scripts import pushimage
 
 
-site_config = config_lib.GetConfig()
-
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test RunBuildScript in a variety of cases."""
@@ -1160,11 +1158,12 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
         constants.CHROMIUM_SRC_PROJECT,
         chrome_revision or 'refs/heads/master',
         constants.PATH_TO_CHROME_LKGM)
+    site_params = config_lib.GetSiteParams()
     with mock.patch.object(
         gob_util, 'FetchUrl',
         return_value=StringIO(base64.b64encode(chrome_lkgm))) as patcher:
       self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
-      patcher.assert_called_with(site_config.params.EXTERNAL_GOB_HOST, url)
+      patcher.assert_called_with(site_params.EXTERNAL_GOB_HOST, url)
 
   def testChromeLKGM(self):
     """Verifies that we can get the chrome lkgm without a chrome revision."""

@@ -21,9 +21,6 @@ from chromite.lib import git
 from chromite.lib import parallel
 
 
-site_config = config_lib.GetConfig()
-
-
 class BranchError(Exception):
   """Raised by branch creation code on error."""
 
@@ -306,7 +303,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
     branch_ref = git.NormalizeRef(self.branch_name)
 
     logging.debug('Fixing manifest projects for new branch.')
-    for project in site_config.params.MANIFEST_PROJECTS:
+    for project in config_lib.GetSiteParams().MANIFEST_PROJECTS:
       manifest_checkout = repo_manifest.FindCheckout(project)
       manifest_dir = manifest_checkout['local_path']
       push_remote = manifest_checkout['push_remote']

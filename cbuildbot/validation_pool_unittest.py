@@ -44,9 +44,6 @@ from chromite.lib import tree_status
 from chromite.lib import triage_lib
 
 
-site_config = config_lib.GetConfig()
-
-
 _GetNumber = iter(itertools.count()).next
 # Without this some lambda's defined in constants will not be the same as
 # constants defined in this module. For comparisons, lambdas must be the same
@@ -497,9 +494,10 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
 
   def testGetCLStatusURLForInternalPatch(self):
     """Test GetCLStatusURL for internal patches."""
+    site_params = config_lib.GetSiteParams()
     master_pool = self.MakePool()
     change = self.MockPatch(
-        change_id=1, patch_number=2, remote=site_config.params.INTERNAL_REMOTE)
+        change_id=1, patch_number=2, remote=site_params.INTERNAL_REMOTE)
     url = master_pool._GetCLStatusURL(change)
     self.assertEqual(
         validation_pool.CL_STATUS_URL_PREFIX +
@@ -1215,7 +1213,7 @@ class TestPickling(cros_test_lib.TempDirTestCase):
 
     repository.CloneGitRepo(
         repo,
-        '%s/chromiumos/chromite' % site_config.params.EXTERNAL_GOB_URL,
+        '%s/chromiumos/chromite' % config_lib.GetSiteParams().EXTERNAL_GOB_URL,
         reference=reference)
 
     code = """
@@ -1241,17 +1239,19 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
 
   @staticmethod
   def _GetCrosInternalPatch(patch_info):
+    site_params = config_lib.GetSiteParams()
     return cros_patch.GerritPatch(
         patch_info,
-        site_config.params.INTERNAL_REMOTE,
-        site_config.params.INTERNAL_GERRIT_URL)
+        site_params.INTERNAL_REMOTE,
+        site_params.INTERNAL_GERRIT_URL)
 
   @staticmethod
   def _GetCrosPatch(patch_info):
+    site_params = config_lib.GetSiteParams()
     return cros_patch.GerritPatch(
         patch_info,
-        site_config.params.EXTERNAL_REMOTE,
-        site_config.params.EXTERNAL_GERRIT_URL)
+        site_params.EXTERNAL_REMOTE,
+        site_params.EXTERNAL_GERRIT_URL)
 
   @classmethod
   def _GetTestData(cls):

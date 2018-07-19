@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import constants
 import cPickle
 
 from chromite.lib import buildbucket_lib
@@ -22,10 +21,8 @@ from chromite.lib import metrics
 from chromite.lib import tree_status
 
 
-site_config = config_lib.GetConfig()
-
 BUILD_STATUS_URL = (
-    '%s/builder-status' % site_config.params.MANIFEST_VERSIONS_GS_URL)
+    '%s/builder-status' % config_lib.GetSiteParams().MANIFEST_VERSIONS_GS_URL)
 NUM_RETRIES = 20
 
 # Namedtupe to store CIDB status info.
@@ -411,6 +408,7 @@ class SlaveBuilderStatus(object):
       Dashboard url of the given build. None if no entry found for this given
       build in CIDB and buildbucket_info_dict is None.
     """
+    site_config = config_lib.GetConfig()
     if build_config in cidb_info_dict:
       build_number = cidb_info_dict[build_config].build_number
 
@@ -439,6 +437,7 @@ class SlaveBuilderStatus(object):
       A build_failure_message.BuildFailureMessage object if the status is
       constants.BUILDER_STATUS_FAILED; else, None.
     """
+    site_config = config_lib.GetConfig()
     if status == constants.BUILDER_STATUS_FAILED:
       failure_messages = slave_failures_dict.get(build_config)
       overlays = site_config[build_config].overlays

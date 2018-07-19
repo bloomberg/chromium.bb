@@ -84,9 +84,9 @@ class GerritChangeTuple(_GerritChangeTuple):
   """A tuple for a given Gerrit change."""
 
   def __str__(self):
-    site_config = config_lib.GetConfig()
-    prefix = (site_config.params.INTERNAL_CHANGE_PREFIX
-              if self.internal else site_config.params.EXTERNAL_CHANGE_PREFIX)
+    site_params = config_lib.GetSiteParams()
+    prefix = (site_params.INTERNAL_CHANGE_PREFIX
+              if self.internal else site_params.EXTERNAL_CHANGE_PREFIX)
     return 'CL:%s%s' % (prefix, self.gerrit_number)
 
   @classmethod
@@ -109,9 +109,9 @@ class GerritPatchTuple(_GerritPatchTuple):
   """A tuple for a given Gerrit patch."""
 
   def __str__(self):
-    site_config = config_lib.GetConfig()
-    prefix = (site_config.params.INTERNAL_CHANGE_PREFIX
-              if self.internal else site_config.params.EXTERNAL_CHANGE_PREFIX)
+    site_params = config_lib.GetSiteParams()
+    prefix = (site_params.INTERNAL_CHANGE_PREFIX
+              if self.internal else site_params.EXTERNAL_CHANGE_PREFIX)
     return 'CL:%s%s#%s' % (prefix, self.gerrit_number, self.patch_number)
 
   def GetChangeTuple(self):

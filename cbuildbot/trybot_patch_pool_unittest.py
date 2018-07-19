@@ -14,9 +14,6 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
 
-site_config = config_lib.GetConfig()
-
-
 class FilterTests(patch_unittest.GitRepoPatchTestCase):
   """Tests for all the various filters."""
 
@@ -32,6 +29,7 @@ class FilterTests(patch_unittest.GitRepoPatchTestCase):
 
   def testManifestFilters(self):
     """Make sure the manifest filters work"""
+    site_params = config_lib.GetSiteParams()
     _, _, patch = self._CommonGitSetup()
 
     patch.project = constants.CHROMITE_PROJECT
@@ -39,12 +37,12 @@ class FilterTests(patch_unittest.GitRepoPatchTestCase):
     self.assertFalse(trybot_patch_pool.IntManifestFilter(patch))
     self.assertFalse(trybot_patch_pool.ManifestFilter(patch))
 
-    patch.project = site_config.params.MANIFEST_PROJECT
+    patch.project = site_params.MANIFEST_PROJECT
     self.assertTrue(trybot_patch_pool.ExtManifestFilter(patch))
     self.assertFalse(trybot_patch_pool.IntManifestFilter(patch))
     self.assertTrue(trybot_patch_pool.ManifestFilter(patch))
 
-    patch.project = site_config.params.MANIFEST_INT_PROJECT
+    patch.project = site_params.MANIFEST_INT_PROJECT
     self.assertFalse(trybot_patch_pool.ExtManifestFilter(patch))
     self.assertTrue(trybot_patch_pool.IntManifestFilter(patch))
     self.assertTrue(trybot_patch_pool.ManifestFilter(patch))

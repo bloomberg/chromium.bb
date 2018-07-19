@@ -61,11 +61,11 @@ class GerritHelper(object):
 
   @classmethod
   def FromRemote(cls, remote, **kwargs):
-    site_config = config_lib.GetConfig()
-    if remote == site_config.params.INTERNAL_REMOTE:
-      host = site_config.params.INTERNAL_GERRIT_HOST
-    elif remote == site_config.params.EXTERNAL_REMOTE:
-      host = site_config.params.EXTERNAL_GERRIT_HOST
+    site_params = config_lib.GetSiteParams()
+    if remote == site_params.INTERNAL_REMOTE:
+      host = site_params.INTERNAL_GERRIT_HOST
+    elif remote == site_params.EXTERNAL_REMOTE:
+      host = site_params.EXTERNAL_GERRIT_HOST
     else:
       raise ValueError('Remote %s not supported.' % remote)
     return cls(host, remote, **kwargs)
@@ -73,11 +73,11 @@ class GerritHelper(object):
   @classmethod
   def FromGob(cls, gob, **kwargs):
     """Return a helper for a GoB instance."""
-    site_config = config_lib.GetConfig()
-    host = site_config.params.GOB_HOST % ('%s-review' % gob)
+    site_params = config_lib.GetSiteParams()
+    host = site_params.GOB_HOST % ('%s-review' % gob)
     # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
     # We should get rid of remotes altogether and just use the host.
-    return cls(host, site_config.params.GOB_REMOTES.get(gob, gob), **kwargs)
+    return cls(host, site_params.GOB_REMOTES.get(gob, gob), **kwargs)
 
   def SetAssignee(self, change, assignee, dryrun=False):
     """Set assignee on a gerrit change.
@@ -497,11 +497,11 @@ def GetGerritPatchInfoWithPatchQueries(patches):
   Raises:
     PatchException if a patch can't be found.
   """
-  site_config = config_lib.GetConfig()
+  site_params = config_lib.GetSiteParams()
   seen = set()
   results = []
   order = {k.ToGerritQueryText(): idx for (idx, k) in enumerate(patches)}
-  for remote in site_config.params.CHANGE_PREFIX.keys():
+  for remote in site_params.CHANGE_PREFIX.keys():
     helper = GetGerritHelper(remote)
     raw_ids = [x.ToGerritQueryText() for x in patches if x.remote == remote]
     for k, change in helper.QueryMultipleCurrentPatchset(raw_ids):
@@ -535,14 +535,14 @@ def GetGerritHelperForChange(change):
 
 def GetCrosInternal(**kwargs):
   """Convenience method for accessing private ChromeOS gerrit."""
-  site_config = config_lib.GetConfig()
-  return GetGerritHelper(site_config.params.INTERNAL_REMOTE, **kwargs)
+  site_params = config_lib.GetSiteParams()
+  return GetGerritHelper(site_params.INTERNAL_REMOTE, **kwargs)
 
 
 def GetCrosExternal(**kwargs):
   """Convenience method for accessing public ChromiumOS gerrit."""
-  site_config = config_lib.GetConfig()
-  return GetGerritHelper(site_config.params.EXTERNAL_REMOTE, **kwargs)
+  site_params = config_lib.GetSiteParams()
+  return GetGerritHelper(site_params.EXTERNAL_REMOTE, **kwargs)
 
 
 def GetChangeRef(change_number, patchset=None):

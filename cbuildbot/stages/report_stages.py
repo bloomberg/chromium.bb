@@ -43,9 +43,6 @@ from chromite.lib import tree_status
 from chromite.lib import triage_lib
 
 
-site_config = config_lib.GetConfig()
-
-
 def WriteBasicMetadata(builder_run):
   """Writes basic metadata that should be known at start of execution.
 
@@ -631,8 +628,9 @@ class ReportStage(generic_stages.BuilderStage,
     Returns:
       The new value of the streak counter.
     """
+    site_params = config_lib.GetSiteParams()
     gs_ctx = gs.GSContext(dry_run=dry_run)
-    counter_url = os.path.join(site_config.params.MANIFEST_VERSIONS_GS_URL,
+    counter_url = os.path.join(site_params.MANIFEST_VERSIONS_GS_URL,
                                constants.STREAK_COUNTERS,
                                counter_name)
     gs_counter = gs.GSCounter(gs_ctx, counter_url)

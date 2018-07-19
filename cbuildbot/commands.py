@@ -40,8 +40,6 @@ from chromite.lib import tree_status
 from chromite.lib.paygen import filelib
 from chromite.scripts import pushimage
 
-site_config = config_lib.GetConfig()
-
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -2948,7 +2946,7 @@ def GetChromeLKGM(revision):
   revision = revision or 'refs/heads/master'
   lkgm_url_path = '%s/+/%s/%s?format=text' % (
       constants.CHROMIUM_SRC_PROJECT, revision, constants.PATH_TO_CHROME_LKGM)
-  contents_b64 = gob_util.FetchUrl(site_config.params.EXTERNAL_GOB_HOST,
+  contents_b64 = gob_util.FetchUrl(config_lib.GetSiteParams().EXTERNAL_GOB_HOST,
                                    lkgm_url_path)
   return base64.b64decode(contents_b64.read()).strip()
 

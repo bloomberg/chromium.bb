@@ -25,9 +25,6 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
 
-site_config = config_lib.GetConfig()
-
-
 _GetNumber = iter(itertools.count()).next
 
 # Change-ID of a known open change in public gerrit.
@@ -220,7 +217,7 @@ I am the first commit.
   has_native_change_id = False
 
   DEFAULT_TRACKING = (
-      'refs/remotes/%s/master' % site_config.params.EXTERNAL_REMOTE)
+      'refs/remotes/%s/master' % config_lib.GetSiteParams().EXTERNAL_REMOTE)
 
   def _CreateSourceRepo(self, path):
     """Generate a new repo with a single commit."""
@@ -253,11 +250,12 @@ I am the first commit.
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     # This arg is used by inherited versions of _MkPatch. Pop it to make this
     # _MkPatch compatible with them.
+    site_params = config_lib.GetSiteParams()
     kwargs.pop('suppress_branch', None)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          '%s/master' % site_config.params.EXTERNAL_REMOTE,
+                          '%s/master' % site_params.EXTERNAL_REMOTE,
                           kwargs.pop('remote',
-                                     site_config.params.EXTERNAL_REMOTE),
+                                     site_params.EXTERNAL_REMOTE),
                           sha1=sha1, **kwargs)
 
   def _run(self, cmd, cwd=None):
@@ -278,7 +276,7 @@ I am the first commit.
     if alternates:
       cmd += ['--reference', clone]
     if remote is None:
-      remote = site_config.params.EXTERNAL_REMOTE
+      remote = config_lib.GetSiteParams().EXTERNAL_REMOTE
     cmd += ['--origin', remote]
     self._run(cmd)
     return path
@@ -604,10 +602,10 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     self.assertEqual(set(prefix + x for x in vals), set(patch.LookupAliases()))
 
   def testExternalLookupAliases(self):
-    self._assertLookupAliases(site_config.params.EXTERNAL_REMOTE)
+    self._assertLookupAliases(config_lib.GetSiteParams().EXTERNAL_REMOTE)
 
   def testInternalLookupAliases(self):
-    self._assertLookupAliases(site_config.params.INTERNAL_REMOTE)
+    self._assertLookupAliases(config_lib.GetSiteParams().INTERNAL_REMOTE)
 
   def _CheckPaladin(self, repo, master_id, ids, extra):
     patch = self.CommitChangeIdFile(
@@ -917,7 +915,7 @@ class TestLocalPatchGit(GitRepoPatchTestCase):
     self.sourceroot = os.path.join(self.tempdir, 'sourceroot')
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
-    remote = kwargs.pop('remote', site_config.params.EXTERNAL_REMOTE)
+    remote = kwargs.pop('remote', config_lib.GetSiteParams().EXTERNAL_REMOTE)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
                           '%s/master' % remote, remote, sha1, **kwargs)
 
@@ -970,12 +968,13 @@ class UploadedLocalPatchTestCase(GitRepoPatchTestCase):
   patch_kls = cros_patch.UploadedLocalPatch
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
+    site_params = config_lib.GetSiteParams()
     return self.patch_kls(source, self.PROJECT, ref,
-                          '%s/master' % site_config.params.EXTERNAL_REMOTE,
+                          '%s/master' % site_params.EXTERNAL_REMOTE,
                           self.ORIGINAL_BRANCH,
                           kwargs.pop('original_sha1', self.ORIGINAL_SHA1),
                           kwargs.pop('remote',
-                                     site_config.params.EXTERNAL_REMOTE),
+                                     site_params.EXTERNAL_REMOTE),
                           carbon_copy_sha1=sha1, **kwargs)
 
 
@@ -1009,10 +1008,11 @@ class TestGerritPatch(TestGitRepoPatch):
     return copy.deepcopy(FAKE_PATCH_JSON)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
+    site_params = config_lib.GetSiteParams()
     json = self.test_json
-    remote = kwargs.pop('remote', site_config.params.EXTERNAL_REMOTE)
+    remote = kwargs.pop('remote', site_params.EXTERNAL_REMOTE)
     url_prefix = kwargs.pop('url_prefix',
-                            site_config.params.EXTERNAL_GERRIT_URL)
+                            site_params.EXTERNAL_GERRIT_URL)
     suppress_branch = kwargs.pop('suppress_branch', False)
     change_id = kwargs.pop('ChangeId', None)
     if change_id is None:
@@ -1036,7 +1036,7 @@ class TestGerritPatch(TestGitRepoPatch):
     self.assertEqual(obj.ref, refspec)
     self.assertEqual(obj.change_id, change_id)
     self.assertEqual(obj.id, '%s%s~%s~%s' % (
-        site_config.params.CHANGE_PREFIX[remote], json['project'],
+        site_params.CHANGE_PREFIX[remote], json['project'],
         json['branch'], change_id))
 
     # Now make the fetching actually work, if desired.
@@ -1060,10 +1060,12 @@ class TestGerritPatch(TestGitRepoPatch):
           expected, patch.approval_timestamp, approvals)
       self.assertEqual(patch.approval_timestamp, expected, msg)
 
-  def _assertGerritDependencies(self,
-                                remote=site_config.params.EXTERNAL_REMOTE):
+  def _assertGerritDependencies(self, remote=None):
+    if remote is None:
+      remote = config_lib.GetSiteParams().EXTERNAL_REMOTE
+
     convert = str
-    if remote == site_config.params.INTERNAL_REMOTE:
+    if remote == config_lib.GetSiteParams().INTERNAL_REMOTE:
       convert = lambda val: '*%s' % (val,)
     git1 = self._MakeRepo('git1', self.source, remote=remote)
     patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), remote=remote)
@@ -1086,13 +1088,13 @@ class TestGerritPatch(TestGitRepoPatch):
     self._assertGerritDependencies()
 
   def testInternalGerritDependencies(self):
-    self._assertGerritDependencies(site_config.params.INTERNAL_REMOTE)
+    self._assertGerritDependencies(config_lib.GetSiteParams().INTERNAL_REMOTE)
 
   def testReviewedOnMetadata(self):
     """Verify Change-Id and Reviewed-On are set in git metadata."""
     git1, _, patch = self._CommonGitSetup()
     patch.Apply(git1, self.DEFAULT_TRACKING)
-    reviewed_on = '/'.join([site_config.params.EXTERNAL_GERRIT_URL,
+    reviewed_on = '/'.join([config_lib.GetSiteParams().EXTERNAL_GERRIT_URL,
                             patch.gerrit_number])
     self.assertIn('Reviewed-on: %s\n' % reviewed_on, patch.commit_message)
 
@@ -1380,7 +1382,7 @@ class MockPatchFactory(object):
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite',
-                remote=site_config.params.EXTERNAL_REMOTE,
+                remote=config_lib.GetSiteParams().EXTERNAL_REMOTE,
                 tracking_branch='refs/heads/master', is_draft=False,
                 approvals=(), commit_message=None):
     """Helper function to create mock GerritPatch objects."""

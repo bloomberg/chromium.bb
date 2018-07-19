@@ -128,8 +128,8 @@ def _GetGclientURLs(internal, rev):
   elif internal:
     # Internal buildspec: check out the buildspec repo and set deps_file to
     # the path to the desired release spec.
-    site_config = config_lib.GetConfig()
-    url = site_config.params.INTERNAL_GOB_URL + '/chrome/tools/buildspec.git'
+    site_params = config_lib.GetSiteParams()
+    url = site_params.INTERNAL_GOB_URL + '/chrome/tools/buildspec.git'
 
     # Chromium switched to DEPS at version 45.0.2432.3.
     deps_file = '.DEPS.git' if BuildspecUsesDepsGit(rev) else 'DEPS'

@@ -444,8 +444,7 @@ def _main(argv):
 
     # Prepare the buildroot with source for the build.
     with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
-      site_config = config_lib.GetConfig()
-      manifest_url = site_config.params['MANIFEST_INT_URL']
+      manifest_url = config_lib.GetSiteParams().MANIFEST_INT_URL
       repo = repository.RepoRepository(manifest_url, buildroot,
                                        branch=branchname,
                                        git_cache_dir=options.git_cache_dir)

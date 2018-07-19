@@ -24,9 +24,6 @@ from chromite.lib import patch as cros_patch
 import digraph
 
 
-site_config = config_lib.GetConfig()
-
-
 MAX_PLAN_RECURSION = 150
 
 
@@ -84,7 +81,7 @@ class PatchExceededRecursionLimit(cros_patch.PatchException):
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
-  def __init__(self, remote=site_config.params.EXTERNAL_REMOTE):
+  def __init__(self, remote=config_lib.GetSiteParams().EXTERNAL_REMOTE):
     gerrit.GerritException.__init__(self)
     # Stringify the pool so that serialization doesn't try serializing
     # the actual HelperPool.
@@ -156,9 +153,10 @@ class HelperPool(object):
     If a given handler is None, then it's disabled; else the passed in
     object is used.
     """
+    site_params = config_lib.GetSiteParams()
     self.pool = {
-        site_config.params.EXTERNAL_REMOTE : cros,
-        site_config.params.INTERNAL_REMOTE : cros_internal
+        site_params.EXTERNAL_REMOTE : cros,
+        site_params.INTERNAL_REMOTE : cros_internal
     }
 
   @classmethod
@@ -172,13 +170,14 @@ class HelperPool(object):
     Returns:
       An appropriately configured HelperPool instance.
     """
+    site_params = config_lib.GetSiteParams()
     if cros:
-      cros = gerrit.GetGerritHelper(site_config.params.EXTERNAL_REMOTE)
+      cros = gerrit.GetGerritHelper(site_params.EXTERNAL_REMOTE)
     else:
       cros = None
 
     if cros_internal:
-      cros_internal = gerrit.GetGerritHelper(site_config.params.INTERNAL_REMOTE)
+      cros_internal = gerrit.GetGerritHelper(site_params.INTERNAL_REMOTE)
     else:
       cros_internal = None
 

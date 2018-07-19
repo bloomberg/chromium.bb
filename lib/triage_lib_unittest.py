@@ -66,7 +66,7 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
   """Tests CalculateSuspects."""
 
   def setUp(self):
-    site_config = config_lib.GetConfig()
+    site_params = config_lib.GetSiteParams()
     overlay = 'chromiumos/overlays/chromiumos-overlay'
     self._patch_factory = patch_unittest.MockPatchFactory()
     self.overlay_patch = self._patch_factory.GetPatches(project=overlay)
@@ -81,7 +81,7 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
     self.kernel_patch = self._patch_factory.GetPatches(project=self.kernel)
     self.secret = 'chromeos/secret'
     self.secret_patch = self._patch_factory.GetPatches(
-        project=self.secret, remote=site_config.params.INTERNAL_REMOTE)
+        project=self.secret, remote=site_params.INTERNAL_REMOTE)
     self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout')
     self.PatchObject(cros_patch.GitRepoPatch, 'GetDiffStatus')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',

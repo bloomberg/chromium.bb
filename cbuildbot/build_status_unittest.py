@@ -27,9 +27,6 @@ from chromite.lib import patch_unittest
 from chromite.lib import tree_status
 
 
-site_config = config_lib.GetConfig()
-
-
 # pylint: disable=protected-access
 class BuildbucketInfos(object):
   """Helper methods to build BuildbucketInfo."""
@@ -196,6 +193,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
   """Test methods testing methods in SlaveStatus class."""
 
   def setUp(self):
+    site_config = config_lib.GetConfig()
+
     self.time_now = datetime.datetime.now()
     self.master_build_id = 0
     self.master_test_config = config_lib.BuildConfig(

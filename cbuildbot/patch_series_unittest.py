@@ -25,9 +25,6 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
 
-site_config = config_lib.GetConfig()
-
-
 def FakeFetchChangesForRepo(fetched_changes, by_repo, repo):
   """Fake version of the "PatchSeries._FetchChangesForRepo" method.
 
@@ -108,13 +105,14 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
 
   def MakeHelper(self, cros_internal=None, cros=None):
     # pylint: disable=attribute-defined-outside-init
+    site_params = config_lib.GetSiteParams()
     if cros_internal:
       cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
       cros_internal.version = '2.2'
-      cros_internal.remote = site_config.params.INTERNAL_REMOTE
+      cros_internal.remote = site_params.INTERNAL_REMOTE
     if cros:
       cros = self.mox.CreateMock(gerrit.GerritHelper)
-      cros.remote = site_config.params.EXTERNAL_REMOTE
+      cros.remote = site_params.EXTERNAL_REMOTE
       cros.version = '2.2'
     return patch_series.HelperPool(cros_internal=cros_internal,
                                    cros=cros)
@@ -252,10 +250,11 @@ class TestPatchSeries(PatchSeriesTestCase):
     but tries to get applied before change2.  What should happen is that
     we should notice change2 is a dep of change1 and apply it first.
     """
+    site_params = config_lib.GetSiteParams()
     series = self.GetPatchSeries()
 
     patch1, patch2, patch3 = patches = self.GetPatches(3)
-    patch3.remote = site_config.params.INTERNAL_REMOTE
+    patch3.remote = site_params.INTERNAL_REMOTE
 
     self.SetPatchDeps(patch1, [patch2.sha1])
     self.SetPatchDeps(patch2, ['*%s' % patch3.sha1])
@@ -323,12 +322,13 @@ class TestPatchSeries(PatchSeriesTestCase):
     but tries to get applied before it.  What should happen is that
     we should notice the dependency and apply change3 first.
     """
+    site_params = config_lib.GetSiteParams()
     helper_pool = self.MakeHelper(cros_internal=cros_internal, cros=True)
     series = self.GetPatchSeries(helper_pool=helper_pool)
 
-    patch1 = self.MockPatch(remote=site_config.params.EXTERNAL_REMOTE)
-    patch2 = self.MockPatch(remote=site_config.params.INTERNAL_REMOTE)
-    patch3 = self.MockPatch(remote=site_config.params.EXTERNAL_REMOTE)
+    patch1 = self.MockPatch(remote=site_params.EXTERNAL_REMOTE)
+    patch2 = self.MockPatch(remote=site_params.INTERNAL_REMOTE)
+    patch3 = self.MockPatch(remote=site_params.EXTERNAL_REMOTE)
     patches = [patch1, patch2, patch3]
     if cros_internal:
       applied_patches = [patch3, patch2, patch1]

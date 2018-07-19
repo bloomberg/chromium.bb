@@ -25,9 +25,6 @@ from chromite.lib import triage_lib
 CQ_HISTORY_LOOKBACK_LIMIT_HOUR = 48
 
 
-site_config = config_lib.GetConfig()
-
-
 class RelevantChanges(object):
   """Class that quries and tracks relevant changes."""
 
@@ -671,6 +668,7 @@ class TriageRelevantChanges(object):
 
   def _AllCompletedSlavesPassedUploadPrebuiltsStage(self):
     """Check if all completed slaves have passed the UploadPrebuiltsStage."""
+    site_config = config_lib.GetConfig()
     for build_config in self.completed_builds:
       # compilecheck builds don't run UploadPrebuiltsStage
       if (not site_config[build_config].compilecheck and
@@ -685,6 +683,7 @@ class TriageRelevantChanges(object):
 
   def _AllUncompletedSlavesPassedUploadPrebuiltsStage(self):
     """Check if all uncompleted slaves have passed the UploadPrebuiltsStage."""
+    site_config = config_lib.GetConfig()
     for build_config in set(self.builders_array) - self.completed_builds:
       # compilecheck builds don't run UploadPrebuiltsStage
       if (not site_config[build_config].compilecheck and

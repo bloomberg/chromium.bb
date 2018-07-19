@@ -21,8 +21,6 @@ from chromite.lib import cros_build_lib
 
 # pylint: disable=protected-access
 
-site_config = config_lib.GetConfig()
-
 
 class RepositoryTests(cros_test_lib.RunCommandTestCase):
   """Test cases related to repository checkout methods."""
@@ -72,7 +70,8 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
     self.PatchObject(time, 'sleep')
 
   def _Initialize(self, branch='master'):
-    self.repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
+    site_params = config_lib.GetSiteParams()
+    self.repo = repository.RepoRepository(site_params.MANIFEST_URL,
                                           self.tempdir, branch=branch)
     self.repo.Initialize()
 
@@ -199,7 +198,8 @@ class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
   """Test cases related to repository Sync"""
 
   def setUp(self):
-    self.repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
+    site_params = config_lib.GetSiteParams()
+    self.repo = repository.RepoRepository(site_params.MANIFEST_URL,
                                           self.tempdir, branch='master')
     self.PatchObject(repository.RepoRepository, 'Initialize')
     self.PatchObject(repository.RepoRepository, '_EnsureMirroring')

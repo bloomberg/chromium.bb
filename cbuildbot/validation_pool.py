@@ -21,7 +21,6 @@ from xml.dom import minidom
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import patch_series
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cl_messages
 from chromite.lib import clactions
@@ -37,9 +36,6 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 from chromite.lib import triage_lib
-
-
-site_config = config_lib.GetConfig()
 
 
 PRE_CQ = constants.PRE_CQ

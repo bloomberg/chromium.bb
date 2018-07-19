@@ -30,9 +30,6 @@ from chromite.lib import terminal
 from chromite.lib import uri_lib
 
 
-site_config = config_lib.GetConfig()
-
-
 # Locate actions that are exposed to the user.  All functions that start
 # with "UserAct" are fair game.
 ACTION_PREFIX = 'UserAct'
@@ -95,7 +92,7 @@ def GetGerrit(opts, cl=None):
   gob = opts.gob
   if cl is not None:
     if cl.startswith('*'):
-      gob = site_config.params.INTERNAL_GOB_INSTANCE
+      gob = config_lib.GetSiteParams().INTERNAL_GOB_INSTANCE
       cl = cl[1:]
     elif ':' in cl:
       gob, cl = cl.split(':', 1)
@@ -161,11 +158,12 @@ def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
 def PrintCls(opts, cls, lims=None, show_approvals=True):
   """Print all results based on the requested format."""
   if opts.raw:
+    site_params = config_lib.GetSiteParams()
     pfx = ''
     # Special case internal Chrome GoB as that is what most devs use.
     # They can always redirect the list elsewhere via the -g option.
-    if opts.gob == site_config.params.INTERNAL_GOB_INSTANCE:
-      pfx = site_config.params.INTERNAL_CHANGE_PREFIX
+    if opts.gob == site_params.INTERNAL_GOB_INSTANCE:
+      pfx = site_params.INTERNAL_CHANGE_PREFIX
     for cl in cls:
       print('%s%s' % (pfx, cl['number']))
 
@@ -545,15 +543,16 @@ Actions:"""
                          (cmd, cmd.lower().capitalize()))
     usage += '\n  %-*s: %s' % (indent, cmd.lower(), globals()[a].__doc__)
 
+  site_params = config_lib.GetSiteParams()
   parser = commandline.ArgumentParser(usage=usage)
   parser.add_argument('-i', '--internal', dest='gob', action='store_const',
-                      default=site_config.params.EXTERNAL_GOB_INSTANCE,
-                      const=site_config.params.INTERNAL_GOB_INSTANCE,
+                      default=site_params.EXTERNAL_GOB_INSTANCE,
+                      const=site_params.INTERNAL_GOB_INSTANCE,
                       help='Query internal Chromium Gerrit instance')
   parser.add_argument('-g', '--gob',
-                      default=site_config.params.EXTERNAL_GOB_INSTANCE,
+                      default=site_params.EXTERNAL_GOB_INSTANCE,
                       help=('Gerrit (on borg) instance to query (default: %s)' %
-                            (site_config.params.EXTERNAL_GOB_INSTANCE)))
+                            (site_params.EXTERNAL_GOB_INSTANCE)))
   parser.add_argument('--sort', default='number',
                       help='Key to sort on (number, project); use "unsorted" '
                            'to disable')

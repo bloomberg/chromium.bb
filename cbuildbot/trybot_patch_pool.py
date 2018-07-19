@@ -17,9 +17,6 @@ from chromite.lib import git
 from chromite.lib import patch as cros_patch
 
 
-site_config = config_lib.GetConfig()
-
-
 def ChromiteFilter(patch):
   """Used with FilterFn to isolate patches to chromite."""
   return patch.project == constants.CHROMITE_PROJECT
@@ -27,12 +24,12 @@ def ChromiteFilter(patch):
 
 def ExtManifestFilter(patch):
   """Used with FilterFn to isolate patches to the external manifest."""
-  return patch.project == site_config.params.MANIFEST_PROJECT
+  return patch.project == config_lib.GetSiteParams().MANIFEST_PROJECT
 
 
 def IntManifestFilter(patch):
   """Used with FilterFn to isolate patches to the internal manifest."""
-  return patch.project == site_config.params.MANIFEST_INT_PROJECT
+  return patch.project == config_lib.GetSiteParams().MANIFEST_INT_PROJECT
 
 
 def ManifestFilter(patch):

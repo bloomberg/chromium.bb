@@ -29,9 +29,6 @@ from chromite.lib import retry_util
 from chromite.lib import rewrite_git_alternates
 
 
-site_config = config_lib.GetConfig()
-
-
 # Default sleep time(second) between retries
 DEFAULT_SLEEP_TIME = 5
 
@@ -59,7 +56,7 @@ def IsInternalRepoCheckout(root):
       manifest_dir, ['config', 'remote.origin.url']).output.strip()
   return (os.path.splitext(os.path.basename(manifest_url))[0] ==
           os.path.splitext(os.path.basename(
-              site_config.params.MANIFEST_INT_URL))[0])
+              config_lib.GetSiteParams().MANIFEST_INT_URL))[0])
 
 
 def _IsLocalPath(url):
@@ -219,7 +216,7 @@ class RepoRepository(object):
 
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
-               depth=None, repo_url=site_config.params.REPO_URL,
+               depth=None, repo_url=config_lib.GetSiteParams().REPO_URL,
                repo_branch=None, groups=None, repo_cmd='repo',
                preserve_paths=(), git_cache_dir=None):
     """Initialize.

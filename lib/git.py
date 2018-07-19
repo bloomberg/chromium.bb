@@ -326,11 +326,11 @@ class ProjectCheckout(dict):
       return False
 
     # Old heuristic.
-    site_config = config_lib.GetConfig()
-    if (self['remote'] not in site_config.params.CROS_REMOTES or
-        self['remote'] not in site_config.params.BRANCHABLE_PROJECTS):
+    site_params = config_lib.GetSiteParams()
+    if (self['remote'] not in site_params.CROS_REMOTES or
+        self['remote'] not in site_params.BRANCHABLE_PROJECTS):
       return False
-    return re.match(site_config.params.BRANCHABLE_PROJECTS[self['remote']],
+    return re.match(site_params.BRANCHABLE_PROJECTS[self['remote']],
                     self['name'])
 
   def IsPinnableProject(self):
@@ -504,11 +504,11 @@ class Manifest(object):
         remote_name, StripRefs(upstream),
     )
 
-    site_config = config_lib.GetConfig()
-    attrs['pushable'] = remote in site_config.params.GIT_REMOTES
+    site_params = config_lib.GetSiteParams()
+    attrs['pushable'] = remote in site_params.GIT_REMOTES
     if attrs['pushable']:
       attrs['push_remote'] = remote
-      attrs['push_remote_url'] = site_config.params.GIT_REMOTES[remote]
+      attrs['push_remote_url'] = site_params.GIT_REMOTES[remote]
       attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
     groups = set(attrs.get('groups', 'default').replace(',', ' ').split())
     groups.add('default')

@@ -20,20 +20,19 @@ from chromite.cli import command
 from chromite.cli.cros import cros_cidbcreds
 from chromite.cli.cros import cros_pinchrome
 
-site_config = config_lib.GetConfig()
 
 # Interesting paths.
 PUB_OVERLAY = os.path.join(
     constants.SOURCE_ROOT,
     constants.CHROMIUMOS_OVERLAY_DIR)
 PUB_OVERLAY_URL = os.path.join(
-    site_config.params.EXTERNAL_GOB_URL,
+    config_lib.GetSiteParams().EXTERNAL_GOB_URL,
     'chromiumos/overlays/chromiumos-overlay')
 PRIV_OVERLAY = os.path.join(
     constants.SOURCE_ROOT,
     'src', 'private-overlays', 'chromeos-partner-overlay')
 PRIV_OVERLAY_URL = os.path.join(
-    site_config.params.INTERNAL_GOB_URL,
+    config_lib.GetSiteParams().INTERNAL_GOB_URL,
     'chromeos/overlays/chromeos-partner-overlay')
 
 # Master branch name

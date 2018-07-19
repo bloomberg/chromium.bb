@@ -17,9 +17,6 @@ from chromite.lib import gob_util
 from chromite.lib import timeout_util
 
 
-site_config = config_lib.GetConfig()
-
-
 class FakeHTTPResponse(object):
   """Enough of a HTTPResponse for FetchUrl.
 
@@ -149,23 +146,24 @@ class NetworkGobTest(cros_test_lib.TestCase):
 
   def test200(self):
     """Test successful loading of change."""
-    gob_util.FetchUrlJson(site_config.params.EXTERNAL_GOB_HOST,
+    gob_util.FetchUrlJson(config_lib.GetSiteParams().EXTERNAL_GOB_HOST,
                           'changes/227254/detail')
 
   def test404(self):
-    gob_util.FetchUrlJson(site_config.params.EXTERNAL_GOB_HOST, 'foo/bar/baz')
+    gob_util.FetchUrlJson(config_lib.GetSiteParams().EXTERNAL_GOB_HOST,
+                          'foo/bar/baz')
 
   def test404Exception(self):
     with self.assertRaises(gob_util.GOBError) as ex:
-      gob_util.FetchUrlJson(site_config.params.EXTERNAL_GOB_HOST, 'foo/bar/baz',
-                            ignore_404=False)
+      gob_util.FetchUrlJson(config_lib.GetSiteParams().EXTERNAL_GOB_HOST,
+                            'foo/bar/baz', ignore_404=False)
     self.assertEqual(ex.exception.http_status, 404)
 
   def test409Exception(self):
     """Test FetchUrlJson raises 409 errors with response body message."""
     with self.assertRaises(gob_util.GOBError) as ex:
       gob_util.FetchUrlJson(
-          site_config.params.EXTERNAL_GERRIT_HOST,
+          config_lib.GetSiteParams().EXTERNAL_GERRIT_HOST,
           'changes/422652/revisions/901b4ee349a9395ba23a7a1e8597a35050f741e4/'
           'review', reqtype='POST', body={'labels': {'Trybot-Ready': '+1'}})
 

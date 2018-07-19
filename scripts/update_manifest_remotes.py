@@ -138,8 +138,8 @@ def main(argv):
   options = parser.parse_args(argv)
 
   # Clone manifest-versions repository.
-  site_config = config_lib.GetConfig()
-  manifest_repo_url = site_config.params.MANIFEST_VERSIONS_INT_GOB_URL
+  site_params = config_lib.GetSiteParams()
+  manifest_repo_url = site_params.MANIFEST_VERSIONS_INT_GOB_URL
   if not options.skip_update:
     manifest_version.RefreshManifestCheckout(
         options.manifest_versions_dir, manifest_repo_url)

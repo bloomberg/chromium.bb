@@ -26,9 +26,6 @@ from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
 
 
-site_config = config_lib.GetConfig()
-
-
 oper = operation.Operation('cros_portage_upgrade')
 
 NOT_APPLICABLE = 'N/A'
@@ -100,7 +97,7 @@ class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
   PORTAGE_GIT_URL = '%s/external/github.com/gentoo/gentoo.git' % (
-      site_config.params.EXTERNAL_GOB_URL)
+      config_lib.GetSiteParams().EXTERNAL_GOB_URL)
   GIT_REMOTE = 'origin'
   GIT_BRANCH = 'master'
   GIT_REMOTE_BRANCH = '%s/%s' % (GIT_REMOTE, GIT_BRANCH)

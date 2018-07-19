@@ -49,9 +49,6 @@ from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 
 
-site_config = config_lib.GetConfig()
-
-
 PRE_CQ = validation_pool.PRE_CQ
 
 PRECQ_INFLIGHT_TIMEOUT_MSG = (
@@ -393,16 +390,17 @@ class SyncStage(generic_stages.BuilderStage):
     if internal is None:
       internal = self._run.config.internal
 
+    site_params = config_lib.GetSiteParams()
     if internal:
       if test:
-        return site_config.params.MANIFEST_VERSIONS_INT_GOB_URL_TEST
+        return site_params.MANIFEST_VERSIONS_INT_GOB_URL_TEST
       else:
-        return site_config.params.MANIFEST_VERSIONS_INT_GOB_URL
+        return site_params.MANIFEST_VERSIONS_INT_GOB_URL
     else:
       if test:
-        return site_config.params.MANIFEST_VERSIONS_GOB_URL_TEST
+        return site_params.MANIFEST_VERSIONS_GOB_URL_TEST
       else:
-        return site_config.params.MANIFEST_VERSIONS_GOB_URL
+        return site_params.MANIFEST_VERSIONS_GOB_URL
 
   def Initialize(self):
     self._InitializeRepo()
@@ -678,7 +676,7 @@ class ManifestVersionedSyncStage(SyncStage):
         root = doc.getroot()
         for node in root.findall('project'):
           remote = node.attrib.get('remote')
-          if remote and remote not in site_config.params.GIT_REMOTES:
+          if remote and remote not in config_lib.GetSiteParams().GIT_REMOTES:
             root.remove(node)
         doc.write(filtered_manifest)
         yield filtered_manifest
@@ -1733,6 +1731,7 @@ class PreCQLauncherStage(SyncStage):
     Returns:
       A set of failed Pre-CQ build configs.
     """
+    site_config = config_lib.GetConfig()
     failed_build_configs = set()
     for action in action_history:
       build_config = action.build_config
@@ -1758,6 +1757,7 @@ class PreCQLauncherStage(SyncStage):
       A boolean indicating whether the consecutive failure counter of
         build_config exceeds its sanity_check_threshold.
     """
+    site_config = config_lib.GetConfig()
     sanity_check_threshold = site_config[build_config].sanity_check_threshold
 
     if sanity_check_threshold <= 0:
