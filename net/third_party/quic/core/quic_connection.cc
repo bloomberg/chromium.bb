@@ -1812,9 +1812,21 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     if (!Near(header.packet_number, last_header_.packet_number)) {
       QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
                       << " out of bounds.  Discarding";
-      CloseConnection(QUIC_INVALID_PACKET_HEADER,
-                      "Packet number out of bounds.",
-                      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      QuicStringPiece packet_data = GetCurrentPacket();
+      const size_t kMaxPacketLengthInErrorDetails = 64;
+      CloseConnection(
+          QUIC_INVALID_PACKET_HEADER,
+          QuicStrCat("Packet number out of bounds. last_pkn=",
+                     last_header_.packet_number,
+                     ", current_pkn=", header.packet_number,
+                     ", current_pkt_len=", packet_data.length(),
+                     ", current_hdr=",
+                     QuicTextUtils::HexEncode(
+                         packet_data.length() > kMaxPacketLengthInErrorDetails
+                             ? QuicStringPiece(packet_data.data(),
+                                               kMaxPacketLengthInErrorDetails)
+                             : packet_data)),
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
       return false;
     }
   }
