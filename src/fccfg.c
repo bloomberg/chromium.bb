@@ -748,12 +748,12 @@ FcConfigPromote (FcValue v, FcValue u, FcValuePromotionBuffer *buf)
 	v.u.l = FcLangSetPromote (v.u.s, buf);
 	v.type = FcTypeLangSet;
     }
-    else if (v.type == FcTypeVoid && u.type == FcTypeLangSet)
+    else if (buf && v.type == FcTypeVoid && u.type == FcTypeLangSet)
     {
 	v.u.l = FcLangSetPromote (NULL, buf);
 	v.type = FcTypeLangSet;
     }
-    else if (v.type == FcTypeVoid && u.type == FcTypeCharSet)
+    else if (buf && v.type == FcTypeVoid && u.type == FcTypeCharSet)
     {
 	v.u.c = FcCharSetPromote (buf);
 	v.type = FcTypeCharSet;
