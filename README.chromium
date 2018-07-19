@@ -77,7 +77,9 @@ Pre-built data files are generated and checked in with the following steps
 
      ix) Repeat ii) and iii) for iOS to get ios/icudtl.dat
 
-     x) scripts/clean_up_data_source.sh
+     x) Repeat ii) and iii) for Flutter to get flutter/icudtl.dat
+
+     xi) scripts/clean_up_data_source.sh
 
      This reverts the result of trim_data.sh and patch_locale.sh and
      make the tree ready for committing updated ICU data files for

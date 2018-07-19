@@ -54,6 +54,21 @@ function copy_cast {
   echo "Done with copying pre-built ICU data file for $1."
 }
 
+function copy_flutter {
+  echo "Copying icudtl.dat for Flutter"
+
+  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/flutter/icudt${VERSION}l.dat"
+
+  echo "Removing unused resources from icudtl.dat for Flutter"
+
+  LD_LIBRARY_PATH=lib/ bin/icupkg -r \
+    "${TOPSRC}/flutter/flutter-removed-resources.txt" \
+    "${TOPSRC}/flutter/icudt${VERSION}l.dat"
+  mv "${TOPSRC}/flutter/icudt${VERSION}l.dat" "${TOPSRC}/flutter/icudtl.dat"
+
+  echo "Done with copying pre-built ICU data file for Flutter."
+}
+
 case "$1" in
   "common")
     copy_common
@@ -66,5 +81,8 @@ case "$1" in
     ;;
   "cast")
     copy_cast Cast cast
+    ;;
+  "flutter")
+    copy_flutter
     ;;
 esac

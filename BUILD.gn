@@ -96,6 +96,8 @@ config("icu_code") {
       # certain preprocessor defines are set.
       # unistr.cpp also has an unused function for non-component builds.
       "-Wno-unused-function",
+      # putil.cpp contains unused variables when building for iOS simulators.
+      "-Wno-unused-variable",
     ]
   }
   if (is_clang || is_linux || is_android) {
