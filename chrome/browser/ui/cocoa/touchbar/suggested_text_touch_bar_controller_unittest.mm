@@ -5,9 +5,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/gfx/range/range.h"
 
 const base::string16 kEmptyText(base::ASCIIToUTF16(""));
@@ -28,6 +30,8 @@ class SuggestedTextTouchBarControllerUnitTest : public CocoaTest {
         [controller_.get() editingWordRangeFromText:text cursorPosition:cursor];
     return gfx::Range(range);
   }
+
+  SuggestedTextTouchBarController* controller() { return controller_; }
 
  private:
   base::scoped_nsobject<SuggestedTextTouchBarController> controller_;
@@ -97,4 +101,13 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest, EditingWordRangeTest) {
   EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 9));
   EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 10));
   EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 11));
+}
+
+TEST_F(SuggestedTextTouchBarControllerUnitTest, TouchBarMetricTest) {
+  if (@available(macOS 10.12.2, *)) {
+    base::HistogramTester histogram_tester;
+    [controller() candidateListTouchBarItem:nil endSelectingCandidateAtIndex:1];
+    histogram_tester.ExpectBucketCount("TouchBar.Default.Metrics",
+                                       ui::TouchBarAction::TEXT_SUGGESTION, 1);
+  }
 }

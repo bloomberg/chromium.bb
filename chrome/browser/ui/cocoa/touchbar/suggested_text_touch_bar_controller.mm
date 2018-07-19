@@ -129,8 +129,12 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   if (index == NSNotFound)
     return;
 
-  NSTextCheckingResult* selectedResult = anItem.candidates[index];
-  [self replaceEditingWordWithSuggestion:[selectedResult replacementString]];
+  if (anItem) {
+    NSTextCheckingResult* selectedResult = anItem.candidates[index];
+    [self replaceEditingWordWithSuggestion:[selectedResult replacementString]];
+  }
+
+  ui::LogTouchBarUMA(ui::TouchBarAction::TEXT_SUGGESTION);
 }
 
 - (void)webContentsTextSelectionChanged:(const base::string16&)text
