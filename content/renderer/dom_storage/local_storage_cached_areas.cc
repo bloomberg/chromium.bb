@@ -35,12 +35,12 @@ LocalStorageCachedAreas::LocalStorageCachedAreas(
       main_thread_scheduler_(main_thread_scheduler) {}
 
 LocalStorageCachedAreas::~LocalStorageCachedAreas() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     const url::Origin& origin) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
   return GetCachedArea(kLocalStorageNamespaceId, origin,
                        main_thread_scheduler_);
 }
@@ -49,7 +49,7 @@ scoped_refptr<LocalStorageCachedArea>
 LocalStorageCachedAreas::GetSessionStorageArea(const std::string& namespace_id,
                                                const url::Origin& origin) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
   return GetCachedArea(namespace_id, origin, main_thread_scheduler_);
 }
 
@@ -59,7 +59,7 @@ void LocalStorageCachedAreas::CloneNamespace(
   DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
   DCHECK_EQ(kSessionStorageNamespaceIdLength, source_namespace.size());
   DCHECK_EQ(kSessionStorageNamespaceIdLength, destination_namespace.size());
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
 
   auto namespace_it = cached_namespaces_.find(source_namespace);
   if (namespace_it == cached_namespaces_.end()) {
@@ -76,7 +76,7 @@ void LocalStorageCachedAreas::CloneNamespace(
 }
 
 size_t LocalStorageCachedAreas::TotalCacheSize() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
   size_t total = 0;
   for (const auto& it : cached_namespaces_)
     total += it.second.TotalCacheSize();
@@ -84,7 +84,7 @@ size_t LocalStorageCachedAreas::TotalCacheSize() const {
 }
 
 void LocalStorageCachedAreas::ClearAreasIfNeeded() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
   if (TotalCacheSize() < total_cache_limit_)
     return;
 
@@ -96,7 +96,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     const std::string& namespace_id,
     const url::Origin& origin,
     blink::scheduler::WebThreadScheduler* scheduler) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(sequence_checker_.CalledOnValidSequence());
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class CacheMetrics {
