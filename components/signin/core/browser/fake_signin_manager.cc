@@ -75,7 +75,7 @@ void FakeSigninManager::SignIn(const std::string& gaia_id,
 }
 
 void FakeSigninManager::ForceSignOut() {
-  prohibit_signout_ = false;
+  ProhibitSignout(false);
   SignOut(signin_metrics::SIGNOUT_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
