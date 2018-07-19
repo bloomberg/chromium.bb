@@ -21,7 +21,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/base/ui_base_features.h"
@@ -189,11 +188,12 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
 }
 
 TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  // Use the target visibility of the layer instead of the visibility of the
+  // view because the view is still visible when fading away, but we do not want
+  // to anchor to this element in that case.
+  if (overview_button_tray_->layer()->GetTargetVisibility())
     return overview_button_tray_.get();
-  }
+
   if (unified_system_tray_)
     return unified_system_tray_.get();
   return system_tray_.get();
