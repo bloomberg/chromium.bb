@@ -55,12 +55,14 @@ class BrowserSavePasswordProgressLoggerTest : public testing::Test {
     field.form_control_type = "password";
     field.is_focusable = true;
     field.autocomplete_attribute = "new-password";
+    field.unique_renderer_id = 10;
     form_.fields.push_back(field);
 
     // Add a text field.
     field.name = base::UTF8ToUTF16("email");
     field.form_control_type = "text";
     field.is_focusable = false;
+    field.unique_renderer_id = 42;
     field.value = base::UTF8ToUTF16("a@example.com");
     field.autocomplete_attribute.clear();
     form_.fields.push_back(field);
@@ -101,12 +103,14 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormSignatures) {
   EXPECT_TRUE(logger.LogsContainSubstring("Origin: http://myform.com"));
   EXPECT_TRUE(logger.LogsContainSubstring("Form fields:"));
   EXPECT_TRUE(logger.LogsContainSubstring(
-      "password: 2051817934, type=password, autocomplete=new-password, VOTE: "
+      "password: 2051817934, type=password, renderer_id = 10, "
+      "autocomplete=new-password, VOTE: "
       "NEW_PASSWORD, GENERATION_EVENT: "
       "Manual generation on sign-up, CLIENT_SIDE_CLASSIFIER: Generation "
       "element"));
-  EXPECT_TRUE(logger.LogsContainSubstring(
-      "email: 420638584, type=text, SERVER_PREDICTION: EMAIL_ADDRESS"));
+  EXPECT_TRUE(
+      logger.LogsContainSubstring("email: 420638584, type=text, renderer_id = "
+                                  "42, SERVER_PREDICTION: EMAIL_ADDRESS"));
 }
 
 TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormData) {
@@ -121,10 +125,11 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormData) {
   EXPECT_TRUE(logger.LogsContainSubstring("Form name: form_name"));
   EXPECT_TRUE(logger.LogsContainSubstring("Form with form tag: true"));
   EXPECT_TRUE(logger.LogsContainSubstring("Form fields:"));
-  EXPECT_TRUE(logger.LogsContainSubstring(
-      "password: type=password, visible, empty, autocomplete=new-password"));
   EXPECT_TRUE(
-      logger.LogsContainSubstring("email: type=text, invisible, non-empty"));
+      logger.LogsContainSubstring("password: type=password, renderer_id = 10, "
+                                  "visible, empty, autocomplete=new-password"));
+  EXPECT_TRUE(logger.LogsContainSubstring(
+      "email: type=text, renderer_id = 42, invisible, non-empty"));
 }
 
 }  // namespace password_manager
