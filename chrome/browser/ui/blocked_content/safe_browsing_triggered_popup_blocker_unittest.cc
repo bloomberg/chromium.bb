@@ -404,6 +404,11 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, WarningMatch_OnlyLogs) {
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, ActivationPosition) {
+  // Turn on the feature to perform safebrowsing on redirects.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilterConsiderRedirects);
+
   const GURL enforce_url("https://enforce.test/");
   const GURL warn_url("https://warn.test/");
   MarkUrlAsAbusiveEnforce(enforce_url);
