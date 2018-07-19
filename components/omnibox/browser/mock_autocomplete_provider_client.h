@@ -14,6 +14,7 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/contextual_suggestions_service.h"
+#include "components/omnibox/browser/document_suggestions_service.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -55,6 +56,10 @@ class MockAutocompleteProviderClient
   ContextualSuggestionsService* GetContextualSuggestionsService(
       bool create_if_necessary) const override {
     return contextual_suggestions_service_.get();
+  }
+  DocumentSuggestionsService* GetDocumentSuggestionsService(
+      bool create_if_necessary) const override {
+    return document_suggestions_service_.get();
   }
 
   MOCK_CONST_METHOD0(GetSearchTermsData, const SearchTermsData&());
@@ -110,6 +115,7 @@ class MockAutocompleteProviderClient
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   std::unique_ptr<ContextualSuggestionsService> contextual_suggestions_service_;
+  std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
   std::unique_ptr<TemplateURLService> template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);

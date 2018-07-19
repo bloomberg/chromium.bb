@@ -35187,6 +35187,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="auto, enabled in trial"/>
 </enum>
 
+<enum name="OmniboxDocumentSuggestRequests">
+  <int value="1" label="requests sent"/>
+  <int value="2" label="requests invalidated"/>
+  <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
 <enum name="OmniboxEnteredKeywordMode">
   <int value="0" label="via tab"/>
   <int value="1" label="via space at end"/>
@@ -35271,6 +35277,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1219" label="APP from on-device service"/>
   <int value="1220" label="LEGACY_ON_DEVICE from on-device service"/>
   <int value="1424" label="CLIPBOARD from Clipboard provider"/>
+  <int value="1627" label="DOCUMENT via DocumentProvider"/>
 </enum>
 
 <enum name="OmniboxProviderType">
@@ -35288,6 +35295,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="on device (only used by Android GSA)"/>
   <int value="13" label="on device chrome (chrome content provider)"/>
   <int value="14" label="clipboard provider"/>
+  <int value="15" label="deprecated: Physical Web"/>
+  <int value="16" label="DocumentProvider"/>
 </enum>
 
 <enum name="OmniboxSearchEngine">

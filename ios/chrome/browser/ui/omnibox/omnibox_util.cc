@@ -48,6 +48,10 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
       // never sent to the search provider.
       DCHECK(!is_incognito);
       return IDR_IOS_OMNIBOX_CALCULATOR;
+    case AutocompleteMatchType::DOCUMENT_SUGGESTION:
+      // Document suggeestions aren't yet supported on mobile.
+      NOTREACHED();
+      return IDR_IOS_OMNIBOX_HTTP;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
@@ -69,6 +73,7 @@ std::string GetResourceNameForAutocompleteMatchType(
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
+    case AutocompleteMatchType::DOCUMENT_SUGGESTION:
       return "omnibox_completion_default_favicon";
     case AutocompleteMatchType::HISTORY_BODY:
     case AutocompleteMatchType::HISTORY_KEYWORD:

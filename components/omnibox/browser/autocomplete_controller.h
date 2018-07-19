@@ -23,6 +23,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 
 class AutocompleteControllerDelegate;
+class DocumentProvider;
 class HistoryURLProvider;
 class KeywordProvider;
 class SearchProvider;
@@ -215,6 +216,8 @@ class AutocompleteController : public AutocompleteProviderListener,
 
   // A list of all providers.
   Providers providers_;
+
+  DocumentProvider* document_provider_;
 
   HistoryURLProvider* history_url_provider_;
 

@@ -30,6 +30,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "Bookmark";
     case TYPE_BUILTIN:
       return "Builtin";
+    case TYPE_DOCUMENT:
+      return "Document";
     case TYPE_HISTORY_QUICK:
       return "HistoryQuick";
     case TYPE_HISTORY_URL:
@@ -66,6 +68,8 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
       return metrics::OmniboxEventProto::BOOKMARK;
     case TYPE_BUILTIN:
       return metrics::OmniboxEventProto::BUILTIN;
+    case TYPE_DOCUMENT:
+      return metrics::OmniboxEventProto::DOCUMENT;
     case TYPE_HISTORY_QUICK:
       return metrics::OmniboxEventProto::HISTORY_QUICK;
     case TYPE_HISTORY_URL:

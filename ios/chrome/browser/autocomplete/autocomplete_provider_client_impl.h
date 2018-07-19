@@ -36,6 +36,8 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   const TemplateURLService* GetTemplateURLService() const override;
   ContextualSuggestionsService* GetContextualSuggestionsService(
       bool create_if_necessary) const override;
+  DocumentSuggestionsService* GetDocumentSuggestionsService(
+      bool create_if_necessary) const override;
   const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;

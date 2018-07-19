@@ -155,6 +155,7 @@ Refer to README.md for content description and update process.
  <item id="oauth2_mint_token_flow" hash_code="1112842" type="1" second_id="29188932" content_hash_code="91581432" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="google_apis/gaia/oauth2_mint_token_flow.cc"/>
  <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="24127780" os_list="linux" file_path="net/cert_net/nss_ocsp.cc"/>
  <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="57248156" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
+ <item id="omnibox_documentsuggest" hash_code="6055066" type="0" content_hash_code="126973249" os_list="linux,windows" file_path="components/omnibox/browser/document_suggestions_service.cc"/>
  <item id="omnibox_navigation_observer" hash_code="61684939" type="0" content_hash_code="70941231" os_list="linux,windows" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc"/>
  <item id="omnibox_prefetch_image" hash_code="109200878" type="0" content_hash_code="107906693" os_list="linux,windows" file_path="chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc"/>
  <item id="omnibox_result_change" hash_code="73107389" type="0" content_hash_code="24802647" os_list="linux,windows" file_path="chrome/browser/ui/omnibox/chrome_omnibox_client.cc"/>

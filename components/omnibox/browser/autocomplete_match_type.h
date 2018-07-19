@@ -63,6 +63,7 @@ struct AutocompleteMatchType {
                                        // (deprecated).
     TAB_SEARCH_DEPRECATED       = 23,  // A suggested open tab, based on its
                                        // URL or title, via HQP (deprecated).
+    DOCUMENT_SUGGESTION         = 24,  // A suggested document.
     NUM_TYPES,
   };
   // clang-format on
