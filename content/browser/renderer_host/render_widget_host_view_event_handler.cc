@@ -433,23 +433,29 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     if (event->finger_count() != 2)
       return;
 #endif
-    blink::WebGestureEvent gesture_event = ui::MakeWebGestureEventFlingCancel();
-    // Coordinates need to be transferred to the fling cancel gesture only
-    // for Surface-targeting to ensure that it is targeted to the correct
-    // RenderWidgetHost.
-    gesture_event.SetPositionInWidget(event->location_f());
     blink::WebMouseWheelEvent mouse_wheel_event = ui::MakeWebMouseWheelEvent(
         *event, base::Bind(&GetScreenLocationFromEvent));
     mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
         mouse_wheel_event, should_route_event);
+
+    base::Optional<blink::WebGestureEvent> maybe_synthetic_fling_cancel;
+    if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
+      maybe_synthetic_fling_cancel =
+          ui::MakeWebGestureEventFlingCancel(mouse_wheel_event);
+    }
+
     if (should_route_event) {
-      host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
-          host_view_, &gesture_event,
-          ui::LatencyInfo(ui::SourceEventType::WHEEL));
+      if (maybe_synthetic_fling_cancel) {
+        host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+            host_view_, &*maybe_synthetic_fling_cancel,
+            ui::LatencyInfo(ui::SourceEventType::WHEEL));
+      }
       host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
           host_view_, &mouse_wheel_event, *event->latency());
     } else {
-      host_->ForwardGestureEvent(gesture_event);
+      if (maybe_synthetic_fling_cancel) {
+        host_->ForwardGestureEvent(*maybe_synthetic_fling_cancel);
+      }
       host_->ForwardWheelEventWithLatencyInfo(mouse_wheel_event,
                                               *event->latency());
     }

@@ -392,11 +392,17 @@ blink::WebGestureEvent MakeWebGestureEvent(
   return gesture_event;
 }
 
-blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
+blink::WebGestureEvent MakeWebGestureEventFlingCancel(
+    const blink::WebMouseWheelEvent& wheel_event) {
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureFlingCancel,
-      blink::WebInputEvent::kNoModifiers, EventTimeForNow(),
+      blink::WebInputEvent::kNoModifiers, wheel_event.TimeStamp(),
       blink::kWebGestureDeviceTouchpad);
+  // Coordinates need to be transferred to the fling cancel gesture only
+  // for Surface-targeting to ensure that it is targeted to the correct
+  // RenderWidgetHost.
+  gesture_event.SetPositionInWidget(wheel_event.PositionInWidget());
+  gesture_event.SetPositionInScreen(wheel_event.PositionInScreen());
   // All other fields are ignored on a GestureFlingCancel event.
   return gesture_event;
 }

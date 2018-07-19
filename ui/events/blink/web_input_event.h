@@ -51,7 +51,8 @@ blink::WebGestureEvent MakeWebGestureEvent(
     const ScrollEvent& event,
     const base::Callback<gfx::PointF(const ui::LocatedEvent& event)>&
         screen_location_callback);
-blink::WebGestureEvent MakeWebGestureEventFlingCancel();
+blink::WebGestureEvent MakeWebGestureEventFlingCancel(
+    const blink::WebMouseWheelEvent& wheel_event);
 
 }  // namespace ui
 
