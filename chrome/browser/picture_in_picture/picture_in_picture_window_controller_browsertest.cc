@@ -474,49 +474,24 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // keep Picture-in-Picture window opened.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        ResetVideoSrcKeepsPictureInPictureWindowOpened) {
-  LoadTabAndEnterPictureInPicture(browser());
-
-  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
-
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.src = null;"));
-
-  bool in_picture_in_picture = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
-  EXPECT_TRUE(in_picture_in_picture);
-
-  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_FALSE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
-}
-
-#if defined(OS_LINUX)
-#define MAYBE_UpdateVideoSrcKeepsPictureInPictureWindowOpened \
-    DISABLED_UpdateVideoSrcKeepsPictureInPictureWindowOpened
-#else
-#define MAYBE_UpdateVideoSrcKeepsPictureInPictureWindowOpened \
-    UpdateVideoSrcKeepsPictureInPictureWindowOpened
-#endif
-
-// Tests that updating video src when video is in Picture-in-Picture session
-// keep Picture-in-Picture window opened.
-IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       MAYBE_UpdateVideoSrcKeepsPictureInPictureWindowOpened) {
-  LoadTabAndEnterPictureInPicture(browser());
-
-  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "changeVideoSrc();", &result));
+      active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
   bool in_picture_in_picture = false;
@@ -525,8 +500,15 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.src = null;"));
+
+  in_picture_in_picture = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
 // Tests that we can enter Picture-in-Picture when a video is not preloaded,
