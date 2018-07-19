@@ -4,7 +4,7 @@
 
 #import <ChromeWebView/ChromeWebView.h>
 
-#import "ios/web_view/test/web_view_int_test.h"
+#import "ios/web_view/test/web_view_inttest_base.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #include "testing/gtest_mac.h"
 
@@ -16,7 +16,7 @@ namespace ios_web_view {
 
 // Tests encodeRestorableStateWithCoder: and decodeRestorableStateWithCoder:
 // methods.
-typedef ios_web_view::WebViewIntTest WebViewRestorableStateTest;
+typedef ios_web_view::WebViewInttestBase WebViewRestorableStateTest;
 TEST_F(WebViewRestorableStateTest, EncodeDecode) {
   // Load 2 URLs to create non-default state.
   ASSERT_FALSE([web_view_ lastCommittedURL]);

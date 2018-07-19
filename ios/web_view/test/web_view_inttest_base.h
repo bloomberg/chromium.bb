@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
-#define IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
+#ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_INTTEST_BASE_H_
+#define IOS_WEB_VIEW_TEST_WEB_VIEW_INTTEST_BASE_H_
 
 #import <Foundation/Foundation.h>
 #include <memory>
@@ -28,10 +28,10 @@ namespace ios_web_view {
 // A test fixture for testing CWVWebView. A test server is also created to
 // support loading content. The server supports the urls returned by the GetUrl*
 // methods below.
-class WebViewIntTest : public PlatformTest {
+class WebViewInttestBase : public PlatformTest {
  protected:
-  WebViewIntTest();
-  ~WebViewIntTest() override;
+  WebViewInttestBase();
+  ~WebViewInttestBase() override;
 
   // Returns URL to an html page with title set to |title|.
   //
@@ -63,4 +63,4 @@ class WebViewIntTest : public PlatformTest {
 
 NS_ASSUME_NONNULL_END
 
-#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
+#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INTTEST_BASE_H_
