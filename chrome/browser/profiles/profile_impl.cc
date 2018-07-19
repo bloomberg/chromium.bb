@@ -33,8 +33,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/foundation/app_service/app_service.h"
-#include "chrome/browser/apps/foundation/app_service/public/mojom/constants.mojom.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -177,6 +175,8 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/apps/foundation/app_service/app_service.h"
+#include "chrome/browser/apps/foundation/app_service/public/mojom/constants.mojom.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/common/page_zoom.h"
 #endif
@@ -298,10 +298,12 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   return std::string();
 }
 
+#if !defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateAppService(Profile* profile) {
   // TODO(crbug.com/826982): use |profile| to fetch existing registries.
   return std::make_unique<apps::AppService>();
 }
+#endif
 
 }  // namespace
 
@@ -1179,6 +1181,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   }
 #endif
 
+#if !defined(OS_ANDROID)
   {
     // Binding the App Service here means that its preferences will be stored in
     // the primary Preferences file for this profile.
@@ -1188,6 +1191,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
         base::BindRepeating(&CreateAppService, base::Unretained(this));
     services->emplace(apps::mojom::kServiceName, info);
   }
+#endif
 
   service_manager::EmbeddedServiceInfo identity_service_info;
 

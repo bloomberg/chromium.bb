@@ -1664,7 +1664,6 @@ jumbo_split_static_library("browser") {
     "//chrome:strings",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
-    "//chrome/browser/apps/foundation/app_service:lib",
     "//chrome/browser/budget_service:budget_proto",
     "//chrome/browser/devtools",
     "//chrome/browser/media:media_engagement_preload_proto",
@@ -2936,6 +2935,7 @@ jumbo_split_static_library("browser") {
     deps += [
       ":theme_properties",
       "//chrome/app/vector_icons",
+      "//chrome/browser/apps/foundation/app_service:lib",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
