@@ -517,6 +517,10 @@ WallpaperManager.prototype.toggleSurpriseMe = function() {
  * do not depend on the download should be initialized here.
  */
 WallpaperManager.prototype.preDownloadDomInit_ = function() {
+  this.document_.defaultView.addEventListener(
+      'resize', this.onResize_.bind(this));
+  this.document_.defaultView.addEventListener(
+      'keydown', this.onKeyDown_.bind(this));
   if (this.useNewWallpaperPicker_) {
     $('minimize-button').addEventListener('click', function() {
       chrome.app.window.current().minimize();
@@ -530,24 +534,32 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
       // Clear the check mark (if any). Do not try to locate the new wallpaper
       // in the picker to avoid changing the selected category abruptly.
       this.wallpaperGrid_.selectedItem = null;
+      this.disableDailyRefresh_();
     });
+    var imagePicker = this.document_.body.querySelector('.image-picker');
+    imagePicker.addEventListener('scroll', function() {
+      var scrollTimer;
+      return () => {
+        imagePicker.classList.add('show-scroll-bar');
+        window.clearTimeout(scrollTimer);
+        scrollTimer = window.setTimeout(() => {
+          imagePicker.classList.remove('show-scroll-bar');
+        }, 500);
+      };
+    }());
   } else {
     $('window-close-button').addEventListener('click', function() {
       window.close();
     });
+    $('learn-more').href = LearnMoreURL;
+    $('close-error').addEventListener('click', function() {
+      $('error-container').hidden = true;
+    });
+    $('close-wallpaper-selection').addEventListener('click', function() {
+      $('wallpaper-selection-container').hidden = true;
+      $('set-wallpaper-layout').disabled = true;
+    });
   }
-  this.document_.defaultView.addEventListener(
-      'resize', this.onResize_.bind(this));
-  this.document_.defaultView.addEventListener(
-      'keydown', this.onKeyDown_.bind(this));
-  $('learn-more').href = LearnMoreURL;
-  $('close-error').addEventListener('click', function() {
-    $('error-container').hidden = true;
-  });
-  $('close-wallpaper-selection').addEventListener('click', function() {
-    $('wallpaper-selection-container').hidden = true;
-    $('set-wallpaper-layout').disabled = true;
-  });
 };
 
 /**
@@ -885,19 +897,22 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
               0.4;
           visibleItemList[0].style.marginTop = topMargin + 'px';
           visibleItemList[1].style.marginTop = topMargin / 2 + 'px';
-
-          // Make sure that all the texts are centered.
-          for (var item of visibleItemList) {
-            var totalPadding = $('current-wallpaper-more-options').offsetWidth -
-                (item.querySelector('.icon').offsetWidth +
-                 item.querySelector('.text').offsetWidth);
-            item.querySelector('.icon').style.WebkitMarginStart =
-                totalPadding / 2 + 'px';
-          }
+        }
+        // Add necessary padding and make sure all the texts are centered. Clear
+        // the existing padding first.
+        for (var item of visibleItemList) {
+          item.style.paddingLeft = item.style.paddingRight = '0px';
+        }
+        var totalWidth = $('current-wallpaper-more-options').offsetWidth;
+        for (var item of visibleItemList) {
+          var padding = 15 +
+              (totalWidth -
+               (item.querySelector('.icon').offsetWidth +
+                item.querySelector('.text').offsetWidth)) /
+                  2;
+          item.style.paddingLeft = item.style.paddingRight = padding + 'px';
         }
 
-        $('current-wallpaper-more-options')
-            .classList.toggle('online-wallpaper', isOnlineWallpaper);
         // Clear the existing contents (needed if the wallpaper changes while
         // the picker is open).
         $('current-wallpaper-description').innerHTML = '';
@@ -1045,6 +1060,10 @@ WallpaperManager.prototype.onWallpaperChanged_ = function(
   // Hides the wallpaper set by message.
   $('wallpaper-set-by-message').textContent = '';
   $('wallpaper-grid').classList.remove('small');
+
+  // Disables daily refresh if user selects a non-daily wallpaper.
+  if (activeItem && activeItem.source !== Constants.WallpaperSourceEnum.Daily)
+    this.disableDailyRefresh_();
 
   if (activeItem) {
     WallpaperUtil.saveWallpaperInfo(
@@ -2183,7 +2202,7 @@ WallpaperManager.prototype.toggleLayoutButtonStates_ = function(layout) {
 
 /**
  * Fetches the info related to the daily refresh feature and updates the UI for
- * the sliders. Only used by the new wallpaper picker.
+ * the items. Only used by the new wallpaper picker.
  * @private
  */
 WallpaperManager.prototype.initializeDailyRefreshStates_ = function() {
@@ -2204,7 +2223,7 @@ WallpaperManager.prototype.initializeDailyRefreshStates_ = function() {
       };
     }
 
-    this.updateDailyRefreshSliderStates_(this.dailyRefreshInfo_);
+    this.updateDailyRefreshItemStates_(this.dailyRefreshInfo_);
     this.decorateCurrentWallpaperInfoBar_();
   };
 
@@ -2213,58 +2232,50 @@ WallpaperManager.prototype.initializeDailyRefreshStates_ = function() {
 };
 
 /**
- * Updates the UI of all the daily refresh sliders based on the info.
+ * Updates the UI of all the daily refresh items based on the info.
  * @param {Object} dailyRefreshInfo The daily refresh info.
  * @private
  */
-WallpaperManager.prototype.updateDailyRefreshSliderStates_ = function(
+WallpaperManager.prototype.updateDailyRefreshItemStates_ = function(
     dailyRefreshInfo) {
-  if (!this.dailyRefreshSliderMap_ || !dailyRefreshInfo)
+  if (!this.dailyRefreshItemMap_ || !dailyRefreshInfo)
     return;
 
-  Object.entries(this.dailyRefreshSliderMap_)
-      .forEach(([collectionId, dailyRefreshSlider]) => {
+  Object.entries(this.dailyRefreshItemMap_)
+      .forEach(([collectionId, dailyRefreshItem]) => {
         var enabled = dailyRefreshInfo.enabled &&
             dailyRefreshInfo.collectionId === collectionId;
-        dailyRefreshSlider.classList.toggle('checked', enabled);
-        dailyRefreshSlider.setAttribute('aria-checked', enabled);
+        dailyRefreshItem.classList.toggle('checked', enabled);
+        dailyRefreshItem.querySelector('.daily-refresh-slider')
+            .setAttribute('aria-checked', enabled);
       });
 };
 
 /**
- * Decorates the UI and registers event listener for the slider.
- * @param {string} collectionId The collection id that this slider is associated
+ * Decorates the UI and registers event listener for the item.
+ * @param {string} collectionId The collection id that this item is associated
  *     with.
- * @param {Object} dailyRefreshSlider The daily refresh slider.
+ * @param {Object} dailyRefreshItem The daily refresh item.
  */
-WallpaperManager.prototype.decorateDailyRefreshSlider = function(
-    collectionId, dailyRefreshSlider) {
-  if (!this.dailyRefreshSliderMap_)
-    this.dailyRefreshSliderMap_ = {};
+WallpaperManager.prototype.decorateDailyRefreshItem = function(
+    collectionId, dailyRefreshItem) {
+  if (!this.dailyRefreshItemMap_)
+    this.dailyRefreshItemMap_ = {};
 
-  this.dailyRefreshSliderMap_[collectionId] = dailyRefreshSlider;
-  this.updateDailyRefreshSliderStates_(this.dailyRefreshInfo_);
-  dailyRefreshSlider.addEventListener('click', () => {
-    var isSliderEnabled = dailyRefreshSlider.classList.contains('checked');
+  this.dailyRefreshItemMap_[collectionId] = dailyRefreshItem;
+  this.updateDailyRefreshItemStates_(this.dailyRefreshInfo_);
+  dailyRefreshItem.addEventListener('click', () => {
+    var isItemEnabled = dailyRefreshItem.classList.contains('checked');
     var isCollectionEnabled =
         collectionId === this.dailyRefreshInfo_.collectionId;
-    if (isSliderEnabled !== isCollectionEnabled) {
+    if (isItemEnabled !== isCollectionEnabled) {
       console.error(
           'There is a mismatch between the enabled daily refresh collection ' +
-          'and the slider state. This should never happen.');
+          'and the item state. This should never happen.');
       return;
     }
-    if (isSliderEnabled) {
-      // Disable daily refresh. The current value of the collection id and
-      // resume token can be discarded.
-      this.dailyRefreshInfo_ = {
-        enabled: false,
-        collectionId: null,
-        resumeToken: null
-      };
-      WallpaperUtil.saveDailyRefreshInfo(this.dailyRefreshInfo_);
-      this.updateDailyRefreshSliderStates_(this.dailyRefreshInfo_);
-      this.decorateCurrentWallpaperInfoBar_();
+    if (isItemEnabled) {
+      this.disableDailyRefresh_();
     } else {
       // Enable daily refresh but do not overwrite |dailyRefreshInfo_| yet
       // (since it's still possible to revert). The resume token is left empty
@@ -2277,21 +2288,21 @@ WallpaperManager.prototype.decorateDailyRefreshSlider = function(
       this.setDailyRefreshWallpaper_();
     }
     var toggleRippleAnimation = enabled => {
-      dailyRefreshSlider.classList.toggle('ripple-animation', enabled);
+      dailyRefreshItem.classList.toggle('ripple-animation', enabled);
     };
     toggleRippleAnimation(true);
     window.setTimeout(() => {
       toggleRippleAnimation(false);
     }, 360);
   });
-  dailyRefreshSlider.addEventListener('keypress', e => {
+  dailyRefreshItem.addEventListener('keypress', e => {
     if (e.keyCode == 13)
-      dailyRefreshSlider.click();
+      dailyRefreshItem.click();
   });
-  dailyRefreshSlider.addEventListener('mousedown', e => {
+  dailyRefreshItem.addEventListener('mousedown', e => {
     e.preventDefault();
   });
-  dailyRefreshSlider.setAttribute('aria-label', str('surpriseMeLabel'));
+  dailyRefreshItem.setAttribute('aria-label', str('surpriseMeLabel'));
 };
 
 /**
@@ -2303,7 +2314,7 @@ WallpaperManager.prototype.setDailyRefreshWallpaper_ = function() {
   if (!this.pendingDailyRefreshInfo_)
     return;
   // There should be immediate UI update even though the info hasn't been saved.
-  this.updateDailyRefreshSliderStates_(this.pendingDailyRefreshInfo_);
+  this.updateDailyRefreshItemStates_(this.pendingDailyRefreshInfo_);
   this.updateSpinnerVisibility_(true);
 
   var retryCount = 0;
@@ -2315,7 +2326,7 @@ WallpaperManager.prototype.setDailyRefreshWallpaper_ = function() {
           var failureCallback = () => {
             this.pendingDailyRefreshInfo_ = null;
             // Restore the original states.
-            this.updateDailyRefreshSliderStates_(this.dailyRefreshInfo_);
+            this.updateDailyRefreshItemStates_(this.dailyRefreshInfo_);
             this.updateSpinnerVisibility_(false);
           };
           if (chrome.runtime.lastError) {
@@ -2406,6 +2417,7 @@ WallpaperManager.prototype.setDailyRefreshWallpaper_ = function() {
  * @param {Object} button The button object.
  * @param {function} eventListener The function to be called when the button is
  *     clicked or the Enter key is pressed.
+ * @private
  */
 WallpaperManager.prototype.addEventToButton_ = function(button, eventListener) {
   // Replace the button with a clone to clear all previous event listeners.
@@ -2425,6 +2437,25 @@ WallpaperManager.prototype.addEventToButton_ = function(button, eventListener) {
   button.addEventListener('mousedown', e => {
     e.preventDefault();
   });
+};
+
+/**
+ * Helper function to disable daily refresh on the new wallpaper picker.
+ * Discards the current values of collection id and resume token. No-op if it's
+ * already disabled.
+ * @private
+ */
+WallpaperManager.prototype.disableDailyRefresh_ = function() {
+  if (!this.dailyRefreshInfo_ || !this.dailyRefreshInfo_.enabled)
+    return;
+  this.dailyRefreshInfo_ = {
+    enabled: false,
+    collectionId: null,
+    resumeToken: null
+  };
+  WallpaperUtil.saveDailyRefreshInfo(this.dailyRefreshInfo_);
+  this.updateDailyRefreshItemStates_(this.dailyRefreshInfo_);
+  this.decorateCurrentWallpaperInfoBar_();
 };
 
 })();

@@ -97,6 +97,9 @@ cr.define('wallpapers', function() {
           if (e.keyCode == 13)
             this.parentNode.selectedItem = this.dataItem;
         });
+        this.addEventListener('mousedown', e => {
+          e.preventDefault();
+        });
       }
 
       imageEl.classList.add('thumbnail');
@@ -705,10 +708,9 @@ cr.define('wallpapers', function() {
       if (!this.dailyRefreshItem.querySelector('.daily-refresh-banner')) {
         var dailyRefreshBanner = document.querySelector('.daily-refresh-banner')
                                      .cloneNode(true /*deep=*/);
-        wallpaperManager.decorateDailyRefreshSlider(
-            this.collectionId,
-            dailyRefreshBanner.querySelector('.daily-refresh-slider'));
         this.dailyRefreshItem.appendChild(dailyRefreshBanner);
+        wallpaperManager.decorateDailyRefreshItem(
+            this.collectionId, this.dailyRefreshItem);
       }
 
       slideShowImage.style.opacity =
@@ -728,17 +730,12 @@ cr.define('wallpapers', function() {
       var images = this.dailyRefreshImages;
       if (images.length <= index)
         return;
-      images[index].style.opacity = 1;
-
-      if (images.length > 1) {
-        var previousIndex = (index - 1) % images.length;
-        if (previousIndex < 0)
-          previousIndex += images.length;
-        images[previousIndex].style.opacity = 0;
-        var nextIndex = (index + 1) % images.length;
-        this.dailyRefreshTimer_ =
-            window.setTimeout(this.showNextImage_.bind(this, nextIndex), 3000);
+      for (var i = 0; i < images.length; ++i) {
+        images[i].style.opacity = i === index ? 1 : 0;
       }
+      var nextIndex = (index + 1) % images.length;
+      this.dailyRefreshTimer_ =
+          window.setTimeout(this.showNextImage_.bind(this, nextIndex), 3000);
     },
 
     /**
