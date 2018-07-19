@@ -39,12 +39,6 @@ bool NGBaseline::ShouldPropagateBaselines(LayoutBox* layout_box) {
   if (!NGBlockNode(layout_box).CanUseNewLayout())
     return true;
 
-  // CSS defines certain cases to synthesize baselines from box. See comments in
-  // UseLogicalBottomMarginEdgeForInlineBlockBaseline().
-  const LayoutBlock* layout_block = ToLayoutBlock(layout_box);
-  if (layout_block->UseLogicalBottomMarginEdgeForInlineBlockBaseline())
-    return false;
-
   return true;
 }
 

@@ -66,6 +66,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
 
+  // CSS defines certain cases to synthesize inline block baselines from box.
+  // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
+  bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
+
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
                                                    FontBaseline,

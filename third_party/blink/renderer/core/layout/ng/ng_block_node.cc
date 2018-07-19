@@ -620,6 +620,13 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
   return GetLayoutBox()->IsAtomicInlineLevel() && GetLayoutBox()->IsInline();
 }
 
+bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
+  LayoutBox* layout_box = GetLayoutBox();
+  return layout_box->IsLayoutBlock() &&
+         ToLayoutBlock(layout_box)
+             ->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
+}
+
 scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const NGConstraintSpace& parent_constraint_space,
     FontBaseline baseline_type,
