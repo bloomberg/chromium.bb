@@ -450,6 +450,7 @@ void XRSession::OnFocusChanged() {
 }
 
 void XRSession::OnFrame(
+    double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
     const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
     const base::Optional<gpu::MailboxHolder>& background_mailbox_holder,
@@ -497,7 +498,7 @@ void XRSession::OnFrame(
     // happen within these calls. resolving_frame_ will be true for the duration
     // of the callbacks.
     base::AutoReset<bool> resolving(&resolving_frame_, true);
-    callback_collection_->ExecuteCallbacks(this, presentation_frame);
+    callback_collection_->ExecuteCallbacks(this, timestamp, presentation_frame);
 
     // The session might have ended in the middle of the frame. Only call
     // OnFrameEnd if it's still valid.

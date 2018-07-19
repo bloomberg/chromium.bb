@@ -122,7 +122,8 @@ class XRSession final : public EventTargetWithInlineData {
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(std::unique_ptr<TransformationMatrix>,
+  void OnFrame(double timestamp,
+               std::unique_ptr<TransformationMatrix>,
                const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
                const base::Optional<gpu::MailboxHolder>& bg_mailbox_holder,
                const base::Optional<IntSize>& background_size);
