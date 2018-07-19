@@ -11,6 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
@@ -292,8 +293,10 @@ id<GREYMatcher> AccountConsistencySetupSigninButton() {
 }
 
 id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
-  return ButtonWithAccessibilityLabelId(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON);
+  int labelID = base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)
+                    ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON
+                    : IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
+  return ButtonWithAccessibilityLabelId(labelID);
 }
 
 id<GREYMatcher> AddAccountButton() {

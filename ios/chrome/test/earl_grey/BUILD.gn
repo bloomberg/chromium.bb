@@ -235,6 +235,7 @@ source_set("test_support") {
     "//base/test:test_support",
     "//components/signin/core/browser",
     "//components/strings",
+    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/authentication:authentication",

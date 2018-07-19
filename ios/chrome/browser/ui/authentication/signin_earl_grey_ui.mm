@@ -6,8 +6,11 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -33,7 +36,18 @@ using chrome_test_util::SettingsDoneButton;
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
-  [self selectIdentityWithEmail:identity.userEmail];
+  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kIdentityPickerViewIdentifier)]
+        performAction:grey_tap()];
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(
+                                                identity.userEmail),
+                                            grey_sufficientlyVisible(), nil)]
+        performAction:grey_tap()];
+  } else {
+    [self selectIdentityWithEmail:identity.userEmail];
+  }
   [self confirmSigninConfirmationDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -58,9 +72,15 @@ using chrome_test_util::SettingsDoneButton;
   // Wait until the sync confirmation is displayed.
   id<GREYMatcher> signinUICollectionViewMatcher = nil;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  signinUICollectionViewMatcher = grey_allOf(
-      grey_ancestor(grey_accessibilityID(kSigninConfirmationCollectionViewId)),
-      grey_kindOfClass([UICollectionView class]), nil);
+  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
+    signinUICollectionViewMatcher =
+        grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
+  } else {
+    signinUICollectionViewMatcher = grey_allOf(
+        grey_ancestor(
+            grey_accessibilityID(kSigninConfirmationCollectionViewId)),
+        grey_kindOfClass([UICollectionView class]), nil);
+  }
   [[EarlGrey selectElementWithMatcher:signinUICollectionViewMatcher]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
 

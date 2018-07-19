@@ -11,6 +11,7 @@ include_rules = [
   "+components/prefs",
   "+components/signin/core/browser",
   "+components/sync",
+  "+components/unified_consent",
   "+components/variations",
   "+components/version_info",
   "+google_apis",

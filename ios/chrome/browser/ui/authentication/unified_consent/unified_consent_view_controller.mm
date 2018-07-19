@@ -22,6 +22,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kUnifiedConsentScrollViewIdentifier =
+    @"kUnifiedConsentScrollViewIdentifier";
+
 namespace {
 
 // Sizes.
@@ -167,6 +170,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   // Main scroll view.
   self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
   self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.scrollView.accessibilityIdentifier = kUnifiedConsentScrollViewIdentifier;
   if (@available(iOS 11, *)) {
     // The observed behavior was buggy. When the view appears on the screen,
     // the scrollvie was not scrolled all the way to the top. Adjusting the
