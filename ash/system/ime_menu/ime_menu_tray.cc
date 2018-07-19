@@ -504,7 +504,7 @@ void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
-void ImeMenuTray::OnKeyboardHidden() {
+void ImeMenuTray::OnKeyboardHidden(bool is_temporary_hide) {
   if (show_bubble_after_keyboard_hidden_) {
     show_bubble_after_keyboard_hidden_ = false;
     auto* keyboard_controller = keyboard::KeyboardController::Get();

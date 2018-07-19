@@ -138,7 +138,8 @@ TEST_F(VirtualKeyboardControllerTest,
 
   // Simulate the keyboard hiding.
   if (GetKeyboardController()->HasObserver(GetVirtualKeyboardController())) {
-    GetVirtualKeyboardController()->OnKeyboardHidden();
+    GetVirtualKeyboardController()->OnKeyboardHidden(
+        false /* is_temporary_hide */);
   }
   base::RunLoop().RunUntilIdle();
 
@@ -182,7 +183,8 @@ TEST_F(VirtualKeyboardControllerTest,
 
   // Simulate the keyboard hiding.
   if (GetKeyboardController()->HasObserver(GetVirtualKeyboardController())) {
-    GetVirtualKeyboardController()->OnKeyboardHidden();
+    GetVirtualKeyboardController()->OnKeyboardHidden(
+        false /* is_temporary_hide */);
   }
   base::RunLoop().RunUntilIdle();
 
@@ -192,6 +194,47 @@ TEST_F(VirtualKeyboardControllerTest,
   // Keyset should be reset to none.
   Shell::Get()->ime_controller()->FlushMojoForTesting();
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kNone,
+            client.last_keyset_);
+}
+
+TEST_F(VirtualKeyboardControllerTest,
+       ForceToShowKeyboardWithKeysetTemporaryHide) {
+  // TODO(mash): Turning on accessibility keyboard does not create a valid
+  // KeyboardController under MASH. See https://crbug.com/646565.
+  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
+    return;
+
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  accessibility_controller->SetVirtualKeyboardEnabled(false);
+  ASSERT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Set up a mock ImeControllerClient to test keyset changes.
+  TestImeControllerClient client;
+  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+
+  // Should show the keyboard by turning on the accesibility keyboard.
+  GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kEmoji);
+  Shell::Get()->ime_controller()->FlushMojoForTesting();
+  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Keyset should be emoji.
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
+            client.last_keyset_);
+
+  // Simulate the keyboard hiding temporarily.
+  if (GetKeyboardController()->HasObserver(GetVirtualKeyboardController())) {
+    GetVirtualKeyboardController()->OnKeyboardHidden(
+        true /* is_temporary_hide */);
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // The keyboard should still be enabled.
+  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Keyset should still be emoji.
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
             client.last_keyset_);
 }
 
