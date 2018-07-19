@@ -81,6 +81,9 @@ namespace {
 constexpr int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
 constexpr int kRefreshExtraLeftPaddingToBalanceCloseButtonPadding = 4;
 
+constexpr int kRefreshAlertIndicatorCloseButtonPadding = 6;
+constexpr int kTouchableRefreshAlertIndicatorCloseButtonPadding = 8;
+
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
 // the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
 // larger than the desired pinned tab width then the tab is rendered as a normal
@@ -616,14 +619,14 @@ void Tab::Layout() {
   const bool was_showing_icon = showing_icon_;
   UpdateIconVisibility();
 
-  int extra_padding = 0;
+  int extra_left_padding = 0;
   if (extra_padding_before_content_) {
-    extra_padding = MD::IsRefreshUi()
-                        ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
-                        : kExtraLeftPaddingToBalanceCloseButtonPadding;
+    extra_left_padding =
+        MD::IsRefreshUi() ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
+                          : kExtraLeftPaddingToBalanceCloseButtonPadding;
   }
 
-  const int start = contents_rect.x() + extra_padding;
+  const int start = contents_rect.x() + extra_left_padding;
 
   // The bounds for the favicon will include extra width for the attention
   // indicator, but visually it will be smaller at kFaviconSize wide.
@@ -690,8 +693,14 @@ void Tab::Layout() {
   if (showing_alert_indicator_) {
     const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
     const gfx::Size image_size(alert_indicator_button_->GetPreferredSize());
-    const int alert_to_close_spacing =
-        is_touch_optimized ? after_title_padding : 0;
+    int alert_to_close_spacing = 0;
+    if (extra_alert_indicator_padding_) {
+      alert_to_close_spacing =
+          is_touch_optimized ? kTouchableRefreshAlertIndicatorCloseButtonPadding
+                             : kRefreshAlertIndicatorCloseButtonPadding;
+    } else if (!MD::IsRefreshUi() && is_touch_optimized) {
+      alert_to_close_spacing = after_title_padding;
+    }
     const int right = showing_close_button_ ? (close_x - alert_to_close_spacing)
                                             : contents_rect.right();
     gfx::Rect bounds(
@@ -1474,6 +1483,7 @@ void Tab::UpdateIconVisibility() {
 
   showing_icon_ = showing_alert_indicator_ = false;
   extra_padding_before_content_ = false;
+  extra_alert_indicator_padding_ = false;
 
   if (height() < GetLayoutConstant(TAB_HEIGHT))
     return;
@@ -1505,7 +1515,9 @@ void Tab::UpdateIconVisibility() {
       (is_touch_optimized ? close_button_->GetInsets().right()
                           : close_button_->GetInsets().width());
   const bool large_enough_for_close_button =
-      available_width >= kMinimumContentsWidthForCloseButtons;
+      available_width >= (is_touch_optimized
+                              ? kTouchableMinimumContentsWidthForCloseButtons
+                              : kMinimumContentsWidthForCloseButtons);
 
   showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
   if (IsActive()) {
@@ -1551,15 +1563,36 @@ void Tab::UpdateIconVisibility() {
     }
   }
 
-  const int extra_padding =
-      MD::IsRefreshUi() ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
-                        : kExtraLeftPaddingToBalanceCloseButtonPadding;
   // The extra padding is intended to visually balance the close button, so only
   // include it when the close button is shown or will be shown on hover. We
   // also check this for active tabs so that the extra padding doesn't pop in
   // and out as you switch tabs.
-  extra_padding_before_content_ =
-      large_enough_for_close_button && extra_padding <= available_width;
+  extra_padding_before_content_ = large_enough_for_close_button;
+
+  if (DCHECK_IS_ON()) {
+    const int extra_left_padding =
+        MD::IsRefreshUi() ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
+                          : kExtraLeftPaddingToBalanceCloseButtonPadding;
+    DCHECK(!extra_padding_before_content_ ||
+           extra_left_padding <= available_width);
+    if (extra_padding_before_content_)
+      available_width -= extra_left_padding;
+  }
+
+  if (MD::IsRefreshUi()) {
+    extra_alert_indicator_padding_ = showing_alert_indicator_ &&
+                                     showing_close_button_ &&
+                                     large_enough_for_close_button;
+
+    if (DCHECK_IS_ON()) {
+      const int extra_alert_padding =
+          MD::IsTouchOptimizedUiEnabled()
+              ? kTouchableRefreshAlertIndicatorCloseButtonPadding
+              : kRefreshAlertIndicatorCloseButtonPadding;
+      DCHECK(!extra_alert_indicator_padding_ ||
+             extra_alert_padding <= available_width);
+    }
+  }
 }
 
 bool Tab::ShouldRenderAsNormalTab() const {
