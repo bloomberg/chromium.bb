@@ -52,9 +52,10 @@ void OffscreenCanvasRenderingContext2D::Trace(blink::Visitor* visitor) {
 }
 
 void OffscreenCanvasRenderingContext2D::commit() {
+  // TODO(fserb): consolidate this with PushFrame
   SkIRect damage_rect(dirty_rect_for_commit_);
   dirty_rect_for_commit_.setEmpty();
-  Host()->Commit(TransferToStaticBitmapImage(), damage_rect);
+  Host()->Commit(ProduceFrame(), damage_rect);
 }
 
 // BaseRenderingContext2D implementation
@@ -102,17 +103,17 @@ void OffscreenCanvasRenderingContext2D::Reset() {
   BaseRenderingContext2D::Reset();
 }
 
-scoped_refptr<StaticBitmapImage>
-OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
+scoped_refptr<CanvasResource>
+OffscreenCanvasRenderingContext2D::ProduceFrame() {
   if (!CanCreateCanvas2dResourceProvider())
     return nullptr;
-  scoped_refptr<StaticBitmapImage> image =
-      GetCanvasResourceProvider()->Snapshot();
-  if (!image)
+  scoped_refptr<CanvasResource> frame =
+      GetCanvasResourceProvider()->ProduceFrame();
+  if (!frame)
     return nullptr;
 
-  image->SetOriginClean(this->OriginClean());
-  return image;
+  frame->SetOriginClean(this->OriginClean());
+  return frame;
 }
 
 void OffscreenCanvasRenderingContext2D::PushFrame() {
@@ -120,7 +121,7 @@ void OffscreenCanvasRenderingContext2D::PushFrame() {
     return;
 
   SkIRect damage_rect(dirty_rect_for_commit_);
-  Host()->PushFrame(TransferToStaticBitmapImage(), damage_rect);
+  Host()->PushFrame(ProduceFrame(), damage_rect);
   dirty_rect_for_commit_.setEmpty();
 }
 
@@ -128,9 +129,14 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     ScriptState* script_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmap2D;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
-  scoped_refptr<StaticBitmapImage> image = TransferToStaticBitmapImage();
+
+  if (!CanCreateCanvas2dResourceProvider())
+    return nullptr;
+  scoped_refptr<StaticBitmapImage> image =
+      GetCanvasResourceProvider()->Snapshot();
   if (!image)
     return nullptr;
+  image->SetOriginClean(this->OriginClean());
   if (image->IsTextureBacked()) {
     // Before discarding the image resource, we need to flush pending render ops
     // to fully resolve the snapshot.

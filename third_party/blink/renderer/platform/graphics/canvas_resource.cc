@@ -554,6 +554,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceGpuMemoryBuffer::Bitmap() {
   scoped_refptr<StaticBitmapImage> bitmap = StaticBitmapImage::Create(
       surface_->makeImageSnapshot(), ContextProviderWrapper());
   DidPaint();
+  bitmap->SetOriginClean(is_origin_clean_);
   return bitmap;
 }
 

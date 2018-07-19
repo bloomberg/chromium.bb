@@ -211,10 +211,12 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
   CanvasResourceProviderBitmap(
       const IntSize& size,
       const CanvasColorParams color_params,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(size,
                                color_params,
-                               nullptr /*context_provider_wrapper*/,
+                               std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderBitmap() override = default;
@@ -251,9 +253,12 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
   CanvasResourceProviderRamGpuMemoryBuffer(
       const IntSize& size,
       const CanvasColorParams color_params,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProviderBitmap(size,
                                      color_params,
+                                     std::move(context_provider_wrapper),
                                      std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderRamGpuMemoryBuffer() override = default;
@@ -307,6 +312,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProviderBitmap(size,
                                      color_params,
+                                     nullptr,  // context_provider_wrapper
                                      std::move(resource_dispatcher)) {
     DCHECK(ResourceDispatcher());
   }
@@ -456,7 +462,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
           continue;
         }
         provider = std::make_unique<CanvasResourceProviderRamGpuMemoryBuffer>(
-            size, color_params, resource_dispatcher);
+            size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
       case kSharedBitmapResourceType:
         if (!resource_dispatcher)
@@ -473,7 +479,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         break;
       case kBitmapResourceType:
         provider = std::make_unique<CanvasResourceProviderBitmap>(
-            size, color_params, resource_dispatcher);
+            size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
     }
     if (provider && provider->IsValid())
@@ -691,7 +697,7 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
-  if (context_provider_wrapper_)
+  if (IsAccelerated() && context_provider_wrapper_)
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache();
   return &Image::SharedCCDecodeCache();
 }

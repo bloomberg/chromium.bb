@@ -142,7 +142,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
                         double* max_width = nullptr);
   const Font& AccessFont();
 
-  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
+  scoped_refptr<CanvasResource> ProduceFrame();
 
   String ColorSpaceAsString() const override;
   CanvasPixelFormat PixelFormat() const override;

@@ -57,6 +57,12 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
     self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
 
+    # TODO(junov): rebaselining
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
+
     # TODO(junov); validate new test results
     self.Fail('Pixel_CanvasLowLatency2D',
         ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
