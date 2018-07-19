@@ -345,6 +345,12 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
                 std::string(kCSSBackgroundPositionCenter));
     builder.Set("imageVerticalAlignment",
                 std::string(kCSSBackgroundPositionCenterCover));
+    builder.Set("attributionActionUrl",
+                theme_info.custom_background_attribution_action_url.spec());
+    builder.Set("attribution1",
+                theme_info.custom_background_attribution_line_1);
+    builder.Set("attribution2",
+                theme_info.custom_background_attribution_line_2);
   }
 
   return builder.Build();
@@ -594,6 +600,11 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       int tile_type,
       v8::Local<v8::Value> data_generation_time);
   static void SetCustomBackgroundURL(const std::string& background_url);
+  static void SetCustomBackgroundURLWithAttributions(
+      const std::string& background_url,
+      const std::string& attribution_line_1,
+      const std::string& attribution_line_2,
+      const std::string& attributionActionUrl);
   static void SelectLocalBackgroundImage();
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
@@ -633,6 +644,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::LogMostVisitedNavigation)
       .SetMethod("setBackgroundURL",
                  &NewTabPageBindings::SetCustomBackgroundURL)
+      .SetMethod("setBackgroundURLWithAttributions",
+                 &NewTabPageBindings::SetCustomBackgroundURLWithAttributions)
       .SetMethod("selectLocalBackgroundImage",
                  &NewTabPageBindings::SelectLocalBackgroundImage);
 }
@@ -837,6 +850,18 @@ void NewTabPageBindings::SetCustomBackgroundURL(
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   GURL url(background_url);
   search_box->SetCustomBackgroundURL(url);
+}
+
+// static
+void NewTabPageBindings::SetCustomBackgroundURLWithAttributions(
+    const std::string& background_url,
+    const std::string& attribution_line_1,
+    const std::string& attribution_line_2,
+    const std::string& attribution_action_url) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  search_box->SetCustomBackgroundURLWithAttributions(
+      GURL(background_url), attribution_line_1, attribution_line_2,
+      GURL(attribution_action_url));
 }
 
 // static

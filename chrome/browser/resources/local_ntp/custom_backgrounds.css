@@ -436,3 +436,58 @@ html[dir=rtl] .plus-icon {
   left: auto;
   right: 67px;
 }
+
+#custom-bg-attr {
+  border-radius: 8px;
+  bottom: 16px;
+  color: white;
+  font-family: 'Roboto', arial, sans-serif;
+  left: 16px;
+  padding: 8px 8px 8px 8px;
+  position: fixed;
+}
+
+html[dir=rtl] #custom-bg-attr {
+  left: auto;
+  position: fixed;
+  right: 16px;
+}
+
+.attr1 {
+  font-size: 13px;
+  height: 20px;
+  line-height: 20px;
+  vertical-align: middle;
+}
+
+.attr2 {
+  font-size: 11px;
+  height: 20px;
+  line-height: 20px;
+  vertical-align: middle;
+}
+
+#custom-bg-attr.attr-link:hover {
+  background: rgba(32, 33, 36, .1);
+}
+
+.attr1.attr-link,
+.attr2.attr-link {
+  display: inline-block;
+  text-decoration: underline;
+}
+
+#link-icon {
+  background: url(icons/link.svg);
+  background-size: 10px 10px;
+  display: inline-block;
+  height: 10px;
+  margin-right: 8px;
+  vertical-align: middle;
+  width: 10px;
+}
+
+html[dir=rtl] #link-icon {
+  margin-right: auto;
+  margin-left: 8px;
+}

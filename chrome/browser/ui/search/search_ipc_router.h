@@ -83,6 +83,17 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when a custom background is selected on the NTP.
     virtual void OnSetCustomBackgroundURL(const GURL& url) = 0;
 
+    // Called when a custom background with attributions is selected on the NTP.
+    // background_url: Url of the background image.
+    // attribution_line_1: First attribution line for the image.
+    // attribution_line_2: Second attribution line for the image.
+    // action_url: Url to learn more about the backgrounds image.
+    virtual void OnSetCustomBackgroundURLWithAttributions(
+        const GURL& background_url,
+        const std::string& attribution_line_1,
+        const std::string& attribution_line_2,
+        const GURL& action_url) = 0;
+
     // Called to open the file select dialog for selecting a
     // NTP background image.
     virtual void OnSelectLocalBackgroundImage() = 0;
@@ -110,6 +121,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURL() = 0;
+    virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
   };
 
@@ -175,6 +187,11 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void HistorySyncCheck(int page_seq_no,
                         HistorySyncCheckCallback callback) override;
   void SetCustomBackgroundURL(const GURL& url) override;
+  void SetCustomBackgroundURLWithAttributions(
+      const GURL& background_url,
+      const std::string& attribution_line_1,
+      const std::string& attribution_line_2,
+      const GURL& action_url) override;
   void SelectLocalBackgroundImage() override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {

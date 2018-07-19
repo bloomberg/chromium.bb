@@ -522,6 +522,8 @@ extern const char kContentSuggestionsNotificationsEnabled[];
 extern const char kContentSuggestionsConsecutiveIgnoredPrefName[];
 extern const char kContentSuggestionsNotificationsSentDay[];
 extern const char kContentSuggestionsNotificationsSentCount[];
+#else
+extern const char kNtpCustomBackgroundDict[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 
@@ -914,7 +916,6 @@ extern const char kWebDriverOverridesIncompatiblePolicies[];
 #if !defined(OS_ANDROID)
 extern const char kAutoplayAllowed[];
 extern const char kAutoplayWhitelist[];
-extern const char kNTPCustomBackgroundURL[];
 #endif
 
 extern const char kNotificationNextPersistentId[];

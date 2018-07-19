@@ -119,8 +119,14 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends UndoMostVisitedDeletion to the browser.
   void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
 
-  // Updates the NTP custom background preferences.
+  // Updates the NTP custom background preferences, sometimes this includes
+  // image attributions.
   void SetCustomBackgroundURL(const GURL& background_url);
+  void SetCustomBackgroundURLWithAttributions(
+      const GURL& background_url,
+      const std::string& attribution_line_1,
+      const std::string& attribution_line_2,
+      const GURL& action_url);
 
   // Let the user select a local file for the NTP background.
   void SelectLocalBackgroundImage();

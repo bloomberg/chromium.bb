@@ -25,6 +25,7 @@ customBackgrounds.KEYCODES = {
  * @const
  */
 customBackgrounds.IDS = {
+  ATTRIBUTIONS: 'custom-bg-attr',
   BACK: 'bg-sel-back',
   CANCEL: 'bg-sel-footer-cancel',
   CONNECT_GOOGLE_PHOTOS: 'edit-bg-google-photos',
@@ -38,6 +39,7 @@ customBackgrounds.IDS = {
   MSG_BOX_MSG: 'message-box-message',
   MSG_BOX_LINK: 'message-box-link',
   MSG_BOX_CONTAINER: 'message-box-container',
+  LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
@@ -56,6 +58,9 @@ customBackgrounds.IDS = {
  * @const
  */
 customBackgrounds.CLASSES = {
+  ATTR_1: 'attr1',
+  ATTR_2: 'attr2',
+  ATTR_LINK: 'attr-link',
   COLLECTION_DIALOG: 'is-col-sel',
   COLLECTION_SELECTED: 'bg-selected',  // Highlight selected tile
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
@@ -114,6 +119,51 @@ function $(id) {
 }
 
 /**
+ * Display custom background image attributions on the page.
+ * @param {string} attributionLine1 First line of attribution.
+ * @param {string} attributionLine2 Second line of attribution.
+ * @param {string} attributionActionUrl Url to learn more about the image.
+ */
+customBackgrounds.setAttribution = function(
+    attributionLine1, attributionLine2, attributionActionUrl) {
+  var attributionBox = $(customBackgrounds.IDS.ATTRIBUTIONS);
+  var attr1 = document.createElement('div');
+  var attr2 = document.createElement('div');
+  if (attributionLine1 != '') {
+    // Shouldn't be changed from textContent for security assurances.
+    attr1.textContent = attributionLine1;
+    attr1.classList.add(customBackgrounds.CLASSES.ATTR_1);
+    $(customBackgrounds.IDS.ATTRIBUTIONS).appendChild(attr1);
+  }
+  if (attributionLine2 != '') {
+    // Shouldn't be changed from textContent for security assurances.
+    attr2.textContent = attributionLine2;
+    attr2.classList.add(customBackgrounds.CLASSES.ATTR_2);
+    attributionBox.appendChild(attr2);
+  }
+  if (attributionActionUrl != '') {
+    var attr = (attributionLine2 != '' ? attr2 : attr1);
+    attr.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
+
+    var linkIcon = document.createElement('div');
+    linkIcon.id = customBackgrounds.IDS.LINK_ICON;
+    attr.insertBefore(linkIcon, attr.firstChild);
+
+    attributionBox.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
+    attributionBox.onclick = function() {
+      window.open(attributionActionUrl, '_blank');
+    };
+  }
+};
+
+customBackgrounds.clearAttribution = function() {
+  var attributions = $(customBackgrounds.IDS.ATTRIBUTIONS);
+  while (attributions.firstChild) {
+    attributions.removeChild(attributions.firstChild);
+  }
+};
+
+/**
  * Remove all collection tiles from the container when the dialog
  * is closed.
  */
@@ -140,9 +190,11 @@ customBackgrounds.closeCollectionDialog = function(menu) {
 /* Close and reset the dialog, and set the background.
  * @param {string} url The url of the selected background.
  */
-customBackgrounds.setBackground = function(url) {
+customBackgrounds.setBackground = function(
+    url, attributionLine1, attributionLine2, attributionActionUrl) {
   customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
-  window.chrome.embeddedSearch.newTabPage.setBackgroundURL(url);
+  window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions(
+      url, attributionLine1, attributionLine2, attributionActionUrl);
 };
 
 /**
@@ -376,10 +428,22 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
             'url(' + imageData[i].thumbnailImageUrl + ')';
       }
       tile.dataset.url = imageData[i].imageUrl;
+      tile.dataset.attributionLine1 =
+          (imageData[i].attributions[0] != undefined ?
+               imageData[i].attributions[0] :
+               '');
+      tile.dataset.attributionLine2 =
+          (imageData[i].attributions[1] != undefined ?
+               imageData[i].attributions[1] :
+               '');
+      tile.dataset.attributionActionUrl = imageData[i].attributionActionUrl;
     } else {
       tile.style.backgroundImage =
           'url(' + imageData[i].thumbnailPhotoUrl + ')';
       tile.dataset.url = imageData[i].photoUrl;
+      tile.dataset.attributionLine1 = '';
+      tile.dataset.attributionLine2 = '';
+      tile.dataset.attributionActionUrl = '';
     }
 
     tile.id = 'img_tile_' + i;
@@ -405,7 +469,9 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       if (clickCount == 1) {
         tileInteraction(event);
       } else if (clickCount == 2) {
-        customBackgrounds.setBackground(this.dataset.url);
+        customBackgrounds.setBackground(
+            this.dataset.url, this.dataset.attributionLine1,
+            this.dataset.attributionLine2, this.dataset.attributionActionUrl);
       }
     };
     tile.onkeyup = function(event) {
@@ -647,7 +713,11 @@ customBackgrounds.initCustomBackgrounds = function() {
       return;
     }
 
-    customBackgrounds.setBackground(customBackgrounds.selectedTile.dataset.url);
+    customBackgrounds.setBackground(
+        customBackgrounds.selectedTile.dataset.url,
+        customBackgrounds.selectedTile.dataset.attributionLine1,
+        customBackgrounds.selectedTile.dataset.attributionLine2,
+        customBackgrounds.selectedTile.dataset.attributionActionUrl);
   };
   $(customBackgrounds.IDS.DONE).onclick = doneInteraction;
   $(customBackgrounds.IDS.DONE).onkeyup = function(event) {

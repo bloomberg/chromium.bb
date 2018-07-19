@@ -318,6 +318,15 @@ void SearchBox::SetCustomBackgroundURL(const GURL& background_url) {
   embedded_search_service_->SetCustomBackgroundURL(background_url);
 }
 
+void SearchBox::SetCustomBackgroundURLWithAttributions(
+    const GURL& background_url,
+    const std::string& attribution_line_1,
+    const std::string& attribution_line_2,
+    const GURL& action_url) {
+  embedded_search_service_->SetCustomBackgroundURLWithAttributions(
+      background_url, attribution_line_1, attribution_line_2, action_url);
+}
+
 void SearchBox::SelectLocalBackgroundImage() {
   embedded_search_service_->SelectLocalBackgroundImage();
 }

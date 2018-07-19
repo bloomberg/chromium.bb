@@ -268,6 +268,18 @@ void SearchIPCRouter::SetCustomBackgroundURL(const GURL& url) {
   delegate_->OnSetCustomBackgroundURL(url);
 }
 
+void SearchIPCRouter::SetCustomBackgroundURLWithAttributions(
+    const GURL& background_url,
+    const std::string& attribution_line_1,
+    const std::string& attribution_line_2,
+    const GURL& action_url) {
+  if (!policy_->ShouldProcessSetCustomBackgroundURLWithAttributions())
+    return;
+
+  delegate_->OnSetCustomBackgroundURLWithAttributions(
+      background_url, attribution_line_1, attribution_line_2, action_url);
+}
+
 void SearchIPCRouter::SelectLocalBackgroundImage() {
   if (!policy_->ShouldProcessSelectLocalBackgroundImage())
     return;

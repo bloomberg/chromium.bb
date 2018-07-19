@@ -70,6 +70,15 @@ struct ThemeBackgroundInfo {
   // Url of the custom background selected by the user.
   GURL custom_background_url;
 
+  // First attribution string for custom background.
+  std::string custom_background_attribution_line_1;
+
+  // Second attribution string for custom background.
+  std::string custom_background_attribution_line_2;
+
+  // Url to learn more info about the custom background.
+  GURL custom_background_attribution_action_url;
+
   // The theme background color in RGBA format always valid.
   RGBAColor background_color;
 
