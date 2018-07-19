@@ -19,7 +19,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -27,7 +27,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
       "sig2;"
       " sig=*MEQCIGjZRqTRf9iKNkGFyzRMTFgwf/BrY2ZNIP/dykhUV0aYAiBTXg+8wujoT4n/W+"
       "cNgb7pGqQvIUGYZ8u8HZJ5YH26Qg==*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/newcerts\";"
       " cert-sha256=*J/lEm9kNRODdCmINbvitpvdYKNQ+YgBj99DlYp4fEXw=*;"
@@ -65,7 +65,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
   EXPECT_EQ(signatures->at(0).sig,
             std::string(reinterpret_cast<const char*>(decoded_sig1),
                         sizeof(decoded_sig1)));
-  EXPECT_EQ(signatures->at(0).integrity, "mi");
+  EXPECT_EQ(signatures->at(0).integrity, "mi-draft2");
   EXPECT_EQ(signatures->at(0).validity_url,
             "https://example.com/resource.validity.1511128380");
   EXPECT_EQ(signatures->at(0).cert_url, "https://example.com/oldcerts");
@@ -77,7 +77,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
   EXPECT_EQ(signatures->at(1).sig,
             std::string(reinterpret_cast<const char*>(decoded_sig2),
                         sizeof(decoded_sig2)));
-  EXPECT_EQ(signatures->at(1).integrity, "mi");
+  EXPECT_EQ(signatures->at(1).integrity, "mi-draft2");
   EXPECT_EQ(signatures->at(1).validity_url,
             "https://example.com/resource.validity.1511128380");
   EXPECT_EQ(signatures->at(1).cert_url, "https://example.com/newcerts");
@@ -106,7 +106,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, DuplicatedParam) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-url=\"https://example.com/oldcerts\";"
@@ -122,7 +122,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertURL) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https:://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -137,7 +137,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, CertURLWithFragment) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts#test\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -152,7 +152,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, CertURLHttpShouldFail) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"http://example.com/oldcerts#test\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -167,7 +167,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeCertURL) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -182,7 +182,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidValidityUrl) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https:://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -197,7 +197,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ValidityUrlWithFragment) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380#test\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -212,7 +212,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ValidityUrlHttpShouldFail) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"http://example.com/resource.validity.1511128380#test\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -227,7 +227,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeValidityUrl) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -242,7 +242,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertSHA256) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9;"
@@ -264,7 +264,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, AsteriskInTheMiddleOfBinary) {
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-      " integrity=\"mi\";"
+      " integrity=\"mi-draft2\";"
       " validity-url=\"https://example.com/resource.validity.1511128380\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefP*S9Tq5ZbH5iSmOILpjv2qEArmI=*;"

@@ -346,7 +346,8 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     return Result::kErrSignatureVerificationFailed;
   }
 
-  if (!base::EqualsCaseInsensitiveASCII(envelope.signature().integrity, "mi")) {
+  if (!base::EqualsCaseInsensitiveASCII(envelope.signature().integrity,
+                                        "mi-draft2")) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
         "The current implemention only supports \"mi\" integrity scheme.");

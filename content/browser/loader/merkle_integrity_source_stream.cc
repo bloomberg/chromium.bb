@@ -19,7 +19,7 @@ namespace {
 // maximum record size in TLS and the default maximum frame size in HTTP/2.
 constexpr uint64_t kMaxRecordSize = 16 * 1024;
 
-constexpr char kMiSha256Header[] = "mi-sha256=";
+constexpr char kMiSha256Header[] = "mi-sha256-draft2=";
 constexpr size_t kMiSha256HeaderLength = sizeof(kMiSha256Header) - 1;
 
 // Copies as many bytes from |input| as will fit in |output| and advances both.

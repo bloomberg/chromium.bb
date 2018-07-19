@@ -17,13 +17,13 @@ const int kBigBufferSize = 4096;
 const int kSmallBufferSize = 1;
 
 const char kMIEmptyBody[] =
-    "mi-sha256=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0";
+    "mi-sha256-draft2=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0";
 const char kMISingleRecord[] =
-    "mi-sha256=dcRDgR2GM35DluAV13PzgnG6-pvQwPywfFvAu1UeFrs";
+    "mi-sha256-draft2=dcRDgR2GM35DluAV13PzgnG6-pvQwPywfFvAu1UeFrs";
 const char kMIMultipleRecords[] =
-    "mi-sha256=IVa9shfs0nyKEhHqtB3WVNANJ2Njm5KjQLjRtnbkYJ4";
+    "mi-sha256-draft2=IVa9shfs0nyKEhHqtB3WVNANJ2Njm5KjQLjRtnbkYJ4";
 const char kMIWholeNumberOfRecords[] =
-    "mi-sha256=L2vdwBplKvIr0ZPkcuskWZfEVDgVdHa6aD363UpKuZs";
+    "mi-sha256-draft2=L2vdwBplKvIr0ZPkcuskWZfEVDgVdHa6aD363UpKuZs";
 
 enum class ReadResultType {
   // Each call to AddReadResult is a separate read from the lower layer
@@ -180,7 +180,7 @@ TEST_P(MerkleIntegritySourceStreamTest, MalformedMIHeader) {
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, WrongMIAttributeName) {
-  Init("mi-sha255=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0");
+  Init("mi-sha256-draft1=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -188,7 +188,7 @@ TEST_P(MerkleIntegritySourceStreamTest, WrongMIAttributeName) {
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, HashTooShort) {
-  Init("mi-sha256=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoA");
+  Init("mi-sha256-draft2=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoA");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -196,7 +196,7 @@ TEST_P(MerkleIntegritySourceStreamTest, HashTooShort) {
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, HashTooLong) {
-  Init("mi-sha256=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0A");
+  Init("mi-sha256-draft2=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0A");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -470,7 +470,7 @@ TEST_P(MerkleIntegritySourceStreamTest, Truncated) {
 // represent the empty string. Update the code and possibly this test depending
 // on how https://github.com/martinthomson/http-mice/issues/3 is resolved.
 TEST_P(MerkleIntegritySourceStreamTest, EmptyFinalRecord) {
-  Init("mi-sha256=JJnIuaOEc2247K9V88VQAQy1GJuQ6ylaVM7mG69QkE4");
+  Init("mi-sha256-draft2=JJnIuaOEc2247K9V88VQAQy1GJuQ6ylaVM7mG69QkE4");
   const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
   const std::string kMessage(
       "When I grow up, I want to be a watermelon!! \xf0\x9f\x8d\x89");

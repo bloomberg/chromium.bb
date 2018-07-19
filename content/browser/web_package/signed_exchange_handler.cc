@@ -47,7 +47,7 @@ namespace content {
 
 namespace {
 
-constexpr char kMiHeader[] = "MI";
+constexpr char kMiHeader[] = "MI-Draft2";
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
@@ -524,7 +524,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   if (!response_head.headers->EnumerateHeader(nullptr, kMiHeader,
                                               &mi_header_value)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(), "Signed exchange has no MI: header");
+        devtools_proxy_.get(), "Signed exchange has no MI-Draft2: header");
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
