@@ -710,6 +710,9 @@ TEST_P(FrameThrottlingTest,
   // layout, but should still unthrottle the frame.
   frame_element->setAttribute(styleAttr, "transform: translateY(0px)");
   CompositeFrame();  // Unthrottle the frame.
+
+  EXPECT_FALSE(
+      frame_element->contentDocument()->View()->ShouldThrottleRendering());
   CompositeFrame();  // Handle the pending visual update of the unthrottled
                      // frame.
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
