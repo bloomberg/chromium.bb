@@ -62,6 +62,7 @@ class Tab : public gfx::AnimationDelegate,
   // hide the close button on inactive tabs. Any smaller and they're too easy
   // to hit on accident.
   static constexpr int kMinimumContentsWidthForCloseButtons = 68;
+  static constexpr int kTouchableMinimumContentsWidthForCloseButtons = 100;
 
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
@@ -362,6 +363,10 @@ class Tab : public gfx::AnimationDelegate,
   // get too small, we let the tab contents take the full width, to maximize
   // visible area.
   bool extra_padding_before_content_ = false;
+
+  // When both the close button and alert indicator are visible, we add extra
+  // padding between them to space them out visually.
+  bool extra_alert_indicator_padding_ = false;
 
   // The current color of the alert indicator and close button icons.
   SkColor button_color_ = SK_ColorTRANSPARENT;

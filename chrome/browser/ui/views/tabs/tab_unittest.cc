@@ -115,13 +115,17 @@ class TabTest : public ChromeViewsTestBase {
   TabTest() {}
   ~TabTest() override {}
 
-  static views::ImageButton* GetCloseButton(const Tab& tab) {
-    return tab.close_button_;
-  }
-
   static TabIcon* GetTabIcon(const Tab& tab) { return tab.icon_; }
 
   static views::Label* GetTabTitle(const Tab& tab) { return tab.title_; }
+
+  static views::ImageButton* GetAlertIndicator(const Tab& tab) {
+    return tab.alert_indicator_button_;
+  }
+
+  static views::ImageButton* GetCloseButton(const Tab& tab) {
+    return tab.close_button_;
+  }
 
   static int GetTitleWidth(const Tab& tab) {
     return tab.title_->bounds().width();
@@ -613,7 +617,7 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
   EXPECT_LT(icon->x(), icon_x);
 }
 
-TEST_F(TabTest, ExtraPaddingNotShownOnSmallActiveTab) {
+TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
   Widget widget;
   InitWidget(&widget);
 
@@ -634,7 +638,7 @@ TEST_F(TabTest, ExtraPaddingNotShownOnSmallActiveTab) {
   EXPECT_LT(icon->x(), icon_x);
 }
 
-TEST_F(TabTest, ExtraPaddingShownOnSiteWithoutFavicon) {
+TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
   Widget widget;
   InitWidget(&widget);
 
@@ -654,4 +658,34 @@ TEST_F(TabTest, ExtraPaddingShownOnSiteWithoutFavicon) {
   EXPECT_FALSE(icon->visible());
   // Title should be placed where the favicon was.
   EXPECT_EQ(icon_x, GetTabTitle(tab)->x());
+}
+
+TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
+  if (!ui::MaterialDesignController::IsRefreshUi()) {
+    // Extra alert padding not shown pre-Refresh.
+    return;
+  }
+
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController controller;
+  controller.set_active_tab(true);
+  Tab tab(&controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  TabRendererData data;
+  data.alert_state = TabAlertState::AUDIO_PLAYING;
+  tab.SetData(data);
+
+  tab.SetBounds(0, 0, 200, 50);
+  const views::View* close = GetCloseButton(tab);
+  const views::View* alert = GetAlertIndicator(tab);
+  const int original_spacing = close->x() - alert->bounds().right();
+
+  tab.SetBounds(0, 0, 60, 50);
+  EXPECT_FALSE(GetTabIcon(tab)->visible());
+  EXPECT_TRUE(close->visible());
+  EXPECT_TRUE(alert->visible());
+  // The alert indicator moves closer because the extra padding is gone.
+  EXPECT_LT(close->x() - alert->bounds().right(), original_spacing);
 }
