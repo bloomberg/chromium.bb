@@ -129,7 +129,8 @@ void InspectorSession::SendProtocolResponse(int call_id,
 }
 
 String InspectorSession::GetStateToSend() {
-  state_->setString(kV8StateKey, ToCoreString(v8_session_->stateJSON()));
+  if (v8_session_)
+    state_->setString(kV8StateKey, ToCoreString(v8_session_->stateJSON()));
   String state_to_send = state_->serialize();
   if (state_to_send == last_sent_state_)
     state_to_send = String();
