@@ -415,7 +415,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
       ChangeState(KeyboardControllerState::HIDDEN);
 
       for (KeyboardControllerObserver& observer : observer_list_)
-        observer.OnKeyboardHidden();
+        observer.OnKeyboardHidden(reason == HIDE_REASON_SYSTEM_TEMPORARY);
       ui_->EnsureCaretInWorkArea(gfx::Rect());
 
       break;

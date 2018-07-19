@@ -56,7 +56,7 @@ class ASH_EXPORT VirtualKeyboardController
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardDisabled() override;
-  void OnKeyboardHidden() override;
+  void OnKeyboardHidden(bool is_temporary_hide) override;
 
   // SessionObserver
   void OnActiveUserSessionChanged(const AccountId& account_id) override;

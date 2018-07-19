@@ -303,7 +303,12 @@ void VirtualKeyboardController::OnKeyboardDisabled() {
       chromeos::input_method::mojom::ImeKeyset::kNone);
 }
 
-void VirtualKeyboardController::OnKeyboardHidden() {
+void VirtualKeyboardController::OnKeyboardHidden(bool is_temporary_hide) {
+  // The keyboard may temporarily hide (e.g. to change container behaviors).
+  // The keyset should not be reset in this case.
+  if (is_temporary_hide)
+    return;
+
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       chromeos::input_method::mojom::ImeKeyset::kNone);
 

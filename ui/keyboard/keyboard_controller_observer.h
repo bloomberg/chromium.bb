@@ -59,7 +59,9 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
 
   // Called when the keyboard has been hidden and the hiding animation finished
   // successfully. This is same as |state| == HIDDEN on OnStateChanged.
-  virtual void OnKeyboardHidden() {}
+  // When |is_temporary_hide| is true, this hide is immediately followed by a
+  // show (e.g. when changing to floating keyboard)
+  virtual void OnKeyboardHidden(bool is_temporary_hide) {}
 
   // Called when the state changed.
   virtual void OnStateChanged(KeyboardControllerState state) {}
