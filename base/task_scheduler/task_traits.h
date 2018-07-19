@@ -24,7 +24,12 @@ enum class TaskPriority {
   // This will always be equal to the lowest priority available.
   LOWEST = 0,
   // User won't notice if this task takes an arbitrarily long time to complete.
+  // TODO(gab): Eliminate BACKGROUND in favor of BEST_EFFORT.
   BACKGROUND = LOWEST,
+  // This task will only be scheduled when machine resources are available. Once
+  // running, it may be descheduled if higher priority work arrives (in this
+  // process or another) and its running on a non-critical thread.
+  BEST_EFFORT = BACKGROUND,
   // This task affects UI or responsiveness of future user interactions. It is
   // not an immediate response to a user interaction.
   // Examples:
