@@ -29,8 +29,7 @@ using media_router::MediaRouterDialogControllerWebUIImpl;
 namespace {
 
 gfx::Image GetActionIcon(ToolbarActionViewController* action) {
-  constexpr auto kTestButtonState = ToolbarActionButtonState::kNormal;
-  return action->GetIcon(nullptr, gfx::Size(), kTestButtonState);
+  return action->GetIcon(nullptr, gfx::Size());
 }
 
 }  // namespace

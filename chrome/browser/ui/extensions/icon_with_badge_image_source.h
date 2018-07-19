@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/toolbar/toolbar_action_button_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -48,7 +47,6 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   void set_paint_blocked_actions_decoration(bool should_paint) {
     paint_blocked_actions_decoration_ = should_paint;
   }
-  void set_state(ToolbarActionButtonState state) { state_ = state; }
   bool grayscale() const { return grayscale_; }
   bool paint_page_action_decoration() const {
     return paint_page_action_decoration_;
@@ -56,7 +54,6 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   bool paint_blocked_actions_decoration() const {
     return paint_blocked_actions_decoration_;
   }
-  ToolbarActionButtonState state() const { return state_; }
 
  private:
   // gfx::CanvasImageSource:
@@ -97,8 +94,6 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   // Whether or not to paint a decoration to indicate that the extension has
   // had actions blocked.
   bool paint_blocked_actions_decoration_ = false;
-
-  ToolbarActionButtonState state_ = ToolbarActionButtonState::kNormal;
 
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };

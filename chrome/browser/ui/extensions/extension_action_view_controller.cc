@@ -82,13 +82,12 @@ void ExtensionActionViewController::SetDelegate(
 
 gfx::Image ExtensionActionViewController::GetIcon(
     content::WebContents* web_contents,
-    const gfx::Size& size,
-    ToolbarActionButtonState state) {
+    const gfx::Size& size) {
   if (!ExtensionIsValid())
     return gfx::Image();
 
   return gfx::Image(
-      gfx::ImageSkia(GetIconImageSource(web_contents, size, state), size));
+      gfx::ImageSkia(GetIconImageSource(web_contents, size), size));
 }
 
 base::string16 ExtensionActionViewController::GetActionName() const {
@@ -283,8 +282,7 @@ std::unique_ptr<IconWithBadgeImageSource>
 ExtensionActionViewController::GetIconImageSourceForTesting(
     content::WebContents* web_contents,
     const gfx::Size& size) {
-  return GetIconImageSource(web_contents, size,
-                            ToolbarActionButtonState::kNormal);
+  return GetIconImageSource(web_contents, size);
 }
 
 ExtensionActionViewController*
@@ -371,8 +369,7 @@ void ExtensionActionViewController::OnPopupClosed() {
 std::unique_ptr<IconWithBadgeImageSource>
 ExtensionActionViewController::GetIconImageSource(
     content::WebContents* web_contents,
-    const gfx::Size& size,
-    ToolbarActionButtonState state) {
+    const gfx::Size& size) {
   int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::unique_ptr<IconWithBadgeImageSource> image_source(
       new IconWithBadgeImageSource(size));
@@ -400,7 +397,6 @@ ExtensionActionViewController::GetIconImageSource(
       toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode();
 
   bool has_blocked_actions = HasBeenBlocked(web_contents);
-  image_source->set_state(state);
   image_source->set_paint_blocked_actions_decoration(has_blocked_actions);
   image_source->set_paint_page_action_decoration(
       !has_blocked_actions && is_overflow &&

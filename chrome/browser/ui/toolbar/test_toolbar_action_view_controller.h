@@ -19,8 +19,7 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   std::string GetId() const override;
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
   gfx::Image GetIcon(content::WebContents* web_contents,
-                     const gfx::Size& size,
-                     ToolbarActionButtonState state) override;
+                     const gfx::Size& size) override;
   base::string16 GetActionName() const override;
   base::string16 GetAccessibleName(content::WebContents* web_contents)
       const override;

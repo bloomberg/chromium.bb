@@ -567,8 +567,7 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
   data->provider().SetDragImage(
       view_controller
           ->GetIcon(GetCurrentWebContents(),
-                    toolbar_actions_bar_->GetViewSize(),
-                    ToolbarActionButtonState::kNormal)
+                    toolbar_actions_bar_->GetViewSize())
           .AsImageSkia(),
       press_pt.OffsetFromOrigin());
   // Fill in the remaining info.
