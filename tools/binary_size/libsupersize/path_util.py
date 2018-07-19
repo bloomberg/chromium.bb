@@ -185,3 +185,9 @@ def GetReadElfPath(tool_prefix):
   if tool_prefix[-5:] == 'llvm-':
     return 'readelf'
   return tool_prefix + 'readelf'
+
+
+def GetBcAnalyzerPath(tool_prefix):
+  if tool_prefix[-5:] != 'llvm-':
+    raise ValueError('BC analyzer is only supported in LLVM.')
+  return tool_prefix + 'bcanalyzer'
