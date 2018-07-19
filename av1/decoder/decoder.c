@@ -202,6 +202,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
     av1_dealloc_dec_jobs(&pbi->tile_mt_info);
   }
 
+  aom_free(pbi->frame_header);
   av1_dec_free_cb_buf(pbi);
 #if CONFIG_ACCOUNTING
   aom_accounting_clear(&pbi->accounting);

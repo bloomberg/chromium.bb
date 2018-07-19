@@ -206,11 +206,13 @@ typedef struct AV1Decoder {
   int operating_point;
   int current_operating_point;
   int seen_frame_header;
+  uint8_t *frame_header;  // Buffer for storing the original frame_buffer_obu
+  size_t frame_header_capacity;  // Size of the frame_header buffer
+  size_t frame_header_size;      // Size of the original frame_buffer_obu
 
   // State if the camera frame header is already decoded while
   // large_scale_tile = 1.
   int camera_frame_header_ready;
-  size_t frame_header_size;
   DataBuffer obu_size_hdr;
   int output_frame_width_in_tiles_minus_1;
   int output_frame_height_in_tiles_minus_1;
