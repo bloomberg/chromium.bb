@@ -1141,10 +1141,8 @@ void Shell::Init(
   toplevel_window_event_handler_ =
       std::make_unique<ToplevelWindowEventHandler>();
 
-  if (config != Config::MASH_DEPRECATED) {
-    system_gesture_filter_.reset(new SystemGestureEventFilter);
-    AddPreTargetHandler(system_gesture_filter_.get());
-  }
+  system_gesture_filter_ = std::make_unique<SystemGestureEventFilter>();
+  AddPreTargetHandler(system_gesture_filter_.get());
 
   sticky_keys_controller_.reset(new StickyKeysController);
   screen_pinning_controller_ = std::make_unique<ScreenPinningController>();
