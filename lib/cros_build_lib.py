@@ -419,7 +419,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                append_to_file=False, chroot_args=None, debug_level=logging.INFO,
                error_code_ok=False, int_timeout=1, kill_timeout=1,
                log_output=False, stdout_to_pipe=False, capture_output=False,
-               quiet=False, mute_output=None, stream_log=False):
+               quiet=False, mute_output=None):
   """Runs a command.
 
   Args:
@@ -471,8 +471,6 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       |combine_stdout_stderr| to True.
     mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
       None, which bases muting on |debug_level|.
-    stream_log: Stream output to the logs as the command runs. Implies
-      log_output, stdout_to_pipe, combine_stdout_stderr.
 
   Returns:
     A CommandResult object.
@@ -486,9 +484,6 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   if quiet:
     debug_level = logging.DEBUG
     stdout_to_pipe, combine_stdout_stderr = True, True
-
-  if stream_log:
-    log_output, stdout_to_pipe, combine_stdout_stderr = True, True, True
 
   # Set default for variables.
   stdout = None
@@ -547,9 +542,6 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   elif input is not None:
     stdin = input
     input = None
-
-  # stream_log needs PIPE.
-  assert not stream_log or stdout == subprocess.PIPE
 
   if isinstance(cmd, basestring):
     if not shell:
@@ -619,18 +611,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                                       kill_timeout, cmd, old_sigterm))
 
     try:
-      if stream_log:
-        logging.log(debug_level, '(stdout/stderr):\n')
-        cmd_result.output = ''
-        while True:
-          output = proc.stdout.readline()
-          if not len(output):
-            break
-          logging.log(debug_level, output.strip())
-          cmd_result.output += output
-        proc.wait()
-      else:
-        (cmd_result.output, cmd_result.error) = proc.communicate(input)
+      (cmd_result.output, cmd_result.error) = proc.communicate(input)
     finally:
       if use_signals:
         signal.signal(signal.SIGINT, old_sigint)
@@ -648,7 +629,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
     cmd_result.returncode = proc.returncode
 
-    if log_output and not stream_log:
+    if log_output:
       if cmd_result.output:
         logging.log(debug_level, '(stdout):\n%s', cmd_result.output)
       if cmd_result.error:
