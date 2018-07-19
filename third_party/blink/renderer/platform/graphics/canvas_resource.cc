@@ -96,16 +96,20 @@ bool CanvasResource::PrepareTransferableResource(
     MailboxSyncMode sync_mode) {
   DCHECK(IsValid());
 
+  DCHECK(out_callback);
   scoped_refptr<CanvasResource> this_ref(this);
   auto func = WTF::Bind(&ReleaseFrameResources, provider_,
                         WTF::Passed(std::move(this_ref)));
   *out_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
-  if (SupportsAcceleratedCompositing()) {
-    return PrepareAcceleratedTransferableResource(out_resource, sync_mode);
-  }
+  if (out_resource) {
+    if (SupportsAcceleratedCompositing()) {
+      return PrepareAcceleratedTransferableResource(out_resource, sync_mode);
+    }
 
-  return PrepareUnacceleratedTransferableResource(out_resource);
+    return PrepareUnacceleratedTransferableResource(out_resource);
+  }
+  return true;
 }
 
 bool CanvasResource::PrepareAcceleratedTransferableResource(
@@ -136,10 +140,16 @@ bool CanvasResource::PrepareUnacceleratedTransferableResource(
     viz::TransferableResource* out_resource) {
   TRACE_EVENT0("blink",
                "CanvasResource::PrepareUnacceleratedTransferableResource");
+  const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox(kVerifiedSyncToken);
+  if (mailbox.IsZero())
+    return false;
 
-  // TODO: add support for shared bitmap
-  NOTREACHED();
-  return false;
+  *out_resource = viz::TransferableResource::MakeSoftware(
+      mailbox, gfx::Size(Size()), color_params_.TransferableResourceFormat());
+
+  out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
+
+  return true;
 }
 
 GrContext* CanvasResource::GetGrContext() const {
@@ -568,9 +578,6 @@ CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
     SkFilterQuality filter_quality)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       size_(size) {
-  if (!Provider())
-    return;
-
   shared_memory_ = viz::bitmap_allocation::AllocateMappedBitmap(
       gfx::Size(Size()), ColorParams().TransferableResourceFormat());
 
@@ -580,7 +587,7 @@ CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
   shared_bitmap_id_ = viz::SharedBitmap::GenerateId();
 
   CanvasResourceDispatcher* resource_dispatcher =
-      Provider()->ResourceDispatcher();
+      Provider() ? Provider()->ResourceDispatcher() : nullptr;
   if (resource_dispatcher) {
     resource_dispatcher->DidAllocateSharedBitmap(
         viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
