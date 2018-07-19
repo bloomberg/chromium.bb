@@ -13,7 +13,7 @@ goog.require('mr.TestProvider');
 
 describe('Tests TestProvider', function() {
   const INVALID_SOURCE = 'foo:bar';
-  const TEST_SOURCE = 'test:test';
+  const TEST_SOURCE = 'https://www.example.com/presentation.html';
   const PRESENTATION_URL = 'https://www.google.com';
   let mockClock;
   let provider;
