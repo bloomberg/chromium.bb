@@ -435,12 +435,12 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     // https://crbug.com/799030
     for (const auto& web_audio_track : web_stream.AudioTracks()) {
       auto it = FindSenderForTrack(web_audio_track);
-      if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()))
+      if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()).ok())
         senders_.erase(it);
     }
     for (const auto& web_video_track : web_stream.VideoTracks()) {
       auto it = FindSenderForTrack(web_video_track);
-      if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()))
+      if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()).ok())
         senders_.erase(it);
     }
     return senders_size_before_remove > senders_.size();

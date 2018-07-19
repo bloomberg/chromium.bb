@@ -1532,12 +1532,11 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
     return;
   }
 
-  if (!peer_handler_->RemoveTrack(sender->web_sender())) {
+  auto error_or_transceiver = peer_handler_->RemoveTrack(sender->web_sender());
+  if (!error_or_transceiver.ok()) {
     // Operation aborted. This indicates that the sender is no longer used by
     // the peer connection, i.e. that it was removed due to setting a remote
     // description of type "rollback".
-    // Note: Until the WebRTC library supports re-using senders, a sender will
-    // also stop being used as a result of being removed.
     return;
   }
   // Successfully removing the track results in the sender's track property
@@ -1843,6 +1842,14 @@ void RTCPeerConnection::DidRemoveReceiverPlanB(
   // Mute track and fire "onmute" if not already muted.
   track->Component()->Source()->SetReadyState(
       MediaStreamSource::kReadyStateMuted);
+}
+
+void RTCPeerConnection::DidModifyTransceivers(
+    std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceiver,
+    bool is_remote_description) {
+  DCHECK_EQ(sdp_semantics_, WebRTCSdpSemantics::kUnifiedPlan);
+  // TODO(hbos): Exercise this codepath. https://crbug.com/777617
+  NOTREACHED();
 }
 
 void RTCPeerConnection::DidAddRemoteDataChannel(

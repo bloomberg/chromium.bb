@@ -149,7 +149,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> AddTrack(
       const blink::WebMediaStreamTrack& web_track,
       const blink::WebVector<blink::WebMediaStream>& web_streams) override;
-  bool RemoveTrack(blink::WebRTCRtpSender* web_sender) override;
+  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> RemoveTrack(
+      blink::WebRTCRtpSender* web_sender) override;
 
   blink::WebRTCDataChannelHandler* CreateDataChannel(
       const blink::WebString& label,
@@ -202,6 +203,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnRenegotiationNeeded();
   void OnAddReceiverPlanB(RtpReceiverState receiver_state);
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
+  void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
+                            bool is_remote_description);
   void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
   void OnIceCandidate(const std::string& sdp,
                       const std::string& sdp_mid,
@@ -245,7 +248,18 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
           error_or_sender);
+  bool RemoveTrackPlanB(blink::WebRTCRtpSender* web_sender);
+  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+  RemoveTrackUnifiedPlan(blink::WebRTCRtpSender* web_sender);
+  void RemoveTrackUnifiedPlanOnSignalingThread(
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+      TransceiverStateSurfacer* transceiver_state_surfacer,
+      bool* result);
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
+  std::vector<std::unique_ptr<RTCRtpTransceiver>>::iterator FindTransceiver(
+      uintptr_t id);
+  std::unique_ptr<RTCRtpTransceiver> CreateOrUpdateTransceiver(
+      RtpTransceiverState transceiver_state);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
@@ -296,6 +310,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // corresponding content layer receivers. The set of receivers is needed in
   // order to keep its associated track's and streams' adapters alive.
   std::map<uintptr_t, std::unique_ptr<RTCRtpReceiver>> rtp_receivers_;
+  // Content layer correspondents of |webrtc::RtpTransceiverInterface|.
+  std::vector<std::unique_ptr<RTCRtpTransceiver>> rtp_transceivers_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 

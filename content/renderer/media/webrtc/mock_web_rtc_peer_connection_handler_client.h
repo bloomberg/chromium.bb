@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 
 namespace content {
 
@@ -39,6 +40,12 @@ class MockWebRTCPeerConnectionHandlerClient
       std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
     DidRemoveReceiverPlanBForMock(&web_rtp_receiver);
   }
+  void DidModifyTransceivers(
+      std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+          web_transceivers,
+      bool is_remote_description) override {
+    DidModifyTransceiversForMock(&web_transceivers, is_remote_description);
+  }
   MOCK_METHOD1(DidAddRemoteDataChannel, void(blink::WebRTCDataChannelHandler*));
   MOCK_METHOD0(ReleasePeerConnectionHandler, void());
 
@@ -48,6 +55,9 @@ class MockWebRTCPeerConnectionHandlerClient
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
   MOCK_METHOD1(DidRemoveReceiverPlanBForMock,
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
+  MOCK_METHOD2(DidModifyTransceiversForMock,
+               void(std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>*,
+                    bool));
 
   void didGenerateICECandidateWorker(
       scoped_refptr<blink::WebRTCICECandidate> candidate);

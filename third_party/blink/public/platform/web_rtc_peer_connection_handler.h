@@ -105,9 +105,12 @@ class WebRTCPeerConnectionHandler {
   virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> AddTrack(
       const WebMediaStreamTrack&,
       const WebVector<WebMediaStream>&) = 0;
-  // Removes the sender, returning whether successful. On success, the sender's
-  // track must have been set to null.
-  virtual bool RemoveTrack(WebRTCRtpSender*) = 0;
+  // Removes the sender.
+  // In Plan B: Returns OK() with value nullptr on success. The sender's track
+  // must be nulled by the caller.
+  // In Unified Plan: Returns OK() with the updated transceiver state.
+  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> RemoveTrack(
+      WebRTCRtpSender*) = 0;
   virtual void Stop() = 0;
 
   // Origin Trial - RtcPeerConnectionId
