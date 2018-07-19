@@ -7,13 +7,13 @@
 namespace device {
 
 GamepadSharedBuffer::GamepadSharedBuffer() {
-  base::SharedMemoryCreateOptions options;
-  options.size = sizeof(GamepadHardwareBuffer);
-  options.share_read_only = true;
-  bool res = shared_memory_.Create(options) && shared_memory_.Map(options.size);
-  CHECK(res);
+  base::MappedReadOnlyRegion mapped_region =
+      base::ReadOnlySharedMemoryRegion::Create(sizeof(GamepadHardwareBuffer));
+  CHECK(mapped_region.IsValid());
+  shared_memory_region_ = std::move(mapped_region.region);
+  shared_memory_mapping_ = std::move(mapped_region.mapping);
 
-  void* mem = shared_memory_.memory();
+  void* mem = shared_memory_mapping_.memory();
   DCHECK(mem);
   hardware_buffer_ = new (mem) GamepadHardwareBuffer();
   memset(&(hardware_buffer_->data), 0, sizeof(Gamepads));
@@ -21,8 +21,9 @@ GamepadSharedBuffer::GamepadSharedBuffer() {
 
 GamepadSharedBuffer::~GamepadSharedBuffer() = default;
 
-base::SharedMemory* GamepadSharedBuffer::shared_memory() {
-  return &shared_memory_;
+base::ReadOnlySharedMemoryRegion
+GamepadSharedBuffer::DuplicateSharedMemoryRegion() {
+  return shared_memory_region_.Duplicate();
 }
 
 Gamepads* GamepadSharedBuffer::buffer() {

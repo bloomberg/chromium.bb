@@ -21,7 +21,7 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
 
 void GamepadSharedMemoryReader::SendStartMessage() {
   if (gamepad_monitor_) {
-    gamepad_monitor_->GamepadStartPolling(&renderer_shared_buffer_handle_);
+    gamepad_monitor_->GamepadStartPolling(&renderer_shared_buffer_region_);
   }
 }
 
@@ -39,24 +39,26 @@ void GamepadSharedMemoryReader::Start(blink::WebGamepadListener* listener) {
 
   // If we don't get a valid handle from the browser, don't try to Map (we're
   // probably out of memory or file handles).
-  bool is_valid = renderer_shared_buffer_handle_.is_valid();
+  bool is_valid = renderer_shared_buffer_region_.IsValid();
   UMA_HISTOGRAM_BOOLEAN("Gamepad.ValidSharedMemoryHandle", is_valid);
 
   if (!is_valid)
     return;
 
-  renderer_shared_buffer_mapping_ = renderer_shared_buffer_handle_->Map(
-      sizeof(device::GamepadHardwareBuffer));
-  CHECK(renderer_shared_buffer_mapping_);
-  void* memory = renderer_shared_buffer_mapping_.get();
+  renderer_shared_buffer_mapping_ = renderer_shared_buffer_region_.Map();
+  CHECK(renderer_shared_buffer_mapping_.IsValid());
+  const void* memory = renderer_shared_buffer_mapping_.memory();
   CHECK(memory);
   gamepad_hardware_buffer_ =
-      static_cast<device::GamepadHardwareBuffer*>(memory);
+      static_cast<const device::GamepadHardwareBuffer*>(memory);
 }
 
 void GamepadSharedMemoryReader::Stop() {
   DCHECK(listener_);
   listener_ = nullptr;
+  renderer_shared_buffer_region_ = base::ReadOnlySharedMemoryRegion();
+  renderer_shared_buffer_mapping_ = base::ReadOnlySharedMemoryMapping();
+  gamepad_hardware_buffer_ = nullptr;
 
   SendStopMessage();
 }
@@ -74,7 +76,7 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
   device::Gamepads read_into;
   TRACE_EVENT0("GAMEPAD", "SampleGamepads");
 
-  if (!renderer_shared_buffer_handle_.is_valid())
+  if (!renderer_shared_buffer_region_.IsValid())
     return;
 
   // Only try to read this many times before failing to avoid waiting here

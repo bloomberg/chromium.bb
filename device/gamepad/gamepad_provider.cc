@@ -85,17 +85,9 @@ GamepadProvider::~GamepadProvider() {
   DCHECK(data_fetchers_.empty());
 }
 
-base::SharedMemoryHandle GamepadProvider::DuplicateSharedMemoryHandle() {
-  return gamepad_shared_buffer_->shared_memory()->handle().Duplicate();
-}
-
-mojo::ScopedSharedBufferHandle GamepadProvider::GetSharedBufferHandle() {
-  // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory in
-  // GamepadSharedBuffer. See crbug.com/670655 for details
-  return mojo::WrapSharedMemoryHandle(
-      gamepad_shared_buffer_->shared_memory()->GetReadOnlyHandle(),
-      sizeof(GamepadHardwareBuffer),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+base::ReadOnlySharedMemoryRegion
+GamepadProvider::DuplicateSharedMemoryRegion() {
+  return gamepad_shared_buffer_->DuplicateSharedMemoryRegion();
 }
 
 void GamepadProvider::GetCurrentGamepadData(Gamepads* data) {

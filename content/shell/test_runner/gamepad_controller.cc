@@ -14,6 +14,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/public/web/blink.h"
@@ -154,11 +155,18 @@ void GamepadControllerBindings::SetDualRumbleVibrationActuator(int index,
 GamepadController::GamepadController()
     : observer_(nullptr), binding_(this), weak_factory_(this) {
   size_t buffer_size = sizeof(device::GamepadHardwareBuffer);
-  buffer_ = mojo::SharedBufferHandle::Create(buffer_size);
-  CHECK(buffer_.is_valid());
-  mapping_ = buffer_->Map(buffer_size);
-  CHECK(mapping_);
-  gamepads_ = new (mapping_.get()) device::GamepadHardwareBuffer();
+  // Use mojo to delegate the creation of shared memory to the broker process.
+  mojo::ScopedSharedBufferHandle mojo_buffer =
+      mojo::SharedBufferHandle::Create(buffer_size);
+  base::WritableSharedMemoryRegion writable_region =
+      mojo::UnwrapWritableSharedMemoryRegion(std::move(mojo_buffer));
+  shared_memory_mapping_ = writable_region.Map();
+  shared_memory_region_ = base::WritableSharedMemoryRegion::ConvertToReadOnly(
+      std::move(writable_region));
+  CHECK(shared_memory_region_.IsValid());
+  CHECK(shared_memory_mapping_.IsValid());
+  gamepads_ =
+      new (shared_memory_mapping_.memory()) device::GamepadHardwareBuffer();
 
   Reset();
 }
@@ -193,8 +201,7 @@ void GamepadController::OnInterfaceRequest(
 
 void GamepadController::GamepadStartPolling(
     GamepadStartPollingCallback callback) {
-  std::move(callback).Run(
-      buffer_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY));
+  std::move(callback).Run(shared_memory_region_.Duplicate());
 }
 
 void GamepadController::GamepadStopPolling(

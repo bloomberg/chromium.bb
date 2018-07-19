@@ -40,6 +40,8 @@ _CONFIG = [
             'base::OptionalOrNullptr',
             'base::RefCountedData',
             'base::CreateSequencedTaskRunnerWithTraits',
+            'base::ReadOnlySharedMemoryMapping',
+            'base::ReadOnlySharedMemoryRegion',
             'base::SequencedTaskRunner',
             'base::SingleThreadTaskRunner',
             'base::ScopedFD',

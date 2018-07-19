@@ -9,6 +9,10 @@ mojom_component("mojom") {
     "gamepad.mojom",
   ]
 
+  deps = [
+    "//mojo/public/mojom/base",
+  ]
+
   output_prefix = "gamepad_mojom"
   macro_prefix = "GAMEPAD_MOJOM"
 }

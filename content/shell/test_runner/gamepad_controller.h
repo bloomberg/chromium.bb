@@ -8,6 +8,7 @@
 #include <bitset>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "device/gamepad/public/cpp/gamepads.h"
@@ -60,8 +61,8 @@ class TEST_RUNNER_EXPORT GamepadController
 
   device::mojom::GamepadObserverPtr observer_;
   mojo::Binding<device::mojom::GamepadMonitor> binding_;
-  mojo::ScopedSharedBufferHandle buffer_;
-  mojo::ScopedSharedBufferMapping mapping_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   device::GamepadHardwareBuffer* gamepads_;
   std::bitset<device::Gamepads::kItemsLengthCap> missed_dispatches_;
