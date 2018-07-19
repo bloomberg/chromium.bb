@@ -91,6 +91,8 @@ void WebView::SetWebContents(content::WebContents* replacement) {
   }
   AttachWebContents();
   NotifyAccessibilityWebContentsChanged();
+
+  MaybeEnableAutoResize();
 }
 
 void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
@@ -107,6 +109,14 @@ void WebView::LoadInitialURL(const GURL& url) {
 
 void WebView::SetFastResize(bool fast_resize) {
   holder_->set_fast_resize(fast_resize);
+}
+
+void WebView::EnableSizingFromWebContents(const gfx::Size& min_size,
+                                          const gfx::Size& max_size) {
+  DCHECK(!max_size.IsEmpty());
+  min_size_ = min_size;
+  max_size_ = max_size;
+  MaybeEnableAutoResize();
 }
 
 void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
@@ -271,6 +281,10 @@ bool WebView::EmbedsFullscreenWidget() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsObserver implementation:
 
+void WebView::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  MaybeEnableAutoResize();
+}
+
 void WebView::RenderViewReady() {
   UpdateCrashedOverlayView();
   NotifyAccessibilityWebContentsChanged();
@@ -283,6 +297,8 @@ void WebView::RenderViewDeleted(content::RenderViewHost* render_view_host) {
 
 void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
                                     content::RenderViewHost* new_host) {
+  MaybeEnableAutoResize();
+
   if (HasFocus())
     OnFocus();
   NotifyAccessibilityWebContentsChanged();
@@ -324,6 +340,14 @@ void WebView::OnWebContentsFocused(
 void WebView::RenderProcessGone(base::TerminationStatus status) {
   UpdateCrashedOverlayView();
   NotifyAccessibilityWebContentsChanged();
+}
+
+void WebView::ResizeDueToAutoResize(content::WebContents* source,
+                                    const gfx::Size& new_size) {
+  if (source != web_contents())
+    return;
+
+  SetPreferredSize(new_size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,6 +433,17 @@ std::unique_ptr<content::WebContents> WebView::CreateWebContents(
   }
 
   return contents;
+}
+
+void WebView::MaybeEnableAutoResize() {
+  if (max_size_.IsEmpty() || !web_contents() ||
+      !web_contents()->GetRenderWidgetHostView()) {
+    return;
+  }
+
+  content::RenderWidgetHostView* render_widget_host_view =
+      web_contents()->GetRenderWidgetHostView();
+  render_widget_host_view->EnableAutoResize(min_size_, max_size_);
 }
 
 }  // namespace views
