@@ -15,7 +15,7 @@ $VerifiedPlatform linux-arm64 linux-armv6l linux-mips64
 infra/tools/luci/vpython/${platform} git_revision:b9c4670197dcefd8762d6e509302acd3efc6e303
 
 # LUCI editor
-infra/tools/luci/led/${platform} git_revision:7ba61969ccbe1f9679661555f72ca947da508a70
+infra/tools/luci/led/${platform} git_revision:f1bd290f360830f99bd414e0141523c59bacd098
 
 # Mac toolchain installer
 infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a
