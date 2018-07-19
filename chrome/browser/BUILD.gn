@@ -2285,6 +2285,8 @@ jumbo_split_static_library("browser") {
       "android/tab_state.h",
       "android/tab_web_contents_delegate_android.cc",
       "android/tab_web_contents_delegate_android.h",
+      "android/tasks/task_tab_helper.cc",
+      "android/tasks/task_tab_helper.h",
       "android/thumbnail/scoped_ptr_expiring_cache.h",
       "android/thumbnail/thumbnail.cc",
       "android/thumbnail/thumbnail.h",
