@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -52,6 +53,12 @@ public class ScrimView extends View implements View.OnClickListener {
 
         /** An observer for visibility and input related events. */
         public final ScrimObserver observer;
+
+        /**
+         * The background color for the {@link ScrimView}. If null, a default color will be set as
+         * the background.
+         */
+        public Integer backgroundColor;
 
         /**
          * Build a new set of params to control the scrim.
@@ -112,6 +119,9 @@ public class ScrimView extends View implements View.OnClickListener {
     /** The view that the scrim should exist in. */
     private final ViewGroup mParent;
 
+    /** The default background color if {@link ScrimParams#backgroundColor} is not set. */
+    private final int mDefaultBackgroundColor;
+
     /** The animator for fading the view out. */
     private ObjectAnimator mOverlayFadeInAnimator;
 
@@ -134,12 +144,13 @@ public class ScrimView extends View implements View.OnClickListener {
         super(context);
         mStatusBarScrimDelegate = scrimDelegate;
         mParent = parent;
+        mDefaultBackgroundColor = ApiCompatibilityUtils.getColor(
+                getResources(), R.color.omnibox_focused_fading_background_color);
 
         setAlpha(0.0f);
         setVisibility(View.GONE);
         setOnClickListener(this);
-        setBackgroundColor(ApiCompatibilityUtils.getColor(
-                getResources(), R.color.omnibox_focused_fading_background_color));
+        setBackgroundColor(mDefaultBackgroundColor);
     }
 
     /**
@@ -186,6 +197,9 @@ public class ScrimView extends View implements View.OnClickListener {
     private void onParamsChanged(ScrimParams params) {
         mActiveParams = params;
         UiUtils.removeViewFromParent(this);
+        setBackgroundColor(params != null && params.backgroundColor != null
+                        ? params.backgroundColor
+                        : mDefaultBackgroundColor);
         if (params == null || params.anchorView == null) return;
 
         placeScrimInHierarchy(params.anchorView, params.showInFrontOfAnchorView);
@@ -223,7 +237,7 @@ public class ScrimView extends View implements View.OnClickListener {
     /**
      * Triggers a fade in of the omnibox results background creating a new animation if necessary.
      */
-    public void showScrim(ScrimParams params) {
+    public void showScrim(@NonNull ScrimParams params) {
         onParamsChanged(params);
         setVisibility(View.VISIBLE);
         if (mActiveParams.observer != null) {
