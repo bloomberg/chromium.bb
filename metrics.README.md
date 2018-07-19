@@ -4,7 +4,7 @@ We're starting to collect metrics about how developers use gclient and other
 tools in depot\_tools to better understand the performance and failure modes of
 the tools, as well of the pain points and workflows of depot\_tools users.
 
-We will collect metrics only if you’re a Googler on the corp network: If you can
+We will collect metrics only if you're a Googler on the corp network: If you can
 access https://cit-cli-metrics.appspot.com/should-upload, then we will collect
 metrics from you.
 
@@ -25,7 +25,7 @@ to better cover your use case.
 
 First, some words about what data we are **NOT** collecting:
 
-- We won’t record any information that identifies you personally.
+- We won't record any information that identifies you personally.
 - We won't record the command line flag values.
 - We won't record information about the current directory or environment flags.
 
