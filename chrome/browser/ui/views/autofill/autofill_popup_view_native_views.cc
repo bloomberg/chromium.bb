@@ -268,7 +268,7 @@ void AutofillPopupItemView::CreateContent() {
       views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
 
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_STRETCH);
   layout->set_minimum_cross_axis_size(
       views::MenuConfig::instance().touchable_menu_height + extra_height_);
 
