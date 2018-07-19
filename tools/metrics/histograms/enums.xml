@@ -2690,6 +2690,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="Previous button pressed (once)"/>
 </enum>
 
+<enum name="AutofillLocalCardMigrationBubbleOffer">
+  <int value="0" label="Show requested"/>
+  <int value="1" label="Shown"/>
+</enum>
+
+<enum name="AutofillLocalCardMigrationBubbleUserInteraction">
+  <int value="0" label="User explicitly accepted bubble"/>
+  <int value="1" label="User explicitly denied bubble"/>
+  <int value="2" label="User navigated away from page while bubble showing"/>
+  <int value="3" label="User navigated away from page while bubble hidden"/>
+</enum>
+
 <enum name="AutofillMacAddressBook">
   <int value="0" label="Showed popup entry"/>
   <int value="1" label="Selected popup entry"/>
