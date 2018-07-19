@@ -3810,6 +3810,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       # This is the full build of open-source overlay.
       'lakitu-full': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_notification_emails,
+          # logging_CrashSender is expected to fail for lakitu-full.
+          # See b/111567339 for more details.
+          useflags=append_useflags(['-tests_logging_CrashSender']),
       ),
 
       'lakitu-gpu-release': config_lib.BuildConfig().apply(
