@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
@@ -46,12 +47,14 @@ import java.util.Arrays;
  */
 public class FeedNewTabPage
         extends NewTabPage implements TouchEnabledDelegate, NewTabPageLayout.ScrollDelegate {
+    private final FeedNewTabPageMediator mMediator;
     private final StreamLifecycleManager mStreamLifecycleManager;
     private final Stream mStream;
     private final ScrollListener mStreamScrollListener;
     private final SnapScrollHelper mSnapScrollHelper;
 
     private FrameLayout mRootView;
+    private SectionHeaderView mSectionHeaderView;
     private FeedImageLoader mImageLoader;
 
     private static class DummySnackbarApi implements SnackbarApi {
@@ -151,11 +154,14 @@ public class FeedNewTabPage
         mStreamLifecycleManager = new StreamLifecycleManager(mStream, activity, tab);
         mSnapScrollHelper =
                 new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout, mStream.getView());
+        mSectionHeaderView = (SectionHeaderView) LayoutInflater.from(activity).inflate(
+                R.layout.new_tab_page_snippets_expandable_header, null);
+        mMediator = new FeedNewTabPageMediator(this);
 
         mStream.getView().setBackgroundColor(Color.WHITE);
         mRootView.addView(mStream.getView());
 
-        mStream.setHeaderViews(Arrays.asList(mNewTabPageLayout));
+        mStream.setHeaderViews(Arrays.asList(mNewTabPageLayout, mSectionHeaderView));
 
         // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
         // position that are due to layout changes after e.g. device rotation. This contrasts with
@@ -205,6 +211,7 @@ public class FeedNewTabPage
     @Override
     public void destroy() {
         super.destroy();
+        mMediator.destroy();
         mStream.removeScrollListener(mStreamScrollListener);
         mImageLoader.destroy();
         mStreamLifecycleManager.destroy();
@@ -236,6 +243,16 @@ public class FeedNewTabPage
     public void captureThumbnail(Canvas canvas) {
         mNewTabPageLayout.onPreCaptureThumbnail();
         ViewUtils.captureBitmap(mRootView, canvas);
+    }
+
+    /** @return The {@link Stream} that this class holds. */
+    Stream getStream() {
+        return mStream;
+    }
+
+    /** @return The {@link SectionHeaderView} for the Feed section header. */
+    SectionHeaderView getSectionHeaderView() {
+        return mSectionHeaderView;
     }
 
     // TouchEnabledDelegate interface.

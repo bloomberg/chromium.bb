@@ -879,6 +879,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/cards/TreeNode.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/CategoryInt.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SectionHeader.java",
+  "java/src/org/chromium/chrome/browser/ntp/snippets/SectionHeaderView.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SectionHeaderViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticle.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticleViewHolder.java",
