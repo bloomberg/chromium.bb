@@ -765,8 +765,7 @@ const MSEPlaybackTestData kMediaSourceVideoFiles[] = {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
     // AV1 in MP4
-    // TODO(johannkoenig): re-enable when an av1 mp4 muxer is available.
-    // {"bear-av1.mp4", kMP4AV1, kAppendWholeFile, kVP9WebMFileDurationMs},
+    {"bear-av1.mp4", kMP4AV1, kAppendWholeFile, kVP9WebMFileDurationMs},
 
     // AV1 in WebM
     {"bear-av1.webm", kWebMAV1, kAppendWholeFile, kVP9WebMFileDurationMs},
@@ -1760,11 +1759,10 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
 #endif
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-// TODO(johannkoenig): re-enable when an av1 mp4 muxer is available.
-TEST_P(MSEPipelineIntegrationTest, DISABLED_BasicPlayback_AV1_MP4) {
+TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
-  MockMediaSource source("bear-av1.mp4", kMP4AV1, 80496);
+  MockMediaSource source("bear-av1.mp4", kMP4AV1, 24723);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1817,8 +1815,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_FlacInMp4) {
 }
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-// TODO(johannkoenig): re-enable when an av1 mp4 muxer is available.
-TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VideoOnly_AV1_Mp4) {
+TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_AV1_Mp4) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
   ASSERT_EQ(PIPELINE_OK, Start("bear-av1.mp4"));
