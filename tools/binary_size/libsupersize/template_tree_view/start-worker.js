@@ -78,14 +78,18 @@ class TreeWorker {
    * Loads the tree data given on a worker thread and replaces the tree view in
    * the UI once complete. Uses query string as state for the options.
    * Use `onProgress` before calling `loadTree`.
+   * @param {string} input
    * @returns {Promise<TreeProgress>}
    */
-  loadTree() {
-    return this._waitForResponse('load', location.search.slice(1));
+  loadTree(input = null) {
+    return this._waitForResponse('load', {
+      input,
+      options: location.search.slice(1),
+    });
   }
 }
 
 const worker = new TreeWorker(_innerWorker);
 // Kick off the worker ASAP so it can start parsing data faster.
 // Subsequent calls will just use a worker locally.
-const treeReady = worker.loadTree();
+const treeReady = worker.loadTree('data.ndjson');

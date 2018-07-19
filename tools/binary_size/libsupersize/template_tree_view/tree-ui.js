@@ -300,7 +300,7 @@
 
   // When the `byteunit` state changes, update all .size elements in the page
   form.elements.namedItem('byteunit').addEventListener('change', event => {
-    // Update state early for _setSize
+    event.stopPropagation();
     state.set(event.currentTarget.name, event.currentTarget.value);
     // Update existing size elements with the new unit
     for (const sizeElement of _liveSizeSpanList) {
@@ -344,6 +344,8 @@
 
   /** @type {HTMLUListElement} */
   const _symbolTree = document.getElementById('symboltree');
+  /** @type {HTMLInputElement} */
+  const _fileUpload = document.getElementById('upload');
   const _progress = new ProgressBar('progress');
 
   /**
@@ -388,11 +390,18 @@
   treeReady.then(displayTree);
   worker.setOnProgressHandler(displayTree);
 
-  form.addEventListener('change', event => {
-    if (event.target.dataset.dynamic == null) {
-      _progress.setValue(0);
-      worker.loadTree().then(displayTree);
-    }
+  _fileUpload.addEventListener('change', event => {
+    const input = /** @type {HTMLInputElement} */ (event.currentTarget);
+    const file = input.files.item(0);
+    const fileUrl = URL.createObjectURL(file);
+    worker.loadTree(fileUrl).then(displayTree);
+    // Clean up afterwards so new files trigger event
+    input.value = '';
+  });
+
+  form.addEventListener('change', () => {
+    _progress.setValue(0);
+    worker.loadTree().then(displayTree);
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
