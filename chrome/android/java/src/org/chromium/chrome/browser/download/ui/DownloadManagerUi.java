@@ -168,13 +168,14 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             MENU_ACTION_SHOW_INFO, MENU_ACTION_HIDE_INFO, MENU_ACTION_SEARCH})
     public @interface MenuAction {}
 
-    private static final int MENU_ACTION_CLOSE = 0;
-    private static final int MENU_ACTION_MULTI_DELETE = 1;
-    private static final int MENU_ACTION_MULTI_SHARE = 2;
-    private static final int MENU_ACTION_SHOW_INFO = 3;
-    private static final int MENU_ACTION_HIDE_INFO = 4;
-    private static final int MENU_ACTION_SEARCH = 5;
-    private static final int MENU_ACTION_BOUNDARY = 6;
+    // TODO(shaktisahu): Move these to new download home and make them private.
+    public static final int MENU_ACTION_CLOSE = 0;
+    public static final int MENU_ACTION_MULTI_DELETE = 1;
+    public static final int MENU_ACTION_MULTI_SHARE = 2;
+    public static final int MENU_ACTION_SHOW_INFO = 3;
+    public static final int MENU_ACTION_HIDE_INFO = 4;
+    public static final int MENU_ACTION_SEARCH = 5;
+    public static final int MENU_ACTION_BOUNDARY = 6;
 
     private static final int PREFETCH_BUNDLE_OPEN_DELAY_MS = 500;
 
@@ -618,7 +619,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         sProviderForTests = provider;
     }
 
-    private static void recordMenuActionHistogram(@MenuAction int action) {
+    public static void recordMenuActionHistogram(@MenuAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.DownloadManager.Menu.Action", action, MENU_ACTION_BOUNDARY);
     }
