@@ -6,6 +6,7 @@
 [Exposed=Window]
 interface RTCRtpReceiver {
     readonly attribute MediaStreamTrack track;
+    static RTCRtpCapabilities?             getCapabilities(DOMString kind);
     sequence<RTCRtpContributingSource> getContributingSources();
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
     // TODO(hbos): Support every member of the spec. https://crbug.com/700916
