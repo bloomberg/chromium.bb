@@ -24,6 +24,7 @@ TEST(ServiceTransferCacheTest, EnforcesOnPurgeMemory) {
   ServiceTransferCache cache;
   uint32_t entry_id = 0u;
   size_t entry_size = 1024u;
+  uint32_t number_of_entry = 4u;
 
   cache.CreateLocalEntry(
       ServiceTransferCache::EntryKey(kDecoderId, kEntryType, ++entry_id),
@@ -32,6 +33,27 @@ TEST(ServiceTransferCacheTest, EnforcesOnPurgeMemory) {
   cache.PurgeMemory(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   EXPECT_EQ(cache.cache_size_for_testing(), 0u);
+
+  cache.SetCacheSizeLimitForTesting(entry_size * number_of_entry);
+  // Create 4 entries, all in the cache.
+  for (uint32_t i = 0; i < number_of_entry; i++) {
+    cache.CreateLocalEntry(
+        ServiceTransferCache::EntryKey(kDecoderId, kEntryType, ++entry_id),
+        CreateEntry(entry_size));
+    EXPECT_EQ(cache.cache_size_for_testing(), entry_size * (i + 1));
+  }
+
+  // The 5th entry creates successfully. But the 1st entry will be purged due to
+  // cache limits.
+  cache.CreateLocalEntry(
+      ServiceTransferCache::EntryKey(kDecoderId, kEntryType, ++entry_id),
+      CreateEntry(entry_size));
+  EXPECT_EQ(cache.cache_size_for_testing(), entry_size * 4);
+
+  cache.PurgeMemory(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  // Only 1/4 of cache limits remains.
+  EXPECT_EQ(cache.cache_size_for_testing(), entry_size);
 }
 
 TEST(ServiceTransferCache, MultipleDecoderUse) {
