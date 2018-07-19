@@ -9357,6 +9357,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DataUsageReportSubmissionResult">
+  <obsolete>
+    Deprecated 2018/07.
+  </obsolete>
   <int value="0" label="Successful"/>
   <int value="1" label="Failed"/>
   <int value="2" label="Timed out"/>
@@ -9364,6 +9367,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DataUsageTrackingSessionEndReason">
+  <obsolete>
+    Deprecated 2018/07.
+  </obsolete>
   <int value="0" label="Omnibox search navigation"/>
   <int value="1" label="Omnibox navigation"/>
   <int value="2" label="Bookmark navigation"/>
@@ -9371,6 +9377,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DataUsageTrackingSessionStartReason">
+  <obsolete>
+    Deprecated 2018/07.
+  </obsolete>
   <int value="0" label="Package regex match in Custom Tab"/>
   <int value="1" label="Omnibox search navigation"/>
   <int value="2" label="Omnibox navigation"/>
@@ -9380,6 +9389,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DataUsageUIAction">
+  <obsolete>
+    Deprecated 2018/07.
+  </obsolete>
   <int value="0" label="Data use tracking started snackbar shown"/>
   <int value="1"
       label="Data use tracking started snackbar 'More' link clicked"/>

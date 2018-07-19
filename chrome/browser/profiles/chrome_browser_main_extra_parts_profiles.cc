@@ -93,7 +93,6 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
@@ -222,9 +221,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   CaptivePortalServiceFactory::GetInstance();
 #endif
   CertificateReportingServiceFactory::GetInstance();
-#if defined(OS_ANDROID)
-  android::DataUseUITabModelFactory::GetInstance();
-#endif
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   chromeos::ChromeCryptAuthServiceFactory::GetInstance();

@@ -29,7 +29,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/data_usage/tab_id_annotator.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
@@ -41,9 +40,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
-#include "components/data_usage/core/data_use_aggregator.h"
-#include "components/data_usage/core/data_use_amortizer.h"
-#include "components/data_usage/core/data_use_annotator.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
@@ -97,8 +93,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/data_usage/external_data_use_observer.h"
-#include "components/data_usage/android/traffic_stats_amortizer.h"
 #include "net/cert/cert_verify_proc_android.h"
 #endif  // defined(OS_ANDROID)
 
@@ -348,27 +342,8 @@ void IOThread::Init() {
       extension_event_router_forwarder_;
 #endif
 
-  std::unique_ptr<data_usage::DataUseAmortizer> data_use_amortizer;
-#if defined(OS_ANDROID)
-  data_use_amortizer =
-      std::make_unique<data_usage::android::TrafficStatsAmortizer>();
-#endif  // defined(OS_ANDROID)
-
   globals_->data_use_ascriber =
       std::make_unique<data_use_measurement::ChromeDataUseAscriber>();
-
-  globals_->data_use_aggregator =
-      std::make_unique<data_usage::DataUseAggregator>(
-          std::make_unique<chrome_browser_data_usage::TabIdAnnotator>(),
-          std::move(data_use_amortizer));
-
-#if defined(OS_ANDROID)
-  globals_->external_data_use_observer =
-      std::make_unique<android::ExternalDataUseObserver>(
-          globals_->data_use_aggregator.get(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
-#endif  // defined(OS_ANDROID)
 
   globals_->dns_probe_service =
       std::make_unique<chrome_browser_net::DnsProbeService>();
@@ -459,10 +434,6 @@ void IOThread::ConstructSystemRequestContext() {
 
     auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
         extension_event_router_forwarder());
-    // By default, data usage is considered off the record.
-    chrome_network_delegate->set_data_use_aggregator(
-        globals_->data_use_aggregator.get(),
-        true /* is_data_usage_off_the_record */);
     builder->set_network_delegate(
         globals_->data_use_ascriber->CreateNetworkDelegate(
             std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));

@@ -1082,8 +1082,6 @@ void ProfileIOData::Init(
           &force_youtube_restrict_);
       chrome_network_delegate->set_allowed_domains_for_apps(
           &allowed_domains_for_apps_);
-      chrome_network_delegate->set_data_use_aggregator(
-          io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
 
       chrome_network_delegate_unowned = chrome_network_delegate.get();
 

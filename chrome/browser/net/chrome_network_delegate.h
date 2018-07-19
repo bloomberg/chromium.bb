@@ -34,10 +34,6 @@ namespace content_settings {
 class CookieSettings;
 }
 
-namespace data_usage {
-class DataUseAggregator;
-}
-
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }
@@ -116,10 +112,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   ReportingPermissionsChecker* reporting_permissions_checker() {
     return reporting_permissions_checker_.get();
   }
-
-  void set_data_use_aggregator(
-      data_usage::DataUseAggregator* data_use_aggregator,
-      bool is_data_usage_off_the_record);
 
   // Binds the pref members to |pref_service| and moves them to the IO thread.
   // All arguments can be nullptr. This method should be called on the UI
@@ -203,12 +195,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanUseReportingClient(const url::Origin& origin,
                                const GURL& endpoint) const override;
 
-  // Convenience function for reporting network usage to the
-  // |data_use_aggregator_|.
-  void ReportDataUsageStats(net::URLRequest* request,
-                            int64_t tx_bytes,
-                            int64_t rx_bytes);
-
   std::unique_ptr<ChromeExtensionsNetworkDelegate> extensions_delegate_;
 
   void* profile_;
@@ -226,11 +212,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker_;
 
   bool experimental_web_platform_features_enabled_;
-
-  // Aggregates and reports network usage.
-  data_usage::DataUseAggregator* data_use_aggregator_;
-  // Controls whether network usage is reported as being off the record.
-  bool is_data_usage_off_the_record_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

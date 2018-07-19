@@ -27,9 +27,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_usage/core/data_use_aggregator.h"
-#include "components/data_usage/core/data_use_amortizer.h"
-#include "components/data_usage/core/data_use_annotator.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
@@ -42,7 +39,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
-#include "net/socket/socket_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -54,79 +50,6 @@
 #endif
 
 namespace {
-
-// This function requests a URL, and makes it return a known response.
-// ResourceRequestInfo is attached to the URLRequest, to represent this request
-// as an user initiated.
-std::unique_ptr<net::URLRequest> RequestURL(
-    net::URLRequestContext* context,
-    net::MockClientSocketFactory* socket_factory) {
-  net::MockRead redirect_mock_reads[] = {
-      net::MockRead("HTTP/1.1 302 Found\r\n"
-                    "Location: http://bar.com/\r\n\r\n"),
-      net::MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider redirect_socket_data_provider(
-      redirect_mock_reads, base::span<net::MockWrite>());
-
-  net::MockRead response_mock_reads[] = {
-      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"), net::MockRead("response body"),
-      net::MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider response_socket_data_provider(
-      response_mock_reads, base::span<net::MockWrite>());
-  socket_factory->AddSocketDataProvider(&response_socket_data_provider);
-  net::TestDelegate test_delegate;
-  std::unique_ptr<net::URLRequest> request(
-      context->CreateRequest(GURL("http://example.com"), net::DEFAULT_PRIORITY,
-                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  content::ResourceRequestInfo::AllocateForTesting(
-      request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-      true, true, true, content::PREVIEWS_OFF, nullptr);
-
-  request->Start();
-  test_delegate.RunUntilComplete();
-  return request;
-}
-
-// A fake DataUseAggregator for testing that only counts how many times its
-// respective methods have been called.
-class FakeDataUseAggregator : public data_usage::DataUseAggregator {
- public:
-  FakeDataUseAggregator()
-      : data_usage::DataUseAggregator(
-            std::unique_ptr<data_usage::DataUseAnnotator>(),
-            std::unique_ptr<data_usage::DataUseAmortizer>()),
-        on_the_record_tx_bytes_(0),
-        on_the_record_rx_bytes_(0),
-        off_the_record_tx_bytes_(0),
-        off_the_record_rx_bytes_(0) {}
-  ~FakeDataUseAggregator() override {}
-
-  void ReportDataUse(net::URLRequest* request,
-                     int64_t tx_bytes,
-                     int64_t rx_bytes) override {
-    on_the_record_tx_bytes_ += tx_bytes;
-    on_the_record_rx_bytes_ += rx_bytes;
-  }
-
-  void ReportOffTheRecordDataUse(int64_t tx_bytes, int64_t rx_bytes) override {
-    off_the_record_tx_bytes_ += tx_bytes;
-    off_the_record_rx_bytes_ += rx_bytes;
-  }
-
-  int64_t on_the_record_tx_bytes() const { return on_the_record_tx_bytes_; }
-  int64_t on_the_record_rx_bytes() const { return on_the_record_rx_bytes_; }
-  int64_t off_the_record_tx_bytes() const { return off_the_record_tx_bytes_; }
-  int64_t off_the_record_rx_bytes() const { return off_the_record_rx_bytes_; }
-
- private:
-  int64_t on_the_record_tx_bytes_;
-  int64_t on_the_record_rx_bytes_;
-  int64_t off_the_record_tx_bytes_;
-  int64_t off_the_record_rx_bytes_;
-};
 
 // Helper function to make the IsAccessAllowed test concise.
 bool IsAccessAllowed(const std::string& path,
@@ -141,8 +64,7 @@ bool IsAccessAllowed(const std::string& path,
 class ChromeNetworkDelegateTest : public testing::Test {
  public:
   ChromeNetworkDelegateTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        context_(new net::TestURLRequestContext(true)) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     forwarder_ = new extensions::EventRouterForwarder();
 #endif
@@ -158,14 +80,9 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
   virtual void Initialize() {
     network_delegate_.reset(new ChromeNetworkDelegate(forwarder()));
-    context_->set_client_socket_factory(&socket_factory_);
-    context_->set_network_delegate(network_delegate_.get());
-    context_->Init();
   }
 
-  net::TestURLRequestContext* context() { return context_.get(); }
   net::NetworkDelegate* network_delegate() { return network_delegate_.get(); }
-  net::MockClientSocketFactory* socket_factory() { return &socket_factory_; }
 
   ChromeNetworkDelegate* chrome_network_delegate() {
     return network_delegate_.get();
@@ -187,8 +104,6 @@ class ChromeNetworkDelegateTest : public testing::Test {
 #endif
   TestingProfile profile_;
   std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
-  net::MockClientSocketFactory socket_factory_;
-  std::unique_ptr<net::TestURLRequestContext> context_;
 };
 
 TEST_F(ChromeNetworkDelegateTest, DisableSameSiteCookiesIffFlagDisabled) {
@@ -201,40 +116,6 @@ TEST_F(ChromeNetworkDelegateTest, EnableSameSiteCookiesIffFlagEnabled) {
       switches::kEnableExperimentalWebPlatformFeatures);
   Initialize();
   EXPECT_TRUE(network_delegate()->AreExperimentalCookieFeaturesEnabled());
-}
-
-TEST_F(ChromeNetworkDelegateTest, ReportDataUseToAggregator) {
-  FakeDataUseAggregator fake_aggregator;
-  Initialize();
-
-  chrome_network_delegate()->set_data_use_aggregator(
-      &fake_aggregator, false /* is_data_usage_off_the_record */);
-
-  std::unique_ptr<net::URLRequest> request =
-      RequestURL(context(), socket_factory());
-  EXPECT_EQ(request->GetTotalSentBytes(),
-            fake_aggregator.on_the_record_tx_bytes());
-  EXPECT_EQ(request->GetTotalReceivedBytes(),
-            fake_aggregator.on_the_record_rx_bytes());
-  EXPECT_EQ(0, fake_aggregator.off_the_record_tx_bytes());
-  EXPECT_EQ(0, fake_aggregator.off_the_record_rx_bytes());
-}
-
-TEST_F(ChromeNetworkDelegateTest, ReportOffTheRecordDataUseToAggregator) {
-  FakeDataUseAggregator fake_aggregator;
-  Initialize();
-
-  chrome_network_delegate()->set_data_use_aggregator(
-      &fake_aggregator, true /* is_data_usage_off_the_record */);
-  std::unique_ptr<net::URLRequest> request =
-      RequestURL(context(), socket_factory());
-
-  EXPECT_EQ(0, fake_aggregator.on_the_record_tx_bytes());
-  EXPECT_EQ(0, fake_aggregator.on_the_record_rx_bytes());
-  EXPECT_EQ(request->GetTotalSentBytes(),
-            fake_aggregator.off_the_record_tx_bytes());
-  EXPECT_EQ(request->GetTotalReceivedBytes(),
-            fake_aggregator.off_the_record_rx_bytes());
 }
 
 class ChromeNetworkDelegatePolicyTest : public testing::Test {

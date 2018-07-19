@@ -37,18 +37,8 @@ class PrefRegistrySimple;
 class PrefService;
 class SystemNetworkContextManager;
 
-#if defined(OS_ANDROID)
-namespace android {
-class ExternalDataUseObserver;
-}
-#endif  // defined(OS_ANDROID)
-
 namespace chrome_browser_net {
 class DnsProbeService;
-}
-
-namespace data_usage {
-class DataUseAggregator;
 }
 
 namespace data_use_measurement {
@@ -106,14 +96,6 @@ class IOThread : public content::BrowserThreadDelegate {
     // Ascribes all data use in Chrome to a source, such as page loads.
     std::unique_ptr<data_use_measurement::ChromeDataUseAscriber>
         data_use_ascriber;
-    // Global aggregator of data use. It must outlive the
-    // |system_network_delegate|.
-    std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator;
-#if defined(OS_ANDROID)
-    // An external observer of data use.
-    std::unique_ptr<android::ExternalDataUseObserver>
-        external_data_use_observer;
-#endif  // defined(OS_ANDROID)
 
     // NetworkQualityEstimator only for use in dummy in-process
     // URLRequestContext when network service is enabled.
