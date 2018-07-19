@@ -31,7 +31,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   explicit V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device,
                               v4l2_memory input_memory_type,
                               v4l2_memory output_memory_type);
-  virtual ~V4L2ImageProcessor();
+  ~V4L2ImageProcessor() override;
 
   // Initializes the processor to convert from |input_format| to |output_format|
   // and/or scale from |input_visible_size| to |output_visible_size|.
@@ -67,12 +67,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                               gfx::Size* size,
                               size_t* num_planes);
 
-  gfx::Size input_allocated_size() const override {
-    return input_allocated_size_;
-  }
-  gfx::Size output_allocated_size() const override {
-    return output_allocated_size_;
-  }
+  gfx::Size input_allocated_size() const override;
+  gfx::Size output_allocated_size() const override;
 
   // Called by client to process |frame|. The resulting processed frame will be
   // stored in |output_buffer_index| output buffer and notified via |cb|. The
