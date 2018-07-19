@@ -42,7 +42,7 @@ function AppStateController(dialogType) {
    * @private {string}
    */
   this.fileListSortDirection_ = AppStateController.DEFAULT_SORT_DIRECTION;
-};
+}
 
 /**
  * Default sort field of the file list.
@@ -109,6 +109,8 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
       'column-resize-end', this.saveViewOptions.bind(this));
   directoryModel.getFileList().addEventListener(
       'sorted', this.onFileListSorted_.bind(this));
+  directoryModel.getFileFilter().addEventListener(
+      'changed', this.onFileFilterChanged_.bind(this));
   directoryModel.addEventListener(
       'directory-changed', this.onDirectoryChanged_.bind(this));
 
@@ -121,6 +123,8 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
     this.fileListSortDirection_ = this.viewOptions_.sortDirection;
   this.directoryModel_.getFileList().sort(
       this.fileListSortField_, this.fileListSortDirection_);
+  if (this.viewOptions_.isAllAndroidFoldersVisible)
+    this.directoryModel_.getFileFilter().setAllAndroidFoldersVisible(true);
   if (this.viewOptions_.columnConfig) {
     this.ui_.listContainer.table.columnModel.restoreColumnConfig(
         this.viewOptions_.columnConfig);
@@ -136,6 +140,8 @@ AppStateController.prototype.saveViewOptions = function() {
     sortDirection: this.fileListSortDirection_,
     columnConfig: {},
     listType: this.ui_.listContainer.currentListType,
+    isAllAndroidFoldersVisible:
+        this.directoryModel_.getFileFilter().isAllAndroidFoldersVisible()
   };
   var cm = this.ui_.listContainer.table.columnModel;
   prefs.columnConfig = cm.exportColumnConfig();
@@ -155,6 +161,9 @@ AppStateController.prototype.saveViewOptions = function() {
   }
 };
 
+/**
+ * @private
+ */
 AppStateController.prototype.onFileListSorted_ = function() {
   var currentDirectory = this.directoryModel_.getCurrentDirEntry();
   if (!currentDirectory)
@@ -168,6 +177,19 @@ AppStateController.prototype.onFileListSorted_ = function() {
     this.fileListSortDirection_ = currentSortStatus.direction;
   }
   this.saveViewOptions();
+};
+
+/**
+ * @private
+ */
+AppStateController.prototype.onFileFilterChanged_ = function() {
+  const isAllAndroidFoldersVisible =
+      this.directoryModel_.getFileFilter().isAllAndroidFoldersVisible();
+  if (this.viewOptions_.isAllAndroidFoldersVisible !==
+      isAllAndroidFoldersVisible) {
+    this.viewOptions_.isAllAndroidFoldersVisible = isAllAndroidFoldersVisible;
+    this.saveViewOptions();
+  }
 };
 
 /**

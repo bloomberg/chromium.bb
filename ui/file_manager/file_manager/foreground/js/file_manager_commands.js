@@ -833,6 +833,8 @@ CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
             !!fileManager.volumeManager.getCurrentProfileVolumeInfo(
                 VolumeManagerCommon.VolumeType.ANDROID_FILES);
         event.command.setHidden(!event.canExecute);
+        event.command.checked =
+            fileManager.fileFilter.isAllAndroidFoldersVisible();
       }
     });
 
