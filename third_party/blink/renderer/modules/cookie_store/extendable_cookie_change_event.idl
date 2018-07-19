@@ -12,6 +12,6 @@
   OriginTrialEnabled=CookieStore,
   Constructor(DOMString type, optional ExtendableCookieChangeEventInit eventInitDict)
 ] interface ExtendableCookieChangeEvent : ExtendableEvent {
-  [Measure] readonly attribute CookieList changed;
-  [Measure] readonly attribute CookieList deleted;
+  [MeasureAs=CookieStoreAPI] readonly attribute CookieList changed;
+  [MeasureAs=CookieStoreAPI] readonly attribute CookieList deleted;
 };
