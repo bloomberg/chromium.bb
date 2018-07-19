@@ -48,6 +48,9 @@ EasyUnlockPrivateConnectionManager::~EasyUnlockPrivateConnectionManager() {
   for (const auto& extension_id : extensions_) {
     base::hash_set<int>* connections =
         GetResourceManager()->GetResourceIds(extension_id);
+    if (!connections)
+      continue;
+
     for (int connection_id : *connections) {
       Connection* connection = GetConnection(extension_id, connection_id);
       if (connection)
