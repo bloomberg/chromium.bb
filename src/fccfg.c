@@ -1832,11 +1832,13 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 			if (value[object])
 			{
 			    FcConfigDel (&elt[object]->values, value[object]);
+			    FcValueListDestroy (l);
 			    break;
 			}
 			/* fall through ... */
 		    case FcOpDeleteAll:
 			FcConfigPatternDel (p, r->u.edit->object);
+			FcValueListDestroy (l);
 			break;
 		    default:
 			FcValueListDestroy (l);
