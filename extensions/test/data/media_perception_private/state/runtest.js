@@ -2,6 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const whiteboardValues = {
+  topLeft: {
+    x: 0.001,
+    y: 0.0015,
+  },
+  topRight: {
+    x: 0.9,
+    y: 0.002,
+  },
+  bottomLeft: {
+    x: 0.0018,
+    y: 0.88,
+  },
+  bottomRight: {
+    x: 0.85,
+    y: 0.79,
+  },
+  aspectRatio: 1.76,
+};
+
 function getStateUninitialized() {
   chrome.mediaPerceptionPrivate.getState(
       chrome.test.callbackPass(function(state) {
@@ -22,6 +42,7 @@ function setStateRunning() {
         frameRate: 30,
       },
     ],
+    whiteboard: whiteboardValues,
   }, chrome.test.callbackPass(function(state) {
     chrome.test.assertEq('RUNNING', state.status);
     chrome.test.assertEq('dummy_config', state.configuration);
@@ -78,6 +99,14 @@ function setStateSuspendedButWithVideoStreamParamFail() {
   }, chrome.test.callbackFail(error));
 }
 
+function setStateSuspendedButWithWhiteboardFail() {
+  const error = 'Status must be RUNNING to set whiteboard configuration.';
+  chrome.mediaPerceptionPrivate.setState({
+    status: 'SUSPENDED',
+    whiteboard: whiteboardValues,
+  }, chrome.test.callbackFail(error));
+}
+
 function setStateRestarted() {
   chrome.mediaPerceptionPrivate.setState({
     status: 'RESTARTING',
@@ -111,8 +140,8 @@ chrome.test.runTests([
     setStateUnsettable,
     setStateSuspendedButWithDeviceContextFail,
     setStateSuspendedButWithConfigurationFail,
+    setStateSuspendedButWithWhiteboardFail,
     setStateSuspendedButWithVideoStreamParamFail,
     setStateRestarted,
     setStateRunningWithoutOptionalParameters,
     setStateStopped]);
-

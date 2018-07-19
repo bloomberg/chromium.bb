@@ -232,6 +232,14 @@ std::unique_ptr<Point> PointProtoToIdl(const mri::Point& point) {
   return point_result;
 }
 
+void PointIdlToProto(const Point& point, mri::Point* point_result) {
+  if (point.x)
+    point_result->set_x(*point.x);
+
+  if (point.y)
+    point_result->set_y(*point.y);
+}
+
 std::unique_ptr<BoundingBox> BoundingBoxProtoToIdl(
     const mri::BoundingBox& bounding_box) {
   std::unique_ptr<BoundingBox> bounding_box_result =
@@ -501,6 +509,58 @@ void VideoStreamParamIdlToProto(mri::VideoStreamParam* param_result,
 
 }  //  namespace
 
+std::unique_ptr<Whiteboard> WhiteboardProtoToIdl(
+    const mri::Whiteboard& whiteboard) {
+  std::unique_ptr<Whiteboard> whiteboard_result =
+      std::make_unique<Whiteboard>();
+  if (whiteboard.has_top_left())
+    whiteboard_result->top_left = PointProtoToIdl(whiteboard.top_left());
+
+  if (whiteboard.has_top_right())
+    whiteboard_result->top_right = PointProtoToIdl(whiteboard.top_right());
+
+  if (whiteboard.has_bottom_left())
+    whiteboard_result->bottom_left = PointProtoToIdl(whiteboard.bottom_left());
+
+  if (whiteboard.has_bottom_right()) {
+    whiteboard_result->bottom_right =
+        PointProtoToIdl(whiteboard.bottom_right());
+  }
+
+  if (whiteboard.has_aspect_ratio()) {
+    whiteboard_result->aspect_ratio =
+        std::make_unique<double>(whiteboard.aspect_ratio());
+  }
+
+  return whiteboard_result;
+}
+
+void WhiteboardIdlToProto(const Whiteboard& whiteboard,
+                          mri::Whiteboard *whiteboard_result) {
+  if (whiteboard.top_left) {
+    PointIdlToProto(*whiteboard.top_left,
+                    whiteboard_result->mutable_top_left());
+  }
+
+  if (whiteboard.top_right) {
+    PointIdlToProto(*whiteboard.top_right,
+                    whiteboard_result->mutable_top_right());
+  }
+
+  if (whiteboard.bottom_left) {
+    PointIdlToProto(*whiteboard.bottom_left,
+                    whiteboard_result->mutable_bottom_left());
+  }
+
+  if (whiteboard.bottom_right) {
+    PointIdlToProto(*whiteboard.bottom_right,
+                    whiteboard_result->mutable_bottom_right());
+  }
+
+  if (whiteboard.aspect_ratio)
+    whiteboard_result->set_aspect_ratio(*whiteboard.aspect_ratio);
+}
+
 State StateProtoToIdl(const mri::State& state) {
   State state_result;
   if (state.has_status()) {
@@ -514,6 +574,9 @@ State StateProtoToIdl(const mri::State& state) {
     state_result.configuration =
         std::make_unique<std::string>(state.configuration());
   }
+  if (state.has_whiteboard())
+    state_result.whiteboard = WhiteboardProtoToIdl(state.whiteboard());
+
   return state_result;
 }
 
@@ -534,6 +597,9 @@ mri::State StateIdlToProto(const State& state) {
                                  state.video_stream_param.get()->at(i));
     }
   }
+
+  if (state.whiteboard)
+    WhiteboardIdlToProto(*state.whiteboard, state_result.mutable_whiteboard());
 
   return state_result;
 }

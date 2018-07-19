@@ -25,8 +25,8 @@ namespace mediaPerceptionPrivate {
     RUNNING,
 
     // Analytics process is running and the media processing pipeline is ready
-    // to be set to state <code>RUNNING</code>. The D-Bus communications are enabled but
-    // the media processing pipeline is suspended.
+    // to be set to state <code>RUNNING</code>. The D-Bus communications
+    // are enabled but the media processing pipeline is suspended.
     SUSPENDED,
 
     // Enum for restarting the media analytics process using Upstart.
@@ -143,6 +143,36 @@ namespace mediaPerceptionPrivate {
     long? frameRate;
   };
 
+  dictionary Point {
+    // The horizontal distance from the top left corner of the image.
+    double? x;
+
+    // The vertical distance from the top left corner of the image.
+    double? y;
+  };
+
+  // The parameters for a whiteboard in the image frame. Corners are given in
+  // pixel coordinates normalized to the size of the image frame (i.e. in the
+  // range [(0.0, 0.0), (1.0, 1.0)]. The aspectRatio is the physical aspect
+  // ratio of the whiteboard (e.g. for a 1m high and 2m wide whiteboard, the
+  // aspect ratio would be 2).
+  dictionary Whiteboard {
+    // The top left corner of the whiteboard in the image frame.
+    Point? topLeft;
+
+    // The top right corner of the whiteboard in the image frame.
+    Point? topRight;
+
+    // The bottom left corner of the whiteboard in the image frame.
+    Point? bottomLeft;
+
+    // The bottom right corner of the whiteboard in the image frame.
+    Point? bottomRight;
+
+    // The physical aspect ratio of the whiteboard.
+    double? aspectRatio;
+  };
+
   // The system and configuration state of the analytics process.
   dictionary State {
     Status status;
@@ -163,14 +193,11 @@ namespace mediaPerceptionPrivate {
     // Media analytics configuration. It can only be used when setting state to
     // RUNNING.
     DOMString? configuration;
-  };
 
-  dictionary Point {
-    // The horizontal distance from the top left corner of the image.
-    double? x;
-
-    // The vertical distance from the top left corner of the image.
-    double? y;
+    // Corners and aspect ratio of the whiteboard in the image frame. Should
+    // only be set when setting state to <code>RUNNING</code> and configuration
+    // to whiteboard.
+    Whiteboard? whiteboard;
   };
 
   dictionary BoundingBox {
