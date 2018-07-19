@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -110,6 +111,7 @@ class TestAutofillClient : public AutofillClient {
  private:
   identity::IdentityTestEnvironment identity_test_env_;
   syncer::SyncService* test_sync_service_ = nullptr;
+  TestAddressNormalizer test_address_normalizer_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
