@@ -520,6 +520,24 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
                                      void* user_data,
                                      DBusError* error);
 
+  // Tries to register the object path and its sub paths.
+  // Returns true on success.
+  // Returns false if the object path is already registered.
+  //
+  // |message_function| in |vtable| will be called every time when a new
+  // message sent to the object path (or hierarchically below) arrives.
+  //
+  // The same object path must not be added more than once.
+  //
+  // See also documentation of |dbus_connection_try_register_fallback| at
+  // http://dbus.freedesktop.org/doc/api/html/group__DBusConnection.html
+  //
+  // BLOCKING CALL.
+  virtual bool TryRegisterFallback(const ObjectPath& object_path,
+                                   const DBusObjectPathVTable* vtable,
+                                   void* user_data,
+                                   DBusError* error);
+
   // Unregister the object path.
   //
   // BLOCKING CALL.
@@ -590,7 +608,21 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   virtual ~Bus();
 
  private:
+  using TryRegisterObjectPathFunction =
+      dbus_bool_t(DBusConnection* connection,
+                  const char* object_path,
+                  const DBusObjectPathVTable* vtable,
+                  void* user_data,
+                  DBusError* error);
+
   friend class base::RefCountedThreadSafe<Bus>;
+
+  bool TryRegisterObjectPathInternal(
+      const ObjectPath& object_path,
+      const DBusObjectPathVTable* vtable,
+      void* user_data,
+      DBusError* error,
+      TryRegisterObjectPathFunction* register_function);
 
   // Helper function used for RemoveObjectProxy().
   void RemoveObjectProxyInternal(scoped_refptr<dbus::ObjectProxy> object_proxy,
