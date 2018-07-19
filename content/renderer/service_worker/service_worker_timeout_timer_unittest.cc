@@ -273,7 +273,8 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, NonS13nServiceWorker) {
-  ASSERT_FALSE(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    return;
 
   MockEvent event;
   {
