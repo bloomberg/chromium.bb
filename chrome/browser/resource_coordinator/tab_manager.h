@@ -254,6 +254,8 @@ class TabManager : public LifecycleUnitObserver,
       NoProactiveDiscardWhenDiscardingVariationParamDisabled);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
                            FreezingWhenDiscardingVariationParamDisabled);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
+                           NoUnfreezeWhenUnfreezingVariationParamDisabled);
 
   // The time of the first purging after a renderer is backgrounded.
   // The initial value was chosen because most of users activate backgrounded
