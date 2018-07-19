@@ -49,6 +49,10 @@ SkColor SelectedKeywordView::GetTextColor() const {
   return location_bar_->GetColor(OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD);
 }
 
+bool SelectedKeywordView::ShouldShowExtraInternalSpace() const {
+  return ui::MaterialDesignController::IsRefreshUi();
+}
+
 gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(full_label_.GetPreferredSize().width());
