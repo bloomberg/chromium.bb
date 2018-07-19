@@ -193,10 +193,13 @@ FcDirCacheReadUUID (FcChar8  *dir,
 	if ((fd = FcOpen ((char *) uuidname, O_RDONLY)) >= 0)
 	{
 	    char suuid[37];
+	    ssize_t len;
 
 	    memset (suuid, 0, sizeof (suuid));
-	    if (read (fd, suuid, 36) > 0)
+	    len = read (fd, suuid, 36);
+	    if (len != -1)
 	    {
+		suuid[len] = 0;
 		memset (uuid, 0, sizeof (uuid));
 		if (uuid_parse (suuid, uuid) == 0)
 		{
