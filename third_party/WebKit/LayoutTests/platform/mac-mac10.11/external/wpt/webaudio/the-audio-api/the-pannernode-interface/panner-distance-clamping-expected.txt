@@ -1,0 +1,49 @@
+This is a testharness.js-based test.
+PASS # AUDIT TASK RUNNER STARTED.
+PASS > [ref-distance-error] 
+FAIL X new PannerNode(c, {refDistance: -1}) threw "RangeError" instead of RangeError. assert_true: expected true got false
+PASS   new PannerNode(c, {refDistance: 0}) did not throw an exception.
+PASS   new PannerNode(c, {refDistance: 5e-324}) did not throw an exception.
+FAIL X panner.refDistance = -1 threw "RangeError" instead of RangeError. assert_true: expected true got false
+PASS   panner.refDistance = 0 did not throw an exception.
+PASS   panner.refDistance = 5e-324 did not throw an exception.
+FAIL < [ref-distance-error] 2 out of 6 assertions were failed. assert_true: expected true got false
+PASS > [max-distance-error] 
+FAIL X new PannerNode(c, {maxDistance: -1}) threw "RangeError" instead of RangeError. assert_true: expected true got false
+FAIL X new PannerNode(c, {maxDistance: 0}) threw "RangeError" instead of RangeError. assert_true: expected true got false
+PASS   new PannerNode(c, {maxDistance: 5e-324}) did not throw an exception.
+FAIL X panner.maxDistance = -1 threw "RangeError" instead of RangeError. assert_true: expected true got false
+FAIL X panner.maxDistance = 0 threw "RangeError" instead of RangeError. assert_true: expected true got false
+PASS   panner.maxDistance = 5e-324 did not throw an exception.
+FAIL < [max-distance-error] 4 out of 6 assertions were failed. assert_true: expected true got false
+PASS > [min-distance] 
+PASS   Model: linear: Distance (0.01) is outside the range [1, 10000] is equal to true.
+PASS   Test panner output {"distance":0.01,"distanceModel":"linear"} is identical to the array [0,0.20702196657657623,0.4738079607486725,-0.23029832541942596,-0.41959449648857117,-0.025587784126400948,0.042879894375801086,0.4513133466243744,0.15709976851940155,-0.4906681776046753,-0.16540144383907318,0.0002187670033890754,0.25102245807647705,0.4455360770225525,-0.29729732871055603,-0.38197818398475647...].
+PASS   Model: exponential: Distance (0.01) is outside the range [1, 10000] is equal to true.
+PASS   Test panner output {"distance":0.01,"distanceModel":"exponential"} is identical to the array [0,0.20702196657657623,0.4738079607486725,-0.23029832541942596,-0.41959449648857117,-0.025587784126400948,0.042879894375801086,0.4513133466243744,0.15709976851940155,-0.4906681776046753,-0.16540144383907318,0.0002187670033890754,0.25102245807647705,0.4455360770225525,-0.29729732871055603,-0.38197818398475647...].
+PASS   Model: inverse: Distance (0.01) is outside the range [1, 10000] is equal to true.
+PASS   Test panner output {"distance":0.01,"distanceModel":"inverse"} is identical to the array [0,0.20702196657657623,0.4738079607486725,-0.23029832541942596,-0.41959449648857117,-0.025587784126400948,0.042879894375801086,0.4513133466243744,0.15709976851940155,-0.4906681776046753,-0.16540144383907318,0.0002187670033890754,0.25102245807647705,0.4455360770225525,-0.29729732871055603,-0.38197818398475647...].
+PASS   Model: linear: Distance (2) is outside the range [10, 1000] is equal to true.
+PASS   Test panner output {"distance":2,"distanceModel":"linear","maxDistance":1000,"refDistance":10} is identical to the array [0,0.20702196657657623,0.4738079607486725,-0.23029832541942596,-0.41959449648857117,-0.025587784126400948,0.042879894375801086,0.4513133466243744,0.15709976851940155,-0.4906681776046753,-0.16540144383907318,0.0002187670033890754,0.25102245807647705,0.4455360770225525,-0.29729732871055603,-0.38197818398475647...].
+PASS   Model: exponential: Distance (2) is outside the range [10, 1000] is equal to true.
+PASS   Test panner output {"distance":2,"distanceModel":"exponential","maxDistance":1000,"refDistance":10} is identical to the array [0,0.20702196657657623,0.4738079607486725,-0.23029832541942596,-0.41959449648857117,-0.025587784126400948,0.042879894375801086,0.4513133466243744,0.15709976851940155,-0.4906681776046753,-0.16540144383907318,0.0002187670033890754,0.25102245807647705,0.4455360770225525,-0.29729732871055603,-0.38197818398475647...].
+PASS   Model: inverse: Distance (2) is outside the range [10, 1000] is equal to true.
+PASS   Test panner output {"distance":2,"distanceModel":"inverse","maxDistance":1000,"refDistance":10} is identical to the array [0,0.20702196657657623,0.4738079607486725,-0.23029832541942596,-0.41959449648857117,-0.025587784126400948,0.042879894375801086,0.4513133466243744,0.15709976851940155,-0.4906681776046753,-0.16540144383907318,0.0002187670033890754,0.25102245807647705,0.4455360770225525,-0.29729732871055603,-0.38197818398475647...].
+PASS < [min-distance] All assertions passed. (total 12 assertions)
+PASS > [max-distance] 
+PASS   Model: linear: Distance (20000) is outside the range [1, 10000] is equal to true.
+PASS   Test panner output {"distance":20000,"distanceModel":"linear"} is identical to the array [0,0.10351098328828812,0.23690398037433624,-0.11514916270971298,-0.20979724824428558,-0.012793892063200474,0.021439947187900543,0.2256566733121872,0.07854988425970078,-0.24533408880233765,-0.08270072191953659,0.0001093835016945377,0.12551122903823853,0.22276803851127625,-0.14864866435527802,-0.19098909199237823...].
+PASS   Model: exponential: Distance (21000) is outside the range [1, 10000] is equal to true.
+PASS   Test panner output {"distance":21000,"distanceModel":"exponential"} is identical to the array [0,0.0014285872457548976,0.0032695855479687452,-0.0015892094234004617,-0.002895476995036006,-0.0001765724882716313,0.000295899371849373,0.0031143580563366413,0.0010840913746505976,-0.003385932184755802,-0.0011413784231990576,0.0000015096356946742162,0.0017322194762527943,0.0030744909308850765,-0.002051546471193433,-0.002635899931192398...].
+PASS   Model: inverse: Distance (23000) is outside the range [1, 10000] is equal to true.
+PASS   Test panner output {"distance":23000,"distanceModel":"inverse"} is identical to the array [0,0.000018001128410105594,0.000041198902181349695,-0.000020025070625706576,-0.000036484892916632816,-0.00000222492803914065,0.0000037285244616214186,0.000039242931961780414,0.00001366025571769569,-0.00004266494215698913,-0.000014382108929567039,1.902239077367085e-8,0.000021827090677106753,0.00003874058529618196,-0.00002585081892902963,-0.000033214051654795185...].
+PASS   Model: linear: Distance (5000) is outside the range [10, 1000] is equal to true.
+PASS   Test panner output {"distance":5000,"distanceModel":"linear","maxDistance":1000,"refDistance":10} is identical to the array [0,0.10351098328828812,0.23690398037433624,-0.11514916270971298,-0.20979724824428558,-0.012793892063200474,0.021439947187900543,0.2256566733121872,0.07854988425970078,-0.24533408880233765,-0.08270072191953659,0.0001093835016945377,0.12551122903823853,0.22276803851127625,-0.14864866435527802,-0.19098909199237823...].
+PASS   Model: exponential: Distance (5000) is outside the range [10, 1000] is equal to true.
+PASS   Test panner output {"distance":5000,"distanceModel":"exponential","maxDistance":1000,"refDistance":10} is identical to the array [0,0.009258303791284561,0.021189337596297264,-0.010299254208803177,-0.018764836713671684,-0.0011443205876275897,0.001917647197842598,0.020183347165584564,0.007025715429335833,-0.021943349391222,-0.007396977860480547,0.00000978355819825083,0.011226066388189793,0.019924979656934738,-0.013295541517436504,-0.017082585021853447...].
+PASS   Model: inverse: Distance (5000) is outside the range [10, 1000] is equal to true.
+PASS   Test panner output {"distance":5000,"distanceModel":"inverse","maxDistance":1000,"refDistance":10} is identical to the array [0,0.0008264349889941514,0.0018914489774033427,-0.0009193546138703823,-0.0016750278882682323,-0.00010214684152742848,0.000171177220181562,0.0018016500398516655,0.0006271447637118399,-0.001958755310624838,-0.0006602851790376008,8.733213689993136e-7,0.0010020856279879808,0.0017785871168598533,-0.0011868156725540757,-0.0015248629497364163...].
+PASS < [max-distance] All assertions passed. (total 12 assertions)
+FAIL # AUDIT TASK RUNNER FINISHED: 2 out of 4 tasks were failed. assert_true: expected true got false
+Harness: the test ran to completion.
+
