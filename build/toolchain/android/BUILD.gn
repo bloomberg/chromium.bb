@@ -6,6 +6,12 @@ import("//build/config/clang/clang.gni")
 import("//build/config/sysroot.gni")  # Imports android/config.gni.
 import("//build/toolchain/gcc_toolchain.gni")
 
+declare_args() {
+  # Whether unstripped binaries, i.e. compiled with debug symbols, should be
+  # considered runtime_deps rather than stripped ones.
+  android_unstripped_runtime_outputs = true
+}
+
 # The Android clang toolchains share most of the same parameters, so we have this
 # wrapper around gcc_toolchain to avoid duplication of logic.
 #
@@ -52,7 +58,7 @@ template("android_clang_toolchain") {
     readelf = _tool_prefix + "readelf"
     nm = _tool_prefix + "nm"
     strip = rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir)
-    use_unstripped_as_runtime_outputs = true
+    use_unstripped_as_runtime_outputs = android_unstripped_runtime_outputs
 
     # Don't use .cr.so for loadable_modules since they are always loaded via
     # absolute path.
