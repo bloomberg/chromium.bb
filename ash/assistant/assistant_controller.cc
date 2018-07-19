@@ -78,9 +78,6 @@ void AssistantController::SetAssistantImageDownloader(
 void AssistantController::SetAssistantSetup(
     mojom::AssistantSetupPtr assistant_setup) {
   assistant_setup_ = std::move(assistant_setup);
-
-  // Provide reference to UI controller.
-  assistant_ui_controller_->SetAssistantSetup(assistant_setup_.get());
 }
 
 void AssistantController::SetWebContentsManager(

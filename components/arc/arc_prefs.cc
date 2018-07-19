@@ -85,6 +85,11 @@ const char kArcVoiceInteractionValuePropAccepted[] =
 const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
 // A preference that indicates whether the SMS Connect feature is enabled.
 const char kSmsConnectEnabled[] = "multidevice.sms_connect_enabled";
+
+// A preference that indicates the user has accepted voice interaction activity
+// control settings.
+const char kVoiceInteractionActivityControlAccepted[] =
+    "settings.voice_interaction.activity_control.accepted";
 // A preference that indicates the user has enabled voice interaction services.
 const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
 // A preference that indicates the user has allowed voice interaction services
@@ -120,6 +125,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
 
   // Sorted in lexicographical order.
+  registry->RegisterBooleanPref(kVoiceInteractionActivityControlAccepted,
+                                false);
   registry->RegisterBooleanPref(kArcDataRemoveRequested, false);
   registry->RegisterBooleanPref(kArcEnabled, false);
   registry->RegisterBooleanPref(kArcInitialSettingsPending, false);

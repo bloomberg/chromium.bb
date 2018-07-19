@@ -9,7 +9,6 @@
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/util/deep_link_util.h"
-#include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
@@ -59,11 +58,6 @@ AssistantUiController::~AssistantUiController() {
 void AssistantUiController::SetAssistant(
     chromeos::assistant::mojom::Assistant* assistant) {
   assistant_ = assistant;
-}
-
-void AssistantUiController::SetAssistantSetup(
-    mojom::AssistantSetup* assistant_setup) {
-  assistant_setup_ = assistant_setup;
 }
 
 void AssistantUiController::AddModelObserver(
@@ -217,15 +211,6 @@ void AssistantUiController::OnUiVisibilityChanged(bool visible,
 }
 
 void AssistantUiController::ShowUi(AssistantSource source) {
-  if (!Shell::Get()->voice_interaction_controller()->setup_completed()) {
-    assistant_setup_->StartAssistantOptInFlow(
-        /* callback= */ base::DoNothing());
-    return;
-  }
-
-  if (!Shell::Get()->voice_interaction_controller()->settings_enabled())
-    return;
-
   if (!assistant_) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;
