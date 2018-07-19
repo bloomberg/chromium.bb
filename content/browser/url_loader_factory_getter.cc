@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -231,6 +233,9 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
   partition_->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(network_factory_request), std::move(params));
 }

@@ -1252,6 +1252,9 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
     auto request = mojo::MakeRequest(&url_loader_factory_for_browser_process_);
     GetContentClient()->browser()->WillCreateURLLoaderFactory(

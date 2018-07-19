@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/origin_policy_throttle.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -11,6 +12,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -173,6 +175,9 @@ void OriginPolicyThrottle::FetchPolicy(const GURL& url, FetchCallback done) {
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   url_loader_factory_params->is_corb_enabled = false;
+  url_loader_factory_params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
   network_context_ptr_->CreateURLLoaderFactory(
       mojo::MakeRequest(&url_loader_factory_),
       std::move(url_loader_factory_params));

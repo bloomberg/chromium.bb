@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
   // Used by content::ResourceMessageFilter.
   // TODO(yhirano): Remove this once when the network service is fully enabled.
   CORSURLLoaderFactory(
+      bool disable_web_security,
       std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
       const base::RepeatingCallback<void(int)>& preflight_finalizer);
   ~CORSURLLoaderFactory() override;
@@ -70,6 +71,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
   std::set<std::unique_ptr<mojom::URLLoader>, base::UniquePtrComparator>
       loaders_;
 
+  const bool disable_web_security_;
   std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_;
 
   // Used when constructed by ResourceMessageFilter.
