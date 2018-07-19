@@ -125,19 +125,19 @@ URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
       " (url, title, visit_count, typed_count, "\
       "last_visit_time, hidden) "\
       "VALUES (?,?,?,?,?,?)"
-  const char* statement_name;
+  size_t statement_line;
   const char* statement_sql;
   if (is_temporary) {
-    statement_name = "AddURLTemporary";
+    statement_line = __LINE__;
     statement_sql = "INSERT INTO temp_urls" ADDURL_COMMON_SUFFIX;
   } else {
-    statement_name = "AddURL";
+    statement_line = __LINE__;
     statement_sql = "INSERT INTO urls" ADDURL_COMMON_SUFFIX;
   }
   #undef ADDURL_COMMON_SUFFIX
 
   sql::Statement statement(GetDB().GetCachedStatement(
-      sql::StatementID(statement_name), statement_sql));
+      sql::StatementID(__FILE__, statement_line), statement_sql));
   statement.BindString(0, GURLToDatabaseURL(info.url()));
   statement.BindString16(1, info.title());
   statement.BindInt(2, info.visit_count());
@@ -276,8 +276,9 @@ bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
   // as bookmarks is no longer part of the db we no longer include the order
   // by clause.
   results->clear();
+
   const char* sql;
-  int line;
+  size_t line;
   if (typed_only) {
     sql = "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls "
         "WHERE url >= ? AND url < ? AND hidden = 0 AND typed_count > 0 "

@@ -204,12 +204,6 @@ void Connection::ResetErrorExpecter() {
   current_expecter_cb_ = nullptr;
 }
 
-bool StatementID::operator<(const StatementID& other) const {
-  if (number_ != other.number_)
-    return number_ < other.number_;
-  return strcmp(str_, other.str_) < 0;
-}
-
 Connection::StatementRef::StatementRef(Connection* connection,
                                        sqlite3_stmt* stmt,
                                        bool was_valid)
@@ -1384,12 +1378,12 @@ bool Connection::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   return Execute(sql);
 }
 
-bool Connection::HasCachedStatement(const StatementID& id) const {
+bool Connection::HasCachedStatement(StatementID id) const {
   return statement_cache_.find(id) != statement_cache_.end();
 }
 
 scoped_refptr<Connection::StatementRef> Connection::GetCachedStatement(
-    const StatementID& id,
+    StatementID id,
     const char* sql) {
   auto it = statement_cache_.find(id);
   if (it != statement_cache_.end()) {

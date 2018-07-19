@@ -18,9 +18,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "sql/sql_export.h"
+#include "sql/statement_id.h"
 
 struct sqlite3;
 struct sqlite3_stmt;
@@ -46,52 +48,6 @@ class ScopedErrorExpecter;
 class ScopedScalarFunction;
 class ScopedMockTimeSource;
 }
-
-// Uniquely identifies a statement. There are two modes of operation:
-//
-// - In the most common mode, you will use the source file and line number to
-//   identify your statement. This is a convienient way to get uniqueness for
-//   a statement that is only used in one place. Use the SQL_FROM_HERE macro
-//   to generate a StatementID.
-//
-// - In the "custom" mode you may use the statement from different places or
-//   need to manage it yourself for whatever reason. In this case, you should
-//   make up your own unique name and pass it to the StatementID. This name
-//   must be a static string, since this object only deals with pointers and
-//   assumes the underlying string doesn't change or get deleted.
-//
-// This object is copyable and assignable using the compiler-generated
-// operator= and copy constructor.
-class StatementID {
- public:
-  // Creates a uniquely named statement with the given file ane line number.
-  // Normally you will use SQL_FROM_HERE instead of calling yourself.
-  StatementID(const char* file, int line)
-      : number_(line),
-        str_(file) {
-  }
-
-  // Creates a uniquely named statement with the given user-defined name.
-  explicit StatementID(const char* unique_name)
-      : number_(-1),
-        str_(unique_name) {
-  }
-
-  // This constructor is unimplemented and will generate a linker error if
-  // called. It is intended to try to catch people dynamically generating
-  // a statement name that will be deallocated and will cause a crash later.
-  // All strings must be static and unchanging!
-  explicit StatementID(const std::string& dont_ever_do_this);
-
-  // We need this to insert into our map.
-  bool operator<(const StatementID& other) const;
-
- private:
-  int number_;
-  const char* str_;
-};
-
-#define SQL_FROM_HERE sql::StatementID(__FILE__, __LINE__)
 
 class Connection;
 
@@ -420,7 +376,7 @@ class SQL_EXPORT Connection {
   // cached. This is normally not necessary to call, but can be useful if the
   // caller has to dynamically build up SQL to avoid doing so if it's already
   // cached.
-  bool HasCachedStatement(const StatementID& id) const;
+  bool HasCachedStatement(StatementID id) const;
 
   // Returns a statement for the given SQL using the statement cache. It can
   // take a nontrivial amount of work to parse and compile a statement, so
@@ -445,7 +401,7 @@ class SQL_EXPORT Connection {
   //       SQL_FROM_HERE, "SELECT * FROM foo"));
   //   if (!stmt)
   //     return false;  // Error creating statement.
-  scoped_refptr<StatementRef> GetCachedStatement(const StatementID& id,
+  scoped_refptr<StatementRef> GetCachedStatement(StatementID id,
                                                  const char* sql);
 
   // Used to check a |sql| statement for syntactic validity. If the statement is
