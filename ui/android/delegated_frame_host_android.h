@@ -95,7 +95,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   cc::SurfaceLayer* content_layer_for_testing() { return content_layer_.get(); }
 
-  viz::FrameSinkId GetFrameSinkId() const;
+  const viz::FrameSinkId& GetFrameSinkId() const;
 
   // Should only be called when the host has a content layer. Use this for one-
   // off screen capture, not for video. Always provides RGBA_BITMAP

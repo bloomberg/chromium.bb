@@ -4,14 +4,12 @@
 
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 
-#include "base/lazy_instance.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 
 namespace viz {
 
-base::LazyInstance<LocalSurfaceId>::Leaky g_invalid_local_surface_id =
-    LAZY_INSTANCE_INITIALIZER;
+constexpr LocalSurfaceId g_invalid_local_surface_id;
 
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
     : current_local_surface_id_(kInvalidParentSequenceNumber,
@@ -75,7 +73,7 @@ const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceId()
     const {
   if (is_invalid_)
-    return g_invalid_local_surface_id.Get();
+    return g_invalid_local_surface_id;
   return current_local_surface_id_;
 }
 

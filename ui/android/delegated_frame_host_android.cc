@@ -113,7 +113,7 @@ void DelegatedFrameHostAndroid::DidNotProduceFrame(
   support_->DidNotProduceFrame(ack);
 }
 
-viz::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
+const viz::FrameSinkId& DelegatedFrameHostAndroid::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 

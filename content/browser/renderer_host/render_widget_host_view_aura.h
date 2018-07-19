@@ -181,7 +181,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool RequestRepaintForTesting() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
-  viz::FrameSinkId GetFrameSinkId() override;
+  const viz::FrameSinkId& GetFrameSinkId() const override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   bool TransformPointToLocalCoordSpaceLegacy(
       const gfx::PointF& point,

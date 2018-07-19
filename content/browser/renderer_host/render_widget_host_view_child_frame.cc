@@ -692,7 +692,7 @@ bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
   return host()->delegate()->HasMouseLock(host());
 }
 
-viz::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
+const viz::FrameSinkId& RenderWidgetHostViewChildFrame::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
