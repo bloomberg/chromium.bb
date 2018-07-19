@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -19,6 +20,8 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 
@@ -39,7 +42,18 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, Shelf* shelf)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));
 
-  UpdateChevronImage();
+  if (chromeos::switches::ShouldUseShelfNewUi()) {
+    horizontal_dots_image_view_ = new views::ImageView();
+    horizontal_dots_image_view_->SetImage(gfx::CreateVectorIcon(
+        kShelfOverflowHorizontalDotsIcon, kShelfIconColor));
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    AddChildView(horizontal_dots_image_view_);
+  } else {
+    // The new UI does not use a chevron icon.
+    // TODO(864701): Once the new UI has been default for a while, get rid
+    // of all the chevron image flipping logic.
+    UpdateChevronImage();
+  }
 }
 
 OverflowButton::~OverflowButton() = default;
@@ -160,6 +174,11 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
 
 void OverflowButton::PaintForeground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
+  if (chromeos::switches::ShouldUseShelfNewUi()) {
+    // The image view is already a child view, no need to do any manual
+    // painting.
+    return;
+  }
   DCHECK(chevron_image_);
   canvas->DrawImageInt(
       *chevron_image_,
