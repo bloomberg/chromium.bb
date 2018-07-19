@@ -20,6 +20,7 @@ UI_BASE_EXPORT extern const char kDisableRemoteCoreAnimation[];
 UI_BASE_EXPORT extern const char kShowMacOverlayBorders[];
 #endif
 
+UI_BASE_EXPORT extern const char kAnimationDurationScale[];
 UI_BASE_EXPORT extern const char kDisableCompositedAntialiasing[];
 UI_BASE_EXPORT extern const char kDisableDwmComposition[];
 UI_BASE_EXPORT extern const char kDisableTouchAdjustment[];
