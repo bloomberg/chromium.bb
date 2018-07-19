@@ -71,7 +71,7 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
     std::unique_ptr<URLLoader>* url_loader) {
   return base::BindOnce(
       [](base::RunLoop* run_loop, std::unique_ptr<URLLoader>* url_loader,
-         URLLoader* url_loader_ptr) {
+         mojom::URLLoader* url_loader_ptr) {
         DCHECK_EQ(url_loader->get(), url_loader_ptr);
         url_loader->reset();
         run_loop->Quit();
@@ -81,10 +81,10 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
 
 // Returns a URLLoader::DeleteCallback that does nothing, but calls NOTREACHED.
 // Tests that use a URLLoader that actually tries to delete itself shouldn't use
-// this methods, as URLLoaders don't expect to be alive after theyinvoke their
+// this method, as URLLoaders don't expect to be alive after they invoke their
 // delete callback.
 URLLoader::DeleteCallback NeverInvokedDeleteLoaderCallback() {
-  return base::BindOnce([](URLLoader* /* url_loader*/) { NOTREACHED(); });
+  return base::BindOnce([](mojom::URLLoader* /* loader*/) { NOTREACHED(); });
 }
 
 constexpr char kBodyReadFromNetBeforePausedHistogram[] =

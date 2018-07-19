@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       public net::URLRequest::Delegate,
       public mojom::AuthChallengeResponder {
  public:
-  using DeleteCallback = base::OnceCallback<void(URLLoader* url_loader)>;
+  using DeleteCallback = base::OnceCallback<void(mojom::URLLoader* loader)>;
 
   // |delete_callback| tells the URLLoader's owner to destroy the URLLoader.
   // The URLLoader must be destroyed before the |url_request_context|.

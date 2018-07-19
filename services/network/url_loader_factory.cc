@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/network_usage_accumulator.h"
@@ -25,16 +26,13 @@ URLLoaderFactory::URLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-    mojom::URLLoaderFactoryRequest request)
+    cors::CORSURLLoaderFactory* cors_url_loader_factory)
     : context_(context),
       params_(std::move(params)),
-      resource_scheduler_client_(std::move(resource_scheduler_client)) {
+      resource_scheduler_client_(std::move(resource_scheduler_client)),
+      cors_url_loader_factory_(cors_url_loader_factory) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
-
-  binding_set_.AddBinding(this, std::move(request));
-  binding_set_.set_connection_error_handler(base::BindRepeating(
-      &URLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
 
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Register(
@@ -122,33 +120,21 @@ void URLLoaderFactory::CreateLoaderAndStart(
     }
   }
 
-  url_loaders_.insert(std::make_unique<URLLoader>(
+  auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
-      base::BindOnce(&URLLoaderFactory::DestroyURLLoader,
-                     base::Unretained(this)),
+      base::BindOnce(&cors::CORSURLLoaderFactory::DestroyURLLoader,
+                     base::Unretained(cors_url_loader_factory_)),
       std::move(request), options, url_request, report_raw_headers,
       std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), request_id, resource_scheduler_client_,
       std::move(keepalive_statistics_recorder),
-      std::move(network_usage_accumulator)));
+      std::move(network_usage_accumulator));
+  cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 
 void URLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
-}
-
-void URLLoaderFactory::DestroyURLLoader(URLLoader* url_loader) {
-  auto it = url_loaders_.find(url_loader);
-  DCHECK(it != url_loaders_.end());
-  url_loaders_.erase(it);
-  DeleteIfNeeded();
-}
-
-void URLLoaderFactory::DeleteIfNeeded() {
-  if (!binding_set_.empty() || !url_loaders_.empty())
-    return;
-  context_->DestroyURLLoaderFactory(this);
+  NOTREACHED();
 }
 
 }  // namespace network

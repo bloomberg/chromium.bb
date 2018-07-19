@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -119,8 +120,8 @@ class CORSURLLoaderTest : public testing::Test {
     std::unique_ptr<TestURLLoaderFactory> factory =
         std::make_unique<TestURLLoaderFactory>();
     test_url_loader_factory_ = factory->GetWeakPtr();
-    cors_url_loader_factory_ =
-        std::make_unique<CORSURLLoaderFactory>(std::move(factory));
+    cors_url_loader_factory_ = std::make_unique<CORSURLLoaderFactory>(
+        std::move(factory), base::RepeatingCallback<void(int)>());
   }
 
  protected:
@@ -135,6 +136,9 @@ class CORSURLLoaderTest : public testing::Test {
     ResourceRequest request;
     request.fetch_request_mode = fetch_request_mode;
     request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+    request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+    request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
     request.method = net::HttpRequestHeaders::kGetMethod;
     request.url = url;
     request.request_initiator = url::Origin::Create(origin);
@@ -664,6 +668,9 @@ TEST_F(CORSURLLoaderTest,
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
   original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  original_request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+  original_request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+  original_request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
   original_request.method = "PATCH";
   original_request.url = url;
   original_request.request_initiator = url::Origin::Create(origin);
@@ -734,6 +741,9 @@ TEST_F(CORSURLLoaderTest, RedirectInfoShouldBeUsed) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+  request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+  request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
   request.method = "POST";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -816,37 +826,10 @@ TEST_F(CORSURLLoaderTest, FollowErrorRedirect) {
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
   original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  original_request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+  original_request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+  original_request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
   original_request.fetch_redirect_mode = mojom::FetchRedirectMode::kError;
-  original_request.method = "GET";
-  original_request.url = url;
-  original_request.request_initiator = url::Origin::Create(origin);
-  CreateLoaderAndStart(original_request);
-
-  NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(301, "GET", new_url));
-  RunUntilRedirectReceived();
-  EXPECT_TRUE(client().has_received_redirect());
-  EXPECT_FALSE(client().has_received_response());
-  EXPECT_FALSE(client().has_received_completion());
-
-  ClearHasReceivedRedirect();
-  FollowRedirect();
-  RunUntilComplete();
-
-  EXPECT_FALSE(client().has_received_redirect());
-  EXPECT_FALSE(client().has_received_response());
-  ASSERT_TRUE(client().has_received_completion());
-  EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
-}
-
-TEST_F(CORSURLLoaderTest, FollowManualRedirect) {
-  const GURL origin("https://example.com");
-  const GURL url("https://example.com/foo.png");
-  const GURL new_url("https://example.com/bar.png");
-
-  ResourceRequest original_request;
-  original_request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
-  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  original_request.fetch_redirect_mode = mojom::FetchRedirectMode::kManual;
   original_request.method = "GET";
   original_request.url = url;
   original_request.request_initiator = url::Origin::Create(origin);

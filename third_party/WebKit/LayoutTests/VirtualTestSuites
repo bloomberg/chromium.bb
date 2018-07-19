@@ -507,6 +507,36 @@
     "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
   },
   {
+    "prefix": "outofblink-cors-ns",
+    "base": "external/wpt/fetch",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "external/wpt/http",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "external/wpt/referrer-policy",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "http/tests/fetch",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "http/tests/xmlhttprequest",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
     "prefix": "presentation",
     "base": "receiver",
     "args": ["--force-presentation-receiver-for-testing"]
