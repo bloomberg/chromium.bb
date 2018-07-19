@@ -16,10 +16,6 @@
 #include "media/base/audio_codecs.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-#if defined(CHROMECAST_BUILD)
-#include <string>
-#endif
-
 namespace extensions {
 class ExtensionsClient;
 class ExtensionsGuestViewContainerDispatcher;
