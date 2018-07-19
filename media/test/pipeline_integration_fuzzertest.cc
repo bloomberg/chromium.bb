@@ -20,6 +20,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/test/mock_media_source.h"
 #include "media/test/pipeline_integration_test_base.h"
+#include "third_party/libaom/av1_buildflags.h"
 
 namespace {
 
@@ -31,6 +32,9 @@ enum FuzzerVariant {
   WEBM_VP8,
   WEBM_VP9,
   WEBM_OPUS_VP9,
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  MP4_AV1,
+#endif
   MP4_FLAC,
   MP3,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -61,6 +65,10 @@ std::string MseFuzzerVariantEnumToMimeTypeString(FuzzerVariant variant) {
       return "video/webm; codecs=\"vp9\"";
     case WEBM_OPUS_VP9:
       return "video/webm; codecs=\"opus,vp9\"";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    case MP4_AV1:
+      return "video/mp4; codecs=\"av01.0.04M.08\"";
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
     case MP4_FLAC:
       return "audio/mp4; codecs=\"flac\"";
     case MP3:

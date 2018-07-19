@@ -4,6 +4,7 @@
 
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libaom/options.gni")
 
 source_set("run_all_unittests") {
   testonly = true
@@ -167,6 +168,10 @@ pipeline_integration_fuzzer_variants = [
   # See below for additional variants depending on build configuration.
 ]
 
+if (enable_av1_decoder) {
+  pipeline_integration_fuzzer_variants += [ "MP4_AV1" ]
+}
+
 if (proprietary_codecs) {
   pipeline_integration_fuzzer_variants += [
     "ADTS",
@@ -210,6 +215,7 @@ foreach(variant, pipeline_integration_fuzzer_variants) {
       # header for pipeline_integration_test_base.h.  This should be
       # moved into the .cc file to avoid the extra dependency here.
       "//testing/gmock",
+      "//third_party/libaom:av1_buildflags",
       "//ui/gfx:test_support",
     ]
 
