@@ -3208,22 +3208,31 @@ TEST_P(SequenceManagerTest, TaskQueueDeletedOnAnotherThread) {
 
 namespace {
 
-void DoNothing() {}
-
-class PostTaskInDestructor {
+class RunOnDestructionHelper {
  public:
-  explicit PostTaskInDestructor(scoped_refptr<TaskQueue> task_queue)
-      : task_queue_(task_queue) {}
+  explicit RunOnDestructionHelper(base::OnceClosure task)
+      : task_(std::move(task)) {}
 
-  ~PostTaskInDestructor() {
-    task_queue_->PostTask(FROM_HERE, BindOnce(&DoNothing));
-  }
-
-  void Do() {}
+  ~RunOnDestructionHelper() { std::move(task_).Run(); }
 
  private:
-  scoped_refptr<TaskQueue> task_queue_;
+  base::OnceClosure task_;
 };
+
+base::OnceClosure RunOnDestruction(base::OnceClosure task) {
+  return base::BindOnce(
+      [](std::unique_ptr<RunOnDestructionHelper>) {},
+      base::Passed(std::make_unique<RunOnDestructionHelper>(std::move(task))));
+}
+
+base::OnceClosure PostOnDestructon(scoped_refptr<TestTaskQueue> task_queue,
+                                   base::OnceClosure task) {
+  return RunOnDestruction(base::BindOnce(
+      [](base::OnceClosure task, scoped_refptr<TestTaskQueue> task_queue) {
+        task_queue->PostTask(FROM_HERE, std::move(task));
+      },
+      base::Passed(std::move(task)), task_queue));
+}
 
 }  // namespace
 
@@ -3241,17 +3250,33 @@ TEST_P(SequenceManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
 
   thread->task_runner()->PostTask(
       FROM_HERE, BindOnce(
-                     [](scoped_refptr<SingleThreadTaskRunner> task_queue,
-                        std::unique_ptr<PostTaskInDestructor> test_object,
+                     [](scoped_refptr<TestTaskQueue> task_queue,
                         WaitableEvent* test_executed) {
-                       task_queue->PostTask(FROM_HERE,
-                                            BindOnce(&PostTaskInDestructor::Do,
-                                                     std::move(test_object)));
+                       task_queue->PostTask(
+                           FROM_HERE, PostOnDestructon(
+                                          task_queue, base::BindOnce([]() {})));
                        test_executed->Signal();
                      },
-                     main_tq, std::make_unique<PostTaskInDestructor>(main_tq),
-                     &test_executed));
+                     main_tq, &test_executed));
   test_executed.Wait();
+}
+
+TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
+  // Checks that a chain of closures which post other closures on destruction do
+  // thing on shutdown.
+  scoped_refptr<TestTaskQueue> task_queue = CreateTaskQueue();
+  bool run = false;
+  task_queue->PostTask(
+      FROM_HERE,
+      PostOnDestructon(
+          task_queue,
+          PostOnDestructon(task_queue,
+                           RunOnDestruction(base::BindOnce(
+                               [](bool* run) { *run = true; }, &run)))));
+
+  manager_.reset();
+
+  EXPECT_TRUE(run);
 }
 
 }  // namespace sequence_manager_impl_unittest
