@@ -21,17 +21,27 @@
 #include "ui/gfx/x/x11.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "ui/ozone/public/ozone_switches.h"
+#endif
+
 namespace content {
 
 UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string enabled =
       command_line->GetSwitchValueASCII(switches::kEnableFeatures);
   std::string disabled =
       command_line->GetSwitchValueASCII(switches::kDisableFeatures);
   feature_list_.InitFromCommandLine(enabled, disabled);
+
+#if defined(OS_FUCHSIA)
+  // Use headless ozone platform on Fuchsia by default.
+  // TODO(crbug.com/865172): Remove this flag.
+  if (!command_line->HasSwitch(switches::kOzonePlatform))
+    command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
+#endif
 
 #if defined(USE_X11)
   XInitThreads();

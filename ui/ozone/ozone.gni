@@ -72,12 +72,8 @@ declare_args() {
       ozone_platform = "windows"
       ozone_platform_windows = true
     } else if (is_fuchsia) {
-      # TODO(crbug.com/829980): Uncomment this line to set scenic as default
-      # on fuchsia. Currently this breaks content_unittests on test bots.
-      #
-      # ozone_platform = "scenic"
+      ozone_platform = "scenic"
       ozone_platform_scenic = true
-
       ozone_platform_magma = true
     }
   }

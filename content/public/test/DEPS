@@ -10,6 +10,7 @@ include_rules = [
   "+services/network",
   "+services/resource_coordinator",
   "+services/service_manager",
+  "+ui/ozone/public",
   "+v8/include/v8.h",
 ]
 
