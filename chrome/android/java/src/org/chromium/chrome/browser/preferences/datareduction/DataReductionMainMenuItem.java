@@ -57,7 +57,7 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
 
             long chartStartDateInMillisSinceEpoch =
                     DataReductionProxySettings.getInstance().getDataReductionLastUpdateTime()
-                    - DateUtils.DAY_IN_MILLIS * ChartDataUsageView.DAYS_IN_CHART;
+                    - DateUtils.DAY_IN_MILLIS * ChartDataUsageView.MAXIMUM_DAYS_IN_CHART;
             long firstEnabledInMillisSinceEpoch = DataReductionProxySettings.getInstance()
                                                           .getDataReductionProxyFirstEnabledTime();
             long mostRecentTime = chartStartDateInMillisSinceEpoch > firstEnabledInMillisSinceEpoch
