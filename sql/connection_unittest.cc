@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "sql/connection.h"
@@ -28,60 +29,6 @@
 
 namespace sql {
 namespace test {
-
-// Replaces the database time source with an object that steps forward 1ms on
-// each check, and which can be jumped forward an arbitrary amount of time
-// programmatically.
-class ScopedMockTimeSource {
- public:
-  ScopedMockTimeSource(Connection& db)
-      : db_(db),
-        delta_(base::TimeDelta::FromMilliseconds(1)) {
-    // Save the current source and replace it.
-    save_.swap(db_.clock_);
-    db_.clock_.reset(new MockTimeSource(*this));
-  }
-  ~ScopedMockTimeSource() {
-    // Put original source back.
-    db_.clock_.swap(save_);
-  }
-
-  void adjust(const base::TimeDelta& delta) {
-    current_time_ += delta;
-  }
-
- private:
-  class MockTimeSource : public TimeSource {
-   public:
-    MockTimeSource(ScopedMockTimeSource& owner)
-        : owner_(owner) {
-    }
-    ~MockTimeSource() override = default;
-
-    base::TimeTicks Now() override {
-      base::TimeTicks ret(owner_.current_time_);
-      owner_.current_time_ += owner_.delta_;
-      return ret;
-    }
-
-   private:
-    ScopedMockTimeSource& owner_;
-    DISALLOW_COPY_AND_ASSIGN(MockTimeSource);
-  };
-
-  Connection& db_;
-
-  // Saves original source from |db_|.
-  std::unique_ptr<TimeSource> save_;
-
-  // Current time returned by mock.
-  base::TimeTicks current_time_;
-
-  // How far to jump on each Now() call.
-  base::TimeDelta delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMockTimeSource);
-};
 
 // Allow a test to add a SQLite function in a scoped context.
 class ScopedScalarFunction {
@@ -224,18 +171,20 @@ class ScopedUmaskSetter {
 #endif  // defined(OS_POSIX)
 
 // SQLite function to adjust mock time by |argv[0]| milliseconds.
-void sqlite_adjust_millis(sql::test::ScopedMockTimeSource* time_mock,
+void sqlite_adjust_millis(base::SimpleTestTickClock* mock_clock,
                           sqlite3_context* context,
-                          int argc, sqlite3_value** argv) {
-  int64_t milliseconds = argc > 0 ? sqlite3_value_int64(argv[0]) : 1000;
-  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
+                          int argc,
+                          sqlite3_value** argv) {
+  CHECK_EQ(argc, 1);
+  int64_t milliseconds = sqlite3_value_int64(argv[0]);
+  mock_clock->Advance(base::TimeDelta::FromMilliseconds(milliseconds));
   sqlite3_result_int64(context, milliseconds);
 }
 
 // Adjust mock time by |milliseconds| on commit.
-int adjust_commit_hook(sql::test::ScopedMockTimeSource* time_mock,
+int adjust_commit_hook(base::SimpleTestTickClock* mock_clock,
                        int64_t milliseconds) {
-  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
+  mock_clock->Advance(base::TimeDelta::FromMilliseconds(milliseconds));
   return SQLITE_OK;
 }
 
@@ -271,34 +220,57 @@ TEST_F(SQLConnectionTest, ExecuteWithErrorCode) {
 
 TEST_F(SQLConnectionTest, CachedStatement) {
   sql::StatementID id1 = SQL_FROM_HERE;
+  sql::StatementID id2 = SQL_FROM_HERE;
+  static const char kId1Sql[] = "SELECT a FROM foo";
+  static const char kId2Sql[] = "SELECT b FROM foo";
 
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   ASSERT_TRUE(db().Execute("INSERT INTO foo(a, b) VALUES (12, 13)"));
 
-  // Create a new cached statement.
+  sqlite3_stmt* raw_id1_statement;
+  sqlite3_stmt* raw_id2_statement;
   {
-    sql::Statement s(db().GetCachedStatement(id1, "SELECT a FROM foo"));
-    ASSERT_TRUE(s.is_valid());
+    scoped_refptr<sql::Connection::StatementRef> ref_from_id1 =
+        db().GetCachedStatement(id1, kId1Sql);
+    raw_id1_statement = ref_from_id1->stmt();
 
-    ASSERT_TRUE(s.Step());
-    EXPECT_EQ(12, s.ColumnInt(0));
+    sql::Statement from_id1(std::move(ref_from_id1));
+    ASSERT_TRUE(from_id1.is_valid());
+    ASSERT_TRUE(from_id1.Step());
+    EXPECT_EQ(12, from_id1.ColumnInt(0));
+
+    scoped_refptr<sql::Connection::StatementRef> ref_from_id2 =
+        db().GetCachedStatement(id2, kId2Sql);
+    raw_id2_statement = ref_from_id2->stmt();
+    EXPECT_NE(raw_id1_statement, raw_id2_statement);
+
+    sql::Statement from_id2(std::move(ref_from_id2));
+    ASSERT_TRUE(from_id2.is_valid());
+    ASSERT_TRUE(from_id2.Step());
+    EXPECT_EQ(13, from_id2.ColumnInt(0));
   }
 
-  // The statement should be cached still.
-  EXPECT_TRUE(db().HasCachedStatement(id1));
-
   {
-    // Get the same statement using different SQL. This should ignore our
-    // SQL and use the cached one (so it will be valid).
-    sql::Statement s(db().GetCachedStatement(id1, "something invalid("));
-    ASSERT_TRUE(s.is_valid());
+    scoped_refptr<sql::Connection::StatementRef> ref_from_id1 =
+        db().GetCachedStatement(id1, kId1Sql);
+    EXPECT_EQ(raw_id1_statement, ref_from_id1->stmt())
+        << "statement was not cached";
 
-    ASSERT_TRUE(s.Step());
-    EXPECT_EQ(12, s.ColumnInt(0));
+    sql::Statement from_id1(std::move(ref_from_id1));
+    ASSERT_TRUE(from_id1.is_valid());
+    ASSERT_TRUE(from_id1.Step()) << "cached statement was not reset";
+    EXPECT_EQ(12, from_id1.ColumnInt(0));
+
+    scoped_refptr<sql::Connection::StatementRef> ref_from_id2 =
+        db().GetCachedStatement(id2, kId2Sql);
+    EXPECT_EQ(raw_id2_statement, ref_from_id2->stmt())
+        << "statement was not cached";
+
+    sql::Statement from_id2(std::move(ref_from_id2));
+    ASSERT_TRUE(from_id2.is_valid());
+    ASSERT_TRUE(from_id2.Step()) << "cached statement was not reset";
+    EXPECT_EQ(13, from_id2.ColumnInt(0));
   }
-
-  // Make sure other statements aren't marked as cached.
-  EXPECT_FALSE(db().HasCachedStatement(SQL_FROM_HERE));
 }
 
 TEST_F(SQLConnectionTest, IsSQLValidTest) {
@@ -1296,7 +1268,10 @@ TEST_F(SQLConnectionTest, TimeQuery) {
   db().set_histogram_tag("Test");
   ASSERT_TRUE(db().OpenInMemory());
 
-  sql::test::ScopedMockTimeSource time_mock(db());
+  auto mock_clock = std::make_unique<base::SimpleTestTickClock>();
+  // Retaining the pointer is safe because the connection keeps it alive.
+  base::SimpleTestTickClock* mock_clock_ptr = mock_clock.get();
+  db().set_clock_for_testing(std::move(mock_clock));
 
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   EXPECT_TRUE(db().Execute(kCreateSql));
@@ -1304,7 +1279,7 @@ TEST_F(SQLConnectionTest, TimeQuery) {
   // Function to inject pauses into statements.
   sql::test::ScopedScalarFunction scoper(
       db(), "milliadjust", 1,
-      base::BindRepeating(&sqlite_adjust_millis, &time_mock));
+      base::BindRepeating(&sqlite_adjust_millis, mock_clock_ptr));
 
   base::HistogramTester tester;
 
@@ -1313,8 +1288,7 @@ TEST_F(SQLConnectionTest, TimeQuery) {
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(kQueryTime));
   ASSERT_TRUE(samples);
-  // 10 for the adjust, 1 for the measurement.
-  EXPECT_EQ(11, samples->sum());
+  EXPECT_EQ(10, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
   EXPECT_EQ(0, samples->sum());
@@ -1335,7 +1309,10 @@ TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
   db().set_histogram_tag("Test");
   ASSERT_TRUE(db().OpenInMemory());
 
-  sql::test::ScopedMockTimeSource time_mock(db());
+  auto mock_clock = std::make_unique<base::SimpleTestTickClock>();
+  // Retaining the pointer is safe because the connection keeps it alive.
+  base::SimpleTestTickClock* mock_clock_ptr = mock_clock.get();
+  db().set_clock_for_testing(std::move(mock_clock));
 
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   EXPECT_TRUE(db().Execute(kCreateSql));
@@ -1343,7 +1320,7 @@ TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
   // Function to inject pauses into statements.
   sql::test::ScopedScalarFunction scoper(
       db(), "milliadjust", 1,
-      base::BindRepeating(&sqlite_adjust_millis, &time_mock));
+      base::BindRepeating(&sqlite_adjust_millis, mock_clock_ptr));
 
   base::HistogramTester tester;
 
@@ -1352,21 +1329,18 @@ TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(kQueryTime));
   ASSERT_TRUE(samples);
-  // 10 for the adjust, 1 for the measurement.
-  EXPECT_EQ(11, samples->sum());
+  EXPECT_EQ(10, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
   ASSERT_TRUE(samples);
-  // 10 for the adjust, 1 for the measurement.
-  EXPECT_EQ(11, samples->sum());
+  EXPECT_EQ(10, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
   EXPECT_EQ(0, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
   ASSERT_TRUE(samples);
-  // 10 for the adjust, 1 for the measurement.
-  EXPECT_EQ(11, samples->sum());
+  EXPECT_EQ(10, samples->sum());
 }
 
 // Update with explicit transaction allocates time to QueryTime, UpdateTime, and
@@ -1378,7 +1352,10 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
   db().set_histogram_tag("Test");
   ASSERT_TRUE(db().OpenInMemory());
 
-  sql::test::ScopedMockTimeSource time_mock(db());
+  auto mock_clock = std::make_unique<base::SimpleTestTickClock>();
+  // Retaining the pointer is safe because the connection keeps it alive.
+  base::SimpleTestTickClock* mock_clock_ptr = mock_clock.get();
+  db().set_clock_for_testing(std::move(mock_clock));
 
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   EXPECT_TRUE(db().Execute(kCreateSql));
@@ -1386,39 +1363,35 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
   // Function to inject pauses into statements.
   sql::test::ScopedScalarFunction scoper(
       db(), "milliadjust", 1,
-      base::BindRepeating(&sqlite_adjust_millis, &time_mock));
+      base::BindRepeating(&sqlite_adjust_millis, mock_clock_ptr));
 
   base::HistogramTester tester;
 
   {
     // Make the commit slow.
     sql::test::ScopedCommitHook scoped_hook(
-        db(), base::BindRepeating(adjust_commit_hook, &time_mock, 100));
+        db(), base::BindRepeating(adjust_commit_hook, mock_clock_ptr, 1000));
     ASSERT_TRUE(db().BeginTransaction());
     EXPECT_TRUE(db().Execute(
         "INSERT INTO foo VALUES (11, milliadjust(10))"));
-    EXPECT_TRUE(db().Execute(
-        "UPDATE foo SET value = milliadjust(10) WHERE id = 11"));
+    EXPECT_TRUE(
+        db().Execute("UPDATE foo SET value = milliadjust(100) WHERE id = 11"));
     EXPECT_TRUE(db().CommitTransaction());
   }
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(kQueryTime));
   ASSERT_TRUE(samples);
-  // 10 for insert adjust, 10 for update adjust, 100 for commit adjust, 1 for
-  // measuring each of BEGIN, INSERT, UPDATE, and COMMIT.
-  EXPECT_EQ(124, samples->sum());
+  // 10 for insert, 100 for update, 1000 for commit
+  EXPECT_EQ(1110, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
   ASSERT_TRUE(samples);
-  // 10 for insert adjust, 10 for update adjust, 100 for commit adjust, 1 for
-  // measuring each of INSERT, UPDATE, and COMMIT.
-  EXPECT_EQ(123, samples->sum());
+  EXPECT_EQ(1110, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
   ASSERT_TRUE(samples);
-  // 100 for commit adjust, 1 for measuring COMMIT.
-  EXPECT_EQ(101, samples->sum());
+  EXPECT_EQ(1000, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
   EXPECT_EQ(0, samples->sum());

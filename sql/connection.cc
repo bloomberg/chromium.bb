@@ -9,8 +9,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <utility>
-
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
@@ -29,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "sql/connection_memory_dump_provider.h"
@@ -260,7 +259,7 @@ Connection::Connection()
       autocommit_time_histogram_(nullptr),
       update_time_histogram_(nullptr),
       query_time_histogram_(nullptr),
-      clock_(new TimeSource()) {}
+      clock_(std::make_unique<base::DefaultTickClock>()) {}
 
 Connection::~Connection() {
   Close();
@@ -1237,9 +1236,9 @@ bool Connection::CommitTransaction() {
 
   // Collect the commit time manually, sql::Statement would register it as query
   // time only.
-  const base::TimeTicks before = Now();
+  const base::TimeTicks before = NowTicks();
   bool ret = commit.RunWithoutTimers();
-  const base::TimeDelta delta = Now() - before;
+  const base::TimeDelta delta = NowTicks() - before;
 
   RecordCommitTime(delta);
   RecordOneEvent(EVENT_COMMIT);
@@ -1298,7 +1297,7 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
     sqlite3_stmt* stmt = nullptr;
     const char *leftover_sql;
 
-    const base::TimeTicks before = Now();
+    const base::TimeTicks before = NowTicks();
     rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, &leftover_sql);
     sql = leftover_sql;
 
@@ -1336,7 +1335,7 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
       sql++;
     }
 
-    const base::TimeDelta delta = Now() - before;
+    const base::TimeDelta delta = NowTicks() - before;
     RecordTimeAndChanges(delta, read_only);
   }
 
@@ -1378,20 +1377,20 @@ bool Connection::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   return Execute(sql);
 }
 
-bool Connection::HasCachedStatement(StatementID id) const {
-  return statement_cache_.find(id) != statement_cache_.end();
-}
-
 scoped_refptr<Connection::StatementRef> Connection::GetCachedStatement(
     StatementID id,
     const char* sql) {
   auto it = statement_cache_.find(id);
   if (it != statement_cache_.end()) {
-    // Statement is in the cache. It should still be active (we're the only
-    // one invalidating cached statements, and we'll remove it from the cache
-    // if we do that. Make sure we reset it before giving out the cached one in
-    // case it still has some stuff bound.
+    // Statement is in the cache. It should still be active. We're the only
+    // one invalidating cached statements, and we remove them from the cache
+    // when we do that.
     DCHECK(it->second->is_valid());
+
+    DCHECK_EQ(std::string(sql), std::string(sqlite3_sql(it->second->stmt())))
+        << "GetCachedStatement used with same ID but different SQL";
+
+    // Reset the statement so it can be reused.
     sqlite3_reset(it->second->stmt());
     return it->second;
   }
@@ -1411,7 +1410,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
     sql::Connection* tracking_db, const char* sql) const {
   AssertIOAllowed();
   DCHECK(sql);
-  DCHECK(!tracking_db || const_cast<Connection*>(tracking_db)==this);
+  DCHECK(!tracking_db || tracking_db == this);
 
   // Return inactive statement.
   if (!db_)
@@ -1438,7 +1437,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
 std::string Connection::GetSchema() const {
   // The ORDER BY should not be necessary, but relying on organic
   // order for something like this is questionable.
-  const char* kSql =
+  static const char kSql[] =
       "SELECT type, name, tbl_name, sql "
       "FROM sqlite_master ORDER BY 1, 2, 3, 4";
   Statement statement(GetUntrackedStatement(kSql));
@@ -1795,9 +1794,9 @@ void Connection::DoRollback() {
 
   // Collect the rollback time manually, sql::Statement would register it as
   // query time only.
-  const base::TimeTicks before = Now();
+  const base::TimeTicks before = NowTicks();
   rollback.RunWithoutTimers();
-  const base::TimeDelta delta = Now() - before;
+  const base::TimeDelta delta = NowTicks() - before;
 
   RecordUpdateTime(delta);
   RecordOneEvent(EVENT_ROLLBACK);
@@ -1824,6 +1823,7 @@ void Connection::StatementRefDeleted(StatementRef* ref) {
 
 void Connection::set_histogram_tag(const std::string& tag) {
   DCHECK(!is_open());
+
   histogram_tag_ = tag;
 }
 
@@ -1963,10 +1963,6 @@ bool Connection::ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
                                    const std::string& dump_name) {
   return memory_dump_provider_ &&
          memory_dump_provider_->ReportMemoryUsage(pmd, dump_name);
-}
-
-base::TimeTicks TimeSource::Now() {
-  return base::TimeTicks::Now();
 }
 
 }  // namespace sql

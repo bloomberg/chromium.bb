@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -20,7 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
+#include "base/time/tick_clock.h"
 #include "sql/sql_export.h"
 #include "sql/statement_id.h"
 
@@ -32,8 +33,8 @@ class FilePath;
 class HistogramBase;
 namespace trace_event {
 class ProcessMemoryDump;
-}
-}
+}  // namespace trace_event
+}  // namespace base
 
 namespace sql {
 
@@ -47,24 +48,18 @@ class ScopedCommitHook;
 class ScopedErrorExpecter;
 class ScopedScalarFunction;
 class ScopedMockTimeSource;
-}
+}  // namespace test
 
 class Connection;
 
-// Abstract the source of timing information for metrics (RecordCommitTime, etc)
-// to allow testing control.
-class SQL_EXPORT TimeSource {
- public:
-  TimeSource() {}
-  virtual ~TimeSource() {}
-
-  // Return the current time (by default base::TimeTicks::Now()).
-  virtual base::TimeTicks Now();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TimeSource);
-};
-
+// Handle to an open SQLite database.
+//
+// Instances of this class are thread-unsafe and DCHECK that they are accessed
+// on the same sequence.
+//
+// TODO(pwnall): This should be renamed to Database. Class instances are
+// typically named "db_" / "db", and the class' equivalents in other systems
+// used by Chrome are named LevelDB::DB and blink::IDBDatabase.
 class SQL_EXPORT Connection {
  private:
   class StatementRef;  // Forward declaration, see real one below.
@@ -84,12 +79,22 @@ class SQL_EXPORT Connection {
   // From sqlite.org: "The page size must be a power of two greater than or
   // equal to 512 and less than or equal to SQLITE_MAX_PAGE_SIZE. The maximum
   // value for SQLITE_MAX_PAGE_SIZE is 32768."
-  void set_page_size(int page_size) { page_size_ = page_size; }
+  void set_page_size(int page_size) {
+    DCHECK(!page_size || (page_size >= 512));
+    DCHECK(!page_size || !(page_size & (page_size - 1)))
+        << "page_size must be a power of two";
+
+    page_size_ = page_size;
+  }
 
   // Sets the number of pages that will be cached in memory by sqlite. The
   // total cache size in bytes will be page_size * cache_size. This must be
   // called before Open() to have an effect.
-  void set_cache_size(int cache_size) { cache_size_ = cache_size; }
+  void set_cache_size(int cache_size) {
+    DCHECK_GE(cache_size, 0);
+
+    cache_size_ = cache_size;
+  }
 
   // Call to put the database in exclusive locking mode. There is no "back to
   // normal" flag because of some additional requirements sqlite puts on this
@@ -105,8 +110,8 @@ class SQL_EXPORT Connection {
 
   // Call to cause Open() to restrict access permissions of the
   // database file to only the owner.
-  // TODO(shess): Currently only supported on OS_POSIX, is a noop on
-  // other platforms.
+  //
+  // This is only supported on OS_POSIX and is a noop on other platforms.
   void set_restrict_to_user() { restrict_to_user_ = true; }
 
   // Call to use alternative status-tracking for mmap.  Usually this is tracked
@@ -114,7 +119,7 @@ class SQL_EXPORT Connection {
   // TODO(shess): Maybe just have all databases use the alt option?
   void set_mmap_alt_status() { mmap_alt_status_ = true; }
 
-  // Call to opt out of memory-mapped file I/O.
+  // Opt out of memory-mapped file I/O.
   void set_mmap_disabled() { mmap_disabled_ = true; }
 
   // Set an error-handling callback.  On errors, the error number (and
@@ -126,12 +131,8 @@ class SQL_EXPORT Connection {
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
   }
-  bool has_error_callback() const {
-    return !error_callback_.is_null();
-  }
-  void reset_error_callback() {
-    error_callback_.Reset();
-  }
+  bool has_error_callback() const { return !error_callback_.is_null(); }
+  void reset_error_callback() { error_callback_.Reset(); }
 
   // Set this to enable additional per-connection histogramming.  Must be called
   // before Open().
@@ -191,9 +192,7 @@ class SQL_EXPORT Connection {
     EVENT_MAX_VALUE
   };
   void RecordEvent(Events event, size_t count);
-  void RecordOneEvent(Events event) {
-    RecordEvent(event, 1);
-  }
+  void RecordOneEvent(Events event) { RecordEvent(event, 1); }
 
   // Run "PRAGMA integrity_check" and post each line of
   // results into |messages|.  Returns the success of running the
@@ -232,7 +231,7 @@ class SQL_EXPORT Connection {
   bool OpenTemporary() WARN_UNUSED_RESULT;
 
   // Returns true if the database has been successfully opened.
-  bool is_open() const { return !!db_; }
+  bool is_open() const { return static_cast<bool>(db_); }
 
   // Closes the database. This is automatically performed on destruction for
   // you, but this allows you to close the database early. You must not call
@@ -372,12 +371,6 @@ class SQL_EXPORT Connection {
   // Like Execute(), but returns the error code given by SQLite.
   int ExecuteAndReturnErrorCode(const char* sql) WARN_UNUSED_RESULT;
 
-  // Returns true if we have a statement with the given identifier already
-  // cached. This is normally not necessary to call, but can be useful if the
-  // caller has to dynamically build up SQL to avoid doing so if it's already
-  // cached.
-  bool HasCachedStatement(StatementID id) const;
-
   // Returns a statement for the given SQL using the statement cache. It can
   // take a nontrivial amount of work to parse and compile a statement, so
   // keeping commonly-used ones around for future use is important for
@@ -466,6 +459,16 @@ class SQL_EXPORT Connection {
   // crash server.
   void ReportDiagnosticInfo(int extended_error, Statement* stmt);
 
+  // Helper to return the current time from the time source.
+  base::TimeTicks NowTicks() const { return clock_->NowTicks(); }
+
+  // Intended for tests to inject a mock time source.
+  //
+  // Inlined to avoid generating code in the production binary.
+  inline void set_clock_for_testing(std::unique_ptr<base::TickClock> clock) {
+    clock_ = std::move(clock);
+  }
+
  private:
   // For recovery module.
   friend class Recovery;
@@ -481,6 +484,7 @@ class SQL_EXPORT Connection {
   friend class test::ScopedScalarFunction;
   friend class test::ScopedMockTimeSource;
 
+  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, CachedStatement);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, CollectDiagnosticInfo);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSize);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSizeAltStatus);
@@ -658,11 +662,6 @@ class SQL_EXPORT Connection {
   // EVENT_CHANGES_AUTOCOMMIT or EVENT_CHANGES_COMMIT.
   void RecordTimeAndChanges(const base::TimeDelta& delta, bool read_only);
 
-  // Helper to return the current time from the time source.
-  base::TimeTicks Now() {
-    return clock_->Now();
-  }
-
   // Release page-cache memory if memory-mapped I/O is enabled and the database
   // was changed.  Passing true for |implicit_change_performed| allows
   // overriding the change detection for cases like DDL (CREATE, DROP, etc),
@@ -788,7 +787,7 @@ class SQL_EXPORT Connection {
 
   // Source for timing information, provided to allow tests to inject time
   // changes.
-  std::unique_ptr<TimeSource> clock_;
+  std::unique_ptr<base::TickClock> clock_;
 
   // Stores the dump provider object when db is open.
   std::unique_ptr<ConnectionMemoryDumpProvider> memory_dump_provider_;
