@@ -402,32 +402,35 @@ camera.models.FileSystem.saveToFile_ = function(
  * Saves the picture into the external or internal file system.
  * @param {boolean} isVideo Picture is a video.
  * @param {Blob} blob Data of the picture to be saved.
- * @param {function(FileEntry)} onSuccess Success callback with the entry of
- *     the saved picture.
- * @param {function(*=)} onFailure Failure callback.
+ * @return {!Promise<FileEntry>} Promise for the result.
  */
-camera.models.FileSystem.savePicture = function(
-    isVideo, blob, onSuccess, onFailure) {
+camera.models.FileSystem.savePicture = function(isVideo, blob) {
   var fs = camera.models.FileSystem.externalFs ?
       camera.models.FileSystem.externalFs : camera.models.FileSystem.internalFs;
   var name = camera.models.FileSystem.generatePictureName_(isVideo, Date.now());
-  camera.models.FileSystem.saveToFile_(fs, name, blob, onSuccess, onFailure);
+  return new Promise((resolve, reject) => {
+    camera.models.FileSystem.saveToFile_(fs, name, blob, resolve, reject);
+  });
 };
 
 /**
  * Creates a thumbnail from the picture.
  * @param {boolean} isVideo Picture is a video.
  * @param {string} url Picture as an URL.
- * @param {function(Blob)} onSuccess Success callback with the thumbnail as a
- *     blob.
- * @param {function(*=)} onFailure Failure callback.
+ * @return {!Promise<Blob>} Promise for the result.
  * @private
  */
-camera.models.FileSystem.createThumbnail_ = function(
-    isVideo, url, onSuccess, onFailure) {
+camera.models.FileSystem.createThumbnail_ = function(isVideo, url) {
   var element = document.createElement(isVideo ? 'video' : 'img');
-
-  var drawThumbnail = function() {
+  return new Promise((resolve, reject) => {
+    if (isVideo) {
+      element.onloadeddata = resolve;
+    } else {
+      element.onload = resolve;
+    }
+    element.onerror = reject;
+    element.src = url;
+  }).then(() => {
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
     var thumbnailWidth = camera.models.FileSystem.THUMBNAIL_WIDTH;
@@ -438,22 +441,16 @@ camera.models.FileSystem.createThumbnail_ = function(
     canvas.width = thumbnailWidth;
     canvas.height = thumbnailHeight;
     context.drawImage(element, 0, 0, thumbnailWidth, thumbnailHeight);
-    canvas.toBlob(function(blob) {
-      if (blob) {
-        onSuccess(blob);
-      } else {
-        onFailure('Failed to create thumbnail.');
-      }
-    }, 'image/jpeg');
-  };
-
-  if (isVideo) {
-    element.onloadeddata = drawThumbnail;
-  } else {
-    element.onload = drawThumbnail;
-  }
-  element.onerror = onFailure;
-  element.src = url;
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject('Failed to create thumbnail.');
+        }
+      }, 'image/jpeg');
+    });
+  });
 };
 
 /**
@@ -471,23 +468,18 @@ camera.models.FileSystem.getThumbnailName = function(entry) {
  * Creates and saves the thumbnail of the given picture.
  * @param {boolean} isVideo Picture is a video.
  * @param {FileEntry} entry Picture's file entry whose thumbnail to be saved.
- * @param {function(FileEntry)} onSuccess Success callback with the file entry
- *     of the saved thumbnail.
- * @param {function(*=)} onFailure Failure callback.
+ * @return {!Promise<FileEntry>} Promise for the result.
  */
-camera.models.FileSystem.saveThumbnail = function(
-    isVideo, entry, onSuccess, onFailure) {
-  camera.models.FileSystem.pictureURL(entry).then(url => {
-    return new Promise((resolve, reject) => {
-      camera.models.FileSystem.createThumbnail_(isVideo, url, resolve, reject);
-    });
+camera.models.FileSystem.saveThumbnail = function(isVideo, entry) {
+  return camera.models.FileSystem.pictureURL(entry).then(url => {
+    return camera.models.FileSystem.createThumbnail_(isVideo, url);
   }).then(blob => {
     return new Promise((resolve, reject) => {
       var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
       camera.models.FileSystem.saveToFile_(camera.models.FileSystem.internalFs,
           thumbnailName, blob, resolve, reject);
     });
-  }).then(onSuccess).catch(onFailure);
+  });
 };
 
 /**

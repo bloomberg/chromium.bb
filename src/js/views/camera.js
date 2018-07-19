@@ -129,7 +129,7 @@ camera.views.Camera = function(context, router, model) {
 
   /**
    * Timer for elapsed recording time for video recording.
-   * @type {number?}
+   * @type {?number}
    * @private
    */
   this.recordingTimer_ = null;
@@ -156,21 +156,21 @@ camera.views.Camera = function(context, router, model) {
 
   /**
    * Timer used to countdown before taking the picture.
-   * @type {number?}
+   * @type {?number}
    * @private
    */
   this.tickTakePictureTimer_ = null;
 
   /**
    * Timer for do-take-picture calls.
-   * @type {number?}
+   * @type {?number}
    * @private
    */
   this.doTakePictureTimer_ = null;
 
   /**
    * DeviceId of the camera device used for the last time during this session.
-   * @type {string?}
+   * @type {?string}
    * @private
    */
   this.videoDeviceId_ = null;
@@ -313,8 +313,8 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
   } else {
     if (this.imageCapture_ == null) {
       // Create a image-capture before proceeding to take photo.
-      const track = this.stream_ && this.stream_.getVideoTracks()[0];
-      this.imageCapture_ = !track ? null : new ImageCapture(track);
+      var track = this.stream_ && this.stream_.getVideoTracks()[0];
+      this.imageCapture_ = track && new ImageCapture(track);
       if (this.imageCapture_ == null) {
         this.showToastMessage_('errorMsgTakePhotoFailed', true);
         return;

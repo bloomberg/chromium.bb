@@ -21,7 +21,7 @@ camera.views = camera.views || {};
 camera.views.Toast = function() {
   /**
    * Timer for hiding the toast message after some delay.
-   * @type {number?}
+   * @type {?number}
    * @private
    */
   this.toastHideTimer_ = null;

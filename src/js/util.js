@@ -1272,7 +1272,7 @@ camera.util.makeElementsUnfocusableByMouse = function() {
  * Updates the wrapped element size according to the given bounds. The wrapped
  * content (either img or video child element) should keep the aspect ratio and
  * is either filled up or letterboxed inside the wrapper element.
- * @param {HTMLElement}  wrapper Element whose wrapped child to be updated.
+ * @param {HTMLElement} wrapper Element whose wrapped child to be updated.
  * @param {number} boundWidth Bound width in pixels.
  * @param {number} boundHeight Bound height in pixels.
  * @param {boolean} fill True to fill up and crop the content to the bounds,
@@ -1282,14 +1282,14 @@ camera.util.updateElementSize = function(
     wrapper, boundWidth, boundHeight, fill) {
   // Assume the wrapped child is either img or video element.
   var child = wrapper.firstElementChild;
-  var srcWidth = child.naturalWidth ? child.naturalWidth : child.videoWidth;
-  var srcHeight = child.naturalHeight ? child.naturalHeight : child.videoHeight;
+  var srcWidth = child.naturalWidth || child.videoWidth;
+  var srcHeight = child.naturalHeight || child.videoHeight;
   var f = fill ? Math.max : Math.min;
   var scale = f(boundHeight / srcHeight, boundWidth / srcWidth);
 
   // Corresponding CSS should handle the adjusted sizes for proper display.
-  child.width = scale * srcWidth;
-  child.height = scale * srcHeight;
+  child.width = Math.round(scale * srcWidth);
+  child.height = Math.round(scale * srcHeight);
 };
 
 /*
