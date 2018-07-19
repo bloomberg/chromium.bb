@@ -168,7 +168,7 @@ class BrowsingDataRemover {
 
   // Like Remove(), but in case of URL-keyed only removes data whose URL match
   // |filter_builder| (e.g. are on certain origin or domain).
-  // RemoveWithFilter() currently only works with FILTERABLE_DATATYPES.
+  // RemoveWithFilter() currently only works with FILTERABLE_DATA_TYPES.
   virtual void RemoveWithFilter(
       const base::Time& delete_begin,
       const base::Time& delete_end,
