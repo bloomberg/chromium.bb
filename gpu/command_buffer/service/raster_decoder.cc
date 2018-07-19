@@ -2425,11 +2425,18 @@ bool RasterDecoderImpl::TexStorage2D(gles2::TextureRef* texture_ref,
     return false;
   }
 
+  unsigned int internal_format =
+      viz::TextureStorageFormat(texture_metadata.format());
+  if (!feature_info_->validators()->texture_internal_format_storage.IsValid(
+          internal_format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage2D", internal_format,
+                                    "internal_format");
+    return error::kNoError;
+  }
+
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
                              texture_metadata.target(), gr_context());
 
-  unsigned int internal_format =
-      viz::TextureStorageFormat(texture_metadata.format());
   GLenum format =
       gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
   GLenum type =
