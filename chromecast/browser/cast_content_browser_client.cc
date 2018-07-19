@@ -213,7 +213,12 @@ CastContentBrowserClient::CreateAudioManager(
   // TODO(alokp): Consider switching off the mixer on audio platforms
   // because we already have a mixer in the audio pipeline downstream of
   // CastAudioManager.
+#if !defined(OS_ANDROID)
   bool use_mixer = true;
+#else
+  bool use_mixer = false;
+#endif
+
 #if defined(USE_ALSA)
   return std::make_unique<media::CastAudioManagerAlsa>(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,

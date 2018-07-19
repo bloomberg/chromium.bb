@@ -517,6 +517,9 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                 sample_rate, preferred_buffer_size));
   }
 
+  audio_parameters_.set_effects(audio_parameters_.effects() |
+                                ::media::AudioParameters::MULTIZONE);
+
   audio_parameters_.set_latency_tag(AudioLatency::LATENCY_PLAYBACK);
 
   last_decoded_channel_layout_ =

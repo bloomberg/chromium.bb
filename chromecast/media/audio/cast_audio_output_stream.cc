@@ -73,10 +73,15 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
     CmaBackendFactory* backend_factory = audio_manager->backend_factory();
     DCHECK(backend_factory);
 
+    MediaPipelineDeviceParams::AudioStreamType stream_type =
+        MediaPipelineDeviceParams::kAudioStreamSoundEffects;
+    if (audio_params_.effects() & ::media::AudioParameters::MULTIZONE) {
+      stream_type = MediaPipelineDeviceParams::kAudioStreamNormal;
+    }
+
     backend_task_runner_.reset(new TaskRunnerImpl());
     MediaPipelineDeviceParams device_params(
-        MediaPipelineDeviceParams::kModeIgnorePts,
-        MediaPipelineDeviceParams::kAudioStreamSoundEffects,
+        MediaPipelineDeviceParams::kModeIgnorePts, stream_type,
         backend_task_runner_.get(), AudioContentType::kMedia,
         ::media::AudioDeviceDescription::kDefaultDeviceId);
     backend_ = backend_factory->CreateBackend(device_params);

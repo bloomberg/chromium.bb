@@ -90,6 +90,9 @@ media::AudioParameters GetMixerOutputParams(
   if (input_params.channel_layout() == media::CHANNEL_LAYOUT_DISCRETE)
     params.set_channels_for_discrete(input_params.channels());
 
+  // Specify the effects info the passed to the browser side.
+  params.set_effects(input_params.effects());
+
   // Specify the latency info to be passed to the browser side.
   params.set_latency_tag(latency);
   return params;
@@ -168,9 +171,6 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     media::AudioLatency::LatencyType latency,
     const std::string& device_id,
     media::OutputDeviceStatus* device_status) {
-  // Effects are not passed through to output creation, so ensure none are set.
-  DCHECK_EQ(input_params.effects(), media::AudioParameters::NO_EFFECTS);
-
   const MixerKey key(source_render_frame_id, input_params, latency, device_id);
   base::AutoLock auto_lock(mixers_lock_);
 

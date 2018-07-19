@@ -536,6 +536,72 @@ TEST_F(AudioRendererMixerManagerTest, LatencyMixing) {
   EXPECT_EQ(0, mixer_count());
 }
 
+// Verify GetMixer() correctly deduplicate mixers basing on the effects
+// requirements.
+TEST_F(AudioRendererMixerManagerTest, EffectsMixing) {
+  EXPECT_CALL(*mock_sink_.get(), Start()).Times(3);
+  EXPECT_CALL(*mock_sink_.get(), Stop()).Times(3);
+  EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(3);
+
+  EXPECT_EQ(0, mixer_count());
+
+  media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
+                                kChannelLayout, kSampleRate, kBufferSize);
+  params.set_effects(1);
+  media::AudioRendererMixer* mixer1 =
+      GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
+               kDefaultDeviceId, nullptr);
+  ASSERT_TRUE(mixer1);
+  EXPECT_EQ(1, mixer_count());
+
+  media::AudioRendererMixer* mixer2 =
+      GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
+               kDefaultDeviceId, nullptr);
+  ASSERT_TRUE(mixer2);
+  EXPECT_EQ(mixer1, mixer2);  // Same effects => same mixer.
+  EXPECT_EQ(1, mixer_count());
+
+  params.set_effects(2);
+  media::AudioRendererMixer* mixer3 =
+      GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
+               kDefaultDeviceId, nullptr);
+  ASSERT_TRUE(mixer3);
+  EXPECT_NE(mixer1, mixer3);
+  EXPECT_EQ(2, mixer_count());  // Another effects => another mixer.
+
+  media::AudioRendererMixer* mixer4 =
+      GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
+               kDefaultDeviceId, nullptr);
+  EXPECT_EQ(mixer3, mixer4);
+  EXPECT_EQ(2, mixer_count());  // Same effects => same mixer.
+
+  params.set_effects(3);
+  media::AudioRendererMixer* mixer5 =
+      GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
+               kDefaultDeviceId, nullptr);
+  ASSERT_TRUE(mixer5);
+  EXPECT_EQ(3, mixer_count());  // Another effects => another mixer.
+
+  media::AudioRendererMixer* mixer6 =
+      GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
+               kDefaultDeviceId, nullptr);
+  EXPECT_EQ(mixer5, mixer6);
+  EXPECT_EQ(3, mixer_count());  // Same effects => same mixer.
+
+  ReturnMixer(mixer1);
+  EXPECT_EQ(3, mixer_count());
+  ReturnMixer(mixer2);
+  EXPECT_EQ(2, mixer_count());
+  ReturnMixer(mixer3);
+  EXPECT_EQ(2, mixer_count());
+  ReturnMixer(mixer4);
+  EXPECT_EQ(1, mixer_count());
+  ReturnMixer(mixer5);
+  EXPECT_EQ(1, mixer_count());
+  ReturnMixer(mixer6);
+  EXPECT_EQ(0, mixer_count());
+}
+
 // Verify output bufer size of the mixer is correctly adjusted for Playback
 // latency.
 TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyPlayback) {

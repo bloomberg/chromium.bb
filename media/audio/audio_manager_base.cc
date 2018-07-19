@@ -348,6 +348,11 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 
     // Ensure we only pass on valid output parameters.
     if (output_params.IsValid()) {
+      if (params.effects() & AudioParameters::MULTIZONE) {
+        // Never turn off the multizone effect even if it is not preferred.
+        output_params.set_effects(output_params.effects() |
+                                  AudioParameters::MULTIZONE);
+      }
       if (params.effects() != output_params.effects()) {
         // Turn off effects that weren't requested.
         output_params.set_effects(params.effects() & output_params.effects());
