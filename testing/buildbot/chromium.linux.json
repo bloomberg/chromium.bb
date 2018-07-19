@@ -3116,6 +3116,11 @@
       "empty_main"
     ]
   },
+  "linux-goma-rbe-staging-rel": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "linux-jumbo-rel": {
     "additional_compile_targets": [
       "all"

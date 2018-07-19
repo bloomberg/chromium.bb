@@ -2704,6 +2704,11 @@
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
+      'linux-goma-rbe-staging-rel': {
+        'additional_compile_targets': [
+          'all'
+        ]
+      },
       'linux-gcc-rel': {
         'additional_compile_targets': [
           'empty_main',
