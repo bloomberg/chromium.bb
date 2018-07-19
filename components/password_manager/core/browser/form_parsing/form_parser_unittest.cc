@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -241,7 +242,15 @@ void CheckField(const std::vector<FormFieldData>& fields,
                                });
   ASSERT_TRUE(field_it != fields.end())
       << "Could not find a field with renderer ID " << renderer_id;
+
+// On iOS |id| is used for identifying DOM elements, so the parser should return
+// it.
+#if defined(OS_IOS)
+  EXPECT_EQ(element_name, field_it->id);
+#else
   EXPECT_EQ(element_name, field_it->name);
+#endif
+
   if (element_value)
     EXPECT_EQ(*element_value, field_it->value);
 }

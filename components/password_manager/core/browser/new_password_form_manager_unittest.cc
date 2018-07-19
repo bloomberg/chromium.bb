@@ -62,11 +62,13 @@ class NewPasswordFormManagerTest : public testing::Test {
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("username");
+    field.id = field.name;
     field.form_control_type = "text";
     field.unique_renderer_id = 2;
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("password");
+    field.id = field.name;
     field.form_control_type = "password";
     field.unique_renderer_id = 3;
     observed_form_.fields.push_back(field);
