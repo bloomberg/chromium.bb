@@ -26,7 +26,8 @@ namespace chromeos {
 // usage) when necessary to determine the current lock screen state.
 // Schedule notifications and lock/unlock screen based on the processor output.
 class ScreenTimeController : public KeyedService,
-                             public session_manager::SessionManagerObserver {
+                             public session_manager::SessionManagerObserver,
+                             public system::TimezoneSettings::Observer {
  public:
   // Registers preferences.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -91,6 +92,9 @@ class ScreenTimeController : public KeyedService,
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // system::TimezoneSettings::Observer:
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   content::BrowserContext* context_;
   PrefService* pref_service_;

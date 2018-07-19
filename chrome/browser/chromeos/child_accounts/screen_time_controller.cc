@@ -66,6 +66,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
     : context_(context),
       pref_service_(Profile::FromBrowserContext(context)->GetPrefs()) {
   session_manager::SessionManager::Get()->AddObserver(this);
+  system::TimezoneSettings::GetInstance()->AddObserver(this);
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kUsageTimeLimit,
@@ -75,6 +76,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
 
 ScreenTimeController::~ScreenTimeController() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   SaveScreenTimeProgressBeforeExit();
 }
 
@@ -94,6 +96,8 @@ void ScreenTimeController::CheckTimeLimit() {
   ResetTimers();
 
   base::Time now = base::Time::Now();
+  const icu::TimeZone& time_zone =
+      system::TimezoneSettings::GetInstance()->GetTimezone();
   base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
   // Used time should be 0 when time usage limit is disabled.
   base::TimeDelta used_time = base::TimeDelta::FromMinutes(0);
@@ -101,9 +105,9 @@ void ScreenTimeController::CheckTimeLimit() {
     used_time = GetScreenTimeDuration();
   const base::DictionaryValue* time_limit =
       pref_service_->GetDictionary(prefs::kUsageTimeLimit);
-  usage_time_limit::State state =
-      usage_time_limit::GetState(time_limit->CreateDeepCopy(), used_time,
-                                 first_screen_start_time_, now, last_state);
+  usage_time_limit::State state = usage_time_limit::GetState(
+      time_limit->CreateDeepCopy(), used_time, first_screen_start_time_, now,
+      &time_zone, last_state);
   SaveCurrentStateToPref(state);
 
   // Show/hide time limits message based on the policy enforcement.
@@ -165,8 +169,8 @@ void ScreenTimeController::CheckTimeLimit() {
   }
 
   // Schedule timer to refresh the screen time usage.
-  base::Time reset_time =
-      usage_time_limit::GetExpectedResetTime(time_limit->CreateDeepCopy(), now);
+  base::Time reset_time = usage_time_limit::GetExpectedResetTime(
+      time_limit->CreateDeepCopy(), now, &time_zone);
   if (reset_time <= now) {
     RefreshScreenLimit();
   } else {
@@ -433,6 +437,10 @@ void ScreenTimeController::OnSessionStateChanged() {
             &ScreenTimeController::SaveScreenTimeProgressPeriodically,
             base::Unretained(this)));
   }
+}
+
+void ScreenTimeController::TimezoneChanged(const icu::TimeZone& timezone) {
+  CheckTimeLimit();
 }
 
 }  // namespace chromeos
