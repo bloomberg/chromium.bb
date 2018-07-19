@@ -76,6 +76,13 @@ cr.define('extensions', function() {
       /** @type {!extensions.ErrorPageDelegate|undefined} */
       delegate: Object,
 
+      // Whether or not dev mode is enabled.
+      inDevMode: {
+        type: Boolean,
+        value: false,
+        observer: 'onInDevModeChanged_',
+      },
+
       /** @private {!Array<!(ManifestError|RuntimeError)>} */
       entries_: Array,
 
@@ -196,6 +203,16 @@ cr.define('extensions', function() {
       this.delegate.deleteErrors(
           this.data.id, [(/** @type {!{model:Object}} */ (e)).model.item.id]);
       e.stopPropagation();
+    },
+
+    /** private */
+    onInDevModeChanged_: function() {
+      if (!this.inDevMode) {
+        // Wait until next render cycle in case error page is loading.
+        this.async(() => {
+          this.onCloseButtonTap_();
+        });
+      }
     },
 
     /**

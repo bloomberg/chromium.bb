@@ -175,15 +175,7 @@ void ErrorConsole::RemoveObserver(Observer* observer) {
 }
 
 bool ErrorConsole::IsEnabledForChromeExtensionsPage() const {
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
-    return false;  // Only enabled in developer mode.
-  }
-  // If there is a command line switch or override, respect that.
-  if (FeatureSwitch::error_console()->HasValue()) {
-    return FeatureSwitch::error_console()->IsEnabled();
-  }
-  // Enable by default on dev channel, disabled on other channels.
-  return GetCurrentChannel() <= version_info::Channel::DEV;
+  return profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
 }
 
 bool ErrorConsole::IsEnabledForAppsDeveloperTools() const {
