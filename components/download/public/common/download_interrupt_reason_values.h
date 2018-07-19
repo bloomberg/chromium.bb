@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// no-include-guard-because-multiply-included
+
 // Note that the embedder is welcome to persist these values across
 // invocations of the browser, and possibly across browser versions.
 // Thus individual errors may be deprecated and new errors added, but
@@ -121,6 +123,9 @@ INTERRUPT_REASON(SERVER_UNREACHABLE, 37)
 // invalid. The download is only interrupted if strong validators are present.
 // Otherwise, it is treated as finished.
 INTERRUPT_REASON(SERVER_CONTENT_LENGTH_MISMATCH, 38)
+
+// An unexpected cross-origin redirect happened.
+INTERRUPT_REASON(SERVER_CROSS_ORIGIN_REDIRECT, 39)
 
 // User input.
 
