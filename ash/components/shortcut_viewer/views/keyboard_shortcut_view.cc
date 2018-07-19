@@ -32,6 +32,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -148,8 +149,13 @@ views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->search_box_view_->search_box()->RequestFocus();
 
-    UMA_HISTOGRAM_TIMES("Keyboard.ShortcutViewer.StartupTime",
-                        base::TimeTicks::Now() - start_time);
+    widget->GetCompositor()->RequestPresentationTimeForNextFrame(base::BindOnce(
+        [](base::TimeTicks start_time,
+           const gfx::PresentationFeedback& feedback) {
+          UMA_HISTOGRAM_TIMES("Keyboard.ShortcutViewer.StartupTime",
+                              feedback.timestamp - start_time);
+        },
+        start_time));
   }
   return g_ksv_view->GetWidget();
 }
