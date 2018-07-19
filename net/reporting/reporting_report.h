@@ -38,6 +38,7 @@ struct NET_EXPORT ReportingReport {
   };
 
   ReportingReport(const GURL& url,
+                  const std::string& user_agent,
                   const std::string& group,
                   const std::string& type,
                   std::unique_ptr<const base::Value> body,
@@ -54,6 +55,9 @@ struct NET_EXPORT ReportingReport {
   // The URL of the document that triggered the report. (Included in the
   // delivered report.)
   GURL url;
+
+  // The User-Agent header that was used for the request.
+  std::string user_agent;
 
   // The endpoint group that should be used to deliver the report. (Not included
   // in the delivered report.)

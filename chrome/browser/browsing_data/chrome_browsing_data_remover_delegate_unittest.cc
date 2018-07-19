@@ -988,6 +988,7 @@ class MockReportingService : public net::ReportingService {
   ~MockReportingService() override = default;
 
   void QueueReport(const GURL& url,
+                   const std::string& user_agent,
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<const base::Value> body,

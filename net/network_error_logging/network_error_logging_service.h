@@ -53,6 +53,7 @@ class NET_EXPORT NetworkErrorLoggingService {
 
     GURL uri;
     GURL referrer;
+    std::string user_agent;
     IPAddress server_ip;
     std::string protocol;
     std::string method;

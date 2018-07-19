@@ -33,17 +33,20 @@ class TestReportingService : public ReportingService {
 
     Report(Report&& other)
         : url(other.url),
+          user_agent(other.user_agent),
           group(other.group),
           type(other.type),
           body(std::move(other.body)),
           depth(other.depth) {}
 
     Report(const GURL& url,
+           const std::string& user_agent,
            const std::string& group,
            const std::string& type,
            std::unique_ptr<const base::Value> body,
            int depth)
         : url(url),
+          user_agent(user_agent),
           group(group),
           type(type),
           body(std::move(body)),
@@ -52,6 +55,7 @@ class TestReportingService : public ReportingService {
     ~Report() = default;
 
     GURL url;
+    std::string user_agent;
     std::string group;
     std::string type;
     std::unique_ptr<const base::Value> body;
@@ -70,11 +74,13 @@ class TestReportingService : public ReportingService {
   ~TestReportingService() override = default;
 
   void QueueReport(const GURL& url,
+                   const std::string& user_agent,
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<const base::Value> body,
                    int depth) override {
-    reports_.push_back(Report(url, group, type, std::move(body), depth));
+    reports_.push_back(
+        Report(url, user_agent, group, type, std::move(body), depth));
   }
 
   void ProcessHeader(const GURL& url,
@@ -139,6 +145,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
 
     details.uri = url;
     details.referrer = kReferrer_;
+    details.user_agent = kUserAgent_;
     details.server_ip = server_ip.IsValid() ? server_ip : kServerIP_;
     details.method = std::move(method);
     details.status_code = status_code;
@@ -179,6 +186,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
       "{\"report_to\":\"group\",\"max_age\":86400,\"junk\":[[[[[[[[[[]]]]]]]]]]"
       "}";
 
+  const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
 
   const std::string kType_ = NetworkErrorLoggingService::kReportType;
@@ -254,6 +262,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
+  EXPECT_EQ(kUserAgent_, reports()[0].user_agent);
   EXPECT_EQ(kGroup_, reports()[0].group);
   EXPECT_EQ(kType_, reports()[0].type);
   EXPECT_EQ(0, reports()[0].depth);
@@ -290,6 +299,7 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
+  EXPECT_EQ(kUserAgent_, reports()[0].user_agent);
   EXPECT_EQ(kGroup_, reports()[0].group);
   EXPECT_EQ(kType_, reports()[0].type);
   EXPECT_EQ(0, reports()[0].depth);
@@ -326,6 +336,7 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
+  EXPECT_EQ(kUserAgent_, reports()[0].user_agent);
   EXPECT_EQ(kGroup_, reports()[0].group);
   EXPECT_EQ(kType_, reports()[0].type);
   EXPECT_EQ(0, reports()[0].depth);

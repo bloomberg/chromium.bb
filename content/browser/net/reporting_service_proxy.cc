@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/blink/public/platform/reporting.mojom.h"
@@ -125,7 +126,11 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
 
     // Depth is only non-zero for NEL reports, and those can't come from the
     // renderer.
-    reporting_service->QueueReport(url, group, type, std::move(body),
+    std::string user_agent;
+    if (request_context->http_user_agent_settings() != nullptr)
+      user_agent = request_context->http_user_agent_settings()->GetUserAgent();
+    reporting_service->QueueReport(url, user_agent, group, type,
+                                   std::move(body),
                                    /* depth= */ 0);
   }
 

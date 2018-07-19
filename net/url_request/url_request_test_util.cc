@@ -140,7 +140,7 @@ void TestURLRequestContext::Init() {
         context_storage_.http_network_session(),
         HttpCache::DefaultBackend::InMemory(0), true /* is_main_cache */));
   }
-  if (!http_user_agent_settings()) {
+  if (!http_user_agent_settings() && create_default_http_user_agent_settings_) {
     context_storage_.set_http_user_agent_settings(
         std::make_unique<StaticHttpUserAgentSettings>("en-us,fr",
                                                       std::string()));

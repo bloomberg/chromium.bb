@@ -25,6 +25,7 @@ void RecordReportOutcome(ReportingReport::Outcome outcome) {
 }  // namespace
 
 ReportingReport::ReportingReport(const GURL& url,
+                                 const std::string& user_agent,
                                  const std::string& group,
                                  const std::string& type,
                                  std::unique_ptr<const base::Value> body,
@@ -32,6 +33,7 @@ ReportingReport::ReportingReport(const GURL& url,
                                  base::TimeTicks queued,
                                  int attempts)
     : url(url),
+      user_agent(user_agent),
       group(group),
       type(type),
       body(std::move(body)),

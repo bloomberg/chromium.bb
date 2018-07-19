@@ -34,6 +34,7 @@ class ReportingServiceImpl : public ReportingService {
   ~ReportingServiceImpl() override = default;
 
   void QueueReport(const GURL& url,
+                   const std::string& user_agent,
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<const base::Value> body,
@@ -44,8 +45,8 @@ class ReportingServiceImpl : public ReportingService {
     if (!context_->delegate()->CanQueueReport(url::Origin::Create(url)))
       return;
 
-    context_->cache()->AddReport(url, group, type, std::move(body), depth,
-                                 context_->tick_clock()->NowTicks(), 0);
+    context_->cache()->AddReport(url, user_agent, group, type, std::move(body),
+                                 depth, context_->tick_clock()->NowTicks(), 0);
   }
 
   void ProcessHeader(const GURL& url,

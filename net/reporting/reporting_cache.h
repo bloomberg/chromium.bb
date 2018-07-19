@@ -60,6 +60,7 @@ class NET_EXPORT ReportingCache {
   // All parameters correspond to the desired values for the relevant fields in
   // ReportingReport.
   virtual void AddReport(const GURL& url,
+                         const std::string& user_agent,
                          const std::string& group,
                          const std::string& type,
                          std::unique_ptr<const base::Value> body,

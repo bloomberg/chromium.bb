@@ -33,6 +33,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request_context.h"
@@ -1178,6 +1179,19 @@ void URLRequest::OnCallToDelegateComplete() {
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
+std::string URLRequest::GetUserAgent() const {
+  // This should be kept in sync with the corresponding code in
+  // URLRequestHttpJob::Start.
+  // TODO(dcreager): Consider whether we can share code instead of copy-pasting
+  std::string user_agent;
+  if (extra_request_headers_.GetHeader(net::HttpRequestHeaders::kUserAgent,
+                                       &user_agent))
+    return user_agent;
+  if (context()->http_user_agent_settings())
+    return context()->http_user_agent_settings()->GetUserAgent();
+  return std::string();
+}
+
 void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
   NetworkErrorLoggingService* service =
       context()->network_error_logging_service();
@@ -1194,6 +1208,7 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
 
   details.uri = url();
   details.referrer = GURL(referrer());
+  details.user_agent = GetUserAgent();
   IPEndPoint endpoint;
   if (GetRemoteEndpoint(&endpoint))
     details.server_ip = endpoint.address();
