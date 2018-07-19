@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/test/web_view_int_test.h"
+#import "ios/web_view/test/web_view_inttest_base.h"
 
 #import <ChromeWebView/ChromeWebView.h>
 #import <Foundation/Foundation.h>
@@ -96,25 +96,27 @@ std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
 
 namespace ios_web_view {
 
-WebViewIntTest::WebViewIntTest()
+WebViewInttestBase::WebViewInttestBase()
     : web_view_(test::CreateWebView()),
       test_server_(std::make_unique<net::EmbeddedTestServer>(
           net::test_server::EmbeddedTestServer::TYPE_HTTP)) {
-  test_server_->RegisterRequestHandler(base::Bind(&TestRequestHandler));
+  test_server_->RegisterRequestHandler(
+      base::BindRepeating(&TestRequestHandler));
 }
 
-WebViewIntTest::~WebViewIntTest() = default;
+WebViewInttestBase::~WebViewInttestBase() = default;
 
-GURL WebViewIntTest::GetUrlForPageWithTitle(const std::string& title) {
+GURL WebViewInttestBase::GetUrlForPageWithTitle(const std::string& title) {
   return GetUrlForPageWithTitleAndBody(title, std::string());
 }
 
-GURL WebViewIntTest::GetUrlForPageWithHtmlBody(const std::string& html) {
+GURL WebViewInttestBase::GetUrlForPageWithHtmlBody(const std::string& html) {
   return GetUrlForPageWithTitleAndBody(std::string(), html);
 }
 
-GURL WebViewIntTest::GetUrlForPageWithTitleAndBody(const std::string& title,
-                                                   const std::string& body) {
+GURL WebViewInttestBase::GetUrlForPageWithTitleAndBody(
+    const std::string& title,
+    const std::string& body) {
   GURL url = test_server_->GetURL(kPageHtmlPath);
 
   // Encode |title| and |body| in url query in order to build the server
