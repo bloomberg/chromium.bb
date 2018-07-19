@@ -100,7 +100,7 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
 
   mojom::MapCharactersResultPtr result;
 
-  if (!GetFontProxy().MapCharacters(
+  if (!GetFontProxyScopeWrapper().GetFontProxy().MapCharacters(
           text_chunk,
           mojom::DWriteFontStyle::New(base_weight, base_style, base_stretch),
           locale, source->GetParagraphReadingDirection(), base_family_name,
@@ -222,8 +222,8 @@ void FontFallback::AddCachedFamily(
     family_list.pop_back();
 }
 
-mojom::DWriteFontProxy& FontFallback::GetFontProxy() {
-  return collection_->GetFontProxy();
+FontProxyScopeWrapper FontFallback::GetFontProxyScopeWrapper() {
+  return collection_->GetFontProxyScopeWrapper();
 }
 
 }  // namespace content

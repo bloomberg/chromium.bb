@@ -22,6 +22,39 @@ namespace content {
 
 class DWriteFontFamilyProxy;
 
+class FontProxyScopeWrapper {
+ public:
+  FontProxyScopeWrapper(mojom::ThreadSafeDWriteFontProxyPtr* font_proxy,
+                        base::ThreadLocalBoolean* is_in_flight)
+      : font_proxy_(font_proxy), is_in_flight_(is_in_flight) {
+    // TODO(crbug.com/561873): Turn this into a DCHECK once instances of this
+    // CHECK have been found in crash reports and the referenced bug has been
+    // root-caused.
+    CHECK(!is_in_flight_->Get());
+    is_in_flight_->Set(true);
+  }
+
+  ~FontProxyScopeWrapper() {
+    // TODO(crbug.com/561873): Turn this into a DCHECK once instances of this
+    // CHECK have been found in crash reports and the referenced bug has been
+    // root-caused.
+    CHECK(is_in_flight_->Get());
+    is_in_flight_->Set(false);
+  }
+
+  content::mojom::DWriteFontProxy& GetFontProxy() const {
+    return **font_proxy_;
+  }
+
+  FontProxyScopeWrapper(FontProxyScopeWrapper&&) = default;
+  FontProxyScopeWrapper& operator=(FontProxyScopeWrapper&&) = default;
+
+ private:
+  mojom::ThreadSafeDWriteFontProxyPtr* font_proxy_;
+  base::ThreadLocalBoolean* is_in_flight_;
+  DISALLOW_COPY_AND_ASSIGN(FontProxyScopeWrapper);
+};
+
 // Implements a DirectWrite font collection that uses IPC to the browser to do
 // font enumeration. If a matching family is found, it will be loaded locally
 // into a custom font collection.
@@ -87,7 +120,7 @@ class DWriteFontCollectionProxy
 
   bool CreateFamily(UINT32 family_index);
 
-  mojom::DWriteFontProxy& GetFontProxy();
+  FontProxyScopeWrapper GetFontProxyScopeWrapper();
 
  private:
   void SetProxy(mojom::DWriteFontProxyPtrInfo);

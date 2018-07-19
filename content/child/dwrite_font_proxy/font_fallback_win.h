@@ -65,7 +65,7 @@ class FontFallback
                        const wchar_t* base_family_name);
 
  private:
-  mojom::DWriteFontProxy& GetFontProxy();
+  FontProxyScopeWrapper GetFontProxyScopeWrapper();
 
   Microsoft::WRL::ComPtr<DWriteFontCollectionProxy> collection_;
 
