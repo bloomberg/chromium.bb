@@ -1535,7 +1535,8 @@ TEST_F(NetworkContextTest, ClearReportingCacheReports) {
       reporting_service.get());
 
   GURL domain("http://google.com");
-  reporting_service->QueueReport(domain, "group", "type", nullptr, 0);
+  reporting_service->QueueReport(domain, "Mozilla/1.0", "group", "type",
+                                 nullptr, 0);
 
   std::vector<const net::ReportingReport*> reports;
   reporting_cache->GetReports(&reports);
@@ -1564,9 +1565,11 @@ TEST_F(NetworkContextTest, ClearReportingCacheReportsWithFilter) {
       reporting_service.get());
 
   GURL domain1("http://google.com");
-  reporting_service->QueueReport(domain1, "group", "type", nullptr, 0);
+  reporting_service->QueueReport(domain1, "Mozilla/1.0", "group", "type",
+                                 nullptr, 0);
   GURL domain2("http://chromium.org");
-  reporting_service->QueueReport(domain2, "group", "type", nullptr, 0);
+  reporting_service->QueueReport(domain2, "Mozilla/1.0", "group", "type",
+                                 nullptr, 0);
 
   std::vector<const net::ReportingReport*> reports;
   reporting_cache->GetReports(&reports);
@@ -1601,9 +1604,11 @@ TEST_F(NetworkContextTest,
       reporting_service.get());
 
   GURL domain1("http://192.168.0.1");
-  reporting_service->QueueReport(domain1, "group", "type", nullptr, 0);
+  reporting_service->QueueReport(domain1, "Mozilla/1.0", "group", "type",
+                                 nullptr, 0);
   GURL domain2("http://192.168.0.2");
-  reporting_service->QueueReport(domain2, "group", "type", nullptr, 0);
+  reporting_service->QueueReport(domain2, "Mozilla/1.0", "group", "type",
+                                 nullptr, 0);
 
   std::vector<const net::ReportingReport*> reports;
   reporting_cache->GetReports(&reports);

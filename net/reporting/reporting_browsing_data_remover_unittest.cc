@@ -41,7 +41,7 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
   }
 
   void AddReport(const GURL& url) {
-    cache()->AddReport(url, kGroup_, kType_,
+    cache()->AddReport(url, kUserAgent_, kGroup_, kType_,
                        std::make_unique<base::DictionaryValue>(), 0,
                        tick_clock()->NowTicks(), 0);
   }
@@ -74,6 +74,7 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
   const url::Origin kOrigin1_ = url::Origin::Create(kUrl1_);
   const url::Origin kOrigin2_ = url::Origin::Create(kUrl2_);
   const GURL kEndpoint_ = GURL("https://endpoint/");
+  const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
   const std::string kType_ = "default";
 };

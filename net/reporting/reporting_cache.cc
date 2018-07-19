@@ -71,6 +71,7 @@ class ReportingCacheImpl : public ReportingCache {
   }
 
   void AddReport(const GURL& url,
+                 const std::string& user_agent,
                  const std::string& group,
                  const std::string& type,
                  std::unique_ptr<const base::Value> body,
@@ -78,7 +79,7 @@ class ReportingCacheImpl : public ReportingCache {
                  base::TimeTicks queued,
                  int attempts) override {
     auto report = std::make_unique<ReportingReport>(
-        url, group, type, std::move(body), depth, queued, attempts);
+        url, user_agent, group, type, std::move(body), depth, queued, attempts);
 
     auto inserted =
         reports_.insert(std::make_pair(report.get(), std::move(report)));

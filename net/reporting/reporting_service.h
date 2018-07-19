@@ -45,12 +45,14 @@ class NET_EXPORT ReportingService {
       std::unique_ptr<ReportingContext> reporting_context);
 
   // Queues a report for delivery. |url| is the URL that originated the report.
+  // |user_agent| is the User-Agent header that was used for the request.
   // |group| is the endpoint group to which the report should be delivered.
   // |type| is the type of the report. |body| is the body of the report.
   //
   // The Reporting system will take ownership of |body|; all other parameters
   // will be copied.
   virtual void QueueReport(const GURL& url,
+                           const std::string& user_agent,
                            const std::string& group,
                            const std::string& type,
                            std::unique_ptr<const base::Value> body,

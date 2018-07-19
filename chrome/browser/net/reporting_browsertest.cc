@@ -113,6 +113,10 @@ std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
   for (auto& report : parsed_payload->GetList()) {
     report.RemoveKey("age");
     report.RemovePath({"body", "elapsed_time"});
+    auto* user_agent =
+        report.FindKeyOfType("user_agent", base::Value::Type::STRING);
+    if (user_agent != nullptr)
+      *user_agent = base::Value("Mozilla/1.0");
   }
   return parsed_payload;
 }
@@ -155,6 +159,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
             },
             "type": "network-error",
             "url": "https://example.com:%d/original",
+            "user_agent": "Mozilla/1.0",
           },
         ]
       )json",

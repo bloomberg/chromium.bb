@@ -56,6 +56,7 @@ class ReportingDeliveryAgentTest : public ReportingTestBase {
   const GURL kSubdomainUrl_ = GURL("https://sub.origin/path");
   const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
+  const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";
 };
@@ -65,8 +66,8 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateUpload) {
   body.SetString("key", "value");
 
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
-                     tick_clock()->NowTicks(), 0);
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_, body.CreateDeepCopy(),
+                     0, tick_clock()->NowTicks(), 0);
 
   // Upload is automatically started when cache is modified.
 
@@ -81,11 +82,12 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateUpload) {
 
     base::DictionaryValue* report;
     ASSERT_TRUE(list->GetDictionary(0, &report));
-    EXPECT_EQ(4u, report->size());
+    EXPECT_EQ(5u, report->size());
 
     ExpectDictIntegerValue(0, *report, "age");
     ExpectDictStringValue(kType_, *report, "type");
     ExpectDictStringValue(kUrl_.spec(), *report, "url");
+    ExpectDictStringValue(kUserAgent_, *report, "user_agent");
     ExpectDictDictionaryValue(body, *report, "body");
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
@@ -113,8 +115,8 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateSubdomainUpload) {
 
   SetClient(kOrigin_, kEndpoint_, kGroup_,
             ReportingClient::Subdomains::INCLUDE);
-  cache()->AddReport(kSubdomainUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
-                     tick_clock()->NowTicks(), 0);
+  cache()->AddReport(kSubdomainUrl_, kUserAgent_, kGroup_, kType_,
+                     body.CreateDeepCopy(), 0, tick_clock()->NowTicks(), 0);
 
   // Upload is automatically started when cache is modified.
 
@@ -129,11 +131,12 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateSubdomainUpload) {
 
     base::DictionaryValue* report;
     ASSERT_TRUE(list->GetDictionary(0, &report));
-    EXPECT_EQ(4u, report->size());
+    EXPECT_EQ(5u, report->size());
 
     ExpectDictIntegerValue(0, *report, "age");
     ExpectDictStringValue(kType_, *report, "type");
     ExpectDictStringValue(kSubdomainUrl_.spec(), *report, "url");
+    ExpectDictStringValue(kUserAgent_, *report, "user_agent");
     ExpectDictDictionaryValue(body, *report, "body");
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
@@ -162,8 +165,8 @@ TEST_F(ReportingDeliveryAgentTest,
 
   SetClient(kOrigin_, kEndpoint_, kGroup_,
             ReportingClient::Subdomains::INCLUDE);
-  cache()->AddReport(kSubdomainUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
-                     tick_clock()->NowTicks(), 0);
+  cache()->AddReport(kSubdomainUrl_, kUserAgent_, kGroup_, kType_,
+                     body.CreateDeepCopy(), 0, tick_clock()->NowTicks(), 0);
 
   // Upload is automatically started when cache is modified.
 
@@ -194,13 +197,13 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {
 
   // Trigger and complete an upload to start the delivery timer.
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
-                     tick_clock()->NowTicks(), 0);
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_, body.CreateDeepCopy(),
+                     0, tick_clock()->NowTicks(), 0);
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
-                     tick_clock()->NowTicks(), 0);
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_, body.CreateDeepCopy(),
+                     0, tick_clock()->NowTicks(), 0);
 
   EXPECT_TRUE(delivery_timer()->IsRunning());
   delivery_timer()->Fire();
@@ -216,11 +219,12 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {
 
     base::DictionaryValue* report;
     ASSERT_TRUE(list->GetDictionary(0, &report));
-    EXPECT_EQ(4u, report->size());
+    EXPECT_EQ(5u, report->size());
 
     ExpectDictIntegerValue(0, *report, "age");
     ExpectDictStringValue(kType_, *report, "type");
     ExpectDictStringValue(kUrl_.spec(), *report, "url");
+    ExpectDictStringValue(kUserAgent_, *report, "user_agent");
     ExpectDictDictionaryValue(body, *report, "body");
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
@@ -244,7 +248,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {
 
 TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -297,8 +301,8 @@ TEST_F(ReportingDeliveryAgentTest, DisallowedUpload) {
   body.SetString("key", "value");
 
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
-                     tick_clock()->NowTicks(), 0);
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_, body.CreateDeepCopy(),
+                     0, tick_clock()->NowTicks(), 0);
 
   tick_clock()->Advance(base::TimeDelta::FromMilliseconds(kAgeMillis));
 
@@ -333,7 +337,7 @@ TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
   ASSERT_TRUE(FindClientInCache(cache(), kOrigin_, kEndpoint_));
   ASSERT_TRUE(FindClientInCache(cache(), kDifferentOrigin, kEndpoint_));
 
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -362,7 +366,7 @@ TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
 
 TEST_F(ReportingDeliveryAgentTest, ConcurrentRemove) {
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -401,7 +405,7 @@ TEST_F(ReportingDeliveryAgentTest, ConcurrentRemoveDuringPermissionsCheck) {
   context()->test_delegate()->set_pause_permissions_check(true);
 
   SetClient(kOrigin_, kEndpoint_, kGroup_);
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -444,17 +448,17 @@ TEST_F(ReportingDeliveryAgentTest,
   SetClient(kDifferentOrigin, kEndpoint_, kGroup_);
 
   // Trigger and complete an upload to start the delivery timer.
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
   // Now that the delivery timer is running, these reports won't be immediately
   // uploaded.
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
-  cache()->AddReport(kDifferentUrl, kGroup_, kType_,
+  cache()->AddReport(kDifferentUrl, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
   EXPECT_EQ(0u, pending_uploads().size());
@@ -477,7 +481,7 @@ TEST_F(ReportingDeliveryAgentTest,
 TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
   SetClient(kOrigin_, kEndpoint_, kGroup_);
 
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -485,7 +489,7 @@ TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
   delivery_timer()->Fire();
   EXPECT_EQ(1u, pending_uploads().size());
 
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -513,7 +517,7 @@ TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToGroup) {
   SetClient(kOrigin_, kEndpoint_, kGroup_);
   SetClient(kOrigin_, kDifferentEndpoint, kGroup_);
 
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -521,7 +525,7 @@ TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToGroup) {
   delivery_timer()->Fire();
   EXPECT_EQ(1u, pending_uploads().size());
 
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 
@@ -549,10 +553,10 @@ TEST_F(ReportingDeliveryAgentTest, ParallelizeUploadsAcrossGroups) {
   SetClient(kOrigin_, kEndpoint_, kGroup_);
   SetClient(kOrigin_, kDifferentEndpoint, kDifferentGroup);
 
-  cache()->AddReport(kUrl_, kGroup_, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
-  cache()->AddReport(kUrl_, kDifferentGroup, kType_,
+  cache()->AddReport(kUrl_, kUserAgent_, kDifferentGroup, kType_,
                      std::make_unique<base::DictionaryValue>(), 0,
                      tick_clock()->NowTicks(), 0);
 

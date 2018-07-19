@@ -92,6 +92,10 @@ class TestURLRequestContext : public URLRequestContext {
     context_storage_.set_ct_policy_enforcer(std::move(ct_policy_enforcer));
   }
 
+  void set_create_default_http_user_agent_settings(bool value) {
+    create_default_http_user_agent_settings_ = value;
+  }
+
  private:
   bool initialized_ = false;
 
@@ -105,6 +109,8 @@ class TestURLRequestContext : public URLRequestContext {
   ClientSocketFactory* client_socket_factory_ = nullptr;
 
   ProxyDelegate* proxy_delegate_ = nullptr;
+
+  bool create_default_http_user_agent_settings_ = true;
 
  protected:
   URLRequestContextStorage context_storage_;

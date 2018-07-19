@@ -307,7 +307,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
 
     reporting_service_->QueueReport(
-        details.uri, policy->report_to, kReportType,
+        details.uri, details.user_agent, policy->report_to, kReportType,
         CreateReportBody(phase_string, type_string, sampling_fraction, details),
         details.reporting_upload_depth);
     RecordRequestOutcome(RequestOutcome::QUEUED);

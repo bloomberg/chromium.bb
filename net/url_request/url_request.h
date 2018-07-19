@@ -832,6 +832,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void OnCallToDelegateComplete();
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  std::string GetUserAgent() const;
   void MaybeGenerateNetworkErrorLoggingReport();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

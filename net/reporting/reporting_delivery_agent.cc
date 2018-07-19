@@ -41,6 +41,7 @@ void SerializeReports(const std::vector<const ReportingReport*>& reports,
     report_value->SetInteger("age", (now - report->queued).InMilliseconds());
     report_value->SetString("type", report->type);
     report_value->SetString("url", report->url.spec());
+    report_value->SetString("user_agent", report->user_agent);
     report_value->SetKey("body", report->body->Clone());
 
     reports_value.Append(std::move(report_value));

@@ -7482,6 +7482,7 @@ class TestReportingService : public ReportingService {
   ~TestReportingService() override = default;
 
   void QueueReport(const GURL& url,
+                   const std::string& user_agent,
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<const base::Value> body,
@@ -7694,6 +7695,11 @@ std::unique_ptr<test_server::HttpResponse> SendEmptyResponse(
   return std::make_unique<test_server::RawHttpResponse>("", "");
 }
 
+// Distinct User-Agent header values that we use to ensure that URLRequest
+// passes along user agents into NEL reports correctly.
+constexpr char kHeaderUserAgent[] = "MozillaFromHeader/1.0";
+constexpr char kSettingsUserAgent[] = "MozillaFromSettings/1.0";
+
 }  // namespace
 
 TEST_F(URLRequestTestHTTP, DontProcessNelHeaderNoDelegate) {
@@ -7888,6 +7894,102 @@ TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Real) {
   EXPECT_EQ(request_url, nel_service.errors()[0].uri);
   EXPECT_EQ(0, nel_service.errors()[0].status_code);
   EXPECT_EQ(ERR_EMPTY_RESPONSE, nel_service.errors()[0].type);
+}
+
+TEST_F(URLRequestTestHTTP, NelReportUserAgentWithHeaderWithSettings) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.base_url();
+
+  StaticHttpUserAgentSettings settings("en", kSettingsUserAgent);
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_service(&nel_service);
+  context.set_http_user_agent_settings(&settings);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->SetExtraRequestHeaderByName("User-Agent", kHeaderUserAgent, true);
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  EXPECT_EQ(kHeaderUserAgent, nel_service.errors()[0].user_agent);
+}
+
+TEST_F(URLRequestTestHTTP, NelReportUserAgentWithHeaderWithoutSettings) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.base_url();
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_service(&nel_service);
+  context.set_create_default_http_user_agent_settings(false);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->SetExtraRequestHeaderByName("User-Agent", kHeaderUserAgent, true);
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  EXPECT_EQ(kHeaderUserAgent, nel_service.errors()[0].user_agent);
+}
+
+TEST_F(URLRequestTestHTTP, NelReportUserAgentWithoutHeaderWithSettings) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.base_url();
+
+  StaticHttpUserAgentSettings settings("en", kSettingsUserAgent);
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_service(&nel_service);
+  context.set_http_user_agent_settings(&settings);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  EXPECT_EQ(kSettingsUserAgent, nel_service.errors()[0].user_agent);
+}
+
+TEST_F(URLRequestTestHTTP, NelReportUserAgentWithoutHeaderWithoutSettings) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.base_url();
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_service(&nel_service);
+  context.set_create_default_http_user_agent_settings(false);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  EXPECT_EQ("", nel_service.errors()[0].user_agent);
 }
 
 #endif  // BUILDFLAG(ENABLE_REPORTING)
