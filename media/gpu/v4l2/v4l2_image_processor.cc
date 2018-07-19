@@ -247,6 +247,14 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
   return true;
 }
 
+gfx::Size V4L2ImageProcessor::input_allocated_size() const {
+  return input_allocated_size_;
+}
+
+gfx::Size V4L2ImageProcessor::output_allocated_size() const {
+  return output_allocated_size_;
+}
+
 bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
                                  int output_buffer_index,
                                  std::vector<base::ScopedFD> output_dmabuf_fds,
