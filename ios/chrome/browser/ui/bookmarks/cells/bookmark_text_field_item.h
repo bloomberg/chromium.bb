@@ -42,10 +42,6 @@
 // Text field to display the title or the URL of the bookmark node.
 @property(nonatomic, strong) UITextField* textField;
 
-// If |NO| changes the cell appearance to reflect that |self.textfield| is on an
-// invalid state.
-@property(nonatomic, assign) BOOL validState;
-
 @end
 
 @interface LegacyBookmarkTextFieldCell : UITableViewCell
