@@ -6,7 +6,7 @@
 
 namespace chromeos {
 
-IntentPickerAppInfo::IntentPickerAppInfo(AppType type,
+IntentPickerAppInfo::IntentPickerAppInfo(apps::mojom::AppType type,
                                          const gfx::Image& icon,
                                          const std::string& launch_name,
                                          const std::string& display_name)

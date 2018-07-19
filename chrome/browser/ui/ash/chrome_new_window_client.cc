@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/intent_helper/page_transition_util.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/url_formatter/url_fixer.h"
@@ -41,6 +40,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace {

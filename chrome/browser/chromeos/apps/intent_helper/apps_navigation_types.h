@@ -10,21 +10,10 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image.h"
 
 namespace chromeos {
-
-enum class AppType {
-  // Used for error scenarios and other cases where the app type isn't going to
-  // be used (e.g. not launching an app).
-  INVALID,
-
-  // An Android app.
-  ARC,
-
-  // A Progressive Web App.
-  PWA,
-};
 
 // Describes the possible ways for the intent picker to be closed.
 enum class IntentPickerCloseReason {
@@ -70,7 +59,7 @@ enum class AppsNavigationAction {
 
 // Represents the data required to display an app in a picker to the user.
 struct IntentPickerAppInfo {
-  IntentPickerAppInfo(AppType type,
+  IntentPickerAppInfo(apps::mojom::AppType type,
                       const gfx::Image& icon,
                       const std::string& launch_name,
                       const std::string& display_name);
@@ -80,7 +69,7 @@ struct IntentPickerAppInfo {
   IntentPickerAppInfo& operator=(IntentPickerAppInfo&& other);
 
   // The type of app that this object represents.
-  AppType type;
+  apps::mojom::AppType type;
 
   // The icon to be displayed for this app in the picker.
   gfx::Image icon;
@@ -108,5 +97,15 @@ using GetAppsCallback =
     base::OnceCallback<void(std::vector<IntentPickerAppInfo> apps)>;
 
 }  // namespace chromeos
+
+// Callback to pass the launch name and type of the app selected by the user,
+// along with the reason why the Bubble was closed and whether the decision
+// should be persisted. When the reason is ERROR or DIALOG_DEACTIVATED, the
+// values of the launch name, app type, and persistence boolean are all ignored.
+using IntentPickerResponse =
+    base::OnceCallback<void(const std::string& launch_name,
+                            apps::mojom::AppType app_type,
+                            chromeos::IntentPickerCloseReason close_reason,
+                            bool should_persist)>;
 
 #endif  // CHROME_BROWSER_CHROMEOS_APPS_INTENT_HELPER_APPS_NAVIGATION_TYPES_H_

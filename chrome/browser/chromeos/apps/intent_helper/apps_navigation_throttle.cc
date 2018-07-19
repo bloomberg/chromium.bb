@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
+#include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
@@ -24,7 +26,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/intent_helper/page_transition_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -62,7 +63,7 @@ void MaybeRemoveComingFromArcFlag(content::WebContents* web_contents,
 }
 
 // Compares the host name of the referrer and target URL to decide whether
-// the navigation needs to be overriden.
+// the navigation needs to be overridden.
 bool ShouldOverrideUrlLoading(const GURL& previous_url,
                               const GURL& current_url) {
   // When the navigation is initiated in a web page where sending a referrer
@@ -174,13 +175,13 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     content::WebContents* web_contents,
     const GURL& url,
     const std::string& launch_name,
-    AppType app_type,
+    apps::mojom::AppType app_type,
     IntentPickerCloseReason close_reason,
     bool should_persist) {
   const bool should_launch_app =
       close_reason == IntentPickerCloseReason::OPEN_APP;
   switch (app_type) {
-    case AppType::PWA:
+    case apps::mojom::AppType::kWeb:
       if (should_launch_app) {
         const extensions::Extension* extension =
             extensions::ExtensionRegistry::Get(
@@ -191,7 +192,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
         ReparentWebContentsIntoAppBrowser(web_contents, extension);
       }
       break;
-    case AppType::ARC:
+    case apps::mojom::AppType::kArc:
       if (arc::ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
               url, launch_name, should_launch_app, should_persist)) {
         CloseOrGoBack(web_contents);
@@ -199,7 +200,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
         close_reason = IntentPickerCloseReason::ERROR;
       }
       break;
-    case AppType::INVALID:
+    case apps::mojom::AppType::kUnknown:
       // TODO(crbug.com/826982): This workaround can be removed when preferences
       // are no longer persisted within the ARC container, it was necessary
       // since chrome browser is neither a PWA or ARC app.
@@ -212,13 +213,15 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       // We reach here if the picker was closed without an app being chosen,
       // e.g. due to the tab being closed. We don't want to do anything.
       break;
+    case apps::mojom::AppType::kCrostini:
+      NOTREACHED();
   }
   RecordUma(launch_name, app_type, close_reason, should_persist);
 }
 
 // static
 void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
-                                       AppType app_type,
+                                       apps::mojom::AppType app_type,
                                        IntentPickerCloseReason close_reason,
                                        bool should_persist) {
   PickerAction action = GetPickerAction(app_type, close_reason, should_persist);
@@ -316,7 +319,7 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
 
 // static
 AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
-    AppType app_type,
+    apps::mojom::AppType app_type,
     IntentPickerCloseReason close_reason,
     bool should_persist) {
   switch (close_reason) {
@@ -331,13 +334,15 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
                             : PickerAction::CHROME_PRESSED;
     case IntentPickerCloseReason::OPEN_APP:
       switch (app_type) {
-        case AppType::INVALID:
+        case apps::mojom::AppType::kUnknown:
           return PickerAction::INVALID;
-        case AppType::ARC:
+        case apps::mojom::AppType::kArc:
           return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
                                 : PickerAction::ARC_APP_PRESSED;
-        case AppType::PWA:
+        case apps::mojom::AppType::kWeb:
           return PickerAction::PWA_APP_PRESSED;
+        case apps::mojom::AppType::kCrostini:
+          NOTREACHED();
       }
   }
 
@@ -375,7 +380,7 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
 
       // Prefer the web and place apps of type PWA before apps of type ARC.
       // TODO(crbug.com/824598): deterministically sort this list.
-      apps.emplace(apps.begin(), AppType::PWA,
+      apps.emplace(apps.begin(), apps::mojom::AppType::kWeb,
                    menu_manager->GetIconForExtension(extension->id()),
                    extension->id(), extension->name());
     }
@@ -455,7 +460,7 @@ void AppsNavigationThrottle::OnDeferredNavigationProcessed(
   // available to persist "Remember my choice" for PWAs.
   if (std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
                   [](const IntentPickerAppInfo& app_info) {
-                    return app_info.type == AppType::PWA;
+                    return app_info.type == apps::mojom::AppType::kWeb;
                   })) {
     ui_displayed_ = false;
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -492,8 +497,8 @@ AppsNavigationThrottle::HandleRequest() {
   ui::PageTransition page_transition = handle->GetPageTransition();
   content::WebContents* web_contents = handle->GetWebContents();
   const GURL& url = handle->GetURL();
-  if (arc::ShouldIgnoreNavigation(page_transition, kAllowFormSubmit,
-                                  kAllowClientRedirect)) {
+  if (ShouldIgnoreNavigation(page_transition, kAllowFormSubmit,
+                             kAllowClientRedirect)) {
     if ((page_transition & ui::PAGE_TRANSITION_FORWARD_BACK) ||
         (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
       // This enforces that whether we ignore the navigation or not, we make
