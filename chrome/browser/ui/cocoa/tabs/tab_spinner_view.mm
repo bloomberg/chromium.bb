@@ -6,18 +6,17 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/cocoa/spinner_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/native_theme/native_theme.h"
 
-namespace {
-constexpr CGFloat kDegrees90 = gfx::DegToRad(90.0f);
-constexpr CGFloat kDegrees180 = gfx::DegToRad(180.0f);
-constexpr CGFloat kDegrees270 = gfx::DegToRad(270.0f);
-constexpr CGFloat kDegrees360 = gfx::DegToRad(360.0f);
-constexpr CGFloat kWaitingStrokeAlpha = 0.5;
-}  // namespace
+using cocoa_spinner_util::kDegrees90;
+using cocoa_spinner_util::kDegrees180;
+using cocoa_spinner_util::kDegrees270;
+using cocoa_spinner_util::kDegrees360;
+using cocoa_spinner_util::kWaitingStrokeAlpha;
 
 @implementation TabSpinnerView {
   BOOL spinReverse_;

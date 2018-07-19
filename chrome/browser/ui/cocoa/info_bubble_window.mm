@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#include "chrome/browser/ui/cocoa/cocoa_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -22,11 +23,6 @@ namespace {
 const CGFloat kOrderInSlideOffset = 10;
 const NSTimeInterval kOrderInAnimationDuration = 0.075;
 const NSTimeInterval kOrderOutAnimationDuration = 0.15;
-// The minimum representable time interval.  This can be used as the value
-// passed to +[NSAnimationContext setDuration:] to stop an in-progress
-// animation as quickly as possible.
-const NSTimeInterval kMinimumTimeInterval =
-    std::numeric_limits<NSTimeInterval>::min();
 }  // namespace
 
 @interface InfoBubbleWindow (Private)
@@ -199,7 +195,8 @@ class AppNotificationBridge : public content::NotificationObserver {
   // Cancel the current animation so that it closes immediately, triggering
   // |finishCloseAfterAnimation|.
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
+  [[NSAnimationContext currentContext]
+      setDuration:cocoa_util::kMinimumTimeInterval];
   [[self animator] setAlphaValue:0.0];
   [NSAnimationContext endGrouping];
 }
@@ -234,7 +231,8 @@ class AppNotificationBridge : public content::NotificationObserver {
     // The star currently triggers on mouse down, not mouse up.
     NSTimeInterval duration =
         (allowedAnimations_ & info_bubble::kAnimateOrderIn)
-            ? kOrderInAnimationDuration : kMinimumTimeInterval;
+            ? kOrderInAnimationDuration
+            : cocoa_util::kMinimumTimeInterval;
     [[NSAnimationContext currentContext]
         gtm_setDuration:duration
               eventMask:NSLeftMouseUpMask | NSLeftMouseDownMask];

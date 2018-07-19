@@ -6,6 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
+#include "ui/views/widget/util_mac.h"
 
 // Implementer's note: Moving the window controls is tricky. When altering the
 // code, ensure that:
@@ -29,9 +30,7 @@ constexpr NSInteger kWindowButtonsOffsetFromLeft = 11;
 - (CGFloat)fullScreenButtonOriginAdjustment;
 @end
 
-// Weak so that Chrome will launch if a future macOS doesn't have NSThemeFrame.
-WEAK_IMPORT_ATTRIBUTE
-@interface NSThemeFrame : NSView
+@interface NSThemeFrame (PrivateTabbedBrowserWindowAPI)
 - (NSView*)fullScreenButton
     __attribute__((availability(macos, obsoleted = 10.10)));
 @end

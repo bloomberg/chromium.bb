@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "chrome/browser/ui/cocoa/cocoa_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_view.h"
@@ -116,12 +117,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                  operation:NSCompositeSourceOver
                   fraction:alpha];
   }) autorelease];
-}
-
-CGFloat LineWidthFromContext(CGContextRef context) {
-  CGRect unitRect = CGRectMake(0.0, 0.0, 1.0, 1.0);
-  CGRect deviceRect = CGContextConvertRectToDeviceSpace(context, unitRect);
-  return 1.0 / deviceRect.size.height;
 }
 
 }  // namespace
@@ -412,7 +407,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
-  CGFloat lineWidth = LineWidthFromContext(context);
+  CGFloat lineWidth = cocoa_util::LineWidthFromContext(context);
   NSBezierPath* bezierPath =
       [self newTabButtonBezierPathWithLineWidth:lineWidth];
 
@@ -522,7 +517,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [fillColor set];
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
-  CGFloat lineWidth = LineWidthFromContext(context);
+  CGFloat lineWidth = cocoa_util::LineWidthFromContext(context);
   [[NewTabButtonCocoa newTabButtonBezierPathWithLineWidth:lineWidth] fill];
   [image unlockFocus];
   return image;

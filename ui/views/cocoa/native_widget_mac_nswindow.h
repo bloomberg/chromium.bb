@@ -9,6 +9,7 @@
 
 #import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/util_mac.h"
 
 @protocol WindowTouchBarDelegate;
 
@@ -18,9 +19,7 @@ WEAK_IMPORT_ATTRIBUTE
 @interface NSNextStepFrame : NSView
 @end
 
-WEAK_IMPORT_ATTRIBUTE
-@interface NSThemeFrame : NSView
-@end
+@class NSThemeFrame;
 
 VIEWS_EXPORT
 @interface NativeWidgetMacNSWindowBorderlessFrame : NSNextStepFrame
