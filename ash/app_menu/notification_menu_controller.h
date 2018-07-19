@@ -37,6 +37,7 @@ class APP_MENU_EXPORT NotificationMenuController
 
   // message_center::MessageCenterObserver overrides:
   void OnNotificationAdded(const std::string& notification_id) override;
+  void OnNotificationUpdated(const std::string& notification_id) override;
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
 
