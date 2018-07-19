@@ -391,15 +391,13 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
-    EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
-                    ->RegisterFileSystem(kLocalMountPointName,
-                                         storage::kFileSystemTypeNativeLocal,
-                                         storage::FileSystemMountOption(),
-                                         mount_point_dir_));
-    VolumeManager::Get(browser()->profile())
-        ->AddVolumeForTesting(mount_point_dir_, VOLUME_TYPE_TESTING,
-                              chromeos::DEVICE_TYPE_UNKNOWN,
-                              false /* read_only */);
+    EXPECT_TRUE(
+        content::BrowserContext::GetMountPoints(profile())->RegisterFileSystem(
+            kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
+            storage::FileSystemMountOption(), mount_point_dir_));
+    VolumeManager::Get(profile())->AddVolumeForTesting(
+        mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN,
+        false /* read_only */);
   }
 
  private:
@@ -424,15 +422,13 @@ class RestrictedFileSystemExtensionApiTest
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
     EXPECT_TRUE(
-        content::BrowserContext::GetMountPoints(browser()->profile())
-            ->RegisterFileSystem(kRestrictedMountPointName,
-                                 storage::kFileSystemTypeRestrictedNativeLocal,
-                                 storage::FileSystemMountOption(),
-                                 mount_point_dir_));
-    VolumeManager::Get(browser()->profile())
-        ->AddVolumeForTesting(mount_point_dir_, VOLUME_TYPE_TESTING,
-                              chromeos::DEVICE_TYPE_UNKNOWN,
-                              true /* read_only */);
+        content::BrowserContext::GetMountPoints(profile())->RegisterFileSystem(
+            kRestrictedMountPointName,
+            storage::kFileSystemTypeRestrictedNativeLocal,
+            storage::FileSystemMountOption(), mount_point_dir_));
+    VolumeManager::Get(profile())->AddVolumeForTesting(
+        mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN,
+        true /* read_only */);
   }
 
  private:
@@ -465,7 +461,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
-    test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+    test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
 
   // FileSystemExtensionApiTestBase override.
@@ -550,7 +546,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   }
 
   void AddTestMountPoint() override {
-    test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+    test_util::WaitUntilDriveMountPointIsAdded(profile());
     test_util::WaitUntilDriveMountPointIsAdded(second_profile_);
   }
 
@@ -571,7 +567,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     const char kResourceId[] = "unique-id-for-multiprofile-copy-test";
     drive::FakeDriveService* const main_service =
         static_cast<drive::FakeDriveService*>(
-            drive::util::GetDriveServiceByProfile(browser()->profile()));
+            drive::util::GetDriveServiceByProfile(profile()));
     drive::FakeDriveService* const sub_service =
         static_cast<drive::FakeDriveService*>(
             drive::util::GetDriveServiceByProfile(second_profile_));
@@ -625,16 +621,14 @@ class LocalAndDriveFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
-    EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
-                    ->RegisterFileSystem(kLocalMountPointName,
-                                         storage::kFileSystemTypeNativeLocal,
-                                         storage::FileSystemMountOption(),
-                                         local_mount_point_dir_));
-    VolumeManager::Get(browser()->profile())
-        ->AddVolumeForTesting(local_mount_point_dir_, VOLUME_TYPE_TESTING,
-                              chromeos::DEVICE_TYPE_UNKNOWN,
-                              false /* read_only */);
-    test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+    EXPECT_TRUE(
+        content::BrowserContext::GetMountPoints(profile())->RegisterFileSystem(
+            kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
+            storage::FileSystemMountOption(), local_mount_point_dir_));
+    VolumeManager::Get(profile())->AddVolumeForTesting(
+        local_mount_point_dir_, VOLUME_TYPE_TESTING,
+        chromeos::DEVICE_TYPE_UNKNOWN, false /* read_only */);
+    test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
 
  protected:
