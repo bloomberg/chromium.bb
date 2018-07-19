@@ -4,6 +4,8 @@
 
 #include "components/viz/common/surfaces/surface_range.h"
 
+#include "base/strings/stringprintf.h"
+
 namespace viz {
 
 SurfaceRange::SurfaceRange() = default;
@@ -43,6 +45,16 @@ bool SurfaceRange::IsValid() const {
     return true;
 
   return end_.local_surface_id().IsSameOrNewerThan(start_->local_surface_id());
+}
+
+std::string SurfaceRange::ToString() const {
+  return base::StringPrintf("SurfaceRange(start: %s, end: %s)",
+                            start_ ? start_->ToString().c_str() : "none",
+                            end_.ToString().c_str());
+}
+
+std::ostream& operator<<(std::ostream& out, const SurfaceRange& surface_range) {
+  return out << surface_range.ToString();
 }
 
 }  // namespace viz

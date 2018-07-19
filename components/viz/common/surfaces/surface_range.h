@@ -41,12 +41,17 @@ class VIZ_COMMON_EXPORT SurfaceRange {
 
   const SurfaceId& end() const { return end_; }
 
+  std::string ToString() const;
+
  private:
   friend struct mojo::StructTraits<mojom::SurfaceRangeDataView, SurfaceRange>;
 
   base::Optional<SurfaceId> start_;
   SurfaceId end_;
 };
+
+VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           const SurfaceRange& surface_range);
 
 }  // namespace viz
 
