@@ -315,10 +315,23 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
       }
     }
 
+    base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
+        HasPlaceholderCanvas() ? GetOrCreateResourceDispatcher()->GetWeakPtr()
+                               : nullptr;
+
     ReplaceResourceProvider(CanvasResourceProvider::Create(
         surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
         context_->ColorParams(), presentation_mode,
-        nullptr));  // canvas_resource_dispatcher
+        std::move(dispatcher_weakptr)));
+
+    // The fallback chain for k*CompositedResourceUsage should never fall
+    // all the way through to BitmapResourceProvider, except in unit tests.
+    // In non unit-test scenarios, it should always be possible to at least
+    // get a ResourceProviderSharedBitmap as a last resort.
+    // This CHECK verifies that we did indeed get a resource provider that
+    // supports compositing when one is required.
+    CHECK(!ResourceProvider() || !HasPlaceholderCanvas() ||
+          ResourceProvider()->SupportsDirectCompositing());
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
       ResourceProvider()->Clear();
