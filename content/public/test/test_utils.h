@@ -251,14 +251,15 @@ class WindowedNotificationObserver : public NotificationObserver {
                const NotificationDetails& details) override;
 
  private:
-  bool seen_ = false;
+  bool seen_;
+  bool running_;
   NotificationRegistrar registrar_;
 
   ConditionTestCallback callback_;
 
   NotificationSource source_;
   NotificationDetails details_;
-  base::RunLoop run_loop_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
 };
