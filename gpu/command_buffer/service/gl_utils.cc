@@ -209,7 +209,7 @@ void PopulateNumericCapabilities(Capabilities* caps,
                 &caps->num_compressed_texture_formats);
   glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &caps->num_shader_binary_formats);
 
-  if (feature_info->IsWebGL2OrES3Context()) {
+  if (feature_info->IsWebGL2OrES3OrHigherContext()) {
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps->max_3d_texture_size);
     glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &caps->max_array_texture_layers);
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &caps->max_color_attachments);
@@ -255,11 +255,15 @@ void PopulateNumericCapabilities(Capabilities* caps,
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
                   &caps->uniform_buffer_offset_alignment);
     caps->major_version = 3;
-    caps->minor_version = 0;
+    if (feature_info->IsWebGL2ComputeContext()) {
+      caps->minor_version = 1;
+    } else {
+      caps->minor_version = 0;
+    }
   }
   if (feature_info->feature_flags().multisampled_render_to_texture ||
       feature_info->feature_flags().chromium_framebuffer_multisample ||
-      feature_info->IsWebGL2OrES3Context()) {
+      feature_info->IsWebGL2OrES3OrHigherContext()) {
     glGetIntegerv(GL_MAX_SAMPLES, &caps->max_samples);
   }
 }
@@ -275,7 +279,9 @@ bool CheckUniqueAndNonNullIds(GLsizei n, const GLuint* client_ids) {
 const char* GetServiceVersionString(const FeatureInfo* feature_info) {
   if (feature_info->IsWebGL2OrES3Context())
     return "OpenGL ES 3.0 Chromium";
-  else
+  else if (feature_info->IsWebGL2ComputeContext()) {
+    return "OpenGL ES 3.1 Chromium";
+  } else
     return "OpenGL ES 2.0 Chromium";
 }
 
@@ -283,7 +289,9 @@ const char* GetServiceShadingLanguageVersionString(
     const FeatureInfo* feature_info) {
   if (feature_info->IsWebGL2OrES3Context())
     return "OpenGL ES GLSL ES 3.0 Chromium";
-  else
+  else if (feature_info->IsWebGL2ComputeContext()) {
+    return "OpenGL ES GLSL ES 3.1 Chromium";
+  } else
     return "OpenGL ES GLSL ES 1.0 Chromium";
 }
 
@@ -511,7 +519,7 @@ bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,
     *output_error_msg = std::string("incompatible format");
     return false;
   }
-  if (feature_info->IsWebGL2OrES3Context()) {
+  if (feature_info->IsWebGL2OrES3OrHigherContext()) {
     GLint color_encoding =
         GLES2Util::GetColorEncodingFromInternalFormat(read_format);
     bool float_mismatch = feature_info->ext_color_buffer_float_available()
@@ -534,7 +542,7 @@ bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,
         std::string("can not be used with depth or stencil textures");
     return false;
   }
-  if (feature_info->IsWebGL2OrES3Context() ||
+  if (feature_info->IsWebGL2OrES3OrHigherContext() ||
       (feature_info->feature_flags().chromium_color_buffer_float_rgb &&
        internal_format == GL_RGB32F) ||
       (feature_info->feature_flags().chromium_color_buffer_float_rgba &&
@@ -679,7 +687,7 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
     case GL_RGBA4:
     case GL_RGBA8UI:
     case GL_RGB10_A2:
-      valid_dest_format = feature_info->IsWebGL2OrES3Context();
+      valid_dest_format = feature_info->IsWebGL2OrES3OrHigherContext();
       break;
     case GL_RGB9_E5:
     case GL_R16F:

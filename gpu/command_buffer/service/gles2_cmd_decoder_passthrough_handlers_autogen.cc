@@ -57,7 +57,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindBuffer(
 error::Error GLES2DecoderPassthroughImpl::HandleBindBufferBase(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::BindBufferBase& c =
       *static_cast<const volatile gles2::cmds::BindBufferBase*>(cmd_data);
@@ -74,7 +74,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindBufferBase(
 error::Error GLES2DecoderPassthroughImpl::HandleBindBufferRange(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::BindBufferRange& c =
       *static_cast<const volatile gles2::cmds::BindBufferRange*>(cmd_data);
@@ -121,7 +121,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindRenderbuffer(
 error::Error GLES2DecoderPassthroughImpl::HandleBindSampler(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::BindSampler& c =
       *static_cast<const volatile gles2::cmds::BindSampler*>(cmd_data);
@@ -151,7 +151,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindTexture(
 error::Error GLES2DecoderPassthroughImpl::HandleBindTransformFeedback(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::BindTransformFeedback& c =
       *static_cast<const volatile gles2::cmds::BindTransformFeedback*>(
@@ -293,7 +293,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleClear(
 error::Error GLES2DecoderPassthroughImpl::HandleClearBufferfi(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::ClearBufferfi& c =
       *static_cast<const volatile gles2::cmds::ClearBufferfi*>(cmd_data);
@@ -311,7 +311,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferfi(
 error::Error GLES2DecoderPassthroughImpl::HandleClearBufferfvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::ClearBufferfvImmediate& c =
       *static_cast<const volatile gles2::cmds::ClearBufferfvImmediate*>(
@@ -340,7 +340,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferfvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleClearBufferivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::ClearBufferivImmediate& c =
       *static_cast<const volatile gles2::cmds::ClearBufferivImmediate*>(
@@ -369,7 +369,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleClearBufferuivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::ClearBufferuivImmediate& c =
       *static_cast<const volatile gles2::cmds::ClearBufferuivImmediate*>(
@@ -469,7 +469,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompileShader(
 error::Error GLES2DecoderPassthroughImpl::HandleCopyBufferSubData(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::CopyBufferSubData& c =
       *static_cast<const volatile gles2::cmds::CopyBufferSubData*>(cmd_data);
@@ -531,7 +531,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopyTexSubImage2D(
 error::Error GLES2DecoderPassthroughImpl::HandleCopyTexSubImage3D(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::CopyTexSubImage3D& c =
       *static_cast<const volatile gles2::cmds::CopyTexSubImage3D*>(cmd_data);
@@ -652,7 +652,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteRenderbuffersImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleDeleteSamplersImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::DeleteSamplersImmediate& c =
       *static_cast<const volatile gles2::cmds::DeleteSamplersImmediate*>(
@@ -677,7 +677,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteSamplersImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleDeleteSync(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::DeleteSync& c =
       *static_cast<const volatile gles2::cmds::DeleteSync*>(cmd_data);
@@ -729,7 +729,7 @@ error::Error
 GLES2DecoderPassthroughImpl::HandleDeleteTransformFeedbacksImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::DeleteTransformFeedbacksImmediate& c =
       *static_cast<
@@ -919,7 +919,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleFramebufferTexture2D(
 error::Error GLES2DecoderPassthroughImpl::HandleFramebufferTextureLayer(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::FramebufferTextureLayer& c =
       *static_cast<const volatile gles2::cmds::FramebufferTextureLayer*>(
@@ -1034,7 +1034,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenRenderbuffersImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleGenSamplersImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GenSamplersImmediate& c =
       *static_cast<const volatile gles2::cmds::GenSamplersImmediate*>(cmd_data);
@@ -1080,7 +1080,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenTexturesImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleGenTransformFeedbacksImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GenTransformFeedbacksImmediate& c =
       *static_cast<const volatile gles2::cmds::GenTransformFeedbacksImmediate*>(
@@ -1133,7 +1133,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetBooleanv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetBufferParameteri64v(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetBufferParameteri64v& c =
       *static_cast<const volatile gles2::cmds::GetBufferParameteri64v*>(
@@ -1276,7 +1276,7 @@ GLES2DecoderPassthroughImpl::HandleGetFramebufferAttachmentParameteriv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetInteger64v(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetInteger64v& c =
       *static_cast<const volatile gles2::cmds::GetInteger64v*>(cmd_data);
@@ -1306,7 +1306,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetInteger64v(
 error::Error GLES2DecoderPassthroughImpl::HandleGetIntegeri_v(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetIntegeri_v& c =
       *static_cast<const volatile gles2::cmds::GetIntegeri_v*>(cmd_data);
@@ -1337,7 +1337,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetIntegeri_v(
 error::Error GLES2DecoderPassthroughImpl::HandleGetInteger64i_v(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetInteger64i_v& c =
       *static_cast<const volatile gles2::cmds::GetInteger64i_v*>(cmd_data);
@@ -1456,7 +1456,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetRenderbufferParameteriv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetSamplerParameterfv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetSamplerParameterfv& c =
       *static_cast<const volatile gles2::cmds::GetSamplerParameterfv*>(
@@ -1489,7 +1489,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetSamplerParameterfv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetSamplerParameteriv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetSamplerParameteriv& c =
       *static_cast<const volatile gles2::cmds::GetSamplerParameteriv*>(
@@ -1551,7 +1551,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetShaderiv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetSynciv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetSynciv& c =
       *static_cast<const volatile gles2::cmds::GetSynciv*>(cmd_data);
@@ -1702,7 +1702,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribiv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribIiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetVertexAttribIiv& c =
       *static_cast<const volatile gles2::cmds::GetVertexAttribIiv*>(cmd_data);
@@ -1734,7 +1734,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribIiv(
 error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribIuiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetVertexAttribIuiv& c =
       *static_cast<const volatile gles2::cmds::GetVertexAttribIuiv*>(cmd_data);
@@ -1780,7 +1780,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleHint(
 error::Error GLES2DecoderPassthroughImpl::HandleInvalidateFramebufferImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::InvalidateFramebufferImmediate& c =
       *static_cast<const volatile gles2::cmds::InvalidateFramebufferImmediate*>(
@@ -1811,7 +1811,7 @@ error::Error
 GLES2DecoderPassthroughImpl::HandleInvalidateSubFramebufferImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::InvalidateSubFramebufferImmediate& c =
       *static_cast<
@@ -1942,7 +1942,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleIsRenderbuffer(
 error::Error GLES2DecoderPassthroughImpl::HandleIsSampler(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::IsSampler& c =
       *static_cast<const volatile gles2::cmds::IsSampler*>(cmd_data);
@@ -1982,7 +1982,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleIsShader(
 error::Error GLES2DecoderPassthroughImpl::HandleIsSync(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::IsSync& c =
       *static_cast<const volatile gles2::cmds::IsSync*>(cmd_data);
@@ -2022,7 +2022,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleIsTexture(
 error::Error GLES2DecoderPassthroughImpl::HandleIsTransformFeedback(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::IsTransformFeedback& c =
       *static_cast<const volatile gles2::cmds::IsTransformFeedback*>(cmd_data);
@@ -2069,7 +2069,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleLinkProgram(
 error::Error GLES2DecoderPassthroughImpl::HandlePauseTransformFeedback(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   error::Error error = DoPauseTransformFeedback();
   if (error != error::kNoError) {
@@ -2095,7 +2095,7 @@ error::Error GLES2DecoderPassthroughImpl::HandlePolygonOffset(
 error::Error GLES2DecoderPassthroughImpl::HandleReadBuffer(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::ReadBuffer& c =
       *static_cast<const volatile gles2::cmds::ReadBuffer*>(cmd_data);
@@ -2137,7 +2137,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleRenderbufferStorage(
 error::Error GLES2DecoderPassthroughImpl::HandleResumeTransformFeedback(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   error::Error error = DoResumeTransformFeedback();
   if (error != error::kNoError) {
@@ -2163,7 +2163,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleSampleCoverage(
 error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterf(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::SamplerParameterf& c =
       *static_cast<const volatile gles2::cmds::SamplerParameterf*>(cmd_data);
@@ -2180,7 +2180,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterf(
 error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterfvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::SamplerParameterfvImmediate& c =
       *static_cast<const volatile gles2::cmds::SamplerParameterfvImmediate*>(
@@ -2209,7 +2209,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterfvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameteri(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::SamplerParameteri& c =
       *static_cast<const volatile gles2::cmds::SamplerParameteri*>(cmd_data);
@@ -2226,7 +2226,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameteri(
 error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::SamplerParameterivImmediate& c =
       *static_cast<const volatile gles2::cmds::SamplerParameterivImmediate*>(
@@ -2473,7 +2473,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexParameterivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleTexStorage3D(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::TexStorage3D& c =
       *static_cast<const volatile gles2::cmds::TexStorage3D*>(cmd_data);
@@ -2494,7 +2494,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexStorage3D(
 error::Error GLES2DecoderPassthroughImpl::HandleTransformFeedbackVaryingsBucket(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::TransformFeedbackVaryingsBucket& c = *static_cast<
       const volatile gles2::cmds::TransformFeedbackVaryingsBucket*>(cmd_data);
@@ -2608,7 +2608,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1ivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform1ui(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform1ui& c =
       *static_cast<const volatile gles2::cmds::Uniform1ui*>(cmd_data);
@@ -2624,7 +2624,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1ui(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform1uivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform1uivImmediate& c =
       *static_cast<const volatile gles2::cmds::Uniform1uivImmediate*>(cmd_data);
@@ -2735,7 +2735,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2ivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform2ui(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform2ui& c =
       *static_cast<const volatile gles2::cmds::Uniform2ui*>(cmd_data);
@@ -2752,7 +2752,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2ui(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform2uivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform2uivImmediate& c =
       *static_cast<const volatile gles2::cmds::Uniform2uivImmediate*>(cmd_data);
@@ -2865,7 +2865,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3ivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform3ui(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform3ui& c =
       *static_cast<const volatile gles2::cmds::Uniform3ui*>(cmd_data);
@@ -2883,7 +2883,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3ui(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform3uivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform3uivImmediate& c =
       *static_cast<const volatile gles2::cmds::Uniform3uivImmediate*>(cmd_data);
@@ -2998,7 +2998,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4ivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform4ui(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform4ui& c =
       *static_cast<const volatile gles2::cmds::Uniform4ui*>(cmd_data);
@@ -3017,7 +3017,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4ui(
 error::Error GLES2DecoderPassthroughImpl::HandleUniform4uivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::Uniform4uivImmediate& c =
       *static_cast<const volatile gles2::cmds::Uniform4uivImmediate*>(cmd_data);
@@ -3074,7 +3074,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x3fvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformMatrix2x3fvImmediate& c =
       *static_cast<const volatile gles2::cmds::UniformMatrix2x3fvImmediate*>(
@@ -3105,7 +3105,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x3fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x4fvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformMatrix2x4fvImmediate& c =
       *static_cast<const volatile gles2::cmds::UniformMatrix2x4fvImmediate*>(
@@ -3165,7 +3165,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x2fvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformMatrix3x2fvImmediate& c =
       *static_cast<const volatile gles2::cmds::UniformMatrix3x2fvImmediate*>(
@@ -3196,7 +3196,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x2fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x4fvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformMatrix3x4fvImmediate& c =
       *static_cast<const volatile gles2::cmds::UniformMatrix3x4fvImmediate*>(
@@ -3256,7 +3256,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x2fvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformMatrix4x2fvImmediate& c =
       *static_cast<const volatile gles2::cmds::UniformMatrix4x2fvImmediate*>(
@@ -3287,7 +3287,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x2fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x3fvImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformMatrix4x3fvImmediate& c =
       *static_cast<const volatile gles2::cmds::UniformMatrix4x3fvImmediate*>(
@@ -3510,7 +3510,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib4fvImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4i(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::VertexAttribI4i& c =
       *static_cast<const volatile gles2::cmds::VertexAttribI4i*>(cmd_data);
@@ -3529,7 +3529,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4i(
 error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4ivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::VertexAttribI4ivImmediate& c =
       *static_cast<const volatile gles2::cmds::VertexAttribI4ivImmediate*>(
@@ -3557,7 +3557,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4ivImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4ui(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::VertexAttribI4ui& c =
       *static_cast<const volatile gles2::cmds::VertexAttribI4ui*>(cmd_data);
@@ -3576,7 +3576,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4ui(
 error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4uivImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::VertexAttribI4uivImmediate& c =
       *static_cast<const volatile gles2::cmds::VertexAttribI4uivImmediate*>(
@@ -3792,7 +3792,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteQueriesEXTImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleBeginTransformFeedback(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::BeginTransformFeedback& c =
       *static_cast<const volatile gles2::cmds::BeginTransformFeedback*>(
@@ -3808,7 +3808,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleBeginTransformFeedback(
 error::Error GLES2DecoderPassthroughImpl::HandleEndTransformFeedback(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   error::Error error = DoEndTransformFeedback();
   if (error != error::kNoError) {
@@ -3946,7 +3946,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetMaxValueInBufferCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::HandleFlushMappedBufferRange(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::FlushMappedBufferRange& c =
       *static_cast<const volatile gles2::cmds::FlushMappedBufferRange*>(
@@ -4576,7 +4576,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexStorage2DImageCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::HandleWindowRectanglesEXTImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::WindowRectanglesEXTImmediate& c =
       *static_cast<const volatile gles2::cmds::WindowRectanglesEXTImmediate*>(
@@ -4610,7 +4610,7 @@ error::Error
 GLES2DecoderPassthroughImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
   const volatile gles2::cmds::SetReadbackBufferShadowAllocationINTERNAL& c =
       *static_cast<const volatile gles2::cmds::

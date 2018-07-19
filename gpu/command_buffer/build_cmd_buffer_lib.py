@@ -1086,7 +1086,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         uint32_t immediate_data_size, const volatile void* cmd_data) {
       """ % {'name': func.name, 'prefix' : _prefix})
     if func.IsES3():
-      f.write("""if (!feature_info_->IsWebGL2OrES3Context())
+      f.write("""if (!feature_info_->IsWebGL2OrES3OrHigherContext())
           return error::kUnknownCommand;
         """)
     if func.GetCmdArgs():
@@ -1165,7 +1165,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         uint32_t immediate_data_size, const volatile void* cmd_data) {
       """ % {'name': func.name})
     if func.IsES3():
-      f.write("""if (!feature_info_->IsWebGL2OrES3Context())
+      f.write("""if (!feature_info_->IsWebGL2OrES3OrHigherContext())
           return error::kUnknownCommand;
         """)
     if func.GetCmdArgs():
