@@ -34,7 +34,8 @@
 
 namespace blink {
 
-ListItemOrdinal::ListItemOrdinal() : type_(kNeedsUpdate), not_in_list_(false) {}
+ListItemOrdinal::ListItemOrdinal()
+    : type_(kNeedsUpdate), not_in_list_(false), not_in_list_changed_(false) {}
 
 bool ListItemOrdinal::IsList(const Node& node) {
   return IsHTMLUListElement(node) || IsHTMLOListElement(node);
@@ -240,8 +241,19 @@ void ListItemOrdinal::ClearExplicitValue(const Node& item_node) {
   InvalidateAfter(EnclosingList(&item_node), &item_node);
 }
 
-void ListItemOrdinal::SetNotInList(bool not_in_list) {
+void ListItemOrdinal::SetNotInList(bool not_in_list, const Node& item_node) {
+  if (not_in_list_ == not_in_list)
+    return;
+
   not_in_list_ = not_in_list;
+  SetNotInListChanged(true);
+  LayoutObject* layout_object = item_node.GetLayoutObject();
+  if (layout_object->IsLayoutNGListItem())
+    layout_object->NotifyOfSubtreeChange();
+}
+
+void ListItemOrdinal::SetNotInListChanged(bool changed) {
+  not_in_list_changed_ = changed;
 }
 
 unsigned ListItemOrdinal::ItemCountForOrderedList(

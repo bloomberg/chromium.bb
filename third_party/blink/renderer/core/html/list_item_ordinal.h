@@ -63,7 +63,9 @@ class CORE_EXPORT ListItemOrdinal {
 
   // Get/set whether this item is in a list or not.
   bool NotInList() const { return not_in_list_; }
-  void SetNotInList(bool);
+  void SetNotInList(bool, const Node&);
+  bool NotInListChanged() const { return not_in_list_changed_; }
+  void SetNotInListChanged(bool);
 
   static bool IsList(const Node&);
   static bool IsListItem(const Node&);
@@ -110,6 +112,7 @@ class CORE_EXPORT ListItemOrdinal {
   mutable int value_ = 0;
   mutable unsigned type_ : 2;  // ValueType
   unsigned not_in_list_ : 1;
+  unsigned not_in_list_changed_ : 1;
 };
 
 }  // namespace blink
