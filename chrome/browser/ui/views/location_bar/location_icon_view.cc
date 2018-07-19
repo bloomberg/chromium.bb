@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/controls/label.h"
 
 using content::WebContents;
@@ -69,6 +70,17 @@ bool LocationIconView::GetTooltipText(const gfx::Point& p,
 SkColor LocationIconView::GetTextColor() const {
   return location_bar_->GetSecurityChipColor(
       location_bar_->GetToolbarModel()->GetSecurityLevel(false));
+}
+
+bool LocationIconView::ShouldShowSeparator() const {
+  return ShouldShowLabel() ||
+         (ui::MaterialDesignController::IsRefreshUi() &&
+          !location_bar_->GetOmniboxView()->IsEditingOrEmpty());
+}
+
+bool LocationIconView::ShouldShowExtraSpace() const {
+  return ui::MaterialDesignController::IsRefreshUi() &&
+         location_bar_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {

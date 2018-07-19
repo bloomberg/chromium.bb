@@ -180,6 +180,10 @@ bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
 
+bool IconLabelBubbleView::ShouldShowExtraSpace() const {
+  return false;
+}
+
 double IconLabelBubbleView::WidthMultiplier() const {
   return 1.0;
 }
@@ -232,8 +236,12 @@ void IconLabelBubbleView::Layout() {
   separator_bounds.Inset(0, (separator_bounds.height() - separator_height) / 2);
 
   float separator_width = GetPrefixedSeparatorWidth() + GetEndPadding();
-  separator_view_->SetBounds(label_->bounds().right(), separator_bounds.y(),
-                             separator_width, separator_height);
+  int separator_x =
+      ui::MaterialDesignController::IsRefreshUi() && label_->text().empty()
+          ? image_->bounds().right()
+          : label_->bounds().right();
+  separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
+                             separator_height);
 
   gfx::Rect ink_drop_bounds = GetLocalBounds();
   if (ShouldShowSeparator()) {
@@ -382,7 +390,11 @@ SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
-  gfx::Size size(GetNonLabelSize());
+  gfx::Size size(image_->GetPreferredSize());
+  size.Enlarge(
+      GetInsets().left() + GetPrefixedSeparatorWidth() + GetEndPadding(),
+      GetInsets().height());
+
   const bool shrinking = IsShrinking();
   // Animation continues for the last few pixels even after the label is not
   // visible in order to slide the icon into its final position. Therefore it
@@ -395,20 +407,10 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // enough to show the icon. We don't want to shrink all the way back to
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
-    const int max_width = size.width() + GetInternalSpacing() + label_width +
-                          GetPrefixedSeparatorWidth();
+    const int max_width = size.width() + GetInternalSpacing() + label_width;
     const int current_width = WidthMultiplier() * max_width;
     size.set_width(shrinking ? std::max(current_width, size.width())
                              : current_width);
-  }
-  return size;
-}
-
-gfx::Size IconLabelBubbleView::GetMaxSizeForLabelWidth(int label_width) const {
-  gfx::Size size(GetNonLabelSize());
-  if (ShouldShowLabel() || IsShrinking()) {
-    size.Enlarge(
-        GetInternalSpacing() + label_width + GetPrefixedSeparatorWidth(), 0);
   }
   return size;
 }
@@ -426,19 +428,15 @@ int IconLabelBubbleView::GetInternalSpacing() const {
 }
 
 int IconLabelBubbleView::GetPrefixedSeparatorWidth() const {
-  return ShouldShowSeparator() ? kSeparatorWidth + kSpaceBesideSeparator : 0;
+  return ShouldShowSeparator() || ShouldShowExtraSpace()
+             ? kSeparatorWidth + kSpaceBesideSeparator
+             : 0;
 }
 
 int IconLabelBubbleView::GetEndPadding() const {
   if (ShouldShowSeparator())
     return kSpaceBesideSeparator;
   return GetInsets().right();
-}
-
-gfx::Size IconLabelBubbleView::GetNonLabelSize() const {
-  gfx::Size size(image_->GetPreferredSize());
-  size.Enlarge(GetInsets().left() + GetEndPadding(), GetInsets().height());
-  return size;
 }
 
 bool IconLabelBubbleView::OnActivate(const ui::Event& event) {

@@ -469,16 +469,10 @@ void LocationBarView::Layout() {
   keyword_hint_view_->SetVisible(false);
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
-
-  constexpr int kTextIndentDp = 12;
-  int leading_edit_item_padding =
-      ui::MaterialDesignController::IsRefreshUi()
-          ? GetOmniboxPopupView()->IsOpen() ? kTextIndentDp : 0
-          : item_padding;
   // We always subtract the left padding of the OmniboxView itself to allow for
   // an extended I-beam click target without affecting actual layout.
-  leading_edit_item_padding -= omnibox_view_->GetInsets().left();
-
+  const int leading_edit_item_padding =
+      item_padding - omnibox_view_->GetInsets().left();
   LocationBarLayout leading_decorations(
       LocationBarLayout::LEFT_EDGE, item_padding, leading_edit_item_padding);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
@@ -1235,11 +1229,6 @@ void LocationBarView::OnPopupVisibilityChanged() {
   // The focus ring may be hidden or shown when the popup visibility changes.
   if (focus_ring_)
     focus_ring_->SchedulePaint();
-
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    Layout();
-    SchedulePaint();
-  }
 }
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {
