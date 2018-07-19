@@ -76,6 +76,10 @@
       status: "experimental",
     },
     {
+      name: "AdTagging",
+      status: "test",
+    },
+    {
       name: "AllowActivationDelegationAttr",
     },
     {

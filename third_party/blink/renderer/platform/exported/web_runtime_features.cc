@@ -92,6 +92,10 @@ void WebRuntimeFeatures::EnableAccessibilityObjectModel(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityObjectModelEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAdTagging(bool enable) {
+  RuntimeEnabledFeatures::SetAdTaggingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAllowActivationDelegationAttr(bool enable) {
   RuntimeEnabledFeatures::SetAllowActivationDelegationAttrEnabled(enable);
 }

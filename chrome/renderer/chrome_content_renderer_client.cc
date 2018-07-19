@@ -86,6 +86,7 @@
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "components/task_scheduler_util/variations_util.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -1577,6 +1578,9 @@ void ChromeContentRendererClient::
 #if defined(OS_ANDROID)
   blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
+
+  if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
+    blink::WebRuntimeFeatures::EnableAdTagging(true);
 }
 
 void ChromeContentRendererClient::

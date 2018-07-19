@@ -288,4 +288,34 @@ TEST_F(AdTrackerSimTest, SameOriginDocWrittenSubframeFromAdScript) {
   EXPECT_TRUE(local_subframe->IsAdSubframe());
 }
 
+class AdTrackerDisabledSimTest : public SimTest {
+ protected:
+  void SetUp() override {
+    RuntimeEnabledFeatures::SetAdTaggingEnabled(false);
+
+    SimTest::SetUp();
+    main_resource_ = std::make_unique<SimRequest>(
+        "https://example.com/test.html", "text/html");
+
+    LoadURL("https://example.com/test.html");
+    main_resource_->Start();
+  }
+
+  void TearDown() override { SimTest::TearDown(); }
+
+  std::unique_ptr<SimRequest> main_resource_;
+};
+
+TEST_F(AdTrackerDisabledSimTest, ResourceLoadedWhenAdTaggingDisabled) {
+  SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
+
+  main_resource_->Complete(R"HTML(
+    <iframe src=https://example.com/iframe.html></iframe>
+    )HTML");
+
+  iframe_resource.Complete("<body></body>");
+
+  EXPECT_FALSE(GetDocument().GetFrame()->IsAdSubframe());
+}
+
 }  // namespace blink
