@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 
-#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 
 namespace blink {
@@ -15,8 +14,7 @@ struct IntrinsicSizingInfo;
 class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
   ~FrameView() override = default;
-  virtual void UpdateViewportIntersectionsForSubtree(
-      DocumentLifecycle::LifecycleState) = 0;
+  virtual void UpdateViewportIntersectionsForSubtree() = 0;
 
   virtual bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const = 0;
   virtual bool HasIntrinsicSizingInfo() const = 0;
