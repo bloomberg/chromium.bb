@@ -10,7 +10,7 @@ source_set("base") {
   ]
 }
 
-executable("base_unittests") {
+source_set("base_unittests") {
   testonly = true
 
   sources = [ "ip_address_unittest.cc" ]

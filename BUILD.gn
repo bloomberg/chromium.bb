@@ -2,49 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# All compilable non-test targets in the repository (both executables and
+# source_sets).
 group("gn_all") {
-  testonly = true
+  deps = [
+    "//base",
+    "//platform",
+    "//sample:hello",
+  ]
+}
 
+executable("unittests") {
+  testonly = true
   deps = [
     "//base:base_unittests",
-    "//platform",
-  ]
-}
-
-executable("hello") {
-  sources = [
-    "hello.cc",
-  ]
-
-  deps = [
-    ":hello_shared",
-    ":hello_static",
-  ]
-}
-
-executable("hello_tests") {
-  testonly = true
-  sources = [ "hello_unittest.cc" ]
-
-  deps = [
-    "third_party/googletest:gmock",
-    "third_party/googletest:gtest",
-    "third_party/googletest:gtest_main",
-  ]
-}
-
-shared_library("hello_shared") {
-  sources = [
-    "hello_shared.cc",
-    "hello_shared.h",
-  ]
-
-  defines = [ "OPENSCREEN_SHARED_IMPLEMENTATION" ]
-}
-
-static_library("hello_static") {
-  sources = [
-    "hello_static.cc",
-    "hello_static.h",
+    "//sample:hello_unittests",
   ]
 }

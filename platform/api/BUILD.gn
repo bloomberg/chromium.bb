@@ -6,5 +6,6 @@ source_set("api") {
   sources = [
     "logging.cc",
     "logging.h",
+    "time.h",
   ]
 }
