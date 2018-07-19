@@ -51,6 +51,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   // not re-used by |this| will be removed from the CALayer hierarchy.
   void CommitScheduledCALayers(CALayer* superlayer,
                                std::unique_ptr<CARendererLayerTree> old_tree,
+                               const gfx::Size& pixel_size,
                                float scale_factor);
 
   // Returns the contents used for a given solid color.
@@ -86,15 +87,12 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // to nil, so that its destructor will not remove an active CALayer.
     void CommitToCA(CALayer* superlayer,
                     RootLayer* old_layer,
+                    const gfx::Size& pixel_size,
                     float scale_factor);
 
-    // Check to see if the CALayer tree is just a video layer on a black
-    // background. If so, return true and set background_rect to the
-    // background's bounding rect, otherwise return false. CommitToCA() calls
-    // this function and, based on its return value, either gives the root
-    // layer this frame and a black background color or clears them.
-    bool WantsFullcreenLowPowerBackdrop(float scale_factor,
-                                        gfx::RectF* background_rect);
+    // Return true if the CALayer tree is just a video layer on a black or
+    // transparent background, false otherwise.
+    bool WantsFullcreenLowPowerBackdrop();
 
     std::vector<ClipAndSortingLayer> clip_and_sorting_layers;
     base::scoped_nsobject<CALayer> ca_layer;
