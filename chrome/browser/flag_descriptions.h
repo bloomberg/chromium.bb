@@ -67,6 +67,9 @@ extern const char kAutomaticPasswordGenerationDescription[];
 extern const char kEnableBlinkHeapIncrementalMarkingName[];
 extern const char kEnableBlinkHeapIncrementalMarkingDescription[];
 
+extern const char kEnableBloatedRendererDetectionName[];
+extern const char kEnableBloatedRendererDetectionDescription[];
+
 extern const char kSystemTrayUnifiedName[];
 extern const char kSystemTrayUnifiedDescription[];
 

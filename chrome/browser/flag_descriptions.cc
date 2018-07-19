@@ -65,6 +65,10 @@ const char kEnableBlinkHeapIncrementalMarkingName[] =
 const char kEnableBlinkHeapIncrementalMarkingDescription[] =
     "Enable incremental marking in Blink";
 
+const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
+const char kEnableBloatedRendererDetectionDescription[] =
+    "Enable bloated renderer detection";
+
 const char kSystemTrayUnifiedName[] = "New system menu";
 const char kSystemTrayUnifiedDescription[] =
     "Enable the experimental system menu.";

@@ -4113,6 +4113,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list::features::kEnableContinueReading)},
 #endif  // OS_CHROMEOS
 
+    {"enable-bloated-renderer-detection",
+     flag_descriptions::kEnableBloatedRendererDetectionName,
+     flag_descriptions::kEnableBloatedRendererDetectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBloatedRendererDetection)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
