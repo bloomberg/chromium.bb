@@ -322,16 +322,36 @@
 }
 
 {
+  class ProgressBar {
+    /** @param {string} id */
+    constructor(id) {
+      /** @type {HTMLProgressElement} */
+      this._element = document.getElementById(id);
+      this.lastValue = this._element.value;
+    }
+
+    setValue(val) {
+      if (val === 0 || val >= this.lastValue) {
+        this._element.value = val;
+        this.lastValue = val;
+      } else {
+        // Reset to 0 so the progress bar doesn't animate backwards.
+        this.setValue(0);
+        requestAnimationFrame(() => this.setValue(val));
+      }
+    }
+  }
+
   /** @type {HTMLUListElement} */
   const _symbolTree = document.getElementById('symboltree');
-  /** @type {HTMLProgressElement} */
-  const _progress = document.getElementById('progress');
+  const _progress = new ProgressBar('progress');
 
   /**
    * Displays the given data as a tree view
-   * @param {TreeProgress} param0
+   * @param {TreeProgress} message
    */
-  function displayTree({root, percent, diffMode, error}) {
+  function displayTree(message) {
+    const {root, percent, diffMode, error} = message;
     /** @type {DocumentFragment | null} */
     let rootElement = null;
     if (root) {
@@ -344,21 +364,25 @@
     }
     state.set('diff_mode', diffMode ? 'on' : null);
 
-    requestAnimationFrame(() => {
-      _progress.value = percent;
-      if (error) {
-        document.body.classList.add('error');
-      } else {
-        document.body.classList.remove('error');
-      }
-      if (diffMode) {
-        document.body.classList.add('diff');
-      } else {
-        document.body.classList.remove('diff');
-      }
+    // Double requestAnimationFrame ensures that the code inside executes in a
+    // different frame than the above tree element creation.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        _progress.setValue(percent);
+        if (error) {
+          document.body.classList.add('error');
+        } else {
+          document.body.classList.remove('error');
+        }
+        if (diffMode) {
+          document.body.classList.add('diff');
+        } else {
+          document.body.classList.remove('diff');
+        }
 
-      dom.replace(_symbolTree, rootElement);
-    });
+        dom.replace(_symbolTree, rootElement);
+      })
+    );
   }
 
   treeReady.then(displayTree);
@@ -366,13 +390,13 @@
 
   form.addEventListener('change', event => {
     if (event.target.dataset.dynamic == null) {
-      _progress.value = 0;
+      _progress.setValue(0);
       worker.loadTree().then(displayTree);
     }
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
-    _progress.value = 0;
+    _progress.setValue(0);
     worker.loadTree().then(displayTree);
   });
 }

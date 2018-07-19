@@ -84,7 +84,7 @@ const _CONTAINER_TYPES = {
 const _CONTAINER_TYPE_SET = new Set(Object.values(_CONTAINER_TYPES));
 
 /** Type for a dex method symbol */
-const _DEX_METHOD_SYMBOL_TYPE = 'm'
+const _DEX_METHOD_SYMBOL_TYPE = 'm';
 /** Type for an 'other' symbol */
 const _OTHER_SYMBOL_TYPE = 'o';
 
@@ -121,4 +121,21 @@ function* types(typesList) {
       yield typeChar;
     }
   }
+}
+
+/**
+ * Limit how frequently `func` is called.
+ * @template {T}
+ * @param {T & Function} func
+ * @param {number} wait Time to wait before func can be called again (ms).
+ * @returns {T}
+ */
+function debounce(func, wait) {
+  /** @type {number} */
+  let timeoutId;
+  function debounced (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), wait);
+  };
+  return /** @type {any} */ (debounced);
 }

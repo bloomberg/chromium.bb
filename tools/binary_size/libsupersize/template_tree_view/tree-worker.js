@@ -37,29 +37,32 @@ importScripts('./shared.js');
 
 const _PATH_SEP = '/';
 
-/**
- * Return the basename of the pathname 'path'. In a file path, this is the name
- * of the file and its extension. In a folder path, this is the name of the
- * folder.
- * @param {string} path Path to find basename of.
- * @param {string} sep Path seperator, such as '/'.
- */
-function basename(path, sep) {
-  const sepIndex = path.lastIndexOf(sep);
-  const pathIndex = path.lastIndexOf(_PATH_SEP);
-  return path.substring(Math.max(sepIndex, pathIndex) + 1);
+/** @param {FileEntry} fileEntry */
+function getSourcePath(fileEntry) {
+  return fileEntry[_KEYS.SOURCE_PATH];
 }
 
 /**
- * Return the basename of the pathname 'path'. In a file path, this is the
+ * Find the last index of either '/' or `sep` in the given path.
+ * @param {string} path
+ * @param {string} sep
+ */
+function lastIndexOf(path, sep) {
+  if (sep === _PATH_SEP) {
+    return path.lastIndexOf(_PATH_SEP);
+  } else {
+    return Math.max(path.lastIndexOf(sep), path.lastIndexOf(_PATH_SEP));
+  }
+}
+
+/**
+ * Return the dirname of the pathname 'path'. In a file path, this is the
  * full path of its folder.
  * @param {string} path Path to find dirname of.
  * @param {string} sep Path seperator, such as '/'.
  */
 function dirname(path, sep) {
-  const sepIndex = path.lastIndexOf(sep);
-  const pathIndex = path.lastIndexOf(_PATH_SEP);
-  return path.substring(0, Math.max(sepIndex, pathIndex));
+  return path.substring(0, lastIndexOf(path, sep));
 }
 
 /**
@@ -73,19 +76,19 @@ function _compareFunc(a, b) {
 
 /**
  * Make a node with some default arguments
- * @param {Partial<TreeNode> & {shortName:string}} options
+ * @param {Partial<TreeNode>} options
  * Values to use for the node. If a value is
  * omitted, a default will be used instead.
  * @returns {TreeNode}
  */
 function createNode(options) {
-  const {idPath, type, shortName, size = 0, childStats = {}} = options;
+  const {idPath, type, shortNameIndex, size = 0, childStats = {}} = options;
   return {
     children: [],
     parent: null,
     childStats,
     idPath,
-    shortNameIndex: idPath.lastIndexOf(shortName),
+    shortNameIndex,
     size,
     type,
   };
@@ -114,7 +117,7 @@ class TreeBuilder {
 
     this.rootNode = createNode({
       idPath: this._sep,
-      shortName: this._sep,
+      shortNameIndex: 0,
       type: this._containerType(this._sep),
     });
     /** @type {Map<string, TreeNode>} Cache for directory nodes */
@@ -131,37 +134,38 @@ class TreeBuilder {
    * Link a node to a new parent. Will go up the tree to update parent sizes to
    * include the new child.
    * @param {TreeNode} node Child node.
-   * @param {TreeNode} parent New parent node.
+   * @param {TreeNode} directParent New parent node.
    */
-  static _attachToParent(node, parent) {
+  static _attachToParent(node, directParent) {
     // Link the nodes together
-    parent.children.push(node);
-    node.parent = parent;
+    directParent.children.push(node);
+    node.parent = directParent;
 
     const additionalSize = node.size;
     const additionalStats = Object.entries(node.childStats);
 
     // Update the size and childStats of all ancestors
-    while (node != null && node.parent != null) {
-      const [containerType, lastBiggestType] = node.parent.type;
+    while (node.parent != null) {
+      const {parent} = node;
+      const [containerType, lastBiggestType] = parent.type;
       let {size: lastBiggestSize = 0} =
-        node.parent.childStats[lastBiggestType] || {};
+        parent.childStats[lastBiggestType] || {};
       for (const [type, stat] of additionalStats) {
-        const parentStat = node.parent.childStats[type] || {size: 0, count: 0};
+        const parentStat = parent.childStats[type] || {size: 0, count: 0};
 
         parentStat.size += stat.size;
         parentStat.count += stat.count;
-        node.parent.childStats[type] = parentStat;
+        parent.childStats[type] = parentStat;
 
         const absSize = Math.abs(parentStat.size);
         if (absSize > lastBiggestSize) {
-          node.parent.type = `${containerType}${type}`;
+          parent.type = `${containerType}${type}`;
           lastBiggestSize = absSize;
         }
       }
 
-      node.parent.size += additionalSize;
-      node = node.parent;
+      parent.size += additionalSize;
+      node = parent;
     }
   }
 
@@ -197,7 +201,7 @@ class TreeBuilder {
           if (classNode == null) {
             classNode = createNode({
               idPath: classIdPath,
-              shortName: classIdPath.slice(childNode.shortNameIndex),
+              shortNameIndex: childNode.shortNameIndex,
               type: _CONTAINER_TYPES.JAVA_CLASS,
             });
             javaClassContainers.set(classIdPath, classNode);
@@ -303,7 +307,7 @@ class TreeBuilder {
       if (parentNode == null) {
         parentNode = createNode({
           idPath: parentPath,
-          shortName: basename(parentPath, this._sep),
+          shortNameIndex: lastIndexOf(parentPath, this._sep) + 1,
           type: this._containerType(childNode.idPath),
         });
         this._parents.set(parentPath, parentNode);
@@ -323,15 +327,11 @@ class TreeBuilder {
    * @param {FileEntry} fileEntry File entry from data file
    */
   addFileEntry(fileEntry) {
-    // make path for this
-    const filePath = fileEntry[_KEYS.SOURCE_PATH];
-    // insert zero-width spaces after certain characters to indicate to the
-    // browser it could add a line break there on small screen sizes.
     const idPath = this._getPath(fileEntry);
     // make node for this
     const fileNode = createNode({
       idPath,
-      shortName: basename(filePath, this._sep),
+      shortNameIndex: lastIndexOf(idPath, this._sep) + 1,
       type: _CONTAINER_TYPES.FILE,
     });
     // build child nodes for this file's symbols and attach to self
@@ -342,7 +342,7 @@ class TreeBuilder {
       const symbolNode = createNode({
         // Join file path to symbol name with a ":"
         idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
-        shortName: symbol[_KEYS.SYMBOL_NAME],
+        shortNameIndex: idPath.length + 1,
         size,
         type: symbol[_KEYS.TYPE],
         childStats: {[type]: {size, count}},
@@ -366,6 +366,9 @@ class TreeBuilder {
    * Finalize the creation of the tree and return the root node.
    */
   build() {
+    this._getPath = () => '';
+    this._filterTest = () => false;
+    this._parents.clear();
     return this.rootNode;
   }
 
@@ -431,6 +434,8 @@ class DataFetcher {
   constructor(url) {
     this._controller = new AbortController();
     this._url = url;
+    /** @type {Uint8Array | null} */
+    this._cache = null;
   }
 
   /**
@@ -446,41 +451,76 @@ class DataFetcher {
   }
 
   /**
-   * Transforms a binary stream into a newline delimited JSON (.ndjson) stream.
-   * Each yielded value corresponds to one line in the stream.
-   * @returns {AsyncIterable<Meta | FileEntry>}
+   * Yields binary chunks as Uint8Arrays. After a complete run, the bytes are
+   * cached and future calls will yield the cached Uint8Array instead.
    */
-  async *newlineDelimtedJsonStream() {
+  async *arrayBufferStream() {
+    if (this._cache) {
+      yield this._cache;
+      return;
+    }
+
     const response = await this.fetch();
-    // Are streams supported?
+    let result;
+    // Use streams, if supported, so that we can show in-progress data instead
+    // of waiting for the entire data file to download. The file can be >100 MB,
+    // so on streams ensure slow connections still see some data.
     if (response.body) {
-      const decoder = new TextDecoder();
-      const decodeOptions = {stream: true};
       const reader = response.body.getReader();
 
-      let buffer = '';
+      /** @type {Uint8Array[]} Store received bytes to merge later */
+      let buffer = [];
+      /** Total size of received bytes */
+      let byteSize = 0;
       while (true) {
         // Read values from the stream
         const {done, value} = await reader.read();
         if (done) break;
 
-        // Convert binary values to text chunks.
-        const chunk = decoder.decode(value, decodeOptions);
-        buffer += chunk;
-        // Split the chunk base on newlines,
-        // and turn each complete line into JSON
-        const lines = buffer.split('\n');
-        [buffer] = lines.splice(lines.length - 1, 1);
+        const chunk = new Uint8Array(value, 0, value.length);
+        yield chunk;
+        buffer.push(chunk);
+        byteSize += chunk.length;
+      }
 
-        for (const line of lines) {
-          yield JSON.parse(line);
-        }
+      // We just cache a single typed array to save some memory and make future
+      // runs consistent with the no streams mode.
+      result = new Uint8Array(byteSize);
+      let i = 0;
+      for (const chunk of buffer) {
+        result.set(chunk, i);
+        i += chunk.length;
       }
     } else {
       // In-memory version for browsers without stream support
-      const text = await response.text();
-      for (const line of text.split('\n')) {
-        if (line) yield JSON.parse(line);
+      result = new Uint8Array(await response.arrayBuffer());
+      yield result;
+    }
+
+    this._cache = result;
+  }
+
+  /**
+   * Transforms a binary stream into a newline delimited JSON (.ndjson) stream.
+   * Each yielded value corresponds to one line in the stream.
+   * @returns {AsyncIterable<Meta | FileEntry>}
+   */
+  async *newlineDelimtedJsonStream() {
+    const decoder = new TextDecoder();
+    const decoderArgs = {stream: true};
+    let textBuffer = '';
+
+    for await (const bytes of this.arrayBufferStream()) {
+      if (this._controller.signal.aborted) {
+        throw new DOMException('Request was aborted', 'AbortError');
+      }
+
+      textBuffer += decoder.decode(bytes, decoderArgs);
+      const lines = textBuffer.split('\n');
+      [textBuffer] = lines.splice(lines.length - 1, 1);
+
+      for (const line of lines) {
+        yield JSON.parse(line);
       }
     }
   }
@@ -517,11 +557,18 @@ function parseOptions(options) {
     }
   }
 
+  /** @type {Array<(symbolNode: TreeNode) => boolean>} */
+  const filters = [];
+
   /** Ensure symbol size is past the minimum */
-  const checkSize = s => Math.abs(s.size) >= minSymbolSize;
+  if (minSymbolSize > 0) {
+    filters.push(s => Math.abs(s.size) >= minSymbolSize);
+  }
+
   /** Ensure the symbol size wasn't filtered out */
-  const checkType = s => typeFilter.has(s.type);
-  const filters = [checkSize, checkType];
+  if (typeFilter.size < _SYMBOL_TYPE_SET.size) {
+    filters.push(s => typeFilter.has(s.type));
+  }
 
   if (includeRegex) {
     const regex = new RegExp(includeRegex);
@@ -551,6 +598,7 @@ const fetcher = new DataFetcher('data.ndjson');
  * Assemble a tree when this worker receives a message.
  * @param {string} options Query string containing options for the builder.
  * @param {(msg: TreeProgress) => void} onProgress
+ * @returns {Promise<TreeProgress>}
  */
 async function buildTree(options, onProgress) {
   const {groupBy, filterTest} = parseOptions(options);
@@ -562,19 +610,14 @@ async function buildTree(options, onProgress) {
   const getPathMap = {
     component(fileEntry) {
       const component = meta.components[fileEntry[_KEYS.COMPONENT_INDEX]];
-      const path = getPathMap.source_path(fileEntry);
-      return (component || '(No component)') + '>' + path;
+      const path = getSourcePath(fileEntry);
+      return `${component || '(No component)'}>${path}`;
     },
-    source_path(fileEntry) {
-      return fileEntry[_KEYS.SOURCE_PATH];
-    },
-  };
-  const sepMap = {
-    component: '>',
+    source_path: getSourcePath,
   };
 
   builder = new TreeBuilder({
-    sep: sepMap[groupBy],
+    sep: groupBy === 'component' ? '>' : _PATH_SEP,
     getPath: getPathMap[groupBy],
     filterTest,
   });
@@ -616,11 +659,9 @@ async function buildTree(options, onProgress) {
     onProgress(message);
   }
 
-  /** @type {number} ID from setInterval */
-  let interval = null;
   try {
     // Post partial state every second
-    interval = setInterval(postToUi, 1000);
+    let lastBatchSent = Date.now();
     for await (const dataObj of fetcher.newlineDelimtedJsonStream()) {
       if (meta == null) {
         // First line of data is used to store meta information.
@@ -628,22 +669,26 @@ async function buildTree(options, onProgress) {
         postToUi();
       } else {
         builder.addFileEntry(/** @type {FileEntry} */ (dataObj));
+        const currentTime = Date.now();
+        if (currentTime - lastBatchSent > 500) {
+          postToUi();
+          await Promise.resolve();  // Pause loop to check for worker messages
+          lastBatchSent = currentTime;
+        }
       }
     }
-    clearInterval(interval);
 
     return createProgressMessage({
       root: builder.build(),
       percent: 1,
     });
   } catch (error) {
-    if (interval != null) clearInterval(interval);
     if (error.name === 'AbortError') {
       console.info(error.message);
     } else {
       console.error(error);
-      return createProgressMessage({error});
     }
+    return createProgressMessage({error});
   }
 }
 
@@ -665,10 +710,11 @@ const actions = {
 /**
  * Call the requested action function with the given data. If an error is thrown
  * or rejected, post the error message to the UI thread.
- * @param {MessageEvent} event Event for when this worker receives a message.
+ * @param {number} id Unique message ID.
+ * @param {string} action Action type, corresponding to a key in `actions.`
+ * @param {any} data Data to supply to the action function.
  */
-self.onmessage = async event => {
-  const {id, action, data} = event.data;
+async function runAction(id, action, data) {
   try {
     const result = await actions[action](data);
     // @ts-ignore
@@ -677,5 +723,23 @@ self.onmessage = async event => {
     // @ts-ignore
     self.postMessage({id, error: err.message});
     throw err;
+  }
+}
+
+const runActionDebounced = debounce(runAction, 0);
+
+/**
+ * @param {MessageEvent} event Event for when this worker receives a message.
+ */
+self.onmessage = async event => {
+  const {id, action, data} = event.data;
+  if (action === 'load') {
+    // Loading large files will block the worker thread until complete or when
+    // an await statement is reached. During this time, multiple load messages
+    // can pile up due to filters being adjusted. We debounce the load call
+    // so that only the last message is read (the current set of filters).
+    runActionDebounced(id, action, data);
+  } else {
+    runAction(id, action, data);
   }
 };
