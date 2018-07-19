@@ -1348,9 +1348,9 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
 #endif
 	FcDirCacheBasenameMD5 (dir, cache_base);
     cache_hashed = FcStrBuildFilename (cache_dir, cache_base, NULL);
+    FcStrFree (cache_dir);
     if (!cache_hashed)
         return FcFalse;
-    FcStrFree (cache_dir);
 
     if (FcDebug () & FC_DBG_CACHE)
         printf ("FcDirCacheWriteDir dir \"%s\" file \"%s\"\n",
