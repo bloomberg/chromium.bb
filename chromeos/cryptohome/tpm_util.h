@@ -32,6 +32,14 @@ CHROMEOS_EXPORT bool InstallAttributesFinalize();
 CHROMEOS_EXPORT bool InstallAttributesIsInvalid();
 CHROMEOS_EXPORT bool InstallAttributesIsFirstInstall();
 
+// Checks if device is locked for Active Directory management.
+CHROMEOS_EXPORT bool IsActiveDirectoryLocked();
+
+// Sets install attributes for an Active Directory managed device and persists
+// them on disk.
+CHROMEOS_EXPORT bool LockDeviceActiveDirectoryForTesting(
+    const std::string& realm);
+
 }  // namespace tpm_util
 }  // namespace chromeos
 

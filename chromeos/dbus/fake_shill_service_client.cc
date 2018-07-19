@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -20,7 +21,6 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
-#include "chromeos/network/shill_property_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -343,7 +343,8 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
     properties->SetKey(shill::kGuidProperty, base::Value(guid_to_set));
   }
   properties->SetKey(shill::kSSIDProperty, base::Value(name));
-  shill_property_util::SetSSID(name, properties);  // Sets kWifiHexSsid
+  properties->SetKey(shill::kWifiHexSsid,
+                     base::Value(base::HexEncode(name.c_str(), name.size())));
   properties->SetKey(shill::kNameProperty, base::Value(name));
   std::string device_path = DBusThreadManager::Get()
                                 ->GetShillDeviceClient()

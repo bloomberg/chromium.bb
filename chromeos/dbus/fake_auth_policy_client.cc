@@ -19,10 +19,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "dbus/message.h"
@@ -96,7 +96,7 @@ void FakeAuthPolicyClient::JoinAdDomain(
     const authpolicy::JoinDomainRequest& request,
     int password_fd,
     JoinCallback callback) {
-  DCHECK(!AuthPolicyLoginHelper::IsAdLocked());
+  DCHECK(!tpm_util::IsActiveDirectoryLocked());
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
   std::string machine_domain;
   if (!started_) {
@@ -137,7 +137,7 @@ void FakeAuthPolicyClient::AuthenticateUser(
     const authpolicy::AuthenticateUserRequest& request,
     int password_fd,
     AuthCallback callback) {
-  DCHECK(AuthPolicyLoginHelper::IsAdLocked());
+  DCHECK(tpm_util::IsActiveDirectoryLocked());
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
   authpolicy::ActiveDirectoryAccountInfo account_info;
   if (!started_) {
@@ -200,7 +200,7 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
     return;
   }
 
-  if (!AuthPolicyLoginHelper::IsAdLocked()) {
+  if (!tpm_util::IsActiveDirectoryLocked()) {
     // Pretend that policy was fetched and cached inside authpolicyd.
     std::move(callback).Run(
         authpolicy::ERROR_DEVICE_POLICY_CACHED_BUT_NOT_SENT);
@@ -225,7 +225,7 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
 
 void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
                                              RefreshPolicyCallback callback) {
-  DCHECK(AuthPolicyLoginHelper::IsAdLocked());
+  DCHECK(tpm_util::IsActiveDirectoryLocked());
   if (!started_) {
     LOG(ERROR) << "authpolicyd not started";
     std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE);

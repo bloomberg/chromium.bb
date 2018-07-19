@@ -13,8 +13,8 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chromeos/network/shill_property_util.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/values_util.h"
@@ -317,7 +317,9 @@ ShillClientUnittestBase::CreateExampleServiceProperties() {
                      base::Value("00000000-0000-0000-0000-000000000000"));
   properties->SetKey(shill::kModeProperty, base::Value(shill::kModeManaged));
   properties->SetKey(shill::kTypeProperty, base::Value(shill::kTypeWifi));
-  shill_property_util::SetSSID("testssid", properties);
+  const std::string ssid = "testssid";
+  properties->SetKey(shill::kWifiHexSsid,
+                     base::Value(base::HexEncode(ssid.c_str(), ssid.size())));
   properties->SetKey(shill::kSecurityClassProperty,
                      base::Value(shill::kSecurityPsk));
   return properties;

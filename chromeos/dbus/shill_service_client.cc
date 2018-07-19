@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
-#include "chromeos/network/network_event_log.h"
+#include "components/device_event_log/device_event_log.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -252,8 +252,8 @@ class ShillServiceClientImpl : public ShillServiceClient {
     // Either way this would cause an invalid memory access in
     // ShillManagerClient, see crbug.com/324849.
     if (object_path == dbus::ObjectPath(shill::kFlimflamServicePath)) {
-      NET_LOG_ERROR("ShillServiceClient service has invalid path",
-                    shill::kFlimflamServicePath);
+      NET_LOG(ERROR) << "ShillServiceClient service has invalid path: "
+                     << shill::kFlimflamServicePath;
       return;
     }
     bus_->RemoveObjectProxy(shill::kFlimflamServiceName, object_path,

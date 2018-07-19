@@ -27,6 +27,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -157,8 +158,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
               loop.QuitClosure(), test_realm_));
       loop.Run();
     }
-    ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
-        test_realm_));
+    ASSERT_TRUE(tpm_util::LockDeviceActiveDirectoryForTesting(test_realm_));
     {
       base::RunLoop loop;
       fake_auth_policy_client()->RefreshDevicePolicy(base::BindOnce(

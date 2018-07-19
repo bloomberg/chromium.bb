@@ -22,8 +22,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kAttrMode[] = "enterprise.mode";
-constexpr char kDeviceModeEnterpriseAD[] = "enterprise_ad";
 constexpr char kDCPrefix[] = "DC=";
 constexpr char kOUPrefix[] = "OU=";
 
@@ -168,29 +166,13 @@ void AuthPolicyLoginHelper::DecryptConfiguration(const std::string& blob,
       base::BindOnce(&DoDecrypt, blob, password), std::move(callback));
 }
 
-// static
-bool AuthPolicyLoginHelper::IsAdLocked() {
-  std::string mode;
-  return chromeos::tpm_util::InstallAttributesGet(kAttrMode, &mode) &&
-         mode == kDeviceModeEnterpriseAD;
-}
-
-// static
-bool AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
-    const std::string& realm) {
-  return tpm_util::InstallAttributesSet("enterprise.owned", "true") &&
-         tpm_util::InstallAttributesSet(kAttrMode, kDeviceModeEnterpriseAD) &&
-         tpm_util::InstallAttributesSet("enterprise.realm", realm) &&
-         tpm_util::InstallAttributesFinalize();
-}
-
 void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
                                          const std::string& distinguished_name,
                                          int encryption_types,
                                          const std::string& username,
                                          const std::string& password,
                                          JoinCallback callback) {
-  DCHECK(!IsAdLocked());
+  DCHECK(!tpm_util::IsActiveDirectoryLocked());
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::JoinDomainRequest request;
   if (!ParseDomainAndOU(distinguished_name, &request)) {
@@ -237,7 +219,7 @@ void AuthPolicyLoginHelper::CancelRequestsAndRestart() {
 void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
                                            authpolicy::ErrorType error,
                                            const std::string& machine_domain) {
-  DCHECK(!IsAdLocked());
+  DCHECK(!tpm_util::IsActiveDirectoryLocked());
   if (error != authpolicy::ERROR_NONE) {
     std::move(callback).Run(error, machine_domain);
     return;
@@ -253,7 +235,7 @@ void AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback(
     JoinCallback callback,
     const std::string& machine_domain,
     authpolicy::ErrorType error) {
-  DCHECK(!IsAdLocked());
+  DCHECK(!tpm_util::IsActiveDirectoryLocked());
   // First policy refresh happens before device is locked. So policy store
   // should not succeed. The error means that authpolicyd cached device policy
   // and stores it in the next call to RefreshDevicePolicy in STEP_STORE_POLICY.

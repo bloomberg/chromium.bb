@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,8 +85,7 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   }
 
   void LockDeviceActiveDirectory() {
-    EXPECT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
-        std::string()));
+    EXPECT_TRUE(tpm_util::LockDeviceActiveDirectoryForTesting(std::string()));
   }
 
   void WaitForServiceToBeAvailable() {
