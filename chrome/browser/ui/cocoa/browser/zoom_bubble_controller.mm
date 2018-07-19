@@ -51,7 +51,7 @@ namespace {
 NSTimeInterval gAutoCloseDelay = 1.5;
 
 // The height of the window.
-const CGFloat kWindowHeight = 29.0;
+const CGFloat kZoomBubbleWindowHeight = 29.0;
 
 // Width of the zoom in and zoom out buttons.
 const CGFloat kZoomInOutButtonWidth = 44.0;
@@ -216,7 +216,8 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   NSButton* zoomOutButton = [self addButtonWithTitleID:IDS_ZOOM_MINUS2
                                               fontSize:kZoomInOutButtonFontSize
                                                 action:@selector(zoomOut:)];
-  NSRect rect = NSMakeRect(0, 0, kZoomInOutButtonWidth, kWindowHeight);
+  NSRect rect =
+      NSMakeRect(0, 0, kZoomInOutButtonWidth, kZoomBubbleWindowHeight);
   [zoomOutButton setFrame:rect];
 
   // Zoom label.

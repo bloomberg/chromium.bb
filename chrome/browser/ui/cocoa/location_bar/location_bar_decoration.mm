@@ -32,7 +32,7 @@ const SkColor kPressedBackgroundColor = 0x1E000000;
 const SkColor kPressedDarkBackgroundColor = 0x3DFFFFFF;
 
 // Amount of inset for the background frame.
-const CGFloat kBackgroundFrameYInset = 2.0;
+const CGFloat kDecorationBackgroundFrameYInset = 2.0;
 
 }  // namespace
 
@@ -186,7 +186,7 @@ CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width) {
 }
 
 NSRect LocationBarDecoration::GetBackgroundFrame(NSRect frame) {
-  return NSInsetRect(frame, 0.0, kBackgroundFrameYInset);
+  return NSInsetRect(frame, 0.0, kDecorationBackgroundFrameYInset);
 }
 
 void LocationBarDecoration::UpdateAccessibilityView(NSRect apparent_frame) {

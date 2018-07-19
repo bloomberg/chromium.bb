@@ -94,7 +94,7 @@ const CGFloat kLastPinnedTabSpacing = 2.0;
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 10.0;
 
-const NSTimeInterval kAnimationDuration = 0.125;
+const NSTimeInterval kTabAnimationDuration = 0.125;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
@@ -412,7 +412,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 @synthesize trailingIndentForControls = trailingIndentForControls_;
 
 + (CGFloat)tabAnimationDuration {
-  return kAnimationDuration;
+  return kTabAnimationDuration;
 }
 
 - (id)initWithView:(TabStripView*)view
@@ -948,7 +948,7 @@ contextMenuModelForController:(TabControllerCocoa*)controller
 
   NSRect enclosingRect = NSZeroRect;
   ScopedNSAnimationContextGroup mainAnimationGroup(animate);
-  mainAnimationGroup.SetCurrentContextDuration(kAnimationDuration);
+  mainAnimationGroup.SetCurrentContextDuration(kTabAnimationDuration);
 
   // Update the current subviews and their z-order if requested.
   if (doUpdate)
@@ -1168,7 +1168,7 @@ contextMenuModelForController:(TabControllerCocoa*)controller
       // display the wrong content when using a theme that creates transparent
       // tabs.
       ScopedNSAnimationContextGroup subAnimationGroup(animate);
-      subAnimationGroup.SetCurrentContextDuration(kAnimationDuration);
+      subAnimationGroup.SetCurrentContextDuration(kTabAnimationDuration);
       NSView* tabView = [tab view];
       [[NSAnimationContext currentContext] setCompletionHandler:^{
         [tabView setNeedsDisplay:YES];
@@ -1513,7 +1513,7 @@ contextMenuModelForController:(TabControllerCocoa*)controller
   NSRect newFrame = [tabView frame];
   newFrame = NSOffsetRect(newFrame, 0, -newFrame.size.height);
   ScopedNSAnimationContextGroup animationGroup(true);
-  animationGroup.SetCurrentContextDuration(kAnimationDuration);
+  animationGroup.SetCurrentContextDuration(kTabAnimationDuration);
   [[tabView animator] setFrame:newFrame];
 }
 

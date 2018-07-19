@@ -38,11 +38,11 @@ NSString* const kBrowserActionButtonDraggingNotification =
 NSString* const kBrowserActionButtonDragEndNotification =
     @"BrowserActionButtonDragEndNotification";
 
-static const CGFloat kAnimationDuration = 0.2;
-static const CGFloat kMinimumDragDistance = 5;
+static const CGFloat kBrowserActionButtonAnimationDuration = 0.2;
+static const CGFloat kBrowserActionButtonMinimumDragDistance = 5;
 
 // Mirrors ui/views/mouse_constants.h for suppressing popup activation.
-static const int kMinimumMsBetweenCloseOpenPopup = 100;
+static const int kBrowserActionButtonMinimumMsBetweenCloseOpenPopup = 100;
 
 @interface BrowserActionButton ()
 - (void)endDrag;
@@ -69,7 +69,8 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegate {
     // If the user clicks on the browser action button to close the bubble,
     // don't show the next popup too soon on the mouse button up.
     base::TimeDelta delta = base::TimeTicks::Now() - popup_closed_time_;
-    return delta.InMilliseconds() >= kMinimumMsBetweenCloseOpenPopup;
+    return delta.InMilliseconds() >=
+           kBrowserActionButtonMinimumMsBetweenCloseOpenPopup;
   }
 
  private:
@@ -234,7 +235,7 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
     [self setShowsBorderOnlyWhileMouseInside:YES];
 
     moveAnimation_.reset([[NSViewAnimation alloc] init]);
-    [moveAnimation_ gtm_setDuration:kAnimationDuration
+    [moveAnimation_ gtm_setDuration:kBrowserActionButtonAnimationDuration
                           eventMask:NSLeftMouseUpMask];
     [moveAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
@@ -294,11 +295,13 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 
   NSPoint eventPoint = [theEvent locationInWindow];
   if (!isBeingDragged_) {
-    // Don't initiate a drag until it moves at least kMinimumDragDistance.
+    // Don't initiate a drag until it moves at least
+    // kBrowserActionButtonMinimumDragDistance.
     NSPoint dragStart = [self convertPoint:dragStartPoint_ toView:nil];
     CGFloat dx = eventPoint.x - dragStart.x;
     CGFloat dy = eventPoint.y - dragStart.y;
-    if (dx*dx + dy*dy < kMinimumDragDistance*kMinimumDragDistance)
+    if (dx * dx + dy * dy < kBrowserActionButtonMinimumDragDistance *
+                                kBrowserActionButtonMinimumDragDistance)
       return;
 
     // The start of a drag. Position the button above all others.

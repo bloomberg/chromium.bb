@@ -25,60 +25,61 @@
 #include "ui/native_theme/native_theme.h"
 
 // Distance from top border to icon.
-const CGFloat kImagePaddingTop = 7;
+const CGFloat kDownloadItemImagePaddingTop = 7;
 
 // Distance from left border to icon.
-const CGFloat kImagePaddingLeft = 9;
+const CGFloat kDownloadItemImagePaddingLeft = 9;
 
 // Horizontal distance from the icon to the text.
-const CGFloat kImagePaddingRight = 7;
+const CGFloat kDownloadItemImagePaddingRight = 7;
 
 // Width of icon.
-const CGFloat kImageWidth = 16;
+const CGFloat kDownloadItemImageWidth = 16;
 
 // Height of icon.
-const CGFloat kImageHeight = 16;
+const CGFloat kDownloadItemImageHeight = 16;
 
 // x coordinate of download name string, in view coords.
-const CGFloat kTextPosLeft = kImagePaddingLeft +
-    kImageWidth + DownloadShelf::kFiletypeIconOffset + kImagePaddingRight;
+const CGFloat kDownloadItemTextPosLeft =
+    kDownloadItemImagePaddingLeft + kDownloadItemImageWidth +
+    DownloadShelf::kFiletypeIconOffset + kDownloadItemImagePaddingRight;
 
 // Distance from end of download name string to dropdown area.
-const CGFloat kTextPaddingRight = 3;
+const CGFloat kDownloadItemTextPaddingRight = 3;
 
 // y coordinate of download name string, in view coords, when status message
 // is visible.
-const CGFloat kPrimaryTextPosTop = 3;
+const CGFloat kDownloadItemPrimaryTextPosTop = 3;
 
 // y coordinate of download name string, in view coords, when status message
 // is not visible.
-const CGFloat kPrimaryTextOnlyPosTop = 10;
+const CGFloat kDownloadItemPrimaryTextOnlyPosTop = 10;
 
 // y coordinate of status message, in view coords.
-const CGFloat kSecondaryTextPosTop = 18;
+const CGFloat kDownloadItemSecondaryTextPosTop = 18;
 
 // Width of dropdown area on the right (includes 1px for the border on each
 // side).
-const CGFloat kDropdownAreaWidth = 14;
+const CGFloat kDownloadItemDropdownAreaWidth = 14;
 
 // Width of dropdown arrow.
-const CGFloat kDropdownArrowWidth = 5;
+const CGFloat kDownloadItemDropdownArrowWidth = 5;
 
 // Height of dropdown arrow.
-const CGFloat kDropdownArrowHeight = 3;
+const CGFloat kDownloadItemDropdownArrowHeight = 3;
 
 // Vertical displacement of dropdown area, relative to the "centered" position.
-const CGFloat kDropdownAreaY = -2;
+const CGFloat kDownloadItemDropdownAreaY = -2;
 
 // Duration of the two-lines-to-one-line animation, in seconds.
-NSTimeInterval kShowStatusDuration = 0.3;
-NSTimeInterval kHideStatusDuration = 0.3;
+NSTimeInterval kDownloadItemShowStatusDuration = 0.3;
+NSTimeInterval kDownloadItemHideStatusDuration = 0.3;
 
 // Duration of the 'download complete' animation, in seconds.
-const CGFloat kCompleteAnimationDuration = 2.5;
+const CGFloat kDownloadItemCompleteAnimationDuration = 2.5;
 
 // Duration of the 'download interrupted' animation, in seconds.
-const CGFloat kInterruptedAnimationDuration = 2.5;
+const CGFloat kDownloadItemInterruptedAnimationDuration = 2.5;
 
 using download::DownloadItem;
 
@@ -134,7 +135,7 @@ using download::DownloadItem;
 
 - (void)setInitialState {
   isStatusTextVisible_ = NO;
-  titleY_ = kPrimaryTextOnlyPosTop;
+  titleY_ = kDownloadItemPrimaryTextOnlyPosTop;
   statusAlpha_ = 0.0;
 
   [self setFont:[NSFont systemFontOfSize:
@@ -211,7 +212,7 @@ using download::DownloadItem;
         break;
       completionAnimation_.reset([[DownloadItemCellAnimation alloc]
           initWithDownloadItemCell:self
-                          duration:kCompleteAnimationDuration
+                          duration:kDownloadItemCompleteAnimationDuration
                     animationCurve:NSAnimationLinear]);
       [completionAnimation_.get() setDelegate:self];
       [completionAnimation_.get() startAnimation];
@@ -231,7 +232,7 @@ using download::DownloadItem;
         break;
       completionAnimation_.reset([[DownloadItemCellAnimation alloc]
           initWithDownloadItemCell:self
-                          duration:kInterruptedAnimationDuration
+                          duration:kDownloadItemInterruptedAnimationDuration
                     animationCurve:NSAnimationLinear]);
       [completionAnimation_.get() setDelegate:self];
       [completionAnimation_.get() startAnimation];
@@ -278,7 +279,7 @@ using download::DownloadItem;
   NSRect bounds = [[self controlView] bounds];
   NSRect buttonRect, dropdownRect;
   NSDivideRect(bounds, &dropdownRect, &buttonRect,
-      kDropdownAreaWidth, NSMaxXEdge);
+               kDownloadItemDropdownAreaWidth, NSMaxXEdge);
 
   trackingAreaButton_.reset([[NSTrackingArea alloc]
                   initWithRect:buttonRect
@@ -416,8 +417,9 @@ using download::DownloadItem;
   if (![self secondaryTitle] || statusAlpha_ <= 0)
     return;
 
-  CGFloat textWidth = NSWidth(innerFrame) -
-      (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
+  CGFloat textWidth = NSWidth(innerFrame) - (kDownloadItemTextPosLeft +
+                                             kDownloadItemTextPaddingRight +
+                                             kDownloadItemDropdownAreaWidth);
   NSString* secondaryText = [self elideStatus:textWidth];
   NSColor* secondaryColor =
       [self titleColorForPart:kDownloadItemMouseOverButtonPart];
@@ -433,7 +435,8 @@ using download::DownloadItem;
           [self secondaryFont], NSFontAttributeName,
           nil];
   NSPoint secondaryPos =
-      NSMakePoint(innerFrame.origin.x + kTextPosLeft, kSecondaryTextPosTop);
+      NSMakePoint(innerFrame.origin.x + kDownloadItemTextPosLeft,
+                  kDownloadItemSecondaryTextPosTop);
 
   gfx::ScopedNSGraphicsContextSaveGState contextSave;
   NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
@@ -478,7 +481,7 @@ using download::DownloadItem;
 
   NSRect buttonDrawRect, dropdownDrawRect;
   NSDivideRect(drawFrame, &dropdownDrawRect, &buttonDrawRect,
-      kDropdownAreaWidth, NSMaxXEdge);
+               kDownloadItemDropdownAreaWidth, NSMaxXEdge);
 
   NSBezierPath* buttonInnerPath = [self
       leftRoundedPath:radius inRect:buttonDrawRect];
@@ -524,8 +527,9 @@ using download::DownloadItem;
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Draw title
-  CGFloat textWidth = NSWidth(cellFrame) -
-      (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
+  CGFloat textWidth = NSWidth(cellFrame) - (kDownloadItemTextPosLeft +
+                                            kDownloadItemTextPaddingRight +
+                                            kDownloadItemDropdownAreaWidth);
   [self setTitle:[self elideTitle:textWidth]];
 
   NSColor* color = [self titleColorForPart:kDownloadItemMouseOverButtonPart];
@@ -536,9 +540,8 @@ using download::DownloadItem;
           color, NSForegroundColorAttributeName,
           [self font], NSFontAttributeName,
           nil];
-  NSPoint primaryPos = NSMakePoint(
-      cellFrame.origin.x + kTextPosLeft,
-      titleY_);
+  NSPoint primaryPos =
+      NSMakePoint(cellFrame.origin.x + kDownloadItemTextPosLeft, titleY_);
 
   [primaryText drawAtPoint:primaryPos withAttributes:primaryTextAttributes];
 
@@ -595,7 +598,7 @@ using download::DownloadItem;
                      hints:nil];
 
   // Separator between button and popup parts
-  CGFloat lx = NSMaxX(cellFrame) - kDropdownAreaWidth + 0.5;
+  CGFloat lx = NSMaxX(cellFrame) - kDownloadItemDropdownAreaWidth + 0.5;
   [[NSColor colorWithDeviceWhite:0.0 alpha:0.1] set];
   [NSBezierPath strokeLineFromPoint:NSMakePoint(lx, NSMinY(cellFrame) + 1)
                             toPoint:NSMakePoint(lx, NSMaxY(cellFrame) - 1)];
@@ -605,13 +608,16 @@ using download::DownloadItem;
 
   // Popup arrow. Put center of mass of the arrow in the center of the
   // dropdown area.
-  CGFloat cx = NSMaxX(cellFrame) - kDropdownAreaWidth/2 + 0.5;
+  CGFloat cx = NSMaxX(cellFrame) - kDownloadItemDropdownAreaWidth / 2 + 0.5;
   CGFloat cy = NSMidY(cellFrame);
-  NSPoint p1 = NSMakePoint(cx - kDropdownArrowWidth/2,
-                           cy - kDropdownArrowHeight/3 + kDropdownAreaY);
-  NSPoint p2 = NSMakePoint(cx + kDropdownArrowWidth/2,
-                           cy - kDropdownArrowHeight/3 + kDropdownAreaY);
-  NSPoint p3 = NSMakePoint(cx, cy + kDropdownArrowHeight*2/3 + kDropdownAreaY);
+  NSPoint p1 = NSMakePoint(
+      cx - kDownloadItemDropdownArrowWidth / 2,
+      cy - kDownloadItemDropdownArrowHeight / 3 + kDownloadItemDropdownAreaY);
+  NSPoint p2 = NSMakePoint(
+      cx + kDownloadItemDropdownArrowWidth / 2,
+      cy - kDownloadItemDropdownArrowHeight / 3 + kDownloadItemDropdownAreaY);
+  NSPoint p3 = NSMakePoint(cx, cy + kDownloadItemDropdownArrowHeight * 2 / 3 +
+                                   kDownloadItemDropdownAreaY);
   NSBezierPath *triangle = [NSBezierPath bezierPath];
   [triangle moveToPoint:p1];
   [triangle lineToPoint:p2];
@@ -633,10 +639,9 @@ using download::DownloadItem;
 }
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {
-  return NSMakeRect(cellFrame.origin.x + kImagePaddingLeft,
-                    cellFrame.origin.y + kImagePaddingTop,
-                    kImageWidth,
-                    kImageHeight);
+  return NSMakeRect(cellFrame.origin.x + kDownloadItemImagePaddingLeft,
+                    cellFrame.origin.y + kDownloadItemImagePaddingTop,
+                    kDownloadItemImageWidth, kDownloadItemImageHeight);
 }
 
 - (void)setupToggleStatusVisibilityAnimation {
@@ -651,7 +656,7 @@ using download::DownloadItem;
     // Don't use core animation -- text in CA layers is not subpixel antialiased
     toggleStatusVisibilityAnimation_.reset([[DownloadItemCellAnimation alloc]
         initWithDownloadItemCell:self
-                        duration:kShowStatusDuration
+                        duration:kDownloadItemShowStatusDuration
                   animationCurve:NSAnimationEaseIn]);
     [toggleStatusVisibilityAnimation_.get() setDelegate:self];
     [toggleStatusVisibilityAnimation_.get() startAnimation];
@@ -680,11 +685,12 @@ using download::DownloadItem;
    progressed:(NSAnimationProgress)progress {
   if (animation == toggleStatusVisibilityAnimation_) {
     if (isStatusTextVisible_) {
-      titleY_ = (1 - progress)*kPrimaryTextOnlyPosTop + kPrimaryTextPosTop;
+      titleY_ = (1 - progress) * kDownloadItemPrimaryTextOnlyPosTop +
+                kDownloadItemPrimaryTextPosTop;
       statusAlpha_ = progress;
     } else {
-      titleY_ = progress*kPrimaryTextOnlyPosTop +
-          (1 - progress)*kPrimaryTextPosTop;
+      titleY_ = progress * kDownloadItemPrimaryTextOnlyPosTop +
+                (1 - progress) * kDownloadItemPrimaryTextPosTop;
       statusAlpha_ = 1 - progress;
     }
     [[self controlView] setNeedsDisplay:YES];
