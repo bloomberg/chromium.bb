@@ -586,7 +586,7 @@ ScriptPromise CredentialsContainer::create(
             "legacy FIDO U2F API."));
         return promise;
       }
-      if (options.publicKey().extensions().hasCableAuthenticationData()) {
+      if (options.publicKey().extensions().hasCableAuthentication()) {
         resolver->Reject(DOMException::Create(
             DOMExceptionCode::kNotSupportedError,
             "The 'cableAuthentication' extension is only valid when requesting "
