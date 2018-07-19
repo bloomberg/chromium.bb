@@ -975,8 +975,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 
 // Tests if DisabledAuthNegotiateCnameLookup changes trigger updating user
 // Kerberos files.
+// Disabled due to flakiness, see https://crbug.com/865206.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
-                       PolicyChangeTriggersFileUpdate) {
+                       DISABLED_PolicyChangeTriggersFileUpdate) {
   LoginAdOnline();
 
   ApplyPolicyAndWaitFilesChanged(false /* enable_dns_cname_lookup */);
@@ -988,8 +989,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 
 // Tests if user Kerberos files changed D-Bus signal triggers updating user
 // Kerberos files.
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
-                       UserKerberosFilesChangedSignalTriggersFileUpdate) {
+// Disabled due to flakiness, see https://crbug.com/865206.
+IN_PROC_BROWSER_TEST_F(
+    ExistingUserControllerActiveDirectoryTest,
+    DISABLED_UserKerberosFilesChangedSignalTriggersFileUpdate) {
   LoginAdOnline();
   KerberosFilesChangeWaiter files_change_waiter(true /* files_must_exist */);
   fake_authpolicy_client()->SetUserKerberosFiles("new_kerberos_creds",
