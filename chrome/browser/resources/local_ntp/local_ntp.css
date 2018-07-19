@@ -110,6 +110,7 @@ button {
 }
 
 body.hide-fakebox #fakebox {
+  opacity: 0;
   visibility: hidden;
 }
 
@@ -303,7 +304,10 @@ body.alternate-logo #logo-non-white {
   box-shadow: none;
   margin: 0 auto;
   max-width: 560px;
+  opacity: 1;
   transition: background-color 300ms ease-in-out;
+  /* Transition should be similar to .mv-tile/.md-tile opacity transition. */
+  transition: opacity 200ms;
 }
 
 .md #fakebox:hover {
