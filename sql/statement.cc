@@ -67,9 +67,9 @@ int Statement::StepInternal(bool timer_flag) {
     if (!timer_flag) {
       ret = sqlite3_step(ref_->stmt());
     } else {
-      const base::TimeTicks before = ref_->connection()->Now();
+      const base::TimeTicks before = ref_->connection()->NowTicks();
       ret = sqlite3_step(ref_->stmt());
-      const base::TimeTicks after = ref_->connection()->Now();
+      const base::TimeTicks after = ref_->connection()->NowTicks();
       const bool read_only = !!sqlite3_stmt_readonly(ref_->stmt());
       ref_->connection()->RecordTimeAndChanges(after - before, read_only);
     }
