@@ -24,17 +24,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// Background color of the bottom part of the prompt.
-constexpr SkColor kPasswordGenerationPopupFooterBackgroundColor =
-    gfx::kGoogleGrey050;
-
-// Color of the separator between the password and help sections.
-constexpr SkColor kPasswordGenerationPopupSeparatorColor = gfx::kGoogleGrey200;
-
-}  // namespace
-
 // Class that shows the generated password and associated UI (currently an
 // explanatory text).
 class PasswordGenerationPopupViewViews::GeneratedPasswordBox
@@ -141,11 +130,10 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
   if (controller_->password_selected())
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 
-  password_view_->SetBackground(views::CreateThemedSolidBackground(
-      password_view_,
-      controller_->password_selected()
-          ? ui::NativeTheme::kColorId_ResultsTableHoveredBackground
-          : ui::NativeTheme::kColorId_ResultsTableNormalBackground));
+  password_view_->SetBackground(views::CreateSolidBackground(
+      controller_->password_selected() ? kSelectedBackgroundColor
+                                       : kBackgroundColor));
+  SchedulePaint();
 }
 
 bool PasswordGenerationPopupViewViews::IsPointInPasswordBounds(
@@ -191,8 +179,8 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   link_style.disable_line_wrapping = false;
   help_label->AddStyleRange(controller_->HelpTextLinkRange(), link_style);
 
-  help_label->SetBackground(views::CreateSolidBackground(
-      kPasswordGenerationPopupFooterBackgroundColor));
+  help_label->SetBackground(
+      views::CreateSolidBackground(kFooterBackgroundColor));
   help_label->SetBorder(
       views::CreateEmptyBorder(kVerticalPadding, kHorizontalMargin,
                                kVerticalPadding, kHorizontalMargin));
@@ -211,7 +199,7 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   if (password_view_) {
     gfx::Rect divider_bounds(0, password_view_->bounds().bottom(),
                              password_view_->width(), 1);
-    canvas->FillRect(divider_bounds, kPasswordGenerationPopupSeparatorColor);
+    canvas->FillRect(divider_bounds, kSeparatorColor);
   }
 }
 
