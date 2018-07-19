@@ -56,10 +56,14 @@ class ResourceTimingInfo;
 // enforces a bunch of security checks and rules for resource revalidation. Its
 // lifetime is roughly per-DocumentLoader, in that it is generally created in
 // the DocumentLoader constructor and loses its ability to generate network
-// requests when the DocumentLoader is destroyed. Documents also hold a pointer
-// to ResourceFetcher for their lifetime (and will create one if they are
-// initialized without a LocalFrame), so a Document can keep a ResourceFetcher
-// alive past detach if scripts still reference the Document.
+// requests when the DocumentLoader is destroyed.
+//
+// It is also created for workers and worklets.
+//
+// Documents also hold a pointer to ResourceFetcher for their lifetime (and will
+// create one if they are initialized without a LocalFrame), so a Document can
+// keep a ResourceFetcher alive past detach if scripts still reference the
+// Document.
 class PLATFORM_EXPORT ResourceFetcher
     : public GarbageCollectedFinalized<ResourceFetcher> {
   WTF_MAKE_NONCOPYABLE(ResourceFetcher);
