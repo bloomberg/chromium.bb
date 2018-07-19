@@ -145,7 +145,7 @@ void OmniboxResultView::Invalidate() {
     if (reverse) {
       suggestion_view_->content()->SetText(match_.answer->second_line());
       suggestion_view_->description()->SetText(match_.contents,
-                                               match_.contents_class, -1);
+                                               match_.contents_class, true);
       suggestion_view_->description()->AppendExtraText(
           match_.answer->first_line());
     } else {
@@ -153,7 +153,7 @@ void OmniboxResultView::Invalidate() {
                                            match_.contents_class);
       suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
       suggestion_view_->description()->SetText(match_.answer->second_line(),
-                                               -1);
+                                               true);
     }
     // AppendExtraText has side effect on color, so explicitly set color.
     // TODO(orinj): Consolidate text color specification in one place.

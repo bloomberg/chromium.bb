@@ -51,7 +51,8 @@ void ApplyCommonFontStyles(int context,
                            gfx::Font::Weight* weight) {
   switch (context) {
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-    case CONTEXT_OMNIBOX_PRIMARY: {
+    case CONTEXT_OMNIBOX_PRIMARY:
+    case CONTEXT_OMNIBOX_DEEMPHASIZED: {
       constexpr int kDesiredFontSizeRegular = 14;
       constexpr int kDesiredFontSizeTouchable = 15;
       static const int omnibox_primary_delta =
@@ -61,6 +62,9 @@ void ApplyCommonFontStyles(int context,
                   ? kDesiredFontSizeTouchable
                   : kDesiredFontSizeRegular);
       *size_delta = omnibox_primary_delta;
+      if (context == CONTEXT_OMNIBOX_DEEMPHASIZED) {
+        (*size_delta)--;
+      }
       break;
     }
     case CONTEXT_OMNIBOX_DECORATION: {
