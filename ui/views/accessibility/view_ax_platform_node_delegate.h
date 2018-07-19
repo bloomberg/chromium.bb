@@ -38,6 +38,9 @@ class VIEWS_EXPORT ViewAXPlatformNodeDelegate
   // ViewAccessibility:
   gfx::NativeViewAccessible GetNativeObject() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
+#if defined(OS_MACOSX)
+  void AnnounceText(base::string16& text) override;
+#endif
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;

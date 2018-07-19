@@ -164,6 +164,12 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
   }
 }
 
+#if defined(OS_MACOSX)
+void ViewAXPlatformNodeDelegate::AnnounceText(base::string16& text) {
+  ax_node_->AnnounceText(text);
+}
+#endif
+
 void ViewAXPlatformNodeDelegate::OnMenuItemActive() {
   // When a native menu is shown and has an item selected, treat it and the
   // currently selected item as focused, even though the actual focus is in the

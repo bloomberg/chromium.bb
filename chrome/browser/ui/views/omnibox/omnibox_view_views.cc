@@ -564,6 +564,11 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
 
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
+#if defined(OS_MACOSX)
+  // On macOS, the text field value changed notification is not
+  // announced, so we need to explicitly announce the suggestion text.
+  GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
+#endif
 }
 
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
