@@ -222,7 +222,15 @@ SkColor GetOmniboxColor(OmniboxPart part,
 
   // Note this will use LIGHT for OmniboxTint::NATIVE.
   // TODO(https://crbug.com/819452): Determine the role GTK should play in this.
-  const bool dark = tint == OmniboxTint::DARK;
+  bool dark = tint == OmniboxTint::DARK;
+
+  // For high contrast, selected rows use inverted colors to stand out more.
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  bool high_contrast = native_theme && native_theme->UsesHighContrastColors();
+  bool selected = state == OmniboxPartState::SELECTED ||
+                  state == OmniboxPartState::HOVERED_AND_SELECTED;
+  if (high_contrast && selected)
+    dark = !dark;
 
   switch (part) {
     case OmniboxPart::LOCATION_BAR_BACKGROUND: {
