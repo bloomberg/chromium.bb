@@ -852,26 +852,6 @@ class Port(object):
             return False
         return self._wpt_manifest().is_slow_test(match.group(1))
 
-    ALL_TEST_TYPES = ['audio', 'harness', 'pixel', 'ref', 'text', 'unknown']
-
-    def test_type(self, test_name):
-        fs = self._filesystem
-        if fs.exists(self.expected_filename(test_name, '.png')):
-            return 'pixel'
-        if fs.exists(self.expected_filename(test_name, '.wav')):
-            return 'audio'
-        if self.reference_files(test_name):
-            return 'ref'
-        txt = self.expected_text(test_name)
-        if txt:
-            if 'layer at (0,0) size 800x600' in txt:
-                return 'pixel'
-            for line in txt.splitlines():
-                if line.startswith('FAIL') or line.startswith('TIMEOUT') or line.startswith('PASS'):
-                    return 'harness'
-            return 'text'
-        return 'unknown'
-
     def test_key(self, test_name):
         """Turns a test name into a pair of sublists: the natural sort key of the
         dirname, and the natural sort key of the basename.
