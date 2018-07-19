@@ -20,7 +20,7 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
   envelope.set_request_url(GURL("https://example.com/index.html"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
 
   base::Optional<std::vector<uint8_t>> encoded =
       SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(envelope);
@@ -51,8 +51,9 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
 
           0x50, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e,
           0x63, 0x6f, 0x64, 0x69, 0x6e, 0x67, // bytes "content-encoding"
-          0x49, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36,
-          // bytes "mi-sha256"
+          0x50, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d,
+          0x64, 0x72, 0x61, 0x66, 0x74, 0x32
+          // bytes "mi-sha256-draft2"
       // clang-format on
   };
   EXPECT_THAT(*encoded,
@@ -72,7 +73,7 @@ constexpr char kSignatureHeaderRSA[] =
     "3hQNNowNhsUCr3fXn0lIMW8Gyp0V6TVedIhgT7zqUxRqJRjedQzY+Bm7F01/jKzvD1etAcw7r"
     "CidWFISmcyWjsLG1dlNtiZynO9gyyZduOSzBwEb9QcMTHekFsnmzFtg==*; "
     "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi\"; "
+    "integrity=\"mi-draft2\"; "
     "cert-url=\"https://example.com/cert.msg\"; "
     "cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; "
     "date=1517892341; expires=1517895941";
@@ -82,12 +83,12 @@ constexpr char kSignatureHeaderRSA[] =
 // clang-format off
 constexpr char kSignatureHeaderECDSAP256[] =
     "label; "
-    "sig=*MEUCIEbg974hkbM6gy0bT4ZpO0afUtpeViz+mojLqtSnqepvAiEApKfMyaKxhE8xofyW"
-    "DlBjGTwsoOvNBycL9YfN9C72Rhs=*; "
+    "sig=*MEYCIQDtLdwjyge6hN35wF7SOgO2aHFYnVYqQvTguZmpZ2WncgIhAO22vzcYGuRXqnAX"
+    "3Bv/llls9DeQ2ecD8btESjxmRBmQ*; "
     "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi\"; "
+    "integrity=\"mi-draft2\"; "
     "cert-url=\"https://example.com/cert.msg\"; "
-    "cert-sha256=*CfDj40tr5B7oo6IaWwQF2L1uDgsHH0fA2YOCB7E0tAQ=*; "
+    "cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; "
     "date=1517892341; expires=1517895941";
 // clang-format on
 
@@ -95,10 +96,10 @@ constexpr char kSignatureHeaderECDSAP256[] =
 // clang-format off
 constexpr char kSignatureHeaderECDSAP384[] =
     "label; "
-    "sig=*MGUCMQC2Sw+qw8pFB8S7gCqFdJlaimbZCA9BOOnjPHuRa8nGbYwnQBJEZnNwWxW+7ffwQ"
-    "skCMBVWAWya/ahn1XebSGAFeV8d6jC/xe9Rc8YCvb/KlV0tRxF0v06VasWcHx6OL8gZUg==*; "
+    "sig=*MGUCMQDoljLI4+cdxPYk0e33WlIBILYN92fpDXG6tBs4GSW3NGcbnwaGxV8qRgg3PQdUZ"
+    "B4CMGe4bAef8YlOErfrfV6UdbAGNeBveoY4rMkDDaPCxt1aCCb/6BYzuFJn6maGOpDN5w==*; "
     "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi\"; "
+    "integrity=\"mi-draft2\"; "
     "cert-url=\"https://example.com/cert.msg\"; "
     "cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; "
     "date=1517892341; expires=1517895941";
@@ -115,7 +116,7 @@ constexpr char kSignatureHeaderInvalidExpires[] =
     "aDLptqRhOG5S+avwKmbQoqtD0JSc/53L5xXjppyvSA2fRmoDlqVQpX4uzRKq9cny7fZ3qgpZ/"
     "YOCuT7wMj7oVEur175QLe2F8ktKH9arSEiquhFJxBIIIXza8PJnmL5w==*;"
     "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi\"; "
+    "integrity=\"mi-draft2\"; "
     "cert-url=\"https://example.com/cert.msg\"; "
     "cert-sha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k=*; "
     "date=1517892341; expires=1518497142";
@@ -148,19 +149,22 @@ SaMW1eOzjHemIWKTMw==
 
 constexpr char kCertPEMECDSAP256[] = R"(
 -----BEGIN CERTIFICATE-----
-MIICQzCCASsCAQEwDQYJKoZIhvcNAQELBQAwYzELMAkGA1UEBhMCVVMxEzARBgNV
-BAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoM
-B1Rlc3QgQ0ExFTATBgNVBAMMDFRlc3QgUm9vdCBDQTAeFw0xODAzMjMwNDU3MzRa
-Fw0xOTAzMTgwNDU3MzRaMDcxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5vcmcxDTAL
-BgNVBAoMBFRlc3QxCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD
-QgAECQYn3HDPPhtMv2hzyjI7E3FU89EjnzTtvLd9OP55GLAsaE/FCTWbx6rKOxF7
-O4jP0N3PsIzr+nT1lIix+HpxujANBgkqhkiG9w0BAQsFAAOCAQEAhKdVMvKm7gBz
-af6nfCkLGRo56KJasi6lJh2byF17vdqq+mSXR+jHZtsRsRZJyl+C+jaSzrT0TnMA
-kLg+U4ZnKZD5sTo7TWnRlTA4G4tOrWaq1tn89FWqe+hbvn6dEyTZ1XFPaO6hzeNH
-ZM5H+bIpngvGmP1lf7K6PtC3Tx/S938zBdQrfKz/4ZB0S5cmIyIUBnlj3PDWtLsB
-KS4wvSnjPj1EyVKxTQH1PdB2NqC4eT8bgFcryNWrkMOWdOUNhGWB55nVwI8yNPQO
-4OrKJLsDZir3v7dzcU9U1erBp4+udGFIfW86g24FX1gn3SavtO6lZt59AFLptyQ6
-LWh1CMv1aQ==
+MIIC1TCCAb2gAwIBAgIBATANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzET
+MBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEQMA4G
+A1UECgwHVGVzdCBDQTEVMBMGA1UEAwwMVGVzdCBSb290IENBMB4XDTE4MDYyODA1
+MTUzMFoXDTE5MDYyMzA1MTUzMFowNzEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLm9y
+ZzENMAsGA1UECgwEVGVzdDELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjO
+PQMBBwNCAAQJBifccM8+G0y/aHPKMjsTcVTz0SOfNO28t304/nkYsCxoT8UJNZvH
+qso7EXs7iM/Q3c+wjOv6dPWUiLH4enG6o4GKMIGHMAkGA1UdEwQCMAAwEAYKKwYB
+BAHWeQIBFgQCBQAwCwYDVR0PBAQDAgXgMB0GA1UdDgQWBBS6dTuFdAI6uylsw3cy
+H3FXfh9g+jAfBgNVHSMEGDAWgBSbJguKmKm7HbkfHOMaQDPtjheIqzAbBgNVHREE
+FDASghB0ZXN0LmV4YW1wbGUub3JnMA0GCSqGSIb3DQEBCwUAA4IBAQCi/l1E+JDK
+/g3cLa5GD8vthZJuFwYEF6lGaAj1RtZ+UwbtRs1vnkJbEpLD1xX5rKXAdWT5QI99
+yK6gXbbicaJmw0KjeE0qizTT1oEfavQu7FtJZ4gfBjIHLsk8PVqHI3t8hf/pJwOd
+n+E79k3qQ2w1IeeVFZXJfnjhOsxHp2NTbeY+ZnbWsTSyUiL81n5GkuyKNDeZkoXi
+x5M6kp+6ZZJHJvLQFp4CqhU+wvM2lvP5mYYDcSlRnlti+N8xwDUb/yGR0UdNx76K
+7uFRoc8R1W8e4kFvU2NHkrtVbaLL6m+/vHE2LehVPh0QQT34Fv0QugYm+iYNToCT
+k5bUo19UY4w3
 -----END CERTIFICATE-----)";
 
 constexpr char kCertPEMECDSAP384[] = R"(
@@ -286,9 +290,10 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
   envelope.set_request_url(GURL("https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
   envelope.AddResponseHeader(
-      "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
+      "mi-draft2",
+      "mi-sha256-draft2=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
   envelope.SetSignatureForTesting((*signature)[0]);
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType,
@@ -314,9 +319,10 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   envelope.set_request_url(GURL("https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
   envelope.AddResponseHeader(
-      "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
+      "mi-draft2",
+      "mi-sha256-draft2=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
 
   envelope.SetSignatureForTesting((*signature)[0]);
 
@@ -340,9 +346,10 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
   envelope.set_request_url(GURL("https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
   envelope.AddResponseHeader(
-      "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RIG");
+      "mi-draft2",
+      "mi-sha256-draft2=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RIG");
 
   envelope.SetSignatureForTesting((*signature)[0]);
 

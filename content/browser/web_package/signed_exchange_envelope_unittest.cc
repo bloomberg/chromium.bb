@@ -23,7 +23,7 @@ const char kSignatureString[] =
     "sig1;"
     " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
     "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
-    " integrity=\"mi\";"
+    " integrity=\"mi-draft2\";"
     " validity-url=\"https://test.example.org/resource.validity.1511128380\";"
     " cert-url=\"https://example.com/oldcerts\";"
     " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
@@ -92,7 +92,7 @@ TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
   EXPECT_EQ(envelope->response_code(), static_cast<net::HttpStatusCode>(200u));
   EXPECT_EQ(envelope->response_headers().size(), 3u);
   EXPECT_EQ(envelope->response_headers().find("content-encoding")->second,
-            "mi-sha256");
+            "mi-sha256-draft2");
 }
 
 TEST(SignedExchangeEnvelopeTest, ValidHeader) {
