@@ -368,14 +368,19 @@ chrome.app.runtime.onLaunched.addListener(function() {
           alphaEnabled: true
         };
 
-    chrome.app.window.create('main.html', options, function(w) {
-      wallpaperPickerWindow = w;
+    chrome.app.window.create('main.html', options, function(window) {
+      wallpaperPickerWindow = window;
       chrome.wallpaperPrivate.minimizeInactiveWindows();
-      w.onClosed.addListener(function() {
+      window.onClosed.addListener(function() {
         wallpaperPickerWindow = null;
-        chrome.wallpaperPrivate.restoreMinimizedWindows();
         // In case the app exits unexpectedly during preview.
         chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {});
+        // If the app exits during preview, do not restore the previously active
+        // windows. Continue to show the new wallpaper.
+        if (!window.contentWindow.document.body.classList.contains(
+                'preview-mode')) {
+          chrome.wallpaperPrivate.restoreMinimizedWindows();
+        }
       });
       if (useNewWallpaperPicker) {
         // By design, the new wallpaper picker should never be shown on top of
@@ -384,7 +389,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
             'focus', function() {
               chrome.wallpaperPrivate.minimizeInactiveWindows();
             });
-        w.onMinimized.addListener(function() {
+        window.onMinimized.addListener(function() {
           chrome.wallpaperPrivate.restoreMinimizedWindows();
         });
       }
@@ -664,10 +669,15 @@ chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
       fileName, layout, Constants.WallpaperSourceEnum.ThirdParty, appName);
 
   getWallpaperPickerInfo((useNewWallpaperPicker, highResolutionSuffix) => {
+    // Surprise me/daily refresh should be auto-disabled if wallpaper is changed
+    // by third-party apps.
     if (!useNewWallpaperPicker) {
       SurpriseWallpaper.getInstance().disable();
       return;
     }
+    WallpaperUtil.saveDailyRefreshInfo(
+        {enabled: false, collectionId: null, resumeToken: null});
+
     if (wallpaperPickerWindow) {
       var event = new CustomEvent(
           Constants.WallpaperChangedBy3rdParty,
