@@ -24,6 +24,7 @@ class VIEWS_MUS_EXPORT AXTreeSourceMus : public AXTreeSourceViews {
   ~AXTreeSourceMus() override;
 
   // AXTreeSource:
+  bool GetTreeData(ui::AXTreeData* data) const override;
   AXAuraObjWrapper* GetRoot() const override;
   void SerializeNode(AXAuraObjWrapper* node,
                      ui::AXNodeData* out_data) const override;

@@ -21,6 +21,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_property_mirror.h"
@@ -46,7 +47,11 @@ namespace {
 class ClientSideNonClientFrameView : public NonClientFrameView {
  public:
   explicit ClientSideNonClientFrameView(views::Widget* widget)
-      : widget_(widget) {}
+      : widget_(widget) {
+    // Not part of the accessibility node hierarchy because the window frame is
+    // provided by the window manager.
+    GetViewAccessibility().set_is_ignored(true);
+  }
   ~ClientSideNonClientFrameView() override {}
 
  private:
@@ -55,6 +60,11 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
     const WindowManagerFrameValues& values =
         WindowManagerFrameValues::instance();
     return is_maximized ? values.maximized_insets : values.normal_insets;
+  }
+
+  // View:
+  const char* GetClassName() const override {
+    return "ClientSideNonClientFrameView";
   }
 
   // NonClientFrameView:
@@ -394,7 +404,15 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
   MusClient::Get()->OnCaptureClientSet(
       aura::client::GetCaptureClient(window()));
 
-  MusClient::Get()->OnWidgetInitDone(native_widget_delegate_->AsWidget());
+  // These views are not part of the accessibility node hierarchy because the
+  // window frame is provided by the window manager.
+  Widget* widget = native_widget_delegate_->AsWidget();
+  if (widget->non_client_view())
+    widget->non_client_view()->GetViewAccessibility().set_is_ignored(true);
+  if (widget->client_view())
+    widget->client_view()->GetViewAccessibility().set_is_ignored(true);
+
+  MusClient::Get()->OnWidgetInitDone(widget);
 }
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {

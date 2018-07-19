@@ -11,6 +11,7 @@
 #include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 namespace {
@@ -109,7 +110,8 @@ TEST_F(AXRemoteHostTest, AutomationEnabled) {
 
   // Event was sent with initial hierarchy.
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
-  EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(widget->client_view()),
+  EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(
+                widget->widget_delegate()->GetContentsView()),
             service.last_event_.id);
 }
 
@@ -139,7 +141,8 @@ TEST_F(AXRemoteHostTest, CreateWidgetThenEnableAutomation) {
 
   // Event was sent with initial hierarchy.
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
-  EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(widget->client_view()),
+  EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(
+                widget->widget_delegate()->GetContentsView()),
             service.last_event_.id);
 }
 

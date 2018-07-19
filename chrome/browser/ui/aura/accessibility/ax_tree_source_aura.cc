@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 
+#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
@@ -14,6 +15,11 @@ AXTreeSourceAura::AXTreeSourceAura()
     : desktop_root_(std::make_unique<AXRootObjWrapper>()) {}
 
 AXTreeSourceAura::~AXTreeSourceAura() = default;
+
+bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
+  tree_data->tree_id = extensions::api::automation::kDesktopTreeID;
+  return AXTreeSourceViews::GetTreeData(tree_data);
+}
 
 views::AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {
   return desktop_root_.get();

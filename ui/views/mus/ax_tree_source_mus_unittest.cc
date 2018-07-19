@@ -9,11 +9,13 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -51,6 +53,15 @@ class AXTreeSourceMusTest : public ViewsTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceMusTest);
 };
+
+TEST_F(AXTreeSourceMusTest, GetTreeData) {
+  AXAuraObjWrapper* root =
+      AXAuraObjCache::GetInstance()->GetOrCreate(widget_->GetContentsView());
+  AXTreeSourceMus tree(root);
+  ui::AXTreeData tree_data;
+  tree.GetTreeData(&tree_data);
+  EXPECT_EQ(AXRemoteHost::kRemoteAXTreeID, tree_data.tree_id);
+}
 
 TEST_F(AXTreeSourceMusTest, Serialize) {
   AXAuraObjCache* cache = AXAuraObjCache::GetInstance();

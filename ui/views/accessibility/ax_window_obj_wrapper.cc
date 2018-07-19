@@ -58,6 +58,10 @@ AXWindowObjWrapper::~AXWindowObjWrapper() {
   window_ = NULL;
 }
 
+bool AXWindowObjWrapper::IsIgnored() {
+  return false;
+}
+
 AXAuraObjWrapper* AXWindowObjWrapper::GetParent() {
   if (!window_->parent())
     return NULL;

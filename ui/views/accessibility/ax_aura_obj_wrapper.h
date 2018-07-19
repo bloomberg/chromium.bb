@@ -28,6 +28,9 @@ class VIEWS_EXPORT AXAuraObjWrapper {
  public:
   virtual ~AXAuraObjWrapper() {}
 
+  // See ViewAccessibility for details.
+  virtual bool IsIgnored() = 0;
+
   // Traversal and serialization.
   virtual AXAuraObjWrapper* GetParent() = 0;
   virtual void GetChildren(

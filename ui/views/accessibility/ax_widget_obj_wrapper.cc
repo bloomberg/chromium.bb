@@ -26,6 +26,10 @@ AXWidgetObjWrapper::~AXWidgetObjWrapper() {
   widget_ = NULL;
 }
 
+bool AXWidgetObjWrapper::IsIgnored() {
+  return false;
+}
+
 AXAuraObjWrapper* AXWidgetObjWrapper::GetParent() {
   return AXAuraObjCache::GetInstance()->GetOrCreate(widget_->GetNativeView());
 }

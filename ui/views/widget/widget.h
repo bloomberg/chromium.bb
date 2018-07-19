@@ -420,6 +420,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // fit the entire size of the RootView. The RootView takes ownership of this
   // View, unless it is set as not being parent-owned.
   void SetContentsView(View* view);
+
+  // NOTE: This may not be the same view as WidgetDelegate::GetContentsView().
+  // See RootView::GetContentsView().
   View* GetContentsView();
 
   // Returns the bounds of the Widget in screen coordinates.
