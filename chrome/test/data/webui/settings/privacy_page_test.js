@@ -186,7 +186,9 @@ cr.define('settings_privacy_page', function() {
         actionButton.click();
 
         return testBrowserProxy.whenCalled('clearBrowsingData')
-            .then(function([dataTypes, timePeriod]) {
+            .then(function(args) {
+              const dataTypes = args[0];
+              const timePeriod = args[1];
               assertEquals(1, dataTypes.length);
               assertEquals('browser.clear_data.cookies_basic', dataTypes[0]);
               assertTrue(element.$$('#clearBrowsingDataDialog').open);
