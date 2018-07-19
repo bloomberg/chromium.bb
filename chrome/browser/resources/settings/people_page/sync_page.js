@@ -150,6 +150,14 @@ Polymer({
       value: true,
     },
 
+    /** @private */
+    driveSuggestAvailable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('driveSuggestAvailable');
+      }
+    },
+
     // <if expr="not chromeos">
     diceEnabled: Boolean,
     // </if>

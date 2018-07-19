@@ -23,7 +23,9 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/document_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
@@ -56,6 +58,12 @@ DocumentProvider* DocumentProvider::Create(
   return new DocumentProvider(client, listener);
 }
 
+// static
+void DocumentProvider::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(omnibox::kDocumentSuggestEnabled, true);
+}
+
 bool DocumentProvider::IsDocumentProviderAllowed(
     PrefService* prefs,
     bool is_incognito,
@@ -63,6 +71,10 @@ bool DocumentProvider::IsDocumentProviderAllowed(
     const TemplateURLService* template_url_service) {
   // Feature must be on.
   if (!base::FeatureList::IsEnabled(omnibox::kDocumentProvider))
+    return false;
+
+  // Client-side toggle must be enabled.
+  if (!prefs->GetBoolean(omnibox::kDocumentSuggestEnabled))
     return false;
 
   // No incognito.

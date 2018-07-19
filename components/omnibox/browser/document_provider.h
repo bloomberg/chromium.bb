@@ -32,6 +32,10 @@ namespace network {
 class SimpleURLLoader;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // Autocomplete provider for personalized documents owned or readable by the
 // signed-in user. In practice this is a second request in parallel with that
 // to the default search provider.
@@ -47,9 +51,17 @@ class DocumentProvider : public AutocompleteProvider {
   void DeleteMatch(const AutocompleteMatch& match) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
+  // Registers a client-side preference to enable document suggestions.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, CheckFeatureBehindFlag);
-  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, CheckFeaturePrerequisites);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeaturePrerequisiteNoIncognito);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeaturePrerequisiteClientSettingOff);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeaturePrerequisiteDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
   DocumentProvider(AutocompleteProviderClient* client,
                    AutocompleteProviderListener* listener);
