@@ -110,9 +110,11 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 }
 
 void OmniboxResultView::Invalidate() {
+  bool high_contrast =
+      GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
   // TODO(tapted): Consider using background()->SetNativeControlColor() and
   // always have a background.
-  if (GetThemeState() == OmniboxPartState::NORMAL) {
+  if (GetThemeState() == OmniboxPartState::NORMAL && !high_contrast) {
     SetBackground(nullptr);
   } else {
     SkColor color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
@@ -176,6 +178,12 @@ void OmniboxResultView::Invalidate() {
                                          match_.contents_class);
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
+    // Explicitly re-apply default styling - high contrast modes use different
+    // text colors depending on selection state.
+    suggestion_view_->content()->ApplyTextColor(
+        OmniboxPart::RESULTS_TEXT_DEFAULT);
+    suggestion_view_->description()->ApplyTextColor(
+        OmniboxPart::RESULTS_TEXT_DEFAULT);
   }
 
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
