@@ -5072,7 +5072,7 @@
     The Linux container didn't start. Please try again.
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
-    Delete Linux
+    Delete Linux (Beta)
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_BODY" desc="Description for the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
     Delete all Linux applications and data in your Linux Files folder from this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
@@ -5087,7 +5087,13 @@
     Error uninstalling Linux. Please try again.
   </message>
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
-    Shut Down Linux
+    Shut Down Linux (Beta)
+  </message>
+  <message name="IDS_CROSTINI_TERMINA_UPDATE_REQUIRED" desc="Text shown in the Crostini update dialog when the VM component needs updating.">
+    Linux (Beta) update required
+  </message>
+  <message name="IDS_CROSTINI_TERMINA_UPDATE_OFFLINE" desc="Text shown in the Crostini update dialog when the VM component needs updating but the user is offline.">
+    Please connect to the internet and try again.
   </message>
 
   <!-- Time limit notification -->
