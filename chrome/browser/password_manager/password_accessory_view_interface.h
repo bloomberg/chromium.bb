@@ -71,6 +71,9 @@ class PasswordAccessoryViewInterface {
   // in the keyboard accessory.
   virtual void OnAutomaticGenerationStatusChanged(bool available) = 0;
 
+  // Called to inform the view that the accessory sheet should be closed now.
+  virtual void CloseAccessorySheet() = 0;
+
  private:
   friend class PasswordAccessoryController;
   // Factory function used to create a concrete instance of this view.

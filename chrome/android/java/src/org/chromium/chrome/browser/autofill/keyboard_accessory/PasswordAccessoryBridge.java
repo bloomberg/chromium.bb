@@ -72,6 +72,11 @@ class PasswordAccessoryBridge {
     }
 
     @CalledByNative
+    private void closeAccessorySheet() {
+        mManualFillingCoordinator.closeAccessorySheet();
+    }
+
+    @CalledByNative
     private void destroy() {
         mItemProvider.notifyObservers(new Item[] {}); // There are no more items available!
         mNativeView = 0;

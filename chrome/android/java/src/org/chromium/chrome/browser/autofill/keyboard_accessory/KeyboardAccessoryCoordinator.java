@@ -102,6 +102,10 @@ public class KeyboardAccessoryCoordinator {
         return tabViewBinder;
     }
 
+    public void closeActiveTab() {
+        mMediator.closeActiveTab();
+    }
+
     /**
      * Called by the {@link LazyViewBinderAdapter} as soon as the view is inflated so it can be
      * initialized. This call happens before the {@link KeyboardAccessoryViewBinder} is called for

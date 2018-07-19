@@ -91,6 +91,11 @@ class KeyboardAccessoryMediator
         updateVisibility();
     }
 
+    void closeActiveTab() {
+        mModel.setActiveTab(null);
+        mVisibilityDelegate.onCloseAccessorySheet();
+    }
+
     @VisibleForTesting
     KeyboardAccessoryModel getModelForTesting() {
         return mModel;

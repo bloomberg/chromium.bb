@@ -205,13 +205,17 @@ void PasswordAccessoryController::OnSavedPasswordsLinkClicked() {
 
 void PasswordAccessoryController::OnFilledIntoFocusedField(
     autofill::FillingStatus status) {
-  // TODO(crbug/853766): Record success rate.
-  // TODO(fhorschig): Update UI by hiding the sheet or communicating the error.
+  if (status != autofill::FillingStatus::SUCCESS)
+    return;                      // TODO(crbug/853766): Record success rate.
+  view_->CloseAccessorySheet();  // The sheet's purpose is fulfilled.
 }
 
 void PasswordAccessoryController::RefreshSuggestionsForField(
     bool is_fillable,
     bool is_password_field) {
+  // When new suggestions are requested, the keyboard will pop open. To avoid
+  // that any open sheet is pushed up, close it now. Doesn't affect the bar.
+  view_->CloseAccessorySheet();
   // TODO(crbug/853766): Record CTR metric.
   SendViewItems(is_password_field);
 }
