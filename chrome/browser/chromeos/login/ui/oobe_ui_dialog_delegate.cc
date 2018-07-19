@@ -83,7 +83,7 @@ content::WebContents* OobeUIDialogDelegate::GetWebContents() {
   return dialog_view_->web_contents();
 }
 
-void OobeUIDialogDelegate::Show(bool closable_by_esc) {
+void OobeUIDialogDelegate::Show() {
   LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(true);
   dialog_widget_->Show();
 }
@@ -94,7 +94,7 @@ void OobeUIDialogDelegate::ShowFullScreen() {
           ->GetDisplayNearestWindow(dialog_widget_->GetNativeWindow())
           .size();
   UpdateSizeAndPosition(size.width(), size.height());
-  Show(false /*closable_by_esc*/);
+  Show();
   showing_fullscreen_ = true;
 }
 

@@ -59,9 +59,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   ~OobeUIDialogDelegate() override;
 
   // Show the dialog widget.
-  // |closable_by_esc|: Whether the widget will be hidden after press escape
-  // key.
-  void Show(bool closable_by_esc);
+  void Show();
 
   // Show the dialog widget stretched to full screen.
   void ShowFullScreen();
