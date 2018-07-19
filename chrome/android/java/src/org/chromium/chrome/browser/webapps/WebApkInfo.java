@@ -9,10 +9,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -139,10 +140,10 @@ public class WebApkInfo extends WebappInfo {
         Map<String, String> iconUrlToMurmur2HashMap = getIconUrlAndIconMurmur2HashMap(bundle);
 
         int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
-        Bitmap primaryIcon = decodeImageResource(res, primaryIconId);
+        Bitmap primaryIcon = decodeBitmapFromDrawable(res, primaryIconId);
 
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
-        Bitmap badgeIcon = decodeImageResource(res, badgeIconId);
+        Bitmap badgeIcon = decodeBitmapFromDrawable(res, badgeIconId);
 
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
                 new Icon(primaryIcon), new Icon(badgeIcon), name, shortName, displayMode,
@@ -276,10 +277,19 @@ public class WebApkInfo extends WebappInfo {
     }
 
     /**
-     * Decodes bitmap from WebAPK's resources.
+     * Decodes bitmap drawable from WebAPK's resources. This should also be used for XML aliases.
      */
-    private static Bitmap decodeImageResource(Resources webApkResources, int resourceId) {
-        return BitmapFactory.decodeResource(webApkResources, resourceId);
+    private static Bitmap decodeBitmapFromDrawable(Resources webApkResources, int resourceId) {
+        if (resourceId == 0) {
+            return null;
+        }
+        try {
+            BitmapDrawable bitmapDrawable =
+                    (BitmapDrawable) ApiCompatibilityUtils.getDrawable(webApkResources, resourceId);
+            return bitmapDrawable != null ? bitmapDrawable.getBitmap() : null;
+        } catch (Resources.NotFoundException e) {
+            return null;
+        }
     }
 
     /**
