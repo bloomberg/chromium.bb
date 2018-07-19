@@ -41,6 +41,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Overrides for each FileManagerBrowserTest test extension type.
   virtual GuestMode GetGuestMode() const = 0;
   virtual bool GetEnableDriveFs() const;
+  virtual bool GetRequiresStartupBrowser() const;
   virtual const char* GetTestCaseName() const = 0;
   virtual const char* GetTestExtensionManifestName() const = 0;
 

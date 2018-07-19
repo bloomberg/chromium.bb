@@ -42,11 +42,23 @@ struct TestCase {
     return *this;
   }
 
+  // Show the startup browser. Some tests invoke the file picker dialog during
+  // the test. Requesting a file picker from a background page is forbidden by
+  // the apps platform, and it's a bug that these tests do so.
+  // FindRuntimeContext() in select_file_dialog_extension.cc will use the last
+  // active browser in this case, which requires a Browser to be present. See
+  // https://crbug.com/736930.
+  TestCase& WithBrowser() {
+    with_browser = true;
+    return *this;
+  }
+
   const char* test_case_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
   bool trusted_events = false;
   bool tablet_mode = false;
   bool enable_drivefs = false;
+  bool with_browser = false;
 };
 
 // EventCase: FilesAppBrowserTest with trusted JS Events.
@@ -81,6 +93,9 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 
   GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
   bool GetEnableDriveFs() const override { return GetParam().enable_drivefs; }
+  bool GetRequiresStartupBrowser() const override {
+    return GetParam().with_browser;
+  }
 
   const char* GetTestCaseName() const override {
     return GetParam().test_case_name;
@@ -407,33 +422,38 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         EventCase("tabindexFocusDownloads"),
         EventCase("tabindexFocusDownloads").InGuestMode(),
         EventCase("tabindexFocusDirectorySelected"),
-        EventCase("tabindexOpenDialogDrive"),
-        EventCase("tabindexOpenDialogDrive").EnableDriveFs(),
-        EventCase("tabindexOpenDialogDownloads"),
-        EventCase("tabindexOpenDialogDownloads").InGuestMode(),
-        EventCase("tabindexSaveFileDialogDrive"),
-        EventCase("tabindexSaveFileDialogDrive").EnableDriveFs(),
-        EventCase("tabindexSaveFileDialogDownloads"),
-        EventCase("tabindexSaveFileDialogDownloads").InGuestMode()));
+        EventCase("tabindexOpenDialogDrive").WithBrowser(),
+        EventCase("tabindexOpenDialogDrive").WithBrowser().EnableDriveFs(),
+        EventCase("tabindexOpenDialogDownloads").WithBrowser(),
+        EventCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode(),
+        EventCase("tabindexSaveFileDialogDrive").WithBrowser(),
+        EventCase("tabindexSaveFileDialogDrive").WithBrowser().EnableDriveFs(),
+        EventCase("tabindexSaveFileDialogDownloads").WithBrowser(),
+        EventCase("tabindexSaveFileDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDialog, /* file_dialog.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("openFileDialogUnload"),
-        TestCase("openFileDialogDownloads"),
-        TestCase("openFileDialogDownloads").InGuestMode(),
-        TestCase("openFileDialogDownloads").InIncognito(),
-        TestCase("openFileDialogCancelDownloads"),
-        TestCase("openFileDialogEscapeDownloads"),
-        TestCase("openFileDialogDrive"),
-        TestCase("openFileDialogDrive").InIncognito(),
-        TestCase("openFileDialogDrive").EnableDriveFs(),
-        TestCase("openFileDialogDrive").InIncognito().EnableDriveFs(),
-        TestCase("openFileDialogCancelDrive"),
-        TestCase("openFileDialogCancelDrive").EnableDriveFs(),
-        TestCase("openFileDialogEscapeDrive"),
-        TestCase("openFileDialogEscapeDrive").EnableDriveFs()));
+        TestCase("openFileDialogUnload").WithBrowser(),
+        TestCase("openFileDialogDownloads").WithBrowser(),
+        TestCase("openFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("openFileDialogDownloads").WithBrowser().InIncognito(),
+        TestCase("openFileDialogCancelDownloads").WithBrowser(),
+        TestCase("openFileDialogEscapeDownloads").WithBrowser(),
+        TestCase("openFileDialogDrive").WithBrowser(),
+        TestCase("openFileDialogDrive").WithBrowser().InIncognito(),
+        TestCase("openFileDialogDrive").WithBrowser().EnableDriveFs(),
+        TestCase("openFileDialogDrive")
+            .WithBrowser()
+            .InIncognito()
+            .EnableDriveFs(),
+        TestCase("openFileDialogCancelDrive").WithBrowser(),
+        TestCase("openFileDialogCancelDrive").WithBrowser().EnableDriveFs(),
+        TestCase("openFileDialogEscapeDrive").WithBrowser(),
+        TestCase("openFileDialogEscapeDrive").WithBrowser().EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CopyBetweenWindows, /* copy_between_windows.js */

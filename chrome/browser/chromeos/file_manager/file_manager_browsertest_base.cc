@@ -890,6 +890,23 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   // Use a fake audio stream crbug.com/835626
   command_line->AppendSwitch(switches::kDisableAudioOutput);
 
+  if (!GetRequiresStartupBrowser()) {
+    // Don't sink time into showing an unused browser window.
+    // InProcessBrowserTest::browser() will be null.
+    command_line->AppendSwitch(switches::kNoStartupWindow);
+
+    // Without a browser window, opening an app window, then closing it will
+    // trigger browser shutdown. Usually this is fine, except it also prevents
+    // any _new_ app window being created, should a test want to do that.
+    // (At the time of writing, exactly one does).
+    // Although in this path no browser is created (and so one can never
+    // close..), setting this to false prevents InProcessBrowserTest from adding
+    // the kDisableZeroBrowsersOpenForTests flag, which would prevent
+    // chrome_browser_main_chromeos from adding the keepalive that normally
+    // stops chromeos from shutting down unexpectedly.
+    set_exit_when_last_browser_closes(false);
+  }
+
   if (IsGuestModeTest()) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "$guest");
@@ -963,6 +980,7 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   extensions::ExtensionApiTest::SetUpOnMainThread();
   CHECK(profile());
+  CHECK_EQ(!!browser(), GetRequiresStartupBrowser());
 
   CHECK(local_volume_->Mount(profile()));
 
@@ -979,8 +997,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     // CustomMountPointCallback. TODO(joelhockey): It would be better if the
     // crostini interface allowed for testing without such tight coupling.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
-    browser()->profile()->GetPrefs()->SetBoolean(
-        crostini::prefs::kCrostiniEnabled, true);
+    profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
     crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
     chromeos::DBusThreadManager* dbus_thread_manager =
         chromeos::DBusThreadManager::Get();
@@ -1015,6 +1032,10 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 }
 
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
   return false;
 }
 
