@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.download.home.view.GenericListItemView;
+import org.chromium.chrome.browser.download.home.view.ImageListItemView;
 import org.chromium.chrome.browser.download.home.view.ListItemView;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
@@ -296,6 +297,9 @@ abstract class ListItemViewHolder extends ViewHolder {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             View imageView = itemView.findViewById(R.id.thumbnail);
             imageView.setContentDescription(offlineItem.item.title);
+
+            ImageListItemView view = (ImageListItemView) itemView;
+            view.setItem(item);
         }
 
         @Override

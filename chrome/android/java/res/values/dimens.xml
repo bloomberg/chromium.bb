@@ -575,7 +575,7 @@
 
     <!-- Download manager dimensions -->
     <dimen name="download_manager_image_width">150dp</dimen>
-    <dimen name="download_manager_image_padding">1dp</dimen>
+    <dimen name="download_manager_image_padding">2dp</dimen>
     <dimen name="download_manager_generic_thumbnail_size">36dp</dimen>
     <dimen name="download_manager_prefetch_thumbnail_size">114dp</dimen>
     <dimen name="download_manager_prefetch_horizontal_margin">16dp</dimen>
