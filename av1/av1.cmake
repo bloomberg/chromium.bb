@@ -45,7 +45,6 @@ list(APPEND AOM_AV1_COMMON_SOURCES
             "${AOM_ROOT}/av1/common/entropymv.c"
             "${AOM_ROOT}/av1/common/entropymv.h"
             "${AOM_ROOT}/av1/common/enums.h"
-            "${AOM_ROOT}/av1/common/filter.c"
             "${AOM_ROOT}/av1/common/filter.h"
             "${AOM_ROOT}/av1/common/frame_buffers.c"
             "${AOM_ROOT}/av1/common/frame_buffers.h"

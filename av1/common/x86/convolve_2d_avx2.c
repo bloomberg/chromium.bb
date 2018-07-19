@@ -24,8 +24,8 @@
 
 void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
-                             InterpFilterParams *filter_params_x,
-                             InterpFilterParams *filter_params_y,
+                             const InterpFilterParams *filter_params_x,
+                             const InterpFilterParams *filter_params_y,
                              const int subpel_x_q4, const int subpel_y_q4,
                              ConvolveParams *conv_params) {
   const int bd = 8;
@@ -180,8 +180,8 @@ static INLINE void copy_128(const uint8_t *src, uint8_t *dst) {
 
 void av1_convolve_2d_copy_sr_avx2(const uint8_t *src, int src_stride,
                                   uint8_t *dst, int dst_stride, int w, int h,
-                                  InterpFilterParams *filter_params_x,
-                                  InterpFilterParams *filter_params_y,
+                                  const InterpFilterParams *filter_params_x,
+                                  const InterpFilterParams *filter_params_y,
                                   const int subpel_x_q4, const int subpel_y_q4,
                                   ConvolveParams *conv_params) {
   (void)filter_params_x;
