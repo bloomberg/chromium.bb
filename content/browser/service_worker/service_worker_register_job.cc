@@ -446,7 +446,7 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent(
       base::BindOnce(&ServiceWorkerRegisterJob::OnInstallFailed,
                      weak_factory_.GetWeakPtr()));
 
-  new_version()->event_dispatcher()->DispatchInstallEvent(
+  new_version()->endpoint()->DispatchInstallEvent(
       base::BindOnce(&ServiceWorkerRegisterJob::OnInstallFinished,
                      weak_factory_.GetWeakPtr(), request_id));
 }

@@ -73,7 +73,7 @@ class WebWorkerFetchContext;
 // called on the worker thread.
 class CONTENT_EXPORT ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient,
-      public mojom::ServiceWorkerEventDispatcher {
+      public mojom::ServiceWorker {
  public:
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.
@@ -93,7 +93,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const GURL& script_url,
       bool is_starting_installed_worker,
       RendererPreferences renderer_preferences,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerRequest service_worker_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -274,7 +274,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   void SendWorkerStarted(blink::mojom::ServiceWorkerStartStatus status);
 
-  // Implements mojom::ServiceWorkerEventDispatcher.
+  // Implements mojom::ServiceWorker.
   void InitializeGlobalScope(
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info)
@@ -422,7 +422,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::WebServiceWorkerContextProxy* proxy_;
 
   // These Mojo objects are bound on the worker thread.
-  mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
+  mojom::ServiceWorkerRequest pending_service_worker_request_;
   mojom::ControllerServiceWorkerRequest pending_controller_request_;
 
   // This is bound on the main thread.

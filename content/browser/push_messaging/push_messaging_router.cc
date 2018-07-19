@@ -126,7 +126,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
       base::TimeDelta::FromSeconds(mojom::kPushEventTimeoutSeconds),
       ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
-  service_worker->event_dispatcher()->DispatchPushEvent(
+  service_worker->endpoint()->DispatchPushEvent(
       payload, service_worker->CreateSimpleEventCallback(request_id));
 }
 

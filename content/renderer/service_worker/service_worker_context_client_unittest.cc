@@ -45,7 +45,7 @@ namespace {
 // Pipes connected to the context client.
 struct ContextClientPipes {
   // From the browser to ServiceWorkerContextClient.
-  mojom::ServiceWorkerEventDispatcherPtr event_dispatcher;
+  mojom::ServiceWorkerPtr service_worker;
   mojom::ControllerServiceWorkerPtr controller;
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr registration;
 
@@ -265,8 +265,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
   std::unique_ptr<ServiceWorkerContextClient> CreateContextClient(
       ContextClientPipes* out_pipes,
       blink::WebServiceWorkerContextProxy* proxy) {
-    auto event_dispatcher_request =
-        mojo::MakeRequest(&out_pipes->event_dispatcher);
+    auto service_worker_request = mojo::MakeRequest(&out_pipes->service_worker);
     auto controller_request = mojo::MakeRequest(&out_pipes->controller);
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr embedded_worker_host_ptr;
     out_pipes->embedded_worker_host_request =
@@ -277,7 +276,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
         std::make_unique<ServiceWorkerContextClient>(
             1 /* embedded_worker_id */, 1 /* service_worker_version_id */,
             kScope, kScript, false /* is_script_streaming */,
-            RendererPreferences(), std::move(event_dispatcher_request),
+            RendererPreferences(), std::move(service_worker_request),
             std::move(controller_request),
             embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
             nullptr /* embedded_worker_client */,
@@ -298,7 +297,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
     out_pipes->registration_host_request =
         mojo::MakeRequest(&registration_info->host_ptr_info);
     registration_info->request = mojo::MakeRequest(&out_pipes->registration);
-    out_pipes->event_dispatcher->InitializeGlobalScope(
+    out_pipes->service_worker->InitializeGlobalScope(
         std::move(service_worker_host), std::move(registration_info));
     task_runner()->RunUntilIdle();
     return context_client;
@@ -326,7 +325,7 @@ TEST_F(ServiceWorkerContextClientTest, Ping) {
       CreateContextClient(&pipes, &mock_proxy);
 
   bool is_called = false;
-  pipes.event_dispatcher->Ping(CreateCallbackWithCalledFlag(&is_called));
+  pipes.service_worker->Ping(CreateCallbackWithCalledFlag(&is_called));
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(is_called);
 }
@@ -348,7 +347,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
   auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = *request;
-  pipes.event_dispatcher->DispatchFetchEvent(
+  pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
       base::BindOnce(
           [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
@@ -490,7 +489,7 @@ TEST_F(ServiceWorkerContextClientTest,
   }
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
-  // Another event dispatched to mojom::ServiceWorkerEventDispatcher wakes up
+  // Another event dispatched to mojom::ServiceWorker wakes up
   // the context client.
   {
     mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
@@ -499,7 +498,7 @@ TEST_F(ServiceWorkerContextClientTest,
     request->url = expected_url_2;
     auto params = blink::mojom::DispatchFetchEventParams::New();
     params->request = *request;
-    pipes.event_dispatcher->DispatchFetchEvent(
+    pipes.service_worker->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
         base::BindOnce(
             [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));

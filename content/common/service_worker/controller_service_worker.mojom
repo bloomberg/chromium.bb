@@ -23,16 +23,15 @@ import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom"
 // service worker runs.
 //
 // The controllees use this interface to directly talk to the controller. This
-// implements a small subset of ServiceWorkerEventDispatcher, namely dispatch
+// implements a small subset of the ServiceWorker interface, namely dispatch
 // methods for Fetch and PostMessage, because ordering must be preserved
 // between them: controller.postMessage(...), controller.fetch(‘...’); from
 // the page must result in a message event then fetch event dispatched to the
 // service worker. They are believed to be the only events whose ordering
 // guarantee is observable from the page context.
-//
 interface ControllerServiceWorker {
   // Dispatches Fetch event for sub-resources. (Fetch for main resource is
-  // handled by ServiceWorkerEventDispatcher, as the fetch is initiated
+  // handled by the ServiceWorker interface, as the fetch is initiated
   // in the browser-process during the navigation)
   // The callback is called once the event finishes, which means the event
   // handler ran and all outstanding respondWith() and waitUntil() promises have

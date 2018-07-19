@@ -810,7 +810,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
-    version_->event_dispatcher()->DispatchInstallEvent(
+    version_->endpoint()->DispatchInstallEvent(
         base::BindOnce(&self::ReceiveInstallEventOnIOThread,
                        base::Unretained(this), done, result, request_id));
   }
@@ -867,7 +867,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
-    version_->event_dispatcher()->DispatchActivateEvent(
+    version_->endpoint()->DispatchActivateEvent(
         version_->CreateSimpleEventCallback(request_id));
   }
 

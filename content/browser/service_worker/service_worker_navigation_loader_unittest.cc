@@ -72,8 +72,7 @@ class NavigationPreloadLoaderClient final
   NavigationPreloadLoaderClient(
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
-          finish_callback)
+      mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       : url_loader_(std::move(preload_handle->url_loader)),
         binding_(this, std::move(preload_handle->url_loader_client_request)),
         response_callback_(std::move(response_callback)),
@@ -144,8 +143,7 @@ class NavigationPreloadLoaderClient final
 
   // Callbacks that complete Helper::OnFetchEvent().
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
-  mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
-      finish_callback_;
+  mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPreloadLoaderClient);
 };
@@ -233,8 +231,8 @@ class Helper : public EmbeddedWorkerTestHelper {
       const network::ResourceRequest& request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
-          finish_callback) override {
+      mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
+      override {
     // Basic checks on DispatchFetchEvent parameters.
     EXPECT_TRUE(ServiceWorkerUtils::IsMainResourceType(
         static_cast<ResourceType>(request.resource_type)));
@@ -319,7 +317,7 @@ class Helper : public EmbeddedWorkerTestHelper {
         SimulateWorkerStopped(embedded_worker_id);
         // Finish the event by calling |finish_callback|.
         // This is the Mojo callback for
-        // mojom::ServiceWorkerEventDispatcher::DispatchFetchEvent().
+        // mojom::ServiceWorker::DispatchFetchEvent().
         // If this is not called, Mojo will complain. In production code,
         // ServiceWorkerContextClient would call this when it aborts all
         // callbacks after an unexpected stop.
@@ -388,8 +386,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
   // For ResponseMode::kEarlyResponse.
-  mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
-      finish_callback_;
+  mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;

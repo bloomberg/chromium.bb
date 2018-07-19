@@ -217,7 +217,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
       // possible.
-      active_version()->event_dispatcher()->SetIdleTimerDelayToZero();
+      active_version()->endpoint()->SetIdleTimerDelayToZero();
     }
     StartLameDuckTimer();
   }
@@ -300,7 +300,7 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
       // possible.
-      active_version()->event_dispatcher()->SetIdleTimerDelayToZero();
+      active_version()->endpoint()->SetIdleTimerDelayToZero();
     }
     StartLameDuckTimer();
   }
@@ -515,7 +515,7 @@ void ServiceWorkerRegistration::DispatchActivateEvent(
       ServiceWorkerMetrics::EventType::ACTIVATE,
       base::BindOnce(&ServiceWorkerRegistration::OnActivateEventFinished, this,
                      activating_version));
-  activating_version->event_dispatcher()->DispatchActivateEvent(
+  activating_version->endpoint()->DispatchActivateEvent(
       activating_version->CreateSimpleEventCallback(request_id));
 }
 

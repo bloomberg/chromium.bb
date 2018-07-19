@@ -223,7 +223,7 @@ void DispatchNotificationClickEventOnWorker(
   if (action_index.has_value())
     action_index_int = action_index.value();
 
-  service_worker->event_dispatcher()->DispatchNotificationClickEvent(
+  service_worker->endpoint()->DispatchNotificationClickEvent(
       notification_database_data.notification_id,
       notification_database_data.notification_data, action_index_int, reply,
       service_worker->CreateSimpleEventCallback(request_id));
@@ -296,7 +296,7 @@ void DispatchNotificationCloseEventOnWorker(
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE, std::move(callback));
 
-  service_worker->event_dispatcher()->DispatchNotificationCloseEvent(
+  service_worker->endpoint()->DispatchNotificationCloseEvent(
       notification_database_data.notification_id,
       notification_database_data.notification_data,
       service_worker->CreateSimpleEventCallback(request_id));

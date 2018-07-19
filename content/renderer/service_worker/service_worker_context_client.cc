@@ -462,7 +462,7 @@ void DidNavigateClient(
 // worker thread.
 struct ServiceWorkerContextClient::WorkerContextData {
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
-      : event_dispatcher_binding(owner),
+      : service_worker_binding(owner),
         weak_factory(owner),
         proxy_weak_factory(owner->proxy_) {}
 
@@ -473,10 +473,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Map from version id to JavaScript ServiceWorker object.
   std::map<int64_t, WebServiceWorkerImpl*> workers_;
 
-  mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
+  mojo::Binding<mojom::ServiceWorker> service_worker_binding;
 
   // Bound by the first Mojo call received on the service worker thread
-  // ServiceWorkerEventDispatcher::InitializeGlobalScope().
+  // ServiceWorker::InitializeGlobalScope().
   blink::mojom::ServiceWorkerHostAssociatedPtr service_worker_host;
 
   // Maps for inflight event callbacks.
@@ -698,7 +698,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& script_url,
     bool is_starting_installed_worker,
     RendererPreferences renderer_preferences,
-    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+    mojom::ServiceWorkerRequest service_worker_request,
     mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -713,7 +713,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       renderer_preferences_(std::move(renderer_preferences)),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       proxy_(nullptr),
-      pending_dispatcher_request_(std::move(dispatcher_request)),
+      pending_service_worker_request_(std::move(service_worker_request)),
       pending_controller_request_(std::move(controller_request)),
       embedded_worker_client_(std::move(embedded_worker_client)),
       start_timing_(std::move(start_timing)) {
@@ -841,12 +841,12 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
 
-  DCHECK(pending_dispatcher_request_.is_pending());
+  DCHECK(pending_service_worker_request_.is_pending());
   DCHECK(pending_controller_request_.is_pending());
-  DCHECK(!context_->event_dispatcher_binding.is_bound());
+  DCHECK(!context_->service_worker_binding.is_bound());
   DCHECK(!context_->controller_impl);
-  context_->event_dispatcher_binding.Bind(
-      std::move(pending_dispatcher_request_));
+  context_->service_worker_binding.Bind(
+      std::move(pending_service_worker_request_));
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(

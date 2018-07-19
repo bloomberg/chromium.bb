@@ -607,11 +607,11 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   params->request_body_blob = request_body_blob_.PassInterface();
   params->client_id = client_id_;
   params->preload_handle = std::move(preload_handle_);
-  // |event_dispatcher| is owned by |version_|. So it is safe to pass the
+  // |endpoint()| is owned by |version_|. So it is safe to pass the
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
-  version_->event_dispatcher()->DispatchFetchEvent(
+  version_->endpoint()->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                      base::Unretained(version_.get()), event_finish_id,

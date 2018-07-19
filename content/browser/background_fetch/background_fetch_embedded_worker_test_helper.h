@@ -70,25 +70,25 @@ class BackgroundFetchEmbeddedWorkerTestHelper
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchAbortEventCallback callback) override;
+      mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback)
+      override;
   void OnBackgroundFetchClickEvent(
       const std::string& developer_id,
       mojom::BackgroundFetchState state,
-      mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchClickEventCallback callback) override;
+      mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback)
+      override;
   void OnBackgroundFetchFailEvent(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchFailEventCallback callback) override;
+      mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback)
+      override;
   void OnBackgroundFetchedEvent(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      mojom::ServiceWorkerEventDispatcher::
-          DispatchBackgroundFetchedEventCallback callback) override;
+      mojom::ServiceWorker::DispatchBackgroundFetchedEventCallback callback)
+      override;
 
  private:
   bool fail_abort_event_ = false;
