@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/header_title"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/snippets_article_header_height"
     android:textColor="@color/snippets_list_header_text_color"
     android:textSize="12sp"
     android:paddingStart="@dimen/snippets_padding"
