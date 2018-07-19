@@ -91,6 +91,7 @@
           "dom_distiller.mojom.DistillabilityService",
           "dom_distiller.mojom.DistillerJavaScriptService",
           "extensions.KeepAlive",
+          "extensions.mime_handler.BeforeUnloadControl",
           "extensions.mime_handler.MimeHandlerService",
           "extensions.mojom.InlineInstall",
           "media_router.mojom.MediaRouter",

@@ -35,13 +35,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(
     int /* script_id */,
     bool /* allowed */)
 
-// Tells the browser to create a mime handler guest view for a plugin.
-IPC_MESSAGE_CONTROL4(ExtensionsGuestViewHostMsg_CreateMimeHandlerViewGuest,
-                     int /* render_frame_id */,
-                     std::string /* view_id */,
-                     int /* element_instance_id */,
-                     gfx::Size /* element_size */)
-
 // A renderer sends this message when it wants to resize a guest.
 IPC_MESSAGE_CONTROL3(ExtensionsGuestViewHostMsg_ResizeGuest,
                      int /* routing_id */,

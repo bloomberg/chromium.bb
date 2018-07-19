@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "extensions/common/api/mime_handler.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -74,8 +75,8 @@ class StreamContainer {
   DISALLOW_COPY_AND_ASSIGN(StreamContainer);
 };
 
-class MimeHandlerViewGuest :
-    public guest_view::GuestView<MimeHandlerViewGuest> {
+class MimeHandlerViewGuest
+    : public guest_view::GuestView<MimeHandlerViewGuest> {
  public:
   static guest_view::GuestViewBase* Create(
       content::WebContents* owner_web_contents);
@@ -89,6 +90,9 @@ class MimeHandlerViewGuest :
   content::SiteInstance* GetOwnerSiteInstance() override;
 
   void SetEmbedderFrame(int process_id, int routing_id);
+
+  void SetBeforeUnloadController(
+      mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control);
 
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
@@ -155,6 +159,9 @@ class MimeHandlerViewGuest :
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) final;
 
+  void FuseBeforeUnloadControl(
+      mime_handler::BeforeUnloadControlRequest request);
+
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;
 
@@ -166,6 +173,8 @@ class MimeHandlerViewGuest :
 
   bool is_guest_fullscreen_ = false;
   bool is_embedder_fullscreen_ = false;
+
+  mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

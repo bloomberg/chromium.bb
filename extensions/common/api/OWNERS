@@ -6,4 +6,7 @@ per-file *.idl=file://extensions/common/api/API_OWNERS
 
 per-file *view*.json=file://components/guest_view/OWNERS
 
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
+
 # COMPONENT: Platform>Extensions>API

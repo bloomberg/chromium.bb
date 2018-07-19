@@ -56,7 +56,6 @@ void ExtensionsGuestViewMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
   switch (message.type()) {
-    case ExtensionsGuestViewHostMsg_CreateMimeHandlerViewGuest::ID:
     case ExtensionsGuestViewHostMsg_ResizeGuest::ID:
       *thread = BrowserThread::UI;
       break;
@@ -71,8 +70,6 @@ bool ExtensionsGuestViewMessageFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ExtensionsGuestViewMessageFilter, message)
     IPC_MESSAGE_HANDLER(ExtensionsGuestViewHostMsg_CanExecuteContentScriptSync,
                         OnCanExecuteContentScript)
-    IPC_MESSAGE_HANDLER(ExtensionsGuestViewHostMsg_CreateMimeHandlerViewGuest,
-                        OnCreateMimeHandlerViewGuest)
     IPC_MESSAGE_HANDLER(ExtensionsGuestViewHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_UNHANDLED(
         handled = GuestViewMessageFilter::OnMessageReceived(message))
@@ -104,11 +101,26 @@ void ExtensionsGuestViewMessageFilter::OnCanExecuteContentScript(
       info.content_script_ids.find(script_id) != info.content_script_ids.end();
 }
 
-void ExtensionsGuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
+void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuest(
+    int32_t render_frame_id,
+    const std::string& view_id,
+    int32_t element_instance_id,
+    const gfx::Size& element_size,
+    mime_handler::BeforeUnloadControlPtr before_unload_control) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ExtensionsGuestViewMessageFilter::
+                         CreateMimeHandlerViewGuestOnUIThread,
+                     this, render_frame_id, view_id, element_instance_id,
+                     element_size, before_unload_control.PassInterface()));
+}
+
+void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuestOnUIThread(
     int render_frame_id,
     const std::string& view_id,
     int element_instance_id,
-    const gfx::Size& element_size) {
+    const gfx::Size& element_size,
+    mime_handler::BeforeUnloadControlPtrInfo before_unload_control) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* manager = GetOrCreateGuestViewManager();
 
@@ -120,7 +132,7 @@ void ExtensionsGuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
   GuestViewManager::WebContentsCreatedCallback callback = base::BindOnce(
       &ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback,
       this, element_instance_id, render_process_id_, render_frame_id,
-      element_size);
+      element_size, std::move(before_unload_control));
 
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kViewId, view_id);
@@ -203,8 +215,8 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
                   -1 /* frame_tree_node_id*/, render_process_id_,
                   render_frame_id);
 
-  OnCreateMimeHandlerViewGuest(render_frame_id, view_id, element_instance_id,
-                               element_size);
+  CreateMimeHandlerViewGuestOnUIThread(
+      render_frame_id, view_id, element_instance_id, element_size, nullptr);
 }
 
 void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
@@ -212,11 +224,13 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
     int embedder_render_process_id,
     int embedder_render_frame_id,
     const gfx::Size& element_size,
+    mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
     WebContents* web_contents) {
   auto* guest_view = MimeHandlerViewGuest::FromWebContents(web_contents);
   if (!guest_view)
     return;
 
+  guest_view->SetBeforeUnloadController(std::move(before_unload_control));
   int guest_instance_id = guest_view->guest_instance_id();
   auto* rfh = RenderFrameHost::FromID(embedder_render_process_id,
                                       embedder_render_frame_id);

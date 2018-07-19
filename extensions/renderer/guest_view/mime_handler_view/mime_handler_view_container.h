@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "components/guest_view/renderer/guest_view_container.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "extensions/common/api/mime_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
@@ -50,7 +51,8 @@ namespace extensions {
 //    |didFinishLoading| (from WebAssociatedURLLoaderClient) when data is
 //    received and when it has finished being received.
 class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
-                                 public blink::WebAssociatedURLLoaderClient {
+                                 public blink::WebAssociatedURLLoaderClient,
+                                 public mime_handler::BeforeUnloadControl {
  public:
   MimeHandlerViewContainer(content::RenderFrame* render_frame,
                            const content::WebPluginInfo& info,
@@ -112,6 +114,11 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // to are available.
   void CreateMimeHandlerViewGuestIfNecessary();
 
+  // mime_handler::BeforeUnloadControl implementation.
+  void SetShowBeforeUnloadDialog(
+      bool show_dialog,
+      SetShowBeforeUnloadDialogCallback callback) override;
+
   // Path of the plugin.
   const std::string plugin_path_;
 
@@ -156,6 +163,9 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
 
   // The size of the element.
   base::Optional<gfx::Size> element_size_;
+
+  mojo::Binding<mime_handler::BeforeUnloadControl>
+      before_unload_control_binding_;
 
   base::WeakPtrFactory<MimeHandlerViewContainer> weak_factory_;
 

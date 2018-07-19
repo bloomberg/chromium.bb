@@ -140,6 +140,11 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
 }
 
+void MimeHandlerViewGuest::SetBeforeUnloadController(
+    mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control) {
+  pending_before_unload_control_ = std::move(pending_before_unload_control);
+}
+
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
   return "mimeHandlerViewGuestInternal";
 }
@@ -203,6 +208,8 @@ void MimeHandlerViewGuest::CreateWebContents(
 
   registry_.AddInterface(
       base::Bind(&MimeHandlerServiceImpl::Create, stream_->GetWeakPtr()));
+  registry_.AddInterface(base::BindRepeating(
+      &MimeHandlerViewGuest::FuseBeforeUnloadControl, base::Unretained(this)));
 }
 
 void MimeHandlerViewGuest::DidAttachToEmbedder() {
@@ -392,6 +399,15 @@ void MimeHandlerViewGuest::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   navigation_handle->RegisterSubresourceOverride(
       stream_->TakeTransferrableURLLoader());
+}
+
+void MimeHandlerViewGuest::FuseBeforeUnloadControl(
+    mime_handler::BeforeUnloadControlRequest request) {
+  if (!pending_before_unload_control_)
+    return;
+
+  mojo::FuseInterface(std::move(request),
+                      std::move(pending_before_unload_control_));
 }
 
 }  // namespace extensions
