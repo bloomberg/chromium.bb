@@ -308,7 +308,7 @@ void ImportantFileWriter::ClearPendingWrite() {
   serializer_ = nullptr;
 }
 
-void ImportantFileWriter::SetTimerForTesting(Timer* timer_override) {
+void ImportantFileWriter::SetTimerForTesting(OneShotTimer* timer_override) {
   timer_override_ = timer_override;
 }
 

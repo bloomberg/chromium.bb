@@ -603,7 +603,7 @@ void TimerTestCallback() {
 TEST(TimerTest, NonRepeatIsRunning) {
   {
     MessageLoop loop;
-    Timer timer(false, false);
+    OneShotTimer timer;
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1), Bind(&TimerTestCallback));
     EXPECT_TRUE(timer.IsRunning());
@@ -613,7 +613,7 @@ TEST(TimerTest, NonRepeatIsRunning) {
   }
 
   {
-    Timer timer(true, false);
+    RetainingOneShotTimer timer;
     MessageLoop loop;
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1), Bind(&TimerTestCallback));
@@ -627,7 +627,7 @@ TEST(TimerTest, NonRepeatIsRunning) {
 }
 
 TEST(TimerTest, NonRepeatMessageLoopDeath) {
-  Timer timer(false, false);
+  OneShotTimer timer;
   {
     MessageLoop loop;
     EXPECT_FALSE(timer.IsRunning());
@@ -640,8 +640,8 @@ TEST(TimerTest, NonRepeatMessageLoopDeath) {
 
 TEST(TimerTest, RetainRepeatIsRunning) {
   MessageLoop loop;
-  Timer timer(FROM_HERE, TimeDelta::FromDays(1), Bind(&TimerTestCallback),
-              true);
+  RepeatingTimer timer(FROM_HERE, TimeDelta::FromDays(1),
+                       Bind(&TimerTestCallback));
   EXPECT_FALSE(timer.IsRunning());
   timer.Reset();
   EXPECT_TRUE(timer.IsRunning());
@@ -653,8 +653,8 @@ TEST(TimerTest, RetainRepeatIsRunning) {
 
 TEST(TimerTest, RetainNonRepeatIsRunning) {
   MessageLoop loop;
-  Timer timer(FROM_HERE, TimeDelta::FromDays(1), Bind(&TimerTestCallback),
-              false);
+  RetainingOneShotTimer timer(FROM_HERE, TimeDelta::FromDays(1),
+                              Bind(&TimerTestCallback));
   EXPECT_FALSE(timer.IsRunning());
   timer.Reset();
   EXPECT_TRUE(timer.IsRunning());
@@ -692,7 +692,7 @@ TEST(TimerTest, ContinuationStopStart) {
   {
     ClearAllCallbackHappened();
     MessageLoop loop;
-    Timer timer(false, false);
+    OneShotTimer timer;
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(10),
                 Bind(&SetCallbackHappened1));
     timer.Stop();
@@ -708,7 +708,7 @@ TEST(TimerTest, ContinuationReset) {
   {
     ClearAllCallbackHappened();
     MessageLoop loop;
-    Timer timer(false, false);
+    OneShotTimer timer;
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(10),
                 Bind(&SetCallbackHappened1));
     timer.Reset();
