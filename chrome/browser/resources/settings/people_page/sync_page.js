@@ -134,7 +134,8 @@ Polymer({
       type: Boolean,
       value: false,
       computed: 'computeSyncSectionDisabled_(' +
-          'unifiedConsentEnabled, syncStatus.signedIn, syncStatus.disabled)',
+          'unifiedConsentEnabled, syncStatus.signedIn, syncStatus.disabled, ' +
+          'syncStatus.hasError, syncStatus.statusAction)',
     },
 
     /** @private */
@@ -217,7 +218,10 @@ Polymer({
    */
   computeSyncSectionDisabled_() {
     return !!this.unifiedConsentEnabled &&
-        (!this.syncStatus.signedIn || !!this.syncStatus.disabled);
+        (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
+         (!!this.syncStatus.hasError &&
+          this.syncStatus.statusAction ===
+              settings.StatusAction.REAUTHENTICATE));
   },
 
   /** @protected */

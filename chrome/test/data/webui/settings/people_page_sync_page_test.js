@@ -155,7 +155,12 @@ cr.define('settings_people_page_sync_page', function() {
       // When unified-consent is enabled and signed in, sync-section should be
       // visible and open by default. Accordion toggle row should be present,
       // and bottom items should have classes used for indentation.
-      syncPage.syncStatus = {signedIn: true, disabled: false};
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(ironCollapse.opened);
@@ -180,6 +185,15 @@ cr.define('settings_people_page_sync_page', function() {
 
       // The unified consent toggle should be visible.
       assertFalse(unifiedConsentToggle.hidden);
+
+      // Test sync paused state.
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: true,
+        statusAction: settings.StatusAction.REAUTHENTICATE
+      };
+      assertTrue(ironCollapse.hidden);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SignedOut', function() {
@@ -190,7 +204,12 @@ cr.define('settings_people_page_sync_page', function() {
 
       // When unified-consent is enabled and signed out, sync-section should be
       // hidden, and the accordion toggle row should be visible not actionable.
-      syncPage.syncStatus = {signedIn: false, disabled: false};
+      syncPage.syncStatus = {
+        signedIn: false,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(ironCollapse.hidden);
@@ -210,7 +229,12 @@ cr.define('settings_people_page_sync_page', function() {
 
       // When unified-consent is enabled and sync is disabled, the sync-section
       // should be hidden.
-      syncPage.syncStatus = {signedIn: false, disabled: true};
+      syncPage.syncStatus = {
+        signedIn: false,
+        disabled: true,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(ironCollapse.hidden);
