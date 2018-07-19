@@ -139,7 +139,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     this.setDirectorySize_(
         /** @type {!DirectoryEntry} */ (entry), isSameEntry);
   }
-  if (item.modificationTime) {
+  if (item.modificationTime && !util.isTeamDriveRoot(entry)) {
     this.metadataBox_.modificationTime =
         this.fileMetadataFormatter_.formatModDate(item.modificationTime);
   }

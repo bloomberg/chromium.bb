@@ -899,6 +899,13 @@ FileTable.prototype.renderDate_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateDate_ = function(div, entry) {
+  // For now, Team Drive roots have the incorrect modified date value. Hide it
+  // until we get the proper one (see https://crbug.com/861622).
+  if (util.isTeamDriveRoot(entry)) {
+    div.textContent = '--';
+    return;
+  }
+
   var item = this.metadataModel_.getCache(
       [entry], ['modificationTime', 'modificationByMeTime'])[0];
   var modTime = this.useModificationByMeTime_ ?
