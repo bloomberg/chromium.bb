@@ -754,6 +754,27 @@ TEST_P(InterfacePtrTest, FlushForTesting) {
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 
+TEST_P(InterfacePtrTest, FlushAsyncForTesting) {
+  math::CalculatorPtr calc;
+  MathCalculatorImpl calc_impl(MakeRequest(&calc));
+  calc.set_connection_error_handler(base::BindOnce(&Fail));
+
+  MathCalculatorUI calculator_ui(std::move(calc));
+
+  calculator_ui.Add(2.0, base::DoNothing());
+  base::RunLoop run_loop;
+  calculator_ui.GetInterfacePtr().FlushAsyncForTesting(run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_EQ(2.0, calculator_ui.GetOutput());
+
+  calculator_ui.Multiply(5.0, base::DoNothing());
+  base::RunLoop run_loop2;
+  calculator_ui.GetInterfacePtr().FlushAsyncForTesting(run_loop2.QuitClosure());
+  run_loop2.Run();
+
+  EXPECT_EQ(10.0, calculator_ui.GetOutput());
+}
+
 void SetBool(bool* value) {
   *value = true;
 }
@@ -766,6 +787,21 @@ TEST_P(InterfacePtrTest, FlushForTestingWithClosedPeer) {
   calc.FlushForTesting();
   EXPECT_TRUE(called);
   calc.FlushForTesting();
+}
+
+TEST_P(InterfacePtrTest, FlushAsyncForTestingWithClosedPeer) {
+  math::CalculatorPtr calc;
+  MakeRequest(&calc);
+  bool called = false;
+  calc.set_connection_error_handler(base::BindOnce(&SetBool, &called));
+  base::RunLoop run_loop;
+  calc.FlushAsyncForTesting(run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_TRUE(called);
+
+  base::RunLoop run_loop2;
+  calc.FlushAsyncForTesting(run_loop2.QuitClosure());
+  run_loop2.Run();
 }
 
 TEST_P(InterfacePtrTest, ConnectionErrorWithReason) {

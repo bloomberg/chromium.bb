@@ -29,6 +29,7 @@ class MOJO_CPP_BINDINGS_EXPORT ControlMessageProxy {
   void RequireVersion(uint32_t version);
 
   void FlushForTesting();
+  void FlushAsyncForTesting(base::OnceClosure callback);
   void OnConnectionError();
 
  private:
@@ -38,7 +39,7 @@ class MOJO_CPP_BINDINGS_EXPORT ControlMessageProxy {
   MessageReceiverWithResponder* receiver_;
   bool encountered_error_ = false;
 
-  base::Closure run_loop_quit_closure_;
+  base::OnceClosure pending_flush_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlMessageProxy);
 };

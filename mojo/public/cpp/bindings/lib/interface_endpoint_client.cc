@@ -347,6 +347,10 @@ void InterfaceEndpointClient::FlushForTesting() {
   control_message_proxy_.FlushForTesting();
 }
 
+void InterfaceEndpointClient::FlushAsyncForTesting(base::OnceClosure callback) {
+  control_message_proxy_.FlushAsyncForTesting(std::move(callback));
+}
+
 void InterfaceEndpointClient::InitControllerIfNecessary() {
   if (controller_ || handle_.pending_association())
     return;

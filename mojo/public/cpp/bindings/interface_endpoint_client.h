@@ -113,6 +113,7 @@ class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
   void QueryVersion(const base::Callback<void(uint32_t)>& callback);
   void RequireVersion(uint32_t version);
   void FlushForTesting();
+  void FlushAsyncForTesting(base::OnceClosure callback);
 
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
