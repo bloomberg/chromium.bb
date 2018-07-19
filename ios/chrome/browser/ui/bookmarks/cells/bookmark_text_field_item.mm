@@ -56,7 +56,6 @@
     cell.textField.accessibilityLabel = self.text;
     cell.textField.accessibilityIdentifier = [NSString
         stringWithFormat:@"%@_textField", self.accessibilityIdentifier];
-    cell.validState = YES;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
   } else {
     LegacyBookmarkTextFieldCell* cell =
@@ -86,15 +85,9 @@
 
 #pragma mark - BookmarkTextFieldCell
 
-@interface BookmarkTextFieldCell ()
-@property(nonatomic, strong) UILabel* invalidURLLabel;
-@end
-
 @implementation BookmarkTextFieldCell
 @synthesize textField = _textField;
 @synthesize titleLabel = _titleLabel;
-@synthesize invalidURLLabel = _invalidURLLabel;
-@synthesize validState = _validState;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -138,60 +131,26 @@
   [horizontalStack
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisVertical];
-
-  // Invalid URL label
-  self.invalidURLLabel = [[UILabel alloc] init];
-  self.invalidURLLabel.text =
-      l10n_util::GetNSString(IDS_IOS_BOOKMARK_URL_FIELD_VALIDATION_FAILED);
-  self.invalidURLLabel.textColor = [UIColor redColor];
-  self.invalidURLLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-  self.invalidURLLabel.adjustsFontForContentSizeCategory = YES;
-  [self.invalidURLLabel
-      setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                      forAxis:UILayoutConstraintAxisVertical];
-  [self.invalidURLLabel
-      setContentHuggingPriority:UILayoutPriorityDefaultLow
-                        forAxis:UILayoutConstraintAxisHorizontal];
-
-  // Vertical StackView.
-  UIStackView* verticalStack = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ horizontalStack, self.invalidURLLabel ]];
-  verticalStack.axis = UILayoutConstraintAxisVertical;
-  verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
-  [verticalStack
-      setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                      forAxis:UILayoutConstraintAxisVertical];
-  [self.contentView addSubview:verticalStack];
+  horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:horizontalStack];
 
   // Set up constraints.
   [NSLayoutConstraint activateConstraints:@[
-    [verticalStack.topAnchor
+    [horizontalStack.topAnchor
         constraintEqualToAnchor:self.contentView.topAnchor
                        constant:kBookmarkCellVerticalInset],
-    [verticalStack.bottomAnchor
+    [horizontalStack.bottomAnchor
         constraintEqualToAnchor:self.contentView.bottomAnchor
                        constant:-kBookmarkCellVerticalInset],
-    [verticalStack.leadingAnchor
+    [horizontalStack.leadingAnchor
         constraintEqualToAnchor:self.contentView.leadingAnchor
                        constant:kBookmarkCellHorizontalLeadingInset],
-    [verticalStack.trailingAnchor
+    [horizontalStack.trailingAnchor
         constraintEqualToAnchor:self.contentView.trailingAnchor
                        constant:-kBookmarkCellHorizontalTrailingInset],
   ]];
 
   return self;
-}
-
-- (void)setValidState:(BOOL)validState {
-  _validState = validState;
-  if (validState) {
-    self.invalidURLLabel.hidden = YES;
-    self.textField.textColor = [UIColor lightGrayColor];
-  } else {
-    self.invalidURLLabel.hidden = NO;
-    self.textField.textColor = [UIColor redColor];
-  }
 }
 
 - (void)prepareForReuse {
@@ -200,7 +159,6 @@
   [self.textField removeTarget:nil
                         action:NULL
               forControlEvents:UIControlEventAllEvents];
-  self.validState = YES;
   self.textField.delegate = nil;
   self.textField.text = nil;
 }
