@@ -320,7 +320,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         }
       ],
-      'platform': 'android',
+      'platform': 'android-webview',
       'dimension': {
         'pool': 'chrome.tests.perf-webview',
         'os': 'Android',
@@ -341,7 +341,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         }
       ],
-      'platform': 'android',
+      'platform': 'android-webview',
       'dimension': {
         'pool': 'chrome.tests.perf-webview',
         'os': 'Android',
