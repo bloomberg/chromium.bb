@@ -937,6 +937,8 @@ class MetaBuildWrapper(object):
       if not re.search('target_os.*=.*"chromeos"', gn_args):
         raise MBErr('GN_ARGS is missing target_os = "chromeos": (GN_ARGS=%s)' %
                     gn_args)
+      if vals['gn_args']:
+        gn_args += ' ' + vals['gn_args']
     else:
       gn_args = vals['gn_args']
 
