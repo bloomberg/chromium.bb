@@ -17,7 +17,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
   test(t => {
     assert_not_equals(undefined, CSS.layoutWorklet);
     assert_not_equals(undefined, CSS.paintWorklet);
-    assert_not_equals(undefined, window.animationWorklet);
+    assert_not_equals(undefined, CSS.animationWorklet);
     assert_not_equals(undefined, realTimeContext.audioWorklet);
     assert_not_equals(undefined, offlineContext.audioWorklet);
   }, 'Worklets should be available on a secure context.');
@@ -27,7 +27,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
   test(t => {
     assert_equals(undefined, CSS.layoutWorklet);
     assert_equals(undefined, CSS.paintWorklet);
-    assert_equals(undefined, window.animationWorklet);
+    assert_equals(undefined, CSS.animationWorklet);
     assert_equals(undefined, realTimeContext.audioWorklet);
     assert_equals(undefined, offlineContext.audioWorklet);
   }, 'Worklets should not be available on an insecure context.');

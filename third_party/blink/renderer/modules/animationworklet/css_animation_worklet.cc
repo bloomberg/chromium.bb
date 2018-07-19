@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/animationworklet/window_animation_worklet.h"
+#include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -11,49 +11,51 @@
 namespace blink {
 
 // static
-AnimationWorklet* WindowAnimationWorklet::animationWorklet(
-    LocalDOMWindow& window) {
-  if (!window.GetFrame())
+AnimationWorklet* CSSAnimationWorklet::animationWorklet(
+    ScriptState* script_state) {
+  LocalDOMWindow* window = ToLocalDOMWindow(script_state->GetContext());
+
+  if (!window->GetFrame())
     return nullptr;
-  return From(window).animation_worklet_.Get();
+  return From(*window).animation_worklet_.Get();
 }
 
 // Break the following cycle when the context gets detached.
 // Otherwise, the worklet object will leak.
 //
-// window => window.animationWorklet
-// => WindowAnimationWorklet
+// window => CSS.animationWorklet
+// => CSSAnimationWorklet
 // => AnimationWorklet  <--- break this reference
 // => ThreadedWorkletMessagingProxy
 // => Document
 // => ... => window
-void WindowAnimationWorklet::ContextDestroyed(ExecutionContext*) {
+void CSSAnimationWorklet::ContextDestroyed(ExecutionContext*) {
   animation_worklet_ = nullptr;
 }
 
-void WindowAnimationWorklet::Trace(blink::Visitor* visitor) {
+void CSSAnimationWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(animation_worklet_);
   Supplement<LocalDOMWindow>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 
 // static
-WindowAnimationWorklet& WindowAnimationWorklet::From(LocalDOMWindow& window) {
-  WindowAnimationWorklet* supplement =
-      Supplement<LocalDOMWindow>::From<WindowAnimationWorklet>(window);
+CSSAnimationWorklet& CSSAnimationWorklet::From(LocalDOMWindow& window) {
+  CSSAnimationWorklet* supplement =
+      Supplement<LocalDOMWindow>::From<CSSAnimationWorklet>(window);
   if (!supplement) {
-    supplement = new WindowAnimationWorklet(window.GetFrame()->GetDocument());
+    supplement = new CSSAnimationWorklet(window.GetFrame()->GetDocument());
     ProvideTo(window, supplement);
   }
   return *supplement;
 }
 
-WindowAnimationWorklet::WindowAnimationWorklet(Document* document)
+CSSAnimationWorklet::CSSAnimationWorklet(Document* document)
     : ContextLifecycleObserver(document),
       animation_worklet_(new AnimationWorklet(document)) {
   DCHECK(GetExecutionContext());
 }
 
-const char WindowAnimationWorklet::kSupplementName[] = "WindowAnimationWorklet";
+const char CSSAnimationWorklet::kSupplementName[] = "CSSAnimationWorklet";
 
 }  // namespace blink

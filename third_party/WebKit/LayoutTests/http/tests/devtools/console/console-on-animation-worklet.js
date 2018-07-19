@@ -9,7 +9,7 @@
   await TestRunner.evaluateInPagePromise(`
       function importWorklet()
       {
-          animationWorklet.import('resources/console-worklet-script.js');
+          CSS.animationWorklet.import('resources/console-worklet-script.js');
       }
   `);
 

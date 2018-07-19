@@ -40,15 +40,17 @@ KeyframeEffect* CreateKeyframeEffect(Element* element) {
   return KeyframeEffect::Create(element, CreateEffectModel(), timing);
 }
 
-WorkletAnimation* CreateWorkletAnimation(ExecutionContext* context,
+WorkletAnimation* CreateWorkletAnimation(ScriptState* script_state,
                                          Element* element) {
   AnimationEffectOrAnimationEffectSequence effects;
   AnimationEffect* effect = CreateKeyframeEffect(element);
   effects.SetAnimationEffect(effect);
   DocumentTimelineOrScrollTimeline timeline;
   scoped_refptr<SerializedScriptValue> options;
+
+  ScriptState::Scope scope(script_state);
   DummyExceptionStateForTesting exception_state;
-  return WorkletAnimation::Create(context, "WorkletAnimation", effects,
+  return WorkletAnimation::Create(script_state, "WorkletAnimation", effects,
                                   timeline, std::move(options),
                                   exception_state);
 }
@@ -63,7 +65,11 @@ class WorkletAnimationTest : public RenderingTest {
   void SetUp() override {
     RenderingTest::SetUp();
     element_ = GetDocument().CreateElementForBinding("test");
-    worklet_animation_ = CreateWorkletAnimation(&GetDocument(), element_);
+    worklet_animation_ = CreateWorkletAnimation(GetScriptState(), element_);
+  }
+
+  ScriptState* GetScriptState() {
+    return ToScriptStateForMainWorld(&GetFrame());
   }
 
   Persistent<Element> element_;

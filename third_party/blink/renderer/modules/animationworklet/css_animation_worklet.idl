@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
-    ImplementedAs=WindowAnimationWorklet,
+    ImplementedAs=CSSAnimationWorklet,
     OriginTrialEnabled=AnimationWorklet,
     SecureContext
-] partial interface Window {
-    readonly attribute Worklet animationWorklet;
+] partial interface CSS {
+    [CallWith=ScriptState] static readonly attribute Worklet animationWorklet;
 };
