@@ -180,6 +180,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (!self.scrollView.dragging && !self.scrollView.decelerating) {
     self.currentPage = _currentPage;
   }
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
   CGFloat bottomInset = self.configuration == TabGridConfigurationBottomToolbar
@@ -187,17 +191,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                             : 0;
   UIEdgeInsets contentInset = UIEdgeInsetsMake(
       self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
-  if (@available(iOS 11, *)) {
-    self.incognitoTabsViewController.additionalSafeAreaInsets = contentInset;
-    self.regularTabsViewController.additionalSafeAreaInsets = contentInset;
-    self.remoteTabsViewController.additionalSafeAreaInsets = contentInset;
-  } else {
-    // Must manually account for status bar in pre-iOS 11.
-    contentInset.top += self.topLayoutGuide.length;
-    self.incognitoTabsViewController.gridView.contentInset = contentInset;
-    self.regularTabsViewController.gridView.contentInset = contentInset;
-    self.remoteTabsViewController.tableView.contentInset = contentInset;
-  }
+
+  [self setInsetForRemoteTabs:contentInset];
+  [self setInsetForGridViews:contentInset];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -344,6 +340,54 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 #pragma mark - Private
 
+// Sets the proper insets for the Remote Tabs ViewController to accomodate for
+// the safe area, toolbar, and status bar.
+- (void)setInsetForRemoteTabs:(UIEdgeInsets)inset {
+  // TableView uses SafeArea to adjust insets, so no need to add them to
+  // contentInset.
+  if (@available(iOS 11, *)) {
+    // Left or right side (depending on rtl) is missing correct safe area
+    // inset upon rotation. Manually correct it. This is because the leading
+    // constraint of the tableView is not directly bound to the scroll view's
+    // margins.
+    UIEdgeInsets safeArea = self.scrollView.safeAreaInsets;
+    if (UseRTLLayout()) {
+      inset.right +=
+          safeArea.right -
+          self.remoteTabsViewController.tableView.safeAreaInsets.right;
+    } else {
+      inset.left += safeArea.left -
+                    self.remoteTabsViewController.tableView.safeAreaInsets.left;
+    }
+    // Ensure that the View Controller doesn't have safe area inset that already
+    // covers the view's bounds.
+    DCHECK(!CGRectIsEmpty(UIEdgeInsetsInsetRect(
+        self.remoteTabsViewController.tableView.bounds,
+        self.remoteTabsViewController.tableView.safeAreaInsets)));
+    self.remoteTabsViewController.additionalSafeAreaInsets = inset;
+  } else {
+    // Must manually account for status bar in pre-iOS 11.
+    inset.top += self.topLayoutGuide.length;
+    self.remoteTabsViewController.tableView.contentInset = inset;
+  }
+}
+
+// Sets the proper insets for the Grid ViewControllers to accomodate for the
+// safe area and toolbar.
+- (void)setInsetForGridViews:(UIEdgeInsets)inset {
+  if (@available(iOS 11, *)) {
+    inset.left = self.scrollView.safeAreaInsets.left;
+    inset.right = self.scrollView.safeAreaInsets.right;
+    inset.top += self.scrollView.safeAreaInsets.top;
+    inset.bottom += self.scrollView.safeAreaInsets.bottom;
+  } else {
+    // Must manually account for status bar in pre-iOS 11.
+    inset.top += self.topLayoutGuide.length;
+  }
+  self.incognitoTabsViewController.gridView.contentInset = inset;
+  self.regularTabsViewController.gridView.contentInset = inset;
+}
+
 // Returns the corresponding GridViewController for |page|. Returns |nil| if
 // page does not have a corresponding GridViewController.
 - (GridViewController*)gridViewControllerForPage:(TabGridPage)page {
@@ -382,7 +426,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // If the view is visible and |animated| is YES, animate the change.
   // Otherwise don't.
   if (self.view.window == nil || !animated) {
-    self.scrollView.contentOffset = offset;
+    [self.scrollView setContentOffset:offset animated:NO];
     _currentPage = currentPage;
   } else {
     [self.scrollView setContentOffset:offset animated:YES];

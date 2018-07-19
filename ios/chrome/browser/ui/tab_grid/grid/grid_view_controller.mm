@@ -99,8 +99,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.backgroundView.backgroundColor =
       UIColorFromRGB(kGridBackgroundColor);
   if (@available(iOS 11, *))
+    // CollectionView, in contrast to TableView, doesn’t inset the
+    // cell content to the safe area guide by default. We will just manage the
+    // collectionView contentInset manually to fit in the safe area instead.
     collectionView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentAlways;
+        UIScrollViewContentInsetAdjustmentNever;
+
   self.itemReorderRecognizer = [[UILongPressGestureRecognizer alloc]
       initWithTarget:self
               action:@selector(handleItemReorderingWithGesture:)];
