@@ -28,6 +28,7 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
@@ -2020,9 +2021,10 @@ RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
   return touch_selection_controller_client_manager_.get();
 }
 
-viz::LocalSurfaceId RenderWidgetHostViewAndroid::GetLocalSurfaceId() const {
+const viz::LocalSurfaceId& RenderWidgetHostViewAndroid::GetLocalSurfaceId()
+    const {
   if (!delegated_frame_host_)
-    return viz::LocalSurfaceId();
+    return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
   return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 

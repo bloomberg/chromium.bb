@@ -77,4 +77,9 @@ const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceId()
   return current_local_surface_id_;
 }
 
+// static
+const LocalSurfaceId& ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId() {
+  return g_invalid_local_surface_id;
+}
+
 }  // namespace viz

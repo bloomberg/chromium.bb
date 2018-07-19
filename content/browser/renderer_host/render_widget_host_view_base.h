@@ -317,7 +317,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // Returns the LocalSurfaceId allocated by the parent client for this view.
   // TODO(fsamuel): Return by const ref.
-  virtual viz::LocalSurfaceId GetLocalSurfaceId() const;
+  virtual const viz::LocalSurfaceId& GetLocalSurfaceId() const = 0;
 
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following

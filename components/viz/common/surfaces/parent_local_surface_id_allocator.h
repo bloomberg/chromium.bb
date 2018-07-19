@@ -46,6 +46,8 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
 
   const LocalSurfaceId& GetCurrentLocalSurfaceId() const;
 
+  static const LocalSurfaceId& InvalidLocalSurfaceId();
+
   bool is_allocation_suppressed() const { return is_allocation_suppressed_; }
 
  private:
