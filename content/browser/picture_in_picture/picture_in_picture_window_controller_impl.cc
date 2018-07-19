@@ -73,14 +73,14 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   return window_->GetBounds().size();
 }
 
-void PictureInPictureWindowControllerImpl::ClickCustomControl() {
+void PictureInPictureWindowControllerImpl::ClickCustomControl(
+    const std::string& control_id) {
   DCHECK(window_);
-  DCHECK(media_player_id_.has_value());
 
   media_player_id_->render_frame_host->Send(
       new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
           media_player_id_->render_frame_host->GetRoutingID(),
-          media_player_id_->delegate_id));
+          media_player_id_->delegate_id, control_id));
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {

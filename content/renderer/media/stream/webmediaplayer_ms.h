@@ -166,7 +166,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
   void OnPictureInPictureModeEnded() override;
-  void OnPictureInPictureControlClicked() override;
+  void OnPictureInPictureControlClicked(const std::string& control_id) override;
 
   bool CopyVideoTextureToPlatformTexture(
       gpu::gles2::GLES2Interface* gl,

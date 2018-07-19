@@ -49,6 +49,10 @@
         document.title = 'left';
       }, { once: true });
 
+      video.addEventListener('pictureinpicturecontrolclick', function(event) {
+        document.title = event.id;
+      }, { once: true });
+
       window.domAutomationController.send(true);
     })
     .catch(e => {

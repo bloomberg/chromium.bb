@@ -208,6 +208,44 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
+// Tests that when a custom control is clicked on a Picture-in-Picture window
+// an event is sent to the caller.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureControlEventFired) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  content::OverlayWindow* overlay_window =
+      window_controller()->GetWindowForTesting();
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->IsVisible());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  std::string control_id = "Test custom control ID";
+  base::string16 expected_title = base::ASCIIToUTF16(control_id);
+
+  static_cast<OverlayWindowViews*>(overlay_window)
+      ->ClickCustomControl(control_id);
+
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
 #endif  // !defined(OS_ANDROID)
 
 // Tests that when closing a Picture-in-Picture window, the video element is

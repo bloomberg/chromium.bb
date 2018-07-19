@@ -59,8 +59,9 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                     int /* delegate_id, distinguishes instances */)
 
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
-                    int /* delegate_id, distinguishes instances */)
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
+                    int /* delegate_id, distinguishes instances */,
+                    std::string /* control_id */)
 
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_OnPictureInPictureWindowResize,
                     int /* delegate_id, distinguishes instances */,

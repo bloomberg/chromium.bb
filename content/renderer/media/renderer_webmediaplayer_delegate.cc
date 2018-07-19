@@ -397,10 +397,11 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEnded(
 }
 
 void RendererWebMediaPlayerDelegate::OnPictureInPictureControlClicked(
-    int player_id) {
+    int player_id,
+    const std::string& control_id) {
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
-    observer->OnPictureInPictureControlClicked();
+    observer->OnPictureInPictureControlClicked(control_id);
 }
 
 void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEndedAck(

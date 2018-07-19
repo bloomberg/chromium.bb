@@ -59,8 +59,10 @@ class CORE_EXPORT PictureInPictureController
   virtual void OnExitedPictureInPicture(ScriptPromiseResolver*) = 0;
 
   // Should be called when a custom control on a video element in
-  // Picture-in-Picture is clicked.
-  virtual void OnPictureInPictureControlClicked() = 0;
+  // Picture-in-Picture is clicked. |control_id| is the identifier for its
+  // custom control. This is defined by the site that calls the web API.
+  virtual void OnPictureInPictureControlClicked(
+      const WebString& control_id) = 0;
 
   // Returns whether the given element is currently in Picture-in-Picture.
   virtual bool IsPictureInPictureElement(const Element*) const = 0;
