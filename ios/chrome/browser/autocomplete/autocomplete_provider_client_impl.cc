@@ -92,6 +92,12 @@ AutocompleteProviderClientImpl::GetContextualSuggestionsService(
   return nullptr;
 }
 
+DocumentSuggestionsService*
+AutocompleteProviderClientImpl::GetDocumentSuggestionsService(
+    bool create_if_necessary) const {
+  return nullptr;
+}
+
 const SearchTermsData& AutocompleteProviderClientImpl::GetSearchTermsData()
     const {
   return search_terms_data_;

@@ -63,6 +63,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
+// Document Suggestions (*experimental): value controlled by Finch     |    *
 //
 // URL input type:
 // --------------------------------------------------------------------|-----
@@ -130,15 +131,16 @@ class AutocompleteProvider
  public:
   // Different AutocompleteProvider implementations.
   enum Type {
-    TYPE_BOOKMARK         = 1 << 0,
-    TYPE_BUILTIN          = 1 << 1,
-    TYPE_HISTORY_QUICK    = 1 << 2,
-    TYPE_HISTORY_URL      = 1 << 3,
-    TYPE_KEYWORD          = 1 << 4,
-    TYPE_SEARCH           = 1 << 5,
-    TYPE_SHORTCUTS        = 1 << 6,
-    TYPE_ZERO_SUGGEST     = 1 << 7,
-    TYPE_CLIPBOARD_URL    = 1 << 8,
+    TYPE_BOOKMARK = 1 << 0,
+    TYPE_BUILTIN = 1 << 1,
+    TYPE_HISTORY_QUICK = 1 << 2,
+    TYPE_HISTORY_URL = 1 << 3,
+    TYPE_KEYWORD = 1 << 4,
+    TYPE_SEARCH = 1 << 5,
+    TYPE_SHORTCUTS = 1 << 6,
+    TYPE_ZERO_SUGGEST = 1 << 7,
+    TYPE_CLIPBOARD_URL = 1 << 8,
+    TYPE_DOCUMENT = 1 << 9,
   };
 
   explicit AutocompleteProvider(Type type);

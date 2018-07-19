@@ -14,6 +14,8 @@ MockAutocompleteProviderClient::MockAutocompleteProviderClient() {
   contextual_suggestions_service_ =
       std::make_unique<ContextualSuggestionsService>(
           /*identity_manager=*/nullptr, GetURLLoaderFactory());
+  document_suggestions_service_ = std::make_unique<DocumentSuggestionsService>(
+      /*identity_manager=*/nullptr, GetURLLoaderFactory());
 }
 
 MockAutocompleteProviderClient::~MockAutocompleteProviderClient() {

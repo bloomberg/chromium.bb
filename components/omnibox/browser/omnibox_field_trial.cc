@@ -143,6 +143,9 @@ const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
 const base::Feature kBreakWordsAtUnderscores{"OmniboxBreakWordsAtUnderscores",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to fetch document suggestions.
+const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace omnibox
 
 namespace {

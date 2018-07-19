@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/builtin_provider.h"
 #include "components/omnibox/browser/clipboard_url_provider.h"
+#include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
@@ -200,6 +201,7 @@ AutocompleteController::AutocompleteController(
     int provider_types)
     : delegate_(delegate),
       provider_client_(std::move(provider_client)),
+      document_provider_(nullptr),
       history_url_provider_(nullptr),
       keyword_provider_(nullptr),
       search_provider_(nullptr),
@@ -236,6 +238,10 @@ AutocompleteController::AutocompleteController(
         provider_client_.get(), history_url_provider_, this);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
+  }
+  if (provider_types & AutocompleteProvider::TYPE_DOCUMENT) {
+    document_provider_ = DocumentProvider::Create(provider_client_.get(), this);
+    providers_.push_back(document_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD_URL) {
 #if !defined(OS_IOS)
