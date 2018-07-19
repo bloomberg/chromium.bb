@@ -2074,6 +2074,9 @@ extern const char kWakeOnPacketsDescription[];
 extern const char kZipArchiverUnpackerName[];
 extern const char kZipArchiverUnpackerDescription[];
 
+extern const char kEnableContinueReadingName[];
+extern const char kEnableContinueReadingDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------

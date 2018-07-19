@@ -4107,6 +4107,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableAccountWalletStorage)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-continue-reading", flag_descriptions::kEnableContinueReadingName,
+     flag_descriptions::kEnableContinueReadingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list::features::kEnableContinueReading)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
