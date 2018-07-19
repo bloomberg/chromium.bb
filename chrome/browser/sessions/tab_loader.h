@@ -127,7 +127,7 @@ class TabLoader : public base::RefCounted<TabLoader>,
 
   // Adds a tab that we are responsible for to one of the |tabs_*| containers.
   // Can invalidate self-destroy and timer invariants.
-  void AddTab(content::WebContents* contents);
+  void AddTab(content::WebContents* contents, bool loading_initiated);
 
   // Removes the tab from the set of tabs to load and list of tabs we're waiting
   // to get a load from. Can invalidate self-destroy and timer invariants.
