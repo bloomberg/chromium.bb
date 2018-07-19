@@ -62,15 +62,6 @@ class ModelTypeStore : public ModelTypeStoreBase {
       base::OnceCallback<void(const base::Optional<ModelError>& error,
                               std::unique_ptr<MetadataBatch> metadata_batch)>;
 
-  // CreateStore takes |path|, and will run blocking calls on a task runner
-  // scoped to the given path. Tests likely don't want to use this method.
-  static void CreateStore(const std::string& path,
-                          ModelType type,
-                          InitCallback callback);
-  // Creates store object backed by in-memory leveldb database, gets its task
-  // runner from MessageLoop::task_runner(), and should only be used in tests.
-  static void CreateInMemoryStoreForTest(ModelType type, InitCallback callback);
-
   // Read operations return records either for all entries or only for ones
   // identified in |id_list|. |error| is nullopt if all records were read
   // successfully, otherwise an empty or partial list of read records is

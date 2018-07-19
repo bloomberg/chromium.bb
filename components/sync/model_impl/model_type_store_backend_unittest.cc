@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,93 +21,23 @@
 using sync_pb::ModelTypeStoreSchemaDescriptor;
 
 namespace syncer {
-
-class ModelTypeStoreBackendTest : public testing::Test {
- public:
-  scoped_refptr<ModelTypeStoreBackend> GetOrCreateBackend() {
-    std::string path = "/test_db";
-    return GetOrCreateBackendWithPath(path);
-  }
-
-  scoped_refptr<ModelTypeStoreBackend> GetOrCreateBackendWithPath(
-      std::string custom_path) {
-    std::unique_ptr<leveldb::Env> in_memory_env =
-        ModelTypeStoreBackend::CreateInMemoryEnv();
-    std::string path;
-    in_memory_env->GetTestDirectory(&path);
-    path += custom_path;
-
-    base::Optional<ModelError> error;
-    // In-memory store backend works on the same thread as test.
-    scoped_refptr<ModelTypeStoreBackend> backend =
-        ModelTypeStoreBackend::GetOrCreateBackend(
-            path, std::move(in_memory_env), &error);
-    EXPECT_TRUE(backend.get());
-    EXPECT_FALSE(error) << error->ToString();
-    return backend;
-  }
-
-  // Create backend with custom env. This function is used in tests that need to
-  // prepare env in some way (create files) before passing it to leveldb.
-  scoped_refptr<ModelTypeStoreBackend> CreateBackendWithEnv(
-      std::unique_ptr<leveldb::Env> env,
-      const std::string& path) {
-    EXPECT_FALSE(BackendExistsForPath(path));
-
-    base::Optional<ModelError> error;
-    scoped_refptr<ModelTypeStoreBackend> backend =
-        ModelTypeStoreBackend::GetOrCreateBackend(path, std::move(env), &error);
-    EXPECT_TRUE(backend.get());
-    EXPECT_FALSE(error) << error->ToString();
-    return backend;
-  }
-
-  bool BackendExistsForPath(const std::string& path) {
-    return ModelTypeStoreBackend::BackendExistsForTest(path);
-  }
-
-  std::string GetBackendPath(scoped_refptr<ModelTypeStoreBackend> backend) {
-    return backend->path_;
-  }
-
-  base::Optional<ModelError> Migrate(
-      scoped_refptr<ModelTypeStoreBackend> backend,
-      int64_t current_version,
-      int64_t desired_version) {
-    return backend->Migrate(current_version, desired_version);
-  }
-
-  bool Migrate0To1(scoped_refptr<ModelTypeStoreBackend> backend) {
-    return backend->Migrate0To1();
-  }
-
-  int64_t GetStoreVersion(scoped_refptr<ModelTypeStoreBackend> backend) {
-    return backend->GetStoreVersion();
-  }
-
-  int64_t LatestVersion() {
-    return ModelTypeStoreBackend::kLatestSchemaVersion;
-  }
-
-  const char* SchemaId() {
-    return ModelTypeStoreBackend::kDBSchemaDescriptorRecordId;
-  }
-
-  const char* StoreInitResultHistogramName() {
-    return ModelTypeStoreBackend::kStoreInitResultHistogramName;
-  }
-};
+namespace {
 
 // Test that after record is written to backend it can be read back even after
 // backend is destroyed and recreated in the same environment.
-TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, WriteThenRead) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::CreateUninitialized();
+  base::Optional<ModelError> error = backend->Init(temp_dir.GetPath());
+  ASSERT_FALSE(error) << error->ToString();
 
   // Write record.
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix:id1", "data1");
-  base::Optional<ModelError> error =
-      backend->WriteModifications(std::move(write_batch));
+  error = backend->WriteModifications(std::move(write_batch));
   ASSERT_FALSE(error) << error->ToString();
 
   // Read all records with prefix.
@@ -118,7 +50,11 @@ TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
   record_list.clear();
 
   // Recreate backend and read all records with prefix.
-  backend = GetOrCreateBackend();
+  backend = nullptr;
+  backend = ModelTypeStoreBackend::CreateUninitialized();
+  error = backend->Init(temp_dir.GetPath());
+  ASSERT_FALSE(error) << error->ToString();
+
   error = backend->ReadAllRecordsWithPrefix("prefix:", &record_list);
   ASSERT_FALSE(error) << error->ToString();
   ASSERT_EQ(1ul, record_list.size());
@@ -127,8 +63,9 @@ TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
 }
 
 // Test that ReadAllRecordsWithPrefix correclty filters records by prefix.
-TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
 
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix1:id1", "data1");
@@ -147,8 +84,9 @@ TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
 
 // Test that deleted records are correctly marked as milling in results of
 // ReadRecordsWithPrefix.
-TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, ReadDeletedRecord) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
 
   // Create records, ensure they are returned by ReadRecordsWithPrefix.
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
@@ -188,8 +126,9 @@ TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
 }
 
 // Test that DeleteDataAndMetadataForPrefix correctly deletes records by prefix.
-TEST_F(ModelTypeStoreBackendTest, DeleteDataAndMetadataForPrefix) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, DeleteDataAndMetadataForPrefix) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
 
   auto write_batch = std::make_unique<leveldb::WriteBatch>();
   write_batch->Put("prefix1:id1", "data1");
@@ -225,125 +164,80 @@ TEST_F(ModelTypeStoreBackendTest, DeleteDataAndMetadataForPrefix) {
   }
 }
 
-// Test that only one backend got create when we ask two backend with same path,
-// and after de-reference the backend, the backend will be deleted.
-TEST_F(ModelTypeStoreBackendTest, TwoSameBackendTest) {
-  // Create two backend with same path, check if they are reference to same
-  // address.
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
-  scoped_refptr<ModelTypeStoreBackend> backend_second = GetOrCreateBackend();
-  std::string path = GetBackendPath(backend);
-  ASSERT_EQ(backend.get(), backend_second.get());
-
-  // Delete one reference, check the real backend still here.
-  backend = nullptr;
-  ASSERT_FALSE(backend);
-  ASSERT_TRUE(backend_second.get());
-  ASSERT_TRUE(backend_second->HasOneRef());
-
-  // Delete another reference, check the real backend is deleted.
-  backend_second = nullptr;
-  ASSERT_FALSE(backend_second);
-  ASSERT_FALSE(BackendExistsForPath(path));
-}
-
-// Test that two backend got create when we ask two backend with different path,
-// and after de-reference two backend, the both backend will be deleted.
-TEST_F(ModelTypeStoreBackendTest, TwoDifferentBackendTest) {
-  // Create two backend with different path, check if they are reference to
-  // different address.
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+// Test that GetOrCreateInMemoryForTest() returns the same backend, if the
+// previous exists.
+TEST(ModelTypeStoreBackendTest, TwoSameBackendTest) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
   scoped_refptr<ModelTypeStoreBackend> backend_second =
-      GetOrCreateBackendWithPath("/test_db2");
-  std::string path = GetBackendPath(backend);
-  ASSERT_NE(backend.get(), backend_second.get());
-  ASSERT_TRUE(backend->HasOneRef());
-  ASSERT_TRUE(backend_second->HasOneRef());
-
-  // delete one backend, check only one got deleted.
-  backend = nullptr;
-  ASSERT_FALSE(backend);
-  ASSERT_TRUE(backend_second.get());
-  ASSERT_TRUE(backend_second->HasOneRef());
-  ASSERT_FALSE(BackendExistsForPath(path));
-
-  // delete another backend.
-  backend_second = nullptr;
-  ASSERT_FALSE(backend_second);
-  ASSERT_FALSE(BackendExistsForPath("/test_db2"));
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
+  EXPECT_EQ(backend.get(), backend_second.get());
 }
 
 // Test that initializing the database migrates it to the latest schema version.
-TEST_F(ModelTypeStoreBackendTest, MigrateNoSchemaVersionToLatestVersionTest) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, MigrateNoSchemaVersionToLatestVersionTest) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
 
-  ASSERT_EQ(LatestVersion(), GetStoreVersion(backend));
+  ASSERT_EQ(ModelTypeStoreBackend::kLatestSchemaVersion,
+            backend->GetStoreVersionForTest());
 }
 
 // Test that the 0 to 1 migration succeeds and sets the schema version to 1.
-TEST_F(ModelTypeStoreBackendTest, Migrate0To1Test) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, Migrate0To1Test) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
 
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
-  write_batch->Delete(SchemaId());
+  write_batch->Delete(ModelTypeStoreBackend::kDBSchemaDescriptorRecordId);
   base::Optional<ModelError> error =
       backend->WriteModifications(std::move(write_batch));
   ASSERT_FALSE(error) << error->ToString();
+  ASSERT_EQ(0, backend->GetStoreVersionForTest());
 
-  ASSERT_TRUE(Migrate0To1(backend));
-  ASSERT_EQ(1, GetStoreVersion(backend));
+  error = backend->MigrateForTest(0, 1);
+  EXPECT_FALSE(error) << error->ToString();
+  EXPECT_EQ(1, backend->GetStoreVersionForTest());
 }
 
 // Test that migration to an unknown version fails
-TEST_F(ModelTypeStoreBackendTest, MigrateWithHigherExistingVersionFails) {
-  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+TEST(ModelTypeStoreBackendTest, MigrateWithHigherExistingVersionFails) {
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      ModelTypeStoreBackend::GetOrCreateInMemoryForTest();
 
   base::Optional<ModelError> error =
-      Migrate(backend, LatestVersion() + 1, LatestVersion());
+      backend->MigrateForTest(ModelTypeStoreBackend::kLatestSchemaVersion + 1,
+                              ModelTypeStoreBackend::kLatestSchemaVersion);
   ASSERT_TRUE(error);
   EXPECT_EQ("Schema version too high", error->message());
 }
 
 // Tests that initializing store after corruption triggers recovery and results
 // in successful store initialization.
-TEST_F(ModelTypeStoreBackendTest, RecoverAfterCorruption) {
+TEST(ModelTypeStoreBackendTest, RecoverAfterCorruption) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   base::HistogramTester tester;
   leveldb::Status s;
 
   // Prepare environment that looks corrupt to leveldb.
-  std::unique_ptr<leveldb::Env> env =
-      std::make_unique<leveldb::EnvWrapper>(leveldb::Env::Default());
-
-  std::string path;
-  env->GetTestDirectory(&path);
-  path += "/corrupt_db";
-
   // Easiest way to simulate leveldb corruption is to create empty CURRENT file.
-  {
-    s = env->CreateDir(path);
-    EXPECT_TRUE(s.ok());
-    leveldb::WritableFile* current_file_raw;
-    s = env->NewWritableFile(path + "/CURRENT", &current_file_raw);
-    EXPECT_TRUE(s.ok());
-    current_file_raw->Close();
-    delete current_file_raw;
-  }
+  base::WriteFile(temp_dir.GetPath().Append(FILE_PATH_LITERAL("CURRENT")), "",
+                  0);
 
-  // CreateBackendWithEnv will ensure backend initialization is successful.
   scoped_refptr<ModelTypeStoreBackend> backend =
-      CreateBackendWithEnv(std::move(env), path);
-
-  // Cleanup directory after the test.
-  backend = nullptr;
-  s = leveldb::DestroyDB(path, leveldb_env::Options());
-  EXPECT_TRUE(s.ok()) << s.ToString();
+      ModelTypeStoreBackend::CreateUninitialized();
+  base::Optional<ModelError> error = backend->Init(temp_dir.GetPath());
+  ASSERT_FALSE(error) << error->ToString();
 
   // Check that both recovery and consecutive initialization are recorded in
   // histograms.
-  tester.ExpectBucketCount(StoreInitResultHistogramName(),
+  tester.ExpectBucketCount(ModelTypeStoreBackend::kStoreInitResultHistogramName,
                            STORE_INIT_RESULT_SUCCESS, 1);
-  tester.ExpectBucketCount(StoreInitResultHistogramName(),
+  tester.ExpectBucketCount(ModelTypeStoreBackend::kStoreInitResultHistogramName,
                            STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION, 1);
 }
 
+}  // namespace
 }  // namespace syncer

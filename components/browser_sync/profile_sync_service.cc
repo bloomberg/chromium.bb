@@ -55,6 +55,7 @@
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/model/change_processor.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/syncable/directory.h"
@@ -124,22 +125,6 @@ void RecordSyncInitialState(int disable_reasons, bool first_setup_complete) {
 
 constexpr char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
-constexpr base::FilePath::CharType kSyncDataFolderName[] =
-    FILE_PATH_LITERAL("Sync Data");
-
-constexpr base::FilePath::CharType kLevelDBFolderName[] =
-    FILE_PATH_LITERAL("LevelDB");
-
-base::FilePath FormatSyncDataPath(const base::FilePath& base_directory) {
-  return base_directory.Append(base::FilePath(kSyncDataFolderName));
-}
-
-base::FilePath FormatSharedModelTypeStorePath(
-    const base::FilePath& base_directory) {
-  return FormatSyncDataPath(base_directory)
-      .Append(base::FilePath(kLevelDBFolderName));
-}
-
 EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
   EngineComponentsFactory::Switches factory_switches = {
       EngineComponentsFactory::ENCRYPTION_KEYSTORE,
@@ -191,7 +176,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           base::BindRepeating(&ProfileSyncService::CredentialsChanged,
                               base::Unretained(this)))),
       channel_(init_params.channel),
-      base_directory_(init_params.base_directory),
       debug_identifier_(init_params.debug_identifier),
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
@@ -232,12 +216,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       current_version.substr(0, current_version.find('.'))) {
     passphrase_prompt_triggered_by_version_ = true;
   }
-
-  if (init_params.model_type_store_factory.is_null()) {
-    model_type_store_factory_ = GetModelTypeStoreFactory(base_directory_);
-  } else {
-    model_type_store_factory_ = init_params.model_type_store_factory;
-  }
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -252,6 +230,12 @@ ProfileSyncService::~ProfileSyncService() {
 void ProfileSyncService::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_client_->Initialize();
+
+  syncer::ModelTypeStoreService* model_type_store_service =
+      sync_client_->GetModelTypeStoreService();
+  DCHECK(model_type_store_service);
+  syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
+      model_type_store_service->GetStoreFactory();
 
   startup_controller_ = std::make_unique<syncer::StartupController>(
       base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
@@ -271,7 +255,7 @@ void ProfileSyncService::Initialize() {
     DCHECK(sync_client_->GetSyncSessionsClient());
     sessions_sync_manager_ = std::make_unique<sync_sessions::SessionSyncBridge>(
         sync_client_->GetSyncSessionsClient(), &sync_prefs_,
-        local_device_.get(), model_type_store_factory_,
+        local_device_.get(), model_type_store_factory,
         base::BindRepeating(&ProfileSyncService::NotifyForeignSessionUpdated,
                             sync_enabled_weak_factory_.GetWeakPtr()),
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
@@ -288,7 +272,7 @@ void ProfileSyncService::Initialize() {
   }
 
   device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
-      local_device_.get(), model_type_store_factory_,
+      local_device_.get(), model_type_store_factory,
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::DEVICE_INFO,
           /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
@@ -551,7 +535,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, sync_client_->GetInvalidationService(),
-      sync_prefs_.AsWeakPtr(), FormatSyncDataPath(base_directory_));
+      sync_prefs_.AsWeakPtr(),
+      sync_client_->GetModelTypeStoreService()->GetSyncDataPath());
 
   // Clear any old errors the first time sync starts.
   if (!IsFirstSetupComplete())
@@ -661,8 +646,9 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
       // the data directory needs to be cleaned up here.
       sync_thread_->task_runner()->PostTask(
           FROM_HERE,
-          base::BindOnce(&syncer::syncable::Directory::DeleteDirectoryFiles,
-                         FormatSyncDataPath(base_directory_)));
+          base::BindOnce(
+              &syncer::syncable::Directory::DeleteDirectoryFiles,
+              sync_client_->GetModelTypeStoreService()->GetSyncDataPath()));
     }
     return;
   }
@@ -1548,16 +1534,6 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
   platform_sync_allowed_provider_ = platform_sync_allowed_provider;
 }
 
-// static
-syncer::RepeatingModelTypeStoreFactory
-ProfileSyncService::GetModelTypeStoreFactory(const base::FilePath& base_path) {
-  // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
-  // as the Local State file is guaranteed to be UTF-8.
-  const std::string path =
-      FormatSharedModelTypeStorePath(base_path).AsUTF8Unsafe();
-  return base::BindRepeating(&syncer::ModelTypeStore::CreateStore, path);
-}
-
 void ProfileSyncService::ConfigureDataTypeManager() {
   // Don't configure datatypes if the setup UI is still on the screen - this
   // is to help multi-screen setting UIs (like iOS) where they don't want to
@@ -2135,11 +2111,6 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (engine_initialized_)
     engine_->FlushDirectory();
-}
-
-base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return FormatSyncDataPath(base_directory_);
 }
 
 base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {

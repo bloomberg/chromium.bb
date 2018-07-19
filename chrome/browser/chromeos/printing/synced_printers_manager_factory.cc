@@ -11,9 +11,11 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -46,7 +48,9 @@ content::BrowserContext* SyncedPrintersManagerFactory::GetBrowserContextToUse(
 SyncedPrintersManagerFactory::SyncedPrintersManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "SyncedPrintersManager",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+}
 
 SyncedPrintersManagerFactory::~SyncedPrintersManagerFactory() {}
 
@@ -55,8 +59,7 @@ SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(browser_context);
 
   syncer::OnceModelTypeStoreFactory store_factory =
-      browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-          profile->GetPath());
+      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
 
   std::unique_ptr<PrintersSyncBridge> sync_bridge =
       std::make_unique<PrintersSyncBridge>(

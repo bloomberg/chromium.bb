@@ -9,8 +9,10 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/sync/model/model_type_store.h"
@@ -56,17 +58,20 @@ enum StoreInitResultForHistogram {
 class ModelTypeStoreBackend
     : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
  public:
-  // Helper function to create in memory environment for leveldb.
-  static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();
+  static scoped_refptr<ModelTypeStoreBackend> GetOrCreateInMemoryForTest();
 
-  // GetOrCreateBackend will check if |backend_map_| has a backend with same
-  // |path|. If |backend_map_| has one, wrap that backend to scoped_refptr and
-  // return. If |backend_map_| does not have, create a backend and store it into
-  // |backend_map_|.
-  static scoped_refptr<ModelTypeStoreBackend> GetOrCreateBackend(
-      const std::string& path,
-      std::unique_ptr<leveldb::Env> env,
-      base::Optional<ModelError>* error);
+  // Create a new and uninitialized instance of ModelTypeStoreBackend. Init()
+  // must be called afterwards, which binds the instance to a certain sequence.
+  static scoped_refptr<ModelTypeStoreBackend> CreateUninitialized();
+
+  // Init opens database at |path|. If database doesn't exist it creates one.
+  // It can be called from a sequence that is different to the constructing one,
+  // but from this point on the backend is bound to the current sequence, and
+  // must be used and destructed in it.
+  base::Optional<ModelError> Init(const base::FilePath& path);
+
+  // Can be called from any sequence.
+  bool IsInitialized() const;
 
   // Reads records with keys formed by prepending ids from |id_list| with
   // |prefix|. If the record is found its id (without prefix) and value is
@@ -92,24 +97,27 @@ class ModelTypeStoreBackend
   base::Optional<ModelError> DeleteDataAndMetadataForPrefix(
       const std::string& prefix);
 
- private:
-  friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
-  friend class ModelTypeStoreBackendTest;
+  // Migrate the db schema from |current_version| to |desired_version|.
+  base::Optional<ModelError> MigrateForTest(int64_t current_version,
+                                            int64_t desired_version);
 
+  // Attempts to read and return the database's version.
+  int64_t GetStoreVersionForTest();
+
+  // Some constants exposed for testing.
   static const int64_t kLatestSchemaVersion;
   static const char kDBSchemaDescriptorRecordId[];
   static const char kStoreInitResultHistogramName[];
 
-  explicit ModelTypeStoreBackend(const std::string& path);
-  ~ModelTypeStoreBackend();
+ private:
+  friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
 
-  // Init opens database at |path|. If database doesn't exist it creates one.
   // Normally |env| should be nullptr, this causes leveldb to use default disk
   // based environment from leveldb::Env::Default().
   // Providing |env| allows to override environment used by leveldb for tests
   // with in-memory or faulty environment.
-  base::Optional<ModelError> Init(const std::string& path,
-                                  std::unique_ptr<leveldb::Env> env);
+  explicit ModelTypeStoreBackend(std::unique_ptr<leveldb::Env> env);
+  ~ModelTypeStoreBackend();
 
   // Opens leveldb database passing correct options. On success sets |db_| and
   // returns ok status. On failure |db_| is nullptr and returned status reflects
@@ -136,10 +144,6 @@ class ModelTypeStoreBackend
   static void RecordStoreInitResultHistogram(
       StoreInitResultForHistogram result);
 
-  // Helper function for unittests to check if backend already exists for a
-  // given path.
-  static bool BackendExistsForTest(const std::string& path);
-
   // In some scenarios ModelTypeStoreBackend holds ownership of env. Typical
   // example is when test creates in memory environment with CreateInMemoryEnv
   // and wants it to be destroyed along with backend. This is achieved by
@@ -147,11 +151,9 @@ class ModelTypeStoreBackend
   //
   // env_ declaration should appear before declaration of db_ because
   // environment object should still be valid when db_'s destructor is called.
-  std::unique_ptr<leveldb::Env> env_;
+  const std::unique_ptr<leveldb::Env> env_;
 
   std::unique_ptr<leveldb::DB> db_;
-
-  std::string path_;
 
   // Ensures that operations with backend are performed seqentially, not
   // concurrently.

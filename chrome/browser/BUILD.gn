@@ -1504,6 +1504,8 @@ jumbo_split_static_library("browser") {
     "sync/glue/extensions_activity_monitor.h",
     "sync/glue/sync_start_util.cc",
     "sync/glue/sync_start_util.h",
+    "sync/model_type_store_service_factory.cc",
+    "sync/model_type_store_service_factory.h",
     "sync/profile_sync_service_factory.cc",
     "sync/profile_sync_service_factory.h",
     "sync/sessions/sync_sessions_router_tab_helper.cc",

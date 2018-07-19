@@ -27,7 +27,7 @@ class UserEventService;
 class IOSUserEventServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static syncer::UserEventService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ios::ChromeBrowserState* context);
 
   static IOSUserEventServiceFactory* GetInstance();
 

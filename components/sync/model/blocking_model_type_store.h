@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_error.h"

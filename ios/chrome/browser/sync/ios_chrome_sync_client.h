@@ -42,6 +42,7 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
+  syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;

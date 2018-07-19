@@ -19,16 +19,8 @@ class ModelTypeStoreBackend;
 
 class BlockingModelTypeStoreImpl : public BlockingModelTypeStore {
  public:
-  // |error| must not be null and will be populated in case there is an error,
-  // where the function returns null.
-  static std::unique_ptr<BlockingModelTypeStoreImpl> CreateStore(
-      ModelType type,
-      const std::string& path,
-      base::Optional<ModelError>* error);
-
-  static std::unique_ptr<BlockingModelTypeStoreImpl> CreateInMemoryStoreForTest(
-      ModelType type);
-
+  BlockingModelTypeStoreImpl(ModelType type,
+                             scoped_refptr<ModelTypeStoreBackend> backend);
   ~BlockingModelTypeStoreImpl() override;
 
   // BlockingModelTypeStore implementation.
@@ -48,9 +40,6 @@ class BlockingModelTypeStoreImpl : public BlockingModelTypeStore {
   static std::unique_ptr<WriteBatch> CreateWriteBatchForType(ModelType type);
 
  private:
-  BlockingModelTypeStoreImpl(ModelType type,
-                             scoped_refptr<ModelTypeStoreBackend> backend);
-
   const ModelType type_;
   const scoped_refptr<ModelTypeStoreBackend> backend_;
 

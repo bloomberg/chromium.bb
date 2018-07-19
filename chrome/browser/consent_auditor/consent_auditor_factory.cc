@@ -4,9 +4,13 @@
 
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -18,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/version_info/version_info.h"
 
@@ -43,6 +48,7 @@ ConsentAuditorFactory::ConsentAuditorFactory()
           "ConsentAuditor",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
 }
 
 ConsentAuditorFactory::~ConsentAuditorFactory() {}
@@ -55,8 +61,8 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
   syncer::UserEventService* user_event_service = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
     syncer::OnceModelTypeStoreFactory store_factory =
-        browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-            profile->GetPath());
+        ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
+
     auto change_processor =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
             syncer::USER_CONSENTS,

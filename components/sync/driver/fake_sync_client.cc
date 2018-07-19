@@ -45,6 +45,10 @@ base::FilePath FakeSyncClient::GetLocalSyncBackendFolder() {
   return base::FilePath();
 }
 
+ModelTypeStoreService* FakeSyncClient::GetModelTypeStoreService() {
+  return nullptr;
+}
+
 bookmarks::BookmarkModel* FakeSyncClient::GetBookmarkModel() {
   return nullptr;
 }

@@ -9,56 +9,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model_impl/blocking_model_type_store_impl.h"
 
 namespace syncer {
-
-namespace {
-
-// Holds a one to one mapping between profile path and SequencedTaskRunner. This
-// class is expected to be accessed on any thread, and uses a lock to guarantee
-// thread safety. The task runners are held onto by scoped_refptrs, and since
-// this class is leaky, none of these task runners are ever destroyed.
-class TaskRunnerMap {
- public:
-  TaskRunnerMap() = default;
-
-  scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner(
-      const std::string& path) {
-    base::AutoLock scoped_lock(lock_);
-    auto iter = task_runner_map_.find(path);
-    if (iter == task_runner_map_.end()) {
-      scoped_refptr<base::SequencedTaskRunner> task_runner =
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-      task_runner_map_[path] = task_runner;
-      return task_runner;
-    } else {
-      return iter->second;
-    }
-  }
-
- private:
-  mutable base::Lock lock_;
-  std::map<std::string, scoped_refptr<base::SequencedTaskRunner>>
-      task_runner_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskRunnerMap);
-};
-
-base::LazyInstance<TaskRunnerMap>::Leaky task_runner_map_singleton =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 ModelTypeStoreImpl::ModelTypeStoreImpl(
     ModelType type,
@@ -82,60 +40,6 @@ ModelTypeStoreImpl::~ModelTypeStoreImpl() {
       base::BindOnce(
           base::DoNothing::Once<std::unique_ptr<BlockingModelTypeStoreImpl>>(),
           std::move(backend_store_)));
-}
-
-// static
-void ModelTypeStoreImpl::CreateStore(ModelType type,
-                                     const std::string& path,
-                                     InitCallback callback) {
-  DCHECK(!callback.is_null());
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      task_runner_map_singleton.Get().GetOrCreateTaskRunner(path);
-  auto error = std::make_unique<base::Optional<ModelError>>();
-  auto task = base::BindOnce(&BlockingModelTypeStoreImpl::CreateStore, type,
-                             path, error.get());
-  auto reply =
-      base::BindOnce(&ModelTypeStoreImpl::BackendInitDone, type,
-                     std::move(error), task_runner, std::move(callback));
-  base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
-                                   std::move(task), std::move(reply));
-}
-
-// static
-void ModelTypeStoreImpl::CreateInMemoryStoreForTest(ModelType type,
-                                                    InitCallback callback) {
-  DCHECK(!callback.is_null());
-
-  // In-memory store backend works on the same sequence as test.
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::SequencedTaskRunnerHandle::Get();
-  DCHECK(task_runner);
-
-  auto error = std::make_unique<base::Optional<ModelError>>();
-  auto task = base::BindOnce(
-      &BlockingModelTypeStoreImpl::CreateInMemoryStoreForTest, type);
-  auto reply =
-      base::BindOnce(&ModelTypeStoreImpl::BackendInitDone, type,
-                     std::move(error), task_runner, std::move(callback));
-
-  base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
-                                   std::move(task), std::move(reply));
-}
-
-// static
-void ModelTypeStoreImpl::BackendInitDone(
-    ModelType type,
-    std::unique_ptr<base::Optional<ModelError>> error,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    InitCallback callback,
-    std::unique_ptr<BlockingModelTypeStoreImpl> backend) {
-  std::unique_ptr<ModelTypeStoreImpl> store;
-  if (!error->has_value()) {
-    store.reset(
-        new ModelTypeStoreImpl(type, std::move(backend), backend_task_runner));
-  }
-
-  std::move(callback).Run(*error, std::move(store));
 }
 
 // Note on pattern for communicating with backend:

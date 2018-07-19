@@ -26,7 +26,6 @@
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/fake_sync_engine.h"
-#include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -192,9 +191,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
     ProfileSyncService::InitParams init_params =
         profile_sync_service_bundle_.CreateBasicInitParams(behavior,
                                                            builder.Build());
-    init_params.model_type_store_factory =
-        syncer::ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest();
-
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
 
     ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))

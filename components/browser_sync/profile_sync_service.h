@@ -41,7 +41,6 @@
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/js/sync_js_controller.h"
-#include "components/sync/model/model_type_store.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
@@ -213,12 +212,10 @@ class ProfileSyncService : public syncer::SyncService,
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
-    base::FilePath base_directory;
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
-    syncer::RepeatingModelTypeStoreFactory model_type_store_factory;
     bool user_events_separate_pref_group = false;
 
    private:
@@ -465,14 +462,6 @@ class ProfileSyncService : public syncer::SyncService,
   void SetPlatformSyncAllowedProvider(
       const PlatformSyncAllowedProvider& platform_sync_allowed_provider);
 
-  // Returns a function  that will create a ModelTypeStore that shares
-  // the sync LevelDB backend. |base_path| should be set to profile path.
-  static syncer::RepeatingModelTypeStoreFactory GetModelTypeStoreFactory(
-      const base::FilePath& base_path);
-
-  // Needed to test whether the directory is deleted properly.
-  base::FilePath GetDirectoryPathForTest() const;
-
   // Sometimes we need to wait for tasks on the sync thread in tests.
   base::MessageLoop* GetSyncLoopForTest() const;
 
@@ -633,10 +622,6 @@ class ProfileSyncService : public syncer::SyncService,
   // The product channel of the embedder.
   const version_info::Channel channel_;
 
-  // The path to the base directory under which sync should store its
-  // information.
-  const base::FilePath base_directory_;
-
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;
 
@@ -770,12 +755,6 @@ class ProfileSyncService : public syncer::SyncService,
   // An object that lets us check whether sync is currently allowed on this
   // platform.
   PlatformSyncAllowedProvider platform_sync_allowed_provider_;
-
-  // The factory used to initialize the ModelTypeStore passed to
-  // sync bridges created by the ProfileSyncService. The default factory
-  // creates an on disk leveldb-backed ModelTypeStore; one might override this
-  // default to, e.g., use an in-memory db for unit tests.
-  syncer::RepeatingModelTypeStoreFactory model_type_store_factory_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;

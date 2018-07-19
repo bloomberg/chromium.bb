@@ -24,12 +24,13 @@ class BlockingModelTypeStoreImpl;
 // underlying ModelTypeStoreBackend).
 class ModelTypeStoreImpl : public ModelTypeStore {
  public:
+  // |backend_store| must not be null and must have been created in
+  // |backend_task_runner|.
+  ModelTypeStoreImpl(
+      ModelType type,
+      std::unique_ptr<BlockingModelTypeStoreImpl> backend_store,
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~ModelTypeStoreImpl() override;
-
-  static void CreateStore(ModelType type,
-                          const std::string& path,
-                          InitCallback callback);
-  static void CreateInMemoryStoreForTest(ModelType type, InitCallback callback);
 
   // ModelTypeStore implementation.
   void ReadData(const IdList& id_list, ReadDataCallback callback) override;
@@ -41,18 +42,6 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   void DeleteAllDataAndMetadata(CallbackWithResult callback) override;
 
  private:
-  static void BackendInitDone(
-      ModelType type,
-      std::unique_ptr<base::Optional<ModelError>> result,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      InitCallback callback,
-      std::unique_ptr<BlockingModelTypeStoreImpl> backend_store);
-
-  ModelTypeStoreImpl(
-      ModelType type,
-      std::unique_ptr<BlockingModelTypeStoreImpl> backend_store,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
-
   // Callbacks for different calls to ModelTypeStoreBackend.
   void ReadDataDone(ReadDataCallback callback,
                     std::unique_ptr<RecordList> record_list,
