@@ -82,8 +82,6 @@ void NotifyContextGettersOfShutdownOnIO(
         ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
         getters) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector::iterator
-      iter;
   for (auto& chrome_context_getter : *getters)
     chrome_context_getter->NotifyContextShuttingDown();
 }
