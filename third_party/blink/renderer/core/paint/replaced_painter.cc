@@ -78,26 +78,24 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       completely_clipped_out = true;
 
     if (!layout_replaced_.IsSVGRoot()) {
-      if (layout_replaced_.Style()->HasBorderRadius()) {
-        if (const auto* fragment =
-                paint_info.FragmentToPaint(layout_replaced_)) {
-          const auto* paint_properties = fragment->PaintProperties();
-          DCHECK(paint_properties && paint_properties->InnerBorderRadiusClip());
-          chunk_properties.emplace(
-              local_paint_info.context.GetPaintController(),
-              paint_properties->InnerBorderRadiusClip(), layout_replaced_,
-              DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
-        }
-      } else if (!layout_replaced_.HasLayer() ||
-                 !layout_replaced_.Layer()->IsSelfPaintingLayer()) {
-        // The only use case of this is to apply color-inversion filter for
-        // images violating feature policy optimized image policies.
-        if (layout_replaced_.FirstFragment().HasLocalBorderBoxProperties()) {
-          chunk_properties.emplace(
-              local_paint_info.context.GetPaintController(),
-              layout_replaced_.FirstFragment().LocalBorderBoxProperties(),
-              layout_replaced_,
-              DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+      if (const auto* fragment = paint_info.FragmentToPaint(layout_replaced_)) {
+        if (const auto* paint_properties = fragment->PaintProperties()) {
+          // Check filter for optimized image policy violation highlights, which
+          // may be applied locally.
+          if (paint_properties->Filter() &&
+              (!layout_replaced_.HasLayer() ||
+               !layout_replaced_.Layer()->IsSelfPaintingLayer())) {
+            chunk_properties.emplace(
+                local_paint_info.context.GetPaintController(),
+                fragment->ContentsProperties(), layout_replaced_,
+                DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+          } else if (layout_replaced_.Style()->HasBorderRadius()) {
+            DCHECK(paint_properties->InnerBorderRadiusClip());
+            chunk_properties.emplace(
+                local_paint_info.context.GetPaintController(),
+                paint_properties->InnerBorderRadiusClip(), layout_replaced_,
+                DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+          }
         }
       }
     }
