@@ -367,6 +367,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"copy-image", flag_descriptions::kCopyImageName,
      flag_descriptions::kCopyImageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCopyImage)},
+    {"new-password-form-parsing",
+     flag_descriptions::kNewPasswordFormParsingName,
+     flag_descriptions::kNewPasswordFormParsingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kNewPasswordFormParsing)},
 };
 
 // Add all switches from experimental flags to |command_line|.
