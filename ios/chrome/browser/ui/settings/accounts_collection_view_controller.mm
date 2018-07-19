@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -284,6 +285,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)syncItem {
   AccountControlItem* item =
       [[AccountControlItem alloc] initWithType:ItemTypeSync];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_TITLE);
   item.accessibilityIdentifier = kSettingsAccountsSyncCellId;
   [self updateSyncItem:item];
@@ -338,6 +340,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)googleActivityControlsItem {
   AccountControlItem* item =
       [[AccountControlItem alloc] initWithType:ItemTypeGoogleActivityControls];
+  item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_TITLE);
   item.detailText =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_DESCRIPTION);

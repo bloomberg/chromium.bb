@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,6 +30,7 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
 
 @implementation AccountControlItem
 
+@synthesize cellStyle = _cellStyle;
 @synthesize image = _image;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
@@ -50,18 +53,27 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
   cell.imageView.image = self.image;
   [cell cr_setAccessoryType:self.accessoryType];
 
-  cell.textLabel.attributedText =
-      [self attributedStringForText:self.text
-                               font:[MDCTypography body2Font]
-                              color:[[MDCPalette greyPalette] tint900]];
+  BOOL uikitStyle = self.cellStyle == CollectionViewCellStyle::kUIKit;
+  UIFont* textFont = uikitStyle ? [UIFont systemFontOfSize:kUIKitMainFontSize]
+                                : [MDCTypography body2Font];
+  UIColor* textColor = uikitStyle ? UIColorFromRGB(kUIKitMainTextColor)
+                                  : [[MDCPalette greyPalette] tint900];
+  UIFont* detailTextFont =
+      uikitStyle ? [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize]
+                 : [MDCTypography body1Font];
 
-  UIColor* detailTextColor = [[MDCPalette greyPalette] tint700];
+  UIColor* detailTextColor =
+      uikitStyle ? UIColorFromRGB(kUIKitMultilineDetailTextColor)
+                 : [[MDCPalette greyPalette] tint700];
   if (self.shouldDisplayError) {
     detailTextColor = [[MDCPalette cr_redPalette] tint700];
   }
+
+  cell.textLabel.attributedText =
+      [self attributedStringForText:self.text font:textFont color:textColor];
   cell.detailTextLabel.attributedText =
       [self attributedStringForText:self.detailText
-                               font:[MDCTypography body1Font]
+                               font:detailTextFont
                               color:detailTextColor];
 }
 
