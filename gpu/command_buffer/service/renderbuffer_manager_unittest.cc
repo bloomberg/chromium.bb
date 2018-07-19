@@ -66,17 +66,16 @@ class RenderbufferManagerMemoryTrackerTest
     : public RenderbufferManagerTestBase {
  protected:
   void SetUp() override {
-    mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
     bool depth24_supported = false;
     bool use_gles = false;
-    SetUpBase(mock_memory_tracker_.get(), depth24_supported, use_gles);
+    SetUpBase(&mock_memory_tracker_, depth24_supported, use_gles);
   }
 
-  scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
+  StrictMock<MockMemoryTracker> mock_memory_tracker_;
 };
 
 #define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)                \
-  EXPECT_CALL(*mock_memory_tracker_.get(),                                 \
+  EXPECT_CALL(mock_memory_tracker_,                                        \
               TrackMemoryAllocatedChange(static_cast<uint64_t>(new_size) - \
                                          static_cast<uint64_t>(old_size))) \
       .Times(1)                                                            \

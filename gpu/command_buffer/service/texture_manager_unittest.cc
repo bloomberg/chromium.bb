@@ -705,16 +705,13 @@ class TextureTest : public TextureTestBase {
 
 class TextureMemoryTrackerTest : public TextureTestBase {
  protected:
-  void SetUp() override {
-    mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
-    SetUpBase(mock_memory_tracker_.get(), std::string());
-  }
+  void SetUp() override { SetUpBase(&mock_memory_tracker_, std::string()); }
 
-  scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
+  StrictMock<MockMemoryTracker> mock_memory_tracker_;
 };
 
 #define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)    \
-  EXPECT_CALL(*mock_memory_tracker_.get(),                     \
+  EXPECT_CALL(mock_memory_tracker_,                            \
               TrackMemoryAllocatedChange(new_size - old_size)) \
       .Times(1)                                                \
       .RetiresOnSaturation()
@@ -2140,6 +2137,7 @@ class CountingMemoryTracker : public MemoryTracker {
   CountingMemoryTracker() {
     current_size_ = 0;
   }
+  ~CountingMemoryTracker() override = default;
 
   void TrackMemoryAllocatedChange(uint64_t delta) override {
     current_size_ += delta;
@@ -2154,8 +2152,6 @@ class CountingMemoryTracker : public MemoryTracker {
   uint64_t ShareGroupTracingGUID() const override { return 0; }
 
  private:
-  ~CountingMemoryTracker() override = default;
-
   uint64_t current_size_;
   DISALLOW_COPY_AND_ASSIGN(CountingMemoryTracker);
 };
@@ -2170,18 +2166,16 @@ class SharedTextureTest : public GpuServiceTest {
 
   void SetUp() override {
     GpuServiceTest::SetUp();
-    memory_tracker1_ = new CountingMemoryTracker;
     texture_manager1_.reset(new TextureManager(
-        memory_tracker1_.get(), feature_info_.get(),
+        &memory_tracker1_, feature_info_.get(),
         TextureManagerTest::kMaxTextureSize,
         TextureManagerTest::kMaxCubeMapTextureSize,
         TextureManagerTest::kMaxRectangleTextureSize,
         TextureManagerTest::kMax3DTextureSize,
         TextureManagerTest::kMaxArrayTextureLayers, kUseDefaultTextures,
         nullptr, &discardable_manager_));
-    memory_tracker2_ = new CountingMemoryTracker;
     texture_manager2_.reset(new TextureManager(
-        memory_tracker2_.get(), feature_info_.get(),
+        &memory_tracker2_, feature_info_.get(),
         TextureManagerTest::kMaxTextureSize,
         TextureManagerTest::kMaxCubeMapTextureSize,
         TextureManagerTest::kMaxRectangleTextureSize,
@@ -2228,9 +2222,9 @@ class SharedTextureTest : public GpuServiceTest {
 
   scoped_refptr<FeatureInfo> feature_info_;
   ServiceDiscardableManager discardable_manager_;
-  scoped_refptr<CountingMemoryTracker> memory_tracker1_;
+  CountingMemoryTracker memory_tracker1_;
   std::unique_ptr<TextureManager> texture_manager1_;
-  scoped_refptr<CountingMemoryTracker> memory_tracker2_;
+  CountingMemoryTracker memory_tracker2_;
   std::unique_ptr<TextureManager> texture_manager2_;
 };
 
@@ -2368,8 +2362,8 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
 }
 
 TEST_F(SharedTextureTest, Memory) {
-  size_t initial_memory1 = memory_tracker1_->GetSize();
-  size_t initial_memory2 = memory_tracker2_->GetSize();
+  size_t initial_memory1 = memory_tracker1_.GetSize();
+  size_t initial_memory2 = memory_tracker2_.GetSize();
 
   // Newly created texture is unrenderable.
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
@@ -2379,31 +2373,29 @@ TEST_F(SharedTextureTest, Memory) {
 
   EXPECT_LT(0u, ref1->texture()->estimated_size());
   EXPECT_EQ(initial_memory1 + ref1->texture()->estimated_size(),
-            memory_tracker1_->GetSize());
+            memory_tracker1_.GetSize());
 
   // Associate new texture ref to other texture manager, it doesn't account for
   // the texture memory, the first memory tracker still has it.
   scoped_refptr<TextureRef> ref2 =
       texture_manager2_->Consume(20, ref1->texture());
   EXPECT_EQ(initial_memory1 + ref1->texture()->estimated_size(),
-            memory_tracker1_->GetSize());
-  EXPECT_EQ(initial_memory2, memory_tracker2_->GetSize());
+            memory_tracker1_.GetSize());
+  EXPECT_EQ(initial_memory2, memory_tracker2_.GetSize());
 
   // Delete the texture, memory should go to the remaining tracker.
   texture_manager1_->RemoveTexture(10);
   ref1 = NULL;
-  EXPECT_EQ(initial_memory1,
-            memory_tracker1_->GetSize());
+  EXPECT_EQ(initial_memory1, memory_tracker1_.GetSize());
   EXPECT_EQ(initial_memory2 + ref2->texture()->estimated_size(),
-            memory_tracker2_->GetSize());
+            memory_tracker2_.GetSize());
 
   EXPECT_CALL(*gl_, DeleteTextures(1, _))
       .Times(1)
       .RetiresOnSaturation();
   ref2 = NULL;
   texture_manager2_->RemoveTexture(20);
-  EXPECT_EQ(initial_memory2,
-            memory_tracker2_->GetSize());
+  EXPECT_EQ(initial_memory2, memory_tracker2_.GetSize());
 }
 
 TEST_F(SharedTextureTest, Images) {

@@ -137,7 +137,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
                                size_t url_hash,
                                GpuChannel* channel);
 
-  gles2::MemoryTracker* CreateMemoryTracker(
+  std::unique_ptr<gles2::MemoryTracker> CreateMemoryTracker(
       const GPUCreateCommandBufferConfig init_params) const;
 
   // Must be called during Initialize(). Takes ownership to co-ordinate

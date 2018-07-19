@@ -149,6 +149,7 @@ class MockProgramCache : public ProgramCache {
 class MockMemoryTracker : public MemoryTracker {
  public:
   MockMemoryTracker();
+  ~MockMemoryTracker() override;
 
   MOCK_METHOD1(TrackMemoryAllocatedChange, void(uint64_t delta));
   uint64_t GetSize() const override { return 0; }
@@ -156,10 +157,6 @@ class MockMemoryTracker : public MemoryTracker {
   MOCK_CONST_METHOD0(ClientId, int());
   MOCK_CONST_METHOD0(ShareGroupTracingGUID, uint64_t());
 
- private:
-  friend class ::testing::StrictMock<MockMemoryTracker>;
-  friend class base::RefCounted< ::testing::StrictMock<MockMemoryTracker> >;
-  ~MockMemoryTracker() override;
 };
 
 }  // namespace gles2

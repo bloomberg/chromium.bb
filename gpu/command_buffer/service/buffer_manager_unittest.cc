@@ -236,12 +236,9 @@ class BufferManagerTest : public BufferManagerTestBase {
 
 class BufferManagerMemoryTrackerTest : public BufferManagerTestBase {
  protected:
-  void SetUp() override {
-    mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
-    SetUpBase(mock_memory_tracker_.get(), NULL, "");
-  }
+  void SetUp() override { SetUpBase(&mock_memory_tracker_, NULL, ""); }
 
-  scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
+  StrictMock<MockMemoryTracker> mock_memory_tracker_;
 };
 
 class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
@@ -259,7 +256,7 @@ class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
 };
 
 #define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)    \
-  EXPECT_CALL(*mock_memory_tracker_.get(),                     \
+  EXPECT_CALL(mock_memory_tracker_,                            \
               TrackMemoryAllocatedChange(new_size - old_size)) \
       .Times(1)                                                \
       .RetiresOnSaturation()

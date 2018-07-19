@@ -19,8 +19,9 @@ namespace gles2 {
 
 // A MemoryTracker is used to propagate per-ContextGroup memory usage
 // statistics to the global GpuMemoryManager.
-class MemoryTracker : public base::RefCounted<MemoryTracker> {
+class MemoryTracker {
  public:
+  virtual ~MemoryTracker() = default;
   virtual void TrackMemoryAllocatedChange(uint64_t delta) = 0;
   virtual uint64_t GetSize() const = 0;
 
@@ -33,14 +34,6 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
 
   // Raw ID identifying the GPU client for whom memory is being allocated.
   virtual int ClientId() const = 0;
-
- protected:
-  friend class base::RefCounted<MemoryTracker>;
-  MemoryTracker() = default;
-  virtual ~MemoryTracker() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryTracker);
 };
 
 // A MemoryTypeTracker tracks the use of a particular type of memory (buffer,
