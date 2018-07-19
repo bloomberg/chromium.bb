@@ -172,6 +172,7 @@ class NytimesDesktopStory(_ArticleBrowsingStory):
   URL = 'http://www.nytimes.com'
   ITEM_SELECTOR = '.story-heading > a'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  COMPLETE_STATE_WAIT_TIMEOUT = 150  # crbug.com/865247
 
 
 # Desktop qq.com opens a news item in a separate tab, for which the back button
