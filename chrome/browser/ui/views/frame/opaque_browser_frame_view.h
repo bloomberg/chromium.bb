@@ -68,6 +68,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
   void ActivationChanged(bool active) override;
+  bool HasClientEdge() const override;
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

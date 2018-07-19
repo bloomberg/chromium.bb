@@ -500,7 +500,8 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
   if (toolbar_bounds.IsEmpty())
     return toolbar_bounds;
   // The apparent toolbar edges are outside the "real" toolbar edges.
-  toolbar_bounds.Inset(-views::NonClientFrameView::kClientEdgeThickness, 0);
+  if (HasClientEdge())
+    toolbar_bounds.Inset(-views::NonClientFrameView::kClientEdgeThickness, 0);
   return toolbar_bounds;
 }
 
@@ -555,12 +556,7 @@ bool BrowserView::IsRegularOrGuestSession() const {
 }
 
 bool BrowserView::HasClientEdge() const {
-#if defined(OS_WIN)
-  return base::win::GetVersion() < base::win::VERSION_WIN10 ||
-         !frame_->ShouldUseNativeFrame();
-#else
-  return true;
-#endif
+  return frame()->GetFrameView()->HasClientEdge();
 }
 
 bool BrowserView::GetAccelerator(int cmd_id,

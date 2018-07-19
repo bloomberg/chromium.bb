@@ -152,11 +152,17 @@ int OpaqueBrowserFrameViewLayout::FrameTopBorderThickness(bool restored) const {
   return thickness;
 }
 
+bool OpaqueBrowserFrameViewLayout::HasClientEdge() const {
+  return !MD::IsRefreshUi();
+}
+
 int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
   const int frame = FrameBorderThickness(false);
   // When we fill the screen, we don't show a client edge.
-  return (IsTitleBarCondensed() || delegate_->IsFullscreen()) ?
-      frame : (frame + views::NonClientFrameView::kClientEdgeThickness);
+  return (!HasClientEdge() || IsTitleBarCondensed() ||
+          delegate_->IsFullscreen())
+             ? frame
+             : (frame + views::NonClientFrameView::kClientEdgeThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {

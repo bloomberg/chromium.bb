@@ -38,6 +38,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
+  bool HasClientEdge() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   int GetTabStripLeftInset() const override;

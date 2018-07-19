@@ -166,6 +166,12 @@ int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
   return 0;
 }
 
+bool GlassBrowserFrameView::HasClientEdge() const {
+  // Native Windows 10 should never paint a client edge.
+  return base::win::GetVersion() < base::win::VERSION_WIN10 &&
+         BrowserNonClientFrameView::HasClientEdge();
+}
+
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
   if (ShowCustomIcon())
     window_icon_->Update();
@@ -502,7 +508,7 @@ void GlassBrowserFrameView::ActivationChanged(bool active) {
 
 int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
   // The frame ends abruptly at the 1 pixel window border drawn by Windows 10.
-  if (!browser_view()->HasClientEdge())
+  if (!HasClientEdge())
     return 0;
 
   if ((IsMaximized() || frame()->IsFullscreen()) && !restored)

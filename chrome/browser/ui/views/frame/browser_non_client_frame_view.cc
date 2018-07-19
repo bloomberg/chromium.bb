@@ -98,6 +98,10 @@ bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
   return frame()->IsFullscreen();
 }
 
+bool BrowserNonClientFrameView::HasClientEdge() const {
+  return !MD::IsRefreshUi();
+}
+
 gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
   const SkColor icon_color = color_utils::PickContrastingColor(
       SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
