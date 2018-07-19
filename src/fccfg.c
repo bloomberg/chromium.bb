@@ -2109,7 +2109,8 @@ FcConfigXdgCacheHome (void)
 	ret = malloc (len + 7 + 1);
 	if (ret)
 	{
-	    memcpy (ret, home, len);
+	    if (home)
+		memcpy (ret, home, len);
 	    memcpy (&ret[len], FC_DIR_SEPARATOR_S ".cache", 7);
 	    ret[len + 7] = 0;
 	}
@@ -2136,7 +2137,8 @@ FcConfigXdgConfigHome (void)
 	ret = malloc (len + 8 + 1);
 	if (ret)
 	{
-	    memcpy (ret, home, len);
+	    if (home)
+		memcpy (ret, home, len);
 	    memcpy (&ret[len], FC_DIR_SEPARATOR_S ".config", 8);
 	    ret[len + 8] = 0;
 	}
@@ -2163,7 +2165,8 @@ FcConfigXdgDataHome (void)
 	ret = malloc (len + 13 + 1);
 	if (ret)
 	{
-	    memcpy (ret, home, len);
+	    if (home)
+		memcpy (ret, home, len);
 	    memcpy (&ret[len], FC_DIR_SEPARATOR_S ".local" FC_DIR_SEPARATOR_S "share", 13);
 	    ret[len + 13] = 0;
 	}
