@@ -2616,12 +2616,13 @@ FcRuleSetAdd (FcRuleSet		*rs,
 	switch (r->type)
 	{
 	case FcRuleTest:
-	    if (r->u.test &&
-		r->u.test->kind == FcMatchDefault)
-		r->u.test->kind = kind;
-
-	    if (n < r->u.test->object)
-		n = r->u.test->object;
+	    if (r->u.test)
+	    {
+		if (r->u.test->kind == FcMatchDefault)
+		    r->u.test->kind = kind;
+		if (n < r->u.test->object)
+		    n = r->u.test->object;
+	    }
 	    break;
 	case FcRuleEdit:
 	    if (n < r->u.edit->object)
