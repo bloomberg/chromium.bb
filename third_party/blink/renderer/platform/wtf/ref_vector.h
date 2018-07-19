@@ -39,6 +39,7 @@ class RefVector : public RefCounted<RefVector<T>> {
   bool IsEmpty() const { return !size(); }
   void push_back(const T& decoration) { vector_.push_back(decoration); }
   const Vector<T>& GetVector() const { return vector_; }
+  Vector<T>* GetMutableVector() { return &vector_; }
 
  private:
   Vector<T> vector_;

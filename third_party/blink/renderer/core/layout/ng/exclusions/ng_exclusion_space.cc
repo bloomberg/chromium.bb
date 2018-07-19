@@ -17,7 +17,7 @@ namespace {
 // We don't explicitly check the inline-size/block-size of the opportunity as
 // they are always produced in the order.
 void InsertOpportunity(const NGLayoutOpportunity& opportunity,
-                       Vector<NGLayoutOpportunity>* opportunities) {
+                       Vector<NGLayoutOpportunity, 4>* opportunities) {
   if (opportunities->IsEmpty()) {
     opportunities->push_back(opportunity);
     return;
@@ -163,6 +163,20 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 }  // namespace
 
 NGExclusionSpace::NGExclusionSpace()
+    : exclusions_(RefVector<scoped_refptr<const NGExclusion>>::Create()),
+      num_exclusions_(0),
+      derived_geometry_(nullptr) {}
+
+NGExclusionSpace::NGExclusionSpace(const NGExclusionSpace& other)
+    : exclusions_(other.exclusions_),
+      num_exclusions_(other.num_exclusions_),
+      derived_geometry_(std::move(other.derived_geometry_)) {
+  // This copy-constructor does fun things. It moves the derived_geometry_ to
+  // the newly created exclusion space where it'll more-likely be used.
+  other.derived_geometry_ = nullptr;
+}
+
+NGExclusionSpace::DerivedGeometry::DerivedGeometry()
     : last_float_block_start_(LayoutUnit::Min()),
       left_float_clear_offset_(LayoutUnit::Min()),
       right_float_clear_offset_(LayoutUnit::Min()) {
@@ -171,6 +185,30 @@ NGExclusionSpace::NGExclusionSpace()
 }
 
 void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
+  DCHECK_LE(num_exclusions_, exclusions_->size());
+
+  // Perform a copy-on-write if the number of exclusions has gone out of sync.
+  if (num_exclusions_ != exclusions_->size()) {
+    scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions =
+        RefVector<scoped_refptr<const NGExclusion>>::Create();
+    exclusions->GetMutableVector()->AppendRange(
+        exclusions_->GetVector().begin(),
+        exclusions_->GetVector().begin() + num_exclusions_);
+    std::swap(exclusions_, exclusions);
+
+    // The derived_geometry_ is now invalid.
+    derived_geometry_ = nullptr;
+  }
+
+  if (derived_geometry_)
+    derived_geometry_->Add(exclusion);
+
+  exclusions_->push_back(std::move(exclusion));
+  num_exclusions_++;
+}
+
+void NGExclusionSpace::DerivedGeometry::Add(
+    scoped_refptr<const NGExclusion> exclusion) {
   last_float_block_start_ =
       std::max(last_float_block_start_, exclusion->rect.BlockStartOffset());
 
@@ -425,11 +463,9 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
   // We must have performed a new shelf insertion.
   DCHECK(inserted);
 #endif
-
-  exclusions_.push_back(std::move(exclusion));
 }
 
-NGLayoutOpportunity NGExclusionSpace::FindLayoutOpportunity(
+NGLayoutOpportunity NGExclusionSpace::DerivedGeometry::FindLayoutOpportunity(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size,
     const NGLogicalSize& minimum_size) const {
@@ -455,7 +491,8 @@ NGLayoutOpportunity NGExclusionSpace::FindLayoutOpportunity(
   return NGLayoutOpportunity();
 }
 
-Vector<NGLayoutOpportunity> NGExclusionSpace::AllLayoutOpportunities(
+Vector<NGLayoutOpportunity>
+NGExclusionSpace::DerivedGeometry::AllLayoutOpportunities(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size) const {
   Vector<NGLayoutOpportunity> opportunities;
@@ -511,7 +548,8 @@ Vector<NGLayoutOpportunity> NGExclusionSpace::AllLayoutOpportunities(
   return opportunities;
 }
 
-LayoutUnit NGExclusionSpace::ClearanceOffset(EClear clear_type) const {
+LayoutUnit NGExclusionSpace::DerivedGeometry::ClearanceOffset(
+    EClear clear_type) const {
   switch (clear_type) {
     case EClear::kNone:
       return LayoutUnit::Min();  // Nothing to do here.
@@ -528,8 +566,22 @@ LayoutUnit NGExclusionSpace::ClearanceOffset(EClear clear_type) const {
   return LayoutUnit::Min();
 }
 
+const NGExclusionSpace::DerivedGeometry& NGExclusionSpace::GetDerivedGeometry()
+    const {
+  // Re-build the geometry if it isn't present.
+  if (!derived_geometry_) {
+    derived_geometry_ = std::make_unique<DerivedGeometry>();
+    DCHECK_LE(num_exclusions_, exclusions_->size());
+    for (size_t i = 0; i < num_exclusions_; ++i)
+      derived_geometry_->Add(exclusions_->GetVector()[i]);
+  }
+
+  return *derived_geometry_;
+}
+
 bool NGExclusionSpace::operator==(const NGExclusionSpace& other) const {
-  return exclusions_ == other.exclusions_;
+  return num_exclusions_ == other.num_exclusions_ &&
+         exclusions_ == other.exclusions_;
 }
 
 }  // namespace blink
