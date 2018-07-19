@@ -334,8 +334,10 @@ var swapInNewTiles = function() {
 
 
 /**
- * Truncates titles that are longer than two lines and appends an ellipsis. Text
- * overflow in CSS ("text-overflow: ellipsis") cannot handle multiple lines.
+ * Truncates titles that are longer than one line and appends an ellipsis. Text
+ * overflow in CSS ("text-overflow: ellipsis") requires "overflow: hidden",
+ * which will cut off the title's text shadow. Only used for Material Design
+ * tiles.
  */
 function truncateTitleText(titles) {
   for (let i = 0; i < titles.length; i++) {

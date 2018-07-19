@@ -4,8 +4,8 @@
 
 html {
   /* Material Design constants */
-  --md-tile-height: 128px;
-  --md-tile-margin: 8px;
+  --md-tile-height: 112px;
+  --md-tile-margin: 16px;
 
   /* This will be overridden based on the viewport width, see below. */
   --column-count: 2;
@@ -472,8 +472,10 @@ body.fakebox-focused #fakebox-cursor {
   user-select: none;
 }
 
-.md-icons #most-visited {
-  margin-top: 30px;
+#most-visited.md-icons {
+  /* Total of 40px margin between fakebox and MV tiles: 8px fakebox
+   * margin-bottom + 22px here margin-top + 10px MV margin-top */
+  margin-top: 22px;
 }
 
 /* Non-Google pages have no Fakebox, so don't need top margin. */
