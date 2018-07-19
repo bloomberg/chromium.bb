@@ -428,12 +428,6 @@ void AssertURLIs(const GURL& expectedURL) {
 // Tests that the header is shown when loading an error page in a native view
 // even if fullscreen was enabled previously.
 - (void)testShowHeaderOnErrorPage {
-#if !TARGET_OS_SIMULATOR
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // TODO(crbug.com/855368): Reenable this test.
-    EARL_GREY_TEST_DISABLED(@"Test failing on iOS 10 devices");
-  }
-#endif  // TARGET_OS_SIMULATOR
   std::map<GURL, std::string> responses;
   const GURL URL = web::test::HttpServer::MakeUrl("http://origin");
   // A long page with some simple text -- a long page is necessary so that
