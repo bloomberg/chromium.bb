@@ -10,14 +10,16 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
 
 using base::checked_cast;
-using base::Value;
 using base::DictionaryValue;
+using base::UintToString;
+using base::Value;
 
 namespace autofill {
 
@@ -68,10 +70,22 @@ void SavePasswordProgressLogger::LogPasswordForm(
   log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(form.action));
   log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT),
                 ScrubElementID(form.username_element));
+  if (form.has_renderer_ids) {
+    log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT_RENDERER_ID),
+                  UintToString(form.username_element_renderer_id));
+  }
   log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT),
                 ScrubElementID(form.password_element));
+  if (form.has_renderer_ids) {
+    log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT_RENDERER_ID),
+                  UintToString(form.password_element_renderer_id));
+  }
   log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
                 ScrubElementID(form.new_password_element));
+  if (!form.confirmation_password_element.empty()) {
+    log.SetString(GetStringFromID(STRING_CONFIRMATION_PASSWORD_ELEMENT),
+                  ScrubElementID(form.confirmation_password_element));
+  }
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
                  form.type == PasswordForm::TYPE_GENERATED);
   log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
@@ -186,10 +200,16 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Action";
     case SavePasswordProgressLogger::STRING_USERNAME_ELEMENT:
       return "Username element";
+    case SavePasswordProgressLogger::STRING_USERNAME_ELEMENT_RENDERER_ID:
+      return "Username element renderer id";
     case SavePasswordProgressLogger::STRING_PASSWORD_ELEMENT:
       return "Password element";
+    case SavePasswordProgressLogger::STRING_PASSWORD_ELEMENT_RENDERER_ID:
+      return "Password element renderer id";
     case SavePasswordProgressLogger::STRING_NEW_PASSWORD_ELEMENT:
       return "New password element";
+    case SavePasswordProgressLogger::STRING_CONFIRMATION_PASSWORD_ELEMENT:
+      return "Confirmation password element";
     case SavePasswordProgressLogger::STRING_PASSWORD_GENERATED:
       return "Password generated";
     case SavePasswordProgressLogger::STRING_TIMES_USED:
@@ -371,9 +391,9 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_MATCH_IN_ADDITIONAL:
       return "Match found in additional logins";
     case SavePasswordProgressLogger::STRING_USERNAME_FILLED:
-      return "Filled username element named";
+      return "Filled username element";
     case SavePasswordProgressLogger::STRING_PASSWORD_FILLED:
-      return "Filled password element named";
+      return "Filled password element";
     case SavePasswordProgressLogger::STRING_FORM_NAME:
       return "Form name";
     case SavePasswordProgressLogger::STRING_FIELDS:
