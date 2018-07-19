@@ -16,6 +16,7 @@
 #include "base/time/tick_clock.h"
 
 namespace base {
+namespace internal {
 
 // BaseTimerTaskInternal is a simple delegate for scheduling a callback to Timer
 // on the current sequence. It also handles the following edge cases:
@@ -23,9 +24,7 @@ namespace base {
 // - abandoned (orphaned) by Timer.
 class BaseTimerTaskInternal {
  public:
-  explicit BaseTimerTaskInternal(Timer* timer)
-      : timer_(timer) {
-  }
+  explicit BaseTimerTaskInternal(TimerBase* timer) : timer_(timer) {}
 
   ~BaseTimerTaskInternal() {
     // This task may be getting cleared because the task runner has been
@@ -45,7 +44,7 @@ class BaseTimerTaskInternal {
 
     // Although Timer should not call back into |this|, let's clear |timer_|
     // first to be pedantic.
-    Timer* timer = timer_;
+    TimerBase* timer = timer_;
     timer_ = nullptr;
     timer->RunScheduledTask();
   }
@@ -54,17 +53,17 @@ class BaseTimerTaskInternal {
   void Abandon() { timer_ = nullptr; }
 
  private:
-  Timer* timer_;
+  TimerBase* timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseTimerTaskInternal);
 };
 
-Timer::Timer(bool retain_user_task, bool is_repeating)
-    : Timer(retain_user_task, is_repeating, nullptr) {}
+TimerBase::TimerBase(bool retain_user_task, bool is_repeating)
+    : TimerBase(retain_user_task, is_repeating, nullptr) {}
 
-Timer::Timer(bool retain_user_task,
-             bool is_repeating,
-             const TickClock* tick_clock)
+TimerBase::TimerBase(bool retain_user_task,
+                     bool is_repeating,
+                     const TickClock* tick_clock)
     : scheduled_task_(nullptr),
       is_repeating_(is_repeating),
       retain_user_task_(retain_user_task),
@@ -77,17 +76,17 @@ Timer::Timer(bool retain_user_task,
   origin_sequence_checker_.DetachFromSequence();
 }
 
-Timer::Timer(const Location& posted_from,
-             TimeDelta delay,
-             const base::Closure& user_task,
-             bool is_repeating)
-    : Timer(posted_from, delay, user_task, is_repeating, nullptr) {}
+TimerBase::TimerBase(const Location& posted_from,
+                     TimeDelta delay,
+                     const base::Closure& user_task,
+                     bool is_repeating)
+    : TimerBase(posted_from, delay, user_task, is_repeating, nullptr) {}
 
-Timer::Timer(const Location& posted_from,
-             TimeDelta delay,
-             const base::Closure& user_task,
-             bool is_repeating,
-             const TickClock* tick_clock)
+TimerBase::TimerBase(const Location& posted_from,
+                     TimeDelta delay,
+                     const base::Closure& user_task,
+                     bool is_repeating,
+                     const TickClock* tick_clock)
     : scheduled_task_(nullptr),
       posted_from_(posted_from),
       delay_(delay),
@@ -100,22 +99,22 @@ Timer::Timer(const Location& posted_from,
   origin_sequence_checker_.DetachFromSequence();
 }
 
-Timer::~Timer() {
+TimerBase::~TimerBase() {
   DCHECK(origin_sequence_checker_.CalledOnValidSequence());
   AbandonAndStop();
 }
 
-bool Timer::IsRunning() const {
+bool TimerBase::IsRunning() const {
   DCHECK(origin_sequence_checker_.CalledOnValidSequence());
   return is_running_;
 }
 
-TimeDelta Timer::GetCurrentDelay() const {
+TimeDelta TimerBase::GetCurrentDelay() const {
   DCHECK(origin_sequence_checker_.CalledOnValidSequence());
   return delay_;
 }
 
-void Timer::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
+void TimerBase::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
   // Do not allow changing the task runner when the Timer is running.
   // Don't check for |origin_sequence_checker_.CalledOnValidSequence()| here to
   // allow the use case of constructing the Timer and immediatetly invoking
@@ -127,9 +126,9 @@ void Timer::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
   task_runner_.swap(task_runner);
 }
 
-void Timer::Start(const Location& posted_from,
-                  TimeDelta delay,
-                  const base::Closure& user_task) {
+void TimerBase::Start(const Location& posted_from,
+                      TimeDelta delay,
+                      const base::Closure& user_task) {
   DCHECK(origin_sequence_checker_.CalledOnValidSequence());
 
   posted_from_ = posted_from;
@@ -139,7 +138,7 @@ void Timer::Start(const Location& posted_from,
   Reset();
 }
 
-void Timer::Stop() {
+void TimerBase::Stop() {
   // TODO(gab): Enable this when it's no longer called racily from
   // RunScheduledTask(): https://crbug.com/587199.
   // DCHECK(origin_sequence_checker_.CalledOnValidSequence());
@@ -155,7 +154,7 @@ void Timer::Stop() {
   // |user_task_|.
 }
 
-void Timer::Reset() {
+void TimerBase::Reset() {
   DCHECK(origin_sequence_checker_.CalledOnValidSequence());
   DCHECK(!user_task_.is_null());
 
@@ -183,14 +182,14 @@ void Timer::Reset() {
   PostNewScheduledTask(delay_);
 }
 
-TimeTicks Timer::Now() const {
+TimeTicks TimerBase::Now() const {
   // TODO(gab): Enable this when it's no longer called racily from
   // RunScheduledTask(): https://crbug.com/587199.
   // DCHECK(origin_sequence_checker_.CalledOnValidSequence());
   return tick_clock_ ? tick_clock_->NowTicks() : TimeTicks::Now();
 }
 
-void Timer::PostNewScheduledTask(TimeDelta delay) {
+void TimerBase::PostNewScheduledTask(TimeDelta delay) {
   // TODO(gab): Enable this when it's no longer called racily from
   // RunScheduledTask(): https://crbug.com/587199.
   // DCHECK(origin_sequence_checker_.CalledOnValidSequence());
@@ -214,11 +213,11 @@ void Timer::PostNewScheduledTask(TimeDelta delay) {
   }
 }
 
-scoped_refptr<SequencedTaskRunner> Timer::GetTaskRunner() {
+scoped_refptr<SequencedTaskRunner> TimerBase::GetTaskRunner() {
   return task_runner_.get() ? task_runner_ : SequencedTaskRunnerHandle::Get();
 }
 
-void Timer::AbandonScheduledTask() {
+void TimerBase::AbandonScheduledTask() {
   // TODO(gab): Enable this when it's no longer called racily from
   // RunScheduledTask() -> Stop(): https://crbug.com/587199.
   // DCHECK(origin_sequence_checker_.CalledOnValidSequence());
@@ -228,7 +227,7 @@ void Timer::AbandonScheduledTask() {
   }
 }
 
-void Timer::RunScheduledTask() {
+void TimerBase::RunScheduledTask() {
   // TODO(gab): Enable this when it's no longer called racily:
   // https://crbug.com/587199.
   // DCHECK(origin_sequence_checker_.CalledOnValidSequence());
@@ -264,6 +263,8 @@ void Timer::RunScheduledTask() {
 
   // No more member accesses here: |this| could be deleted at this point.
 }
+
+}  // namespace internal
 
 void OneShotTimer::FireNow() {
   DCHECK(origin_sequence_checker_.CalledOnValidSequence());

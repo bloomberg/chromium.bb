@@ -114,14 +114,13 @@ class BASE_EXPORT ImportantFileWriter {
   }
 
   // Overrides the timer to use for scheduling writes with |timer_override|.
-  void SetTimerForTesting(Timer* timer_override);
+  void SetTimerForTesting(OneShotTimer* timer_override);
 
  private:
-  const Timer& timer() const {
-    return timer_override_ ? const_cast<const Timer&>(*timer_override_)
-                           : timer_;
+  const OneShotTimer& timer() const {
+    return timer_override_ ? *timer_override_ : timer_;
   }
-  Timer& timer() { return timer_override_ ? *timer_override_ : timer_; }
+  OneShotTimer& timer() { return timer_override_ ? *timer_override_ : timer_; }
 
   void ClearPendingWrite();
 
@@ -139,7 +138,7 @@ class BASE_EXPORT ImportantFileWriter {
   OneShotTimer timer_;
 
   // An override for |timer_| used for testing.
-  Timer* timer_override_ = nullptr;
+  OneShotTimer* timer_override_ = nullptr;
 
   // Serializer which will provide the data to be saved.
   DataSerializer* serializer_;

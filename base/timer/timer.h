@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// OneShotTimer and RepeatingTimer provide a simple timer API.  As the names
-// suggest, OneShotTimer calls you back once after a time delay expires.
+// OneShotTimer, RepeatingTimer and RetainingOneShotTimer provide a simple timer
+// API.  As the names suggest, OneShotTimer calls you back once after a time
+// delay expires.
 // RepeatingTimer on the other hand calls you back periodically with the
 // prescribed time interval.
+// RetainingOneShotTimer doesn't repeat the task itself like OneShotTimer, but
+// retains the given task after the time out. You can restart it with Reset
+// again without giving new task to Start.
 //
-// OneShotTimer and RepeatingTimer both cancel the timer when they go out of
-// scope, which makes it easy to ensure that you do not get called when your
-// object has gone out of scope.  Just instantiate a OneShotTimer or
-// RepeatingTimer as a member variable of the class for which you wish to
-// receive timer events.
+// All of OneShotTimer, RepeatingTimer and RetainingOneShotTimer cancel the
+// timer when they go out of scope, which makes it easy to ensure that you do
+// not get called when your object has gone out of scope.  Just instantiate a
+// timer as a member variable of the class for which you wish to receive timer
+// events.
 //
 // Sample RepeatingTimer usage:
 //
@@ -32,12 +36,11 @@
 //     base::RepeatingTimer timer_;
 //   };
 //
-// Both OneShotTimer and RepeatingTimer also support a Reset method, which
-// allows you to easily defer the timer event until the timer delay passes once
-// again.  So, in the above example, if 0.5 seconds have already passed,
-// calling Reset on |timer_| would postpone DoStuff by another 1 second.  In
-// other words, Reset is shorthand for calling Stop and then Start again with
-// the same arguments.
+// Timers also support a Reset method, which allows you to easily defer the
+// timer event until the timer delay passes once again.  So, in the above
+// example, if 0.5 seconds have already passed, calling Reset on |timer_|
+// would postpone DoStuff by another 1 second.  In other words, Reset is
+// shorthand for calling Stop and then Start again with the same arguments.
 //
 // These APIs are not thread safe. All methods must be called from the same
 // sequence (not necessarily the construction sequence), except for the
@@ -75,35 +78,42 @@
 
 namespace base {
 
-class BaseTimerTaskInternal;
 class TickClock;
+
+namespace internal {
+
+class BaseTimerTaskInternal;
 
 //-----------------------------------------------------------------------------
 // This class wraps TaskRunner::PostDelayedTask to manage delayed and repeating
 // tasks. See meta comment above for thread-safety requirements.
+// Do not use this class directly. Use one of OneShotTimer, RepeatingTimer or
+// RetainingOneShotTimer.
 //
-class BASE_EXPORT Timer {
+class BASE_EXPORT TimerBase {
  public:
   // Construct a timer in repeating or one-shot mode. Start must be called later
   // to set task info. |retain_user_task| determines whether the user_task is
   // retained or reset when it runs or stops. If |tick_clock| is provided, it is
   // used instead of TimeTicks::Now() to get TimeTicks when scheduling tasks.
-  Timer(bool retain_user_task, bool is_repeating);
-  Timer(bool retain_user_task, bool is_repeating, const TickClock* tick_clock);
+  TimerBase(bool retain_user_task, bool is_repeating);
+  TimerBase(bool retain_user_task,
+            bool is_repeating,
+            const TickClock* tick_clock);
 
   // Construct a timer with retained task info. If |tick_clock| is provided, it
   // is used instead of TimeTicks::Now() to get TimeTicks when scheduling tasks.
-  Timer(const Location& posted_from,
-        TimeDelta delay,
-        const base::Closure& user_task,
-        bool is_repeating);
-  Timer(const Location& posted_from,
-        TimeDelta delay,
-        const base::Closure& user_task,
-        bool is_repeating,
-        const TickClock* tick_clock);
+  TimerBase(const Location& posted_from,
+            TimeDelta delay,
+            const base::Closure& user_task,
+            bool is_repeating);
+  TimerBase(const Location& posted_from,
+            TimeDelta delay,
+            const base::Closure& user_task,
+            bool is_repeating,
+            const TickClock* tick_clock);
 
-  virtual ~Timer();
+  virtual ~TimerBase();
 
   // Returns true if the timer is running (i.e., not stopped).
   bool IsRunning() const;
@@ -231,16 +241,18 @@ class BASE_EXPORT Timer {
   // If true, |user_task_| is scheduled to run sometime in the future.
   bool is_running_;
 
-  DISALLOW_COPY_AND_ASSIGN(Timer);
+  DISALLOW_COPY_AND_ASSIGN(TimerBase);
 };
+
+}  // namespace internal
 
 //-----------------------------------------------------------------------------
 // A simple, one-shot timer.  See usage notes at the top of the file.
-class BASE_EXPORT OneShotTimer : public Timer {
+class BASE_EXPORT OneShotTimer : public internal::TimerBase {
  public:
   OneShotTimer() : OneShotTimer(nullptr) {}
   explicit OneShotTimer(const TickClock* tick_clock)
-      : Timer(false, false, tick_clock) {}
+      : internal::TimerBase(false, false, tick_clock) {}
 
   // Run the scheduled task immediately, and stop the timer. The timer needs to
   // be running.
@@ -249,41 +261,49 @@ class BASE_EXPORT OneShotTimer : public Timer {
 
 //-----------------------------------------------------------------------------
 // A simple, repeating timer.  See usage notes at the top of the file.
-class RepeatingTimer : public Timer {
+class RepeatingTimer : public internal::TimerBase {
  public:
   RepeatingTimer() : RepeatingTimer(nullptr) {}
   explicit RepeatingTimer(const TickClock* tick_clock)
-      : Timer(true, true, tick_clock) {}
+      : internal::TimerBase(true, true, tick_clock) {}
 
   RepeatingTimer(const Location& posted_from,
                  TimeDelta delay,
                  RepeatingClosure user_task)
-      : Timer(posted_from, delay, std::move(user_task), true) {}
+      : internal::TimerBase(posted_from, delay, std::move(user_task), true) {}
   RepeatingTimer(const Location& posted_from,
                  TimeDelta delay,
                  RepeatingClosure user_task,
                  const TickClock* tick_clock)
-      : Timer(posted_from, delay, std::move(user_task), true, tick_clock) {}
+      : internal::TimerBase(posted_from,
+                            delay,
+                            std::move(user_task),
+                            true,
+                            tick_clock) {}
 };
 
 //-----------------------------------------------------------------------------
 // A simple, one-shot timer with the retained user task.  See usage notes at the
 // top of the file.
-class RetainingOneShotTimer : public Timer {
+class RetainingOneShotTimer : public internal::TimerBase {
  public:
   RetainingOneShotTimer() : RetainingOneShotTimer(nullptr) {}
   explicit RetainingOneShotTimer(const TickClock* tick_clock)
-      : Timer(true, false, tick_clock) {}
+      : internal::TimerBase(true, false, tick_clock) {}
 
   RetainingOneShotTimer(const Location& posted_from,
                         TimeDelta delay,
                         RepeatingClosure user_task)
-      : Timer(posted_from, delay, std::move(user_task), false) {}
+      : internal::TimerBase(posted_from, delay, std::move(user_task), false) {}
   RetainingOneShotTimer(const Location& posted_from,
                         TimeDelta delay,
                         RepeatingClosure user_task,
                         const TickClock* tick_clock)
-      : Timer(posted_from, delay, std::move(user_task), false, tick_clock) {}
+      : internal::TimerBase(posted_from,
+                            delay,
+                            std::move(user_task),
+                            false,
+                            tick_clock) {}
 };
 
 //-----------------------------------------------------------------------------
