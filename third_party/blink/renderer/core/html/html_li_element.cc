@@ -111,7 +111,7 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
     // inside.  We don't want to change our style to say "inside" since that
     // would affect nested nodes.
     if (!list_node)
-      ordinal->SetNotInList(true);
+      ordinal->SetNotInList(true, *this);
 
     ParseValue(FastGetAttribute(valueAttr), ordinal);
   }

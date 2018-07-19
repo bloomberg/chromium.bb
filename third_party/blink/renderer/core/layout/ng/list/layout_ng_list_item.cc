@@ -66,6 +66,12 @@ void LayoutNGListItem::SubtreeDidChange() {
   if (!marker_)
     return;
 
+  if (ordinal_.NotInListChanged()) {
+    UpdateMarker();
+    ordinal_.SetNotInListChanged(false);
+    return;
+  }
+
   // Make sure outside marker is the direct child of ListItem.
   if (!IsInside() && marker_->Parent() != this) {
     marker_->Remove();
