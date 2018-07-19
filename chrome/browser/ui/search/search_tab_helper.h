@@ -107,6 +107,11 @@ class SearchTabHelper : public content::WebContentsObserver,
   bool ChromeIdentityCheck(const base::string16& identity) override;
   bool HistorySyncCheck() override;
   void OnSetCustomBackgroundURL(const GURL& url) override;
+  void OnSetCustomBackgroundURLWithAttributions(
+      const GURL& background_url,
+      const std::string& attribution_line_1,
+      const std::string& attribution_line_2,
+      const GURL& action_url) override;
   void OnSelectLocalBackgroundImage() override;
 
   // Overridden from InstantServiceObserver:

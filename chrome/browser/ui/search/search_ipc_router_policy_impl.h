@@ -40,6 +40,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldSendMostVisitedItems() override;
   bool ShouldSendThemeBackgroundInfo() override;
   bool ShouldProcessSetCustomBackgroundURL() override;
+  bool ShouldProcessSetCustomBackgroundURLWithAttributions() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;
 
   // Used by unit tests.

@@ -359,6 +359,17 @@ void SearchTabHelper::OnSetCustomBackgroundURL(const GURL& url) {
     instant_service_->SetCustomBackgroundURL(url);
 }
 
+void SearchTabHelper::OnSetCustomBackgroundURLWithAttributions(
+    const GURL& background_url,
+    const std::string& attribution_line_1,
+    const std::string& attribution_line_2,
+    const GURL& action_url) {
+  if (instant_service_) {
+    instant_service_->SetCustomBackgroundURLWithAttributions(
+        background_url, attribution_line_1, attribution_line_2, action_url);
+  }
+}
+
 void SearchTabHelper::FileSelected(const base::FilePath& path,
                                    int index,
                                    void* params) {

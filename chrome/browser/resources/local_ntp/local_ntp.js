@@ -306,9 +306,13 @@ function renderTheme() {
 
     if (imageWithOverlay != document.body.style.backgroundImage) {
       customBackgrounds.closeCustomizationDialog();
+      customBackgrounds.clearAttribution();
     }
 
     document.body.style.setProperty('background-image', imageWithOverlay);
+
+    customBackgrounds.setAttribution(
+        info.attribution1, info.attribution2, info.attributionActionUrl);
   }
   $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden =
       !info.customBackgroundConfigured;

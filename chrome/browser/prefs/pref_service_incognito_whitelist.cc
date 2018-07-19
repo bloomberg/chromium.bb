@@ -838,7 +838,7 @@ const char* incognito_whitelist[] = {
 
 #if !defined(OS_ANDROID)
     prefs::kAutoplayAllowed, prefs::kAutoplayWhitelist,
-    prefs::kNTPCustomBackgroundURL,
+    prefs::kNtpCustomBackgroundDict,
 #endif
 
 // chromeos/chromeos_pref_names.h

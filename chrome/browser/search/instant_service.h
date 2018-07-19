@@ -97,8 +97,18 @@ class InstantService : public KeyedService,
   // Invoked when a custom background is selected on the NTP.
   void SetCustomBackgroundURL(const GURL& url);
 
+  // Invoked when a custom background with attributions is selected on the NTP.
+  void SetCustomBackgroundURLWithAttributions(
+      const GURL& background_url,
+      const std::string& attribution_line_1,
+      const std::string& attribution_line_2,
+      const GURL& action_url);
+
   // Invoked when a user selected the "Upload an image" option on the NTP.
   void SelectLocalBackgroundImage(const base::FilePath& path);
+
+  // Used for testing.
+  ThemeBackgroundInfo* GetThemeInfoForTesting() { return theme_info_.get(); }
 
  private:
   friend class InstantExtendedTest;
@@ -129,7 +139,9 @@ class InstantService : public KeyedService,
 
   void BuildThemeInfo();
 
-  void ApplyGoogleNtpThemeElements();
+  void ApplyOrResetCustomBackgroundThemeInfo();
+
+  void ResetCustomBackgroundThemeInfo();
 
   // Update the background pref to point to
   // chrome-search://local-ntp/background.jpg

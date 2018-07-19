@@ -1442,6 +1442,7 @@ const char kSuppressUnsupportedOSWarning[] =
 
 // Set before autorestarting Chrome, cleared on clean exit.
 const char kWasRestarted[] = "was.restarted";
+
 #endif  // !defined(OS_ANDROID)
 
 // Whether Extensions are enabled.
@@ -1482,6 +1483,9 @@ const char kContentSuggestionsNotificationsSentDay[] =
     "ntp.content_suggestions.notifications.sent_day";
 const char kContentSuggestionsNotificationsSentCount[] =
     "ntp.content_suggestions.notifications.sent_count";
+#else
+// Holds info for New Tab Page custom background
+const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
@@ -2593,10 +2597,6 @@ const char kAutoplayAllowed[] = "media.autoplay_allowed";
 
 // Holds URL patterns that specify URLs that will be allowed to autoplay.
 const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
-
-// Holds URL for New Tab Page custom background
-const char kNTPCustomBackgroundURL[] = "new_tab_page.custom_background_url";
-
 #endif  // !defined(OS_ANDROID)
 
 // Integer that holds the value of the next persistent notification ID to be
