@@ -71,6 +71,8 @@ void VideoFrameSubmitter::UpdateSubmissionStateInternal() {
     compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && should_submit_);
     if (should_submit_)
       SubmitSingleFrame();
+    else if (!frame_size_.IsEmpty())
+      SubmitEmptyFrame();
   }
 }
 
@@ -194,11 +196,15 @@ void VideoFrameSubmitter::SubmitFrame(
   if (!compositor_frame_sink_ || !should_submit_)
     return;
 
+  // TODO(mlamouri): the `frame_size_` is expected to be consistent but seems to
+  // change in some cases. Ideally, it should be set when empty and a DCHECK
+  // should make sure it stays consistent.
+  frame_size_ = gfx::Rect(video_frame->coded_size());
+
   viz::CompositorFrame compositor_frame;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
-  render_pass->SetNew(1, gfx::Rect(video_frame->coded_size()),
-                      gfx::Rect(video_frame->coded_size()), gfx::Transform());
+  render_pass->SetNew(1, frame_size_, frame_size_, gfx::Transform());
   render_pass->filters = cc::FilterOperations();
   resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_);
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
@@ -222,6 +228,28 @@ void VideoFrameSubmitter::SubmitFrame(
       surface_id_.local_surface_id(), std::move(compositor_frame), nullptr, 0);
   resource_provider_->ReleaseFrameResources();
 
+  waiting_for_compositor_ack_ = true;
+}
+
+void VideoFrameSubmitter::SubmitEmptyFrame() {
+  TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitEmptyFrame");
+  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  DCHECK(compositor_frame_sink_ && !should_submit_);
+  DCHECK(!frame_size_.IsEmpty());
+
+  viz::CompositorFrame compositor_frame;
+
+  compositor_frame.metadata.begin_frame_ack =
+      viz::BeginFrameAck::CreateManualAckWithDamage();
+  compositor_frame.metadata.device_scale_factor = 1;
+  compositor_frame.metadata.may_contain_video = true;
+
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  render_pass->SetNew(1, frame_size_, frame_size_, gfx::Transform());
+  compositor_frame.render_pass_list.push_back(std::move(render_pass));
+
+  compositor_frame_sink_->SubmitCompositorFrame(
+      surface_id_.local_surface_id(), std::move(compositor_frame), nullptr, 0);
   waiting_for_compositor_ack_ = true;
 }
 
