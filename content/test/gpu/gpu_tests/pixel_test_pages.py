@@ -791,7 +791,7 @@ def DirectCompositionPages(base_name):
         {
           'comment': 'red top right quadrant',
           'location': [124, 4],
-          'size': [110, 60],
+          'size': [50, 60],
           'color': [255, 17, 24],
           'tolerance': 3
         },
@@ -805,7 +805,7 @@ def DirectCompositionPages(base_name):
         {
           'comment': 'green bottom right quadrant',
           'location': [124, 72],
-          'size': [110, 60],
+          'size': [50, 60],
           'color': [44, 255, 16],
           'tolerance': 3
         }
