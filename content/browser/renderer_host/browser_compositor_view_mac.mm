@@ -104,7 +104,7 @@ bool BrowserCompositorMac::RequestRepaintForTesting() {
   delegated_frame_host_->EmbedSurface(
       new_local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
-  return client_->SynchronizeVisualProperties();
+  return client_->SynchronizeVisualProperties(new_local_surface_id);
 }
 
 const gfx::CALayerParams* BrowserCompositorMac::GetLastCALayerParams() const {
@@ -193,7 +193,7 @@ void BrowserCompositorMac::SynchronizeVisualProperties(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         dfh_size_dip_, GetDeadlinePolicy(true /* is_resize */));
   }
-  client_->SynchronizeVisualProperties();
+  client_->SynchronizeVisualProperties(child_allocated_local_surface_id);
 }
 
 void BrowserCompositorMac::UpdateVSyncParameters(
@@ -399,7 +399,7 @@ void BrowserCompositorMac::DidNavigate() {
   delegated_frame_host_->EmbedSurface(
       local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
-  client_->SynchronizeVisualProperties();
+  client_->SynchronizeVisualProperties(local_surface_id);
   delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
 }
@@ -458,6 +458,11 @@ const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
   if (dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid())
     return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 
+  return dfh_local_surface_id_allocator_.GenerateId();
+}
+
+const viz::LocalSurfaceId&
+BrowserCompositorMac::AllocateNewRendererLocalSurfaceId() {
   return dfh_local_surface_id_allocator_.GenerateId();
 }
 

@@ -394,7 +394,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DidReceiveFirstFrameAfterNavigation() override;
   void DestroyCompositorForShutdown() override;
-  bool SynchronizeVisualProperties() override;
+  bool SynchronizeVisualProperties(
+      const base::Optional<viz::LocalSurfaceId>&
+          child_allocated_local_surface_id) override;
 
   // AcceleratedWidgetMacNSView implementation.
   void AcceleratedWidgetCALayerParamsUpdated() override;
