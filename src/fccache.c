@@ -110,6 +110,7 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	{
 	    ret = FcFalse;
 	    FcAtomicDeleteNew (atomic);
+	    close (fd);
 	    goto bail3;
 	}
 	uuid_unparse (uuid, out);
