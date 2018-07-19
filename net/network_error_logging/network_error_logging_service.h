@@ -78,7 +78,6 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   // Keys for data included in report bodies. Exposed for tests.
 
-  static const char kUriKey[];
   static const char kReferrerKey[];
   static const char kSamplingFractionKey[];
   static const char kServerIpKey[];

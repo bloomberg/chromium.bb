@@ -206,7 +206,6 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
 
   ExpectDictStringValue("http.response.empty", *body_dict, "type");
   ExpectDictIntegerValue(0, *body_dict, "status_code");
-  ExpectDictStringValue(GetFailURL().spec(), *body_dict, "uri");
 }
 
 #if defined(OS_WIN)
