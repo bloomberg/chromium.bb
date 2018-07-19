@@ -730,15 +730,15 @@ HWTEST_PRIORITIES_MAP = {key: 10 + 10 * index
 
 # Creates a mapping of priorities for skylab hwtest tasks. In swarming,
 # lower number means high priorities. Priority lower than 48 will be special
-# tasks.
+# tasks. The upper bound of priority is 255.
 # Use the same priorities mapping as autotest/venv/skylab_suite/swarming_lib.py
 SKYLAB_HWTEST_PRIORITIES_MAP = {
-    HWTEST_WEEKLY_PRIORITY: 160,
-    HWTEST_DAILY_PRIORITY: 145,
-    HWTEST_POST_BUILD_PRIORITY: 130,
-    HWTEST_DEFAULT_PRIORITY: 100,
-    HWTEST_BUILD_PRIORITY: 80,
-    HWTEST_PFQ_PRIORITY: 65,
+    HWTEST_WEEKLY_PRIORITY: 230,
+    HWTEST_DAILY_PRIORITY: 200,
+    HWTEST_POST_BUILD_PRIORITY: 170,
+    HWTEST_DEFAULT_PRIORITY: 140,
+    HWTEST_BUILD_PRIORITY: 110,
+    HWTEST_PFQ_PRIORITY: 80,
     HWTEST_CQ_PRIORITY: 50,
 }
 
