@@ -123,6 +123,11 @@ Polymer({
     const browserProxy =
         settings.IncompatibleApplicationsBrowserProxyImpl.getInstance();
     const numApplications = this.applications_.length;
+
+    // The plural strings are not displayed when there is no applications.
+    if (this.applications_.length === 0)
+      return;
+
     Promise
         .all([
           browserProxy.getSubtitlePluralString(numApplications),
