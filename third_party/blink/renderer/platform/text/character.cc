@@ -299,4 +299,8 @@ bool Character::IsPrivateUse(UChar32 character) {
   return WTF::Unicode::Category(character) & WTF::Unicode::kOther_PrivateUse;
 }
 
+bool Character::IsNonCharacter(UChar32 character) {
+  return U_IS_UNICODE_NONCHAR(character);
+}
+
 }  // namespace blink
