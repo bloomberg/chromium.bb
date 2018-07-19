@@ -780,6 +780,10 @@ bool AutocompleteMatch::IsExceptedFromLineReversal() const {
   return !!answer && answer->type() == SuggestionAnswer::ANSWER_TYPE_DICTIONARY;
 }
 
+bool AutocompleteMatch::ShouldShowTabMatch() const {
+  return has_tab_match && !associated_keyword;
+}
+
 #if DCHECK_IS_ON()
 void AutocompleteMatch::Validate() const {
   ValidateClassifications(contents, contents_class);
