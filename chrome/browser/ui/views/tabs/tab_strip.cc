@@ -1230,6 +1230,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   Tab* hovered_tab = nullptr;
   Tabs tabs_dragging;
   Tabs selected_tabs;
+  Tabs hovered_tabs;
 
   {
     // We pass false for |lcd_text_requires_opaque_layer| so that background
@@ -1251,22 +1252,19 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
         } else {
           tabs_dragging.push_back(tab);
         }
-      } else if (!tab->IsActive()) {
-        if (!tab->IsSelected()) {
-          if (!stacked_layout_) {
-            // In Refresh mode, defer the painting of the hovered tab to below.
-            if (MD::IsRefreshUi() && tab->mouse_hovered()) {
-              hovered_tab = tab;
-            } else {
-              tab->Paint(paint_info);
-            }
-          }
-        } else {
-          selected_tabs.push_back(tab);
-        }
-      } else {
+      } else if (tab->IsActive()) {
         active_tab = tab;
         active_tab_index = i;
+      } else if (tab->IsSelected()) {
+        selected_tabs.push_back(tab);
+      } else if (stacked_layout_) {
+        // Do nothing; this will be handled below.
+      } else if (MD::IsRefreshUi() && tab->mouse_hovered()) {
+        hovered_tab = tab;
+      } else if (MD::IsRefreshUi() && tab->hover_controller()->ShouldDraw()) {
+        hovered_tabs.push_back(tab);
+      } else {
+        tab->Paint(paint_info);
       }
       PaintClosingTabs(i, paint_info);
     }
@@ -1287,25 +1285,23 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
 
   // Now selected but not active. We don't want these dimmed if using native
   // frame, so they're painted after initial pass.
-  for (size_t i = 0; i < selected_tabs.size(); ++i)
-    selected_tabs[i]->Paint(paint_info);
+  for (Tab* tab : selected_tabs)
+    tab->Paint(paint_info);
 
-  // If the last hovered tab is still animating and there is no currently
-  // hovered tab, make sure it still paints in the right order while it's
-  // animating.
-  if (!hovered_tab && last_hovered_tab_ &&
-      last_hovered_tab_->hover_controller()->ShouldDraw())
-    hovered_tab = last_hovered_tab_;
+  // Next, paint the hover animating tabs in ascending order of the current
+  // animation value.
+  std::sort(hovered_tabs.begin(), hovered_tabs.end(),
+            [](Tab* tab1, Tab* tab2) -> bool {
+              return tab1->hover_controller()->GetAnimationValue() <
+                     tab2->hover_controller()->GetAnimationValue();
+            });
+  for (Tab* tab : hovered_tabs)
+    tab->Paint(paint_info);
 
-  // The currently hovered tab or the last tab that was hovered should be
-  // painted right before the active tab to ensure the highlighted tab shape
-  // looks reasonable.
-  if (hovered_tab && !is_dragging)
+  // The currently hovered tab should be painted right before the active tab
+  // to ensure the highlighted tab shape looks reasonable.
+  if (hovered_tab)
     hovered_tab->Paint(paint_info);
-
-  // Keep track of the last tab that was hovered so that it continues to be
-  // painted right before the active tab while the animation is running.
-  last_hovered_tab_ = hovered_tab;
 
   // Next comes the active tab.
   if (active_tab && !is_dragging)
@@ -1841,8 +1837,6 @@ void TabStrip::RemoveAndDeleteTab(Tab* tab) {
   res.first->second.erase(res.second);
   if (res.first->second.empty())
     tabs_closing_map_.erase(res.first);
-  if (tab == last_hovered_tab_)
-    last_hovered_tab_ = nullptr;
 }
 
 void TabStrip::UpdateTabsClosingMap(int index, int delta) {
