@@ -1492,8 +1492,7 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
     pool: The name of the pool.
     suite_id: The ID of this swarming suite task.
   """
-  abort_args = ['--board', board, '--suite_name', suite, '--build', build,
-                '--abort_limit', str(1)]
+  abort_args = ['--board', board, '--suite_name', suite, '--build', build]
   if suite_id:
     abort_args += ['--suite_task_ids', suite_id]
 
