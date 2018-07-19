@@ -24,6 +24,10 @@ var menu = document.getElementById('menu');
 openPicker(menu, function() {
     shouldBe('popupWindow.innerWidth', '100');
     popupWindow.addEventListener("resize", checkPopupWidth, false);
+    setTimeout(function() {
+        testFailed('Popup wasn\'t resized.');
+        finishJSTest();
+    }, 3000);
     menu.style.width = "150px";
     menu.offsetTop;
 }, openPickerErrorCallback);
