@@ -57,7 +57,6 @@ void WorkerAnimationFrameProvider::DeregisterOffscreenCanvas(
 
 void WorkerAnimationFrameProvider::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_collection_);
-  visitor->Trace(offscreen_canvases_);
 }
 
 }  // namespace blink

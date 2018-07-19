@@ -58,7 +58,9 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   DISALLOW_COPY_AND_ASSIGN(WorkerAnimationFrameProvider);
   FrameRequestCallbackCollection callback_collection_;
 
-  HeapVector<Member<OffscreenCanvas>> offscreen_canvases_;
+  // To avoid leaking OffscreenCanvas objects, the following vector must
+  // not hold strong references.
+  Vector<UntracedMember<OffscreenCanvas>> offscreen_canvases_;
   bool in_begin_frame_;
 };
 
