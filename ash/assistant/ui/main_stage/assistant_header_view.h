@@ -18,6 +18,7 @@ class Label;
 namespace ash {
 
 class AssistantController;
+class AssistantProgressIndicator;
 
 // AssistantHeaderView is the child of UiElementContainerView which provides
 // the Assistant icon. On first launch, it also displays a greeting to the user.
@@ -35,6 +36,7 @@ class AssistantHeaderView : public views::View,
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
+  void OnUiElementAdded(const AssistantUiElement* ui_element) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
@@ -45,7 +47,8 @@ class AssistantHeaderView : public views::View,
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
-  views::Label* label_;               // Owned by view hierarchy.
+  views::Label* greeting_label_;      // Owned by view hierarchy.
+  AssistantProgressIndicator* progress_indicator_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantHeaderView);
 };
