@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-def PostUploadHook(cl, change, output_api):
-  return output_api.EnsureCQIncludeTrybotsAreAdded(
-    cl,
-    [
-      'luci.chromium.try:closure_compilation',
-    ],
-    'Automatically added optional Closure bots to run on CQ.')
-
-
 def CheckChangeOnUpload(input_api, output_api):
   return _CommonChecks(input_api, output_api)
 

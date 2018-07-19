@@ -138,12 +138,3 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   return _CheckChangeOnUploadOrCommit(input_api, output_api)
-
-
-def PostUploadHook(cl, change, output_api):
-  return output_api.EnsureCQIncludeTrybotsAreAdded(
-    cl,
-    [
-      'luci.chromium.try:closure_compilation',
-    ],
-    'Automatically added optional Closure bots to run on CQ.')
