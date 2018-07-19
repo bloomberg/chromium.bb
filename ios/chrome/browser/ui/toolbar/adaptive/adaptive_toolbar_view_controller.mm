@@ -368,11 +368,11 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 
 // Adds a LongPressGesture to the |view|, with target on -|handleLongPress:|.
 - (void)addLongPressGestureToView:(UIView*)view {
-  UILongPressGestureRecognizer* navigationHistoryLongPress =
+  UILongPressGestureRecognizer* longPressGestureRecognizer =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
                   action:@selector(handleLongPress:)];
-  [view addGestureRecognizer:navigationHistoryLongPress];
+  [view addGestureRecognizer:longPressGestureRecognizer];
 }
 
 // Handles the long press on the views.
@@ -390,6 +390,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
       base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
       [self.dispatcher showToolsMenuPopup];
     }
+    TriggerHapticFeedbackForAction();
   } else if (gesture.state == UIGestureRecognizerStateEnded) {
     [self.longPressDelegate
         longPressEndedAtPoint:[gesture locationOfTouch:0 inView:nil]];

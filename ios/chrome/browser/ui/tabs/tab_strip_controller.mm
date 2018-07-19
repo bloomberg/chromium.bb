@@ -1182,6 +1182,7 @@ NSString* StringForItemCount(long count) {
 - (void)handleTabSwitcherLongPress:(UILongPressGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
     [self.dispatcher showTabStripTabGridButtonPopup];
+    TriggerHapticFeedbackForAction();
   } else if (gesture.state == UIGestureRecognizerStateEnded) {
     [self.longPressDelegate
         longPressEndedAtPoint:[gesture locationOfTouch:0 inView:nil]];
