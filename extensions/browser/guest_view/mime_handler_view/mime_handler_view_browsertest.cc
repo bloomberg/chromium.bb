@@ -11,8 +11,10 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -229,4 +231,28 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, TargetBlankAnchor) {
   EXPECT_EQ(
       GURL("about:blank"),
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_NoDialog) {
+  ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadNoDialog.csv"));
+  content::PrepContentsForBeforeUnloadTest(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+
+  // Try to navigate away from the page. If the beforeunload listener is
+  // triggered and a dialog is shown, this navigation will never complete,
+  // causing the test to timeout and fail.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+}
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
+  ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadShowDialog.csv"));
+  auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::PrepContentsForBeforeUnloadTest(web_contents);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, false);
+
+  app_modal::JavaScriptAppModalDialog* before_unload_dialog =
+      ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
+  EXPECT_TRUE(before_unload_dialog->is_reload());
+  before_unload_dialog->OnAccept(base::string16(), false);
 }

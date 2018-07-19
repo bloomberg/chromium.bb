@@ -37,4 +37,18 @@ interface MimeHandlerService {
   // Aborts the stream associated with this service instance. This is an
   // idempotent operation.
   AbortStream() => ();
+
+};
+
+// Provides a mime handler guest with control over beforeunload event handling
+// when running in a PluginDocument.
+//
+// For full-frame mime handler guests, an instance of this interface is passed
+// from the embedding renderer to the browser when creating the mime handler
+// guest. If the frame hosting the guest requests this interface from the
+// browser, that instance is provided to the guest.
+interface BeforeUnloadControl {
+  // Instructs the containing PluginDocument whether to show a beforeunload
+  // dialog.
+  SetShowBeforeUnloadDialog(bool show_dialog) => ();
 };

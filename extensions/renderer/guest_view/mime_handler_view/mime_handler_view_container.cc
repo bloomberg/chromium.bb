@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -179,6 +180,7 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
       original_url_(original_url),
       guest_proxy_routing_id_(-1),
       guest_loaded_(false),
+      before_unload_control_binding_(this),
       weak_factory_(this) {
   DCHECK(!mime_type_.empty());
   is_embedded_ = !render_frame->GetWebFrame()->GetDocument().IsPluginDocument();
@@ -441,12 +443,28 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
   if (!render_frame())
     return;
 
-  render_frame()->Send(
-      new ExtensionsGuestViewHostMsg_CreateMimeHandlerViewGuest(
-          render_frame()->GetRoutingID(), view_id_, element_instance_id(),
-          *element_size_));
+  mime_handler::BeforeUnloadControlPtr before_unload_control;
+  if (!is_embedded_) {
+    before_unload_control_binding_.Bind(
+        mojo::MakeRequest(&before_unload_control));
+  }
+  GetGuestView()->CreateMimeHandlerViewGuest(
+      render_frame()->GetRoutingID(), view_id_, element_instance_id(),
+      *element_size_, std::move(before_unload_control));
 
   guest_created_ = true;
+}
+
+void MimeHandlerViewContainer::SetShowBeforeUnloadDialog(
+    bool show_dialog,
+    SetShowBeforeUnloadDialogCallback callback) {
+  DCHECK(!is_embedded_);
+  render_frame()
+      ->GetWebFrame()
+      ->GetDocument()
+      .To<blink::WebPluginDocument>()
+      .SetShowBeforeUnloadDialog(show_dialog);
+  std::move(callback).Run();
 }
 
 }  // namespace extensions

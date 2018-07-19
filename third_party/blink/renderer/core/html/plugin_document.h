@@ -48,16 +48,22 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
 
   WebPluginContainerImpl* GetPluginView();
 
+  void SetShowBeforeUnloadDialog(bool show_dialog);
+
   void Shutdown() override;
 
   void Trace(blink::Visitor*) override;
 
  private:
+  class BeforeUnloadEventListener;
+
   PluginDocument(const DocumentInit&, Color background_color);
 
   DocumentParser* CreateParser() override;
 
   Member<HTMLPlugInElement> plugin_node_;
+  Member<BeforeUnloadEventListener> before_unload_event_listener_;
+
   const Color background_color_;
 };
 

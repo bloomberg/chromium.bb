@@ -76,13 +76,28 @@ class ExtensionsGuestViewMessageFilter
       const gfx::Size& element_size,
       content::mojom::TransferrableURLLoaderPtr transferrable_url_loader)
       override;
+  void CreateMimeHandlerViewGuest(
+      int32_t render_frame_id,
+      const std::string& view_id,
+      int32_t element_instance_id,
+      const gfx::Size& element_size,
+      mime_handler::BeforeUnloadControlPtr before_unload_control) override;
+
+  void CreateMimeHandlerViewGuestOnUIThread(
+      int32_t render_frame_id,
+      const std::string& view_id,
+      int32_t element_instance_id,
+      const gfx::Size& element_size,
+      mime_handler::BeforeUnloadControlPtrInfo before_unload_control);
 
   // Runs on UI thread.
-  void MimeHandlerViewGuestCreatedCallback(int element_instance_id,
-                                           int embedder_render_process_id,
-                                           int embedder_render_frame_id,
-                                           const gfx::Size& element_size,
-                                           content::WebContents* web_contents);
+  void MimeHandlerViewGuestCreatedCallback(
+      int element_instance_id,
+      int embedder_render_process_id,
+      int embedder_render_frame_id,
+      const gfx::Size& element_size,
+      mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
+      content::WebContents* web_contents);
 
   static const uint32_t kFilteredMessageClasses[];
 

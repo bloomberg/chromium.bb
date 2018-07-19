@@ -25,8 +25,11 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
+#include "third_party/blink/renderer/core/events/before_unload_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -44,6 +47,39 @@
 namespace blink {
 
 using namespace HTMLNames;
+
+class PluginDocument::BeforeUnloadEventListener : public EventListener {
+ public:
+  static BeforeUnloadEventListener* Create(PluginDocument* document) {
+    return new BeforeUnloadEventListener(document);
+  }
+
+  bool operator==(const EventListener& listener) const override {
+    return this == &listener;
+  }
+
+  void SetShowBeforeUnloadDialog(bool show_dialog) {
+    show_dialog_ = show_dialog;
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(doc_);
+    EventListener::Trace(visitor);
+  }
+
+ private:
+  explicit BeforeUnloadEventListener(PluginDocument* document)
+      : EventListener(kCPPEventListenerType), doc_(document) {}
+
+  void handleEvent(ExecutionContext*, Event* event) override {
+    DCHECK_EQ(event->type(), EventTypeNames::beforeunload);
+    if (show_dialog_)
+      ToBeforeUnloadEvent(event)->setReturnValue(g_empty_string);
+  }
+
+  Member<PluginDocument> doc_;
+  bool show_dialog_;
+};
 
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
@@ -186,14 +222,28 @@ WebPluginContainerImpl* PluginDocument::GetPluginView() {
   return plugin_node_ ? plugin_node_->OwnedPlugin() : nullptr;
 }
 
+void PluginDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
+  if (!before_unload_event_listener_) {
+    if (!show_dialog)
+      return;
+
+    before_unload_event_listener_ = BeforeUnloadEventListener::Create(this);
+    domWindow()->addEventListener(EventTypeNames::beforeunload,
+                                  before_unload_event_listener_, false);
+  }
+  before_unload_event_listener_->SetShowBeforeUnloadDialog(show_dialog);
+}
+
 void PluginDocument::Shutdown() {
   // Release the plugin node so that we don't have a circular reference.
   plugin_node_ = nullptr;
+  before_unload_event_listener_ = nullptr;
   HTMLDocument::Shutdown();
 }
 
 void PluginDocument::Trace(blink::Visitor* visitor) {
   visitor->Trace(plugin_node_);
+  visitor->Trace(before_unload_event_listener_);
   HTMLDocument::Trace(visitor);
 }
 

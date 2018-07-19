@@ -118,7 +118,7 @@ var tests = [
       } else if (event.data == expectedMessages[messagesReceived]) {
         event.source.postMessage(event.data, '*');
         messagesReceived++;
-      } else {
+      } else if (event.data != 'initBeforeUnload') {
         chrome.test.fail('unexpected message ' + event.data);
       }
     }
@@ -244,6 +244,18 @@ var tests = [
     anchor.target = '_blank';
     document.body.appendChild(anchor);
     anchor.click();
+    chrome.test.succeed();
+  },
+
+  function testBeforeUnloadNoDialog() {
+    checkStreamDetails('testBeforeUnloadNoDialog.csv', false);
+    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
+    chrome.test.succeed();
+  },
+
+  function testBeforeUnloadShowDialog() {
+    checkStreamDetails('testBeforeUnloadShowDialog.csv', false);
+    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
     chrome.test.succeed();
   },
 ];

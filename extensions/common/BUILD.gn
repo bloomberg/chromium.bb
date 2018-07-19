@@ -42,6 +42,7 @@ if (enable_extensions) {
 
     public_deps = [
       "//content/public/common:interfaces",
+      "//extensions/common/api:mojom",
       "//mojo/public/mojom/base",
       "//ui/gfx/geometry/mojo",
       "//url/mojom:url_mojom_gurl",
