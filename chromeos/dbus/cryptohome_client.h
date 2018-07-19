@@ -12,8 +12,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

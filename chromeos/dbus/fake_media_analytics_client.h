@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/media_analytics_client.h"
-#include "chromeos/media_perception/media_perception.pb.h"
+#include "chromeos/dbus/media_perception/media_perception.pb.h"
 
 namespace chromeos {
 

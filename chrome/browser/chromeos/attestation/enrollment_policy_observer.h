@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/attestation/attestation_constants.h"
+#include "chromeos/dbus/attestation_constants.h"
 
 namespace policy {
 class CloudPolicyClient;

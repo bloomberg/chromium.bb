@@ -72,8 +72,6 @@ component("chromeos") {
     "account_manager/account_manager_factory.h",
     "app_mode/kiosk_oem_manifest_parser.cc",
     "app_mode/kiosk_oem_manifest_parser.h",
-    "attestation/attestation_constants.cc",
-    "attestation/attestation_constants.h",
     "attestation/attestation_flow.cc",
     "attestation/attestation_flow.h",
     "audio/audio_device.cc",
@@ -150,6 +148,8 @@ component("chromeos") {
     "dbus/arc_obb_mounter_client.h",
     "dbus/arc_oemcrypto_client.cc",
     "dbus/arc_oemcrypto_client.h",
+    "dbus/attestation_constants.cc",
+    "dbus/attestation_constants.h",
     "dbus/audio_node.cc",
     "dbus/audio_node.h",
     "dbus/auth_policy_client.cc",
@@ -869,38 +869,12 @@ proto_library("power_manager_proto") {
   proto_out_dir = "chromeos/dbus/power_manager"
 }
 
-proto_library("cryptohome_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/key.proto",
-    "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/cryptohome"
-}
-
-proto_library("login_manager_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/login_manager/arc.proto",
-    "//third_party/cros_system_api/dbus/login_manager/policy_descriptor.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/login_manager"
-}
-
 proto_library("attestation_proto") {
   sources = [
     "dbus/proto/attestation.proto",
   ]
 
-  proto_out_dir = "chromeos/attestation"
-}
-
-proto_library("cryptohome_signkey_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/signed_secret.proto",
-  ]
-
-  proto_out_dir = "chromeos/cryptohome"
+  proto_out_dir = "chromeos/dbus/attestation"
 }
 
 proto_library("authpolicy_proto") {
@@ -920,30 +894,6 @@ proto_library("biod_proto") {
   proto_out_dir = "chromeos/dbus/biod"
 }
 
-proto_library("media_perception_proto") {
-  sources = [
-    "dbus/proto/media_perception.proto",
-  ]
-
-  proto_out_dir = "chromeos/media_perception"
-}
-
-proto_library("smbprovider_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/smbprovider"
-}
-
-proto_library("account_manager_proto") {
-  sources = [
-    "account_manager/tokens.proto",
-  ]
-
-  proto_out_dir = "chromeos/account_manager"
-}
-
 proto_library("cicerone_proto") {
   sources = [
     "//third_party/cros_system_api/dbus/vm_cicerone/cicerone_service.proto",
@@ -960,10 +910,60 @@ proto_library("concierge_proto") {
   proto_out_dir = "chromeos/dbus/concierge"
 }
 
+proto_library("cryptohome_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/cryptohome/key.proto",
+    "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/cryptohome"
+}
+
+proto_library("cryptohome_signkey_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/cryptohome/signed_secret.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/cryptohome"
+}
+
+proto_library("login_manager_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/login_manager/arc.proto",
+    "//third_party/cros_system_api/dbus/login_manager/policy_descriptor.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/login_manager"
+}
+
+proto_library("media_perception_proto") {
+  sources = [
+    "dbus/proto/media_perception.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/media_perception"
+}
+
+proto_library("smbprovider_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/smbprovider"
+}
+
 proto_library("vm_applications_apps_proto") {
   sources = [
     "//third_party/cros_system_api/dbus/vm_applications/apps.proto",
   ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
+}
+
+proto_library("account_manager_proto") {
+  sources = [
+    "account_manager/tokens.proto",
+  ]
+
+  proto_out_dir = "chromeos/account_manager"
 }
