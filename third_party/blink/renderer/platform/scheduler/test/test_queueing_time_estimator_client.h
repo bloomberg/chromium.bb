@@ -27,7 +27,7 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
   const std::vector<base::TimeDelta>& expected_queueing_times() {
     return expected_queueing_times_;
   }
-  const std::map<const char*, std::vector<base::TimeDelta>>& split_eqts() {
+  const std::map<std::string, std::vector<base::TimeDelta>>& split_eqts() {
     return split_eqts_;
   }
   const std::vector<base::TimeDelta>& QueueTypeValues(QueueType queue_type);
@@ -36,7 +36,7 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
 
  private:
   std::vector<base::TimeDelta> expected_queueing_times_;
-  std::map<const char*, std::vector<base::TimeDelta>> split_eqts_;
+  std::map<std::string, std::vector<base::TimeDelta>> split_eqts_;
 };
 
 class QueueingTimeEstimatorForTest : public QueueingTimeEstimator {
