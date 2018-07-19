@@ -103,6 +103,9 @@ interface HTMLVideoElement : HTMLMediaElement
     getter onleavepictureinpicture
     setter onleavepictureinpicture
 
+# support_webgl2_compute_context not supported on android, crbug.com/865569
+interface WebGL2ComputeRenderingContext
+
 [GLOBAL OBJECT]
     method openDatabase
     attribute eventSender                    # test only
