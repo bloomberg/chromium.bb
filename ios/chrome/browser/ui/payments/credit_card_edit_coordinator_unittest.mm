@@ -114,6 +114,7 @@ class PaymentRequestCreditCardEditCoordinatorTest
       public PlatformTest {
  protected:
   PaymentRequestCreditCardEditCoordinatorTest() {
+    personal_data_manager_.SetAutofillProfileEnabled(true);
     personal_data_manager_.SetAutofillCreditCardEnabled(true);
     personal_data_manager_.SetAutofillWalletImportEnabled(true);
   }

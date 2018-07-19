@@ -2014,8 +2014,10 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   WaitForOnPersonalDataChanged();
   personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
 
+  // Check that profiles were saved.
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
   // Expect no autofilled values or suggestions.
-  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(0U, personal_data_->GetProfilesToSuggest().size());
 
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
@@ -2058,6 +2060,7 @@ TEST_F(PersonalDataManagerTest,
 
   // Expect 2 autofilled values or suggestions.
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(2U, personal_data_->GetProfilesToSuggest().size());
 
   // Disable CProfile autofill.
   personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
@@ -2066,7 +2069,7 @@ TEST_F(PersonalDataManagerTest,
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   // Expect no profile values or suggestions were loaded.
-  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(0U, personal_data_->GetProfilesToSuggest().size());
 
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
@@ -2321,8 +2324,12 @@ TEST_F(PersonalDataManagerTest,
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
 
+  // Check that profiles were saved.
+  EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
   // Expect no autofilled values or suggestions.
-  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      0U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
@@ -2371,7 +2378,9 @@ TEST_F(PersonalDataManagerTest,
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   // Expect no credit card values or suggestions were loaded.
-  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      0U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
@@ -2379,6 +2388,26 @@ TEST_F(PersonalDataManagerTest,
           /* field_contents= */ base::string16(),
           /*include_server_cards=*/true);
   ASSERT_EQ(0U, suggestions.size());
+}
+
+// Test that local profiles are not added if |kAutofillProfileEnabled| is set to
+// |false|.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_NoCreditCardsAddedIfDisabled) {
+  // Disable Profile autofill.
+  personal_data_->pref_service_->SetBoolean(prefs::kAutofillCreditCardEnabled,
+                                            false);
+
+  // Add a local credit card.
+  CreditCard credit_card("002149C1-EE28-4213-A3B9-DA243FFF021B",
+                         "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
+                          "5105105105105100" /* Mastercard */, "04", "2999",
+                          "1");
+  personal_data_->AddCreditCard(credit_card);
+
+  // Expect no profile values or suggestions were added.
+  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
 }
 
 // Test that expired cards are ordered by frecency and are always suggested

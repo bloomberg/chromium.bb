@@ -441,15 +441,15 @@ Polymer({
   },
 
   /**
-   * Returns true if the pref has been explicitly disabled.
-   * @param {Object} pref
+   * Returns true if either pref value is false.
+   * @param {boolean} pref1Value
+   * @param {boolean} pref2Value
    * @return {boolean}
    * @private
    */
-  isDisabled_: function(pref) {
-    return !!pref && (pref.value === false);
+  eitherIsDisabled_: function(pref1Value, pref2Value) {
+    return !pref1Value || !pref2Value;
   },
-
 
   /**
    * Listens for the save-address event, and calls the private API.

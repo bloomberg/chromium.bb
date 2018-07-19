@@ -34,6 +34,7 @@ class PaymentRequestStateTest : public testing::Test,
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()) {
     test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
+    test_personal_data_manager_.SetAutofillProfileEnabled(true);
     test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
     test_personal_data_manager_.AddProfile(address_);
     credit_card_visa_.set_billing_address_id(address_.guid());

@@ -50,6 +50,7 @@ class CWVAutofillDataManagerTest : public PlatformTest {
 
     // Set to stub out behavior inside PersonalDataManager.
     personal_data_manager_->SetAutofillEnabled(true);
+    personal_data_manager_->SetAutofillProfileEnabled(true);
     personal_data_manager_->SetAutofillCreditCardEnabled(true);
     personal_data_manager_->SetAutofillWalletImportEnabled(true);
 

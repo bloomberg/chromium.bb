@@ -42,6 +42,7 @@ using ::testing::_;
 class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
  public:
   MockTestPersonalDataManager() : TestPersonalDataManager() {
+    SetAutofillProfileEnabled(true);
     SetAutofillCreditCardEnabled(true);
     SetAutofillWalletImportEnabled(true);
   }
@@ -72,6 +73,7 @@ class PaymentRequestTest : public PlatformTest {
  protected:
   PaymentRequestTest()
       : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    test_personal_data_manager_.SetAutofillProfileEnabled(true);
     test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
     test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
   }

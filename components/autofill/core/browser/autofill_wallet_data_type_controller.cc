@@ -39,10 +39,6 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
       autofill::prefs::kAutofillWalletImportEnabled,
       base::Bind(&AutofillWalletDataTypeController::OnUserPrefChanged,
                  base::AsWeakPtr(this)));
-  pref_registrar_.Add(
-      autofill::prefs::kAutofillCreditCardEnabled,
-      base::Bind(&AutofillWalletDataTypeController::OnUserPrefChanged,
-                 base::AsWeakPtr(this)));
 }
 
 AutofillWalletDataTypeController::~AutofillWalletDataTypeController() {}
@@ -124,8 +120,7 @@ bool AutofillWalletDataTypeController::IsEnabled() {
   // Require the user-visible pref to be enabled to sync Wallet data/metadata,
   // and also check that Autofill for credit cards is not disabled by policy.
   PrefService* ps = sync_client_->GetPrefService();
-  return ps->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled) &&
-         ps->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled);
+  return ps->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
 }
 void AutofillWalletDataTypeController::DisableForPolicy() {
   if (state() != NOT_RUNNING && state() != STOPPING) {

@@ -17,6 +17,7 @@ const char kAppLocale[] = "fr-CA";
 
 TEST(AddressComboboxModelTest, Empty) {
   TestPersonalDataManager test_personal_data_manager;
+  test_personal_data_manager.SetAutofillProfileEnabled(true);
 
   AddressComboboxModel model(test_personal_data_manager, kAppLocale, "");
   EXPECT_EQ(1, model.GetItemCount());
@@ -27,6 +28,7 @@ TEST(AddressComboboxModelTest, Empty) {
 
 TEST(AddressComboboxModelTest, OneAddress) {
   TestPersonalDataManager test_personal_data_manager;
+  test_personal_data_manager.SetAutofillProfileEnabled(true);
   AutofillProfile profile1(test::GetFullProfile());
   test_personal_data_manager.AddProfile(profile1);
 
@@ -45,6 +47,7 @@ TEST(AddressComboboxModelTest, OneAddress) {
 
 TEST(AddressComboboxModelTest, TwoAddresses) {
   TestPersonalDataManager test_personal_data_manager;
+  test_personal_data_manager.SetAutofillProfileEnabled(true);
   AutofillProfile profile1(test::GetFullProfile());
   AutofillProfile profile2(test::GetFullProfile2());
 
@@ -70,6 +73,7 @@ TEST(AddressComboboxModelTest, TwoAddresses) {
 
 TEST(AddressComboboxModelTest, AddAnAddress) {
   TestPersonalDataManager test_personal_data_manager;
+  test_personal_data_manager.SetAutofillProfileEnabled(true);
   AutofillProfile profile1(test::GetFullProfile());
   test_personal_data_manager.AddProfile(profile1);
 

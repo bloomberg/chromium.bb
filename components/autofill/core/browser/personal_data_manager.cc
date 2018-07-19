@@ -738,6 +738,9 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
 }
 
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
+  if (!IsAutofillProfileEnabled())
+    return;
+
   if (is_off_the_record_)
     return;
 
@@ -804,6 +807,9 @@ AutofillProfile* PersonalDataManager::GetProfileFromProfilesByGUID(
 }
 
 void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
+  if (!IsAutofillCreditCardEnabled())
+    return;
+
   if (is_off_the_record_)
     return;
 
@@ -1088,8 +1094,6 @@ bool PersonalDataManager::IsDataLoaded() const {
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
   std::vector<AutofillProfile*> result;
-  if (!IsAutofillProfileEnabled())
-    return result;
   result.reserve(web_profiles_.size());
   for (const auto& profile : web_profiles_)
     result.push_back(profile.get());
@@ -1108,9 +1112,6 @@ std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
 
 std::vector<CreditCard*> PersonalDataManager::GetLocalCreditCards() const {
   std::vector<CreditCard*> result;
-  if (!IsAutofillCreditCardEnabled())
-    return result;
-
   result.reserve(local_credit_cards_.size());
   for (const auto& card : local_credit_cards_)
     result.push_back(card.get());
@@ -1119,7 +1120,7 @@ std::vector<CreditCard*> PersonalDataManager::GetLocalCreditCards() const {
 
 std::vector<CreditCard*> PersonalDataManager::GetServerCreditCards() const {
   std::vector<CreditCard*> result;
-  if (!IsAutofillCreditCardEnabled() || !IsAutofillWalletImportEnabled())
+  if (!IsAutofillWalletImportEnabled())
     return result;
 
   result.reserve(server_credit_cards_.size());
@@ -1130,8 +1131,6 @@ std::vector<CreditCard*> PersonalDataManager::GetServerCreditCards() const {
 
 std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
   std::vector<CreditCard*> result;
-  if (!IsAutofillCreditCardEnabled())
-    return result;
 
   result.reserve(local_credit_cards_.size() + server_credit_cards_.size());
   for (const auto& card : local_credit_cards_)
@@ -1150,6 +1149,9 @@ void PersonalDataManager::Refresh() {
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
     const {
+  if (!IsAutofillProfileEnabled())
+    return std::vector<AutofillProfile*>{};
+
   std::vector<AutofillProfile*> profiles = GetProfiles();
 
   // Rank the suggestions by frecency (see AutofillDataModel for details).
@@ -1317,6 +1319,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
 // with a vector instead of a list.
 const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest(
     bool include_server_cards) const {
+  if (!IsAutofillCreditCardEnabled())
+    return std::vector<CreditCard*>{};
+
   std::vector<CreditCard*> credit_cards;
   if (include_server_cards && ShouldSuggestServerCards()) {
     credit_cards = GetCreditCards();
@@ -2203,7 +2208,7 @@ void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
   // server addresses have a chance to merge into the non-verified local
   // profiles.
   std::vector<AutofillProfile> local_profiles;
-  for (AutofillProfile* existing_profile : GetProfilesToSuggest()) {
+  for (AutofillProfile* existing_profile : GetProfiles()) {
     local_profiles.push_back(*existing_profile);
   }
 
