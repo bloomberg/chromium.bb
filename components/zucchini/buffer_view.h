@@ -24,9 +24,9 @@ struct BufferRegion {
   size_t hi() const { return offset + size; }
 
   // Returns whether the Region fits in |[0, container_size)|. Special case:
-  // a size-0 region starting at |container_size| does not fit.
+  // a size-0 region starting at |container_size| fits.
   bool FitsIn(size_t container_size) const {
-    return offset < container_size && container_size - offset >= size;
+    return offset <= container_size && container_size - offset >= size;
   }
 
   // Returns |v| clipped to the inclusive range |[lo(), hi()]|.
