@@ -69,6 +69,7 @@ class SecurityOrigin;
 class SerializedScriptValue;
 class SourceLocation;
 class StyleMedia;
+class USVStringOrTrustedURL;
 class V8FrameRequestCallback;
 class V8IdleRequestCallback;
 
@@ -267,12 +268,27 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   DOMWindow* open(ExecutionContext*,
                   LocalDOMWindow* current_window,
                   LocalDOMWindow* entered_window,
-                  const String& url,
+                  const USVStringOrTrustedURL& stringOrUrl,
                   const AtomicString& target,
                   const String& features,
                   ExceptionState&);
 
-  DOMWindow* open(const String& url_string,
+  DOMWindow* open(const USVStringOrTrustedURL& stringOrUrl,
+                  const AtomicString& frame_name,
+                  const String& window_features_string,
+                  LocalDOMWindow* calling_window,
+                  LocalDOMWindow* entered_window,
+                  ExceptionState&);
+
+  DOMWindow* open(ExecutionContext*,
+                  LocalDOMWindow* current_window,
+                  LocalDOMWindow* entered_window,
+                  const String& str_url,
+                  const AtomicString& target,
+                  const String& features,
+                  ExceptionState&);
+
+  DOMWindow* open(const String& str_url,
                   const AtomicString& frame_name,
                   const String& window_features_string,
                   LocalDOMWindow* calling_window,
@@ -338,6 +354,21 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void DispatchLoadEvent();
   void ClearDocument();
+
+  DOMWindow* openFromString(ExecutionContext*,
+                            LocalDOMWindow* current_window,
+                            LocalDOMWindow* entered_window,
+                            const String& url,
+                            const AtomicString& target,
+                            const String& features,
+                            ExceptionState&);
+
+  DOMWindow* openFromString(const String& url_string,
+                            const AtomicString& frame_name,
+                            const String& window_features_string,
+                            LocalDOMWindow* calling_window,
+                            LocalDOMWindow* entered_window,
+                            ExceptionState&);
 
   // Return the viewport size including scrollbars.
   IntSize GetViewportSize() const;

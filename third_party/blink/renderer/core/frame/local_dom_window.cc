@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
@@ -97,6 +98,7 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
@@ -1532,6 +1534,46 @@ DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
+  if (document_->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return nullptr;
+  }
+  return openFromString(executionContext, current_window, entered_window, url,
+                        target, features, exception_state);
+}
+
+DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
+                                LocalDOMWindow* current_window,
+                                LocalDOMWindow* entered_window,
+                                const USVStringOrTrustedURL& stringOrUrl,
+                                const AtomicString& target,
+                                const String& features,
+                                ExceptionState& exception_state) {
+  DCHECK(stringOrUrl.IsUSVString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (!stringOrUrl.IsTrustedURL() && document_->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return nullptr;
+  }
+
+  String url = stringOrUrl.IsUSVString()
+                   ? stringOrUrl.GetAsUSVString()
+                   : stringOrUrl.GetAsTrustedURL()->toString();
+
+  return openFromString(executionContext, current_window, entered_window, url,
+                        target, features, exception_state);
+}
+
+DOMWindow* LocalDOMWindow::openFromString(ExecutionContext* executionContext,
+                                          LocalDOMWindow* current_window,
+                                          LocalDOMWindow* entered_window,
+                                          const String& url,
+                                          const AtomicString& target,
+                                          const String& features,
+                                          ExceptionState& exception_state) {
   // If the bindings implementation is 100% correct, the current realm and the
   // entered realm should be same origin-domain. However, to be on the safe
   // side and add some defense in depth, we'll check against the entered realm
@@ -1542,16 +1584,54 @@ DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
     return nullptr;
   }
   DCHECK(!target.IsNull());
-  return open(url, target, features, current_window, entered_window,
-              exception_state);
+  return openFromString(url, target, features, current_window, entered_window,
+                        exception_state);
 }
 
-DOMWindow* LocalDOMWindow::open(const String& url_string,
+DOMWindow* LocalDOMWindow::open(const String& url,
                                 const AtomicString& frame_name,
                                 const String& window_features_string,
                                 LocalDOMWindow* calling_window,
                                 LocalDOMWindow* entered_window,
                                 ExceptionState& exception_state) {
+  if (document_->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return nullptr;
+  }
+  return openFromString(url, frame_name, window_features_string, calling_window,
+                        entered_window, exception_state);
+}
+
+DOMWindow* LocalDOMWindow::open(const USVStringOrTrustedURL& stringOrUrl,
+                                const AtomicString& frame_name,
+                                const String& window_features_string,
+                                LocalDOMWindow* calling_window,
+                                LocalDOMWindow* entered_window,
+                                ExceptionState& exception_state) {
+  DCHECK(stringOrUrl.IsUSVString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (!stringOrUrl.IsTrustedURL() && document_->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return nullptr;
+  }
+
+  String url = stringOrUrl.IsUSVString()
+                   ? stringOrUrl.GetAsUSVString()
+                   : stringOrUrl.GetAsTrustedURL()->toString();
+
+  return openFromString(url, frame_name, window_features_string, calling_window,
+                        entered_window, exception_state);
+}
+
+DOMWindow* LocalDOMWindow::openFromString(const String& url_string,
+                                          const AtomicString& frame_name,
+                                          const String& window_features_string,
+                                          LocalDOMWindow* calling_window,
+                                          LocalDOMWindow* entered_window,
+                                          ExceptionState& exception_state) {
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;
   if (!calling_window->GetFrame())
