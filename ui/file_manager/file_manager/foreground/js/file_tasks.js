@@ -186,6 +186,24 @@ FileTasks.create = function(
         return;
       }
 
+      // Linux package installation is currently only supported for a single
+      // file already inside the Linux container.
+      // TODO(timloh): Instead of filtering these out, we probably should show
+      // a dialog with an error message, similar to when attempting to run
+      // Crostini tasks with non-Crostini entries.
+      if (entries.length !== 1 ||
+          !FileTasks.isCrostiniEntry_(entries[0], volumeManager)) {
+        taskItems = taskItems.filter(function(item) {
+          var taskParts = item.taskId.split('|');
+          var appId = taskParts[0];
+          var taskType = taskParts[1];
+          var actionId = taskParts[2];
+          return !(
+              appId === chrome.runtime.id && taskType === 'file' &&
+              actionId === 'install-linux-package');
+        });
+      }
+
       // Filters out Pack with Zip Archiver task because it will be accessible
       // via 'Zip selection' context menu button
       taskItems = taskItems.filter(function(item) {
@@ -407,9 +425,9 @@ FileTasks.isInternalTask_ = function(taskId) {
   var appId = taskParts[0];
   var taskType = taskParts[1];
   var actionId = taskParts[2];
-  return (appId === chrome.runtime.id &&
-          taskType === 'file' &&
-          actionId === 'mount-archive');
+  return (
+      appId === chrome.runtime.id && taskType === 'file' &&
+      (actionId === 'mount-archive' || actionId === 'install-linux-package'));
 };
 
 /**
@@ -435,13 +453,23 @@ FileTasks.isCrostiniTask_ = function(taskId) {
 };
 
 /**
+ * @param {!Entry} entry
+ * @param {!VolumeManagerWrapper} volumeManager
+ * @return {boolean} True if the entry is from crostini.
+ * @private
+ */
+FileTasks.isCrostiniEntry_ = function(entry, volumeManager) {
+  return volumeManager.getLocationInfo(entry).rootType ===
+      VolumeManagerCommon.RootType.CROSTINI;
+};
+
+/**
  * @return {boolean} True if all entries are crostini.
  * @private
  */
 FileTasks.prototype.allCrostiniEntries_ = function() {
   return this.entries_.every(
-      entry => this.volumeManager_.getLocationInfo(entry).rootType ===
-          VolumeManagerCommon.RootType.CROSTINI);
+      entry => FileTasks.isCrostiniEntry_(entry, this.volumeManager_));
 };
 
 /**
@@ -491,6 +519,9 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
       } else if (taskParts[2] === 'open-hosted-gslides') {
         task.iconType = 'gslides';
         task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
+      } else if (taskParts[2] === 'install-linux-package') {
+        task.iconType = 'crostini';
+        task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
       } else if (taskParts[2] === 'view-swf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED'))
@@ -833,8 +864,22 @@ FileTasks.prototype.executeInternalTask_ = function(taskId) {
     this.mountArchivesInternal_();
     return;
   }
+  if (taskParts[2] === 'install-linux-package') {
+    this.installLinuxPackageInternal_();
+    return;
+  }
 
   console.error('The specified task is not a valid internal task: ' + taskId);
+};
+
+/**
+ * Install a Linux Package in the Linux container.
+ * @private
+ */
+FileTasks.prototype.installLinuxPackageInternal_ = function() {
+  assert(this.entries_.length === 1);
+  this.ui_.installLinuxPackageDialog.showInstallLinuxPackageDialog(
+      this.entries_[0]);
 };
 
 /**

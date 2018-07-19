@@ -1323,6 +1323,7 @@ enum HistogramValue {
   SYSTEM_POWER_SOURCE_REQUESTSTATUSUPDATE = 1260,
   INPUTMETHODPRIVATE_GETSURROUNDINGTEXT = 1261,
   USERSPRIVATE_GETLOGINSTATUS = 1262,
+  FILEMANAGERPRIVATEINTERNAL_INSTALLLINUXPACKAGE = 1263,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

@@ -72,6 +72,13 @@ enum CopyProgressStatusType {
   error
 };
 
+// The response when starting installing a Linux package.
+enum InstallLinuxPackageResponse {
+  started,
+  failed,
+  install_already_active
+};
+
 // Specifies type of event that is raised.
 enum FileWatchEventType { changed, error };
 
@@ -731,6 +738,11 @@ callback GetDirectorySizeCallback = void(double size);
 // |entries| Recently modified entries.
 callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 
+// |status| Result of starting the install
+// |failure_reason| Reason for failure for a 'failed' status
+callback InstallLinuxPackageCallback = void(
+    InstallLinuxPackageResponse response, DOMString failure_reason);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -1104,6 +1116,11 @@ interface Functions {
   // Starts and mounts crostini container.
   // |callback|
   static void mountCrostiniContainer(SimpleCallback callback);
+
+  // Starts installation of a Linux package.
+  [nocompile]
+  static void installLinuxPackage([instanceof=Entry] object entry,
+                                  InstallLinuxPackageCallback callback);
 };
 
 interface Events {

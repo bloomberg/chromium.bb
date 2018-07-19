@@ -215,6 +215,13 @@ chrome.fileManagerPrivate.SourceRestriction = {
   NATIVE_OR_DRIVE_SOURCE: 'native_or_drive_source',
 };
 
+/** @enum {string} */
+chrome.fileManagerPrivate.InstallLinuxPackageResponse = {
+  STARTED: 'started',
+  FAILED: 'failed',
+  INSTALL_ALREADY_ACTIVE: 'install_already_active',
+};
+
 /**
  * @typedef {{
  *   taskId: string,
@@ -940,6 +947,15 @@ chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
  *     chrome.runtime.lastError will be set if there was an error.
  */
 chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
+
+/**
+ * Begin installation of a Linux package.
+ * @param {!Entry} entry
+ * @param {function(!chrome.fileManagerPrivate.InstallLinuxPackageResponse,
+ *    string)} callback
+ *    Called when the installation is either started or fails to start.
+ */
+chrome.fileManagerPrivate.installLinuxPackage = function(entry, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

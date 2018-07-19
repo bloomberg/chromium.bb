@@ -138,6 +138,14 @@
         "filesystem:*.gslides"
       ]
     },
+    {
+      "id": "install-linux-package",
+      "default_title": "__MSG_INSTALL_LINUX_PACKAGE__",
+      "default_icon": "common/images/file_types/200/generic.png",
+      "file_filters": [
+        "filesystem:*.deb"
+      ]
+    },
     // The following handlers are used only internally, therefore they do not
     // have any file filter.
     // Selects the passed file after launching the Files app.

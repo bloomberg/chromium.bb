@@ -52,6 +52,11 @@ std::string GetCrostiniMountPointName(Profile* profile);
 // The actual directory the crostini "Linux Files" folder is mounted.
 base::FilePath GetCrostiniMountDirectory(Profile* profile);
 
+// Convert a cracked url to a path inside the Crostini VM.
+std::string ConvertFileSystemURLToPathInsideCrostini(
+    Profile* profile,
+    const storage::FileSystemURL& file_system_url);
+
 // DEPRECATED. Use |ConvertToContentUrls| instead.
 // While this function can convert paths under Downloads, /media/removable
 // and /special/drive, this CANNOT convert paths under ARC media directories

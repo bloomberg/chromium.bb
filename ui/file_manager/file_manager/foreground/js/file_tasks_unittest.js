@@ -56,19 +56,21 @@ function setUp() {
 function getMockFileManager() {
   return {
     volumeManager: {
+      getLocationInfo: function(entry) {
+        return VolumeManagerCommon.RootType.DRIVE;
+      },
       getDriveConnectionState: function() {
         return VolumeManagerCommon.DriveConnectionType.ONLINE;
       },
-      getVolumeInfo: function() {
+      getVolumeInfo: function(entry) {
         return {
           volumeType: VolumeManagerCommon.VolumeType.DRIVE
         };
       }
     },
     ui: {
-      alertDialog: {
-        showHtml: function(title, text, onOk, onCancel, onShow) {}
-      }
+      alertDialog:
+          {showHtml: function(title, text, onOk, onCancel, onShow) {}}
     },
     metadataModel: {},
     directoryModel: {
@@ -204,15 +206,12 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
   var showByExtensionAndMimeIsCalled = new Promise(function(resolve, reject) {
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test.rtf');
+    var fileManager = getMockFileManager();
 
     FileTasks
         .create(
-            {
-              getDriveConnectionState: function() {
-                return VolumeManagerCommon.DriveConnectionType.ONLINE;
-              }
-            },
-            {}, {}, {
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, {
               taskMenuButton: document.createElement('button'),
               fileContextMenu:
                   {defaultActionMenuItem: document.createElement('div')},
@@ -244,20 +243,13 @@ function testOpenSuggestAppsDialogFailure(callback) {
   var onFailureIsCalled = new Promise(function(resolve, reject) {
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test');
+    var fileManager = getMockFileManager();
 
     FileTasks
         .create(
-            {
-              getDriveConnectionState: function() {
-                return VolumeManagerCommon.DriveConnectionType.ONLINE;
-              }
-            },
-            {}, {}, {
-              taskMenuButton: document.createElement('button'),
-              fileContextMenu:
-                  {defaultActionMenuItem: document.createElement('div')}
-            },
-            [entry], [null], mockTaskHistory)
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, [entry], [null],
+            mockTaskHistory)
         .then(function(tasks) {
           tasks.openSuggestAppsDialog(function() {}, function() {}, resolve);
         });

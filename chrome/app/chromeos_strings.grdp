@@ -457,6 +457,28 @@
   <message name="IDS_FILE_BROWSER_TASK_LISTEN" desc="Title of the action to play an audio file.">
     Listen
   </message>
+  <message name="IDS_FILE_BROWSER_TASK_INSTALL_LINUX_PACKAGE" desc="Title of the action to install a Linux package.">
+    Install with Linux (Beta)
+  </message>
+
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_TITLE" desc="In the File Manager, the title shown in the dialog for installing a Linux application.">
+    Install app with Linux (Beta)
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DESCRIPTION" desc="In the File Manager, the message shown in the dialog for installing a Linux application.">
+    The Linux application will be available within your Terminal and may also show an icon in your Launcher.
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_INSTALL_BUTTON" desc="In the File Manager, the label on the button to begin installing a Linux application. ">
+    Install
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_INSTALLATION_STARTED" desc="In the File Manager, the dialog message when a Linux application installation successfully starts.">
+    Installation successfully started.
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_ERROR_TITLE" desc="In the File Manager, the title shown in the dialog for installing a Linux application when an error occurs.">
+    Error installing Linux application
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_ERROR_DESCRIPTION" desc="In the File Manager, the dialog message when a Linux application installation fails.">
+    An error occured during installation of your Linux application.
+  </message>
 
   <message name="IDS_FILE_BROWSER_GALLERY_NO_IMAGES" desc="In the Gallery, the message that there are no images in this directory.">
     No images in this directory.
@@ -5094,6 +5116,24 @@
   </message>
   <message name="IDS_CROSTINI_TERMINA_UPDATE_OFFLINE" desc="Text shown in the Crostini update dialog when the VM component needs updating but the user is offline.">
     Please connect to the internet and try again.
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE" desc="Source of the Notification for Linux package installation.">
+    Linux installer
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_IN_PROGRESS_TITLE" desc="Title of the Notification for an in-progress Linux package installation.">
+    Installation in progress
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_COMPLETED_TITLE" desc="Title of the Notification for Linux package installation once installation has completed successfully.">
+    Installation complete
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_COMPLETED_MESSAGE" desc="Message in the Notification for Linux package installation once installation has completed successfully.">
+    The Linux application was successfully installed. It will be available within your Terminal and may also show an icon in your Launcher.
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_TITLE" desc="Title of the Notification for Linux package installation when there is an error during installation.">
+    Error while installing
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_MESSAGE" desc="Message in the Notification for Linux package installation when there is an error during installation.">
+    An error occurred during installation of your Linux application.
   </message>
 
   <!-- Time limit notification -->

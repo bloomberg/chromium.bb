@@ -119,6 +119,14 @@ function FileManagerUI(providersModel, element, launchParam) {
       providersModel, this.element, launchParam.suggestAppsDialogState);
 
   /**
+   * Dialog for installing .deb files
+   * @type {!cr.filebrowser.InstallLinuxPackageDialog}
+   * @const
+   */
+  this.installLinuxPackageDialog =
+      new cr.filebrowser.InstallLinuxPackageDialog(this.element);
+
+  /**
    * The container element of the dialog.
    * @type {!HTMLElement}
    */
