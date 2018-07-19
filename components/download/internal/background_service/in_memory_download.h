@@ -111,7 +111,7 @@ class InMemoryDownload {
   }
 
  protected:
-  InMemoryDownload(const std::string& guid, const GURL& url);
+  InMemoryDownload(const std::string& guid);
 
   // GUID of the download.
   const std::string guid_;
@@ -125,8 +125,6 @@ class InMemoryDownload {
   base::Time completion_time_;
 
   // The URL request chain of this download.
-  // TODO(crbug.com/863949): Update the URL chain once all redirects in the
-  // request have been identified.
   std::vector<GURL> url_chain_;
 
   // HTTP response headers.
@@ -187,6 +185,15 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
 
   // Sends a new network request.
   void SendRequest();
+
+  // Called when the server redirects to another URL.
+  void OnRedirect(const net::RedirectInfo& redirect_info,
+                  const network::ResourceResponseHead& response_head,
+                  std::vector<std::string>* to_be_removed_headers);
+
+  // Called when the response of the final URL is received.
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head);
 
   // Resets local states.
   void Reset();
