@@ -6,6 +6,7 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "media/capture/video/create_video_capture_device_factory.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
@@ -110,7 +111,7 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
   // happen on a "UI thread equivalent", e.g. obtaining screen rotation on
   // Chrome OS.
   std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
-      media::VideoCaptureDeviceFactory::CreateFactory(
+      media::CreateVideoCaptureDeviceFactory(
           base::ThreadTaskRunnerHandle::Get());
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));

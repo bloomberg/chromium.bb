@@ -6,8 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
-#include "media/capture/video/chromeos/public/cros_features.h"
-#include "media/capture/video/linux/video_capture_device_factory_linux.h"
 
 namespace media {
 
@@ -84,29 +82,5 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
   camera_hal_delegate_->RegisterCameraClient();
   return true;
 }
-
-#if defined(OS_CHROMEOS)
-// static
-VideoCaptureDeviceFactory*
-VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
-    scoped_refptr<base::SingleThreadTaskRunner>
-        task_runner_for_screen_observer) {
-  // On Chrome OS we have to support two use cases:
-  //
-  // 1. For devices that have the camera HAL v3 service running on Chrome OS,
-  //    we use the HAL v3 capture device which VideoCaptureDeviceFactoryChromeOS
-  //    provides.
-  // 2. Existing devices that use UVC cameras need to use the V4L2 capture
-  //    device which VideoCaptureDeviceFacotoryLinux provides; there are also
-  //    some special devices that may never be able to implement a camera HAL
-  //    v3.
-  if (ShouldUseCrosCameraService()) {
-    return new VideoCaptureDeviceFactoryChromeOS(
-        task_runner_for_screen_observer);
-  } else {
-    return new VideoCaptureDeviceFactoryLinux(task_runner_for_screen_observer);
-  }
-}
-#endif
 
 }  // namespace media

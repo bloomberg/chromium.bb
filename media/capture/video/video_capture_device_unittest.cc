@@ -21,7 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/create_video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -300,8 +300,8 @@ class VideoCaptureDeviceTest
         base::DoNothing::Repeatedly<
             media::mojom::JpegEncodeAcceleratorRequest>());
 #endif
-    video_capture_device_factory_ = VideoCaptureDeviceFactory::CreateFactory(
-        base::ThreadTaskRunnerHandle::Get());
+    video_capture_device_factory_ =
+        CreateVideoCaptureDeviceFactory(base::ThreadTaskRunnerHandle::Get());
   }
 
   void SetUp() override {

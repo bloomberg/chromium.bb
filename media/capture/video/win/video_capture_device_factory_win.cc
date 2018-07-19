@@ -753,11 +753,4 @@ void VideoCaptureDeviceFactoryWin::GetSupportedFormats(
   GetApiSpecificSupportedFormats(device, formats);
 }
 
-// static
-VideoCaptureDeviceFactory*
-VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return new VideoCaptureDeviceFactoryWin();
-}
-
 }  // namespace media
