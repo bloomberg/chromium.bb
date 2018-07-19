@@ -220,6 +220,10 @@ class NET_EXPORT URLFetcher {
   // called before the request is started.
   virtual void SetLoadFlags(int load_flags) = 0;
 
+  // Set whether credentials should be included on the request. Must be called
+  // before the request is started.
+  virtual void SetAllowCredentials(bool allow_credentials) = 0;
+
   // Returns the current load flags.
   virtual int GetLoadFlags() const = 0;
 

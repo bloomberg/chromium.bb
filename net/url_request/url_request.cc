@@ -509,6 +509,16 @@ void URLRequest::set_delegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+void URLRequest::set_allow_credentials(bool allow_credentials) {
+  if (allow_credentials) {
+    load_flags_ &= ~(LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
+                     LOAD_DO_NOT_SEND_AUTH_DATA);
+  } else {
+    load_flags_ |= (LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
+                    LOAD_DO_NOT_SEND_AUTH_DATA);
+  }
+}
+
 void URLRequest::Start() {
   DCHECK(delegate_);
 

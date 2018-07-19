@@ -78,6 +78,7 @@ URLFetcherCore::URLFetcherCore(
       delegate_(d),
       delegate_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       load_flags_(LOAD_NORMAL),
+      allow_credentials_(base::nullopt),
       response_code_(URLFetcher::RESPONSE_CODE_INVALID),
       url_request_data_key_(NULL),
       was_fetched_via_proxy_(false),
@@ -212,6 +213,10 @@ void URLFetcherCore::AppendChunkToUpload(const std::string& content,
 
 void URLFetcherCore::SetLoadFlags(int load_flags) {
   load_flags_ = load_flags;
+}
+
+void URLFetcherCore::SetAllowCredentials(bool allow_credentials) {
+  allow_credentials_ = base::make_optional<bool>(allow_credentials);
 }
 
 int URLFetcherCore::GetLoadFlags() const {
@@ -563,6 +568,9 @@ void URLFetcherCore::StartURLRequest() {
     request_->set_upload(std::move(chunked_stream_));
 
   request_->SetLoadFlags(flags);
+  if (allow_credentials_) {
+    request_->set_allow_credentials(allow_credentials_.value());
+  }
   request_->SetReferrer(referrer_);
   request_->set_referrer_policy(referrer_policy_);
   request_->set_site_for_cookies(initiator_.has_value() &&

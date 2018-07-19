@@ -362,6 +362,16 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // must not yet have a Delegate set.
   void set_delegate(Delegate* delegate);
 
+  // Sets whether credentials are allowed.
+  // If credentials are allowed, the request will send and save HTTP
+  // cookies, as well as authentication to the origin server. If not,
+  // they will not be sent, however proxy-level authentication will
+  // still occur.
+  // Setting this to false is equivalent to setting the
+  // LOAD_DO_NOT_SAVE_COOKIES, LOAD_DO_NOT_SEND_COOKIES, and
+  // LOAD_DO_NOT_SEND_AUTH_DATA flags. See https://crbug.com/799935.
+  void set_allow_credentials(bool allow_credentials);
+
   // Sets the upload data.
   void set_upload(std::unique_ptr<UploadDataStream> upload);
 

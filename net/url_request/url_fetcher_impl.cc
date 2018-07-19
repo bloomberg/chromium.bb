@@ -76,6 +76,10 @@ void URLFetcherImpl::SetLoadFlags(int load_flags) {
   core_->SetLoadFlags(load_flags);
 }
 
+void URLFetcherImpl::SetAllowCredentials(bool allow_credentials) {
+  core_->SetAllowCredentials(allow_credentials);
+}
+
 int URLFetcherImpl::GetLoadFlags() const {
   return core_->GetLoadFlags();
 }

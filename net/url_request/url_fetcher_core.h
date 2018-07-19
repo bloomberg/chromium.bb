@@ -86,6 +86,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   // one or more of the LOAD_* flags defined in net/base/load_flags.h.
   void SetLoadFlags(int load_flags);
   int GetLoadFlags() const;
+  void SetAllowCredentials(bool allow_credentials);
   void SetReferrer(const std::string& referrer);
   void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy);
   void SetExtraRequestHeaders(const std::string& extra_request_headers);
@@ -246,6 +247,8 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   scoped_refptr<base::TaskRunner> upload_file_task_runner_;
   std::unique_ptr<URLRequest> request_;  // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
+  // Whether credentials are sent along with the request.
+  base::Optional<bool> allow_credentials_;
   int response_code_;                // HTTP status code for the request
   scoped_refptr<IOBuffer> buffer_;
                                      // Read buffer
