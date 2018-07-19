@@ -168,6 +168,7 @@ void ConflictsHandler::OnNewModuleFound(const ModuleInfoKey& module_key,
   data->SetString("description", inspection_result.description);
   data->SetString("version", inspection_result.version);
   data->SetString("digital_signer", inspection_result.certificate_info.subject);
+  data->SetString("code_id", GenerateCodeId(module_key));
 
   module_list_->Append(std::move(data));
 }
