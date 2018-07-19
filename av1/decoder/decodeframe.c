@@ -3990,7 +3990,8 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
 }
 
 static void read_film_grain(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  if (cm->film_grain_params_present && (cm->show_frame || cm->showable_frame)) {
+  if (cm->seq_params.film_grain_params_present &&
+      (cm->show_frame || cm->showable_frame)) {
     av1_read_film_grain_params(cm, rb);
   } else {
     memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
@@ -4685,8 +4686,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                                "Failed to allocate frame buffer");
           }
           unlock_buffer_pool(pool);
-          set_planes_to_neutral_grey(&cm->seq_params, &frame_bufs[buf_idx].buf,
-                                     0);
+          set_planes_to_neutral_grey(seq_params, &frame_bufs[buf_idx].buf, 0);
 
           cm->ref_frame_map[ref_idx] = buf_idx;
           frame_bufs[buf_idx].cur_frame_offset = frame_offset;
@@ -4706,7 +4706,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->allow_ref_frame_mvs = 0;
 
     if (cm->intra_only) {
-      cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
+      cm->cur_frame->film_grain_params_present =
+          seq_params->film_grain_params_present;
       setup_frame_size(cm, frame_size_override_flag, rb);
       if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
         cm->allow_intrabc = aom_rb_read_bit(rb);
@@ -5007,7 +5008,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
-  cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
+  cm->cur_frame->film_grain_params_present =
+      seq_params->film_grain_params_present;
   read_film_grain(cm, rb);
 
 #if EXT_TILE_DEBUG

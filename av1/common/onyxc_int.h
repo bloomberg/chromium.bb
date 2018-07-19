@@ -255,6 +255,8 @@ typedef struct SequenceHeader {
   int subsampling_y;          // Chroma subsampling for y
   aom_chroma_sample_position_t chroma_sample_position;
   int separate_uv_delta_q;
+
+  int film_grain_params_present;
 } SequenceHeader;
 
 typedef struct AV1Common {
@@ -494,7 +496,6 @@ typedef struct AV1Common {
   ENTROPY_CONTEXT **above_context[MAX_MB_PLANE];
   TXFM_CONTEXT **above_txfm_context;
   WarpedMotionParams global_motion[REF_FRAMES];
-  int film_grain_params_present;
   aom_film_grain_t film_grain_params;
 
   int cdef_pri_damping;

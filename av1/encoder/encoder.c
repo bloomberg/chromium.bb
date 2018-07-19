@@ -455,7 +455,7 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
   }
 
   if (oxcf->film_grain_test_vector) {
-    cm->film_grain_params_present = 1;
+    cm->seq_params.film_grain_params_present = 1;
     if (cm->frame_type == KEY_FRAME) {
       memcpy(&cm->film_grain_params,
              film_grain_test_vectors + oxcf->film_grain_test_vector - 1,
@@ -473,7 +473,7 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
     aom_film_grain_table_read(cpi->film_grain_table,
                               oxcf->film_grain_table_filename, &cm->error);
   } else {
-    cm->film_grain_params_present = 0;
+    cm->seq_params.film_grain_params_present = 0;
     memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
   }
 }
@@ -6081,11 +6081,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->cur_frame->buf.buf_8bit_valid = 0;
 
   if (cpi->film_grain_table) {
-    cm->film_grain_params_present = aom_film_grain_table_lookup(
+    cm->seq_params.film_grain_params_present = aom_film_grain_table_lookup(
         cpi->film_grain_table, *time_stamp, *time_end, 0 /* =erase */,
         &cm->film_grain_params);
   }
-  cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
+  cm->cur_frame->film_grain_params_present =
+      cm->seq_params.film_grain_params_present;
 
   // only one operating point supported now
   const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);

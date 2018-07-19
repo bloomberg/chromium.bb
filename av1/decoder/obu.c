@@ -339,7 +339,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                        seq_params->subsampling_x, seq_params->subsampling_y);
   }
 
-  cm->film_grain_params_present = aom_rb_read_bit(rb);
+  seq_params->film_grain_params_present = aom_rb_read_bit(rb);
 
   if (av1_check_trailing_bits(pbi, rb) != 0) {
     // cm->error.error_code is already set.
