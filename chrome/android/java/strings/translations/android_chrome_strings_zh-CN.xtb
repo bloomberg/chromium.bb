@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1513858653616922153">删除密码</translation>
 <translation id="1516229014686355813">“点按搜索”功能会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中关闭该功能。</translation>
-<translation id="1521008027388393450">热门内容</translation>
 <translation id="1539064842193522527">已在 Chrome 中打开此链接</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">连接的设备</translation>
 <translation id="1571304935088121812">复制用户名</translation>
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
+<translation id="162035744160882748">开启同步、个性化和其他 Google 服务</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 个所选项}other{移除 # 个所选项}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">安全事件</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
 <translation id="1868024384445905608">Chrome 现可更快速地下载文件</translation>
+<translation id="1878302395768190018">您可以随时在 Chrome 设置中自定义此设置</translation>
 <translation id="1880072593381090678">Chrome 中的热门网页</translation>
 <translation id="1883903952484604915">我的文件</translation>
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="311456632243022227">已在 Chrome 中打开多个链接</translation>
 <translation id="3115898365077584848">显示信息</translation>
-<translation id="3129938255108848489">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3157842584138209013">通过“更多选项”按钮查看您已节省多少数据流量</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
+<translation id="385051799172605136">后退</translation>
 <translation id="3859306556332390985">前进</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
@@ -371,6 +372,7 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">语言</translation>
+<translation id="4192273449750167573">在下一个屏幕上查看您的设置</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4198423547019359126">没有可用的下载内容保存位置</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
@@ -390,6 +392,7 @@
 <translation id="4404568932422911380">没有书签</translation>
 <translation id="4409723563706114196">使用网页联想查询功能</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
+<translation id="4419556793104466535">控制同步、个性化和其他服务</translation>
 <translation id="4432792777822557199">从现在开始，源语言为<ph name="SOURCE_LANGUAGE" />的网页一律会被翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="4445444302979002552">使用联想查询服务可让系统提供搜索字词和网站建议</translation>
@@ -495,6 +498,7 @@
 <translation id="5222676887888702881">退出</translation>
 <translation id="5224771365102442243">包含视频</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
+<translation id="5240817131241497236">Chrome 中控制同步、个性化和其他 Google 服务的设置已发生更改。这可能会影响您的当前设置。</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5284584623296338184">对您的书签、历史记录、密码和其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据将继续存储在您的 Google 帐号中。</translation>
@@ -682,6 +686,7 @@
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
+<translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6710213216561001401">上一个</translation>
@@ -696,6 +701,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6846298663435243399">正在加载...</translation>
+<translation id="685040365210406336">不做任何更改</translation>
 <translation id="6850409657436465440">您的下载仍在进行中</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
 <translation id="6864459304226931083">下载图片</translation>
@@ -817,6 +823,7 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
+<translation id="7832327313660264358">您同步到 Google 中的数据和您使用的功能将保持不变</translation>
 <translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="784934925303690534">时间范围</translation>
@@ -858,7 +865,6 @@
 <translation id="8105951947646329362">提供相关页面建议</translation>
 <translation id="8116925261070264013">已静音的网站</translation>
 <translation id="813082847718468539">查看网站信息</translation>
-<translation id="8160722851663543621">将地址栏和搜索框中的搜索字词以及一些 Cookie 发送给您的默认搜索引擎</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="8186512483418048923">还剩 <ph name="FILES" /> 个文件</translation>
 <translation id="8190358571722158785">还剩 1 天</translation>

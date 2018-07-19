@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">קריאה ושינוי של משתמשים ברשימת היתרים</translation>
 <translation id="1206407435587370571">‏סיור ב-Chromebook</translation>
 <translation id="1209796539517632982">שרתי שמות אוטומטיים</translation>
-<translation id="1210982357925844241">אפשר להציג ולנהל סיסמאות שמורות בכתובת <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="1211364473545090084">חלון גלישה בסתר מאפשר לגלוש בלי לשמור את היסטוריית הגלישה</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> טביעות אצבעות הוגדרו</translation>
 <translation id="1215411991991485844">נוסף יישום רקע חדש</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     במסך הבא, שלח אלינו משוב כדי לעזור לנו לתקן את הבעיה.</translation>
 <translation id="121783623783282548">הסיסמאות אינן תואמות.</translation>
-<translation id="1218015446623563536">‏מחיקת Linux</translation>
 <translation id="1218860753635451122">‏לחיצה על הלחצן "אני מסכים/ה" משמעותה הסכמה לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
 <translation id="122082903575839559">אלגוריתם חתימה של אישור </translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 עם הצפנת RSA</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">אפשר תמיד חלונות קופצים והפניות אוטומטיות מ-<ph name="HOST" /></translation>
 <translation id="126710816202626562">שפת תרגום:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">‏שליחת חיפושים משורת כתובת האתר ותיבת החיפוש אל מנוע החיפוש שהגדרת כברירת מחדל יחד עם קובצי cookie מסוימים.</translation>
 <translation id="127138278192656016">שימוש בסינכרון ובכל השירותים</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1272242203003205253">‏שותפים של Google עובדים עם ה-Assistant כדי לעזור לך</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">החשבון של בעלים זה צריך להיות החשבון הראשון שאליו נכנסים בעת כניסה לפעילות באתר מחשבונות מרובים.</translation>
 <translation id="1503914375822320413">פעולת ההעתקה נכשלה, שגיאה בלתי צפויה: $1</translation>
 <translation id="150411034776756821">הסרה של <ph name="SITE" /></translation>
-<translation id="1504682556807808151">האם ברצונך ש-<ph name="PASSWORD_MANAGER_BRAND" /> ישמור את הסיסמה בשביל האתר הזה?</translation>
 <translation id="1505091014076919009">‏כאן ניתן לנהל את כל חשבונות Google המחוברים מאפליקציות ומאתרים.</translation>
 <translation id="1506061864768559482">מנוע חיפוש</translation>
 <translation id="1507170440449692343">דף זה נחסם לגישה למצלמה שלך.</translation>
@@ -355,7 +351,6 @@
 <translation id="1511388193702657997">הצגת הצעה לשמור את הסיסמאות שלך באינטרנט</translation>
 <translation id="1512210426710821809">הדרך היחידה לבטל את הפעולה זו היא להתקין מחדש את <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">‏יובא מ-Safari</translation>
-<translation id="1520605251886806589">‏Google עשויה להשתמש בתוכן מאתרים שאליהם נכנסת ובפעילות הגלישה והאינטראקציות שלך כדי להתאים אישית את Chrome ושירותים אחרים של Google, כמו Translate, החיפוש ומודעות. אפשר להתאים אישית את התכונה הזו ב'הגדרות'.</translation>
 <translation id="1521442365706402292">נהל אישורים</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1524430321211440688">מקלדת</translation>
@@ -998,6 +993,7 @@
 <translation id="2509495747794740764">שיעור קנה המידה חייב להיות מספר בין 10 ל-200.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">מילוי אוטומטי של טפסים</translation>
+<translation id="2513403576141822879">‏אפשר למצוא הגדרות נוספות בנושא פרטיות, אבטחה ואיסוף נתונים בדף <ph name="BEGIN_LINK" />סנכרון ושירותי Google<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">סריקה</translation>
 <translation id="2518024842978892609">שימוש באישורי הלקוח</translation>
@@ -1033,7 +1029,6 @@
 <translation id="2564520396658920462">‏הפעלת JavaScript דרך AppleScript מושבתת. כדי להפעיל את האפשרות הזו, מסרגל התפריטים יש לעבור אל 'תצוגה' &gt; 'מפתח' &gt; 'התרת JavaScript מאירועי Apple'. מידע נוסף זמין בכתובת https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">בדיקת איות משופרת</translation>
 <translation id="2566124945717127842">‏בצע פעולת Powerwash כדי לאפס את מכשיר <ph name="IDS_SHORT_PRODUCT_NAME" /> שלך כך שיהיה כמו חדש.</translation>
-<translation id="2567257616420533738">הסיסמה נשמרה. אפשר להציג ולנהל את הסיסמאות השמורות ב-<ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">גורם מכיל של סרגל המידע</translation>
 <translation id="2570454805927264159">‏איך להפיק את המירב מ-Assistant</translation>
 <translation id="257088987046510401">ערכות נושא</translation>
@@ -1839,7 +1834,6 @@
 <translation id="3792890930871100565">נתק מדפסות</translation>
 <translation id="3796648294839530037">רשתות מועדפות:</translation>
 <translation id="3797900183766075808">&amp;חפש ב-<ph name="SEARCH_ENGINE" /> אחר '<ph name="SEARCH_TERMS" />'</translation>
-<translation id="3798133693323981089">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="3798449238516105146">גרסה</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;פתח הכל}=1{&amp;פתח סימניה}two{&amp;פתח הכל (2)}many{&amp;פתח הכל (#)}other{&amp;פתח הכל (#)}}</translation>
 <translation id="3800806661949714323">הצג הכל (מומלץ)</translation>
@@ -2479,9 +2473,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">‏לא מחנות האינטרנט של Chrome.</translation>
 <translation id="4871370605780490696">הוסף סימניה</translation>
-<translation id="4871833665870725367">האם ברצונך לעדכן את הסיסמה של <ph name="ORIGIN" /> שנשמרה על-ידי <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4873312501243535625">בודק קובצי המדיה</translation>
-<translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4876273079589074638">עזור למהנדסים שלנו לחקור את הקריסה הזו ולתקן אותה. מומלץ לרשום את השלבים בצורה כמה שיותר מדויקת, גם הפרטים הקטנים ביותר יכולים לעזור.</translation>
 <translation id="4876895919560854374">נעילה ושחרור של המסך</translation>
 <translation id="4877017884043316611">‏התאם ל-Chromebox</translation>
@@ -3035,7 +3027,6 @@
 <translation id="5669267381087807207">מפעיל</translation>
 <translation id="5669691691057771421">‏הזן את מספר ה-PIN החדש</translation>
 <translation id="5671641761787789573">תמונות נחסמו</translation>
-<translation id="5673076758299428095">‏כיבוי Linux</translation>
 <translation id="5677503058916217575">שפת הדף:</translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5678550637669481956">ניתנה הרשאה לקריאה וכתיבה ב-<ph name="VOLUME_NAME" />.</translation>
@@ -4311,6 +4302,7 @@
 <translation id="7701869757853594372">מזהים ייחודיים של משתמשים</translation>
 <translation id="7702907602086592255">דומיין</translation>
 <translation id="7704305437604973648">משימה</translation>
+<translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="7704521324619958564">‏פתח את Play Store</translation>
 <translation id="7705276765467986571">לא ניתן להעלות דגם סימניה.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4983,7 +4975,6 @@
 <translation id="8712637175834984815">הבנתי</translation>
 <translation id="8713570323158206935">שלח <ph name="BEGIN_LINK1" />פרטי מערכת<ph name="END_LINK1" /></translation>
 <translation id="8714154114375107944">סיום התמיכה</translation>
-<translation id="871476437400413057">‏סיסמאות שמורות ב-Google</translation>
 <translation id="8714838604780058252">גרפיקת רקע</translation>
 <translation id="8715480913140015283">כרטיסיית הרקע משתמשת במצלמה</translation>
 <translation id="8719653885894320876">הורדת <ph name="PLUGIN_NAME" /> נכשלה</translation>
@@ -5064,7 +5055,6 @@
 <translation id="8830796635868321089">‏בדיקת העדכון נכשלה עם ההגדרות הנוכחיות של שרת ה-proxy‏. התאם את <ph name="PROXY_SETTINGS_LINK_START" />הגדרות שרת ה-proxy שלך<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8834039744648160717">הגדרת הרשת היא בשליטת <ph name="USER_EMAIL" />.</translation>
 <translation id="8834164572807951958">חברים באחסון השיתופי '<ph name="DESTINATION_NAME" />' יקבלו גישה ויוכלו להעתיק את הפריטים האלה.</translation>
-<translation id="8837103518490433332">האם ברצונך ש-<ph name="PASSWORD_MANAGER_BRAND" /> ישמור את הסיסמה שלך בשביל <ph name="ORIGIN" />?</translation>
 <translation id="8838770651474809439">המבורגר</translation>
 <translation id="883911313571074303">רשום הערה לתמונה</translation>
 <translation id="8844690305858050198">‏סיימנו! התוכנות המזיקות הוסרו. כדי להפעיל מחדש את התוספים, צריך לעבור אל &lt;a href="chrome://extensions"&gt;תוספים.&lt;/a&gt;</translation>
@@ -5072,7 +5062,6 @@
 <translation id="8846141544112579928">מחפש מקלדת...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">‏כדי לפתוח קבצים בעזרת $1, קודם צריך להעתיק אל התיקייה Linux Files (קובצי Linux).</translation>
-<translation id="8858798938034909167">‏תוכל לגשת לסיסמאות שלך מכל מכשיר דרך <ph name="BEGIN_LINK" />‏passwords.google.com‏<ph name="END_LINK" /></translation>
 <translation id="8859057652521303089">בחר שפה:</translation>
 <translation id="8859174528519900719">תת-מסגרת: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">‏גיליון אלקטרוני של Excel</translation>
@@ -5108,6 +5097,7 @@
 <translation id="8909833622202089127">האתר עוקב אחרי המיקום שלך</translation>
 <translation id="8910146161325739742">שיתוף המסך שלך</translation>
 <translation id="8910222113987937043">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות אחרות לא יסונכרנו עוד עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יישארו בחשבון Google ותוכל לנהל אותם ב<ph name="BEGIN_LINK" />מרכז השליטה של Google<ph name="END_LINK" />.</translation>
+<translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="8912793549644936705">מתח</translation>
 <translation id="8915370057835397490">טוען הצעה...</translation>
 <translation id="8916476537757519021">תת-מסגרת לגלישה בסתר: <ph name="SUBFRAME_SITE" /></translation>

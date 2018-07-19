@@ -59,7 +59,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="1809939268435598390">Usuń folder</translation>
 <translation id="1813414402673211292">Wyczyść historię przeglądania</translation>
 <translation id="1820259098641718022">Dodano do listy Do przeczytania</translation>
-<translation id="1821253160463689938">Zapisuje Twoje ustawienia w plikach cookie, nawet jeśli nie odwiedzasz tych stron</translation>
+<translation id="1821253160463689938">Twoje ustawienia będą zapisywane w plikach cookie, nawet jeśli nie odwiedzisz tych stron</translation>
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
 <translation id="1886928167269928266">Od początku</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
@@ -89,7 +89,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="2481538920734869610">DODAJ KONTO</translation>
-<translation id="2523184218357549926">Wysyła adresy URL odwiedzanych stron do Google</translation>
+<translation id="2523184218357549926">Adresy URL odwiedzanych stron będą wysyłane do Google</translation>
 <translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
 <translation id="2529021024822217800">Otwórz wszystkie</translation>
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
@@ -348,7 +348,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6979158407327259162">Dysk Google</translation>
 <translation id="7004499039102548441">Niedawno używane karty</translation>
 <translation id="7006788746334555276">Ustawienia treści</translation>
-<translation id="7017968314960951695">Wykorzystuje do personalizacji zawartość otwieranych stron oraz informacje o Twoich interakcjach i aktywności w przeglądarce.</translation>
+<translation id="7017968314960951695">Zawartość otwieranych stron oraz informacje o Twoich interakcjach i aktywności w przeglądarce zostaną wykorzystane do personalizacji</translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7031882061095297553">Synchronizuj z</translation>
 <translation id="7053983685419859001">Blokuj</translation>
@@ -391,7 +391,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7769602470925380267">Zaakceptuj i wyloguj się</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
-<translation id="7830720446622801252">Niespersonalizowane usługi</translation>
+<translation id="7830720446622801252">Usługi niespersonalizowane</translation>
 <translation id="7856733331829174190">Nie udało się pobrać pliku</translation>
 <translation id="7859704718976024901">Historia przeglądania</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -410,7 +410,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Zamknij wszystkie karty</translation>
 <translation id="8114753159095730575">Pobrany plik jest dostępny. Opcje są dostępne u dołu ekranu.</translation>
-<translation id="8160722851663543621">Wysyła zapytania wpisane na pasku adresu i w polu wyszukiwania oraz niektóre pliki cookie do domyślnej wyszukiwarki</translation>
+<translation id="8160722851663543621">Zapytania wpisane na pasku adresu i w polu wyszukiwania oraz niektóre pliki cookie zostaną wysłane do domyślnej wyszukiwarki</translation>
 <translation id="8205564605687841303">Anuluj</translation>
 <translation id="8225985093977202398">Obrazy i pliki w pamięci podręcznej</translation>
 <translation id="8261506727792406068">Usuń</translation>

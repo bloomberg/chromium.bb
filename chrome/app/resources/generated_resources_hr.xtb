@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">čitati i mijenjati korisnike na popisu dopuštenih</translation>
 <translation id="1206407435587370571">Istražite svoj Chromebook</translation>
 <translation id="1209796539517632982">Automatski poslužitelji naziva</translation>
-<translation id="1210982357925844241">Spremljene zaporke možete pregledati i upravljati njima na <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="1211364473545090084">Pomoću anonimnog prozora surfajte na webu bez spremanja povijesti pregledavanja</translation>
 <translation id="1213037489357051291">Postavljeno otisaka: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1215411991991485844">Dodana je nova pozadinska aplikacija</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     Na sljedećem zaslonu pošaljite povratne informacije kako biste nam pomogli riješiti poteškoću.</translation>
 <translation id="121783623783282548">Zaporke se ne podudaraju.</translation>
-<translation id="1218015446623563536">Brisanje Linuxa</translation>
 <translation id="1218860753635451122">Klikom na gumb "Prihvaćam" prihvaćate prethodno opisanu obradu za ove Googleove usluge.</translation>
 <translation id="122082903575839559">Algoritam potpisa certifikata</translation>
 <translation id="1221024147024329929">PKCS br. 1 MD2 s RSA enkripcijom</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">Uvijek dopusti skočne prozore i preusmjeravanja s web-lokacije <ph name="HOST" /></translation>
 <translation id="126710816202626562">Jezik prijevoda:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">Zadanoj tražilici šalje pretraživanja iz adresne trake i okvira za pretraživanje te neke kolačiće</translation>
 <translation id="127138278192656016">Upotreba sinkronizacije i svih usluga</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1272242203003205253">Googleovi partneri surađuju s Asistentom da bi vam pomogli</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">Vlasnik ovog računa mora biti prvi prijavljeni račun u sesiji s višestrukom prijavom.</translation>
 <translation id="1503914375822320413">Kopiranje nije uspjelo, neočekivana pogreška: $1</translation>
 <translation id="150411034776756821">Ukloni <ph name="SITE" /></translation>
-<translation id="1504682556807808151">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> spremi vašu zaporku za ovu web-lokaciju?</translation>
 <translation id="1505091014076919009">Ovdje možete upravljati svim Google računima kojima ste prijavljeni na aplikacije i web-lokacije.</translation>
 <translation id="1506061864768559482">Tražilica</translation>
 <translation id="1507170440449692343">Stranici je zabranjen pristup vašoj kameri.</translation>
@@ -358,7 +354,6 @@
 <translation id="1511388193702657997">Nudi spremanje vaših zaporki za web</translation>
 <translation id="1512210426710821809">To možete poništiti jedino tako da ponovo instalirate <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Uvezeno iz preglednika Safari</translation>
-<translation id="1520605251886806589">Google može upotrebljavati sadržaj na web-lokacijama koje posjećujete, vašu aktivnost pregledavanja i interakcije u pregledniku kako bi prilagodio Chrome i druge Googleove usluge kao što su Prevoditelj, Pretraživanje i oglasi. To možete prilagoditi u Postavkama.</translation>
 <translation id="1521442365706402292">Upravljanje potvrdama</translation>
 <translation id="152234381334907219">Nikad spremljeno</translation>
 <translation id="1524430321211440688">Tipkovnica</translation>
@@ -1001,6 +996,7 @@
 <translation id="2509495747794740764">Iznos skaliranja mora biti broj od 10 do 200.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">Automatski popunite obrasce</translation>
+<translation id="2513403576141822879">Više postavki koje se odnose na privatnost, sigurnost i prikupljanje podataka dostupno je u odjeljku <ph name="BEGIN_LINK" />Sinkronizacija i prilagodba<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Traži</translation>
 <translation id="2518024842978892609">Upotreba vaših korisničkih certifikata</translation>
@@ -1036,7 +1032,6 @@
 <translation id="2564520396658920462">Izvršavanje JavaScripta putem AppleScripta isključeno je. Da biste ga uključili, na traci izbornika otvorite Prikaz &gt; Razvojni programer &gt; Dopusti JavaScript iz Appleovih događaja. Više informacija dostupno je na stranici https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Poboljšana provjera pravopisa</translation>
 <translation id="2566124945717127842">Pokrenite Powerwash da biste vratili uređaj <ph name="IDS_SHORT_PRODUCT_NAME" /> na tvorničke postavke.</translation>
-<translation id="2567257616420533738">Zaporka je spremljena. Spremljene zaporke možete pregledati i upravljati njima na <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Spremnik infotrake</translation>
 <translation id="2570454805927264159">Iskoristite sve što Asistent nudi</translation>
 <translation id="257088987046510401">Teme</translation>
@@ -1842,7 +1837,6 @@
 <translation id="3792890930871100565">Isključi pisače</translation>
 <translation id="3796648294839530037">Omiljene mreže:</translation>
 <translation id="3797900183766075808">&amp;Traži pojam "<ph name="SEARCH_TERMS" />" na tražilici <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798133693323981089">Samodovršavanje pretraživanja i web-adresa</translation>
 <translation id="3798449238516105146">Verzija</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Otvori sve}=1{&amp;Otvori oznaku}one{&amp;Otvori sve (#)}few{&amp;Otvori sve (#)}other{&amp;Otvori sve (#)}}</translation>
 <translation id="3800806661949714323">Prikaži sve (preporučeno)</translation>
@@ -2482,9 +2476,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Nije iz web-trgovine Chrome.</translation>
 <translation id="4871370605780490696">Dodavanje oznake</translation>
-<translation id="4871833665870725367">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za <ph name="ORIGIN" />?</translation>
 <translation id="4873312501243535625">Provjera medijskih datoteka</translation>
-<translation id="4875622588773761625">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za tu web-lokaciju?</translation>
 <translation id="4876273079589074638">Pomognite našim inženjerima da istraže i isprave rušenje. Navedite točne korake ako možete. Svaka je pojedinost važna!</translation>
 <translation id="4876895919560854374">zaključati i otključati zaslon</translation>
 <translation id="4877017884043316611">Upari s Chromeboxom</translation>
@@ -3037,7 +3029,6 @@
 <translation id="5669267381087807207">Aktivacija</translation>
 <translation id="5669691691057771421">Unesite novi PIN</translation>
 <translation id="5671641761787789573">Slike su blokirane</translation>
-<translation id="5673076758299428095">Isključi Linux</translation>
 <translation id="5677503058916217575">Jezik stranice:</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5678550637669481956">Odobren je pristup za čitanje jedinice <ph name="VOLUME_NAME" /> i zapisivanje na nju.</translation>
@@ -4315,6 +4306,7 @@
 <translation id="7701869757853594372">Rukuje KORISNIK</translation>
 <translation id="7702907602086592255">Domena</translation>
 <translation id="7704305437604973648">Zadatak</translation>
+<translation id="7704317875155739195">Samodovršavanje pretraživanja i URL-ova</translation>
 <translation id="7704521324619958564">Otvori Trgovinu Play</translation>
 <translation id="7705276765467986571">Nije bilo moguće učitati model oznaka.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4989,7 +4981,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8712637175834984815">Shvaćam</translation>
 <translation id="8713570323158206935">Pošalji <ph name="BEGIN_LINK1" />informacije o sustavu<ph name="END_LINK1" /></translation>
 <translation id="8714154114375107944">Kraj podrške</translation>
-<translation id="871476437400413057">Google spremljene zaporke</translation>
 <translation id="8714838604780058252">Pozadinska grafika</translation>
 <translation id="8715480913140015283">Pozadinska kartica upotrebljava vaš fotoaparat</translation>
 <translation id="8719653885894320876">Preuzimanje dodatka <ph name="PLUGIN_NAME" /> nije uspjelo</translation>
@@ -5070,7 +5061,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8830796635868321089">Provjera ažuriranja pomoću trenutačnih postavki proxyja nije uspjela. Prilagodite <ph name="PROXY_SETTINGS_LINK_START" />postavke proxyja<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8834039744648160717">Konfiguracijom mreže upravlja <ph name="USER_EMAIL" />.</translation>
 <translation id="8834164572807951958">Članovi grupe "<ph name="DESTINATION_NAME" />" dobit će pristup kopiji tih stavki.</translation>
-<translation id="8837103518490433332">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> spremi vašu zaporku za <ph name="ORIGIN" />?</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Dodaj napomenu slici</translation>
 <translation id="8844690305858050198">Gotovo! Štetni je softver uklonjen. Za ponovno uključivanje proširenja otvorite &lt;a href="chrome://extensions"&gt;Proširenja&lt;/a&gt;.</translation>
@@ -5078,7 +5068,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8846141544112579928">Traženje tipkovnice...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">Da biste otvarali datoteke pomoću aplikacije $1, najprije ih kopirajte u mapu Linux datoteke.</translation>
-<translation id="8858798938034909167">Na stranici <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> možete pristupati svojim zaporkama na bilo kojem uređaju</translation>
 <translation id="8859057652521303089">Odaberite svoj jezik:</translation>
 <translation id="8859174528519900719">Podokvir: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excelova proračunska tablica</translation>
@@ -5114,6 +5103,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8909833622202089127">Web-lokacija prati vašu lokaciju</translation>
 <translation id="8910146161325739742">Dijeljenje zaslona</translation>
 <translation id="8910222113987937043">Promjene vaših oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši podaci ostat će pohranjeni na vašem Google računu i možete upravljati njima na <ph name="BEGIN_LINK" />Google nadzornoj ploči<ph name="END_LINK" />.</translation>
+<translation id="8912362522468806198">Google Račun</translation>
 <translation id="8912793549644936705">Rastegni</translation>
 <translation id="8915370057835397490">Učitavanje prijedloga</translation>
 <translation id="8916476537757519021">Anonimni podokvir: <ph name="SUBFRAME_SITE" /></translation>

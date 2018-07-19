@@ -151,7 +151,7 @@
 <translation id="6394232988457703198">Należy teraz ponownie uruchomić Chromium.</translation>
 <translation id="6400072781405947421">Chromium może działać nieprawidłowo, bo nie jest już zgodny z systemem Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium to przeglądarka obsługująca strony i aplikacje z szybkością błyskawicy. Jest szybka, stabilna i łatwa w użyciu. Bezpiecznie przeglądaj internet dzięki wbudowanej w Chromium ochronie przed złośliwym oprogramowaniem i phishingiem.</translation>
-<translation id="641451971369018375">Wysyła do Google dane, które pomagają ulepszać Chromium i funkcje przeglądania</translation>
+<translation id="641451971369018375">Dane, które pomagają ulepszać Chromium i funkcje przeglądania, będą wysyłane do Google</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium uruchomi się ponownie za sekundę}few{Chromium uruchomi się ponownie za # sekundy}many{Chromium uruchomi się ponownie za # sekund}other{Chromium uruchomi się ponownie za # sekundy}}</translation>
 <translation id="6475912303565314141">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium.</translation>
 <translation id="6485906693002546646">Używasz adresu <ph name="PROFILE_EMAIL" /> do synchronizowania danych w Chromium. Aby zaktualizować ustawienia synchronizacji lub używać Chromium bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK" />.</translation>
@@ -241,7 +241,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8897323336392112261">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium lub kliknięciu przycisku strony startowej.</translation>
 <translation id="8907580949721785412">Chromium próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="8941642502866065432">Nie można zaktualizować Chromium</translation>
-<translation id="8968921422458636175">Chromium zapisze to hasło za pomocą <ph name="SAVED_PASSWORD_LINK" />. Nie musisz go pamiętać.</translation>
 <translation id="8974095189086268230">Stworzenie systemu operacyjnego Chromium było możliwe dzięki dodatkowym <ph name="BEGIN_LINK_CROS_OSS" />programom o otwartym kodzie źródłowym<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8985587603644336029">Ktoś zalogował się wcześniej w Chromium na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Jeśli to nie jest Twoje konto, utwórz nowego użytkownika Chromium, by Twoje informacje były przechowywane oddzielnie.
 

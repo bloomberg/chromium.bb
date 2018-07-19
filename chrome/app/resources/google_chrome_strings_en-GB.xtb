@@ -136,6 +136,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="4571503333518166079">Go to Chrome notification settings</translation>
+<translation id="459622048091363950">Once Chrome has access, websites will be able to ask you for access.</translation>
 <translation id="4600710005438004015">Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
@@ -254,7 +255,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8380166467911888159">To fix spelling errors, Chrome sends the text that you type in text fields to Google</translation>
 <translation id="840084489713044809">Google Chrome wants to export your passwords.</translation>
 <translation id="8406086379114794905">Help make Chrome better</translation>
-<translation id="8439301513305169426">Chrome will save this password with <ph name="SAVED_PASSWORD_LINK" />. You don’t have to remember it.</translation>
 <translation id="8455999171311319804">Optional: Help make Chrome OS better by automatically sending diagnostic and usage data to Google.</translation>
 <translation id="8478823064122749032">Install Chrome on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8521348052903287641">Inbound rule for Google Chrome Dev to allow mDNS traffic.</translation>

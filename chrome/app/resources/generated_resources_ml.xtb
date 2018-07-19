@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">വൈറ്റ്‌ലിസ്റ്റ് ചെയ്‌ത ഉപയോക്താക്കളെ റീഡുചെയ്യുക, മാറ്റുക</translation>
 <translation id="1206407435587370571">നിങ്ങളുടെ Chromebook-നെ അടുത്തറിയൂ</translation>
 <translation id="1209796539517632982">യാന്ത്രിക നാമ സെർവറുകൾ</translation>
-<translation id="1210982357925844241"><ph name="SAVED_PASSWORDS_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="1211364473545090084">അദൃശ്യ വിൻഡോ ഉപയോഗിച്ച്, നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം സംരക്ഷിക്കാതെ, വെബ് ഉപയോഗിക്കുക</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> വിരലടയാളങ്ങൾ സജ്ജമാക്കി</translation>
 <translation id="1215411991991485844">പുതിയ പശ്ചാത്തല അപ്ലിക്കേഷൻ ചേർത്തു</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     അടുത്ത സ്‌ക്രീനിൽ, ഫീഡ്‌ബാക്ക് അയച്ച് പ്രശ്‌നം പരിഹരിക്കാൻ ഞങ്ങളെ സഹായിക്കുക.</translation>
 <translation id="121783623783282548">പാസ്‌വേഡുകൾ പൊരുത്തപ്പെടുന്നില്ല.</translation>
-<translation id="1218015446623563536">Linux ഇല്ലാതാക്കുക</translation>
 <translation id="1218860753635451122">"ഞാൻ സമ്മതിക്കുന്നു" ബട്ടൺ ക്ലിക്ക് ചെയ്യുക വഴി, ഈ Google സേവനങ്ങൾക്കായി മുകളിൽ വിവരിച്ചിട്ടുള്ള പ്രോസസ്സിംഗിന് നിങ്ങൾ സമ്മതിക്കുകയാണ്.</translation>
 <translation id="122082903575839559">സര്‍‌ട്ടിഫിക്കറ്റ് സിഗ്‌നേച്ചര്‍‌ അല്‍‌ഗോരിതം</translation>
 <translation id="1221024147024329929">RSA എന്‍‌ക്രിപ്‌ഷനോടുകൂടിയ PKCS #1 MD2</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">എല്ലായ്‌പ്പോഴും <ph name="HOST" />-ല്‍‌ നിന്നുമുള്ള പോപ്പ്-‌‌‌അപ്പുകളും റീഡയറക്‌റ്റുകളും അനുവദിക്കുക</translation>
 <translation id="126710816202626562">വിവർത്തന ഭാഷ:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1271317946095246719">നിങ്ങളുടെ ഡിഫോൾട്ട് തിരയൽ എഞ്ചിനിലേക്ക് വിലാസ ബാറിൽ നിന്നും തിരയൽ ബോക്‌സിൽ നിന്നുമുള്ള തിരയലുകളും കുറച്ച് കുക്കികളും അയയ്ക്കുന്നു</translation>
 <translation id="127138278192656016">സമന്വയവും എല്ലാ സേവനങ്ങളും ഉപയോഗിക്കുക</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1272242203003205253">നിങ്ങളെ സഹായിക്കാനായി Google സഹകാരികൾ അസിസ്‌റ്റന്റുമായി ബന്ധപ്പെട്ട് പ്രവർത്തിക്കുന്നു</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">ഒന്നിലധികം സൈൻ ഇൻ സെഷനിൽ സൈൻ ഇൻ ചെയ്തിരിക്കുന്ന ആദ്യ അക്കൗണ്ട്, ഈ ഉടമ അക്കൗണ്ടായിരിക്കണം.</translation>
 <translation id="1503914375822320413">പകർത്തൽ പ്രവർത്തനം പരാജയപ്പെട്ടു, അപ്രതീക്ഷിത പിശക്: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> നീക്കംചെയ്യുക</translation>
-<translation id="1504682556807808151">ഈ സൈറ്റിനായുള്ള നിങ്ങളുടെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> സംരക്ഷിക്കണോ?</translation>
 <translation id="1505091014076919009">നിങ്ങളുടെ, ആപ്പുകളിൽ നിന്നും വെബ്‌സൈറ്റുകളിൽ നിന്നും സൈൻ ഇൻ ചെയ്തിരിക്കുന്ന എല്ലാ Google അക്കൗണ്ടുകളും ഇവിടെ മാനേജ് ചെയ്യാവുന്നതാണ്.</translation>
 <translation id="1506061864768559482">തിരയൽ എഞ്ചിൻ</translation>
 <translation id="1507170440449692343">നിങ്ങളുടെ ക്യാമറ ആക്‌സസ്സുചെയ്യുന്നതിൽ നിന്ന് ഈ പേജിനെ തടഞ്ഞു.</translation>
@@ -355,7 +351,6 @@
 <translation id="1511388193702657997">നിങ്ങളുടെ വെബ് പാസ്‌വേഡുകൾ സംരക്ഷിക്കുന്നത് ഓഫർ ചെയ്യുന്നു</translation>
 <translation id="1512210426710821809"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> വീണ്ടും ഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിലൂടെ മാത്രമേ ഇത് പഴയപടിയാക്കാനാകൂ</translation>
 <translation id="151501797353681931">Safari യില്‍‌ നിന്നും ഇറക്കുമതി ചെയ്‌തത്</translation>
-<translation id="1520605251886806589">Chrome, മറ്റ് Google സേവനങ്ങളായ Translate, തിരയൽ, പരസ്യങ്ങൾ പോലുള്ളവ വ്യക്തിപരമാക്കാൻ, നിങ്ങൾ സന്ദർശിക്കുന്ന സൈറ്റുകളുടെ ഉള്ളടക്കം, ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി, ഇടപെടലുകൾ എന്നിവ Google ഉപയോഗിച്ചേക്കാം. ഇത് നിങ്ങൾക്ക് ക്രമീകരണത്തിൽ ഇഷ്‌ടാനുസൃതമാക്കാവുന്നതാണ്.</translation>
 <translation id="1521442365706402292">സര്‍ട്ടിഫിക്കറ്റുകള്‍ മാനേജ് ചെയ്യുക</translation>
 <translation id="152234381334907219">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
 <translation id="1524430321211440688">കീബോർഡ്</translation>
@@ -998,6 +993,7 @@
 <translation id="2509495747794740764">സ്‌കെയിൽ തുക 10-നും 200-നും ഇടയിലുള്ള സംഖ്യ ആയിരിക്കണം.</translation>
 <translation id="2509566264613697683">8x</translation>
 <translation id="2512222046227390255">ഫോമുകൾ ഓട്ടോഫിൽ ചെയ്യുക</translation>
+<translation id="2513403576141822879">സ്വകാര്യത, സുരക്ഷ, ഡാറ്റാ ശേഖരണം എന്നിവയുമായി ബന്ധപ്പെട്ട കൂടുതൽ ക്രമീകരണത്തിന്, <ph name="BEGIN_LINK" />സമന്വയവും Google സേവനങ്ങളും<ph name="END_LINK" /> കാണുക</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2518024842978892609">നിങ്ങളുടെ ക്ലയന്റ് സർട്ടിഫിക്കറ്റുകൾ ഉപയോഗിക്കുക</translation>
@@ -1033,7 +1029,6 @@
 <translation id="2564520396658920462">AppleScript-ലൂടെ JavaScript നടപ്പിലാക്കുന്നത് ഓഫാക്കിയിരിക്കുന്നു. അത് ഓണാക്കാൻ, മെനു ബാറിൽ നിന്നും കാഴ്‌ച &gt; ഡെവലപ്പർ &gt; Apple Events-ൽ നിന്ന് JavaScript അനുവദിക്കൽ, എന്നതിലേക്ക് പോവുക. കൂടുതൽ വിവരങ്ങൾക്ക്: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">മെച്ചപ്പെടുത്തിയ അക്ഷരത്തെറ്റ് പരിശോധന</translation>
 <translation id="2566124945717127842">നിങ്ങളുടെ <ph name="IDS_SHORT_PRODUCT_NAME" /> ഉപകരണം പുതിയതുപോലാക്കാൻ പുനഃസജ്ജമാക്കുന്നതിന് പവർവാഷുചെയ്യുക.</translation>
-<translation id="2567257616420533738">പാസ്‌വേഡ് സംരക്ഷിച്ചു. <ph name="SAVED_PASSWORDS_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="2568774940984945469">വിവരബാര്‍ കണ്ടെയ്നര്‍</translation>
 <translation id="2570454805927264159">നിങ്ങളുടെ Assistant-നെ പരമാവധി പ്രയോജനപ്പെടുത്തുക</translation>
 <translation id="257088987046510401">തീമുകള്‍‌</translation>
@@ -1839,7 +1834,6 @@
 <translation id="3792890930871100565">പ്രിന്ററുകൾ വിച്ഛേദിക്കുക</translation>
 <translation id="3796648294839530037">പ്രിയപ്പെട്ട നെറ്റ്‌വർക്കുകൾ:</translation>
 <translation id="3797900183766075808">&amp;'<ph name="SEARCH_TERMS" />' എന്നതിനായി <ph name="SEARCH_ENGINE" />-ൽ തിരയുക</translation>
-<translation id="3798133693323981089">തിരയലുകളും വെബ് വിലാസങ്ങളും സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="3798449238516105146">പതിപ്പ്</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{എല്ലാം &amp;തുറക്കുക}=1{ബുക്ക്‌മാർക്ക് &amp;തുറക്കുക}other{എല്ലാം (#) &amp;തുറക്കുക}}</translation>
 <translation id="3800806661949714323">എല്ലാം കാണിക്കുക (ശുപാർശ ചെയ്‌തിരിക്കുന്നു)</translation>
@@ -2478,9 +2472,7 @@
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="4871308555310586478">Chrome വെബ് സ്റ്റോറിൽ നിന്നല്ല.</translation>
 <translation id="4871370605780490696">ബുക്ക്‌മാർക്ക് ചേർക്കുക</translation>
-<translation id="4871833665870725367"><ph name="ORIGIN" /> എന്നതിനായി <ph name="PASSWORD_MANAGER_BRAND" />, നിങ്ങളുടെ പാസ്‌വേഡ് അപ്‌ഡേറ്റുചെയ്യണോ?</translation>
 <translation id="4873312501243535625">മീഡിയ ഫയൽ ചെക്കർ</translation>
-<translation id="4875622588773761625">ഈ സൈറ്റിനായി നിങ്ങളുടെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> അപ്‌ഡേറ്റുചെയ്യണോ?</translation>
 <translation id="4876273079589074638">ഈ ക്രാഷിനെ കുറിച്ച് അന്വേഷിക്കാനും അത് പരിഹരിക്കാനും ഞങ്ങളുടെ എഞ്ചിനീയർമാരെ സഹായിക്കുക. കഴിയുമെങ്കിൽ കൃത്യമായ ഘട്ടങ്ങൾ ലിസ്‌റ്റുചെയ്യുക. ഒരു വിശദാംശവും ചെറുതല്ല!</translation>
 <translation id="4876895919560854374">സ്ക്രീൻ ലോക്കുചെയ്യുക, അൺലോക്കുചെയ്യുക</translation>
 <translation id="4877017884043316611">Chromebox-മായി ജോടിയാക്കുക</translation>
@@ -3033,7 +3025,6 @@
 <translation id="5669267381087807207">സജീവമാക്കുന്നു</translation>
 <translation id="5669691691057771421">പുതിയ പിൻ നൽകുക</translation>
 <translation id="5671641761787789573">ചിത്രങ്ങൾ ബ്ലോക്ക് ചെയ്‌തു</translation>
-<translation id="5673076758299428095">Linux ഷട്ട് ഡൗൺ ചെയ്യുക</translation>
 <translation id="5677503058916217575">പേജ് ഭാഷ:</translation>
 <translation id="5677928146339483299">തടഞ്ഞു</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> എന്നതിലേക്ക് റീഡുചെയ്യാനും റൈറ്റുചെയ്യാനുമുള്ള ആക്‌സസ്സ് അനുവദിച്ചിരിക്കുന്നു.</translation>
@@ -4313,6 +4304,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7701869757853594372">ഉപയോക്താവ് കൈകാര്യംചെയ്യുന്നവ</translation>
 <translation id="7702907602086592255">ഡൊമെയ്‌ൻ</translation>
 <translation id="7704305437604973648">ടാസ്‌ക്</translation>
+<translation id="7704317875155739195">സ്വമേധയാ പൂർത്തിയാക്കുന്ന തിരയലുകളും URL-കളും</translation>
 <translation id="7704521324619958564">Play സ്‌റ്റോർ തുറക്കുക</translation>
 <translation id="7705276765467986571">ബുക്ക്‌മാര്‍ക്ക് മോഡല്‍ ലോഡുചെയ്യാന്‍ കഴിഞ്ഞില്ല.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4986,7 +4978,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8712637175834984815">വിജയകരം</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />സിസ്റ്റം വിവരങ്ങൾ<ph name="END_LINK1" /> അയയ്‌ക്കുക</translation>
 <translation id="8714154114375107944">ഇനി പിന്തുണയ്ക്കില്ല</translation>
-<translation id="871476437400413057">Google സംരക്ഷിത പാസ്‌വേഡുകൾ</translation>
 <translation id="8714838604780058252">പശ്ചാത്തല ഗ്രാഫിക്സ്</translation>
 <translation id="8715480913140015283">പശ്ചാത്തല ടാബ് നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
@@ -5066,7 +5057,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8830796635868321089">നിലവിലെ പ്രോക്‌സി ക്രമീകരണങ്ങൾ ഉപയോഗിച്ചുള്ള അപ്‌ഡേറ്റ് പരിശോധന പരാജയപ്പെട്ടു. നിങ്ങളുടെ <ph name="PROXY_SETTINGS_LINK_START" />പ്രോക്‌സി ക്രമീകരണങ്ങൾ<ph name="PROXY_SETTINGS_LINK_END" /> ക്രമീകരിക്കുക.</translation>
 <translation id="8834039744648160717">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ നിയന്ത്രിക്കുന്നത് <ph name="USER_EMAIL" /> ആണ്.</translation>
 <translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' എന്നതിലെ അംഗങ്ങൾ ഈ ഇനങ്ങളുടെ പകർപ്പിലേക്ക് ആക്‌സസ് ‌കരസ്ഥമാക്കും.</translation>
-<translation id="8837103518490433332"><ph name="ORIGIN" /> എന്നതിനായി നിങ്ങളുടെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> സംരക്ഷിക്കുന്നതിൽ താൽപ്പര്യമുണ്ടോ?</translation>
 <translation id="8838770651474809439">ഹാംബർഗർ</translation>
 <translation id="883911313571074303">ചിത്രം വ്യാഖ്യാനിക്കുക</translation>
 <translation id="8844690305858050198">പൂർത്തിയായി! ദോഷകരമായ സോഫ്‌റ്റ്‌വെയർ നീക്കം ചെയ്‌തു. വിപുലീകരണം വീണ്ടും ഓണാക്കാൻ, &lt;a href="chrome://extensions"&gt;വിപുലീകരണങ്ങൾ&lt;/a&gt; സന്ദർശിക്കുക.</translation>
@@ -5075,7 +5065,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">$1 ഉപയോഗിച്ച് ഫയലുകൾ തുറക്കാൻ, ആദ്യം 
 Linux ഫയലുകൾ ഫോൾഡറിലേക്ക് പകർത്തുക.</translation>
-<translation id="8858798938034909167">ഏത് ഉപകരണത്തിൽ നിന്നും <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ നിങ്ങളുടെ പാസ്‌വേഡുകൾ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="8859057652521303089">നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക :</translation>
 <translation id="8859174528519900719">സബ്ഫ്രെയിം: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel സ്‌പ്രെഡ്‌ഷീറ്റ്</translation>
@@ -5111,6 +5100,7 @@ Linux ഫയലുകൾ ഫോൾഡറിലേക്ക് പകർത്ത
 <translation id="8909833622202089127">സൈറ്റ് നിങ്ങളുടെ ലൊക്കേഷൻ ട്രാക്ക് ചെയ്യുന്നു</translation>
 <translation id="8910146161325739742">നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുക</translation>
 <translation id="8910222113987937043">ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവയിലുള്ള മാറ്റങ്ങളെ ഇനി നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിക്കില്ല. എന്നിരുന്നാലും, നിലവിലുള്ള വിവരങ്ങളെ Google അക്കൗണ്ടിൽ തുടർന്നും സൂക്ഷിക്കും, അവ <ph name="BEGIN_LINK" />Google ഡാഷ്‌ബോർഡിൽ<ph name="END_LINK" /> മാനേജുചെയ്യാം.</translation>
+<translation id="8912362522468806198">Google അക്കൗണ്ട്</translation>
 <translation id="8912793549644936705">വലിച്ചുനീട്ടുക</translation>
 <translation id="8915370057835397490">നിർദ്ദേശം ലോഡുചെയ്യുന്നു</translation>
 <translation id="8916476537757519021">ആൾമാറാട്ട സബ്‌ഫ്രെയിം: <ph name="SUBFRAME_SITE" /></translation>

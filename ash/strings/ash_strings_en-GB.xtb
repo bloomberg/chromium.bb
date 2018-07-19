@@ -194,6 +194,7 @@
 <translation id="4544944664594876241">The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Font service</translation>
 <translation id="4570957409596482333">Select-to-Speak button</translation>
+<translation id="4585337515783392668">Stop casting on an unknown receiver</translation>
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -240,6 +241,7 @@
 <translation id="5805697420284793859">Window manager</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Add Person</translation>
+<translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> on <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -276,6 +278,7 @@
 <translation id="639644700271529076">CAPS LOCK is off</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">All finished</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> on <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Reject</translation>
 <translation id="6453179446719226835">Language has been changed</translation>
 <translation id="6459472438155181876">Extending screen to <ph name="DISPLAY_NAME" /></translation>
@@ -372,6 +375,7 @@
 <translation id="8351131234907093545">Create note</translation>
 <translation id="8392451568018454956">Options menu for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Full-screen Magnifier</translation>
+<translation id="8427213022735114808">Dictation sends your voice to Google to allow voice typing in any text field.</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8431190899827883166">Show taps</translation>
 <translation id="8433186206711564395">Network settings</translation>
@@ -413,6 +417,7 @@
 <translation id="9111102763498581341">Unlock</translation>
 <translation id="9151726767154816831">Restart and powerwash to update</translation>
 <translation id="9179259655489829027">This feature allows you to quickly access any signed-in user without requiring a password. Only use this feature with accounts that you trust.</translation>
+<translation id="9193626018745640770">Casting on an unknown receiver</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>

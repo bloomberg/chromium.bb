@@ -146,7 +146,6 @@
 <translation id="1205489148908752564">خواندن و تغییر کاربران فهرست مجاز</translation>
 <translation id="1206407435587370571">‏Chromebook خود را کاوش کنید</translation>
 <translation id="1209796539517632982">سرورهای نام خودکار</translation>
-<translation id="1210982357925844241">مشاهده و مدیریت گذرواژه‌های ذخیره‌شده در <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="1211364473545090084">با پنجره ناشناس، بدون ذخیره کردن سابقه مرور از وب استفاده کنید</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> اثرانگشت تنظیم شده است</translation>
 <translation id="1215411991991485844">برنامه جدید پس‌زمینه اضافه شد</translation>
@@ -157,7 +156,6 @@
     <ph name="BR" />
     در صفحه بعدی، لطفاً برای کمک به ما جهت اصلاح مشکل، بازخوردی ارسال کنید.</translation>
 <translation id="121783623783282548">گذرواژه‌ها با هم مطابقت ندارند.</translation>
-<translation id="1218015446623563536">‏حذف Linux</translation>
 <translation id="1218860753635451122">‏درصورت کلیک کردن روی دکمه «موافقم»، با پردازش توضیح داده‌شده در بالا برای این سرویس‌های Google موافقت می‌کنید.</translation>
 <translation id="122082903575839559">الگوریتم امضای گواهی</translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 با رمزگذاری RSA</translation>
@@ -190,7 +188,6 @@
 <translation id="1260451001046713751">همیشه پنجره‌های بازشو و هدایت‌ها از <ph name="HOST" /> مجاز باشد</translation>
 <translation id="126710816202626562">زبان ترجمه:</translation>
 <translation id="126768002343224824">۱۶ برابر</translation>
-<translation id="1271317946095246719">جستجوها را از نوار نشانی و جعبه جستجو و برخی کوکی‌ها را به موتور جستجوی پیش‌فرض ارسال می‌کند</translation>
 <translation id="127138278192656016">استفاده از همگام‌سازی و همه سرویس‌ها</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1272242203003205253">‏«شریکان Google» برای کمک به شما با «دستیار» همکاری می‌کند</translation>
@@ -341,7 +338,6 @@
 <translation id="1503394326855300303">این حساب مالک باید اولین حسابی باشد که در یک جلسه ورود به سیستم چندگانه به سیستم وارد می‌شود.</translation>
 <translation id="1503914375822320413">فرایند تهیه رونوشت انجام نشد، خطای پیش‌بینی‌نشده: $1</translation>
 <translation id="150411034776756821">حذف <ph name="SITE" /></translation>
-<translation id="1504682556807808151">آیا می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه شما را برای این سایت ذخیره کند؟</translation>
 <translation id="1505091014076919009">‏می‌توانید همه حساب‌های Google خود را که از برنامه‌ها و وب‌سایت‌ها به سیستم وارد شده‌اند، از اینجا مدیریت کنید.</translation>
 <translation id="1506061864768559482">موتور جستجو</translation>
 <translation id="1507170440449692343">این صفحه از دسترسی به دوربین شما بازداشته شده است.</translation>
@@ -355,7 +351,6 @@
 <translation id="1511388193702657997">پیشنهاد ذخیره گذرواژه‌های وب</translation>
 <translation id="1512210426710821809">تنها راه برای واگرد این مورد، نصب مجدد <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> است</translation>
 <translation id="151501797353681931">‏وارد شده از Safari</translation>
-<translation id="1520605251886806589">‏ممکن است Google از محتوای سایت‌هایی که بازدید می‌کنید و فعالیت و تعاملات مرور برای شخصی کردن Chrome و سایر سرویس‌های Google (مانند «مترجم»، «جستجو» و آگهی‌ها) استفاده کند. می‌توانید این مورد را در «تنظیمات» سفارشی کنید.</translation>
 <translation id="1521442365706402292">مدیریت گواهی‌ها</translation>
 <translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
 <translation id="1524430321211440688">صفحه‌کلید</translation>
@@ -998,6 +993,7 @@
 <translation id="2509495747794740764">مقیاس باید عددی بین ۱۰ تا ۲۰۰ باشد.</translation>
 <translation id="2509566264613697683">۸ برابر</translation>
 <translation id="2512222046227390255">تکمیل خودکار فرم‌ها</translation>
+<translation id="2513403576141822879">‏برای تنظیمات بیشتر مرتبط با حریم خصوصی، امنیت و جمع‌آوری داده‌ها، <ph name="BEGIN_LINK" />همگام‌سازی و سرویس‌های Google<ph name="END_LINK" /> را ببینید</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">اسکن</translation>
 <translation id="2518024842978892609">استفاده از گواهی‌های کلاینت شما</translation>
@@ -1033,7 +1029,6 @@
 <translation id="2564520396658920462">‏اجرای جاوااسکریپت ازطریق AppleScript خاموش شده است. برای روشن کردن آن، از نوار منو به View (مشاهده) &gt; Developer (برنامه‌نویس) &gt; Allow JavaScript from Apple Events (مجاز کردن JavaScript از رویدادهای Apple) بروید. برای اطلاعات بیشتر به این نشانی بروید: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">غلط‌گیر املا بهبودیافته</translation>
 <translation id="2566124945717127842">‏Powerwash، دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> شما را بازنشانی می‌کند، به نحوی که مانند یک دستگاه جدید به نظر می‌رسد.</translation>
-<translation id="2567257616420533738">گذرواژه ذخیر شد. مشاهده و مدیریت گذرواژه‌های ذخیره‌شده در <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">قسمت نوار اطلاعات</translation>
 <translation id="2570454805927264159">بیشترین بهره را از «دستیار» ببرید</translation>
 <translation id="257088987046510401">طرح‌‌های قسمت</translation>
@@ -1838,7 +1833,6 @@
 <translation id="3792890930871100565">قطع ارتباط چاپگرها</translation>
 <translation id="3796648294839530037">شبکه‌های دلخواه:</translation>
 <translation id="3797900183766075808">‏(&amp;S) جستجوی <ph name="SEARCH_ENGINE" /> برای «<ph name="SEARCH_TERMS" />»</translation>
-<translation id="3798133693323981089">تکمیل خودکار جستجوها و نشانی‌های وب</translation>
 <translation id="3798449238516105146">نسخه</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{باز کردن همه}=1{باز کردن نشانک}one{باز کردن همه (#)}other{باز کردن همه (#)}}</translation>
 <translation id="3800806661949714323">نمایش همه موارد (توصیه می‌شود)</translation>
@@ -2478,9 +2472,7 @@
 <translation id="4871210892959306034">$1 کیلوبایت</translation>
 <translation id="4871308555310586478">‏از فروشگاه وب Chrome نیست.</translation>
 <translation id="4871370605780490696">افزودن نشانک</translation>
-<translation id="4871833665870725367">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه شما را برای <ph name="ORIGIN" /> به‌روز کند؟</translation>
 <translation id="4873312501243535625">بررسی‌کننده فایل رسانه‌ای</translation>
-<translation id="4875622588773761625">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="4876273079589074638">به مهندسان ما کمک کنید این خرابی را بررسی و برطرف کنند. در صورت امکان مراحل را دقیق فهرست کنید. هیچ جزئیاتی بی‌اهمیت نیست!</translation>
 <translation id="4876895919560854374">قفل و باز کردن قفل صفحه</translation>
 <translation id="4877017884043316611">‏مرتبط‌سازی با Chromebox</translation>
@@ -3033,7 +3025,6 @@
 <translation id="5669267381087807207">فعالسازی</translation>
 <translation id="5669691691057771421">پین جدید را وارد کنید</translation>
 <translation id="5671641761787789573">تصویرها مسدود شدند</translation>
-<translation id="5673076758299428095">‏خاموش کردن Linux</translation>
 <translation id="5677503058916217575">زبان صفحه:</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5678550637669481956">مجوز خواندن و نوشتن در <ph name="VOLUME_NAME" /> داده شد.</translation>
@@ -4311,6 +4302,7 @@
 <translation id="7701869757853594372">مدیریت کاربر</translation>
 <translation id="7702907602086592255">دامنه</translation>
 <translation id="7704305437604973648">کار</translation>
+<translation id="7704317875155739195">تکمیل خودکار جستجوها و نشانی‌های وب</translation>
 <translation id="7704521324619958564">‏باز کردن فروشگاه Play</translation>
 <translation id="7705276765467986571">مدل نشانک بارگیری نشد.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4984,7 +4976,6 @@
 <translation id="8712637175834984815">متوجه شدم</translation>
 <translation id="8713570323158206935">ارسال <ph name="BEGIN_LINK1" />اطلاعات سیستم<ph name="END_LINK1" /></translation>
 <translation id="8714154114375107944">پایان دوره پشتیبانی</translation>
-<translation id="871476437400413057">‏گذرواژه‌های ذخیره‌شده Google</translation>
 <translation id="8714838604780058252">گرافیک‌های پس‌زمینه</translation>
 <translation id="8715480913140015283">برگه پس‌زمینه درحال استفاده از دوربین است</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> بارگیری نشد</translation>
@@ -5065,7 +5056,6 @@
 <translation id="8830796635868321089">با تنظیمات پراکسی کنونی، بررسی برای به‌روزرسانی ناموفق بود. لطفاً <ph name="PROXY_SETTINGS_LINK_START" />تنظیمات پراکسی<ph name="PROXY_SETTINGS_LINK_END" />تان را تغییر دهید.</translation>
 <translation id="8834039744648160717">پیکربندی شبکه توسط <ph name="USER_EMAIL" /> کنترل می‌شود.</translation>
 <translation id="8834164572807951958">اعضای «<ph name="DESTINATION_NAME" />»، برای کپی کردن این موارد، دسترسی پیدا می‌کنند.</translation>
-<translation id="8837103518490433332">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه شما را برای <ph name="ORIGIN" /> ذخیره کند؟</translation>
 <translation id="8838770651474809439">همبرگر</translation>
 <translation id="883911313571074303">حاشیه‌نویسی تصویر</translation>
 <translation id="8844690305858050198">‏تمام شد! نرم‌افزار مضر پاک شد. برای اینکه دوباره افزونه‌ها را روشن کنید، به &lt;a href="chrome://extensions"&gt;افزونه‌ها&lt;/a&gt; بروید.</translation>
@@ -5073,7 +5063,6 @@
 <translation id="8846141544112579928">در حال جستجو برای صفحه‌کلید...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">‏برای باز کردن فایل‌ها با $1، ابتدا آن‌ها را در پوشه «فایل‌های Linux» کپی کنید.</translation>
-<translation id="8858798938034909167">‏از هر دستگاهی به گذرواژه‌تان در <ph name="BEGIN_LINK" /> passwords.google.com <ph name="END_LINK" /> دسترسی داشته باشید</translation>
 <translation id="8859057652521303089">انتخاب زبان:</translation>
 <translation id="8859174528519900719">قاب فرعی: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">‏صفحه‌گسترده Excel </translation>
@@ -5109,6 +5098,7 @@
 <translation id="8909833622202089127">سایت درحال ردیابی مکان شما است</translation>
 <translation id="8910146161325739742">اشتراک‌گذاری صفحه</translation>
 <translation id="8910222113987937043">‏تغییرات ایجادشده در نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما با حساب Google شما دیگر همگام‌سازی نخواهد شد. بااین‌وجود داده‌های قبلاً ذخیره‌شده در حساب Google شما در آنجا می‌مانند و در <ph name="BEGIN_LINK" />داشبورد Google<ph name="END_LINK" /> می‌توانید آن‌ها را مدیریت کنید.</translation>
+<translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8912793549644936705">گسترده کردن</translation>
 <translation id="8915370057835397490">در حال بارگیری پیشنهادات</translation>
 <translation id="8916476537757519021">قاب فرعی ناشناس: <ph name="SUBFRAME_SITE" /></translation>

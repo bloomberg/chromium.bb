@@ -240,6 +240,13 @@
       Otherwise, if compatibility with a buggy server must be maintained, this policy may be set to "tls1.1". This is a stopgap measure and the server should be rapidly fixed.</translation>
 <translation id="1864269674877167562">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
       If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension. The user will be able to overwrite this domain name extension.</translation>
+<translation id="1864382791685519617">Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
+
+      This controls DNS pre-fetching, TCP and SSL pre-connection and pre-rendering of web pages.
+
+      If you set this policy, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="1865417998205858223">Key Permissions</translation>
 <translation id="186719019195685253">Action to take when the idle delay is reached while running on AC power</translation>
 <translation id="187819629719252111">Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME" /> to display file selection dialogues.
@@ -718,6 +725,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
       </translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
+<translation id="2951386431828317490">Enable Auto-Fill for profiles</translation>
 <translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 36.
 
       Specifies whether the TLS domain-bound certificates extension should be enabled.
@@ -726,6 +734,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2957506574938329824">Do not allow any site to request access to Bluetooth devices via the Web Bluetooth API</translation>
 <translation id="2957513448235202597">Account type for <ph name="HTTP_NEGOTIATE" /> authentication</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
+<translation id="2960128438010718932">The staging schedule for applying a new update</translation>
 <translation id="2960691910306063964">Enable or disable PIN-less authentication for remote access hosts</translation>
 <translation id="2976002782221275500">Specifies the length of time without user input after which the screen is dimmed when running on battery power.
 
@@ -768,6 +777,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Independent of whether or how this policy is set, the WPAD optimisation setting cannot be changed by users.</translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
+<translation id="3077183141551274418">Enables or disables tab lifecycles</translation>
 <translation id="3086995894968271156">Configure the cast receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Allows you to set a list of URL patterns that specify sites which are allowed to display images.
 
@@ -1343,6 +1353,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       These suggestions are fetched remotely from Google servers.
 
       If this setting is set to false, suggestions will not be fetched or displayed.</translation>
+<translation id="4788252609789586009">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete credit card information in web forms using previously stored information.
+
+      If this setting is disabled, Auto-fill will never suggest or fill in credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
+
+      If this setting is enabled or has no value, the user will be able to control Auto-fill for credit cards in the UI.</translation>
 <translation id="4791031774429044540">Enable the large cursor accessibility feature.
 
           If this policy is set to true, the large cursor will always be enabled.
@@ -1483,6 +1498,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to True, <ph name="PRODUCT_OS_NAME" /> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
 
       If this policy is unset or set to False, developer mode will remain available for the device.</translation>
+<translation id="520403427390290017">The tab life cycles feature reclaims CPU and eventually memory associated with running tabs that have not been used in a long period of time, by first throttling them, then freezing them and finally discarding them.
+
+      If the policy is set to false then tab lifecycles are disabled, and all tabs will be left running normally.
+
+      If the policy is set to true or left unspecified then tab life cycles are enabled.</translation>
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1530,6 +1550,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is set to False, users will not be able to cast content to their device. If this policy is set to True, users are allowed to cast content. If this policy is not set, users are not allowed to cast content to enrolled Chrome OS devices, but can cast to non-enrolled devices.</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
+<translation id="5360146044009867539">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete profile and address information in web forms using previously stored information.
+
+      If this setting is disabled, Auto-fill will never suggest or fill in address information, nor will it save additional address information that the user might submit while browsing the web.
+
+      If this setting is enabled or has no value, the user will be able to control Auto-fill for addresses in the UI.</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366745336748853475">Allows you to specify a list of URL patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
 
@@ -2251,6 +2276,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled, then this feature will not be available.</translation>
 <translation id="7275334191706090484">Managed Bookmarks</translation>
+<translation id="729492886167634859">This policy defines a list of percentages that will define the fraction of <ph name="PRODUCT_OS_NAME" /> devices in the OU to update per week starting from the day on which the update is first discovered. The discovery time is later than the update published time, since it could be a while after the update is published until the device checks for updates.
+
+      The n-th value in the list will be used as the percentage of devices that should complete updating to the next version in the n-th week after the update has been discovered. For example, if an update is discovered today, then the first value in the list defines the percentage of devices in the OU that should update to that version by a week from today. The second value defines the percentage of devices in the OU that should update to that version by 2 weeks from today, and so on.
+
+      If there is a value defined for this policy, updates will ignore the <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> policy and follow this policy instead.
+
+      If this list is empty, there will be no staging and updates will be applied according to other device policies.
+
+      This policy does not apply for channel switches.</translation>
 <translation id="7295019613773647480">Enable supervised users</translation>
 <translation id="7301543427086558500">Specifies a list of alternative URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be used to extract the search terms.
 
@@ -2716,6 +2750,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
           For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
+<translation id="8498293625012059298">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
+      In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
+      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
 <translation id="8507835864888987300">Sets a target version for Auto Updates.
 
@@ -2769,6 +2809,14 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
       When this policy is not set on a managed device, the device is not allowed to run virtual machines.
       Unmanaged devices are allowed to run virtual machines.</translation>
+<translation id="8669669491594628013">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+
+      You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
+
+      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
+      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their protected password on a non-whitelisted site.
+      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their protected password on a phishing site.
+      If this policy is left unset, password protection service will only protect Google passwords, but the user will be able to change this setting.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>

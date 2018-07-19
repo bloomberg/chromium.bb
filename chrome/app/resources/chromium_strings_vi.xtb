@@ -158,7 +158,7 @@
 <translation id="6475912303565314141">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="6485906693002546646">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chromium của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chromium mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
-<translation id="6570579332384693436">Để sửa lỗi chính tả, Chromium sẽ gửi cho Google văn bản bạn nhập vào các trường văn bản</translation>
+<translation id="6570579332384693436">Để sửa lỗi chính tả, Chromium sẽ gửi cho Google nội dung bạn nhập vào các trường văn bản</translation>
 <translation id="6598877126913850652">Đi tới cài đặt thông báo của Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium sẽ chạy lại ngay bây giờ}=1{Chromium sẽ chạy lại sau 1 giây}other{Chromium sẽ chạy lại sau # giây}}</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
@@ -243,7 +243,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="8897323336392112261">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc nhấp vào nút Trang chủ.</translation>
 <translation id="8907580949721785412">Chromium đang cố gắng hiển thị mật khẩu. Nhập mật khẩu Windows của bạn để cho phép thực hiện việc này.</translation>
 <translation id="8941642502866065432">Không thể cập nhật Chromium</translation>
-<translation id="8968921422458636175">Chromium sẽ lưu mật khẩu này bằng <ph name="SAVED_PASSWORD_LINK" />. Bạn không cần phải nhớ mật khẩu đó.</translation>
 <translation id="8974095189086268230">Chromium OS trở nên khả thi là nhờ các <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung.</translation>
 <translation id="8985587603644336029">Ai đó trước đây đã đăng nhập vào Chromium trên máy tính này là <ph name="ACCOUNT_EMAIL_LAST" />. Nếu đó không phải là tài khoản của bạn, hãy tạo một người dùng Chromium mới để giữ thông tin của bạn riêng biệt.
 

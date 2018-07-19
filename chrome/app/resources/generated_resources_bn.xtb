@@ -145,7 +145,6 @@
 <translation id="1205489148908752564">পরিচ্ছন্ন তালিকাতে যুক্ত ব্যবহারকারিদের পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="1206407435587370571">আপনার Chromebook এর বৈশিষ্ট্যগুলি জানুন</translation>
 <translation id="1209796539517632982">স্বয়ংক্রিয় নাম সার্ভার</translation>
-<translation id="1210982357925844241">সেভ করা পাসওয়ার্ড দেখতে এবং পরিচালনা করতে <ph name="SAVED_PASSWORDS_LINK" /> এ যান</translation>
 <translation id="1211364473545090084">ব্রাউজিং এর ইতিহাস সেভ না করে ওয়েব ব্রাউজ করার জন্য ছদ্মবেশী উইন্ডো ব্যবহার করুন</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" />টি আঙ্গুলের ছাপের সেট আপ</translation>
 <translation id="1215411991991485844">নতুন পটভূমি অ্যাপ্লিকেশন জোড়া হয়েছে</translation>
@@ -156,7 +155,6 @@
     <ph name="BR" />
     পরবর্তী স্ক্রীনে, আমাদেরকে সমস্যাটি সমাধানে সাহায্য করতে দয়া করে প্রতিক্রিয়া পাঠান।</translation>
 <translation id="121783623783282548">পাসওয়ার্ডগুলি মেলে না৷</translation>
-<translation id="1218015446623563536">Linux মুছে ফেলুন</translation>
 <translation id="1218860753635451122">“আমি সম্মত” বোতামে ক্লিক করার অর্থ আপনি এই Google পরিষেবাগুলির জন্য উপরে বর্ণিত প্রক্রিয়াগুলিতে আপনি সম্মতি দেন।</translation>
 <translation id="122082903575839559">শংসাপত্র স্বাক্ষর অ্যালগরিদম</translation>
 <translation id="1221024147024329929">RSA এনক্রিপশানের সাথে PKCS #1 MD2</translation>
@@ -189,7 +187,6 @@
 <translation id="1260451001046713751"><ph name="HOST" /> থেকে সবসময় পপ-আপ এবং রিডাইরেক্টের অনুমতি দিন</translation>
 <translation id="126710816202626562">অনুবাদের ভাষা:</translation>
 <translation id="126768002343224824">১৬x</translation>
-<translation id="1271317946095246719">অ্যাড্রেস বার এবং সার্চ বক্স থেকে সার্চের তথ্য এবং কিছু কুকি আপনার ডিফল্ট সার্চ ইঞ্জিনে পাঠায়</translation>
 <translation id="127138278192656016">সিঙ্ক এবং সমস্ত পরিষেবা ব্যবহার করুন</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1272242203003205253">আপনাকে সাহায্য করতে Google পার্টনাররা অ্যাসিস্ট্যান্টের সাথে কাজ করে</translation>
@@ -340,7 +337,6 @@
 <translation id="1503394326855300303">একটি একাধিক প্রবেশ করুন সেশনে এই মালিক অ্যাকাউন্টটি প্রথম প্রবেশ করুন থাকা অ্যাকাউন্ট হতে হবে৷</translation>
 <translation id="1503914375822320413">অনুলিপি ক্রিয়াকলাপ ব্যর্থ হয়েছে, অপ্রত্যাশিত ত্রুটি: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> সরান</translation>
-<translation id="1504682556807808151">এই সাইটটির জন্য আপনার পাসওয়ার্ড সংরক্ষণ করতে আপনি কী <ph name="PASSWORD_MANAGER_BRAND" /> চান?</translation>
 <translation id="1505091014076919009">অ্যাপ এবং ওয়েবসাইটগুলি থেকে আপনার সাইন-ইন করা সমস্ত Google অ্যাকাউন্টগুলি এখানে পরিচালনা করা যেতে পারে।</translation>
 <translation id="1506061864768559482">সার্চ ইঞ্জিন</translation>
 <translation id="1507170440449692343">এই পৃষ্ঠাটিকে আপনার ক্যামেরা অ্যাক্সেস করা থেকে অবরুদ্ধ করা হয়েছে৷</translation>
@@ -357,7 +353,6 @@
 <translation id="1511388193702657997">আপনার ওয়েব পাসওয়ার্ডগুলি সংরক্ষণের প্রস্তাব দেয়</translation>
 <translation id="1512210426710821809">এটি আগের অবস্থায় ফিরিয়ে আনার একমাত্র উপায় হল <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> আবার ইনস্টল করা।</translation>
 <translation id="151501797353681931">Safari থেকে আমদানি করা</translation>
-<translation id="1520605251886806589">Google আপনার দেখা সাইটগুলির কন্টেন্ট, ব্রাউজারের অ্যাক্টিভিটি এবং ইন্টার‍্যাকশন ব্যবহার করে Chrome এবং অন্যান্য Google পরিষেবা যেমন অনুবাদ, সার্চ ও বিজ্ঞাপনগুলি ব্যক্তিগতকৃত করতে পারে। আপনি এটি সেটিংস থেকে কাস্টমাইজ করতে পারেন।</translation>
 <translation id="1521442365706402292">শংসাপত্রগুলি পরিচালনা করুন</translation>
 <translation id="152234381334907219">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="1524430321211440688">কীবোর্ড</translation>
@@ -1026,7 +1021,6 @@
 <translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME" />' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>
 <translation id="2564520396658920462">AppleScript এর মাধ্যমে জাভাস্ক্রিপ্ট চালানো বন্ধ করা আছে। এটি চালু করতে Apple ইভেন্টগুলি'র মেনু বার থেকে, ভিউ &gt; ডেভেলপার &gt; জাভাস্ক্রিপ্টের অনুমতি দিন-এ যান। আরও তথ্যের জন্য: https://support.google.com/chrome/?p=applescript এ যান</translation>
 <translation id="2566124945717127842">আপনার <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইস নতুনের মত আবার সেট করতে পাওয়ারওয়াশ করুন।</translation>
-<translation id="2567257616420533738">পাসওয়ার্ড সেভ করা হয়েছে। সেভ করা পাসওয়ার্ড দেখতে এবং পরিচালনা করতে <ph name="SAVED_PASSWORDS_LINK" /> এ যান</translation>
 <translation id="2568774940984945469">তথ্যবার ধারক</translation>
 <translation id="2570454805927264159">আপনার অ্যাসিস্ট্যান্ট থেকে সর্বাধিক সুবিধা পান</translation>
 <translation id="257088987046510401">থিমসমূহ</translation>
@@ -1829,7 +1823,6 @@
 <translation id="3792890930871100565">প্রিন্টার সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="3796648294839530037">পছন্দসই নেটওয়ার্কগুলি:</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> এ “<ph name="SEARCH_TERMS" />” এর &amp;অনুসন্ধান করুন</translation>
-<translation id="3798133693323981089">সার্চ এবং ওয়েব ঠিকানা নিজে থেকে সম্পূর্ণ হতে দিন</translation>
 <translation id="3798449238516105146">সংস্করণ</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{সবগুলি &amp;খুলুন}=1{বুকমার্ক &amp;খুলুন}one{সবগুলি (#টি) &amp;খুলুন}other{সবগুলি (#টি) &amp;খুলুন}}</translation>
 <translation id="3800806661949714323">সব দেখান (প্রস্তাবিত)</translation>
@@ -2465,9 +2458,7 @@
 <translation id="4871210892959306034">KB</translation>
 <translation id="4871308555310586478">Chrome ওয়েব দোকান থেকে নয়৷</translation>
 <translation id="4871370605780490696">বুকমার্ক যোগ করুন</translation>
-<translation id="4871833665870725367">আপনি কি <ph name="PASSWORD_MANAGER_BRAND" /> এর মাধ্যমে <ph name="ORIGIN" /> এর জন্য আপনার পাসওয়ার্ডগুলি আপডেট করতে চান?</translation>
 <translation id="4873312501243535625">মিডিয়া ফাইল পরীক্ষাকারী</translation>
-<translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
 <translation id="4876273079589074638">এই ক্র্যাশ বা সমস্যাটির বিষয়ে সার্চ করে সেটি ঠিক করতে আমাদের ইঞ্জিনিয়ারদের সাহায্য করুন। কোনও বিবরণ যত ছোটই হোক না কেন সেটি গুরুত্বপূর্ণ!</translation>
 <translation id="4876895919560854374">স্ক্রীণ লক ও আনলক করুন</translation>
 <translation id="4877017884043316611">Chromebox এর সাথে যুক্ত করা</translation>
@@ -4957,7 +4948,6 @@
 <translation id="8712637175834984815">বুঝেছি</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />সিস্টেমের তথ্য<ph name="END_LINK1" /> পাঠান</translation>
 <translation id="8714154114375107944">আর সহায়তা পাওয়া যাবে না</translation>
-<translation id="871476437400413057">Google এর সংরক্ষিত পাসওয়ার্ডগুলি</translation>
 <translation id="8714838604780058252">পটভূমির গ্রাফিক্স</translation>
 <translation id="8715480913140015283">ব্যাকগ্রাউন্ড ট্যাব আপনার ক্যামেরা ব্যবহার করছে</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> ডাউনলোড ব্যর্থ হয়েছে</translation>
@@ -5038,7 +5028,6 @@
 <translation id="8830796635868321089">বর্তমান প্রক্সি সেটিংস ব্যবহার করে আপডেট চেক ব্যর্থ হয়েছে৷ দয়া করে আপনার <ph name="PROXY_SETTINGS_LINK_START" />প্রক্সি সেটিংস<ph name="PROXY_SETTINGS_LINK_END" /> অ্যাডজাস্ট করুন৷</translation>
 <translation id="8834039744648160717">নেটওয়ার্ক কনফিগারেশন <ph name="USER_EMAIL" /> দ্বারা নিয়ন্ত্রিত।</translation>
 <translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' এর সদস্যরা এই আইটেমগুলির কপিতে অ্যাক্সেস পাবেন।</translation>
-<translation id="8837103518490433332">আপনি কি <ph name="PASSWORD_MANAGER_BRAND" /> এর মাধ্যমে <ph name="ORIGIN" /> এর জন্য আপনার পাসওয়ার্ডগুলি সংরক্ষণ করতে চান?</translation>
 <translation id="8838770651474809439">হ্যামবার্গার</translation>
 <translation id="883911313571074303">চিত্রের জন্য টিকা লিখুন</translation>
 <translation id="8844690305858050198">হয়ে গেছে! ক্ষতিকারক সফ্টওয়্যার সরানো হয়েছে। এক্সটেনশন আবার চালু করতে, &lt;a href="chrome://extensions"&gt;এক্সটেনশন&lt;/a&gt; -এ যান।</translation>
@@ -5046,7 +5035,6 @@
 <translation id="8846141544112579928">কীবোর্ডের জন্য সার্চ করা হচ্ছে...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="885217322790849332">$1-দিয়ে ফাইল খুলতে আগে সেগুলি Linux Files ফোল্ডারে কপি করুন।</translation>
-<translation id="8858798938034909167">যেকোনো ডিভাইস থেকে <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> এ গিয়ে আপনার পাসওয়ার্ডগুলি অ্যাক্সেস করুন</translation>
 <translation id="8859057652521303089">আপনার ভাষা বেছে নিন:</translation>
 <translation id="8859174528519900719">সাবফ্রেম: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel spreadsheet</translation>
@@ -5082,6 +5070,7 @@
 <translation id="8909833622202089127">সাইটটি আপনার লোকেশন ট্র্যাক করছে</translation>
 <translation id="8910146161325739742">আপনার স্ক্রিন শেয়ার করুন</translation>
 <translation id="8910222113987937043">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসের পরিবর্তনগুলি এখন আর আপনার Google অ্যাকাউন্টের সাথে সিঙ্ক করা হবে না। তবে, আপনার বিদ্যমান ডেটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে এবং <ph name="BEGIN_LINK" />Google ড্যাশবোর্ড<ph name="END_LINK" /> থেকে পরিচালনা করা যাবে।</translation>
+<translation id="8912362522468806198">Google অ্যাকাউন্ট</translation>
 <translation id="8912793549644936705">বিস্তার</translation>
 <translation id="8915370057835397490">লোড করার প্রস্তাব</translation>
 <translation id="8916476537757519021">ছদ্মবেশী সাবফ্রেম: <ph name="SUBFRAME_SITE" /></translation>

@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">Záložky a webová historie</translation>
 <translation id="1513858653616922153">Vymazat heslo</translation>
 <translation id="1516229014686355813">Vyhledání klepnutím odešle vybrané slovo a aktuální stránku jako kontext do Vyhledávání Google. Tuto funkci můžete vypnout v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
-<translation id="1521008027388393450">Oblíbený obsah</translation>
 <translation id="1539064842193522527">V Chromu byl otevřen odkaz</translation>
 <translation id="1549000191223877751">Přejít do jiného okna</translation>
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">Připojené zařízení</translation>
 <translation id="1571304935088121812">Kopírovat uživatelské jméno</translation>
 <translation id="1612196535745283361">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. Přístup k poloze je v tomto zařízení <ph name="BEGIN_LINK" />vypnut<ph name="END_LINK" />.</translation>
+<translation id="162035744160882748">Zapnout synchronizaci, personalizaci a další služby Google</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Odstranit jednu vybranou položku}few{Odstranit # vybrané položky}many{Odstranit # vybrané položky}other{Odstranit # vybraných položek}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">Narušení zabezpečení</translation>
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="1868024384445905608">Chrome teď stahuje soubory rychleji</translation>
+<translation id="1878302395768190018">Toto nastavení můžete kdykoliv upravit v nastavení Chromu</translation>
 <translation id="1880072593381090678">Oblíbené stránky z Chromu</translation>
 <translation id="1883903952484604915">Moje soubory</translation>
 <translation id="1887786770086287077">Přístup k poloze je v tomto zařízení vypnut. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="311456632243022227">V Chromu byly otevřeny odkazy</translation>
 <translation id="3115898365077584848">Zobrazit informace</translation>
-<translation id="3129938255108848489">Zobrazuje návrhy podobných stránek, když nějakou stránku nelze najít</translation>
 <translation id="3137521801621304719">Ukončit anonymní režim</translation>
 <translation id="3148434565183091099">Chcete-li záložky synchronizovat do všech zařízení, přihlaste se do Chromu.</translation>
 <translation id="3157842584138209013">Informace o množství uspořených dat zobrazíte pomocí tlačítka Další možnosti</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">Spravovat</translation>
 <translation id="3819178904835489326">Počet smazaných stažených souborů: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Vymazat úložiště webů?</translation>
+<translation id="385051799172605136">Zpět</translation>
 <translation id="3859306556332390985">Přetočit dopředu</translation>
 <translation id="3894427358181296146">Přidat složku</translation>
 <translation id="3895926599014793903">Vynutit aktivaci přiblížení</translation>
@@ -371,6 +372,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
 <translation id="4179980317383591987">Využito: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
+<translation id="4192273449750167573">Na další obrazovce zkontrolujte svá nastavení</translation>
 <translation id="4195643157523330669">Otevřít na nové kartě</translation>
 <translation id="4198423547019359126">Nejsou k dispozici žádná umístění stažených souborů</translation>
 <translation id="4226663524361240545">Oznámení mohou aktivovat vibraci</translation>
@@ -390,6 +392,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4404568932422911380">Žádné záložky</translation>
 <translation id="4409723563706114196">Předvídat stránky</translation>
 <translation id="4412992751769744546">Povolit cookies třetích stran</translation>
+<translation id="4419556793104466535">Ovládání synchronizace, personalizace apod.</translation>
 <translation id="4432792777822557199">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> od teď budou překládány do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Vyskakovací okna a přesměrování</translation>
 <translation id="4445444302979002552">Používat služby předpovídání k zobrazování návrhů vyhledávacích dotazů a webů</translation>
@@ -495,6 +498,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="5224771365102442243">S videem</translation>
 <translation id="5233638681132016545">Nová karta</translation>
+<translation id="5240817131241497236">Nastavení, která v Chromu ovládají synchronizaci, personalizaci a další služby Google, se změnila. Může to mít dopad na vaše aktuální nastavení.</translation>
 <translation id="5271967389191913893">Zařízení obsah ke stažení nemůže otevřít.</translation>
 <translation id="528192093759286357">Režim celé obrazovky ukončíte přetažením z horního okraje obrazovky a klepnutím na tlačítko Zpět.</translation>
 <translation id="5284584623296338184">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
@@ -682,6 +686,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="666268767214822976">Používat službu předpovídání k zobrazení souvisejících dotazů a oblíbených webových stránek.</translation>
 <translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
+<translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>
 <translation id="6697947395630195233">Chrome potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem.</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
 <translation id="6710213216561001401">Předchozí</translation>
@@ -696,6 +701,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6820686453637990663">Bezpečnostní kód platební karty (CVC)</translation>
 <translation id="6831043979455480757">Přeložit</translation>
 <translation id="6846298663435243399">Načítání…</translation>
+<translation id="685040365210406336">Neprovádět žádné změny</translation>
 <translation id="6850409657436465440">Stahování stále probíhá</translation>
 <translation id="6850830437481525139">Zavřené karty: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Stáhnout obrázek</translation>
@@ -817,6 +823,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7810647596859435254">Otevřít v aplikaci…</translation>
+<translation id="7832327313660264358">Data synchronizovaná do Googlu ani používané funkce se nezmění</translation>
 <translation id="7837721118676387834">Povolit automatické přehrávání ztlumených videí na konkrétním webu.</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="784934925303690534">Časové období</translation>
@@ -858,7 +865,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8105951947646329362">Navrhovat související stránky</translation>
 <translation id="8116925261070264013">Ztlumeno</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
-<translation id="8160722851663543621">Odesílá vyhledávací dotazy z adresního řádku a vyhledávacího pole a několik souborů cookie vašemu výchozímu vyhledávači</translation>
 <translation id="8168435359814927499">Obsah</translation>
 <translation id="8186512483418048923">Zbývající soubory: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Zbývá: 1 d</translation>

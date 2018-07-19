@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">Закладки и история поиска</translation>
 <translation id="1513858653616922153">Удалить пароль</translation>
 <translation id="1516229014686355813">Быстрый поиск отправляет в Google выбранное слово, а также – в качестве контекста – текущую страницу. Отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
-<translation id="1521008027388393450">Популярные</translation>
 <translation id="1539064842193522527">Ссылка открыта в Chrome</translation>
 <translation id="1549000191223877751">Перейти к другому окну</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">Подключенное устройство</translation>
 <translation id="1571304935088121812">Копировать имя пользователя</translation>
 <translation id="1612196535745283361">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Включить<ph name="END_LINK" /></translation>
+<translation id="162035744160882748">Включить синхронизацию, персонализацию и другие сервисы Google</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Удалить 1 выбранный объект}one{Удалить # выбранный объект}few{Удалить # выбранных объекта}many{Удалить # выбранных объектов}other{Удалить # выбранного объекта}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">Случаи нарушения безопасности</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="1868024384445905608">Теперь файлы в Chrome будут скачиваться ещё быстрее</translation>
+<translation id="1878302395768190018">Выбрать нужные вам параметры можно будет в настройках Chrome в любое время</translation>
 <translation id="1880072593381090678">Популярные страницы из Chrome</translation>
 <translation id="1883903952484604915">Скачанные</translation>
 <translation id="1887786770086287077">Для устройства отключено определение местоположения. Включите эту функцию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="311456632243022227">Ссылки открыты в Chrome</translation>
 <translation id="3115898365077584848">Показать информацию</translation>
-<translation id="3129938255108848489">Предлагать варианты, если страница, которую вы пытаетесь открыть, не найдена</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
 <translation id="3148434565183091099">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="3157842584138209013">Чтобы узнать, сколько трафика вы сэкономили, нажмите кнопку "Ещё"</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
+<translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
@@ -371,6 +372,7 @@
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="4179980317383591987">Использовано: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Языки</translation>
+<translation id="4192273449750167573">Проверить настройки на следующем экране</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198423547019359126">Нет доступных мест для скачивания</translation>
 <translation id="4226663524361240545">Вибрация при получении уведомлений</translation>
@@ -390,6 +392,7 @@
 <translation id="4404568932422911380">Нет закладок</translation>
 <translation id="4409723563706114196">Загружать страницы предварительно</translation>
 <translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
+<translation id="4419556793104466535">Настройки синхронизации, персонализации и других сервисов</translation>
 <translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="4445444302979002552">Включить рекомендации поисковых запросов и веб-сайтов.</translation>
@@ -495,6 +498,7 @@
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5224771365102442243">Есть видео</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
+<translation id="5240817131241497236">В Chrome изменились настройки синхронизации, персонализации и других сервисов Google. Это может повлиять на текущие настройки.</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="5284584623296338184">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это изменение не затронет данные, сохраненные в аккаунте ранее.</translation>
@@ -682,6 +686,7 @@
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666731172850799929">Открыть в <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
+<translation id="6697492270171225480">Предлагать варианты, если страница, которую вы пытаетесь открыть, не найдена</translation>
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6710213216561001401">Назад</translation>
@@ -696,6 +701,7 @@
 <translation id="6820686453637990663">Код CVC</translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6846298663435243399">Загрузка…</translation>
+<translation id="685040365210406336">Ничего не менять</translation>
 <translation id="6850409657436465440">Выполняется скачивание</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
@@ -817,6 +823,7 @@
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
+<translation id="7832327313660264358">Данные, которые синхронизируются с серверами Google, и используемые вами функции останутся без изменений</translation>
 <translation id="7837721118676387834">Разрешить определенному сайту автоматически воспроизводить видео без звука.</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="784934925303690534">Временной диапазон</translation>
@@ -858,7 +865,6 @@
 <translation id="8105951947646329362">Предлагать похожие страницы</translation>
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
-<translation id="8160722851663543621">Отправлять поисковые запросы из адресной строки и окна поиска, а также файлы cookie в поисковую систему по умолчанию</translation>
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8186512483418048923">Осталось файлов: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Остался 1 день</translation>

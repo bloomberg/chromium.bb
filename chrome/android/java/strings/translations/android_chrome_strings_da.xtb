@@ -69,7 +69,6 @@
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
 <translation id="1513858653616922153">Slet adgangskoden</translation>
 <translation id="1516229014686355813">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan deaktivere funktionen i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
-<translation id="1521008027388393450">Populært indhold</translation>
 <translation id="1539064842193522527">Der blev åbnet et link i Chrome</translation>
 <translation id="1549000191223877751">Flyt til et andet vindue</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
@@ -77,6 +76,7 @@
 <translation id="1569387923882100876">Tilsluttet enhed</translation>
 <translation id="1571304935088121812">Kopiér brugernavnet</translation>
 <translation id="1612196535745283361">Chrome skal have placeringsadgang for at kunne scanne efter enheder. Placeringsadgang er <ph name="BEGIN_LINK" />slået fra på denne enhed<ph name="END_LINK" />.</translation>
+<translation id="162035744160882748">Aktivér synkronisering, tilpasning og andre Google-tjenester</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}one{Fjern # valgt element}other{Fjern # valgte elementer}}</translation>
@@ -106,6 +106,7 @@
 <translation id="1832521218263067499">Sikkerhedshændelser</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="1868024384445905608">Chrome downloader nu filer endnu hurtigere</translation>
+<translation id="1878302395768190018">Du kan til enhver tid tilpasse dette i Chrome-indstillingerne</translation>
 <translation id="1880072593381090678">Populære sider i Chrome</translation>
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1887786770086287077">Placeringsadgang er deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
@@ -256,7 +257,6 @@
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="311456632243022227">Der blev åbnet flere links i Chrome</translation>
 <translation id="3115898365077584848">Vis oplysninger</translation>
-<translation id="3129938255108848489">Viser forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3148434565183091099">Log ind på Chrome for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="3157842584138209013">Se, hvor meget data du har gemt via knappen Flere valgmuligheder</translation>
@@ -329,6 +329,7 @@
 <translation id="3810973564298564668">Valgmuligheder</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
 <translation id="3822502789641063741">Vil du rydde websitelagerpladsen?</translation>
+<translation id="385051799172605136">Tilbage</translation>
 <translation id="3859306556332390985">Spol fremad</translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="3895926599014793903">Tving aktivering af zoom</translation>
@@ -371,6 +372,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> er brugt</translation>
 <translation id="4181841719683918333">Sprog</translation>
+<translation id="4192273449750167573">Gennemgå dine indstillinger på næste skærm</translation>
 <translation id="4195643157523330669">Åbn på ny fane</translation>
 <translation id="4198423547019359126">Der er ingen tilgængelige downloadplaceringer</translation>
 <translation id="4226663524361240545">Underretninger kan få enheden til at vibrere</translation>
@@ -390,6 +392,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4404568932422911380">Der er ingen bogmærker</translation>
 <translation id="4409723563706114196">Brug sideforslag</translation>
 <translation id="4412992751769744546">Tillad tredjepartscookies</translation>
+<translation id="4419556793104466535">Styr synkronisering, tilpasning og meget mere</translation>
 <translation id="4432792777822557199">Sider på <ph name="SOURCE_LANGUAGE" /> oversættes fremover til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop op-vinduer og omdirigeringer</translation>
 <translation id="4445444302979002552">Brug forslagstjenester til at foreslå søgetermer og websites</translation>
@@ -495,6 +498,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5224771365102442243">Med video</translation>
 <translation id="5233638681132016545">Ny fane</translation>
+<translation id="5240817131241497236">De indstillinger, der styrer synkronisering, tilpasning og andre Google-tjenester i Chrome, er blevet ændret. Dette kan påvirke dine aktuelle indstillinger.</translation>
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="5284584623296338184">Ændringer i dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto, men dine eksisterende data er stadig gemt på din Google-konto.</translation>
@@ -682,6 +686,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="666268767214822976">Brug en forslagstjeneste til at få vist relaterede forespørgsler og populære websites, mens du skriver i adresselinjen</translation>
 <translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Erklæring om privatliv for Google Chrome</translation>
+<translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
 <translation id="6710213216561001401">Forrige</translation>
@@ -696,6 +701,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6846298663435243399">Indlæser…</translation>
+<translation id="685040365210406336">Undlad at foretage nogen ændringer</translation>
 <translation id="6850409657436465440">Der downloades stadig</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner blev lukket</translation>
 <translation id="6864459304226931083">Download billede</translation>
@@ -817,6 +823,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7810647596859435254">Åbn med…</translation>
+<translation id="7832327313660264358">De data, du synkroniserer med Google, og de funktioner, du bruger, ændres ikke</translation>
 <translation id="7837721118676387834">Tillad automatisk afspilning af videoer, hvor lyden er slået fra, for et bestemt website.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="784934925303690534">Tidsinterval</translation>
@@ -858,7 +865,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8105951947646329362">Foreslå relaterede sider</translation>
 <translation id="8116925261070264013">Websites, hvor lyden er slået fra</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
-<translation id="8160722851663543621">Sender søgninger fra adresselinjen og søgefeltet samt nogle cookies til din standardsøgemaskine</translation>
 <translation id="8168435359814927499">Indhold</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> filer tilbage</translation>
 <translation id="8190358571722158785">1 dag tilbage</translation>
