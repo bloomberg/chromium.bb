@@ -61,7 +61,6 @@ camera.views.Browser = function(context, router, model) {
   /**
    * Sequential index of the last inserted picture. Used to generate unique
    * identifiers.
-   *
    * @type {number}
    * @private
    */
@@ -137,8 +136,8 @@ camera.views.Browser.prototype.onLeave = function() {
  */
 camera.views.Browser.prototype.onResize = function() {
   this.pictures.forEach(function(picture) {
-    this.updateElementSize(picture.element);
-  }.bind(this));
+    camera.views.Browser.updateElementSize_(picture.element);
+  });
 
   this.scrollBar_.onResize();
   var selectedPicture = this.lastSelectedPicture();
@@ -245,93 +244,75 @@ camera.views.Browser.prototype.updateScrollbarThumb_ = function() {
  * resolution, and all the rest low. This method waits until CSS transitions
  * are finished (if any). Element sizes would also be updated here after
  * updating resolutions.
- *
  * @private
  */
 camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
-  var selectedPicture = this.lastSelectedPicture();
-
   var wrappedElement = function(wrapper, tagName) {
-    return (wrapper.firstElementChild.tagName == tagName) ?
-        wrapper.firstElementChild : null;
+    var wrapped = wrapper.firstElementChild;
+    return (wrapped.tagName == tagName) ? wrapped : null;
+  };
+
+  var replaceElement = function(wrapper, element) {
+    wrapper.replaceChild(element, wrapper.firstElementChild);
+    camera.views.Browser.updateElementSize_(wrapper);
   };
 
   var updateImage = function(wrapper, url) {
     var img = wrappedElement(wrapper, 'IMG');
     if (!img) {
-      // Remove the existing video element if any.
       img = document.createElement('img');
       img.tabIndex = -1;
       img.onload = function() {
-        var video = wrappedElement(wrapper, 'VIDEO');
-        if (video) {
-          wrapper.replaceChild(img, video);
-          this.updateElementSize(wrapper);
-        }
-      }.bind(this);
+        replaceElement(wrapper, img);
+      };
       img.src = url;
     } else if (img.src != url) {
       img.onload = function() {
-        this.updateElementSize(wrapper);
-      }.bind(this);
+        camera.views.Browser.updateElementSize_(wrapper);
+      };
       img.src = url;
     }
-  }.bind(this);
+  };
 
   var updateVideo = function(wrapper, url) {
-    // Use a video element to play back the selected motion picture.
     var video = document.createElement('video');
     video.tabIndex = -1;
     video.controls = true;
     video.setAttribute('controlsList', 'nodownload nofullscreen');
     video.onloadeddata = function() {
       // Add the video element only if the selection has not been changed and
-      // there is still the image element after loading.
-      if (wrapper == this.lastSelectedPicture().element) {
-        var img = wrappedElement(wrapper, 'IMG');
-        if (img) {
-          wrapper.replaceChild(video, img);
-          this.updateElementSize(wrapper);
-        }
+      // there is still no video element after loading video.
+      var domPicture = this.lastSelectedPicture();
+      if (domPicture && wrapper == domPicture.element &&
+          !wrappedElement(wrapper, 'VIDEO')) {
+        replaceElement(wrapper, video);
       }
     }.bind(this);
     video.src = url;
   }.bind(this);
 
-  var updateDomPicture = function(domPicture) {
-    var wrapper = domPicture.element;
-    var picture = domPicture.picture;
-    if (domPicture == selectedPicture) {
-      picture.pictureURL().then(url => {
-        if (picture.isMotionPicture) {
-          updateVideo(wrapper, url);
-        } else {
-          updateImage(wrapper, url);
-        }
-      });
-    } else {
-      // Show thumbnails for both unselected still and motion pictures.
-      updateImage(wrapper, picture.thumbnailURL);
-    }
-  }
-
-  var updateResolutions = function() {
-    for (var index = 0; index < this.pictures.length; index++) {
-      updateDomPicture(this.pictures[index]);
-    }
-  }.bind(this);
-
-  // Wait until the zoom-in transition is finished, and then update pictures'
-  // resolutions.
-  if (selectedPicture !== null) {
-    camera.util.waitForTransitionCompletion(
-        selectedPicture.element,
-        250,  // Timeout in ms.
-        updateResolutions);
-  } else {
-    // No selection.
-    updateResolutions();
-  }
+  // Update resolutions immediately if no selection; otherwise, wait for pending
+  // selection changes before updating the current selection's resolution.
+  setTimeout(function() {
+    var selectedPicture = this.lastSelectedPicture();
+    this.pictures.forEach(function(domPicture) {
+      var wrapper = domPicture.element;
+      var picture = domPicture.picture;
+      var thumbnailURL = picture.thumbnailURL;
+      if (domPicture == selectedPicture || !thumbnailURL) {
+        picture.pictureURL().then(url => {
+          if (picture.isMotionPicture) {
+            updateVideo(wrapper, url);
+          } else {
+            updateImage(wrapper, url);
+          }
+        });
+      } else {
+        // Show cached thumbnails for unselected pictures.
+        updateImage(wrapper, thumbnailURL);
+      }
+    });
+  }.bind(this), this.lastSelectedIndex() ? 75 : 0);
 };
 
 /**
@@ -414,7 +395,6 @@ camera.views.Browser.prototype.onPictureDeleted = function(picture) {
  * @override
  */
 camera.views.Browser.prototype.addPictureToDOM = function(picture) {
-  var browser = document.querySelector('#browser .padder');
   var wrapper = document.createElement('div');
   wrapper.className = 'media-wrapper';
   wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
@@ -422,59 +402,71 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   wrapper.setAttribute('aria-role', 'option');
   wrapper.setAttribute('aria-selected', 'false');
 
-  var img = document.createElement('img');
-  img.tabIndex = -1;
-  img.onload = function() {
-    this.updateElementSize(wrapper);
-  }.bind(this);
-  img.src = picture.thumbnailURL;
-  wrapper.appendChild(img);
-
-  // Insert the picture's DOM element in a sorted timestamp order.
-  for (var index = this.pictures.length - 1; index >= 0; index--) {
-    if (picture.timestamp >= this.pictures[index].picture.timestamp) {
-      break;
+  // Display high-res picture if no cached thumbnail.
+  // TODO(yuli): Fix wrappers' size to avoid scrolling for changed elements.
+  var thumbnailURL = picture.thumbnailURL;
+  Promise.resolve(thumbnailURL || picture.pictureURL()).then(url => {
+    var isVideo = !thumbnailURL && picture.isMotionPicture;
+    var element = wrapper.appendChild(document.createElement(
+        isVideo ? 'video' : 'img'));
+    var updateElementSize = () => {
+      camera.views.Browser.updateElementSize_(wrapper);
+    };
+    if (isVideo) {
+      element.controls = true;
+      element.setAttribute('controlsList', 'nodownload nofullscreen');
+      element.onloadeddata = updateElementSize;
+    } else {
+      element.onload = updateElementSize;
     }
-  }
-  var nextSibling = (index >= 0) ? this.pictures[index].element :
-      browser.lastElementChild;
-  browser.insertBefore(wrapper, nextSibling);
+    element.tabIndex = -1;
+    element.src = url;
 
-  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
-  this.pictures.splice(index + 1, 0, domPicture);
-  this.updateScrollbarThumb_();
+    // Insert the picture's DOM element in a sorted timestamp order.
+    for (var index = this.pictures.length - 1; index >= 0; index--) {
+      if (picture.timestamp >= this.pictures[index].picture.timestamp) {
+        break;
+      }
+    }
+    var browserPadder = document.querySelector('#browser .padder');
+    var nextSibling = (index >= 0) ? this.pictures[index].element :
+        browserPadder.lastElementChild;
+    browserPadder.insertBefore(wrapper, nextSibling);
+    this.updateScrollbarThumb_();
 
-  wrapper.addEventListener('mousedown', function(event) {
-    event.preventDefault();  // Prevent focusing.
+    var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
+    this.pictures.splice(index + 1, 0, domPicture);
+
+    wrapper.addEventListener('mousedown', event => {
+      event.preventDefault();  // Prevent focusing.
+    });
+    wrapper.addEventListener('click', event => {
+      // If scrolled while clicking, then discard this selection, since another
+      // one will be choosen in the onScrollEnded handler.
+      if (this.scrollTracker_.scrolling &&
+          Math.abs(this.scrollTracker_.delta[0]) > 16) {
+        return;
+      }
+      this.setSelectedIndex(this.pictures.indexOf(domPicture));
+    });
+    wrapper.addEventListener('focus', () => {
+      var index = this.pictures.indexOf(domPicture);
+      if (this.lastSelectedIndex() != index)
+        this.setSelectedIndex(index);
+    });
   });
-  wrapper.addEventListener('click', function(event) {
-    // If scrolled while clicking, then discard this selection, since another
-    // one will be choosen in the onScrollEnded handler.
-    if (this.scrollTracker_.scrolling &&
-        Math.abs(this.scrollTracker_.delta[0]) > 16) {
-      return;
-    }
-
-    this.setSelectedIndex(this.pictures.indexOf(domPicture));
-  }.bind(this));
-  wrapper.addEventListener('focus', function() {
-    var index = this.pictures.indexOf(domPicture);
-    if (this.lastSelectedIndex() != index)
-      this.setSelectedIndex(index);
-  }.bind(this));
 };
 
 /**
- * @override
+ * Updates the picture element's size.
+ * @param {HTMLElement} wrapper Element to be updated.
+ * @private
  */
-camera.views.Browser.prototype.updateElementSize = function(wrapper) {
-  // Set the picture element's max dimension (not larger than the window size).
-  // Scaling up the selected element is still done in css rather than here as
-  // calculating the element size after loading the high-resolution content
-  // makes DOM tree relayout and unsmooth UI experience.
-  // TODO(yuli): Fix the blurriness in CSS scaled-up content.
-  var maxWidth = wrapper.parentElement.clientWidth * 0.72;
-  var maxHeight = wrapper.parentElement.clientHeight * 0.72;
+camera.views.Browser.updateElementSize_ = function(wrapper) {
+  // Make the picture element not too large to overlap the buttons.
+  var browserPadder = document.querySelector('#browser .padder');
+  var maxWidth = browserPadder.clientWidth * 0.7;
+  var maxHeight = browserPadder.clientHeight * 0.7;
   camera.util.updateElementSize(wrapper, maxWidth, maxHeight, false);
 };
 

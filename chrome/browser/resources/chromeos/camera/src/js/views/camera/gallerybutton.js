@@ -58,7 +58,9 @@ camera.views.camera.GalleryButton = function(router, model) {
     // Check if the last picture still exists before opening it in the gallery.
     // TODO(yuli): Remove this workaround for unable watching changed-files.
     this.model_.checkLastPicture().then(picture => {
-      this.openGallery_(picture);
+      if (picture) {
+        this.openGallery_(picture);
+      }
     });
   });
 };
@@ -80,30 +82,34 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
   this.model_.lastPicture().then(picture => {
     if (picture != this.lastPicture_) {
       this.lastPicture_ = picture;
-      return this.button_;
+      return true;
     }
-  }).then(button => {
-    // Update the button if the last picture changes.
-    if (!button) {
+    return false;
+  }).then(changed => {
+    if (!changed) {
       return;
     }
-    button.hidden = !this.lastPicture_;
-    if (!this.lastPicture_ && button.firstElementChild) {
-      button.removeChild(button.firstElementChild);
-      return;
-    }
-    var img = document.createElement('img');
-    img.tabIndex = -1;
-    img.onload = function() {
-      camera.util.updateElementSize(
-          button, button.clientWidth, button.clientHeight, true);
-    };
-    img.src = this.lastPicture_.thumbnailURL;
-
-    if (button.firstElementChild) {
-      button.replaceChild(img, button.firstElementChild);
+    this.button_.hidden = !this.lastPicture_;
+    var url = this.lastPicture_ && this.lastPicture_.thumbnailURL;
+    if (url) {
+      var img = document.createElement('img');
+      if (this.button_.firstElementChild) {
+        this.button_.replaceChild(img, this.button_.firstElementChild);
+      } else {
+        this.button_.appendChild(img);
+      }
+      img.tabIndex = -1;
+      img.onload = () => {
+        camera.util.updateElementSize(this.button_, this.button_.clientWidth,
+            this.button_.clientHeight, true);
+      };
+      img.src = url;
+      this.button_.classList.remove('no-content');
     } else {
-      button.appendChild(img);
+      if (this.button_.firstElementChild) {
+        this.button_.removeChild(this.button_.firstElementChild);
+      }
+      this.button_.classList.add('no-content');
     }
   });
 };
@@ -114,9 +120,6 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
  * @private
  */
 camera.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
-  if (!picture) {
-    return;
-  }
   if (camera.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
     // TODO(yuli): Don't open video-player app here.
     const id = picture.isMotionPicture ?

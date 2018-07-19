@@ -66,37 +66,6 @@ body {
   width: 8px;
 }
 
-.buttons button,
-.buttons input {
-  -webkit-app-region: no-drag;
-  border: none;
-  height: 32px;
-  margin: 2px;
-  padding: 0;
-  pointer-events: auto;
-  vertical-align: middle;
-  width: 32px;
-}
-
-.buttons button {
-  background: rgba(0, 0, 0, 0.75) center center no-repeat;
-}
-
-.buttons button:not([disabled]):hover,
-.buttons input:not([disabled]):hover {
-  background-color: rgba(60, 60, 60, 0.75);
-}
-
-.buttons button:not([disabled]):active,
-.buttons input:not([disabled]):active {
-  background-color: rgba(90, 90, 90, 0.75);
-}
-
-#toolbar-stripe {
-  margin: 8px 0;
-  position: relative;
-}
-
 .buttons {
   align-content: flex-end;
   align-items: flex-end;
@@ -111,6 +80,66 @@ body {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.one-button {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.buttons button,
+.buttons input {
+  -webkit-app-region: no-drag;
+  background-color: transparent;
+  border: none;
+  margin: 2px;
+  padding: 0;
+  pointer-events: auto;
+  vertical-align: middle;
+  width: 32px;
+  height: 32px;
+}
+
+.one-button button,
+.one-button input {
+  background-color: transparent;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.one-button.circle button {
+  border-radius: 50%;
+}
+
+.one-button button[disabled],
+.one-button input[disabled],
+.buttons button[disabled],
+.buttons input[disabled] {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+
+.one-button button:not([disabled]):hover,
+.one-button input:not([disabled]):hover,
+.buttons button:not([disabled]):hover,
+.buttons input:not([disabled]):hover {
+  background-color: rgba(60, 60, 60, 0.75);
+}
+
+.one-button button:not([disabled]):active,
+.one-button input:not([disabled]):active,
+.buttons button:not([disabled]):active,
+.buttons input:not([disabled]):active {
+  background-color: rgba(90, 90, 90, 0.75);
+}
+
+#toolbar-stripe {
+  margin: 8px 0;
+  position: relative;
 }
 
 .buttons.prev-to-middle {
@@ -128,10 +157,6 @@ body {
 #toolbar .buttons {
   align-items: center;
   padding: 0 10px;
-}
-
-#toolbar .buttons button:not(:hover):not(:active) {
-  background-color: transparent;
 }
 
 .buttons #browser-print {
@@ -238,35 +263,7 @@ body.mirror #main-preview {
   height: 0;
 }
 
-.one-button {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 5px;
-}
-
-.one-button button,
-.one-button input {
-  background-color: transparent;
-  border: none;
-  display: flex;
-  margin: 0;
-  padding: 0;
-}
-
-.one-button button[disabled],
-.one-button input[disabled],
-.buttons button[disabled],
-.buttons input[disabled] {
-  opacity: 0.65;
-  pointer-events: none;
-}
-
-.one-button.circle button {
-  border-radius: 50%;
-}
-
-.one-button #gallery-enter {
+.one-button.circle #gallery-enter {
   position: absolute;
   right: 24px;
   bottom: 32px;
@@ -275,11 +272,15 @@ body.mirror #main-preview {
   overflow: hidden;
 }
 
-.one-button #gallery-enter img {
+.one-button.circle #gallery-enter img {
   position: absolute;
   left: 50%;
   top: 50%;
   -webkit-transform: translate(-50%, -50%);
+}
+
+#gallery-enter.no-content {
+  background-color: rgba(24, 24, 24, 1);
 }
 
 .one-button #take-picture {
@@ -332,6 +333,7 @@ body.mirror #main-preview {
       url(../images/2x/camera_button_timer.png) 2x);
   height: 32px;
   width: 32px;
+  background-position: 0 0;
 }
 
 .buttons #toggle-camera {
@@ -358,6 +360,7 @@ body.mirror #main-preview {
       url(../images/2x/camera_button_mirror.png) 2x);
   height: 32px;
   width: 32px;
+  background-position: 0 0;
 }
 
 .buttons #toggle-timer.animate,
@@ -458,6 +461,12 @@ body.browser #browser {
   transform: translate3d(0, 0, 0);
 }
 
+#browser .buttons button {
+  /* TODO(yuli): Fix browser view's buttons' incorrect dimensions. */
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 #browser .buttons button[disabled] {
   display: none;
 }
@@ -479,7 +488,6 @@ body.browser #browser {
   flex-shrink: 0;
   margin: 4%;
   pointer-events: auto;
-  transition: -webkit-transform 200ms;
 }
 
 #browser div.bounds-padder {
@@ -490,7 +498,7 @@ body.browser #browser {
 }
 
 #browser div.media-wrapper.selected {
-  -webkit-transform: scale(1.1);
+  /* TODO(yuli): Maybe add borders for selection */
 }
 
 /* Printing in the browser view. */

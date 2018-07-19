@@ -46,7 +46,7 @@ camera.models.Gallery = function() {
 camera.models.Gallery.Picture = function(
     thumbnailEntry, pictureEntry, isMotionPicture) {
   /**
-   * @type {FileEntry}
+   * @type {?FileEntry}
    * @private
    */
   this.thumbnailEntry_ = thumbnailEntry;
@@ -96,10 +96,7 @@ camera.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
 
 camera.models.Gallery.Picture.prototype = {
   get thumbnailURL() {
-    return this.thumbnailEntry_.toURL();
-  },
-  get thumbnailEntry() {
-    return this.thumbnailEntry_;
+    return this.thumbnailEntry_ && this.thumbnailEntry_.toURL();
   },
   get pictureEntry() {
     return this.pictureEntry_;
@@ -179,12 +176,12 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
     // TODO(yuli): Remove unused thumbnails.
     var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
     var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
-    return this.wrapPicture_(entry, thumbnailEntry).catch(() => null);
+    return this.wrapPicture_(entry, thumbnailEntry);
   });
 
   return Promise.all(wrapped).then(pictures => {
     // Sort pictures by timestamps. The most recent picture will be at the end.
-    return pictures.filter(p => p).sort((a, b) => {
+    return pictures.sort((a, b) => {
       if (a.timestamp == null) {
         return -1;
       }
@@ -238,19 +235,21 @@ camera.models.Gallery.prototype.checkLastPicture = function() {
  * @param {function(*=)} onFailure Failure callback.
  */
 camera.models.Gallery.prototype.deletePicture = function(picture, onFailure) {
-  this.loaded_.then(pictures => {
-    var onDelete = () => {
-      var index = pictures.indexOf(picture);
-      pictures.splice(index, 1);
-      this.notifyObservers_('onPictureDeleted', picture);
-      picture.thumbnailEntry.remove(function() {});
-    };
+  var removed = new Promise((resolve, reject) => {
     if (picture.pictureEntry) {
-      picture.pictureEntry.remove(onDelete, onFailure);
+      picture.pictureEntry.remove(resolve, reject);
     } else {
-      onDelete();
+      resolve();
     }
   });
+  Promise.all([this.loaded_, removed]).then(([pictures, _]) => {
+    var index = pictures.indexOf(picture);
+    pictures.splice(index, 1);
+    this.notifyObservers_('onPictureDeleted', picture);
+    if (picture.thumbnailEntry_) {
+      picture.thumbnailEntry_.remove(() => {});
+    }
+  }).catch(onFailure);
 };
 
 /**
@@ -278,15 +277,12 @@ camera.models.Gallery.prototype.exportPicture = function(
 camera.models.Gallery.prototype.wrapPicture_ = function(
     pictureEntry, thumbnailEntry) {
   var isMotionPicture = camera.models.FileSystem.hasVideoPrefix(pictureEntry);
-  return new Promise((resolve, reject) => {
-    if (thumbnailEntry) {
-      resolve(thumbnailEntry);
-    } else {
-      // TODO(yuli): Add the picture even if unable to save its thumbnail.
-      camera.models.FileSystem.saveThumbnail(
-          isMotionPicture, pictureEntry, resolve, reject);
-    }
-  }).then(thumbnailEntry => {
+  var saved = () => {
+    // Proceed to wrap the picture even if unable to save its thumbnail.
+    return camera.models.FileSystem.saveThumbnail(
+        isMotionPicture, pictureEntry).catch(() => null);
+  };
+  return Promise.resolve(thumbnailEntry || saved()).then(thumbnailEntry => {
     return new camera.models.Gallery.Picture(
         thumbnailEntry, pictureEntry, isMotionPicture);
   });
@@ -325,10 +321,7 @@ camera.models.Gallery.prototype.savePicture = function(
       });
     }
   }).then(blob => {
-    return new Promise((resolve, reject) => {
-      camera.models.FileSystem.savePicture(
-          isMotionPicture, blob, resolve, reject);
-    });
+    return camera.models.FileSystem.savePicture(isMotionPicture, blob);
   }).then(pictureEntry => {
     return this.wrapPicture_(pictureEntry);
   });
