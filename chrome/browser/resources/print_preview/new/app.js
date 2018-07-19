@@ -372,7 +372,12 @@ Polymer({
       this.remove();
       this.nativeLayer_.dialogClose(this.cancelled_);
     } else if (this.state == print_preview_new.State.HIDDEN) {
-      this.nativeLayer_.hidePreview();
+      if (this.destination_.isLocal &&
+          this.destination_.id !==
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        // Only hide the preview for local, non PDF destinations.
+        this.nativeLayer_.hidePreview();
+      }
     } else if (this.state == print_preview_new.State.PRINTING) {
       if (this.shouldShowMoreSettings_) {
         new print_preview.PrintSettingsUiMetricsContext().record(
