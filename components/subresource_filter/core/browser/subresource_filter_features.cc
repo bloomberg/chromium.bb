@@ -232,7 +232,7 @@ const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects{
-    "SubresourceFilterConsiderRedirects", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SubresourceFilterConsiderRedirects", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
