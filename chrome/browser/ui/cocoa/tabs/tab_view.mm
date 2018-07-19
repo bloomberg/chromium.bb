@@ -88,7 +88,8 @@ const CGFloat kRapidCloseDist = 2.5;
 + (void)setTabEdgeStrokeColor;
 @end
 
-extern NSString* const _Nonnull NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification;
+extern NSString* const
+    NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification;
 
 namespace {
 

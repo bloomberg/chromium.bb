@@ -14,7 +14,7 @@
 namespace {
 
 // Length of the animation in seconds.
-const NSTimeInterval kAnimationDuration = 0.18;
+const NSTimeInterval kSheetAnimationDuration = 0.18;
 
 // If the machine has a DisplayLink device attached, the WindowServer has a
 // tendency to crash https://crbug.com/755516. To avoid this, probe the
@@ -68,7 +68,7 @@ bool HasDisplayLinkDevice() {
 
   if (useSimpleAnimations_) {
     [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+    [[NSAnimationContext currentContext] setDuration:kSheetAnimationDuration];
     [[customWindow_ animator] setAlphaValue:1.0];
     [NSAnimationContext endGrouping];
   } else {
@@ -87,7 +87,7 @@ bool HasDisplayLinkDevice() {
       } ];
       animation.reset(
           [[NSViewAnimation alloc] initWithViewAnimations:animationArray]);
-      [animation setDuration:kAnimationDuration];
+      [animation setDuration:kSheetAnimationDuration];
       [animation setAnimationBlockingMode:NSAnimationBlocking];
     } else {
       animation.reset([[ConstrainedWindowAnimationHide alloc]

@@ -17,8 +17,8 @@
 
 namespace {
 
-const CGFloat kWindowMinWidth = 500;
-const CGFloat kButtonGap = 6;
+const CGFloat kConstrainedWindowMinWidth = 500;
+const CGFloat kConstrainedWindowButtonGap = 6;
 
 }  // namespace
 
@@ -163,21 +163,22 @@ const CGFloat kButtonGap = 6;
     buttonWidth += size.width;
   }
   if ([buttons_ count])
-    buttonWidth += ([buttons_ count] - 1) * kButtonGap;
+    buttonWidth += ([buttons_ count] - 1) * kConstrainedWindowButtonGap;
 
   // Window width.
   CGFloat windowWidth = buttonWidth;
   if (accessoryView_.get())
     windowWidth = std::max(windowWidth, NSWidth([accessoryView_ frame]));
   windowWidth += chrome_style::kHorizontalPadding * 2;
-  windowWidth = std::max(windowWidth, kWindowMinWidth);
+  windowWidth = std::max(windowWidth, kConstrainedWindowMinWidth);
 
   // Layout controls.
   [self layoutButtonsWithWindowWidth:windowWidth];
   CGFloat curY = [buttons_ count] ? NSMaxY([[buttons_ lastObject] frame])
       : chrome_style::kClientBottomPadding;
-  CGFloat availableMessageWidth =
-      windowWidth - chrome_style::GetCloseButtonSize() - kButtonGap;
+  CGFloat availableMessageWidth = windowWidth -
+                                  chrome_style::GetCloseButtonSize() -
+                                  kConstrainedWindowButtonGap;
   curY = [self layoutLinkAtYPos:curY
                     windowWidth:availableMessageWidth];
   curY = [self layoutAccessoryViewAtYPos:curY];
@@ -208,7 +209,7 @@ const CGFloat kButtonGap = 6;
     rect.origin.x = curX - NSWidth(rect);
     rect.origin.y = chrome_style::kClientBottomPadding;
     [button setFrameOrigin:rect.origin];
-    curX = NSMinX(rect) - kButtonGap;
+    curX = NSMinX(rect) - kConstrainedWindowButtonGap;
   }
 
   // Layout remaining buttons left to right.
@@ -217,7 +218,7 @@ const CGFloat kButtonGap = 6;
     NSButton* button = [buttons_ objectAtIndex:i];
     [button setFrameOrigin:
         NSMakePoint(curX, chrome_style::kClientBottomPadding)];
-    curX += NSMaxX([button frame]) + kButtonGap;
+    curX += NSMaxX([button frame]) + kConstrainedWindowButtonGap;
   }
 }
 

@@ -11,32 +11,33 @@
 #include "chrome/grit/theme_resources.h"
 
 // Distance from top border to icon.
-const CGFloat kImagePaddingTop = 7;
+const CGFloat kDownloadShowAllImagePaddingTop = 7;
 
 // Distance from left border to icon.
-const CGFloat kImagePaddingLeft = 11;
+const CGFloat kDownloadShowAllImagePaddingLeft = 11;
 
 // Width of icon.
-const CGFloat kImageWidth = 16;
+const CGFloat kDownloadShowAllImageWidth = 16;
 
 // Height of icon.
-const CGFloat kImageHeight = 16;
+const CGFloat kDownloadShowAllImageHeight = 16;
 
 // x distance between image and title.
-const CGFloat kImageTextPadding = 4;
+const CGFloat kDownloadShowAllImageTextPadding = 4;
 
 // x coordinate of download name string, in view coords.
-const CGFloat kTextPosLeft =
-    kImagePaddingLeft + kImageWidth + kImageTextPadding;
+const CGFloat kDownloadShowAllTextPosLeft = kDownloadShowAllImagePaddingLeft +
+                                            kDownloadShowAllImageWidth +
+                                            kDownloadShowAllImageTextPadding;
 
 // Distance from end of title to right border.
-const CGFloat kTextPaddingRight = 13;
+const CGFloat kDownloadShowAllTextPaddingRight = 13;
 
 // y coordinate of title, in view coords.
-const CGFloat kTextPosTop = 10;
+const CGFloat kDownloadShowAllTextPosTop = 10;
 
 // Width of outer stroke
-const CGFloat kOuterStrokeWidth = 1;
+const CGFloat kDownloadShowAllOuterStrokeWidth = 1;
 
 @interface DownloadShowAllCell(Private)
 - (const ui::ThemeProvider*)backgroundThemeWrappingProvider:
@@ -156,8 +157,9 @@ const CGFloat kOuterStrokeWidth = 1;
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Draw title
-  NSPoint primaryPos = NSMakePoint(
-      cellFrame.origin.x + kTextPosLeft, kTextPosTop);
+  NSPoint primaryPos =
+      NSMakePoint(cellFrame.origin.x + kDownloadShowAllTextPosLeft,
+                  kDownloadShowAllTextPosTop);
   [[self title] drawAtPoint:primaryPos withAttributes:[self textAttributes]];
 
   // Draw icon
@@ -170,10 +172,9 @@ const CGFloat kOuterStrokeWidth = 1;
 }
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {
-  return NSMakeRect(cellFrame.origin.x + kImagePaddingLeft,
-                    cellFrame.origin.y + kImagePaddingTop,
-                    kImageWidth,
-                    kImageHeight);
+  return NSMakeRect(cellFrame.origin.x + kDownloadShowAllImagePaddingLeft,
+                    cellFrame.origin.y + kDownloadShowAllImagePaddingTop,
+                    kDownloadShowAllImageWidth, kDownloadShowAllImageHeight);
 }
 
 - (NSSize)cellSize {
@@ -181,8 +182,9 @@ const CGFloat kOuterStrokeWidth = 1;
 
   // Custom width:
   NSSize textSize = [[self title] sizeWithAttributes:[self textAttributes]];
-  size.width = kTextPosLeft + textSize.width + kTextPaddingRight +
-      kOuterStrokeWidth * 2;
+  size.width = kDownloadShowAllTextPosLeft + textSize.width +
+               kDownloadShowAllTextPaddingRight +
+               kDownloadShowAllOuterStrokeWidth * 2;
   return size;
 }
 @end
