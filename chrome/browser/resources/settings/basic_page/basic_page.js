@@ -113,6 +113,12 @@ Polymer({
     'subpage-expand': 'onSubpageExpanded_',
   },
 
+  /**
+   * Used to avoid handling a new toggle while currently toggling.
+   * @private {boolean}
+   */
+  advancedTogglingInProgress_: false,
+
   /** @override */
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
@@ -291,12 +297,21 @@ Polymer({
   },
 
   advancedToggleClicked_: function() {
+    if (this.advancedTogglingInProgress_)
+      return;
+
+    this.advancedTogglingInProgress_ = true;
     const toggle = this.$$('#toggleContainer');
     if (!this.advancedToggleExpanded) {
       this.advancedToggleExpanded = true;
       this.async(() => {
-        this.$$('#advancedPageTemplate').get().then(advancedPage => {
-          this.fire('scroll-to-top', toggle.offsetTop);
+        this.$$('#advancedPageTemplate').get().then(() => {
+          this.fire('scroll-to-top', {
+            top: toggle.offsetTop,
+            callback: () => {
+              this.advancedTogglingInProgress_ = false;
+            }
+          });
         });
       });
     } else {
@@ -304,6 +319,7 @@ Polymer({
         bottom: toggle.offsetTop + toggle.offsetHeight + 24,
         callback: () => {
           this.advancedToggleExpanded = false;
+          this.advancedTogglingInProgress_ = false;
         }
       });
     }
