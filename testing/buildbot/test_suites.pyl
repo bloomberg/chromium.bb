@@ -246,22 +246,16 @@
     'breakpad_unittests': {},
     'content_shell_test_apk': {
       'swarming': {
-        'hard_timeout': 960,
         'shards': 3,
       },
     },
     'chrome_public_test_apk': {
       'swarming': {
-        'hard_timeout': 1500,
         'shards': 20,
       },
     },
     'chrome_public_test_vr_apk': {},
-    'chrome_sync_shell_test_apk': {
-      'swarming': {
-        'hard_timeout': 960,
-      },
-    },
+    'chrome_sync_shell_test_apk': {},
     'gl_tests': {
       # TODO(kbr): these are actually run on many of the GPU bots, which have
       # physical hardware for several of the desktop OSs. Once the GPU JSON
@@ -273,15 +267,8 @@
       # physical hardware for several of the desktop OSs. Once the GPU JSON
       # generation script is merged with this one, this should be promoted from
       # the Android-specific section.
-      'android_swarming': {
-        'hard_timeout': 120,
-      },
     },
-    'mojo_test_apk': {
-      'swarming': {
-        'hard_timeout': 300,
-      },
-    },
+    'mojo_test_apk': {},
     'ui_android_unittests': {},
     'webview_instrumentation_test_apk': {
       'swarming': {
@@ -498,19 +485,16 @@
     'components_browsertests': {},
     'components_unittests': {
       'android_swarming': {
-        'hard_timeout': 900,
         'shards': 2,
       },
     },
     'content_browsertests': {
       'android_swarming': {
-        'hard_timeout': 1500,
         'shards': 9,
       },
     },
     'content_unittests': {
       'android_swarming': {
-        'hard_timeout': 960,
         'shards': 3,
       },
     },
@@ -519,39 +503,22 @@
     'gcm_unit_tests': {},
     'gin_unittests': {},
     'google_apis_unittests': {},
-    'gpu_unittests': {
-      'android_swarming': {
-        'hard_timeout': 960,
-      },
-    },
+    'gpu_unittests': {},
     'ipc_tests': {},
     'libjingle_xmpp_unittests': {},
     'jingle_unittests': {},
     'latency_unittests': {},
     'media_blink_unittests': {},
     'media_service_unittests': {},
-    'media_unittests': {
-      'android_swarming': {
-        'hard_timeout': 900,
-      },
-    },
+    'media_unittests': {},
     'midi_unittests': {},
-    'mojo_unittests': {
-      'android_swarming': {
-        'hard_timeout': 300,
-      },
-    },
+    'mojo_unittests': {},
     'net_unittests': {
       'android_swarming': {
-        'hard_timeout': 1800,
         'shards': 3,
       },
     },
-    'services_unittests': {
-      'android_swarming': {
-        'hard_timeout': 300,
-      },
-    },
+    'services_unittests': {},
     'shell_dialogs_unittests': {},
     'skia_unittests': {},
     'sql_unittests': {},
@@ -564,21 +531,12 @@
   },
 
   'chromium_gtests_for_devices_with_graphical_output': {
-    'cc_unittests': {
-      'android_swarming': {
-        'hard_timeout': 900,
-      },
-    },
+    'cc_unittests': {},
     'device_unittests': {},
     'display_unittests': {},
-    'gfx_unittests': {
-      'android_swarming': {
-        'hard_timeout': 900,
-      },
-    },
+    'gfx_unittests': {},
     'unit_tests': {
       'android_swarming': {
-        'hard_timeout': 900,
         'shards': 5,
       },
     },
@@ -864,31 +822,11 @@
   },
 
   'cronet_gtests': {
-    'cronet_sample_test_apk': {
-      'swarming': {
-        'hard_timeout': 300,
-      },
-    },
-    'cronet_smoketests_missing_native_library_instrumentation_apk': {
-      'swarming': {
-        'hard_timeout': 300,
-      },
-    },
-    'cronet_smoketests_platform_only_instrumentation_apk': {
-      'swarming': {
-        'hard_timeout': 300,
-      },
-    },
-    'cronet_test_instrumentation_apk': {
-      'swarming': {
-        'hard_timeout': 600,
-      },
-    },
-    'cronet_unittests_android': {
-      'swarming': {
-        'hard_timeout': 300,
-      },
-    },
+    'cronet_sample_test_apk': {},
+    'cronet_smoketests_missing_native_library_instrumentation_apk': {},
+    'cronet_smoketests_platform_only_instrumentation_apk': {},
+    'cronet_test_instrumentation_apk': {},
+    'cronet_unittests_android': {},
     'net_unittests': {
       'swarming': {
         'shards': 4,

@@ -33,7 +33,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -77,7 +76,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -121,7 +119,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -165,7 +162,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 600,
           "output_links": [
             {
               "link": [
@@ -209,7 +205,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -341,7 +336,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -385,7 +379,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -429,7 +422,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -473,7 +465,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 600,
           "output_links": [
             {
               "link": [
@@ -517,7 +508,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -1201,7 +1191,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 900,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -1427,7 +1417,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 900,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -1473,7 +1463,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1500,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -1836,7 +1826,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 900,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -1971,7 +1961,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 120,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -2376,7 +2366,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 900,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -2511,7 +2501,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 300,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -2556,7 +2546,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1800,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -2647,7 +2637,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 300,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -3007,7 +2997,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 900,
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -3638,8 +3628,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "cc_unittests"
       },
@@ -3665,7 +3654,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 1500,
           "shards": 20
         },
         "test": "chrome_public_test_apk"
@@ -3716,8 +3704,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "chrome_sync_shell_test_apk"
       },
@@ -3768,7 +3755,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 900,
           "shards": 2
         },
         "test": "components_unittests"
@@ -3795,7 +3781,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 1500,
           "shards": 9
         },
         "test": "content_browsertests"
@@ -3822,7 +3807,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 3
         },
         "test": "content_shell_test_apk"
@@ -3849,7 +3833,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 3
         },
         "test": "content_unittests"
@@ -4000,8 +3983,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "gfx_unittests"
       },
@@ -4076,8 +4058,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 120
+          ]
         },
         "test": "gl_unittests"
       },
@@ -4127,8 +4108,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "gpu_unittests"
       },
@@ -4303,8 +4283,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "media_unittests"
       },
@@ -4354,8 +4333,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 300
+          ]
         },
         "test": "mojo_test_apk"
       },
@@ -4380,8 +4358,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 300
+          ]
         },
         "test": "mojo_unittests"
       },
@@ -4407,7 +4384,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 1800,
           "shards": 3
         },
         "test": "net_unittests"
@@ -4458,8 +4434,7 @@
               "device_type": "coho",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 300
+          ]
         },
         "test": "services_unittests"
       },
@@ -4660,7 +4635,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 900,
           "shards": 5
         },
         "test": "unit_tests"
@@ -5166,8 +5140,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "cc_unittests"
       },
@@ -5193,7 +5166,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 1500,
           "shards": 20
         },
         "test": "chrome_public_test_apk"
@@ -5244,8 +5216,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "chrome_sync_shell_test_apk"
       },
@@ -5296,7 +5267,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 900,
           "shards": 2
         },
         "test": "components_unittests"
@@ -5323,7 +5293,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 1500,
           "shards": 9
         },
         "test": "content_browsertests"
@@ -5350,7 +5319,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 3
         },
         "test": "content_shell_test_apk"
@@ -5377,7 +5345,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 3
         },
         "test": "content_unittests"
@@ -5528,8 +5495,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "gfx_unittests"
       },
@@ -5604,8 +5570,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 120
+          ]
         },
         "test": "gl_unittests"
       },
@@ -5655,8 +5620,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "gpu_unittests"
       },
@@ -5831,8 +5795,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "media_unittests"
       },
@@ -5882,8 +5845,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 300
+          ]
         },
         "test": "mojo_test_apk"
       },
@@ -5908,8 +5870,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 300
+          ]
         },
         "test": "mojo_unittests"
       },
@@ -5935,7 +5896,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 1800,
           "shards": 3
         },
         "test": "net_unittests"
@@ -5986,8 +5946,7 @@
               "device_type": "gce_x86",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 300
+          ]
         },
         "test": "services_unittests"
       },
@@ -6188,7 +6147,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 900,
           "shards": 5
         },
         "test": "unit_tests"
