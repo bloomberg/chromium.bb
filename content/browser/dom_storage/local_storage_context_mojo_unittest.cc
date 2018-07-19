@@ -805,6 +805,15 @@ class LocalStorageContextMojoTestWithService
   }
 
  private:
+  // testing::Test:
+  void TearDown() override {
+    // Some of these tests close message pipes which serve as master interfaces
+    // to other associated interfaces; this in turn schedules tasks to invoke
+    // the associated interfaces' error handlers, and local storage code relies
+    // on those handlers running in order to avoid memory leaks at shutdown.
+    RunUntilIdle();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(LocalStorageContextMojoTestWithService);
 };
 

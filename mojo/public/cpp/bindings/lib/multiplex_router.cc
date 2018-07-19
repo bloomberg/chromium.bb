@@ -338,8 +338,9 @@ MultiplexRouter::MultiplexRouter(
     connector_.AllowWokenUpBySyncWatchOnSameThread();
   }
   connector_.set_incoming_receiver(&filters_);
-  connector_.set_connection_error_handler(base::Bind(
-      &MultiplexRouter::OnPipeConnectionError, base::Unretained(this)));
+  connector_.set_connection_error_handler(
+      base::BindOnce(&MultiplexRouter::OnPipeConnectionError,
+                     base::Unretained(this), false /* force_async_dispatch */));
 
   std::unique_ptr<MessageHeaderValidator> header_validator =
       std::make_unique<MessageHeaderValidator>();
@@ -491,7 +492,7 @@ void MultiplexRouter::RaiseError() {
     connector_.RaiseError();
   } else {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&MultiplexRouter::RaiseError, this));
+                           base::BindOnce(&MultiplexRouter::RaiseError, this));
   }
 }
 
@@ -506,7 +507,7 @@ void MultiplexRouter::CloseMessagePipe() {
   // CloseMessagePipe() above won't trigger connection error handler.
   // Explicitly call OnPipeConnectionError() so that associated endpoints will
   // get notified.
-  OnPipeConnectionError();
+  OnPipeConnectionError(true /* force_async_dispatch */);
 }
 
 void MultiplexRouter::PauseIncomingMethodCallProcessing() {
@@ -641,7 +642,7 @@ bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
   return true;
 }
 
-void MultiplexRouter::OnPipeConnectionError() {
+void MultiplexRouter::OnPipeConnectionError(bool force_async_dispatch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   scoped_refptr<MultiplexRouter> protector(this);
@@ -664,10 +665,13 @@ void MultiplexRouter::OnPipeConnectionError() {
     UpdateEndpointStateMayRemove(endpoint.get(), PEER_ENDPOINT_CLOSED);
   }
 
-  ProcessTasks(connector_.during_sync_handle_watcher_callback()
-                   ? ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES
-                   : ALLOW_DIRECT_CLIENT_CALLS,
-               connector_.task_runner());
+  ClientCallBehavior call_behavior = ALLOW_DIRECT_CLIENT_CALLS;
+  if (force_async_dispatch)
+    call_behavior = NO_DIRECT_CLIENT_CALLS;
+  else if (connector_.during_sync_handle_watcher_callback())
+    call_behavior = ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES;
+
+  ProcessTasks(call_behavior, connector_.task_runner());
 }
 
 void MultiplexRouter::ProcessTasks(
@@ -879,7 +883,8 @@ void MultiplexRouter::MaybePostToProcessTasks(
   posted_to_process_tasks_ = true;
   posted_to_task_runner_ = task_runner;
   task_runner->PostTask(
-      FROM_HERE, base::Bind(&MultiplexRouter::LockAndCallProcessTasks, this));
+      FROM_HERE,
+      base::BindOnce(&MultiplexRouter::LockAndCallProcessTasks, this));
 }
 
 void MultiplexRouter::LockAndCallProcessTasks() {
