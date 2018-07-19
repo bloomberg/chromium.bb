@@ -64,6 +64,9 @@ legend {
 /** Buttons */
 .icon-button,
 .text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   background: transparent;
   border: 0;
