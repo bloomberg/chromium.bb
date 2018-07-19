@@ -128,9 +128,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_DisabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_SelectedMenuItemForegroundColor:
-      return SK_ColorBLACK;
+      return UsesHighContrastColors() ? SK_ColorWHITE : SK_ColorBLACK;
     case kColorId_FocusedMenuItemBackgroundColor:
-      return gfx::kGoogleGrey200;
+      return UsesHighContrastColors() ? SK_ColorDKGRAY : gfx::kGoogleGrey200;
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
@@ -297,18 +297,6 @@ void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
-
-  // In high contrast, draw a border stroke as well.
-  if (UsesHighContrastColors()) {
-    constexpr int kStrokeWidth = 2;
-    cc::PaintFlags border_flags;
-    gfx::Rect border_rect = rect;
-    border_rect.Inset(kStrokeWidth / 2, kStrokeWidth / 2);
-    border_flags.setColor(GetSystemColor(kColorId_MenuBorderColor));
-    border_flags.setStyle(cc::PaintFlags::kStroke_Style);
-    border_flags.setStrokeWidth(kStrokeWidth);
-    canvas->drawRect(gfx::RectToSkRect(border_rect), border_flags);
-  }
 }
 
 }  // namespace ui
