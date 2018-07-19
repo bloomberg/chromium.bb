@@ -44,7 +44,7 @@ Number of unique symbols 44 -> 43 (-1)
 0 paths added, 0 removed, 2 changed
 Changed files:
   
-  third_party/container.c
+  third_party/container/container.c
 
 Showing 7 symbols (5 -> 4 unique) with total pss: 38 bytes
 Histogram of symbols based on PSS:
@@ -56,13 +56,13 @@ Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss
 Index | Running Total | Section@Address | ...
 ------------------------------------------------------------
 ~ 0)         10 (26.3%) r@0x284e398  +10 (22->32)  num_aliases=1
-               source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+               source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
                flags={}  name=chrome::mojom::FilePatcher::Name_
 + 1)         14 (36.8%) d@0x2de7000  +4 (0->4)  num_aliases=1
                source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
                flags={}  name=google::protobuf::internal::pLinuxKernelCmpxchg
 + 2)         18 (47.4%) d@0x2de7004  +4 (0->4)  num_aliases=1
-               source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+               source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
                flags={}  name=google::protobuf::internal::pLinuxKernelMemoryBarrier
 ~ 3)         38 (100.0%) d@0x2dffd88  20 (0->0)  num_aliases=1
                source_path= 	object_path=

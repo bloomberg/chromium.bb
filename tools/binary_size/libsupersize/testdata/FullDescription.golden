@@ -87,16 +87,16 @@ Index | Running Total | Section@Address | ...
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=google::protobuf::internal::pLinuxKernelCmpxchg
 1)          8 (0.0%)  d@0x2de7004  pss=4  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=google::protobuf::internal::pLinuxKernelMemoryBarrier
 2)        160 (0.0%)  d@0x2de7008  pss=152  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={rel}  name=base::android::kBaseRegisteredMethods
 3)        164 (0.0%)  d@0x2de70a0  pss=4  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={anon}  name=base::android::g_renderer_histogram_code
 4)        168 (0.0%)  d@0x2de70a4  pss=4  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={anon,rel.loc}  name=base::android::g_library_version_number
 5)     101768 (0.1%)  d@0x2dffd88  pss=101600  padding=101600  num_aliases=1
              source_path= 	object_path=
@@ -120,7 +120,7 @@ Index | Running Total | Section@Address | ...
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
              flags={gen}  name=chrome::mojom::FieldTrialRecorder [vtable]
 12)   1956976 (2.5%)  R@0x2c17740  pss=789904  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=chrome::mojom::FieldTrialRecorderProxy [vtable]
 13)   1957008 (2.5%)  R@0x2cd84e0  pss=32  padding=16  num_aliases=1
              source_path= 	object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
@@ -155,7 +155,7 @@ Index | Running Total | Section@Address | ...
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=Name
 24)  37906683 (48.7%) r@0x284e398  pss=32  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=chrome::mojom::FilePatcher::Name_
 25)  38582723 (49.6%) r@0x28f3450  pss=676040  padding=675992  num_aliases=1
              source_path=third_party/paint.cc 	object_path=third_party/sub/PaintChunker.o
@@ -222,14 +222,14 @@ Index | Running Total | Section@Address | ...
              flags={clone}  name=blink::ContiguousContainerBase::shrinkToFit
                   full_name=blink::ContiguousContainerBase::shrinkToFit()
 43)  41944415 (53.9%) t@0x2a0020   pss=28  padding=4  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=blink::ContiguousContainerBase::ContiguousContainerBase
                   full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&)
 44)  41948455 (53.9%) t@0x2a1000   pss=4040  padding=4040  num_aliases=1
              source_path= 	object_path=
              flags={}  name=** symbol gap 1
 45)  41948549 (53.9%) t@0x2a1000   pss=94  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={anon,clone}  name=blink::PaintChunker::releasePaintChunks
                   full_name=blink::PaintChunker::releasePaintChunks()
 46)  77769551 (100.0%) t@0x24ca628  pss=35821002  padding=35821002  num_aliases=1
@@ -269,16 +269,16 @@ Index | Running Total | Section@Address | ...
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=google::protobuf::internal::pLinuxKernelCmpxchg
 1)          8 (0.0%)  d@0x2de7004  pss=4  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=google::protobuf::internal::pLinuxKernelMemoryBarrier
 2)        160 (0.0%)  d@0x2de7008  pss=152  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={rel}  name=base::android::kBaseRegisteredMethods
 3)        164 (0.0%)  d@0x2de70a0  pss=4  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={anon}  name=base::android::g_renderer_histogram_code
 4)        168 (0.0%)  d@0x2de70a4  pss=4  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={anon,rel.loc}  name=base::android::g_library_version_number
 5)     101768 (0.1%)  d@0x2dffd88  pss=101600  padding=101600  num_aliases=1
              source_path= 	object_path=
@@ -302,7 +302,7 @@ Index | Running Total | Section@Address | ...
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
              flags={gen}  name=chrome::mojom::FieldTrialRecorder [vtable]
 12)   1956976 (2.5%)  R@0x2c17740  pss=789904  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=chrome::mojom::FieldTrialRecorderProxy [vtable]
 13)   1957008 (2.5%)  R@0x2cd84e0  pss=32  padding=16  num_aliases=1
              source_path= 	object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
@@ -343,7 +343,7 @@ Index | Running Total | Section@Address | ...
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=Name
 24)  41192795 (53.0%) r@0x284e398  pss=32  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=chrome::mojom::FilePatcher::Name_
 25)  41868835 (53.8%) r@0x28f3450  pss=676040  padding=675992  num_aliases=1
              source_path=third_party/paint.cc 	object_path=third_party/sub/PaintChunker.o
@@ -416,11 +416,11 @@ Index | Running Total | Section@Address | ...
              flags={clone}  name=blink::ContiguousContainerBase::shrinkToFit
                   full_name=blink::ContiguousContainerBase::shrinkToFit()
 42)  77769457 (100.0%) t@0x2a0020   pss=28  padding=4  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={}  name=blink::ContiguousContainerBase::ContiguousContainerBase
                   full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&)
 43)  77769551 (100.0%) t@0x2a1000   pss=94  padding=0  num_aliases=1
-             source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+             source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
              flags={anon,clone}  name=blink::PaintChunker::releasePaintChunks
                   full_name=blink::PaintChunker::releasePaintChunks()
 44)  77769551 (100.0%) b@0x0        pss=262144  padding=0  num_aliases=1

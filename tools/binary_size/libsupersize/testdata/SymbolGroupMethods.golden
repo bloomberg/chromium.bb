@@ -163,7 +163,7 @@ Index | Running Total | Section@Address | PSS | Path
 ------------------------------------------------------------
 0)          8 (0.0%)  *@Group      8              {no path}
              google (count=2)
-1)        168 (0.0%)  *@Group      160            third_party/container.c
+1)        168 (0.0%)  *@Group      160            third_party/container/container.c
              base (count=3)
 2)    1166900 (1.5%)  *@Group      1166732        {no path}
              ** symbol gap 0 (end of section) (count=2)
