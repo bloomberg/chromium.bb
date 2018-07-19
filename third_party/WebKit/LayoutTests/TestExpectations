@@ -2646,6 +2646,10 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-safe-overflow-position-001.html [ Failure ]
+crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-service-worker.https.html [ Timeout ]
+crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-shared-worker.html [ Timeout ]
+crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-dedicated-worker.html [ Timeout ]
 crbug.com/626703 external/wpt/editing/manual/insertlinebreak-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/editing/dnd/canvas/cross-domain/001-manual.xhtml [ Skip ]
 crbug.com/626703 external/wpt/html/editing/dnd/images/cross-domain/001-manual.xhtml [ Skip ]

@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS # AUDIT TASK RUNNER STARTED.
+PASS > [start/stop exceptions] 
+PASS   start(NaN) threw EcmaScript error TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.".
+PASS   start(Infinity) threw EcmaScript error TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.".
+PASS   start(-Infinity) threw EcmaScript error TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.".
+PASS   Calling stop() before start() threw InvalidStateError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': cannot call stop without calling start first.".
+FAIL X start(-1) threw "RangeError" instead of RangeError. assert_true: expected true got false
+FAIL X start(0,-1) threw "RangeError" instead of RangeError. assert_true: expected true got false
+FAIL X start(0,0,-1) threw "RangeError" instead of RangeError. assert_true: expected true got false
+PASS   Calling start() twice threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': cannot call start more than once.".
+FAIL X stop(-1) threw "RangeError" instead of RangeError. assert_true: expected true got false
+PASS   stop(NaN) threw EcmaScript error TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".
+PASS   stop(Infinity) threw EcmaScript error TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".
+PASS   stop(-Infinity) threw EcmaScript error TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".
+FAIL < [start/stop exceptions] 4 out of 12 assertions were failed. assert_true: expected true got false
+FAIL # AUDIT TASK RUNNER FINISHED: 1 out of 1 tasks were failed. assert_true: expected true got false
+Harness: the test ran to completion.
+
