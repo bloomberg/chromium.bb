@@ -486,6 +486,29 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(RasterDecoderManualInitTest, TexStorage2DValidateColorFormat) {
+  // GL_EXT_texture_norm16 disabled by default, so glTexStorage2DEXT with
+  // viz::ResourceFormat::R16_EXT fails validation.
+  InitState init;
+  init.extensions.push_back("GL_EXT_texture_storage");
+  InitDecoder(init);
+
+  GLuint texture_id = kNewClientId;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  cmds::CreateTexture create_cmd;
+  create_cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+                  viz::ResourceFormat::R16_EXT, texture_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(create_cmd));
+
+  cmds::TexStorage2D storage_cmd;
+  storage_cmd.Init(texture_id, /*width=*/2, /*height=*/2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(storage_cmd));
+
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 TEST_P(RasterDecoderTest, GLImageAttachedAfterClearLevel) {
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManagerForTest()->AddImage(image.get(), kImageId);
