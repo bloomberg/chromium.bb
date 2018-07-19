@@ -2936,6 +2936,8 @@ jumbo_split_static_library("browser") {
       "themes/browser_theme_pack.h",
       "themes/custom_theme_supplier.cc",
       "themes/custom_theme_supplier.h",
+      "themes/increased_contrast_theme_supplier.cc",
+      "themes/increased_contrast_theme_supplier.h",
       "themes/theme_properties.cc",
       "themes/theme_service.cc",
       "themes/theme_service.h",
