@@ -61,16 +61,6 @@ class CAPTURE_EXPORT CameraConfigChromeOS {
   CAPTURE_EXPORT VideoFacingMode
   GetCameraFacing(const std::string& device_id,
                   const std::string& model_id) const;
-  // Get the orientation of the camera. The value is the angle that the camera
-  // image needs to be rotated clockwise so it shows correctly on the display in
-  // its natural orientation. It should be 0, 90, 180, or 270.
-  //
-  // For example, suppose a device has a naturally tall screen. The back-facing
-  // camera sensor is mounted in landscape. You are looking at the screen. If
-  // the top side of the camera sensor is aligned with the right edge of the
-  // screen in natural orientation, the value should be 90. If the top side of a
-  // front-facing camera sensor is aligned with the right of the screen, the
-  // value should be 270.
   int GetOrientation(const std::string& device_id,
                      const std::string& model_id) const;
 

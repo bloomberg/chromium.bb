@@ -17,37 +17,25 @@
 
 namespace media {
 
-static CameraConfigChromeOS* GetCameraConfig() {
-  static CameraConfigChromeOS* config = new CameraConfigChromeOS();
-  return config;
-}
-
 VideoCaptureDeviceChromeOS::VideoCaptureDeviceChromeOS(
+    const ChromeOSDeviceCameraConfig& camera_config,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<V4L2CaptureDevice> v4l2,
     const VideoCaptureDeviceDescriptor& device_descriptor)
     : VideoCaptureDeviceLinux(std::move(v4l2), device_descriptor),
+      camera_config_(camera_config),
       screen_observer_delegate_(
-          new ScreenObserverDelegate(this, ui_task_runner)),
-      lens_facing_(
-          GetCameraConfig()->GetCameraFacing(device_descriptor.device_id,
-                                             device_descriptor.model_id)),
-      camera_orientation_(
-          GetCameraConfig()->GetOrientation(device_descriptor.device_id,
-                                            device_descriptor.model_id)),
-      // External cameras have lens_facing as MEDIA_VIDEO_FACING_NONE.
-      // We don't want to rotate the frame even if the device rotates.
-      rotates_with_device_(lens_facing_ !=
-                           VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {}
+          new ScreenObserverDelegate(this, ui_task_runner)) {}
 
 VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
   screen_observer_delegate_->RemoveObserver();
 }
 
 void VideoCaptureDeviceChromeOS::SetRotation(int rotation) {
-  if (!rotates_with_device_) {
+  if (!camera_config_.rotates_with_device) {
     rotation = 0;
-  } else if (lens_facing_ == VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT) {
+  } else if (camera_config_.lens_facing ==
+             VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT) {
     // Original frame when |rotation| = 0
     // -----------------------
     // |          *          |
@@ -83,7 +71,7 @@ void VideoCaptureDeviceChromeOS::SetRotation(int rotation) {
   }
   // Take into account camera orientation w.r.t. the display. External cameras
   // would have camera_orientation_ as 0.
-  rotation = (rotation + camera_orientation_) % 360;
+  rotation = (rotation + camera_config_.camera_orientation) % 360;
   VideoCaptureDeviceLinux::SetRotation(rotation);
 }
 

@@ -44,6 +44,13 @@ const char kPidPathTemplate[] = "/sys/class/video4linux/%s/device/../idProduct";
 const char kInterfacePathTemplate[] =
     "/sys/class/video4linux/%s/device/interface";
 
+#if defined(OS_CHROMEOS)
+static CameraConfigChromeOS* GetCameraConfig() {
+  static CameraConfigChromeOS* config = new CameraConfigChromeOS();
+  return config;
+}
+#endif
+
 bool ReadIdFile(const std::string& path, std::string* id) {
   char id_buf[kVidPidSize];
   FILE* file = fopen(path.c_str(), "rb");
@@ -106,6 +113,26 @@ class DevVideoFilePathsDeviceProvider
     }
     return display_name;
   }
+
+  VideoFacingMode GetCameraFacing(const std::string& device_id,
+                                  const std::string& model_id) override {
+#if defined(OS_CHROMEOS)
+    return GetCameraConfig()->GetCameraFacing(device_id, model_id);
+#else
+    NOTREACHED();
+    return MEDIA_VIDEO_FACING_NONE;
+#endif
+  }
+
+  int GetOrientation(const std::string& device_id,
+                     const std::string& model_id) override {
+#if defined(OS_CHROMEOS)
+    return GetCameraConfig()->GetOrientation(device_id, model_id);
+#else
+    NOTREACHED();
+    return 0;
+#endif
+  }
 };
 
 }  // namespace
@@ -131,8 +158,13 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_CHROMEOS)
+  ChromeOSDeviceCameraConfig camera_config(
+      device_provider_->GetCameraFacing(device_descriptor.device_id,
+                                        device_descriptor.model_id),
+      device_provider_->GetOrientation(device_descriptor.device_id,
+                                       device_descriptor.model_id));
   VideoCaptureDeviceChromeOS* self = new VideoCaptureDeviceChromeOS(
-      ui_task_runner_, v4l2_.get(), device_descriptor);
+      camera_config, ui_task_runner_, v4l2_.get(), device_descriptor);
 #else
   VideoCaptureDeviceLinux* self =
       new VideoCaptureDeviceLinux(v4l2_.get(), device_descriptor);
@@ -182,12 +214,11 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
       if (display_name.empty())
         display_name = reinterpret_cast<char*>(cap.card);
 #if defined(OS_CHROMEOS)
-      static CameraConfigChromeOS* config = new CameraConfigChromeOS();
       device_descriptors->emplace_back(
           display_name, unique_id, model_id,
           VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
           VideoCaptureTransportType::OTHER_TRANSPORT,
-          config->GetCameraFacing(unique_id, model_id));
+          device_provider_->GetCameraFacing(unique_id, model_id));
 #else
       device_descriptors->emplace_back(
           display_name, unique_id, model_id,
