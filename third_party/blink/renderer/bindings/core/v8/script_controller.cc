@@ -129,6 +129,7 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::MaybeLocal<v8::Value> maybe_result;
     maybe_result = V8ScriptRunner::RunCompiledScript(GetIsolate(), script,
                                                      GetFrame()->GetDocument());
+    probe::produceCompilationCache(frame_, source, script);
     V8CodeCache::ProduceCache(GetIsolate(), script, source,
                               produce_cache_options, compile_options);
 

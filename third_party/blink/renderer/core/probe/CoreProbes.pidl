@@ -165,4 +165,6 @@ interface CoreProbes {
   void didCloseAudioContext(Document*);
   void didResumeAudioContext(Document*);
   void didSuspendAudioContext(Document*);
+  void produceCompilationCache(LocalFrame*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
+  void consumeCompilationCache(ExecutionContext*, const ScriptSourceCode& source, v8::ScriptCompiler::CachedData** cached_data);
 }

@@ -35,6 +35,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
@@ -98,6 +99,7 @@ static const char kFantasyFontFamily[] = "fantasyFontFamily";
 static const char kPictographFontFamily[] = "pictographFontFamily";
 static const char kStandardFontSize[] = "standardFontSize";
 static const char kFixedFontSize[] = "fixedFontSize";
+static const char kProduceCompilationCache[] = "generateCompilationCache";
 }  // namespace PageAgentState
 
 namespace {
@@ -1276,6 +1278,64 @@ Response InspectorPageAgent::setFontSizes(
     }
   }
 
+  return Response::OK();
+}
+
+void InspectorPageAgent::ConsumeCompilationCache(
+    const ScriptSourceCode& source,
+    v8::ScriptCompiler::CachedData** cached_data) {
+  if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
+    return;
+  if (source.Url().IsEmpty())
+    return;
+  auto it = compilation_cache_.find(source.Url().GetString());
+  if (it == compilation_cache_.end())
+    return;
+  const Vector<char>& data = it->value;
+  *cached_data = new v8::ScriptCompiler::CachedData(
+      reinterpret_cast<const uint8_t*>(data.data()), data.size(),
+      v8::ScriptCompiler::CachedData::BufferNotOwned);
+}
+
+void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
+                                                 v8::Local<v8::Script> script) {
+  if (!state_->booleanProperty(PageAgentState::kProduceCompilationCache, false))
+    return;
+  KURL url = source.Url();
+  if (source.Streamer())
+    return;
+  if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
+    return;
+  if (url.IsEmpty())
+    return;
+  static const int kMinimalCodeLength = 1024;
+  if (source.Source().length() < kMinimalCodeLength)
+    return;
+  std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
+      v8::ScriptCompiler::CreateCodeCache(script->GetUnboundScript()));
+  if (cached_data) {
+    String base64data = Base64Encode(
+        reinterpret_cast<const char*>(cached_data->data), cached_data->length);
+    GetFrontend()->compilationCacheProduced(url, base64data);
+  }
+}
+
+Response InspectorPageAgent::setProduceCompilationCache(bool enabled) {
+  state_->setBoolean(PageAgentState::kProduceCompilationCache, enabled);
+  return Response::OK();
+}
+
+Response InspectorPageAgent::addCompilationCache(const String& url,
+                                                 const String& base64data) {
+  Vector<char> data;
+  if (!Base64Decode(base64data, data))
+    return Response::Error("data should be base64-encoded");
+  compilation_cache_.Set(url, std::move(data));
+  return Response::OK();
+}
+
+Response InspectorPageAgent::clearCompilationCache() {
+  compilation_cache_.clear();
   return Response::OK();
 }
 

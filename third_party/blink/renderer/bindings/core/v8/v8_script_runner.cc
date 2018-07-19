@@ -93,6 +93,7 @@ v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
 
 v8::MaybeLocal<v8::Script> CompileScriptInternal(
     v8::Isolate* isolate,
+    ExecutionContext* execution_context,
     const ScriptSourceCode& source_code,
     v8::ScriptOrigin origin,
     v8::ScriptCompiler::CompileOptions compile_options,
@@ -108,6 +109,18 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     DCHECK(!streamer->StreamingSuppressed());
     return v8::ScriptCompiler::Compile(isolate->GetCurrentContext(),
                                        streamer->Source(), code, origin);
+  }
+
+  // Allow inspector to use its own compilation cache store.
+  v8::ScriptCompiler::CachedData* inspector_data = nullptr;
+  probe::consumeCompilationCache(execution_context, source_code,
+                                 &inspector_data);
+  if (inspector_data) {
+    v8::ScriptCompiler::Source source(code, origin, inspector_data);
+    v8::MaybeLocal<v8::Script> script =
+        v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), &source,
+                                    v8::ScriptCompiler::kConsumeCodeCache);
+    return script;
   }
 
   switch (compile_options) {
@@ -175,7 +188,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
   TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compile", "fileName",
                      file_name.Utf8());
-  probe::V8Compile probe(ExecutionContext::From(script_state), file_name,
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  probe::V8Compile probe(execution_context, file_name,
                          script_start_position.line_.ZeroBasedInt(),
                          script_start_position.column_.ZeroBasedInt());
 
@@ -193,13 +207,14 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       referrer_info.ToV8HostDefinedOptions(isolate));
 
   if (!*TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(kTraceEventCategoryGroup)) {
-    return CompileScriptInternal(isolate, source, origin, compile_options,
-                                 no_cache_reason, nullptr);
+    return CompileScriptInternal(isolate, execution_context, source, origin,
+                                 compile_options, no_cache_reason, nullptr);
   }
 
   InspectorCompileScriptEvent::V8CacheResult cache_result;
-  v8::MaybeLocal<v8::Script> script = CompileScriptInternal(
-      isolate, source, origin, compile_options, no_cache_reason, &cache_result);
+  v8::MaybeLocal<v8::Script> script =
+      CompileScriptInternal(isolate, execution_context, source, origin,
+                            compile_options, no_cache_reason, &cache_result);
   TRACE_EVENT_END1(
       kTraceEventCategoryGroup, "v8.compile", "data",
       InspectorCompileScriptEvent::Data(file_name, script_start_position,
