@@ -152,13 +152,12 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
               "status_code": 204,
               "phase": "application",
               "type": "ok",
-              "uri": "https://example.com:%d/original",
             },
             "type": "network-error",
             "url": "https://example.com:%d/original",
           },
         ]
       )json",
-      port(), port()));
+      port()));
   EXPECT_EQ(*expected, *actual);
 }

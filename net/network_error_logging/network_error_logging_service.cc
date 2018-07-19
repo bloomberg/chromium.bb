@@ -546,7 +546,6 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       const RequestDetails& details) const {
     auto body = std::make_unique<base::DictionaryValue>();
 
-    body->SetString(kUriKey, details.uri.spec());
     body->SetString(kReferrerKey, details.referrer.spec());
     body->SetDouble(kSamplingFractionKey, sampling_fraction);
     body->SetString(kServerIpKey, details.server_ip.ToString());
@@ -586,7 +585,6 @@ const char NetworkErrorLoggingService::kReportType[] = "network-error";
 // that generate new NEL reports to bypass the age limit on Reporting reports.
 const int NetworkErrorLoggingService::kMaxNestedReportDepth = 1;
 
-const char NetworkErrorLoggingService::kUriKey[] = "uri";
 const char NetworkErrorLoggingService::kReferrerKey[] = "referrer";
 const char NetworkErrorLoggingService::kSamplingFractionKey[] =
     "sampling_fraction";

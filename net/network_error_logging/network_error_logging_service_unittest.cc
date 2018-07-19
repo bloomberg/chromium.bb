@@ -260,8 +260,6 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   // TODO(juliatuttle): Extract these constants.
@@ -298,8 +296,6 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   // TODO(juliatuttle): Extract these constants.
@@ -336,8 +332,6 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   // TODO(juliatuttle): Extract these constants.
@@ -375,8 +369,6 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   ExpectDictDoubleValue(1.0, *body,
@@ -413,8 +405,6 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   ExpectDictDoubleValue(1.0, *body,
@@ -451,8 +441,6 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   ExpectDictDoubleValue(1.0, *body,
@@ -489,8 +477,6 @@ TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   ExpectDictDoubleValue(1.0, *body,
@@ -526,8 +512,6 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(kUrl_.spec(), *body,
-                              NetworkErrorLoggingService::kUriKey);
   base::ExpectDictStringValue(kReferrer_.spec(), *body,
                               NetworkErrorLoggingService::kReferrerKey);
   ExpectDictDoubleValue(1.0, *body,
