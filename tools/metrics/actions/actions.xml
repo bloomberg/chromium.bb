@@ -15263,6 +15263,84 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ProfileChooser_AddressesClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked 'Addresses' in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_CloseAllClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked 'Close All Windows' in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_GuestClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User opened a guest session from the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_ManageClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked 'Manage people' in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_PasswordsClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked 'Passwords' in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_PaymentsClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked 'Payments' in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_ProfileClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked a profile to switch in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_Show">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>The user opened the profile chooser menu.</description>
+</action>
+
+<action name="ProfileChooser_SignInAgainClicked">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    User clicked 'Sign in again' in the profile chooser menu.
+  </description>
+</action>
+
+<action name="ProfileChooser_SignInAgainDisplayed">
+  <owner>vasilii@chromium.org</owner>
+  <owner>ewald@chromium.org</owner>
+  <description>
+    The profile chooser opened with 'Sign in again' button.
+  </description>
+</action>
+
 <action name="Redo">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
