@@ -25,7 +25,9 @@
 
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.9
 
-interface WebGLTexture {
+[
+    Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
+] interface WebGLTexture {
     [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute unsigned long lastUploadedVideoWidth;
     [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute unsigned long lastUploadedVideoHeight;
     [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute double lastUploadedVideoTimestamp;

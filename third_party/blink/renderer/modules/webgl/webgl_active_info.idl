@@ -25,7 +25,9 @@
 
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.11
 
-interface WebGLActiveInfo {
+[
+    Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
+] interface WebGLActiveInfo {
     readonly attribute long size;
     readonly attribute unsigned long type;
     readonly attribute DOMString name;

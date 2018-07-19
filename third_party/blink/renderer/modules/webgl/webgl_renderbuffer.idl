@@ -25,5 +25,7 @@
 
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.7
 
-interface WebGLRenderbuffer {
+[
+    Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
+] interface WebGLRenderbuffer {
 };

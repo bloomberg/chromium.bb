@@ -2694,6 +2694,27 @@ interface WebGL2RenderingContext
     method vertexAttribPointer
     method viewport
     method waitSync
+interface WebGLActiveInfo
+    attribute @@toStringTag
+    getter name
+    getter size
+    getter type
+    method constructor
+interface WebGLBuffer
+    attribute @@toStringTag
+    method constructor
+interface WebGLFramebuffer
+    attribute @@toStringTag
+    method constructor
+interface WebGLProgram
+    attribute @@toStringTag
+    method constructor
+interface WebGLQuery
+    attribute @@toStringTag
+    method constructor
+interface WebGLRenderbuffer
+    attribute @@toStringTag
+    method constructor
 interface WebGLRenderingContext
     attribute @@toStringTag
     attribute ACTIVE_ATTRIBUTES
@@ -3132,6 +3153,33 @@ interface WebGLRenderingContext
     method vertexAttrib4fv
     method vertexAttribPointer
     method viewport
+interface WebGLSampler
+    attribute @@toStringTag
+    method constructor
+interface WebGLShader
+    attribute @@toStringTag
+    method constructor
+interface WebGLShaderPrecisionFormat
+    attribute @@toStringTag
+    getter precision
+    getter rangeMax
+    getter rangeMin
+    method constructor
+interface WebGLSync
+    attribute @@toStringTag
+    method constructor
+interface WebGLTexture
+    attribute @@toStringTag
+    method constructor
+interface WebGLTransformFeedback
+    attribute @@toStringTag
+    method constructor
+interface WebGLUniformLocation
+    attribute @@toStringTag
+    method constructor
+interface WebGLVertexArrayObject
+    attribute @@toStringTag
+    method constructor
 interface WebSocket : EventTarget
     attribute @@toStringTag
     attribute CLOSED
