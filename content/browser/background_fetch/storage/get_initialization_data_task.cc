@@ -9,7 +9,9 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/image/image.h"
@@ -36,7 +38,6 @@ class InitializationSubTask : public DatabaseTask {
 
     // The results to report.
     BackgroundFetchInitializationData* initialization_data;
-    blink::mojom::BackgroundFetchError* error;
   };
 
   InitializationSubTask(DatabaseTaskHost* host,
@@ -46,7 +47,6 @@ class InitializationSubTask : public DatabaseTask {
         sub_task_init_(sub_task_init),
         done_closure_(std::move(done_closure)) {
     DCHECK(sub_task_init_.initialization_data);
-    DCHECK(sub_task_init_.error);
   }
 
   ~InitializationSubTask() override = default;
@@ -54,7 +54,7 @@ class InitializationSubTask : public DatabaseTask {
  protected:
   void FinishWithError(blink::mojom::BackgroundFetchError error) override {
     if (error != blink::mojom::BackgroundFetchError::NONE)
-      *sub_task_init_.error = error;
+      sub_task_init_.initialization_data->error = error;
     std::move(done_closure_).Run();
     Finished();  // Destroys |this|.
   }
@@ -150,10 +150,10 @@ class GetRequestsTask : public InitializationSubTask {
       proto::BackgroundFetchCompletedRequest completed_request;
       if (!completed_request.ParseFromString(serialized_completed_request) ||
           sub_task_init().unique_id != completed_request.unique_id()) {
-        *sub_task_init().error =
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-        continue;
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        return;
       }
+
       active_requests_to_delete.push_back(ActiveRequestKey(
           completed_request.unique_id(), completed_request.request_index()));
     }
@@ -203,9 +203,8 @@ class GetRequestsTask : public InitializationSubTask {
     for (const std::string& serialized_active_request : data) {
       proto::BackgroundFetchActiveRequest active_request;
       if (!active_request.ParseFromString(serialized_active_request)) {
-        *sub_task_init().error =
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-        continue;
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        return;
       }
       DCHECK_EQ(sub_task_init().unique_id, active_request.unique_id());
       sub_task_init().initialization_data->active_fetch_guids.push_back(
@@ -425,7 +424,8 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
         base::BindOnce(
             [](base::WeakPtr<FillBackgroundFetchInitializationDataTask> task) {
               if (task)
-                task->FinishWithError(*task->sub_task_init().error);
+                task->FinishWithError(
+                    task->sub_task_init().initialization_data->error);
             },
             weak_factory_.GetWeakPtr()));
     AddSubTask(std::make_unique<FillFromMetadataTask>(this, sub_task_init(),
@@ -486,12 +486,10 @@ void GetInitializationDataTask::DidGetRegistrations(
   }
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      user_data.size(), base::BindOnce(
-                            [](base::WeakPtr<GetInitializationDataTask> task) {
-                              if (task)
-                                task->FinishWithError(task->error_);
-                            },
-                            weak_factory_.GetWeakPtr()));
+      user_data.size(),
+      base::BindOnce(&GetInitializationDataTask::FinishWithError,
+                     weak_factory_.GetWeakPtr(),
+                     blink::mojom::BackgroundFetchError::NONE));
 
   for (const auto& ud : user_data) {
     auto insertion_result = initialization_data_map_.emplace(
@@ -502,7 +500,7 @@ void GetInitializationDataTask::DidGetRegistrations(
         this,
         InitializationSubTask::SubTaskInit{
             ud.first, ud.second,
-            &insertion_result.first->second /* initialization_data */, &error_},
+            &insertion_result.first->second /* initialization_data */},
         barrier_closure));
   }
 }
@@ -510,8 +508,24 @@ void GetInitializationDataTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
   std::vector<BackgroundFetchInitializationData> results;
   results.reserve(initialization_data_map_.size());
-  for (auto& id : initialization_data_map_)
-    results.emplace_back(std::move(id.second));
+
+  for (auto& data : initialization_data_map_) {
+    if (data.second.error == blink::mojom::BackgroundFetchError::NONE) {
+      // If we successfully extracted all the data, move it to the
+      // initialization vector to be handed over to create a controller.
+      results.emplace_back(std::move(data.second));
+    } else if (!data.second.registration_id.developer_id().empty()) {
+      // There was an error in getting the initialization data
+      // (e.g. corrupt data, SWDB error). If the Developer ID of the fetch
+      // is available, mark the registration for deletion.
+      // Note that the Developer ID isn't available if the metadata extraction
+      // failed.
+      // TODO(crbug.com/865388): Getting the Developer ID should be possible
+      // since it is part of the key for when we got the Unique ID.
+      AddDatabaseTask(std::make_unique<MarkRegistrationForDeletionTask>(
+          data_manager(), data.second.registration_id, base::DoNothing()));
+    }
+  }
 
   std::move(callback_).Run(error, std::move(results));
   Finished();  // Destroys |this|.
