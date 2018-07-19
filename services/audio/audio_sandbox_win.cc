@@ -26,14 +26,22 @@ namespace audio {
 
 bool AudioPreSpawnTarget(sandbox::TargetPolicy* policy) {
   // Audio process privilege requirements:
-  //  - Lockdown level of USER_LIMITED
+  //  - Lockdown level of USER_NON_ADMIN
   //  - Delayed integrity level of INTEGRITY_LEVEL_LOW
   //
-  // For audio streams to create shared memory regions, both settings are
-  // needed. If either of them is not set, CreateFileMapping() will fail with
-  // error code ERROR_ACCESS_DENIED (0x5).
+  // For audio streams to create shared memory regions, lockdown level must be
+  // at least USER_LIMITED and delayed integrity level INTEGRITY_LEVEL_LOW,
+  // otherwise CreateFileMapping() will fail with error code ERROR_ACCESS_DENIED
+  // (0x5).
+  //
+  // For audio input streams to use ISimpleAudioVolume interface, lockdown
+  // level must be set to USER_NON_ADMIN, otherwise
+  // WASAPIAudioInputStream::Open() will fail with error code E_ACCESSDENIED
+  // (0x80070005) when trying to get a reference to ISimpleAudioVolume
+  // interface. See
+  // https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_input_win.cc
   policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                        sandbox::USER_LIMITED);
+                        sandbox::USER_NON_ADMIN);
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   return true;
 }
