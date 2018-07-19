@@ -18,10 +18,40 @@
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 namespace extensions {
 
 namespace {
+
+class ConnectorImpl : public chromeos::media_perception::mojom::Connector {
+ public:
+  // delegate is owned by the ExtensionsAPIClient.
+  explicit ConnectorImpl(MediaPerceptionAPIDelegate* delegate)
+      : delegate_(delegate) {}
+  ~ConnectorImpl() override = default;
+
+  // media_perception::mojom::Connector override.
+  void ConnectToVideoCaptureService(
+      video_capture::mojom::DeviceFactoryRequest request) override {
+    DCHECK(delegate_) << "Delegate not set.";
+    delegate_->BindDeviceFactoryProviderToVideoCaptureService(
+        &device_factory_provider_);
+    device_factory_provider_->ConnectToDeviceFactory(std::move(request));
+  }
+
+ private:
+  // Provides access to methods for talking to core Chrome code.
+  MediaPerceptionAPIDelegate* delegate_;
+
+  // Bound to the VideoCaptureService to establish the connection to the
+  // media analytics process.
+  video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectorImpl);
+};
 
 extensions::api::media_perception_private::State GetStateForServiceError(
     const extensions::api::media_perception_private::ServiceError
@@ -343,6 +373,64 @@ void MediaPerceptionAPIManager::UpstartStartProcessCallback(
             SERVICE_ERROR_SERVICE_NOT_RUNNING));
     return;
   }
+
+  // Check if the extensions api client is available in this context. Code path
+  // used for testing.
+  if (!ExtensionsAPIClient::Get()) {
+    LOG(ERROR) << "Could not get ExtensionsAPIClient.";
+    OnBootstrapMojoConnection(std::move(callback), true);
+    return;
+  }
+
+  SendMojoInvitation(std::move(callback));
+}
+
+void MediaPerceptionAPIManager::SendMojoInvitation(
+    APIComponentProcessStateCallback callback) {
+  MediaPerceptionAPIDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetMediaPerceptionAPIDelegate();
+  if (!delegate) {
+    LOG(WARNING) << "Could not get MediaPerceptionAPIDelegate.";
+    std::move(callback).Run(GetProcessStateForServiceError(
+        extensions::api::media_perception_private::
+            SERVICE_ERROR_MOJO_CONNECTION_FAILURE));
+    return;
+  }
+
+  mojo::OutgoingInvitation invitation;
+  mojo::PlatformChannel channel;
+  mojo::ScopedMessagePipeHandle server_pipe =
+      invitation.AttachMessagePipe("mpp-connector-pipe");
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 base::kNullProcessHandle,
+                                 channel.TakeLocalEndpoint());
+
+  auto connector = std::make_unique<ConnectorImpl>(delegate);
+  mojo::MakeStrongBinding(std::move(connector),
+                          chromeos::media_perception::mojom::ConnectorRequest(
+                              std::move(server_pipe)));
+
+  base::ScopedFD fd =
+      channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
+  chromeos::DBusThreadManager::Get()
+      ->GetMediaAnalyticsClient()
+      ->BootstrapMojoConnection(
+          std::move(fd),
+          base::BindOnce(&MediaPerceptionAPIManager::OnBootstrapMojoConnection,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void MediaPerceptionAPIManager::OnBootstrapMojoConnection(
+    APIComponentProcessStateCallback callback,
+    bool succeeded) {
+  if (!succeeded) {
+    analytics_process_state_ = AnalyticsProcessState::UNKNOWN;
+    std::move(callback).Run(GetProcessStateForServiceError(
+        extensions::api::media_perception_private::
+            SERVICE_ERROR_MOJO_CONNECTION_FAILURE));
+    return;
+  }
+
   analytics_process_state_ = AnalyticsProcessState::RUNNING;
   extensions::api::media_perception_private::ProcessState state_started;
   state_started.status =

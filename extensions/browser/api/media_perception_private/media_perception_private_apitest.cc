@@ -46,6 +46,11 @@ class TestMediaPerceptionAPIDelegate : public MediaPerceptionAPIDelegate {
         FROM_HERE,
         base::BindOnce(std::move(load_callback), false, base::FilePath()));
   }
+
+  void BindDeviceFactoryProviderToVideoCaptureService(
+      video_capture::mojom::DeviceFactoryProviderPtr* provider) override {
+    LOG(ERROR) << "Not implemented.";
+  }
 };
 
 class TestExtensionsAPIClient : public ShellExtensionsAPIClient {

@@ -1004,6 +1004,7 @@ jumbo_static_library("extensions") {
       "//remoting/base",
       "//remoting/host",
       "//remoting/host/it2me:common",
+      "//services/video_capture/public/mojom:constants",
       "//third_party/protobuf:protobuf_lite",
       "//ui/chromeos",
       "//ui/chromeos/events",
