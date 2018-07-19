@@ -119,7 +119,7 @@ test.util.sync.openFile = function(contentWindow, filename) {
 };
 
 /**
- * Selects a volume specified by its icon name
+ * Selects a volume specified by its icon name.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} iconName Name of the volume icon.
@@ -255,6 +255,8 @@ test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
 /**
  * Fakes pressing the down arrow until the given |folderName| is selected in the
  * navigation tree.
+ * TODO(sashab): Merge this functionality into selectTeamDrive and remove this
+ * function.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} folderName Name of the folder to be selected.
