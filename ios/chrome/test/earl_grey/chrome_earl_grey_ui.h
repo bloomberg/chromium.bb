@@ -71,10 +71,6 @@
 // GREYAssert is induced.
 + (void)waitForToolbarVisible:(BOOL)isVisible;
 
-// Confirms the sign in confirmation page, scrolls first to make the OK button
-// visible on short devices (e.g. iPhone 5s).
-+ (void)confirmSigninConfirmationDialog;
-
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_

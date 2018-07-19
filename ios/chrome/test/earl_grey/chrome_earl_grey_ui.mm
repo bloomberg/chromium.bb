@@ -6,7 +6,6 @@
 
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
@@ -24,7 +23,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::AccountConsistencyConfirmationOkButton;
 using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
@@ -166,25 +164,6 @@ id<GREYAction> ScrollDown() {
   GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kWaitForToolbarAnimationTimeout, condition),
              errorMessage);
-}
-
-+ (void)confirmSigninConfirmationDialog {
-  // Confirm sign in. "More" button is shown on short devices (e.g. iPhone 5s,
-  // iPhone SE), so needs to scroll first to dismiss the "More" button before
-  // taping on "OK".
-  // Cannot directly scroll on |kSignInConfirmationCollectionViewId| because it
-  // is a MDC collection view, not a UICollectionView, so itself is not
-  // scrollable.
-  // Wait until the sync confirmation is displayed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  id<GREYMatcher> signinUICollectionViewMatcher = grey_allOf(
-      grey_ancestor(grey_accessibilityID(kSigninConfirmationCollectionViewId)),
-      grey_kindOfClass([UICollectionView class]), nil);
-  [[EarlGrey selectElementWithMatcher:signinUICollectionViewMatcher]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-
-  [[EarlGrey selectElementWithMatcher:AccountConsistencyConfirmationOkButton()]
-      performAction:grey_tap()];
 }
 
 @end
