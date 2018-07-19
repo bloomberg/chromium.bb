@@ -138,8 +138,7 @@ def parse_common_test_results(json_results, test_separator='/'):
   # TODO(dpranke): crbug.com/357866 - we should simplify the handling of
   # both the return code and parsing the actual results, below.
 
-  passing_statuses = ('PASS', 'SLOW', 'NEEDSREBASELINE',
-                        'NEEDSMANUALREBASELINE')
+  passing_statuses = ('PASS', 'SLOW', 'NEEDSREBASELINE')
 
   for test, result in convert_trie_to_flat_paths(
       json_results['tests']).iteritems():

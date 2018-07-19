@@ -131,15 +131,6 @@ depends on its arguments.
   assuming that there are no platform-specific results for those platforms,
   you can add the flag `--fill-missing`.
 
-### Rebaselining manually
-
-1. If the tests is already listed in TestExpectations as flaky, mark the test
-   `NeedsManualRebaseline` and comment out the flaky line so that your patch can
-   land without turning the tree red. If the test is not in TestExpectations,
-   you can add a `[ Rebaseline ]` line to TestExpectations.
-2. Run `third_party/blink/tools/blink_tool.py rebaseline-expectations`
-3. Post the patch created in step 2 for review.
-
 ## Kinds of expectations files
 
 * [TestExpectations](../../third_party/WebKit/LayoutTests/TestExpectations): The
@@ -212,7 +203,7 @@ The syntax of a line is roughly:
   [third_party/blink/tools/blinkpy/web_tests/port/base.py](../../third_party/blink/tools/blinkpy/web_tests/port/base.py)
   for the meta keywords and which modifiers they represent.
 * Expectations can be one or more of `Crash`, `Failure`, `Pass`, `Rebaseline`,
-  `Slow`, `Skip`, `Timeout`, `WontFix`, `Missing`, `NeedsManualRebaseline`.
+  `Slow`, `Skip`, `Timeout`, `WontFix`, `Missing`.
   If multiple expectations are listed, the test is considered "flaky" and any
   of those results will be considered as expected.
 
