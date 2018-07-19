@@ -252,6 +252,10 @@ const int kRows = 2;
   return self.shouldShowSecondRow ? kTileHeight + kTileSpacing : 0;
 }
 
+- (BOOL)sitesFitSingleRow {
+  return self.iconsPerRow >= self.siteCount;
+}
+
 #pragma mark - ContentWidgetView
 
 - (void)showMode:(BOOL)compact {

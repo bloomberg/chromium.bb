@@ -48,6 +48,9 @@
 // positions starting at 0.
 - (void)updateSites:(NSDictionary<NSURL*, NTPTile*>*)sites;
 
+// Returns whether all the sites can be displayed on a single row.
+- (BOOL)sitesFitSingleRow;
+
 @end
 
 #endif  // IOS_CHROME_CONTENT_WIDGET_EXTENSION_CONTENT_WIDGET_VIEW_H_
