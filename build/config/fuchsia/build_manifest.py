@@ -36,9 +36,13 @@ def ReadDynamicLibDeps(paths):
     if match:
       lib = match.group('lib')
 
+      # libc.so is an alias for ld.so.1 .
+      if lib == 'libc.so':
+        lib = 'ld.so.1'
+
       # Skip libzircon.so, as it is supplied by the OS loader.
       if lib != 'libzircon.so':
-        libs.append(match.group('lib'))
+        libs.append(lib)
 
   return libs
 
@@ -197,13 +201,6 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
       # e.g. builder bots and swarming clients.
       manifest.write('%s=%s\n' % (in_package_path,
                                   os.path.relpath(current_file, out_dir)))
-
-      # Use libc.so's dynamic linker by aliasing libc.so to ld.so.1.
-      # Fuchsia always looks for the linker implementation in ld.so.1.
-      if os.path.basename(in_package_path) == 'libc.so':
-        manifest.write(
-            '%s=%s\n' % (os.path.dirname(in_package_path) + '/ld.so.1',
-                         os.path.relpath(current_file, out_dir)))
 
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
