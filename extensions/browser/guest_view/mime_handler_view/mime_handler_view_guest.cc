@@ -354,11 +354,14 @@ bool MimeHandlerViewGuest::ShouldCreateWebContents(
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
+  content::OpenURLParams open_params(target_url, content::Referrer(),
+                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                     ui::PAGE_TRANSITION_LINK, true);
+  // Extensions are allowed to open popups under circumstances covered by
+  // running as a mime handler.
+  open_params.user_gesture = true;
   embedder_web_contents()->GetDelegate()->OpenURLFromTab(
-      embedder_web_contents(),
-      content::OpenURLParams(target_url, content::Referrer(),
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, true));
+      embedder_web_contents(), open_params);
   return false;
 }
 

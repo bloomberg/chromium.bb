@@ -12,7 +12,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
@@ -223,8 +222,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BackgroundPage) {
 }
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, TargetBlankAnchor) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
   RunTest("testTargetBlankAnchor.csv");
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
