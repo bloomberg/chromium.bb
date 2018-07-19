@@ -390,6 +390,31 @@ class AutofillMetrics {
     NUM_SCAN_CREDIT_CARD_PROMPT_METRICS,
   };
 
+  // Metrics to track events when local credit card migration is offered.
+  enum LocalCardMigrationBubbleOfferMetric {
+    // The bubble is requested due to a credit card being used or
+    // local card migration icon in the omnibox being clicked.
+    LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED = 0,
+    // The bubble is actually shown to the user.
+    LOCAL_CARD_MIGRATION_BUBBLE_SHOWN = 1,
+    NUM_LOCAL_CARD_MIGRATION_BUBBLE_OFFER_METRICS,
+  };
+
+  // Metrics to track user interactions with the bubble.
+  enum LocalCardMigrationBubbleUserInteractionMetric {
+    // The user explicitly accepts the offer.
+    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_ACCEPTED = 0,
+    // The user explicitly denies the offer (clicks the cancel button).
+    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_DENIED = 1,
+    // The bubble is closed due to user navigating away from the page
+    // while the bubble was showing.
+    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_NAVIGATED_WHILE_SHOWING = 2,
+    // The bubble is closed due to user navigating away from the page
+    // while the bubble was hidden.
+    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_NAVIGATED_WHILE_HIDDEN = 3,
+    NUM_LOCAL_CARD_MIGRATION_BUBBLE_USER_INTERACTION_METRICS,
+  };
+
   // Each of these metrics is logged only for potentially autofillable forms,
   // i.e. forms with at least three fields, etc.
   // These are used to derive certain "user happiness" metrics.  For example, we
@@ -794,6 +819,12 @@ class AutofillMetrics {
       bool is_uploading,
       security_state::SecurityLevel security_level);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
+  static void LogLocalCardMigrationBubbleOfferMetric(
+      LocalCardMigrationBubbleOfferMetric metric,
+      bool is_reshow);
+  static void LogLocalCardMigrationBubbleUserInteractionMetric(
+      LocalCardMigrationBubbleUserInteractionMetric metric,
+      bool is_reshow);
 
   // Should be called when credit card scan is finished. |duration| should be
   // the time elapsed between launching the credit card scanner and getting back

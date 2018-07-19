@@ -45,6 +45,9 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubble(
   local_card_migration_bubble_closure_ =
       std::move(local_card_migration_bubble_closure);
 
+  AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED, is_reshow_);
+
   ShowBubbleImplementation();
 }
 
@@ -58,6 +61,10 @@ void LocalCardMigrationBubbleControllerImpl::HideBubble() {
 void LocalCardMigrationBubbleControllerImpl::ReshowBubble() {
   if (local_card_migration_bubble_)
     return;
+
+  is_reshow_ = true;
+  AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED, is_reshow_);
 
   ShowBubbleImplementation();
 }
@@ -81,10 +88,16 @@ base::string16 LocalCardMigrationBubbleControllerImpl::GetWindowTitle() const {
 void LocalCardMigrationBubbleControllerImpl::OnConfirmButtonClicked() {
   DCHECK(local_card_migration_bubble_closure_);
   std::move(local_card_migration_bubble_closure_).Run();
+
+  AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_ACCEPTED, is_reshow_);
 }
 
 void LocalCardMigrationBubbleControllerImpl::OnCancelButtonClicked() {
   local_card_migration_bubble_closure_.Reset();
+
+  AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_DENIED, is_reshow_);
 }
 
 void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
@@ -123,6 +136,14 @@ void LocalCardMigrationBubbleControllerImpl::DidFinishNavigation(
   } else {
     UpdateIcon();
   }
+
+  AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
+      bubble_was_visible
+          ? AutofillMetrics::
+                LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_NAVIGATED_WHILE_SHOWING
+          : AutofillMetrics::
+                LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_NAVIGATED_WHILE_HIDDEN,
+      is_reshow_);
 }
 
 void LocalCardMigrationBubbleControllerImpl::OnVisibilityChanged(
@@ -150,6 +171,9 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
   DCHECK(local_card_migration_bubble_);
   UpdateIcon();
   timer_.reset(new base::ElapsedTimer());
+
+  AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, is_reshow_);
 }
 
 void LocalCardMigrationBubbleControllerImpl::UpdateIcon() {

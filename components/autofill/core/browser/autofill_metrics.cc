@@ -792,6 +792,30 @@ void AutofillMetrics::LogScanCreditCardCompleted(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
+    LocalCardMigrationBubbleOfferMetric metric,
+    bool is_reshow) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_BUBBLE_OFFER_METRICS);
+  std::string histogram_name = "Autofill.LocalCardMigrationBubbleOffer.";
+  histogram_name += is_reshow ? "Reshows" : "FirstShow";
+  base::UmaHistogramEnumeration(histogram_name, metric,
+                                NUM_LOCAL_CARD_MIGRATION_BUBBLE_OFFER_METRICS);
+}
+
+// static
+void AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
+    LocalCardMigrationBubbleUserInteractionMetric metric,
+    bool is_reshow) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_BUBBLE_USER_INTERACTION_METRICS);
+  std::string histogram_name =
+      "Autofill.LocalCardMigrationBubbleUserInteraction.";
+  histogram_name += is_reshow ? "Reshows" : "FirstShow";
+  base::UmaHistogramEnumeration(
+      histogram_name, metric,
+      NUM_LOCAL_CARD_MIGRATION_BUBBLE_USER_INTERACTION_METRICS);
+}
+
+// static
 void AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(bool is_local) {
   std::string histogram_name = "Autofill.SaveCardWithFirstAndLastNameOffered.";
   histogram_name += is_local ? "Local" : "Server";
