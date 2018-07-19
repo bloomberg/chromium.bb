@@ -385,6 +385,11 @@
         'shards': 3,
       },
     },
+    'ozone_gl_unittests': {
+      'args': [
+        '--ozone-platform=headless',
+      ],
+    },
   },
 
   'chromeos_isolated_scripts': {
