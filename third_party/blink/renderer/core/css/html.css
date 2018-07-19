@@ -467,6 +467,7 @@ input[type="search" i]::-webkit-search-cancel-button {
     -webkit-margin-start: 1px;
     opacity: 0;
     pointer-events: none;
+    user-select: none !important;
 }
 
 input[type="search" i]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-search-cancel-button {
