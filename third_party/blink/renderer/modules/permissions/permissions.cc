@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_clipboard_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_midi_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
@@ -47,7 +47,7 @@ namespace {
 // current context. The caller should make sure that no assumption is made
 // after this has been called.
 PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
-                                        const Dictionary raw_permission,
+                                        const ScriptValue raw_permission,
                                         ExceptionState& exception_state) {
   PermissionDescriptor permission =
       NativeValueTraits<PermissionDescriptor>::NativeValue(
@@ -144,7 +144,7 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
 }  // anonymous namespace
 
 ScriptPromise Permissions::query(ScriptState* script_state,
-                                 const Dictionary& raw_permission,
+                                 const ScriptValue& raw_permission,
                                  ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
       ParsePermission(script_state, raw_permission, exception_state);
@@ -168,7 +168,7 @@ ScriptPromise Permissions::query(ScriptState* script_state,
 }
 
 ScriptPromise Permissions::request(ScriptState* script_state,
-                                   const Dictionary& raw_permission,
+                                   const ScriptValue& raw_permission,
                                    ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
       ParsePermission(script_state, raw_permission, exception_state);
@@ -195,7 +195,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 }
 
 ScriptPromise Permissions::revoke(ScriptState* script_state,
-                                  const Dictionary& raw_permission,
+                                  const ScriptValue& raw_permission,
                                   ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
       ParsePermission(script_state, raw_permission, exception_state);
@@ -215,14 +215,15 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise Permissions::requestAll(ScriptState* script_state,
-                                      const Vector<Dictionary>& raw_permissions,
-                                      ExceptionState& exception_state) {
+ScriptPromise Permissions::requestAll(
+    ScriptState* script_state,
+    const Vector<ScriptValue>& raw_permissions,
+    ExceptionState& exception_state) {
   Vector<PermissionDescriptorPtr> internal_permissions;
   Vector<int> caller_index_to_internal_index;
   caller_index_to_internal_index.resize(raw_permissions.size());
   for (size_t i = 0; i < raw_permissions.size(); ++i) {
-    const Dictionary& raw_permission = raw_permissions[i];
+    const ScriptValue& raw_permission = raw_permissions[i];
 
     auto descriptor =
         ParsePermission(script_state, raw_permission, exception_state);
