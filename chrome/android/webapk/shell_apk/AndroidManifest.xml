@@ -65,7 +65,8 @@
         <meta-data android:name="org.chromium.webapk.shell_apk.orientation" android:value="{{{orientation}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{{theme_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{{background_color}}}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="{{{splash_screen_icon}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="@mipmap/app_icon" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.splashId" android:resource="@drawable/splash_icon" />
 
         {{!  Hashes of icons should be taken of the icons as they are available on the web. The icon
              bytes should not be transformed (e.g. decoded / encoded) prior to taking the hash.
