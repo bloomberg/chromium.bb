@@ -734,7 +734,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   // Fade the toolbars in for the last 60% of the transition.
   auto keyframe = ^{
-    [UIView addKeyframeWithRelativeStartTime:0.4
+    [UIView addKeyframeWithRelativeStartTime:0.2
                             relativeDuration:0.6
                                   animations:^{
                                     [self showToolbars];
@@ -772,7 +772,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // Fade the toolbars out in the first 66% of the transition.
   auto keyframe = ^{
     [UIView addKeyframeWithRelativeStartTime:0
-                            relativeDuration:0.66
+                            relativeDuration:0.40
                                   animations:^{
                                     [self hideToolbars];
                                   }];
