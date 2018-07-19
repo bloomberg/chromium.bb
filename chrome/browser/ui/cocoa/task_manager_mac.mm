@@ -41,10 +41,6 @@ NSString* ColumnIdentifier(int id) {
 }
 
 bool ShouldUseViewsTaskManager() {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (!views_mode_controller::IsViewsBrowserCocoa())
-    return true;
-#endif
   return base::FeatureList::IsEnabled(features::kViewsTaskManager);
 }
 
