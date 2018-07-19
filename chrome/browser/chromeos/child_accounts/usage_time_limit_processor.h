@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/settings/timezone_settings.h"
 
 namespace chromeos {
 namespace usage_time_limit {
@@ -103,12 +104,6 @@ class Override {
   DISALLOW_COPY_AND_ASSIGN(Override);
 };
 
-// Retrieves the weekday from a time.
-Weekday GetWeekday(base::Time time);
-
-// Shifts the current weekday, if the value is po
-Weekday WeekdayShift(Weekday current_day, int shift);
-
 }  // namespace internal
 
 enum class ActivePolicies {
@@ -163,12 +158,14 @@ State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
                const base::TimeDelta& used_time,
                const base::Time& usage_timestamp,
                const base::Time& current_time,
+               const icu::TimeZone* const time_zone,
                const base::Optional<State>& previous_state);
 
 // Ruturns the expected time that the used time stored should be reseted.
 base::Time GetExpectedResetTime(
     const std::unique_ptr<base::DictionaryValue>& time_limit,
-    base::Time current_time);
+    base::Time current_time,
+    const icu::TimeZone* const time_zone);
 
 }  // namespace usage_time_limit
 }  // namespace chromeos
