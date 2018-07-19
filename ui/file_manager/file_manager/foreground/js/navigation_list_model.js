@@ -428,6 +428,10 @@ NavigationListModel.prototype = {
     this.linuxFilesItem_ = item;
     this.reorderNavigationItems_();
   },
+  /** @type {boolean} */
+  get disableMyFilesNavigation() {
+    return this.disableMyFilesNavigation_;
+  }
 };
 
 /**
