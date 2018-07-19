@@ -25,6 +25,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   // PasswordAccessoryViewInterface:
   void OnItemsAvailable(const std::vector<AccessoryItem>& items) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
+  void CloseAccessorySheet() override;
 
   // Called from Java via JNI:
   void OnFillingTriggered(

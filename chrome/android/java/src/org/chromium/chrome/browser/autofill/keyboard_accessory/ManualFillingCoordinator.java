@@ -62,6 +62,10 @@ public class ManualFillingCoordinator {
         mMediator.registerPasswordProvider(itemProvider);
     }
 
+    public void closeAccessorySheet() {
+        mMediator.getKeyboardAccessory().closeActiveTab();
+    }
+
     // TODO(fhorschig): Should be @VisibleForTesting.
     /**
      * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of
