@@ -359,6 +359,7 @@
     'ozone_unittests': {},
     'pdf_unittests': {},
     'printing_unittests': {},
+    'sandbox_linux_unittests': {},
     'sql_unittests': {},
     'url_unittests': {},
   },
