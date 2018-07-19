@@ -12,13 +12,13 @@ html {
   --md-menu-margin-side: 2px;
   --md-menu-margin-top: 4px;
   --md-menu-size: 12px;
-  --md-tile-height: 128px;
-  --md-tile-margin: 8px;
+  --md-tile-height: 112px;
+  --md-tile-margin: 16px;
   --md-tile-padding-horizontal: 8px;
   --md-tile-padding-vertical: 16px;
-  --md-tile-width: 96px;
+  --md-tile-width: 112px;
   --md-title-font-size: 12px;
-  --md-title-height: 32px;
+  --md-title-height: 16px;
 
   /* Constants. */
   --tile-height: 128px;
@@ -506,7 +506,7 @@ body.background-image .md-tile:active .md-title {
   font-size: var(--md-title-font-size);
   font-weight: 500;
   height: var(--md-title-height);
-  line-height: 1.4em;
+  line-height: var(--md-title-height);
   text-align: center;
   width: 100%;
   word-break: break-word;
