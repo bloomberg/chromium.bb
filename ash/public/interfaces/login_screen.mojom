@@ -226,6 +226,9 @@ interface LoginScreenClient {
   // Request to show a feedback report dialog in chrome.
   ShowFeedback();
 
+  // Show the reset (powerwash) screen.
+  ShowResetScreen();
+
   // Launch the specific kiosk app.
   LaunchKioskApp(string app_id);
 

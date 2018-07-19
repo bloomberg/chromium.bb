@@ -237,6 +237,12 @@ void LoginScreenController::ShowFeedback() {
   login_screen_client_->ShowFeedback();
 }
 
+void LoginScreenController::ShowResetScreen() {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->ShowResetScreen();
+}
+
 void LoginScreenController::AddObserver(
     LoginScreenControllerObserver* observer) {
   observers_.AddObserver(observer);

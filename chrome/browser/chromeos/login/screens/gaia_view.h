@@ -43,6 +43,10 @@ class GaiaView {
                                        const std::string& password,
                                        const std::string& services) = 0;
 
+  // Cancels the request to show the sign-in screen while the asynchronous
+  // clean-up process that precedes the screen being shown is in progress.
+  virtual void CancelShowGaiaAsync() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GaiaView);
 };

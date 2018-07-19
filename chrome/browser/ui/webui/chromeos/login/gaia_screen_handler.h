@@ -56,6 +56,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;
+  void CancelShowGaiaAsync() override;
 
  private:
   // TODO (xiaoyinh): remove this dependency.
@@ -170,10 +171,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Updates the member variable and UMA histogram indicating whether the
   // principals API was used during SAML login.
   void SetSAMLPrincipalsAPIUsed(bool api_used);
-
-  // Cancels the request to show the sign-in screen while the asynchronous
-  // clean-up process that precedes the screen showing is in progress.
-  void CancelShowGaiaAsync();
 
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowGaiaScreenIfReady();
