@@ -31,7 +31,6 @@ js_library("multidevice_feature_item") {
   deps = [
     "..:route",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
