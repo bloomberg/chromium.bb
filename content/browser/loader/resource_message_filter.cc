@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_message_filter.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -17,6 +18,7 @@
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_switches.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -177,6 +179,8 @@ void ResourceMessageFilter::InitializeOnIOThread() {
   // WeakPtr of |requester_info_| now.
   requester_info_->set_filter(GetWeakPtr());
   url_loader_factory_ = std::make_unique<network::cors::CORSURLLoaderFactory>(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity),
       std::make_unique<URLLoaderFactoryImpl>(requester_info_),
       base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
                           base::Unretained(ResourceDispatcherHostImpl::Get()),

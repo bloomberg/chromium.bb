@@ -828,6 +828,9 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = GetProcess()->GetID();
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
   SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
 
   auto* context = GetSiteInstance()->GetBrowserContext();

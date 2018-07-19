@@ -315,6 +315,10 @@ struct URLLoaderFactoryParams {
   // extension manifest V3 / assumming that content scripts have a
   // URLLoaderFactory separate from the rest of the renderer).
   string corb_excluded_initiator_scheme;
+
+  // True if web related security (e.g., CORS) should be disabled. This is
+  // mainly used by people testing their sites, via a command line switch.
+  bool disable_web_security = false;
 };
 
 // Represents a distinct context for making network requests, with its own

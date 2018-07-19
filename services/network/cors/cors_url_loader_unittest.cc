@@ -121,7 +121,7 @@ class CORSURLLoaderTest : public testing::Test {
         std::make_unique<TestURLLoaderFactory>();
     test_url_loader_factory_ = factory->GetWeakPtr();
     cors_url_loader_factory_ = std::make_unique<CORSURLLoaderFactory>(
-        std::move(factory), base::RepeatingCallback<void(int)>());
+        false, std::move(factory), base::RepeatingCallback<void(int)>());
   }
 
  protected:

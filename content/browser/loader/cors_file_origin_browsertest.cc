@@ -12,7 +12,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -24,6 +27,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,11 +41,20 @@ using net::test_server::HttpResponse;
 
 // Tests end to end Origin header and CORS check behaviors without
 // --allow-file-access-from-files flag.
-class CORSFileOriginBrowserTest : public ContentBrowserTest {
+class CORSFileOriginBrowserTest : public ContentBrowserTest,
+                                  public testing::WithParamInterface<bool> {
  public:
   CORSFileOriginBrowserTest()
       : pass_string_(base::ASCIIToUTF16("PASS")),
-        fail_string_(base::ASCIIToUTF16("FAIL")) {}
+        fail_string_(base::ASCIIToUTF16("FAIL")) {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kOutOfBlinkCORS);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kOutOfBlinkCORS);
+    }
+  }
   ~CORSFileOriginBrowserTest() override = default;
 
  protected:
@@ -84,7 +97,15 @@ class CORSFileOriginBrowserTest : public ContentBrowserTest {
 
  private:
   bool AllowFileAccessFromFiles() const override { return false; }
+  virtual bool IsWebSecurityEnabled() const { return true; }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (!IsWebSecurityEnabled()) {
+      command_line->AppendSwitch(switches::kDisableWebSecurity);
+    }
+
+    ContentBrowserTest::SetUpCommandLine(command_line);
+  }
   void SetUpOnMainThread() override {
     base::AutoLock lock(lock_);
 
@@ -147,6 +168,9 @@ class CORSFileOriginBrowserTest : public ContentBrowserTest {
   const base::string16 pass_string_;
   const base::string16 fail_string_;
 
+  base::test::ScopedFeatureList scoped_command_line_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(CORSFileOriginBrowserTest);
 };
 
@@ -158,7 +182,16 @@ class CORSFileOriginBrowserTestWithAllowFileAccessFromFiles
   bool AllowFileAccessFromFiles() const override { return true; }
 };
 
-IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTest,
+// Tests end to end Origin header and CORS check behaviors with
+// --disable-web-security flag.
+class CORSFileOriginBrowserTestWithDisableWebSecurity
+    : public CORSFileOriginBrowserTest {
+ private:
+  bool AllowFileAccessFromFiles() const override { return false; }
+  bool IsWebSecurityEnabled() const override { return false; }
+};
+
+IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTest,
                        AccessControlAllowOriginIsNull) {
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -170,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTest,
   EXPECT_TRUE(is_preflight_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTest,
+IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTest,
                        AccessControlAllowOriginIsFile) {
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -182,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTest,
   EXPECT_TRUE(is_preflight_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
+IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
                        AccessControlAllowOriginIsNull) {
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -194,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
   EXPECT_TRUE(is_preflight_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
+IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
                        AccessControlAllowOriginIsFile) {
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -205,6 +238,47 @@ IN_PROC_BROWSER_TEST_F(CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
   EXPECT_TRUE(is_preflight_requested());
 }
+
+IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTestWithDisableWebSecurity,
+                       AccessControlAllowOriginIsNull) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), CreateTestDataURL(base::StringPrintf(
+                   "cors_file_origin_test.html?port=%d&allow=%s&origin=%s",
+                   port(), "unused", ""))));
+
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+  EXPECT_FALSE(is_preflight_requested());
+}
+
+IN_PROC_BROWSER_TEST_P(CORSFileOriginBrowserTestWithDisableWebSecurity,
+                       AccessControlAllowOriginIsFile) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), CreateTestDataURL(base::StringPrintf(
+                   "cors_file_origin_test.html?port=%d&allow=%s&origin=%s",
+                   port(), "unused", ""))));
+
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+  EXPECT_FALSE(is_preflight_requested());
+}
+
+// --allow-file-access-from-files is currently not supported by OOR-CORS.
+// We may remove the feature.
+INSTANTIATE_TEST_CASE_P(
+    /* No test prefix */,
+    CORSFileOriginBrowserTest,
+    ::testing::Values(false));
+
+INSTANTIATE_TEST_CASE_P(
+    /* No test prefix */,
+    CORSFileOriginBrowserTestWithAllowFileAccessFromFiles,
+    ::testing::Values(false));
+
+INSTANTIATE_TEST_CASE_P(
+    /* No test prefix */,
+    CORSFileOriginBrowserTestWithDisableWebSecurity,
+    ::testing::Values(false, true));
 
 }  // namespace
 

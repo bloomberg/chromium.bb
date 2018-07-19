@@ -2309,6 +2309,9 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = id_;
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
   SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
   storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(request), std::move(params));

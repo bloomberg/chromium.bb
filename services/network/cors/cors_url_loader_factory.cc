@@ -23,7 +23,8 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     mojom::URLLoaderFactoryRequest request)
     : context_(context),
-      network_loader_factory_(std::make_unique<::network::URLLoaderFactory>(
+      disable_web_security_(params && params->disable_web_security),
+      network_loader_factory_(std::make_unique<network::URLLoaderFactory>(
           context,
           std::move(params),
           std::move(resource_scheduler_client),
@@ -35,9 +36,11 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
 }
 
 CORSURLLoaderFactory::CORSURLLoaderFactory(
+    bool disable_web_security,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
     const base::RepeatingCallback<void(int)>& preflight_finalizer)
-    : network_loader_factory_(std::move(network_loader_factory)),
+    : disable_web_security_(disable_web_security),
+      network_loader_factory_(std::move(network_loader_factory)),
       preflight_finalizer_(preflight_finalizer) {}
 
 CORSURLLoaderFactory::~CORSURLLoaderFactory() = default;
@@ -63,7 +66,8 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS) &&
+      !disable_web_security_) {
     auto loader = std::make_unique<CORSURLLoader>(
         std::move(request), routing_id, request_id, options,
         base::BindOnce(&CORSURLLoaderFactory::DestroyURLLoader,
