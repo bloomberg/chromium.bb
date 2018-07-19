@@ -279,6 +279,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kSpeaker,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {mojom::FeaturePolicyFeature::kSyncScript,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kSyncXHR,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kUnsizedMedia,

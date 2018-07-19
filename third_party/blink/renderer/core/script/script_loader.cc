@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -216,6 +217,24 @@ network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
   return network::mojom::FetchCredentialsMode::kOmit;
 }
 
+// https://github.com/WICG/feature-policy/issues/135
+bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
+                                           ScriptType script_type,
+                                           bool parser_inserted) {
+  if (element->GetDocument().GetFeaturePolicy()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kSyncScript)) {
+    return false;
+  }
+
+  // Module scripts never block parsing.
+  if (script_type == ScriptType::kModule || !parser_inserted)
+    return false;
+
+  if (!element->HasSourceAttribute())
+    return true;
+  return !element->DeferAttributeValue() && !element->AsyncAttributeValue();
+}
+
 // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                                  LegacyTypeSupport support_legacy_types) {
@@ -302,6 +321,15 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // 13.
   if (!IsScriptForEventSupported())
     return false;
+
+  // This FeaturePolicy is still in the process of being added to the spec.
+  if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),
+                                            parser_inserted_)) {
+    element_document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "Synchronous script execution is disabled by Feature Policy"));
+    return false;
+  }
 
   // 14. is handled below.
 

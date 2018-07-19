@@ -246,6 +246,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    mojom::FeaturePolicyFeature::kUnsizedMedia);
       default_feature_name_map.Set(
           "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
+      default_feature_name_map.Set("sync-script",
+                                   mojom::FeaturePolicyFeature::kSyncScript);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
       default_feature_name_map.Set("autoplay",
