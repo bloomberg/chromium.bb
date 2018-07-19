@@ -56,6 +56,8 @@ _TEMPLATE_FILES = [
   'tree-worker.js',
 ]
 
+_DEFAULT_SYMBOL_COUNT = 100000
+
 
 def _GetSymbolType(symbol):
   symbol_type = symbol.section
@@ -63,7 +65,23 @@ def _GetSymbolType(symbol):
     symbol_type = _SYMBOL_TYPE_VTABLE
   elif symbol.name.endswith(']'):
     symbol_type = _SYMBOL_TYPE_GENERATED
+  if symbol_type not in _SMALL_SYMBOL_DESCRIPTIONS:
+    symbol_type = _SYMBOL_TYPE_OTHER
   return symbol_type
+
+
+def _GetOrAddFileNode(symbol, file_nodes, components):
+  path = symbol.source_path or symbol.object_path
+  file_node = file_nodes.get(path)
+  if file_node is None:
+    component_index = components.GetOrAdd(symbol.component)
+    file_node = {
+      _COMPACT_FILE_PATH_KEY: path,
+      _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
+      _COMPACT_FILE_SYMBOLS_KEY: [],
+    }
+    file_nodes[path] = file_node
+  return file_node
 
 
 class IndexedSet(object):
@@ -86,7 +104,7 @@ class IndexedSet(object):
     return index
 
 
-def _MakeTreeViewList(symbols, min_symbol_size):
+def _MakeTreeViewList(symbols, include_all_symbols):
   """Builds JSON data of the symbols for the tree view HTML report.
 
   As the tree is built on the client-side, this function creates a flat list
@@ -94,23 +112,30 @@ def _MakeTreeViewList(symbols, min_symbol_size):
 
   Args:
     symbols: A SymbolGroup containing all symbols.
-    min_symbol_size: The minimum byte size needed for a symbol to be included.
+    include_all_symbols: If true, include all symbols in the data file.
   """
   file_nodes = {}
   components = IndexedSet()
-  total_size = 0
 
   # Build a container for symbols smaller than min_symbol_size
   small_symbols = collections.defaultdict(dict)
 
+  # Dex methods (type "m") are whitelisted for the method_count mode on the
+  # UI. It's important to see details on all the methods.
+  dex_symbols = symbols.WhereIsDex()
+  ordered_symbols = dex_symbols.Inverted().Sorted()
+  if include_all_symbols:
+    symbol_count = len(ordered_symbols)
+  else:
+    symbol_count = _DEFAULT_SYMBOL_COUNT - len(dex_symbols)
+
+  main_symbols = dex_symbols + ordered_symbols[:symbol_count]
+  extra_symbols = ordered_symbols[symbol_count:]
+
   # Bundle symbols by the file they belong to,
   # and add all the file buckets into file_nodes
-  for symbol in symbols:
+  for symbol in main_symbols:
     symbol_type = _GetSymbolType(symbol)
-    if symbol_type not in _SMALL_SYMBOL_DESCRIPTIONS:
-      symbol_type = _SYMBOL_TYPE_OTHER
-
-    total_size += symbol.pss
     symbol_size = round(symbol.pss, 2)
     if symbol_size.is_integer():
       symbol_size = int(symbol_size)
@@ -118,51 +143,44 @@ def _MakeTreeViewList(symbols, min_symbol_size):
     if symbol.IsDelta() and symbol.diff_status == models.DIFF_STATUS_REMOVED:
       symbol_count = -1
 
-    path = symbol.source_path or symbol.object_path
-    file_node = file_nodes.get(path)
-    if file_node is None:
-      component_index = components.GetOrAdd(symbol.component)
-      file_node = {
-        _COMPACT_FILE_PATH_KEY: path,
-        _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
-        _COMPACT_FILE_SYMBOLS_KEY: [],
-      }
-      file_nodes[path] = file_node
+    file_node = _GetOrAddFileNode(symbol, file_nodes, components)
 
-    # Dex methods (type "m") are whitelisted for the method_count mode on the
-    # UI. It's important to see details on all the methods, and most fall below
-    # the default byte size.
     is_dex_method = symbol_type == _SYMBOL_TYPE_DEX_METHOD
-    if is_dex_method or abs(symbol_size) >= min_symbol_size:
-      symbol_entry = {
-        _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
-        _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
-        _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
-      }
-      # We use symbol count for the method count mode in the diff mode report.
-      # Negative values are used to indicate a symbol was removed, so it should
-      # count as -1 rather than the default, 1.
-      # We don't care about accurate counts for other symbol types currently,
-      # so this data is only included for methods.
-      if is_dex_method and symbol_count != 1:
-        symbol_entry[_COMPACT_SYMBOL_COUNT_KEY] = symbol_count
-      file_node[_COMPACT_FILE_SYMBOLS_KEY].append(symbol_entry)
-    else:
-      small_type_symbol = small_symbols[path].get(symbol_type)
-      if small_type_symbol is None:
-        small_type_symbol = {
-          _COMPACT_SYMBOL_NAME_KEY: _SMALL_SYMBOL_DESCRIPTIONS[symbol_type],
-          _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
-          _COMPACT_SYMBOL_BYTE_SIZE_KEY: 0,
-        }
-        small_symbols[path][symbol_type] = small_type_symbol
-        file_node[_COMPACT_FILE_SYMBOLS_KEY].append(small_type_symbol)
+    symbol_entry = {
+      _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
+      _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
+      _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
+    }
+    # We use symbol count for the method count mode in the diff mode report.
+    # Negative values are used to indicate a symbol was removed, so it should
+    # count as -1 rather than the default, 1.
+    # We don't care about accurate counts for other symbol types currently,
+    # so this data is only included for methods.
+    if is_dex_method and symbol_count != 1:
+      symbol_entry[_COMPACT_SYMBOL_COUNT_KEY] = symbol_count
+    file_node[_COMPACT_FILE_SYMBOLS_KEY].append(symbol_entry)
 
-      small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol_size
+  for symbol in extra_symbols:
+    symbol_type = _GetSymbolType(symbol)
+
+    file_node = _GetOrAddFileNode(symbol, file_nodes, components)
+    path = file_node[_COMPACT_FILE_PATH_KEY]
+
+    small_type_symbol = small_symbols[path].get(symbol_type)
+    if small_type_symbol is None:
+      small_type_symbol = {
+        _COMPACT_SYMBOL_NAME_KEY: _SMALL_SYMBOL_DESCRIPTIONS[symbol_type],
+        _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
+        _COMPACT_SYMBOL_BYTE_SIZE_KEY: 0,
+      }
+      small_symbols[path][symbol_type] = small_type_symbol
+      file_node[_COMPACT_FILE_SYMBOLS_KEY].append(small_type_symbol)
+
+    small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol.pss
 
   meta = {
     'components': components.value_list,
-    'total': total_size,
+    'total': symbols.pss,
   }
   return meta, file_nodes.values()
 
@@ -203,9 +221,9 @@ def AddArguments(parser):
   parser.add_argument('--report-dir', metavar='PATH', required=True,
                       help='Write output to the specified directory. An HTML '
                             'report is generated here.')
-  parser.add_argument('--min-symbol-size', type=float, default=1024,
-                      help='Minimum size (PSS) for a symbol to be included as '
-                           'an independent node.')
+  parser.add_argument('--all-symbols', action='store_true',
+                      help='Include all symbols. Will cause the data file to '
+                           'take longer to load.')
   parser.add_argument('--diff-with',
                       help='Diffs the input_file against an older .size file')
 
@@ -222,12 +240,15 @@ def Run(args, parser):
     before_size_info = archive.LoadAndPostProcessSizeInfo(args.diff_with)
     after_size_info = size_info
     size_info = diff.Diff(before_size_info, after_size_info)
-  symbols = size_info.raw_symbols
+    symbols = size_info.raw_symbols
+    symbols = symbols.WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
+  else:
+    symbols = size_info.raw_symbols
 
   template_src = os.path.join(os.path.dirname(__file__), 'template_tree_view')
   _CopyTreeViewTemplateFiles(template_src, args.report_dir)
   logging.info('Creating JSON objects')
-  meta, tree_nodes = _MakeTreeViewList(symbols, args.min_symbol_size)
+  meta, tree_nodes = _MakeTreeViewList(symbols, args.all_symbols)
   meta.update({
     'diff_mode': bool(args.diff_with),
     'section_sizes': size_info.section_sizes,
