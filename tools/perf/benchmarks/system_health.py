@@ -59,7 +59,9 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
-                        'tdresser@chromium.org'],
+                        'tdresser@chromium.org',
+                        'chrome-speed-metrics-dev@chromium.org'],
+                component='Speed>Metrics>SystemHealthRegressions',
                 documentation_url='https://bit.ly/system-health-benchmarks')
 class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Desktop Chrome Energy System Health Benchmark."""
@@ -72,8 +74,9 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
 
 
 @benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
-                        'tdresser@chromium.org', 'perezju@chromium.org'],
-
+                        'tdresser@chromium.org', 'perezju@chromium.org',
+                        'chrome-speed-metrics-dev@chromium.org'],
+                component='Speed>Metrics>SystemHealthRegressions',
                 documentation_url='https://bit.ly/system-health-benchmarks')
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Mobile Chrome Energy System Health Benchmark."""
