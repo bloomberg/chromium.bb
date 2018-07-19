@@ -4970,7 +4970,7 @@ void RenderFrameHostImpl::BindPresentationServiceRequest(
 
 #if !defined(OS_ANDROID)
 void RenderFrameHostImpl::BindAuthenticatorRequest(
-    webauth::mojom::AuthenticatorRequest request) {
+    blink::mojom::AuthenticatorRequest request) {
   if (!authenticator_impl_)
     authenticator_impl_.reset(new AuthenticatorImpl(this));
 

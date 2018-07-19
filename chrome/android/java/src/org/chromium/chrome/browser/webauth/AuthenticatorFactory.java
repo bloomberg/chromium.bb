@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.webauth;
 
+import org.chromium.blink.mojom.Authenticator;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.services.service_manager.InterfaceFactory;
-import org.chromium.webauth.mojom.Authenticator;
 
 /**
  * Factory class registered to create Authenticators upon request.

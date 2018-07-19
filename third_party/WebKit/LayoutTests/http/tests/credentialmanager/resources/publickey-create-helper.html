@@ -10,7 +10,7 @@ mockAuthenticator.setId(ID);
 mockAuthenticator.setClientDataJson(CLIENT_DATA_JSON);
 mockAuthenticator.setAttestationObject(ATTESTATION_OBJECT);
 mockAuthenticator.setAuthenticatorStatus(
-    webauth.mojom.AuthenticatorStatus.SUCCESS);
+    blink.mojom.AuthenticatorStatus.SUCCESS);
 let queryParams = new URLSearchParams(window.location.search);
 var relyingPartyId = queryParams.has('rpId') ? queryParams.get('rpId') : document.domain;
 var customPublicKey = {

@@ -8,10 +8,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
+import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.webauth.mojom.PublicKeyCredentialCreationOptions;
-import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
 
 /**
  * Android implementation of the Authenticator service defined in

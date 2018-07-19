@@ -24,78 +24,78 @@ namespace mojo {
 
 template <>
 struct TypeConverter<::device::FidoTransportProtocol,
-                     ::webauth::mojom::AuthenticatorTransport> {
+                     ::blink::mojom::AuthenticatorTransport> {
   static ::device::FidoTransportProtocol Convert(
-      const ::webauth::mojom::AuthenticatorTransport& input);
+      const ::blink::mojom::AuthenticatorTransport& input);
 };
 
 template <>
 struct TypeConverter<::device::CredentialType,
-                     ::webauth::mojom::PublicKeyCredentialType> {
+                     ::blink::mojom::PublicKeyCredentialType> {
   static ::device::CredentialType Convert(
-      const ::webauth::mojom::PublicKeyCredentialType& input);
+      const ::blink::mojom::PublicKeyCredentialType& input);
 };
 
 template <>
 struct TypeConverter<
     std::vector<::device::PublicKeyCredentialParams::CredentialInfo>,
-    std::vector<::webauth::mojom::PublicKeyCredentialParametersPtr>> {
+    std::vector<::blink::mojom::PublicKeyCredentialParametersPtr>> {
   static std::vector<::device::PublicKeyCredentialParams::CredentialInfo>
-  Convert(const std::vector<::webauth::mojom::PublicKeyCredentialParametersPtr>&
+  Convert(const std::vector<::blink::mojom::PublicKeyCredentialParametersPtr>&
               input);
 };
 
 template <>
 struct TypeConverter<
     std::vector<::device::PublicKeyCredentialDescriptor>,
-    std::vector<::webauth::mojom::PublicKeyCredentialDescriptorPtr>> {
+    std::vector<::blink::mojom::PublicKeyCredentialDescriptorPtr>> {
   static std::vector<::device::PublicKeyCredentialDescriptor> Convert(
-      const std::vector<::webauth::mojom::PublicKeyCredentialDescriptorPtr>&
+      const std::vector<::blink::mojom::PublicKeyCredentialDescriptorPtr>&
           input);
 };
 
 template <>
 struct TypeConverter<
     ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment,
-    ::webauth::mojom::AuthenticatorAttachment> {
+    ::blink::mojom::AuthenticatorAttachment> {
   static ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment
-  Convert(const ::webauth::mojom::AuthenticatorAttachment& input);
+  Convert(const ::blink::mojom::AuthenticatorAttachment& input);
 };
 
 template <>
 struct TypeConverter<::device::UserVerificationRequirement,
-                     ::webauth::mojom::UserVerificationRequirement> {
+                     ::blink::mojom::UserVerificationRequirement> {
   static ::device::UserVerificationRequirement Convert(
-      const ::webauth::mojom::UserVerificationRequirement& input);
+      const ::blink::mojom::UserVerificationRequirement& input);
 };
 
 template <>
 struct TypeConverter<::device::AuthenticatorSelectionCriteria,
-                     ::webauth::mojom::AuthenticatorSelectionCriteriaPtr> {
+                     ::blink::mojom::AuthenticatorSelectionCriteriaPtr> {
   static ::device::AuthenticatorSelectionCriteria Convert(
-      const ::webauth::mojom::AuthenticatorSelectionCriteriaPtr& input);
+      const ::blink::mojom::AuthenticatorSelectionCriteriaPtr& input);
 };
 
 template <>
 struct TypeConverter<::device::PublicKeyCredentialRpEntity,
-                     ::webauth::mojom::PublicKeyCredentialRpEntityPtr> {
+                     ::blink::mojom::PublicKeyCredentialRpEntityPtr> {
   static ::device::PublicKeyCredentialRpEntity Convert(
-      const ::webauth::mojom::PublicKeyCredentialRpEntityPtr& input);
+      const ::blink::mojom::PublicKeyCredentialRpEntityPtr& input);
 };
 
 template <>
 struct TypeConverter<::device::PublicKeyCredentialUserEntity,
-                     ::webauth::mojom::PublicKeyCredentialUserEntityPtr> {
+                     ::blink::mojom::PublicKeyCredentialUserEntityPtr> {
   static ::device::PublicKeyCredentialUserEntity Convert(
-      const ::webauth::mojom::PublicKeyCredentialUserEntityPtr& input);
+      const ::blink::mojom::PublicKeyCredentialUserEntityPtr& input);
 };
 
 template <>
 struct TypeConverter<
     std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
-    std::vector<::webauth::mojom::CableAuthenticationPtr>> {
+    std::vector<::blink::mojom::CableAuthenticationPtr>> {
   static std::vector<::device::FidoCableDiscovery::CableDiscoveryData> Convert(
-      const std::vector<::webauth::mojom::CableAuthenticationPtr>& input);
+      const std::vector<::blink::mojom::CableAuthenticationPtr>& input);
 };
 
 }  // namespace mojo

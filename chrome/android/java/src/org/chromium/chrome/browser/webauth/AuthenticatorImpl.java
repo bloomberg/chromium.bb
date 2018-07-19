@@ -10,18 +10,18 @@ import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.PackageUtils;
+import org.chromium.blink.mojom.Authenticator;
+import org.chromium.blink.mojom.AuthenticatorStatus;
+import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
+import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
+import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
+import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.webauth.mojom.Authenticator;
-import org.chromium.webauth.mojom.AuthenticatorStatus;
-import org.chromium.webauth.mojom.GetAssertionAuthenticatorResponse;
-import org.chromium.webauth.mojom.MakeCredentialAuthenticatorResponse;
-import org.chromium.webauth.mojom.PublicKeyCredentialCreationOptions;
-import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
 
 /**
  * Android implementation of the authenticator.mojom interface.

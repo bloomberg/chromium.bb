@@ -42,17 +42,17 @@ namespace blink {
 
 namespace {
 
-using ::blink::mojom::blink::CredentialManagerError;
-using ::blink::mojom::blink::CredentialInfo;
-using ::blink::mojom::blink::CredentialInfoPtr;
-using ::blink::mojom::blink::CredentialMediationRequirement;
-using ::webauth::mojom::blink::AuthenticatorStatus;
+using mojom::blink::CredentialManagerError;
+using mojom::blink::CredentialInfo;
+using mojom::blink::CredentialInfoPtr;
+using mojom::blink::CredentialMediationRequirement;
+using mojom::blink::AuthenticatorStatus;
 using MojoPublicKeyCredentialCreationOptions =
-    ::webauth::mojom::blink::PublicKeyCredentialCreationOptions;
-using ::webauth::mojom::blink::MakeCredentialAuthenticatorResponsePtr;
+    mojom::blink::PublicKeyCredentialCreationOptions;
+using mojom::blink::MakeCredentialAuthenticatorResponsePtr;
 using MojoPublicKeyCredentialRequestOptions =
-    ::webauth::mojom::blink::PublicKeyCredentialRequestOptions;
-using ::webauth::mojom::blink::GetAssertionAuthenticatorResponsePtr;
+    mojom::blink::PublicKeyCredentialRequestOptions;
+using mojom::blink::GetAssertionAuthenticatorResponsePtr;
 
 enum class RequiredOriginType { kSecure, kSecureAndSameWithAncestors };
 

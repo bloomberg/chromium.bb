@@ -172,7 +172,7 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
 
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
     base::span<const uint8_t, device::kClientDataHashLength> client_data_hash,
-    const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options,
+    const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
     bool is_individual_attestation) {
   auto credential_params = mojo::ConvertTo<
       std::vector<device::PublicKeyCredentialParams::CredentialInfo>>(
@@ -196,7 +196,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
 
 device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
     base::span<const uint8_t, device::kClientDataHashLength> client_data_hash,
-    const webauth::mojom::PublicKeyCredentialRequestOptionsPtr& options,
+    const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
     base::Optional<base::span<const uint8_t, device::kRpIdHashLength>>
         alternative_application_parameter) {
   device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
@@ -261,12 +261,12 @@ ProcessAppIdExtension(std::string appid, const url::Origin& caller_origin) {
   return CreateApplicationParameter(appid);
 }
 
-webauth::mojom::MakeCredentialAuthenticatorResponsePtr
+blink::mojom::MakeCredentialAuthenticatorResponsePtr
 CreateMakeCredentialResponse(
     const std::string& client_data_json,
     device::AuthenticatorMakeCredentialResponse response_data) {
-  auto response = webauth::mojom::MakeCredentialAuthenticatorResponse::New();
-  auto common_info = webauth::mojom::CommonCredentialInfo::New();
+  auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
+  auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
   common_info->raw_id = response_data.raw_credential_id();
@@ -277,12 +277,12 @@ CreateMakeCredentialResponse(
   return response;
 }
 
-webauth::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
+blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
     const std::string& client_data_json,
     device::AuthenticatorGetAssertionResponse response_data,
     bool echo_appid_extension) {
-  auto response = webauth::mojom::GetAssertionAuthenticatorResponse::New();
-  auto common_info = webauth::mojom::CommonCredentialInfo::New();
+  auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
+  auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
   common_info->raw_id = response_data.raw_credential_id();
@@ -343,7 +343,7 @@ AuthenticatorImpl::~AuthenticatorImpl() {
   render_frame_host_->GetRoutingID();
 }
 
-void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
+void AuthenticatorImpl::Bind(blink::mojom::AuthenticatorRequest request) {
   // If |render_frame_host_| is being unloaded then binding requests are
   // rejected.
   if (!render_frame_host_->IsCurrent()) {
@@ -411,11 +411,11 @@ std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
 
 // mojom::Authenticator
 void AuthenticatorImpl::MakeCredential(
-    webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
+    blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
     MakeCredentialCallback callback) {
   if (request_) {
-    std::move(callback).Run(
-        webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+    std::move(callback).Run(blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
+                            nullptr);
     return;
   }
 
@@ -424,16 +424,15 @@ void AuthenticatorImpl::MakeCredential(
       GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
           render_frame_host_);
   if (!request_delegate_) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr,
-        Focus::kDontCheck);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
+                             nullptr, Focus::kDontCheck);
     return;
   }
 
   if (!IsFocused()) {
     InvokeCallbackAndCleanup(std::move(callback),
-                             webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+                             blink::mojom::AuthenticatorStatus::NOT_FOCUSED,
                              nullptr, Focus::kDontCheck);
     return;
   }
@@ -444,20 +443,18 @@ void AuthenticatorImpl::MakeCredential(
   if (!HasValidEffectiveDomain(caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr,
-        Focus::kDontCheck);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr, Focus::kDontCheck);
     return;
   }
 
   if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr,
-        Focus::kDontCheck);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr, Focus::kDontCheck);
     return;
   }
 
@@ -480,7 +477,7 @@ void AuthenticatorImpl::MakeCredential(
 
   const bool individual_attestation =
       options->attestation ==
-          webauth::mojom::AttestationConveyancePreference::ENTERPRISE &&
+          blink::mojom::AttestationConveyancePreference::ENTERPRISE &&
       request_delegate_->ShouldPermitIndividualAttestation(relying_party_id_);
 
   attestation_preference_ = options->attestation;
@@ -510,11 +507,11 @@ void AuthenticatorImpl::MakeCredential(
 
 // mojom:Authenticator
 void AuthenticatorImpl::GetAssertion(
-    webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
+    blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
     GetAssertionCallback callback) {
   if (request_) {
-    std::move(callback).Run(
-        webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+    std::move(callback).Run(blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
+                            nullptr);
     return;
   }
 
@@ -523,9 +520,9 @@ void AuthenticatorImpl::GetAssertion(
       GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
           render_frame_host_);
   if (!request_delegate_) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
+                             nullptr);
     return;
   }
 
@@ -534,18 +531,18 @@ void AuthenticatorImpl::GetAssertion(
   if (!HasValidEffectiveDomain(caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr);
     return;
   }
 
   if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr);
     return;
   }
 
@@ -554,8 +551,8 @@ void AuthenticatorImpl::GetAssertion(
   if (options->appid) {
     auto appid_hash = ProcessAppIdExtension(*options->appid, caller_origin);
     if (!appid_hash) {
-      std::move(callback).Run(
-          webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+      std::move(callback).Run(blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                              nullptr);
       return;
     }
 
@@ -637,14 +634,14 @@ void AuthenticatorImpl::OnRegisterResponse(
       // |exclude_credentials|.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
           Focus::kDoCheck);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
           Focus::kDoCheck);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
@@ -654,7 +651,7 @@ void AuthenticatorImpl::OnRegisterResponse(
       DCHECK(response_data.has_value());
 
       if (attestation_preference_ !=
-          webauth::mojom::AttestationConveyancePreference::NONE) {
+          blink::mojom::AttestationConveyancePreference::NONE) {
         request_delegate_->ShouldReturnAttestation(
             relying_party_id_,
             base::BindOnce(
@@ -666,7 +663,7 @@ void AuthenticatorImpl::OnRegisterResponse(
       response_data->EraseAttestationStatement();
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::SUCCESS,
+          blink::mojom::AuthenticatorStatus::SUCCESS,
           CreateMakeCredentialResponse(std::move(client_data_json_),
                                        std::move(*response_data)),
           Focus::kDoCheck);
@@ -685,12 +682,12 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
   }
 
   DCHECK(attestation_preference_ !=
-         webauth::mojom::AttestationConveyancePreference::NONE);
+         blink::mojom::AttestationConveyancePreference::NONE);
 
   if (!attestation_permitted) {
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
         Focus::kDoCheck);
     return;
   }
@@ -717,7 +714,7 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 
   InvokeCallbackAndCleanup(
       std::move(make_credential_response_callback_),
-      webauth::mojom::AuthenticatorStatus::SUCCESS,
+      blink::mojom::AuthenticatorStatus::SUCCESS,
       CreateMakeCredentialResponse(std::move(client_data_json_),
                                    std::move(response_data)),
       Focus::kDoCheck);
@@ -738,14 +735,14 @@ void AuthenticatorImpl::OnSignResponse(
       // No authenticators contained the credential.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
           nullptr);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialExcluded:
       NOTREACHED();
@@ -754,7 +751,7 @@ void AuthenticatorImpl::OnSignResponse(
       DCHECK(response_data.has_value());
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::SUCCESS,
+          blink::mojom::AuthenticatorStatus::SUCCESS,
           CreateGetAssertionResponse(std::move(client_data_json_),
                                      std::move(*response_data),
                                      echo_appid_extension_));
@@ -771,22 +768,22 @@ void AuthenticatorImpl::OnTimeout() {
   if (make_credential_response_callback_) {
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
         Focus::kDontCheck);
   } else if (get_assertion_response_callback_) {
     InvokeCallbackAndCleanup(
         std::move(get_assertion_response_callback_),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
   }
 }
 
 void AuthenticatorImpl::InvokeCallbackAndCleanup(
     MakeCredentialCallback callback,
-    webauth::mojom::AuthenticatorStatus status,
-    webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
+    blink::mojom::AuthenticatorStatus status,
+    blink::mojom::MakeCredentialAuthenticatorResponsePtr response,
     Focus check_focus) {
   if (check_focus != Focus::kDontCheck && !(request_delegate_ && IsFocused())) {
-    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+    std::move(callback).Run(blink::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {
     std::move(callback).Run(status, std::move(response));
@@ -797,8 +794,8 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
 
 void AuthenticatorImpl::InvokeCallbackAndCleanup(
     GetAssertionCallback callback,
-    webauth::mojom::AuthenticatorStatus status,
-    webauth::mojom::GetAssertionAuthenticatorResponsePtr response) {
+    blink::mojom::AuthenticatorStatus status,
+    blink::mojom::GetAssertionAuthenticatorResponsePtr response) {
   std::move(callback).Run(status, std::move(response));
   Cleanup();
 }

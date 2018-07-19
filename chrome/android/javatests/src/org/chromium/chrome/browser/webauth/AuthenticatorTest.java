@@ -17,6 +17,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.blink.mojom.AuthenticatorStatus;
+import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
+import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -27,9 +30,6 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
-import org.chromium.webauth.mojom.AuthenticatorStatus;
-import org.chromium.webauth.mojom.PublicKeyCredentialCreationOptions;
-import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
 
 /** Test suite for navigator.credentials functionality. */
 @RunWith(ChromeJUnit4ClassRunner.class)

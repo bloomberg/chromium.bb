@@ -1107,7 +1107,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::PresentationServiceRequest request);
 
 #if !defined(OS_ANDROID)
-  void BindAuthenticatorRequest(webauth::mojom::AuthenticatorRequest request);
+  void BindAuthenticatorRequest(blink::mojom::AuthenticatorRequest request);
 #endif
 
   // service_manager::mojom::InterfaceProvider:
