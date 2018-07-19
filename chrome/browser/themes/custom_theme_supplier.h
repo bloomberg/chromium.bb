@@ -34,6 +34,7 @@ class CustomThemeSupplier
     EXTENSION,
     NATIVE_X11,
     SUPERVISED_USER_THEME,
+    INCREASED_CONTRAST,
   };
 
   explicit CustomThemeSupplier(ThemeType type);

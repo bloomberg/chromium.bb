@@ -118,9 +118,15 @@ namespace {
 
 // Helper function to create a rounded rect background (no stroke).
 std::unique_ptr<views::Background> CreateRoundRectBackground(SkColor bg_color,
-                                                             float radius) {
-  std::unique_ptr<views::Background> background = CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(bg_color, radius));
+                                                             float radius,
+                                                             SkColor fg_color) {
+  auto painter =
+      fg_color != SK_ColorTRANSPARENT
+          ? views::Painter::CreateRoundRectWith1PxBorderPainter(
+                bg_color, fg_color, radius)
+          : views::Painter::CreateSolidRoundRectPainter(bg_color, radius);
+  std::unique_ptr<views::Background> background =
+      CreateBackgroundFromPainter(std::move(painter));
   background->SetNativeControlColor(bg_color);
   return background;
 }
@@ -789,8 +795,12 @@ void LocationBarView::RefreshBackground() {
   if (is_popup_mode_) {
     SetBackground(views::CreateSolidBackground(background_color));
   } else if (IsRounded()) {
-    SetBackground(
-        CreateRoundRectBackground(background_color, GetBorderRadius()));
+    // High contrast schemes get a border stroke even on a rounded omnibox.
+    SkColor fg_color = GetNativeTheme()->UsesHighContrastColors()
+                           ? border_color
+                           : SK_ColorTRANSPARENT;
+    SetBackground(CreateRoundRectBackground(background_color, GetBorderRadius(),
+                                            fg_color));
   } else {
     SetBackground(std::make_unique<BackgroundWith1PxBorder>(background_color,
                                                             border_color));

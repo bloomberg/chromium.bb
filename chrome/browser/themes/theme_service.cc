@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
+#include "chrome/browser/themes/increased_contrast_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
@@ -314,6 +315,11 @@ void ThemeService::UseDefaultTheme() {
     SetSupervisedUserTheme();
     return;
   }
+#endif
+#if defined(OS_MACOSX)
+  // TODO(ellyjones): Expand ShouldIncreaseContrast() to non-Mac platforms.
+  if (original_theme_provider_.ShouldIncreaseContrast())
+    SetCustomDefaultTheme(new IncreasedContrastThemeSupplier);
 #endif
   ClearAllThemeData();
   NotifyThemeChanged();
