@@ -551,6 +551,7 @@ interface CDATASection : Text
     attribute @@toStringTag
     method constructor
 interface CSS
+    static getter animationWorklet
     static getter layoutWorklet
     static getter paintWorklet
     static method Hz
@@ -10288,7 +10289,6 @@ interface webkitURL
     attribute textInputController
     attribute top
     attribute window
-    getter animationWorklet
     getter applicationCache
     getter caches
     getter clientInformation

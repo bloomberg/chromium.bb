@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/modules/animationworklet/window_animation_worklet.h"
+#include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -201,26 +201,25 @@ unsigned NextSequenceNumber() {
 }  // namespace
 
 WorkletAnimation* WorkletAnimation::Create(
-    ExecutionContext* context,
+    ScriptState* script_state,
     String animator_name,
     const AnimationEffectOrAnimationEffectSequence& effects,
     ExceptionState& exception_state) {
-  return Create(context, animator_name, effects,
+  return Create(script_state, animator_name, effects,
                 DocumentTimelineOrScrollTimeline(), nullptr, exception_state);
 }
 
 WorkletAnimation* WorkletAnimation::Create(
-    ExecutionContext* context,
-
+    ScriptState* script_state,
     String animator_name,
     const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
     ExceptionState& exception_state) {
-  return Create(context, animator_name, effects, timeline, nullptr,
+  return Create(script_state, animator_name, effects, timeline, nullptr,
                 exception_state);
 }
 WorkletAnimation* WorkletAnimation::Create(
-    ExecutionContext* context,
+    ScriptState* script_state,
     String animator_name,
     const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
@@ -250,7 +249,7 @@ WorkletAnimation* WorkletAnimation::Create(
   }
 
   AnimationWorklet* worklet =
-      WindowAnimationWorklet::animationWorklet(*context->ExecutingWindow());
+      CSSAnimationWorklet::animationWorklet(script_state);
 
   WorkletAnimationId id = worklet->NextWorkletAnimationId();
 

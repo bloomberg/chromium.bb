@@ -1,5 +1,5 @@
 function runInAnimationWorklet(code) {
-  return window.animationWorklet.addModule(
+  return CSS.animationWorklet.addModule(
     URL.createObjectURL(new Blob([code], {type: 'text/javascript'}))
   );
 }

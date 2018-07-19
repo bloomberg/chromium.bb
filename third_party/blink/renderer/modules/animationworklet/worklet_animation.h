@@ -44,18 +44,18 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
  public:
   static WorkletAnimation* Create(
-      ExecutionContext*,
+      ScriptState*,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       ExceptionState&);
   static WorkletAnimation* Create(
-      ExecutionContext*,
+      ScriptState*,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
       ExceptionState&);
   static WorkletAnimation* Create(
-      ExecutionContext*,
+      ScriptState*,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
