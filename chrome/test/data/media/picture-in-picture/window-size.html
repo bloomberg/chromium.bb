@@ -71,12 +71,5 @@
       document.title = 'fullscreen';
     }, { once: true });
   }
-
-  function changeVideoSrc() {
-    video.addEventListener('loadedmetadata', function() {
-      window.domAutomationController.send(true);
-    }, { once: true });
-    video.src = video.src;
-  }
 </script>
 </html>
