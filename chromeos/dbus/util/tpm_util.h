@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_CRYPTOHOME_TPM_UTIL_H_
-#define CHROMEOS_CRYPTOHOME_TPM_UTIL_H_
+#ifndef CHROMEOS_DBUS_UTIL_TPM_UTIL_H_
+#define CHROMEOS_DBUS_UTIL_TPM_UTIL_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ CHROMEOS_EXPORT bool LockDeviceActiveDirectoryForTesting(
 }  // namespace tpm_util
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CRYPTOHOME_TPM_UTIL_H_
+#endif  // CHROMEOS_DBUS_UTIL_TPM_UTIL_H_
