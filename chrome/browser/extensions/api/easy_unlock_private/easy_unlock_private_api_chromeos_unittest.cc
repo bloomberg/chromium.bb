@@ -37,6 +37,12 @@ EasyUnlockPrivateConnectionManager* GetConnectionManager(
       ->get_connection_manager();
 }
 
+std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
+    content::BrowserContext* context) {
+  return std::make_unique<ApiResourceManager<EasyUnlockPrivateConnection>>(
+      context);
+}
+
 scoped_refptr<const Extension> CreateTestExtension() {
   return ExtensionBuilder()
       .SetManifest(
@@ -52,8 +58,13 @@ scoped_refptr<const Extension> CreateTestExtension() {
 
 class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
  public:
-  EasyUnlockPrivateApiTest() {}
-  ~EasyUnlockPrivateApiTest() override {}
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+
+    ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance()
+        ->SetTestingFactoryAndUse(browser()->profile(),
+                                  ApiResourceManagerTestFactory);
+  }
 };
 
 // Tests that no BrowserContext dependencies of EasyUnlockPrivateApi (and its

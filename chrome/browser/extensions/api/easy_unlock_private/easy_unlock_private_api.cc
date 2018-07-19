@@ -90,6 +90,13 @@ void EasyUnlockPrivateAPI::Shutdown() {
   connection_manager_.reset();
 }
 
+template <>
+void BrowserContextKeyedAPIFactory<
+    EasyUnlockPrivateAPI>::DeclareFactoryDependencies() {
+  DependsOn(
+      ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance());
+}
+
 EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
 }
 EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {

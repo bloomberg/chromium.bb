@@ -65,6 +65,10 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
 };
 
+template <>
+void BrowserContextKeyedAPIFactory<
+    EasyUnlockPrivateAPI>::DeclareFactoryDependencies();
+
 class EasyUnlockPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
   EasyUnlockPrivateGetStringsFunction();
