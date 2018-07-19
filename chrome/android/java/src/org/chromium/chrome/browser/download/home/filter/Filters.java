@@ -104,4 +104,6 @@ public class Filters {
 
         return filter;
     }
+
+    private Filters() {}
 }
