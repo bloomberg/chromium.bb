@@ -5,8 +5,8 @@
 cr.exportPath('settings');
 
 /**
- * The default number of items to show for files and registry keys on the
- * detailed view when user-initiated cleanups are enabled.
+ * The default number of items to show for files, registry keys and extensions
+ * on the detailed view when user-initiated cleanups are enabled.
  */
 settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
 
