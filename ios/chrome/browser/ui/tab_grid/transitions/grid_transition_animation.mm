@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_to_tab_transition_view.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/property_animator_group.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,6 +18,10 @@ namespace {
 
 // Scale factor for inactive items when a tab is expanded.
 const CGFloat kInactiveItemScale = 0.95;
+
+CGFloat DeviceCornerRadius() {
+  return IsIPhoneX() ? 40.0 : 0.0;
+}
 }
 
 @interface GridTransitionAnimation ()
@@ -95,16 +100,18 @@ const CGFloat kInactiveItemScale = 0.95;
   // fractions of the overall animation duration.
   CGFloat partialDuration = 0.6;
   CGFloat briefDuration = partialDuration * 0.5;
-  CGFloat delay = 0.4;
   CGFloat shortDelay = 0.2;
+
+  // Damping ratio for the resize animation.
+  CGFloat resizeDamping = 0.8;
 
   // If there's only one cell, the animation has two parts.
   //   (A) Zooming the active cell into position.
   //   (B) Crossfading from the tab to cell top view.
   //   (C) Rounding the corners of the active cell.
   //
-  //  {0%}------------------[A]----------{60%}
-  //                                {50%}---[B]---{80%}
+  //  {0%}----------------------[A]-------------------{100%}
+  //                            {50%}----[B]----{80%}
   //  {0%}---[C]---{30%}
 
   // If there's more than once cell, the animation adds two more parts:
@@ -112,16 +119,12 @@ const CGFloat kInactiveItemScale = 0.95;
   //   (E) Fading the inactive cells to 100% opacity.
   // The overall timing is as follows:
   //
-  //  {0%}------------------[A]----------{60%}
-  //                                {50%}---[B]---{80%}
+  //  {0%}----------------------[A]-------------------{100%}
+  //                            {50%}----[B]----{80%}
   //  {0%}---[C]---{30%}
   //           {20%}--[D]-----------------------------{100%}
-  //           {20%}--[E]-------------------------{80%}
+  //           {20%}--[E]-----------------------{80%}
   //
-  // All animations are timed ease-in (so more motion happens later), except
-  // for B and C. B is a crossfade timed ease in/out, and C is relatively small
-  // in space and short in duration; it has linear timing so it doesn't seem
-  // instantaneous.
   // (Changing the timing constants above will change the timing % values)
 
   UIView<GridToTabTransitionView>* activeCell = self.layout.activeItem.cell;
@@ -135,14 +138,11 @@ const CGFloat kInactiveItemScale = 0.95;
   auto zoomActiveCellAnimation = ^{
     [self positionAndScaleActiveItemInGrid];
   };
-  auto zoomActiveCellKeyframeAnimation =
-      [self keyframeAnimationWithRelativeStart:0
-                              relativeDuration:partialDuration
-                                    animations:zoomActiveCellAnimation];
-  UIViewPropertyAnimator* zoomActiveCell = [[UIViewPropertyAnimator alloc]
-      initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseIn
-            animations:zoomActiveCellKeyframeAnimation];
+
+  UIViewPropertyAnimator* zoomActiveCell =
+      [[UIViewPropertyAnimator alloc] initWithDuration:self.duration
+                                          dampingRatio:resizeDamping
+                                            animations:zoomActiveCellAnimation];
   [self.animations addAnimator:zoomActiveCell];
 
   // B: Fade in the active cell top cell view, fade out the active cell's
@@ -161,7 +161,7 @@ const CGFloat kInactiveItemScale = 0.95;
 
   // C: Round the corners of the active cell.
   UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
-  cell.cornerRadius = 0.0;
+  cell.cornerRadius = DeviceCornerRadius();
   auto roundCornersAnimation = ^{
     cell.cornerRadius = self.finalActiveCellCornerRadius;
   };
@@ -193,7 +193,7 @@ const CGFloat kInactiveItemScale = 0.95;
                                     animations:scaleUpCellsAnimation];
   UIViewPropertyAnimator* scaleUpCells = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseIn
+                 curve:UIViewAnimationCurveEaseOut
             animations:scaleUpCellsKeyframeAnimation];
   [self.animations addAnimator:scaleUpCells];
 
@@ -204,12 +204,12 @@ const CGFloat kInactiveItemScale = 0.95;
     }
   };
   auto fadeInCellsKeyframeAnimation =
-      [self keyframeAnimationWithRelativeStart:delay
+      [self keyframeAnimationWithRelativeStart:shortDelay
                               relativeDuration:partialDuration
                                     animations:fadeInCellsAnimation];
   UIViewPropertyAnimator* fadeInCells = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseIn
+                 curve:UIViewAnimationCurveEaseOut
             animations:fadeInCellsKeyframeAnimation];
   [self.animations addAnimator:fadeInCells];
 }
@@ -223,6 +223,9 @@ const CGFloat kInactiveItemScale = 0.95;
   CGFloat veryBriefDuration = 0.2;
   CGFloat delay = (1.0 - veryBriefDuration) / 2.0;
 
+  // Damping ratio for the resize animation.
+  CGFloat resizeDamping = 0.7;
+
   // If there's only one cell, the animation has three parts:
   //   (A) Zooming the active cell out into the expanded position.
   //   (B) Crossfading the active cell's top views.
@@ -232,7 +235,7 @@ const CGFloat kInactiveItemScale = 0.95;
   //
   //  {0%}--[A]-----------------------------------{100%}
   //  {0%}--[B]---{30%}
-  //                               {70%}----[C]---{100%}
+  //  {0%}--[C]---{30%}
   //                   {40%}-[D]-{60%}
 
   // If there's more than once cell, the animation adds:
@@ -242,7 +245,7 @@ const CGFloat kInactiveItemScale = 0.95;
   //
   //  {0%}--[A]-----------------------------------{100%}
   //  {0%}--[B]---{30%}
-  //                               {70%}----[C]---{100%}
+  //  {0%}--[C]---{30%}
   //                   {40%}-[D]-{60%}
   //  {0%}--[E]-----------------------------------{100%}
   //  {0%}--[F]-------------------{66%}
@@ -264,12 +267,12 @@ const CGFloat kInactiveItemScale = 0.95;
   activeCell.topTabView.alpha = 0.0;
 
   // A: Zoom the active cell into position.
-  UIViewPropertyAnimator* zoomActiveCell = [[UIViewPropertyAnimator alloc]
-      initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseOut
-            animations:^{
-              [self positionExpandedActiveItem];
-            }];
+  UIViewPropertyAnimator* zoomActiveCell =
+      [[UIViewPropertyAnimator alloc] initWithDuration:self.duration
+                                          dampingRatio:resizeDamping
+                                            animations:^{
+                                              [self positionExpandedActiveItem];
+                                            }];
   [self.animations addAnimator:zoomActiveCell];
 
   // B: Crossfade the top views.
@@ -287,10 +290,10 @@ const CGFloat kInactiveItemScale = 0.95;
   // C: Square the active cell's corners.
   UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
   auto squareCornersAnimation = ^{
-    cell.cornerRadius = 0.0;
+    cell.cornerRadius = DeviceCornerRadius();
   };
   auto squareCornersKeyframeAnimation =
-      [self keyframeAnimationWithRelativeStart:1.0 - briefDuration
+      [self keyframeAnimationWithRelativeStart:0.0
                               relativeDuration:briefDuration
                                     animations:squareCornersAnimation];
   UIViewPropertyAnimator* squareCorners = [[UIViewPropertyAnimator alloc]
@@ -380,7 +383,7 @@ const CGFloat kInactiveItemScale = 0.95;
 - (void)prepareInactiveItemsForAppearance {
   for (GridTransitionItem* item in self.layout.inactiveItems) {
     [self positionItemInGrid:item];
-    item.cell.alpha = 0.0;
+    item.cell.alpha = 0.2;
     item.cell.transform = CGAffineTransformScale(
         item.cell.transform, kInactiveItemScale, kInactiveItemScale);
   }
