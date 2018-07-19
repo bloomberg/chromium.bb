@@ -14,4 +14,7 @@ scroggo@chromium.org
 senorblanco@chromium.org
 thakis@chromium.org
 
+# For Fuchsia-specific changes:
+per-file *_fuchsia*=file://build/fuchsia/OWNERS
+
 # COMPONENT: Internals>Skia
