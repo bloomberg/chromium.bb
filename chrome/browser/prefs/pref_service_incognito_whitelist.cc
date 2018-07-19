@@ -12,7 +12,6 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/consent_auditor/pref_names.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
@@ -939,32 +938,6 @@ const char* incognito_whitelist[] = {
 
     // components/consent_auditor/pref_names.h
     consent_auditor::prefs::kLocalConsentsDictionary,
-
-    // components/content_settings/core/common/pref_names.h
-    // TODO(https://crbug.com/861722): Check with code owners why this pref is
-    // required in tests, if possible, update tests and remove.
-    prefs::kBlockThirdPartyCookies, prefs::kContentSettingsVersion,
-
-    prefs::kContentSettingsWindowLastTabIndex, prefs::kManagedDefaultAdsSetting,
-    prefs::kManagedDefaultCookiesSetting, prefs::kManagedDefaultImagesSetting,
-    prefs::kManagedDefaultJavaScriptSetting,
-    prefs::kManagedDefaultPluginsSetting, prefs::kManagedDefaultPopupsSetting,
-    prefs::kManagedDefaultGeolocationSetting,
-    prefs::kManagedDefaultNotificationsSetting,
-    prefs::kManagedDefaultMediaStreamSetting,
-    prefs::kManagedDefaultWebBluetoothGuardSetting,
-    prefs::kManagedDefaultWebUsbGuardSetting,
-    prefs::kManagedCookiesAllowedForUrls, prefs::kManagedCookiesBlockedForUrls,
-    prefs::kManagedCookiesSessionOnlyForUrls,
-    prefs::kManagedImagesAllowedForUrls, prefs::kManagedImagesBlockedForUrls,
-    prefs::kManagedJavaScriptAllowedForUrls,
-    prefs::kManagedJavaScriptBlockedForUrls,
-    prefs::kManagedPluginsAllowedForUrls, prefs::kManagedPluginsBlockedForUrls,
-    prefs::kManagedPopupsAllowedForUrls, prefs::kManagedPopupsBlockedForUrls,
-    prefs::kManagedNotificationsAllowedForUrls,
-    prefs::kManagedNotificationsBlockedForUrls,
-    prefs::kManagedAutoSelectCertificateForUrls,
-    prefs::kManagedWebUsbAskForUrls, prefs::kManagedWebUsbBlockedForUrls,
 
 // components/cryptauth/pref_names.h
 #if defined(CHROMEOS)
