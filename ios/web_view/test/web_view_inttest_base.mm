@@ -100,6 +100,7 @@ WebViewInttestBase::WebViewInttestBase()
     : web_view_(test::CreateWebView()),
       test_server_(std::make_unique<net::EmbeddedTestServer>(
           net::test_server::EmbeddedTestServer::TYPE_HTTP)) {
+  test_server_->AddDefaultHandlers(FILE_PATH_LITERAL(base::FilePath()));
   test_server_->RegisterRequestHandler(
       base::BindRepeating(&TestRequestHandler));
 }

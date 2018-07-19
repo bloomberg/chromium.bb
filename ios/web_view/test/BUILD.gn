@@ -9,6 +9,7 @@ import("//testing/test.gni")
 source_set("inttests") {
   testonly = true
   sources = [
+    "navigation_delegate_inttest.mm",
     "scroll_view_kvo_inttest.mm",
     "web_view_autofill_inttest.mm",
     "web_view_inttest.mm",
