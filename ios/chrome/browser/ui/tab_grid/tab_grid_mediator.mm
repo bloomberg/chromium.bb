@@ -11,6 +11,7 @@
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
@@ -36,7 +37,10 @@ namespace {
 GridItem* CreateItem(web::WebState* web_state) {
   TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
   GridItem* item = [[GridItem alloc] initWithIdentifier:tab_helper->tab_id()];
-  item.title = base::SysUTF16ToNSString(web_state->GetTitle());
+  // chrome://newtab (NTP) tabs have no title.
+  if (!IsURLNtp(web_state->GetVisibleURL())) {
+    item.title = base::SysUTF16ToNSString(web_state->GetTitle());
+  }
   return item;
 }
 
@@ -317,6 +321,10 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
                   completion:(void (^)(UIImage*))completion {
   web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
   if (!webState) {
+    return;
+  }
+  // NTP tabs get no favicon.
+  if (IsURLNtp(webState->GetVisibleURL())) {
     return;
   }
   UIImage* defaultFavicon;
