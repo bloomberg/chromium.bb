@@ -400,7 +400,7 @@ void PipelineIntegrationTestBase::FailTest(PipelineStatus status) {
 void PipelineIntegrationTestBase::QuitAfterCurrentTimeTask(
     base::TimeDelta quit_time,
     base::OnceClosure quit_closure) {
-  if (pipeline_->GetMediaTime() >= quit_time ||
+  if (!pipeline_ || pipeline_->GetMediaTime() >= quit_time ||
       pipeline_status_ != PIPELINE_OK) {
     std::move(quit_closure).Run();
     return;
