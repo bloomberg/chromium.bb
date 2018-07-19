@@ -98,6 +98,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "shelf_logout.icon",
     "shelf_notifications.icon",
     "shelf_overflow.icon",
+    "shelf_overflow_horizontal_dots.icon",
     "shelf_overview.icon",
     "shelf_shutdown_button.icon",
     "shelf_sign_out_button.icon",

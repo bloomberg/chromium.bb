@@ -11,6 +11,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 
+namespace views {
+class ImageView;
+}
+
 namespace ash {
 
 class Shelf;
@@ -58,6 +62,10 @@ class ASH_EXPORT OverflowButton : public views::Button {
   // Calculates the bounds of the overflow button based on the shelf alignment
   // and overflow shelf visibility.
   gfx::Rect CalculateButtonBounds() const;
+
+  // The icon in the new UI: horizontal dots.
+  const gfx::ImageSkia horizontal_dots_image_;
+  views::ImageView* horizontal_dots_image_view_;
 
   // The original upward chevron image.
   const gfx::ImageSkia upward_image_;
