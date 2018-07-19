@@ -2824,6 +2824,65 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
 }
 
+namespace {
+
+void DoNotAttachToOtherWindowTestStep2(
+    DetachToBrowserTabDragControllerTest* test,
+    TabStrip* not_attached_tab_strip,
+    TabStrip* target_tab_strip) {
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // There should be three browser windows, incluing the newly created one for
+  // the dragged tab.
+  EXPECT_EQ(3u, test->browser_list->size());
+  // Get this new created window and set it to non-attachable.
+  Browser* new_browser = test->browser_list->get(2);
+  new_browser->window()->GetNativeWindow()->SetProperty(
+      ash::kCanAttachToAnotherWindowKey, false);
+
+  // Now drag to target_tab_strip.
+  gfx::Point target_point(target_tab_strip->width() / 2,
+                          target_tab_strip->height() / 2);
+  views::View::ConvertPointToScreen(target_tab_strip, &target_point);
+  ASSERT_TRUE(test->DragInputTo(target_point));
+
+  if (test->input_source() == INPUT_SOURCE_TOUCH)
+    ASSERT_TRUE(test->ReleaseInput());
+  else
+    ASSERT_TRUE(test->ReleaseMouseAsync());
+}
+
+}  // namespace
+
+// Test that if the dragged window is not allowed to attach to another window
+// during dragging, then it can't attach to another window.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DoNotAttachToOtherWindowTest) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  EXPECT_EQ(2u, browser_list->size());
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::BindOnce(&DoNotAttachToOtherWindowTestStep2, this, tab_strip,
+                     tab_strip2)));
+  QuitWhenNotDragging();
+
+  // Test that the newly created browser window doesn't attach to the target
+  // browser window.
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(3u, browser_list->size());
+}
+
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
