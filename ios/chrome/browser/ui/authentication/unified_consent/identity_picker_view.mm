@@ -14,6 +14,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kIdentityPickerViewIdentifier =
+    @"kIdentityPickerViewIdentifier";
+
 namespace {
 
 const CGFloat kIdentityPickerViewRadius = 8.;
@@ -43,6 +46,7 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    self.accessibilityIdentifier = kIdentityPickerViewIdentifier;
     self.layer.cornerRadius = kIdentityPickerViewRadius;
     self.backgroundColor = UIColorFromRGB(kHeaderBackgroundColor);
     // Adding view elements inside.

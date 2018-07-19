@@ -9,6 +9,9 @@
 
 #include <vector>
 
+// Accessibility identifier for |-UnifiedConsentViewController.view|.
+extern NSString* const kUnifiedConsentScrollViewIdentifier;
+
 @class UnifiedConsentViewController;
 
 // Delegate protocol for UnifiedConsentViewController.
