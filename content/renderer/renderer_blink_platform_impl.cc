@@ -898,6 +898,28 @@ RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
   return std::make_unique<ImageCaptureFrameGrabber>();
 }
 
+//------------------------------------------------------------------------------
+
+std::unique_ptr<webrtc::RtpCapabilities>
+RendererBlinkPlatformImpl::GetRtpSenderCapabilities(
+    const blink::WebString& kind) {
+  PeerConnectionDependencyFactory* pc_dependency_factory =
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
+  pc_dependency_factory->EnsureInitialized();
+  return pc_dependency_factory->GetSenderCapabilities(kind.Utf8());
+}
+
+std::unique_ptr<webrtc::RtpCapabilities>
+RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
+    const blink::WebString& kind) {
+  PeerConnectionDependencyFactory* pc_dependency_factory =
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
+  pc_dependency_factory->EnsureInitialized();
+  return pc_dependency_factory->GetReceiverCapabilities(kind.Utf8());
+}
+
+//------------------------------------------------------------------------------
+
 void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
     blink::WebRTCAPIName api_name) {
   UpdateWebRTCMethodCount(api_name);

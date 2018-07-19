@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -11,6 +12,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -437,6 +439,51 @@ void RTCRtpSender::Trace(blink::Visitor* visitor) {
   visitor->Trace(streams_);
   visitor->Trace(last_returned_parameters_);
   ScriptWrappable::Trace(visitor);
+}
+
+void RTCRtpSender::getCapabilities(
+    const String& kind,
+    base::Optional<RTCRtpCapabilities>& capabilities) {
+  if (kind != "audio" && kind != "video")
+    return;
+
+  capabilities = RTCRtpCapabilities{};
+
+  std::unique_ptr<webrtc::RtpCapabilities> rtc_capabilities =
+      blink::Platform::Current()->GetRtpSenderCapabilities(kind);
+
+  HeapVector<RTCRtpCodecCapability> codecs;
+  codecs.ReserveInitialCapacity(rtc_capabilities->codecs.size());
+  for (const auto& rtc_codec : rtc_capabilities->codecs) {
+    codecs.emplace_back();
+    auto& codec = codecs.back();
+    codec.setMimeType(WTF::String::FromUTF8(rtc_codec.mime_type().c_str()));
+    if (rtc_codec.clock_rate)
+      codec.setClockRate(rtc_codec.clock_rate.value());
+    if (rtc_codec.num_channels)
+      codec.setChannels(rtc_codec.num_channels.value());
+    if (rtc_codec.parameters.size()) {
+      std::string sdp_fmtp_line;
+      for (const auto& parameter : rtc_codec.parameters) {
+        if (sdp_fmtp_line.size())
+          sdp_fmtp_line += ";";
+        sdp_fmtp_line += parameter.first + "=" + parameter.second;
+      }
+      codec.setSdpFmtpLine(sdp_fmtp_line.c_str());
+    }
+  }
+  capabilities->setCodecs(codecs);
+
+  HeapVector<RTCRtpHeaderExtensionCapability> header_extensions;
+  header_extensions.ReserveInitialCapacity(
+      rtc_capabilities->header_extensions.size());
+  for (const auto& rtc_header_extension : rtc_capabilities->header_extensions) {
+    header_extensions.emplace_back();
+    auto& header_extension = header_extensions.back();
+    header_extension.setUri(
+        WTF::String::FromUTF8(rtc_header_extension.uri.c_str()));
+  }
+  capabilities->setHeaderExtensions(header_extensions);
 }
 
 }  // namespace blink

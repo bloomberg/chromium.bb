@@ -171,6 +171,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebMediaPlayer* web_media_player) override;
   std::unique_ptr<blink::WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber() override;
+  std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
+      const blink::WebString& kind) override;
+  std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
+      const blink::WebString& kind) override;
   void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;

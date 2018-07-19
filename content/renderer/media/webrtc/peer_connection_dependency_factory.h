@@ -94,6 +94,13 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       int sdp_mline_index,
       const std::string& sdp);
 
+  // Returns the most optimistic view of the capabilities of the system for
+  // sending or receiving media of the given kind ("audio" or "video").
+  virtual std::unique_ptr<webrtc::RtpCapabilities> GetSenderCapabilities(
+      const std::string& kind);
+  virtual std::unique_ptr<webrtc::RtpCapabilities> GetReceiverCapabilities(
+      const std::string& kind);
+
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
   void EnsureInitialized();

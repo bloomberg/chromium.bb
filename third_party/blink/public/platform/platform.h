@@ -87,6 +87,10 @@ template <class T>
 class Local;
 }
 
+namespace webrtc {
+struct RtpCapabilities;
+}
+
 namespace blink {
 
 class InterfaceProvider;
@@ -597,6 +601,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if the functionality is not available.
   virtual std::unique_ptr<WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber();
+
+  // Returns the most optimistic view of the capabilities of the system for
+  // sending or receiving media of the given kind ("audio" or "video").
+  virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
+      const WebString& kind);
+  virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
+      const WebString& kind);
 
   virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
 

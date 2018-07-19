@@ -620,4 +620,30 @@ void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
   audio_device_ = new rtc::RefCountedObject<WebRtcAudioDeviceImpl>();
 }
 
+std::unique_ptr<webrtc::RtpCapabilities>
+PeerConnectionDependencyFactory::GetSenderCapabilities(
+    const std::string& kind) {
+  if (kind == "audio") {
+    return std::make_unique<webrtc::RtpCapabilities>(
+        GetPcFactory()->GetRtpSenderCapabilities(cricket::MEDIA_TYPE_AUDIO));
+  } else if (kind == "video") {
+    return std::make_unique<webrtc::RtpCapabilities>(
+        GetPcFactory()->GetRtpSenderCapabilities(cricket::MEDIA_TYPE_VIDEO));
+  }
+  return nullptr;
+}
+
+std::unique_ptr<webrtc::RtpCapabilities>
+PeerConnectionDependencyFactory::GetReceiverCapabilities(
+    const std::string& kind) {
+  if (kind == "audio") {
+    return std::make_unique<webrtc::RtpCapabilities>(
+        GetPcFactory()->GetRtpReceiverCapabilities(cricket::MEDIA_TYPE_AUDIO));
+  } else if (kind == "video") {
+    return std::make_unique<webrtc::RtpCapabilities>(
+        GetPcFactory()->GetRtpReceiverCapabilities(cricket::MEDIA_TYPE_VIDEO));
+  }
+  return nullptr;
+}
+
 }  // namespace content

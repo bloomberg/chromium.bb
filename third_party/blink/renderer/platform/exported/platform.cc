@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/webrtc/api/rtpparameters.h"
 
 namespace blink {
 
@@ -254,6 +255,16 @@ Platform::CreateWebSocketHandshakeThrottle() {
 
 std::unique_ptr<WebImageCaptureFrameGrabber>
 Platform::CreateImageCaptureFrameGrabber() {
+  return nullptr;
+}
+
+std::unique_ptr<webrtc::RtpCapabilities> Platform::GetRtpSenderCapabilities(
+    const WebString& kind) {
+  return nullptr;
+}
+
+std::unique_ptr<webrtc::RtpCapabilities> Platform::GetRtpReceiverCapabilities(
+    const WebString& kind) {
   return nullptr;
 }
 
