@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/range/range.h"
 
 namespace gfx {
 class Point;
@@ -139,6 +140,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Returns the currently selected text.
   virtual base::string16 GetSelectedText() = 0;
+
+  // Returns the currently selected text with the text before and after it.
+  virtual base::string16 GetSurroundingText() = 0;
+
+  // Returns the range of the selection in the page.
+  virtual gfx::Range GetSelectedRange() = 0;
 
   // This only returns non-null on platforms that implement touch
   // selection editing (TSE), currently Aura and (soon) Android.
