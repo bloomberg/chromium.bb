@@ -1719,6 +1719,7 @@ crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/workers/cr
 # The tests time out on some builders.
 crbug.com/862184 [ Linux ] virtual/outofblink-cors-ns/http/tests/fetch/chromium/call-extra-crash-tee.html [ Timeout Pass ]
 crbug.com/862184 [ Linux ] virtual/outofblink-cors-ns/http/tests/fetch/chromium/release-handle-crash.html [ Timeout Pass ]
+crbug.com/862184 [ Linux ] virtual/outofblink-cors-ns/http/tests/fetch/serviceworker-proxied/thorough/cors-base-https-other-https.html [ Timeout Pass ]
 
 # ====== Out of Blink CORS related tests END ======
 
