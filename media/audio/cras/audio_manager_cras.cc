@@ -186,6 +186,10 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   if (HasKeyboardMic(devices))
     params.set_effects(AudioParameters::KEYBOARD_MIC);
 
+  if (GetSystemAecSupportedPerBoard())
+    params.set_effects(params.effects() |
+                       AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+
   return params;
 }
 
@@ -308,6 +312,27 @@ int AudioManagerCras::GetDefaultOutputBufferSizePerBoard() {
   }
   WaitEventOrShutdown(&event);
   return static_cast<int>(buffer_size);
+}
+
+bool AudioManagerCras::GetSystemAecSupportedPerBoard() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  bool system_aec_supported = false;
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  if (main_task_runner_->BelongsToCurrentThread()) {
+    // Unittest may use the same thread for audio thread.
+    GetSystemAecSupportedOnMainThread(&system_aec_supported, &event);
+  } else {
+    // Using base::Unretained is safe here because we wait for callback be
+    // executed in main thread before local variables are destructed.
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioManagerCras::GetSystemAecSupportedOnMainThread,
+                       weak_this_, base::Unretained(&system_aec_supported),
+                       base::Unretained(&event)));
+  }
+  WaitEventOrShutdown(&event);
+  return system_aec_supported;
 }
 
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
@@ -462,6 +487,17 @@ void AudioManagerCras::GetDefaultOutputBufferSizeOnMainThread(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (chromeos::CrasAudioHandler::IsInitialized()) {
     chromeos::CrasAudioHandler::Get()->GetDefaultOutputBufferSize(buffer_size);
+  }
+  event->Signal();
+}
+
+void AudioManagerCras::GetSystemAecSupportedOnMainThread(
+    bool* system_aec_supported,
+    base::WaitableEvent* event) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
+    *system_aec_supported =
+        chromeos::CrasAudioHandler::Get()->system_aec_supported();
   }
   event->Signal();
 }

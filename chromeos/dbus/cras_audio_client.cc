@@ -59,6 +59,15 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetSystemAecSupported(DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kGetSystemAecSupported);
+    cras_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnGetSystemAecSupported,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void GetNodes(DBusMethodCallback<AudioNodeList> callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetNodes);
@@ -432,6 +441,25 @@ class CrasAudioClientImpl : public CrasAudioClient {
     }
 
     std::move(callback).Run(buffer_size);
+  }
+
+  void OnGetSystemAecSupported(DBusMethodCallback<bool> callback,
+                               dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling " << cras::kGetSystemAecSupported;
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    bool system_aec_supported = 0;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&system_aec_supported)) {
+      LOG(ERROR) << "Error reading response from cras: "
+                 << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(system_aec_supported);
   }
 
   void OnGetNodes(DBusMethodCallback<AudioNodeList> callback,

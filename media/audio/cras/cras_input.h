@@ -78,6 +78,9 @@ class MEDIA_EXPORT CrasInputStream : public AgcAudioStream<AudioInputStream> {
   // Convert from a volume ratio to dB.
   double GetDecibelsFromVolumeRatio(double volume_ratio) const;
 
+  // Return true to use AEC in CRAS for this input stream.
+  inline bool UseCrasAec() const;
+
   // Non-refcounted pointer back to the audio manager.
   // The AudioManager indirectly holds on to stream objects, so we don't
   // want circular references.  Additionally, stream objects live on the audio

@@ -121,6 +121,10 @@ void CrasInputStream::Close() {
   audio_manager_->ReleaseInputStream(this);
 }
 
+inline bool CrasInputStream::UseCrasAec() const {
+  return params_.effects() & AudioParameters::ECHO_CANCELLER;
+}
+
 void CrasInputStream::Start(AudioInputCallback* callback) {
   DCHECK(client_);
   DCHECK(callback);
@@ -203,6 +207,9 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     cras_audio_format_destroy(audio_format);
     return;
   }
+
+  if (UseCrasAec())
+    cras_client_stream_params_enable_aec(stream_params);
 
   // Before starting the stream, save the number of bytes in a frame for use in
   // the callback.
