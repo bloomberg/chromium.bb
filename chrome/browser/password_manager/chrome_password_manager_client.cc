@@ -718,6 +718,11 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
       PasswordAccessoryController::FromWebContents(web_contents())
           ->OnAutomaticGenerationStatusChanged(true, ui_data,
                                                driver->AsWeakPtr());
+      gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
+          password_manager_client_bindings_.GetCurrentTargetFrame(),
+          ui_data.value().bounds);
+      driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
+          element_bounds_in_screen_space);
     } else {
       PasswordAccessoryController::FromWebContents(web_contents())
           ->OnAutomaticGenerationStatusChanged(false, base::nullopt, nullptr);
