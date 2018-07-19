@@ -408,12 +408,15 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  for (AXPlatformNodeCocoa* child in [self AXChildren]) {
-    if (![child accessibilityIsIgnored] &&
-        NSPointInRect(point, child.boundsInScreen)) {
-      return [child accessibilityHitTest:point];
-    }
+  if (!NSPointInRect(point, [self boundsInScreen]))
+    return nil;
+
+  for (id child in [[self AXChildren] reverseObjectEnumerator]) {
+    if (id foundChild = [child accessibilityHitTest:point])
+      return foundChild;
   }
+
+  // Hit self, but not any child.
   return NSAccessibilityUnignoredAncestor(self);
 }
 
