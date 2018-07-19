@@ -38,6 +38,8 @@ public class MediaViewerUtils {
     private static final String MIMETYPE_IMAGE = "image";
     private static final String MIMETYPE_VIDEO = "video";
 
+    private static boolean sIsMediaLauncherActivityForceEnabledForTest = false;
+
     /**
      * Creates an Intent that allows viewing the given file in an internal media viewer.
      * @param displayUri               URI to display to the user, ideally in file:// form.
@@ -177,9 +179,28 @@ public class MediaViewerUtils {
             packageManager.setComponentEnabledSetting(componentName, newState, flags);
     }
 
+    /**
+     * Force MediaLauncherActivity to be enabled for testing.
+     * @param context The application Context.
+     */
+    public static void forceEnableMediaLauncherActivityForTest(Context context) {
+        sIsMediaLauncherActivityForceEnabledForTest = true;
+        updateMediaLauncherActivityEnabled(context);
+    }
+
+    /**
+     * Stops forcing MediaLauncherActivity to be enabled for testing.
+     * @param context The application Context.
+     */
+    public static void stopForcingEnableMediaLauncherActivityForTest(Context context) {
+        sIsMediaLauncherActivityForceEnabledForTest = false;
+        updateMediaLauncherActivityEnabled(context);
+    }
+
     private static boolean shouldEnableMediaLauncherActivity() {
-        return FeatureUtilities.isAndroidGo()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS);
+        return sIsMediaLauncherActivityForceEnabledForTest
+                || (FeatureUtilities.isAndroidGo()
+                           && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS));
     }
 
     private static Intent createShareIntent(Uri fileUri, String mimeType) {
