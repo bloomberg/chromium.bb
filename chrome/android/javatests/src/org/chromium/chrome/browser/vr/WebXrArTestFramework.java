@@ -20,6 +20,21 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class WebXrArTestFramework extends WebXrTestFramework {
     /**
+     * Checks whether an AR session request would prompt the user for Camera permissions.
+     * @param webContents The WebContents to check for the permission in
+     * @return True if an AR session request will cause a permission prompt, false otherwise.
+     */
+    public static boolean arSessionRequestWouldTriggerPermissionPrompt(WebContents webContents) {
+        runJavaScriptOrFail("checkIfArSessionWouldTriggerPermissionPrompt()", POLL_TIMEOUT_SHORT_MS,
+                webContents);
+        Assert.assertTrue(
+                pollJavaScriptBoolean("arSessionRequestWouldTriggerPermissionPrompt !== null",
+                        POLL_TIMEOUT_SHORT_MS, webContents));
+        return Boolean.valueOf(runJavaScriptOrFail("arSessionRequestWouldTriggerPermissionPrompt",
+                POLL_TIMEOUT_SHORT_MS, webContents));
+    }
+
+    /**
      * Must be constructed after the rule has been applied (e.g. in whatever method is
      * tagged with @Before)
      */
@@ -62,21 +77,6 @@ public class WebXrArTestFramework extends WebXrTestFramework {
         Assert.assertTrue(
                 pollJavaScriptBoolean("sessionInfos[sessionTypes.AR].currentSession != null",
                         POLL_TIMEOUT_LONG_MS, webContents));
-    }
-
-    /**
-     * Checks whether an AR session request would prompt the user for Camera permissions.
-     * @param webContents The WebContents to check for the permission in
-     * @return True if an AR session request will cause a permission prompt, false otherwise.
-     */
-    public static boolean arSessionRequestWouldTriggerPermissionPrompt(WebContents webContents) {
-        runJavaScriptOrFail("checkIfArSessionWouldTriggerPermissionPrompt()", POLL_TIMEOUT_SHORT_MS,
-                webContents);
-        Assert.assertTrue(
-                pollJavaScriptBoolean("arSessionRequestWouldTriggerPermissionPrompt !== null",
-                        POLL_TIMEOUT_SHORT_MS, webContents));
-        return Boolean.valueOf(runJavaScriptOrFail("arSessionRequestWouldTriggerPermissionPrompt",
-                POLL_TIMEOUT_SHORT_MS, webContents));
     }
 
     /**

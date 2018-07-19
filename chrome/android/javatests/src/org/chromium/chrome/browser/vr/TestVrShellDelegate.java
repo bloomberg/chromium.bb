@@ -23,10 +23,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private boolean mExpectingIntent;
     private Boolean mAllow2dIntents;
 
-    protected TestVrShellDelegate(ChromeActivity activity) {
-        super(activity);
-    }
-
     public static void createTestVrShellDelegate(final ChromeActivity activity) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -40,12 +36,16 @@ public class TestVrShellDelegate extends VrShellDelegate {
         return sInstance;
     }
 
+    public static VrShell getVrShellForTesting() {
+        return TestVrShellDelegate.getInstance().getVrShell();
+    }
+
     public static boolean isDisplayingUrlForTesting() {
         return TestVrShellDelegate.getInstance().getVrShell().isDisplayingUrlForTesting();
     }
 
-    public static VrShell getVrShellForTesting() {
-        return TestVrShellDelegate.getInstance().getVrShell();
+    protected TestVrShellDelegate(ChromeActivity activity) {
+        super(activity);
     }
 
     public void overrideDaydreamApiForTesting(VrDaydreamApi api) {

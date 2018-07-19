@@ -56,8 +56,7 @@ public class VrBrowserControllerInputTest {
     @Before
     public void setUp() throws Exception {
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         mController = new EmulatedVrController(mVrTestRule.getActivity());
         mController.recenterView();
     }
@@ -208,8 +207,7 @@ public class VrBrowserControllerInputTest {
     @Test
     @MediumTest
     public void testControllerScrollingNative() throws InterruptedException {
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         // Fill history with enough items to scroll
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),

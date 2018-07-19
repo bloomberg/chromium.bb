@@ -76,40 +76,6 @@ public abstract class XrTestFramework {
     private View mFirstTabContentView;
 
     /**
-     * Must be constructed after the rule has been applied (e.g. in whatever method is
-     * tagged with @Before)
-     */
-    public XrTestFramework(ChromeActivityTestRule rule) {
-        mRule = rule;
-        mFirstTabWebContents = mRule.getWebContents();
-        mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
-    }
-
-    public WebContents getFirstTabWebContents() {
-        return mFirstTabWebContents;
-    }
-
-    public View getFirstTabContentView() {
-        return mFirstTabContentView;
-    }
-
-    public ChromeActivityTestRule getRule() {
-        return mRule;
-    }
-
-    public void simulateRendererKilled() {
-        final Tab tab = getRule().getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return tab.isShowingSadTab();
-            }
-        });
-    }
-
-    /**
      * Gets the file:// URL to the test file
      * @param testName The name of the test whose file will be retrieved.
      * @return The file:// URL to the specified test file.
@@ -129,22 +95,6 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Loads the given URL with the given timeout then waits for JavaScript to
-     * signal that it's ready for testing.
-     * @param url The URL of the page to load.
-     * @param timeoutSec The timeout of the page load in seconds.
-     * @return The return value of ChromeActivityTestRule.loadUrl()
-     */
-    public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
-            throws InterruptedException {
-        int result = mRule.loadUrl(url, timeoutSec);
-        Assert.assertTrue("JavaScript initialization successful",
-                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
-                        mRule.getWebContents()));
-        return result;
-    }
-
-    /**
      * Helper function to run the given JavaScript, return the return value,
      * and fail if a timeout/interrupt occurs so we don't have to catch or
      * declare exceptions all the time.
@@ -161,94 +111,6 @@ public abstract class XrTestFramework {
             Assert.fail("Fatal interruption or timeout running JavaScript: " + js);
         }
         return "Not reached";
-    }
-
-    /**
-     * Helper method to run runJavaScriptOrFail with the first tab's WebContents.
-     * @param js The JavaScript to run.
-     * @param timeout The timeout in milliseconds before a failure.
-     * @return The return value of the JavaScript.
-     */
-    public String runJavaScriptOrFail(String js, int timeout) {
-        return runJavaScriptOrFail(js, timeout, mFirstTabWebContents);
-    }
-
-    /**
-     * Retrieves the current status of the JavaScript test and returns an enum corresponding to it.
-     * @param webContents The WebContents for the tab to check the status in.
-     * @return A TestStatus integer corresponding to the current state of the JavaScript test
-     */
-    @TestStatus
-    public static int checkTestStatus(WebContents webContents) {
-        String resultString =
-                runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
-        boolean testPassed = Boolean.parseBoolean(
-                runJavaScriptOrFail("testPassed", POLL_TIMEOUT_SHORT_MS, webContents));
-        if (testPassed) {
-            return STATUS_PASSED;
-        } else if (!testPassed && resultString.equals("\"\"")) {
-            return STATUS_RUNNING;
-        } else {
-            // !testPassed && !resultString.equals("\"\"")
-            return STATUS_FAILED;
-        }
-    }
-
-    /**
-     * Helper method to run checkTestSTatus with the first tab's WebContents.
-     * @return A TestStatus integer corresponding to the current state of the JavaScript test
-     */
-    @TestStatus
-    public int checkTestStatus() {
-        return checkTestStatus(mFirstTabWebContents);
-    }
-
-    /**
-     * Helper function to end the test harness test and assert that it passed,
-     * setting the failure reason as the description if it didn't.
-     * @param webContents The WebContents for the tab to check test results in.
-     */
-    public static void endTest(WebContents webContents) {
-        switch (checkTestStatus(webContents)) {
-            case STATUS_PASSED:
-                break;
-            case STATUS_FAILED:
-                String resultString =
-                        runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
-                Assert.fail("JavaScript testharness failed with result: " + resultString);
-                break;
-            case STATUS_RUNNING:
-                Assert.fail("Attempted to end test in Java without finishing in JavaScript.");
-                break;
-            default:
-                Assert.fail("Received unknown test status.");
-        }
-    }
-
-    /**
-     * Helper function to run endTest with the first tab's WebContents.
-     */
-    public void endTest() {
-        endTest(mFirstTabWebContents);
-    }
-
-    /**
-     * Helper function to make sure that the JavaScript test harness did not detect any failures.
-     * Similar to endTest, but does not fail if the test is still detected as running. This is
-     * useful because not all tests make use of the test harness' test/assert features (particularly
-     * simple enter/exit tests), but may still want to ensure that no unexpected JavaScript errors
-     * were encountered.
-     * @param webContents The Webcontents for the tab to check for failures in.
-     */
-    public static void assertNoJavaScriptErrors(WebContents webContents) {
-        Assert.assertNotEquals(checkTestStatus(webContents), STATUS_FAILED);
-    }
-
-    /**
-     * Helper function to run assertNoJavaScriptErrors with the first tab's WebContents.
-     */
-    public void assertNoJavaScriptErrors() {
-        assertNoJavaScriptErrors(mFirstTabWebContents);
     }
 
     /**
@@ -283,13 +145,14 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Helper function to run pollJavaScriptBoolean with the first tab's WebContents.
-     * @param boolName The name of the JavaScript boolean or expression to poll.
-     * @param timeoutMs The polling timeout in milliseconds.
-     * @return True if the boolean evaluated to true, false if timed out.
+     * Executes a JavaScript step function using the given WebContents.
+     * @param stepFunction The JavaScript step function to call.
+     * @param webContents The WebContents for the tab the JavaScript is in.
      */
-    public boolean pollJavaScriptBoolean(String boolName, int timeoutMs) {
-        return pollJavaScriptBoolean(boolName, timeoutMs, mFirstTabWebContents);
+    public static void executeStepAndWait(String stepFunction, WebContents webContents) {
+        // Run the step and block
+        JavaScriptUtils.executeJavaScript(webContents, stepFunction);
+        waitOnJavaScriptStep(webContents);
     }
 
     /**
@@ -336,21 +199,104 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Helper function to run waitOnJavaScriptStep with the first tab's WebContents.
+     * Retrieves the current status of the JavaScript test and returns an enum corresponding to it.
+     * @param webContents The WebContents for the tab to check the status in.
+     * @return A TestStatus integer corresponding to the current state of the JavaScript test
      */
-    public void waitOnJavaScriptStep() {
-        waitOnJavaScriptStep(mFirstTabWebContents);
+    @TestStatus
+    public static int checkTestStatus(WebContents webContents) {
+        String resultString =
+                runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
+        boolean testPassed = Boolean.parseBoolean(
+                runJavaScriptOrFail("testPassed", POLL_TIMEOUT_SHORT_MS, webContents));
+        if (testPassed) {
+            return STATUS_PASSED;
+        } else if (!testPassed && resultString.equals("\"\"")) {
+            return STATUS_RUNNING;
+        } else {
+            // !testPassed && !resultString.equals("\"\"")
+            return STATUS_FAILED;
+        }
     }
 
     /**
-     * Executes a JavaScript step function using the given WebContents.
-     * @param stepFunction The JavaScript step function to call.
-     * @param webContents The WebContents for the tab the JavaScript is in.
+     * Helper function to end the test harness test and assert that it passed,
+     * setting the failure reason as the description if it didn't.
+     * @param webContents The WebContents for the tab to check test results in.
      */
-    public static void executeStepAndWait(String stepFunction, WebContents webContents) {
-        // Run the step and block
-        JavaScriptUtils.executeJavaScript(webContents, stepFunction);
-        waitOnJavaScriptStep(webContents);
+    public static void endTest(WebContents webContents) {
+        switch (checkTestStatus(webContents)) {
+            case STATUS_PASSED:
+                break;
+            case STATUS_FAILED:
+                String resultString =
+                        runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
+                Assert.fail("JavaScript testharness failed with result: " + resultString);
+                break;
+            case STATUS_RUNNING:
+                Assert.fail("Attempted to end test in Java without finishing in JavaScript.");
+                break;
+            default:
+                Assert.fail("Received unknown test status.");
+        }
+    }
+
+    /**
+     * Helper function to make sure that the JavaScript test harness did not detect any failures.
+     * Similar to endTest, but does not fail if the test is still detected as running. This is
+     * useful because not all tests make use of the test harness' test/assert features (particularly
+     * simple enter/exit tests), but may still want to ensure that no unexpected JavaScript errors
+     * were encountered.
+     * @param webContents The Webcontents for the tab to check for failures in.
+     */
+    public static void assertNoJavaScriptErrors(WebContents webContents) {
+        Assert.assertNotEquals(checkTestStatus(webContents), STATUS_FAILED);
+    }
+
+    /**
+     * Must be constructed after the rule has been applied (e.g. in whatever method is
+     * tagged with @Before)
+     */
+    public XrTestFramework(ChromeActivityTestRule rule) {
+        mRule = rule;
+        mFirstTabWebContents = mRule.getWebContents();
+        mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
+    }
+
+    /**
+     * Loads the given URL with the given timeout then waits for JavaScript to
+     * signal that it's ready for testing.
+     * @param url The URL of the page to load.
+     * @param timeoutSec The timeout of the page load in seconds.
+     * @return The return value of ChromeActivityTestRule.loadUrl()
+     */
+    public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
+            throws InterruptedException {
+        int result = mRule.loadUrl(url, timeoutSec);
+        Assert.assertTrue("JavaScript initialization successful",
+                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
+                        mRule.getWebContents()));
+        return result;
+    }
+
+    /**
+     * Helper method to run runJavaScriptOrFail with the first tab's WebContents.
+     * @param js The JavaScript to run.
+     * @param timeout The timeout in milliseconds before a failure.
+     * @return The return value of the JavaScript.
+     */
+    public String runJavaScriptOrFail(String js, int timeout) {
+        return runJavaScriptOrFail(js, timeout, mFirstTabWebContents);
+    }
+
+    /**
+     * Helper function to run pollJavaScriptBoolean with the first tab's WebContents.
+     * @param boolName The name of the JavaScript boolean or expression to poll.
+     * @param timeoutMs The polling timeout in milliseconds.
+     * @return True if the boolean evaluated to true, false if timed out.
+     */
+    public boolean pollJavaScriptBoolean(String boolName, int timeoutMs) {
+        return pollJavaScriptBoolean(boolName, timeoutMs, mFirstTabWebContents);
     }
 
     /**
@@ -359,5 +305,59 @@ public abstract class XrTestFramework {
      */
     public void executeStepAndWait(String stepFunction) {
         executeStepAndWait(stepFunction, mFirstTabWebContents);
+    }
+
+    /**
+     * Helper function to run waitOnJavaScriptStep with the first tab's WebContents.
+     */
+    public void waitOnJavaScriptStep() {
+        waitOnJavaScriptStep(mFirstTabWebContents);
+    }
+
+    /**
+     * Helper method to run checkTestSTatus with the first tab's WebContents.
+     * @return A TestStatus integer corresponding to the current state of the JavaScript test
+     */
+    @TestStatus
+    public int checkTestStatus() {
+        return checkTestStatus(mFirstTabWebContents);
+    }
+
+    /**
+     * Helper function to run endTest with the first tab's WebContents.
+     */
+    public void endTest() {
+        endTest(mFirstTabWebContents);
+    }
+
+    /**
+     * Helper function to run assertNoJavaScriptErrors with the first tab's WebContents.
+     */
+    public void assertNoJavaScriptErrors() {
+        assertNoJavaScriptErrors(mFirstTabWebContents);
+    }
+
+    public View getFirstTabContentView() {
+        return mFirstTabContentView;
+    }
+
+    public WebContents getFirstTabWebContents() {
+        return mFirstTabWebContents;
+    }
+
+    public ChromeActivityTestRule getRule() {
+        return mRule;
+    }
+
+    public void simulateRendererKilled() {
+        final Tab tab = getRule().getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return tab.isShowingSadTab();
+            }
+        });
     }
 }

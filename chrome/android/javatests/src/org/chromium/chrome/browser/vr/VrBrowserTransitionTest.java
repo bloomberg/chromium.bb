@@ -206,8 +206,7 @@ public class VrBrowserTransitionTest {
     @MediumTest
     public void testExitFullscreenAfterExitingVrFromCinemaMode()
             throws InterruptedException, TimeoutException {
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -263,8 +262,7 @@ public class VrBrowserTransitionTest {
 
     private void exitPresentationToVrShellImpl(String url, WebXrVrTestFramework framework,
             String exitPresentString) throws InterruptedException {
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
         float expectedWidth = vrShellImpl.getContentWidthForTesting();
@@ -313,8 +311,7 @@ public class VrBrowserTransitionTest {
 
     private void reEntryFromVrBrowserImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
 
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
@@ -352,9 +349,7 @@ public class VrBrowserTransitionTest {
 
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         Assert.assertFalse(mockApi.getExitFromVrCalled());
         Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
@@ -385,9 +380,7 @@ public class VrBrowserTransitionTest {
 
     private void testStartActivityTriggersDoffImpl(Context context)
             throws InterruptedException, TimeoutException {
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         mockApi.setExitFromVrReturnValue(false);
@@ -436,9 +429,7 @@ public class VrBrowserTransitionTest {
     @MediumTest
     public void testStartActivityIfNeeded() throws InterruptedException, TimeoutException {
         Activity context = mTestRule.getActivity();
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -464,8 +455,7 @@ public class VrBrowserTransitionTest {
                 PAGE_LOAD_TIMEOUT_S);
 
         // Test JavaScript dialogs.
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         // Alerts block JavaScript execution until they're closed, so we can't use the normal
         // runJavaScriptOrFail, as that will time out.
         JavaScriptUtils.executeJavaScript(
@@ -474,8 +464,7 @@ public class VrBrowserTransitionTest {
         VrBrowserTransitionUtils.forceExitVr();
 
         // Test permission prompts.
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         mVrBrowserTestFramework.runJavaScriptOrFail(
                 "navigator.getUserMedia({video: true}, ()=>{}, ()=>{})", POLL_TIMEOUT_SHORT_MS);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);

@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.vr.VrBrowserTestFramework.POLL_CHECK_I
 import android.content.Intent;
 import android.net.Uri;
 
+import org.junit.Assert;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -40,6 +42,17 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
         } catch (ExecutionException e) {
         }
         return result;
+    }
+
+    /**
+     * Forces Chrome into the VR Browser, causing a test failure if it is not entered in the
+     * allotted time.
+     * @param timeoutMs The amount of time in milliseconds to wait for VR Browser entry before
+     *    failing.
+     */
+    public static void forceEnterVrBrowserOrFail(int timeoutMs) {
+        Assert.assertTrue("Request to enter VR Browser failed", forceEnterVrBrowser());
+        waitForVrEntry(timeoutMs);
     }
 
     /**

@@ -25,7 +25,9 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Checks whether an XRDevice was actually found.
+     * Checks whether an XRDevice was actually found. Needs to be non-static despite not using any
+     * member variables in order for the WebContents-less helper version to work properly in
+     * subclasses.
      * @param webContents The WebContents to run the JavaScript through.
      * @return Whether an XRDevice was found.
      */
@@ -42,7 +44,9 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Enters a WebXR or WebVR session of some kind by tapping on the canvas on the page.
+     * Enters a WebXR or WebVR session of some kind by tapping on the canvas on the page. Needs to
+     * be non-static despite not using any member variables in order for the WebContents-less helper
+     * version to work properly in subclasses.
      * @param webContents The WebContents for the tab the canvas is in.
      */
     public void enterSessionWithUserGesture(WebContents webContents) {
@@ -62,7 +66,8 @@ public abstract class WebXrTestFramework extends XrTestFramework {
 
     /**
      * Enters a WebXR or WebVR session of some kind and waits until the page reports it is finished
-     * with its JavaScript step.
+     * with its JavaScript step. Needs to be non-static despite not using any member variables in
+     * order for the WebContents-less helper version to work properly in subclasses.
      * @param webContents The WebContents for the tab to enter the session in.
      */
     public void enterSessionWithUserGestureAndWait(WebContents webContents) {
