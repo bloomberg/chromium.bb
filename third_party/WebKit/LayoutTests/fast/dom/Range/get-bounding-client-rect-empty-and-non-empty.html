@@ -23,48 +23,60 @@ html, body {
 b<span></span>b</div>
 </div>
 <script>
-var range = document.createRange();
+testEmptyBoundsEqualFirstRect('normal-wrap', 4);
+testEmptyBoundsEqualFirstRect('normal-wrap-with-overflow-space', 5);
 
-testWhenFirstRectIsEmpty("normal-wrap", [4]);
-testWhenFirstRectIsEmpty("normal-wrap-with-overflow-space", [5]);
-testWhenFirstRectIsEmpty("pre-wrap", [3, 4, 5]);
-testWhenFirstRectIsEmpty("pre-wrap-with-overflow-space", [4, 5, 6]);
-testWhenFirstRectIsEmpty("break-word", [4, 5]);
-testWhenFirstRectIsEmpty("pre", [0, 1, 2]);
+testUniqueRectAt('pre-wrap', 3);
+testUniqueRectAt('pre-wrap', 4);
+testUniqueRectAt('pre-wrap', 5);
 
-function testWhenFirstRectIsEmpty(id, offsets) {
-  let element = document.getElementById(id);
-  let node = element.firstChild;
-  for (let offset of offsets) {
-    range.setStart(node, offset);
-    range.setEnd(node, offset + 1);
-    let rects = range.getClientRects();
-    let bounds = range.getBoundingClientRect();
-    if (rects.length <= 1)
-      continue;
+testUniqueRectAt('pre-wrap-with-overflow-space', 4);
+testUniqueRectAt('pre-wrap-with-overflow-space', 5);
+testUniqueRectAt('pre-wrap-with-overflow-space', 6);
 
-    if (!bounds.width || !bounds.height) {
-      // If all rects are empty, bounds should be equal to rects[0].
-      test(() => assert_equals_rect(bounds, rects[0]),
-        `${name}[${offset}]: ${rectToString(bounds)} should be equal to the first of ${rectsToString(rects)}`);
-    } else {
-      // Otherwise, it should be the union of rects excluding empty ones.
-      // Since we measure one character, it should have the same height as rects[0].
-      test(() => assert_equals(bounds.height, rects[0].height),
-        `${name}[${offset}]: Height of ${rectToString(bounds)} should match to the first of ${rectsToString(rects)}`);
-    }
-  }
+testUniqueRectAt('break-word', 4);
+testUniqueRectAt('break-word', 5);
+
+testUniqueRectAt('pre', 0);
+testUniqueRectAt('pre', 1);
+testUniqueRectAt('pre', 2);
+
+function getRectsAndBoundsAt(id, offset) {
+  const element = document.getElementById(id);
+  const node = element.firstChild;
+  const range = document.createRange();
+  range.setStart(node, offset);
+  range.setEnd(node, offset + 1);
+  return {rects: range.getClientRects(), bounds: range.getBoundingClientRect()}
 }
 
-function assert_equals_rect(actual, expected, description) {
+function testEmptyBoundsEqualFirstRect(id, offset) {
+  const rectsAndBounds = getRectsAndBoundsAt(id, offset);
+  const rects = rectsAndBounds.rects;
+  const bounds = rectsAndBounds.bounds;
+
+  // All rects are empty, and bounds should be equal to rects[0].
+  test(() => {
+    assert_equals(bounds.width, 0);
+    assert_greater_than(rects.length, 0);
+    assert_equals_rect(bounds, rects[0]);
+  }, `${id}[${offset}]: ${rectToString(bounds)} should be equal to the first of ${rectsToString(rects)}`);
+}
+
+function testUniqueRectAt(id, offset) {
+  test(() => assert_equals(getRectsAndBoundsAt(id, offset).rects.length, 1),
+       `${id}[${offset}]: Only one unique client rect`);
+}
+
+function assert_equals_rect(actual, expected) {
   for (let prop in expected)
-    assert_equals(actual[prop], expected[prop], description + "." + prop);
+    assert_equals(actual[prop], expected[prop]);
 }
 function rectsToString(rects) {
-  return "[" + Array.prototype.map.call(rects, rectToString).join() + "]";
+  return '[' + Array.prototype.map.call(rects, rectToString).join() + ']';
 }
 
 function rectToString(r) {
-  return "(" + r.left + "," + r.top + "-" + r.width + "," + r.height + ")";
+  return '(' + r.left + ',' + r.top + '-' + r.width + ',' + r.height + ')';
 }
 </script>
