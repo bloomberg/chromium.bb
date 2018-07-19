@@ -997,7 +997,8 @@ void TabManager::PerformStateTransitions() {
   // Unfreeze the LifecycleUnit that has been frozen for the longest time if it
   // has been frozen long enough and a sufficient amount of time elapsed since
   // the last unfreeze.
-  if (oldest_frozen_lifecycle_unit) {
+  if (proactive_freeze_discard_params_.should_periodically_unfreeze &&
+      oldest_frozen_lifecycle_unit) {
     next_state_transition_time =
         std::min(MaybeUnfreezeLifecycleUnit(oldest_frozen_lifecycle_unit, now),
                  next_state_transition_time);

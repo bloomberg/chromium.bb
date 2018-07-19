@@ -365,6 +365,7 @@ class TabManagerWithProactiveDiscardExperimentEnabledTest
     // parameters.
     ProactiveTabFreezeAndDiscardParams params = {};
     params.should_proactively_discard = true;
+    params.should_periodically_unfreeze = true;
     params.low_occluded_timeout = kLowOccludedTimeout;
     params.moderate_occluded_timeout = kModerateOccludedTimeout;
     params.high_occluded_timeout = kHighOccludedTimeout;
@@ -1613,6 +1614,49 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
   SimulateFreezeCompletion(tab_strip->GetWebContentsAt(2));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       NoUnfreezeWhenUnfreezingVariationParamDisabled) {
+  tab_manager_->proactive_freeze_discard_params_.should_periodically_unfreeze =
+      false;
+
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create 2 tabs.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(0), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+
+  // No tab should be frozen initially.
+  task_runner_->RunUntilIdle();
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+
+  // After the freeze timeout, the background tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(1));
+
+  // After the unfreeze timeout, the background tab should still be frozen as
+  // the unfreeze feature is disabled..
+  task_runner_->FastForwardBy(kUnfreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }
