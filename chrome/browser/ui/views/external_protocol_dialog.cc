@@ -57,6 +57,10 @@ bool ExternalProtocolDialog::ShouldShowCloseButton() const {
   return false;
 }
 
+int ExternalProtocolDialog::GetDefaultDialogButton() const {
+  return ui::DIALOG_BUTTON_CANCEL;
+}
+
 base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return delegate_->GetDialogButtonLabel(button);
