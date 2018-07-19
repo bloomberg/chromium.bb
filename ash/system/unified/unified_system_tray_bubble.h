@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
 class LayerOwner;
@@ -35,8 +36,9 @@ class UnifiedSystemTrayView;
 // It is possible that the bubble widget is closed on deactivation. In such
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
 class UnifiedSystemTrayBubble : public TrayBubbleBase,
-                                public views::WidgetObserver,
                                 public ash::ScreenLayoutObserver,
+                                public views::WidgetObserver,
+                                public ::wm::ActivationChangeObserver,
                                 public TimeToClickRecorder::Delegate,
                                 public TabletModeObserver {
  public:
@@ -74,6 +76,11 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  // ::wm::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // TimeToClickRecorder::Delegate:
   void RecordTimeToClick() override;
