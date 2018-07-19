@@ -55,6 +55,10 @@ void DOMURL::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
+void DOMURL::setHref(const String& value) {
+  SetInput(value);
+}
+
 void DOMURL::SetInput(const String& value) {
   KURL url(BlankURL(), value);
   if (url.IsValid()) {
