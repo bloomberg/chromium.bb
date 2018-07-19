@@ -56,8 +56,8 @@ speedometer2-future,hablich@chromium.org,,
 start_with_url.cold.startup_pages,"pasko@chromium.org, chrome-android-perf-status@chromium.org",,
 start_with_url.warm.startup_pages,"pasko@chromium.org, chrome-android-perf-status@chromium.org",,
 supersize_archive,agrieve@chromium.org,,
-system_health.common_desktop,"charliea@chromium.org, sullivan@chromium.org, tdresser@chromium.org",,https://bit.ly/system-health-benchmarks
-system_health.common_mobile,"charliea@chromium.org, sullivan@chromium.org, tdresser@chromium.org, perezju@chromium.org",,https://bit.ly/system-health-benchmarks
+system_health.common_desktop,"charliea@chromium.org, sullivan@chromium.org, tdresser@chromium.org, chrome-speed-metrics-dev@chromium.org",Speed>Metrics>SystemHealthRegressions,https://bit.ly/system-health-benchmarks
+system_health.common_mobile,"charliea@chromium.org, sullivan@chromium.org, tdresser@chromium.org, perezju@chromium.org, chrome-speed-metrics-dev@chromium.org",Speed>Metrics>SystemHealthRegressions,https://bit.ly/system-health-benchmarks
 system_health.memory_desktop,perezju@chromium.org,,https://bit.ly/system-health-benchmarks
 system_health.memory_mobile,perezju@chromium.org,,https://bit.ly/system-health-benchmarks
 system_health.webview_startup,"perezju@chromium.org, torne@chromium.org, changwan@chromium.org",Mobile>WebView>Perf,
