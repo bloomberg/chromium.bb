@@ -15,8 +15,6 @@
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
-class PrefChangeRegistrar;
-class PrefService;
 class TabStripModel;
 
 namespace content {
@@ -26,7 +24,6 @@ class WebContents;
 namespace resource_coordinator {
 
 class InterventionPolicyDatabase;
-class TabLifecylesEnterprisePreferenceMonitor;
 class TabLifecycleObserver;
 class TabLifecycleUnitExternal;
 class UsageClock;
@@ -59,12 +56,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   InterventionPolicyDatabase* intervention_policy_database() const {
     return intervention_policy_database_;
-  }
-
-  // Returns the state of the tab lifecycles feature enterprise control. This
-  // returns true if the feature should be enabled, false otherwise.
-  bool tab_lifecycles_enterprise_policy() const {
-    return tab_lifecycles_enterprise_policy_;
   }
 
   class TabLifecycleUnitHolder;
@@ -133,9 +124,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                                const PageNavigationIdentity& page_navigation_id,
                                mojom::LifecycleState state) override;
 
-  // Callback for TabLifecyclesEnterprisePreferenceMonitor.
-  void SetTabLifecyclesEnterprisePolicy(bool enabled);
-
   // Tracks the BrowserList and all TabStripModels.
   BrowserTabStripTracker browser_tab_strip_tracker_;
 
@@ -156,37 +144,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // A clock that advances when Chrome is in use.
   UsageClock* const usage_clock_;
 
-  // The enterprise policy for overriding the tab lifecycles feature.
-  bool tab_lifecycles_enterprise_policy_ = true;
-
-  // In official production builds this monitors policy settings and reflects
-  // them in |tab_lifecycles_enterprise_policy_|.
-  std::unique_ptr<TabLifecylesEnterprisePreferenceMonitor>
-      tab_lifecycles_enterprise_preference_monitor_;
-
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSource);
-};
-
-// Helper class used for getting and monitoring enterprise-policy controlled
-// preferences that can control the tab lifecycles feature. Exposed for testing.
-class TabLifecylesEnterprisePreferenceMonitor {
- public:
-  using OnPreferenceChangedCallback = base::RepeatingCallback<void(bool)>;
-
-  // Creates a preference monitor that monitors the provided PrefService. When
-  // the preference is initially checked or changed its value is provided via
-  // the provided callback.
-  TabLifecylesEnterprisePreferenceMonitor(PrefService* pref_service,
-                                          OnPreferenceChangedCallback callback);
-
-  ~TabLifecylesEnterprisePreferenceMonitor();
-
- private:
-  void GetPref();
-
-  PrefService* pref_service_;
-  OnPreferenceChangedCallback callback_;
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 };
 
 }  // namespace resource_coordinator
