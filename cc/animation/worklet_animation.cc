@@ -18,11 +18,28 @@ WorkletAnimation::WorkletAnimation(
     std::unique_ptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
     bool is_controlling_instance)
-    : SingleKeyframeEffectAnimation(cc_animation_id),
+    : WorkletAnimation(cc_animation_id,
+                       worklet_animation_id,
+                       name,
+                       std::move(scroll_timeline),
+                       std::move(options),
+                       is_controlling_instance,
+                       nullptr) {}
+
+WorkletAnimation::WorkletAnimation(
+    int cc_animation_id,
+    WorkletAnimationId worklet_animation_id,
+    const std::string& name,
+    std::unique_ptr<ScrollTimeline> scroll_timeline,
+    std::unique_ptr<AnimationOptions> options,
+    bool is_controlling_instance,
+    std::unique_ptr<KeyframeEffect> effect)
+    : SingleKeyframeEffectAnimation(cc_animation_id, std::move(effect)),
       worklet_animation_id_(worklet_animation_id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)),
       options_(std::move(options)),
+      local_time_(base::nullopt),
       start_time_(base::nullopt),
       last_current_time_(base::nullopt),
       state_(State::PENDING),
@@ -64,13 +81,14 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   // skip ticking all animations on main thread in http://crbug.com/762717.
   if (!is_impl_instance_)
     return;
-
+  if (!local_time_.has_value())
+    return;
   // As the output of a WorkletAnimation is driven by a script-provided local
   // time, we don't want the underlying effect to participate in the normal
   // animations lifecycle. To avoid this we pause the underlying keyframe effect
   // at the local time obtained from the user script - essentially turning each
   // call to |WorkletAnimation::Tick| into a seek in the effect.
-  keyframe_effect()->Pause(local_time_);
+  keyframe_effect()->Pause(local_time_.value());
   keyframe_effect()->Tick(monotonic_time);
 }
 
@@ -110,7 +128,6 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
 void WorkletAnimation::SetOutputState(
     const MutatorOutputState::AnimationState& state) {
   local_time_ = state.local_time;
-  SetNeedsPushProperties();
 }
 
 // TODO(crbug.com/780151): Multiply the result by the play back rate.

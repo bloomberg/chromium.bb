@@ -60,6 +60,9 @@ class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimation : public Animation {
  protected:
   explicit SingleKeyframeEffectAnimation(int id);
   explicit SingleKeyframeEffectAnimation(int id, size_t keyframe_effect_id);
+  explicit SingleKeyframeEffectAnimation(int id,
+                                         std::unique_ptr<KeyframeEffect>);
+
   ~SingleKeyframeEffectAnimation() override;
 
   DISALLOW_COPY_AND_ASSIGN(SingleKeyframeEffectAnimation);
