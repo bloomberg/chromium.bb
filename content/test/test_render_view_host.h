@@ -114,7 +114,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  viz::FrameSinkId GetFrameSinkId() override;
+  const viz::FrameSinkId& GetFrameSinkId() const override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
 
   bool is_showing() const { return is_showing_; }

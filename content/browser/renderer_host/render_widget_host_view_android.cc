@@ -27,6 +27,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
@@ -1932,9 +1933,9 @@ void RenderWidgetHostViewAndroid::DidStopFlinging() {
   gesture_listener_manager_->DidStopFlinging();
 }
 
-viz::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {
+const viz::FrameSinkId& RenderWidgetHostViewAndroid::GetFrameSinkId() const {
   if (!delegated_frame_host_)
-    return viz::FrameSinkId();
+    return viz::FrameSinkIdAllocator::InvalidFrameSinkId();
 
   return delegated_frame_host_->GetFrameSinkId();
 }

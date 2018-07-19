@@ -2317,7 +2317,7 @@ void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
   ui::GestureRecognizer::Get()->CancelActiveTouches(window_);
 }
 
-viz::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
+const viz::FrameSinkId& RenderWidgetHostViewAura::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 

@@ -515,10 +515,6 @@ void RenderWidgetHostViewBase::OnFrameTokenChangedForView(
     host()->DidProcessFrame(frame_token);
 }
 
-viz::FrameSinkId RenderWidgetHostViewBase::GetFrameSinkId() {
-  return viz::FrameSinkId();
-}
-
 viz::LocalSurfaceId RenderWidgetHostViewBase::GetLocalSurfaceId() const {
   return viz::LocalSurfaceId();
 }

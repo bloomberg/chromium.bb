@@ -193,7 +193,7 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
-viz::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {
+const viz::FrameSinkId& TestRenderWidgetHostView::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
