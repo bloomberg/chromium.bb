@@ -23,24 +23,13 @@ login.createScreen('WelcomeScreen', 'connect', function() {
     decorate: function() {
       var welcomeScreen = $('oobe-welcome-md');
       welcomeScreen.screen = this;
-      welcomeScreen.enabled = true;
-
-      var languageList = loadTimeData.getValue('languageList');
-      welcomeScreen.languages = languageList;
-
-      var inputMethodsList = loadTimeData.getValue('inputMethodsList');
-      welcomeScreen.keyboards = inputMethodsList;
-
-      var timezoneList = loadTimeData.getValue('timezoneList');
-      welcomeScreen.timezones = timezoneList;
-
-      welcomeScreen.highlightStrength =
-          loadTimeData.getValue('highlightStrength');
 
       this.context.addObserver(
           CONTEXT_KEY_INPUT_METHOD, function(inputMethodId) {
             $('oobe-welcome-md').setSelectedKeyboard(inputMethodId);
           });
+
+      this.updateLocalizedContent();
     },
 
     onLanguageSelected_: function(languageId) {

@@ -75,34 +75,32 @@
       </hd-iron-icon>
       <h1 slot="title">[[i18nDynamic(locale, 'languageSectionTitle')]]</h1>
       <div slot="footer" class="layout vertical">
-        <template is="dom-if" if="[[enabled]]">
-          <div id="languageDropdownContainer"
-              class="flex layout center horizontal justified
-                  language-selection-entry">
-            <div class=
-                "language-selection-title layout vertical center-justified">
-              [[i18nDynamic(locale, 'languageDropdownTitle')]]
-            </div>
-            <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
-                on-select-item="onLanguageSelected_" class="focus-on-show"
-                label-for-aria=
-                    "[[i18nDynamic(locale, 'languageDropdownLabel')]]">
-            </oobe-i18n-dropdown>
+        <div id="languageDropdownContainer"
+            class="flex layout center horizontal justified
+                language-selection-entry">
+          <div class=
+              "language-selection-title layout vertical center-justified">
+            [[i18nDynamic(locale, 'languageDropdownTitle')]]
           </div>
-          <div id="keyboardDropdownContainer"
-              class="flex layout center horizontal justified
-                 language-selection-entry">
-            <div class=
-                "language-selection-title layout vertical center-justified">
-              [[i18nDynamic(locale, 'keyboardDropdownTitle')]]
-            </div>
-            <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
-                on-select-item="onKeyboardSelected_"
-                label-for-aria=
-                    "[[i18nDynamic(locale, 'keyboardDropdownLabel')]]">
-            </oobe-i18n-dropdown>
+          <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
+              on-select-item="onLanguageSelected_" class="focus-on-show"
+              label-for-aria=
+                  "[[i18nDynamic(locale, 'languageDropdownLabel')]]">
+          </oobe-i18n-dropdown>
+        </div>
+        <div id="keyboardDropdownContainer"
+            class="flex layout center horizontal justified
+               language-selection-entry">
+          <div class=
+              "language-selection-title layout vertical center-justified">
+            [[i18nDynamic(locale, 'keyboardDropdownTitle')]]
           </div>
-        </template>
+          <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
+              on-select-item="onKeyboardSelected_"
+              label-for-aria=
+                  "[[i18nDynamic(locale, 'keyboardDropdownLabel')]]">
+          </oobe-i18n-dropdown>
+        </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeLanguageSection_">
