@@ -460,7 +460,6 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
 service_manifest("chrome_content_browser_manifest_overlay") {
   source = "//chrome/browser/chrome_content_browser_manifest_overlay.json"
   packaged_services = [
-    "//chrome/browser/apps/foundation/app_service:manifest",
     "//services/identity:manifest",
     "//services/preferences:manifest",
   ]
@@ -472,6 +471,10 @@ service_manifest("chrome_content_browser_manifest_overlay") {
       "//chromeos/services/device_sync:manifest",
       "//chromeos/services/multidevice_setup:manifest",
     ]
+  }
+  if (!is_android) {
+    packaged_services +=
+        [ "//chrome/browser/apps/foundation/app_service:manifest" ]
   }
 }
 
