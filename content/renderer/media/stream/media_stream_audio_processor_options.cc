@@ -85,7 +85,9 @@ bool AudioProcessingProperties::EchoCancellationEnabled() const {
 }
 
 bool AudioProcessingProperties::EchoCancellationIsWebRtcProvided() const {
-  return echo_cancellation_type == EchoCancellationType::kEchoCancellationAec2;
+  return echo_cancellation_type ==
+             EchoCancellationType::kEchoCancellationAec2 ||
+         echo_cancellation_type == EchoCancellationType::kEchoCancellationAec3;
 }
 
 EchoInformation::EchoInformation()

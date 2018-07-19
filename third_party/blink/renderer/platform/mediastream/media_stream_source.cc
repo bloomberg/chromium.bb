@@ -132,12 +132,17 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
         settings.echo_cancellation = false;
         settings.echo_cancellation_type.Reset();
         break;
-      case EchoCancellationMode::kSoftware:
+      case EchoCancellationMode::kBrowser:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
             WebString::FromASCII(blink::kEchoCancellationTypeBrowser);
         break;
-      case EchoCancellationMode::kHardware:
+      case EchoCancellationMode::kAec3:
+        settings.echo_cancellation = true;
+        settings.echo_cancellation_type =
+            WebString::FromASCII(blink::kEchoCancellationTypeAec3);
+        break;
+      case EchoCancellationMode::kSystem:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
             WebString::FromASCII(blink::kEchoCancellationTypeSystem);
@@ -183,9 +188,11 @@ STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
                    MediaStreamSource::kReadyStateEnded);
 STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kDisabled,
                    MediaStreamSource::EchoCancellationMode::kDisabled);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kSoftware,
-                   MediaStreamSource::EchoCancellationMode::kSoftware);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kHardware,
-                   MediaStreamSource::EchoCancellationMode::kHardware);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kBrowser,
+                   MediaStreamSource::EchoCancellationMode::kBrowser);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kAec3,
+                   MediaStreamSource::EchoCancellationMode::kAec3);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kSystem,
+                   MediaStreamSource::EchoCancellationMode::kSystem);
 
 }  // namespace blink

@@ -36,6 +36,8 @@
 
 namespace content {
 
+using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
+
 namespace {
 
 using webrtc::AudioProcessing;
@@ -591,21 +593,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0)));
   }
 
-  // Check if experimental echo canceller should be used.
-  if (properties.EchoCancellationIsWebRtcProvided()) {
-    base::Optional<bool> override_aec3;
-    // In unit tests not creating a message filter, |aec_dump_message_filter_|
-    // will be null. We can just ignore that. Other unit tests and browser tests
-    // ensure that we do get the filter when we should.
-    if (aec_dump_message_filter_)
-      override_aec3 = aec_dump_message_filter_->GetOverrideAec3();
-    using_aec3_ = override_aec3.value_or(
-        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
-  }
-
   // Create and configure the webrtc::AudioProcessing.
   webrtc::AudioProcessingBuilder ap_builder;
-  if (using_aec3_) {
+  if (properties.echo_cancellation_type ==
+      EchoCancellationType::kEchoCancellationAec3) {
     webrtc::EchoCanceller3Config aec3_config;
     aec3_config.ep_strength.bounded_erl =
         base::FeatureList::IsEnabled(features::kWebRtcAecBoundedErlSetup);
@@ -633,8 +624,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // Prepare for logging echo information. Do not log any echo information
     // when AEC3 is active, as the echo information then will not be properly
     // updated.
-    if (!using_aec3_)
+    if (properties.echo_cancellation_type !=
+        EchoCancellationType::kEchoCancellationAec3) {
       echo_information_ = std::make_unique<EchoInformation>();
+    }
   }
 
   if (properties.goog_noise_suppression)
