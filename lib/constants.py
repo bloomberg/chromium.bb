@@ -370,6 +370,10 @@ ANDROID_PI_BUILD_TARGETS = {
         'linux-cheets_x86_ndk_translation-userdebug', r'\.zip$'
     ),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
+    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_cheets_x86-userdebug',
+                                 r'\.zip$'),
+    'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_cheets_x86_64-userdebug',
+                                    r'\.zip$'),
 }
 
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
