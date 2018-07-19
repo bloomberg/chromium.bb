@@ -5,7 +5,7 @@
 #ifndef DEVICE_GAMEPAD_SHARED_BUFFER_H_
 #define DEVICE_GAMEPAD_SHARED_BUFFER_H_
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
@@ -30,7 +30,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadSharedBuffer {
   GamepadSharedBuffer();
   ~GamepadSharedBuffer();
 
-  base::SharedMemory* shared_memory();
+  base::ReadOnlySharedMemoryRegion DuplicateSharedMemoryRegion();
   Gamepads* buffer();
   GamepadHardwareBuffer* hardware_buffer();
 
@@ -38,7 +38,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadSharedBuffer {
   void WriteEnd();
 
  private:
-  base::SharedMemory shared_memory_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
   GamepadHardwareBuffer* hardware_buffer_;
 };
 

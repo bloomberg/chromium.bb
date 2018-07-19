@@ -90,15 +90,18 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
   ASSERT_TRUE(sink().GetFirstResourceReplyMatching(
       PpapiPluginMsg_Gamepad_SendMemory::ID, &reply_params, &reply_msg));
 
-  // Extract the shared memory handle.
-  base::SharedMemoryHandle reply_handle;
-  EXPECT_TRUE(reply_params.TakeSharedMemoryHandleAtIndex(0, &reply_handle));
+  // Extract the shared memory region.
+  base::ReadOnlySharedMemoryRegion shared_memory_region;
+  EXPECT_TRUE(reply_params.TakeReadOnlySharedMemoryRegionAtIndex(
+      0, &shared_memory_region));
 
   // Validate the shared memory.
-  base::SharedMemory shared_memory(reply_handle, true);
-  EXPECT_TRUE(shared_memory.Map(sizeof(device::GamepadHardwareBuffer)));
+  base::ReadOnlySharedMemoryMapping shared_memory_mapping =
+      shared_memory_region.Map();
+  EXPECT_TRUE(shared_memory_mapping.IsValid());
   const device::GamepadHardwareBuffer* buffer =
-      static_cast<const device::GamepadHardwareBuffer*>(shared_memory.memory());
+      static_cast<const device::GamepadHardwareBuffer*>(
+          shared_memory_mapping.memory());
   EXPECT_EQ(button_down_data.items[0].buttons_length,
             buffer->data.items[0].buttons_length);
   for (size_t i = 0; i < device::Gamepad::kButtonsLengthCap; i++) {

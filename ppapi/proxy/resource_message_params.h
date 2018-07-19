@@ -16,6 +16,10 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_handle.h"
 
+namespace base {
+class ReadOnlySharedMemoryRegion;
+}
+
 namespace ppapi {
 namespace proxy {
 
@@ -60,6 +64,9 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   //          is valid.
   bool TakeSharedMemoryHandleAtIndex(size_t index,
                                      base::SharedMemoryHandle* handle) const;
+  bool TakeReadOnlySharedMemoryRegionAtIndex(
+      size_t index,
+      base::ReadOnlySharedMemoryRegion* region) const;
   bool TakeSocketHandleAtIndex(size_t index,
                                IPC::PlatformFileForTransit* handle) const;
   bool TakeFileHandleAtIndex(size_t index,

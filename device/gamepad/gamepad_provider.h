@@ -11,8 +11,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/time/time.h"
@@ -53,11 +53,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
 
   ~GamepadProvider() override;
 
-  // Returns a duplicate of the shared memory handle of the gamepad data.
-  base::SharedMemoryHandle DuplicateSharedMemoryHandle();
-
-  // Returns a new mojo::ScopedSharedBufferHandle of the gamepad data.
-  mojo::ScopedSharedBufferHandle GetSharedBufferHandle();
+  // Returns a duplicate of the shared memory region of the gamepad data.
+  base::ReadOnlySharedMemoryRegion DuplicateSharedMemoryRegion();
 
   void GetCurrentGamepadData(Gamepads* data);
 

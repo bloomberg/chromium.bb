@@ -45,7 +45,7 @@ void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
 
   GamepadService* service = GamepadService::GetInstance();
   service->ConsumerBecameActive(this);
-  std::move(callback).Run(service->GetSharedBufferHandle());
+  std::move(callback).Run(service->DuplicateSharedMemoryRegion());
 }
 
 void GamepadMonitor::GamepadStopPolling(GamepadStopPollingCallback callback) {

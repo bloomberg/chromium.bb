@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/threading/platform_thread.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
@@ -77,13 +77,13 @@ void GamepadResource::Sample(PP_Instance /* instance */,
 void GamepadResource::OnPluginMsgSendMemory(
     const ResourceMessageReplyParams& params) {
   // On failure, the handle will be null and the CHECK below will be tripped.
-  base::SharedMemoryHandle handle;
-  params.TakeSharedMemoryHandleAtIndex(0, &handle);
+  base::ReadOnlySharedMemoryRegion region;
+  params.TakeReadOnlySharedMemoryRegionAtIndex(0, &region);
 
-  shared_memory_.reset(new base::SharedMemory(handle, true));
-  CHECK(shared_memory_->Map(sizeof(device::GamepadHardwareBuffer)));
+  shared_memory_mapping_ = region.Map();
+  CHECK(shared_memory_mapping_.IsValid());
   buffer_ = static_cast<const device::GamepadHardwareBuffer*>(
-      shared_memory_->memory());
+      shared_memory_mapping_.memory());
 }
 
 }  // namespace proxy

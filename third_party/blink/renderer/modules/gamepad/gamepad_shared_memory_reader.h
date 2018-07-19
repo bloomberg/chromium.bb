@@ -40,9 +40,9 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
   void GamepadConnected(int index, const device::Gamepad& gamepad) override;
   void GamepadDisconnected(int index, const device::Gamepad& gamepad) override;
 
-  mojo::ScopedSharedBufferHandle renderer_shared_buffer_handle_;
-  mojo::ScopedSharedBufferMapping renderer_shared_buffer_mapping_;
-  device::GamepadHardwareBuffer* gamepad_hardware_buffer_ = nullptr;
+  base::ReadOnlySharedMemoryRegion renderer_shared_buffer_region_;
+  base::ReadOnlySharedMemoryMapping renderer_shared_buffer_mapping_;
+  const device::GamepadHardwareBuffer* gamepad_hardware_buffer_ = nullptr;
 
   bool ever_interacted_with_ = false;
 

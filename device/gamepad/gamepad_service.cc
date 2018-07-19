@@ -200,14 +200,9 @@ void GamepadService::ResetVibrationActuator(
   provider_->ResetVibrationActuator(pad_index, std::move(callback));
 }
 
-base::SharedMemoryHandle GamepadService::DuplicateSharedMemoryHandle() {
+base::ReadOnlySharedMemoryRegion GamepadService::DuplicateSharedMemoryRegion() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  return provider_->DuplicateSharedMemoryHandle();
-}
-
-mojo::ScopedSharedBufferHandle GamepadService::GetSharedBufferHandle() {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  return provider_->GetSharedBufferHandle();
+  return provider_->DuplicateSharedMemoryRegion();
 }
 
 void GamepadService::OnUserGesture() {

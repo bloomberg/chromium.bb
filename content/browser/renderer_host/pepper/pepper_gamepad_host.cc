@@ -68,11 +68,12 @@ int32_t PepperGamepadHost::OnRequestMemory(
 
 void PepperGamepadHost::GotUserGesture(
     const ppapi::host::ReplyMessageContext& context) {
-  base::SharedMemoryHandle handle =
-      gamepad_service_->DuplicateSharedMemoryHandle();
+  base::ReadOnlySharedMemoryRegion region =
+      gamepad_service_->DuplicateSharedMemoryRegion();
 
   context.params.AppendHandle(ppapi::proxy::SerializedHandle(
-      handle, sizeof(device::GamepadHardwareBuffer)));
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region))));
   host()->SendReply(context, PpapiPluginMsg_Gamepad_SendMemory());
 }
 

@@ -4,6 +4,8 @@
 
 module device.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
+
 struct GamepadQuaternion {
   float x;
   float y;
@@ -70,12 +72,13 @@ interface GamepadObserver {
 };
 
 // Asks the browser process to start polling, and return a shared memory
-// handle that will hold the data from the hardware. See
+// region that will hold the data from the hardware. See
 // gamepad_shared_buffer.h for a description of how synchronization is
 // handled. The number of Starts should match the number of Stops.
 interface GamepadMonitor {
   [Sync]
-  GamepadStartPolling() => (handle<shared_buffer> memory_handle);
+  GamepadStartPolling()
+      => (mojo_base.mojom.ReadOnlySharedMemoryRegion memory_region);
 
   [Sync]
   GamepadStopPolling() => ();

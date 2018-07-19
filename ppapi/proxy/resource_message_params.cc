@@ -5,6 +5,7 @@
 #include "ppapi/proxy/resource_message_params.h"
 
 #include "base/logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -97,6 +98,18 @@ bool ResourceMessageParams::TakeSharedMemoryHandleAtIndex(
   if (!serialized.is_shmem())
     return false;
   *handle = serialized.shmem();
+  return true;
+}
+
+bool ResourceMessageParams::TakeReadOnlySharedMemoryRegionAtIndex(
+    size_t index,
+    base::ReadOnlySharedMemoryRegion* region) const {
+  SerializedHandle serialized =
+      TakeHandleOfTypeAtIndex(index, SerializedHandle::SHARED_MEMORY_REGION);
+  if (!serialized.is_shmem_region())
+    return false;
+  *region = base::ReadOnlySharedMemoryRegion::Deserialize(
+      serialized.TakeSharedMemoryRegion());
   return true;
 }
 
