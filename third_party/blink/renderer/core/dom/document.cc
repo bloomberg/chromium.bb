@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
@@ -240,6 +241,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -3240,7 +3242,7 @@ Document* Document::open(LocalDOMWindow* entered_window,
 
 DOMWindow* Document::open(LocalDOMWindow* current_window,
                           LocalDOMWindow* entered_window,
-                          const AtomicString& url,
+                          const USVStringOrTrustedURL& stringOrUrl,
                           const AtomicString& name,
                           const AtomicString& features,
                           ExceptionState& exception_state) {
@@ -3250,7 +3252,8 @@ DOMWindow* Document::open(LocalDOMWindow* current_window,
     return nullptr;
   }
   AtomicString frame_name = name.IsEmpty() ? "_blank" : name;
-  return domWindow()->open(url, frame_name, features, current_window,
+
+  return domWindow()->open(stringOrUrl, frame_name, features, current_window,
                            entered_window, exception_state);
 }
 
