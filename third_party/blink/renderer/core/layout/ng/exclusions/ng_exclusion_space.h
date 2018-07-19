@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/ref_vector.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -24,6 +25,7 @@ namespace blink {
 class CORE_EXPORT NGExclusionSpace {
  public:
   NGExclusionSpace();
+  NGExclusionSpace(const NGExclusionSpace&);
   ~NGExclusionSpace(){};
 
   void Add(scoped_refptr<const NGExclusion> exclusion);
@@ -35,17 +37,27 @@ class CORE_EXPORT NGExclusionSpace {
   NGLayoutOpportunity FindLayoutOpportunity(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
-      const NGLogicalSize& minimum_size) const;
+      const NGLogicalSize& minimum_size) const {
+    return GetDerivedGeometry().FindLayoutOpportunity(
+        offset, available_inline_size, minimum_size);
+  }
 
   Vector<NGLayoutOpportunity> AllLayoutOpportunities(
       const NGBfcOffset& offset,
-      const LayoutUnit available_inline_size) const;
+      const LayoutUnit available_inline_size) const {
+    return GetDerivedGeometry().AllLayoutOpportunities(offset,
+                                                       available_inline_size);
+  }
 
   // Returns the clearance offset based on the provided {@code clear_type}.
-  LayoutUnit ClearanceOffset(EClear clear_type) const;
+  LayoutUnit ClearanceOffset(EClear clear_type) const {
+    return GetDerivedGeometry().ClearanceOffset(clear_type);
+  }
 
   // Returns the block start offset of the last float added.
-  LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
+  LayoutUnit LastFloatBlockStart() const {
+    return GetDerivedGeometry().LastFloatBlockStart();
+  }
 
   bool operator==(const NGExclusionSpace& other) const;
   bool operator!=(const NGExclusionSpace& other) const {
@@ -119,52 +131,105 @@ class CORE_EXPORT NGExclusionSpace {
   };
 
  private:
-  Vector<scoped_refptr<const NGExclusion>> exclusions_;
+  // In order to reduce the amount of Vector copies, instances of a
+  // NGExclusionSpace can share the same exclusions_ Vector. See the copy
+  // constructor.
+  //
+  // We implement a copy-on-write behaviour when adding an exclusion (if
+  // exclusions_.size(), and num_exclusions_ differs).
+  //
+  // num_exclusions_ is how many exclusions *this* instance of an exclusion
+  // space has, which may differ to the number of exclusions in the Vector.
+  scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions_;
+  size_t num_exclusions_;
 
-  // See NGShelf for a broad description of what shelves are. We always begin
-  // with one, which has the internal value of:
-  // {
-  //   block_offset: LayoutUnit::Min(),
-  //   line_left: LayoutUnit::Min(),
-  //   line_right: LayoutUnit::Max(),
-  // }
+  // The derived geometry struct, is the data-structure which handles all of the
+  // queries on the exclusion space. It can always be rebuilt from exclusions_
+  // and num_exclusions_. This is mutable as it is passed down a chain of
+  // exclusion spaces inside the copy constructor. E.g.
   //
-  // The list of opportunities represent "closed-off" areas. E.g.
+  // NGExclusionSpace space1;
+  // space1.Add(exclusion1);
+  // space1.LastFloatBlockStart(); // Builds derived_geometry_ to answer query.
   //
-  //    0 1 2 3 4 5 6 7 8
-  // 0  +---+.      .+---+
-  //    |xxx|.      .|xxx|
-  // 10 |xxx|.      .|xxx|
-  //    +---+.      .+---+
-  // 20      ........
-  //      +---+
-  // 30   |xxx|
-  //      |xxx|
-  // 40   +---+
+  // NGExclusionSpace space2(space1); // Moves derived_geometry_ to space2.
+  // space2.Add(exclusion2); // Modifies derived_geometry_.
   //
-  // In the above example the opportunity is represented with the dotted line.
-  // It has the internal values of:
-  // {
-  //   start_offset: {20, LayoutUnit::Min()},
-  //   end_offset: {65, 25},
-  // }
-  // Once an opportunity has been created, it can never been changed due to the
-  // property that floats always align their block-start edges.
+  // space1.LastFloatBlockStart(); // Re-builds derived_geometry_.
   //
-  // We exploit this property by keeping this list of "closed-off" areas, and
-  // removing shelves to make insertion faster.
-  Vector<NGShelf> shelves_;
-  Vector<NGLayoutOpportunity> opportunities_;
+  // This is efficient (desirable) as the common usage pattern is only the last
+  // exclusion space in the copy-chain is used for answering queries. Only when
+  // we trigger a (rare) re-layout case will we need to rebuild the
+  // derived_geometry_ data-structure.
+  struct DerivedGeometry {
+    DerivedGeometry();
 
-  // This member is used for implementing the "top edge alignment rule" for
-  // floats. Floats can be positioned at negative offsets, hence is initialized
-  // the minimum value.
-  LayoutUnit last_float_block_start_;
+    void Add(scoped_refptr<const NGExclusion> exclusion);
 
-  // These members are used for keeping track of the "lowest" offset for each
-  // type of float. This is used for implementing float clearance.
-  LayoutUnit left_float_clear_offset_;
-  LayoutUnit right_float_clear_offset_;
+    NGLayoutOpportunity FindLayoutOpportunity(
+        const NGBfcOffset& offset,
+        const LayoutUnit available_inline_size,
+        const NGLogicalSize& minimum_size) const;
+
+    Vector<NGLayoutOpportunity> AllLayoutOpportunities(
+        const NGBfcOffset& offset,
+        const LayoutUnit available_inline_size) const;
+
+    LayoutUnit ClearanceOffset(EClear clear_type) const;
+    LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
+
+    // See NGShelf for a broad description of what shelves are. We always begin
+    // with one, which has the internal value of:
+    // {
+    //   block_offset: LayoutUnit::Min(),
+    //   line_left: LayoutUnit::Min(),
+    //   line_right: LayoutUnit::Max(),
+    // }
+    //
+    // The list of opportunities represent "closed-off" areas. E.g.
+    //
+    //    0 1 2 3 4 5 6 7 8
+    // 0  +---+.      .+---+
+    //    |xxx|.      .|xxx|
+    // 10 |xxx|.      .|xxx|
+    //    +---+.      .+---+
+    // 20      ........
+    //      +---+
+    // 30   |xxx|
+    //      |xxx|
+    // 40   +---+
+    //
+    // In the above example the opportunity is represented with the dotted line.
+    // It has the internal values of:
+    // {
+    //   start_offset: {20, LayoutUnit::Min()},
+    //   end_offset: {65, 25},
+    // }
+    // Once an opportunity has been created, it can never been changed due to
+    // the property that floats always align their block-start edges.
+    //
+    // We exploit this property by keeping this list of "closed-off" areas, and
+    // removing shelves to make insertion faster.
+    Vector<NGShelf, 4> shelves_;
+    Vector<NGLayoutOpportunity, 4> opportunities_;
+
+    // This member is used for implementing the "top edge alignment rule" for
+    // floats. Floats can be positioned at negative offsets, hence is
+    // initialized the minimum value.
+    LayoutUnit last_float_block_start_;
+
+    // These members are used for keeping track of the "lowest" offset for each
+    // type of float. This is used for implementing float clearance.
+    LayoutUnit left_float_clear_offset_;
+    LayoutUnit right_float_clear_offset_;
+  };
+
+  // Returns the derived_geometry_ member, potentially re-built from the
+  // exclusions_, and num_exclusions_ members.
+  const DerivedGeometry& GetDerivedGeometry() const;
+
+  // See DerivedGeometry struct description.
+  mutable std::unique_ptr<DerivedGeometry> derived_geometry_;
 };
 
 }  // namespace blink
