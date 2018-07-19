@@ -516,25 +516,6 @@ class SyncStage(generic_stages.BuilderStage):
           logging.PrintBuildbotStepText('Pre-patch build failed.')
 
 
-class LKGMSyncStage(SyncStage):
-  """Stage that syncs to the last known good manifest blessed by builders."""
-
-  output_manifest_sha1 = False
-
-  def GetNextManifest(self):
-    """Override: Gets the LKGM."""
-    # TODO(sosa):  Should really use an initialized manager here.
-    if self.internal:
-      mv_dir = site_config.params.INTERNAL_MANIFEST_VERSIONS_PATH
-    else:
-      mv_dir = site_config.params.EXTERNAL_MANIFEST_VERSIONS_PATH
-
-    manifest_path = os.path.join(self._build_root, mv_dir)
-    manifest_repo = self._GetManifestVersionsRepoUrl()
-    manifest_version.RefreshManifestCheckout(manifest_path, manifest_repo)
-    return os.path.join(manifest_path, self._run.config.lkgm_manifest)
-
-
 class ManifestVersionedSyncStage(SyncStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
@@ -1040,15 +1021,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         is_master=self._run.config.master,
         dryrun=self._run.options.debug,
         builder_run=self._run)
-
-  def _GetLKGMVersionFromManifest(self, manifest):
-    manifest_dom = minidom.parse(manifest)
-    elements = manifest_dom.getElementsByTagName(lkgm_manager.LKGM_ELEMENT)
-    if elements:
-      lkgm_version = elements[0].getAttribute(lkgm_manager.LKGM_VERSION_ATTR)
-      logging.info(
-          'LKGM version was found in the manifest: %s', lkgm_version)
-      return lkgm_version
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""

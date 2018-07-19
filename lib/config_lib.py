@@ -935,12 +935,6 @@ def DefaultSettings():
       # Use a different branch of the project manifest for the build.
       manifest_branch=None,
 
-      # Use the Last Known Good Manifest blessed by Paladin.
-      use_lkgm=False,
-
-      # If we use_lkgm -- What is the name of the manifest to look for?
-      lkgm_manifest=constants.LKGM_MANIFEST,
-
       # LKGM for Chrome OS generated for Chrome builds that are blessed from
       # canary runs.
       use_chrome_lkgm=False,

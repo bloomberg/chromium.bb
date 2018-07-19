@@ -59,8 +59,6 @@ class SimpleBuilder(generic_builders.Builder):
     if self._run.options.force_version:
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
-    elif self._run.config.use_lkgm:
-      sync_stage = self._GetStageInstance(sync_stages.LKGMSyncStage)
     elif self._run.config.use_chrome_lkgm:
       sync_stage = self._GetStageInstance(chrome_stages.ChromeLKGMSyncStage)
     else:

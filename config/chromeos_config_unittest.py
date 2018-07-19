@@ -893,11 +893,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     return False
 
-  def testCantBeBothTypesOfLKGM(self):
-    """Using lkgm and chrome_lkgm doesn't make sense."""
-    for config in self.site_config.values():
-      self.assertFalse(config['use_lkgm'] and config['use_chrome_lkgm'])
-
   def testNoDuplicateSlavePrebuilts(self):
     """Test that no two same-board paladin slaves upload prebuilts."""
     for cfg in self.site_config.values():
