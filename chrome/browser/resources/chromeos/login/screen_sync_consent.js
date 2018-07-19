@@ -55,6 +55,11 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
     setThrobberVisible: function(visible) {
       $('sync-loading').hidden = !visible;
       $('sync-consent-impl').hidden = visible;
+      if (visible) {
+        $('sync-loading').focus();
+      } else {
+        $('sync-consent-impl').focus();
+      }
     },
   };
 });
