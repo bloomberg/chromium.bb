@@ -41,7 +41,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/media_stream_utils.h"
-#include "content/public/renderer/platform_event_observer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
@@ -1049,14 +1048,6 @@ void RendererBlinkPlatformImpl::RecordRappor(const char* metric,
 void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
                                                 const blink::WebURL& url) {
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
-}
-
-void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
-    blink::WebPlatformEventType type,
-    std::unique_ptr<PlatformEventObserverBase> observer) {
-  if (platform_event_observers_.Lookup(type))
-    platform_event_observers_.Remove(type);
-  platform_event_observers_.AddWithID(std::move(observer), type);
 }
 
 service_manager::Connector* RendererBlinkPlatformImpl::GetConnector() {
