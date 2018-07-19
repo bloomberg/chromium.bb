@@ -4808,6 +4808,7 @@ interface RTCPeerConnection : EventTarget
     method getRemoteStreams
     method getSenders
     method getStats
+    method getTransceivers
     method removeStream
     method removeTrack
     method setConfiguration
@@ -4846,6 +4847,16 @@ interface RTCRtpSender
     method getStats
     method replaceTrack
     method setParameters
+interface RTCRtpTransceiver
+    attribute @@toStringTag
+    getter currentDirection
+    getter direction
+    getter mid
+    getter receiver
+    getter sender
+    getter stopped
+    method constructor
+    setter direction
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp
@@ -4870,6 +4881,7 @@ interface RTCTrackEvent : Event
     getter receiver
     getter streams
     getter track
+    getter transceiver
     method constructor
 interface RadioNodeList : NodeList
     attribute @@toStringTag
@@ -9166,6 +9178,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getRemoteStreams
     method getSenders
     method getStats
+    method getTransceivers
     method removeStream
     method removeTrack
     method setConfiguration

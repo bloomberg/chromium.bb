@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_request_impl.h"
@@ -1288,10 +1289,21 @@ String RTCPeerConnection::id(ScriptState* script_state) const {
 
 MediaStreamVector RTCPeerConnection::getLocalStreams() const {
   MediaStreamVector local_streams;
-  for (const auto& rtp_sender : getSenders()) {
-    for (const auto& stream : rtp_sender->streams()) {
-      if (!local_streams.Contains(stream))
-        local_streams.push_back(stream);
+  if (sdp_semantics_ == WebRTCSdpSemantics::kPlanB) {
+    for (const auto& sender : rtp_senders_) {
+      for (const auto& stream : sender->streams()) {
+        if (!local_streams.Contains(stream))
+          local_streams.push_back(stream);
+      }
+    }
+  } else {
+    for (const auto& transceiver : transceivers_) {
+      if (!transceiver->DirectionHasSend())
+        continue;
+      for (const auto& stream : transceiver->sender()->streams()) {
+        if (!local_streams.Contains(stream))
+          local_streams.push_back(stream);
+      }
     }
   }
   return local_streams;
@@ -1299,10 +1311,21 @@ MediaStreamVector RTCPeerConnection::getLocalStreams() const {
 
 MediaStreamVector RTCPeerConnection::getRemoteStreams() const {
   MediaStreamVector remote_streams;
-  for (const auto& rtp_receiver : rtp_receivers_) {
-    for (const auto& stream : rtp_receiver->streams()) {
-      if (!remote_streams.Contains(stream))
-        remote_streams.push_back(stream);
+  if (sdp_semantics_ == WebRTCSdpSemantics::kPlanB) {
+    for (const auto& receiver : rtp_receivers_) {
+      for (const auto& stream : receiver->streams()) {
+        if (!remote_streams.Contains(stream))
+          remote_streams.push_back(stream);
+      }
+    }
+  } else {
+    for (const auto& transceiver : transceivers_) {
+      if (!transceiver->DirectionHasRecv())
+        continue;
+      for (const auto& stream : transceiver->receiver()->streams()) {
+        if (!remote_streams.Contains(stream))
+          remote_streams.push_back(stream);
+      }
     }
   }
   return remote_streams;
@@ -1457,6 +1480,11 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
   return track_receiver->getStats(script_state);
 }
 
+const HeapVector<Member<RTCRtpTransceiver>>&
+RTCPeerConnection::getTransceivers() const {
+  return transceivers_;
+}
+
 const HeapVector<Member<RTCRtpSender>>& RTCPeerConnection::getSenders() const {
   return rtp_senders_;
 }
@@ -1503,20 +1531,37 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
   }
 
   auto web_transceiver = error_or_transceiver.MoveValue();
-  // TODO(hbos): Currently the result of this operation is always to surface
-  // senders only - which is Plan B behavior - even if Unified Plan SDP
-  // semantics is used. Implement and surface transceivers under Unified Plan.
-  // https://crbug.com/777617
-  DCHECK_EQ(web_transceiver->ImplementationType(),
-            WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
-  std::unique_ptr<WebRTCRtpSender> web_rtp_sender = web_transceiver->Sender();
 
-  DCHECK(FindSender(*web_rtp_sender) == rtp_senders_.end());
-  RTCRtpSender* rtp_sender =
-      new RTCRtpSender(this, std::move(web_rtp_sender), track, streams);
-  tracks_.insert(track->Component(), track);
-  rtp_senders_.push_back(rtp_sender);
-  return rtp_sender;
+  // The track must be known to the peer connection when performing
+  // CreateOrUpdateSender() below.
+  RegisterTrack(track);
+
+  auto stream_ids = web_transceiver->Sender()->StreamIds();
+  RTCRtpSender* sender;
+  if (sdp_semantics_ == WebRTCSdpSemantics::kPlanB) {
+    DCHECK_EQ(web_transceiver->ImplementationType(),
+              WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+    sender = CreateOrUpdateSender(web_transceiver->Sender(), track->kind());
+  } else {
+    DCHECK_EQ(sdp_semantics_, WebRTCSdpSemantics::kUnifiedPlan);
+    DCHECK_EQ(web_transceiver->ImplementationType(),
+              WebRTCRtpTransceiverImplementationType::kFullTransceiver);
+    RTCRtpTransceiver* transceiver =
+        CreateOrUpdateTransceiver(std::move(web_transceiver));
+    sender = transceiver->sender();
+  }
+  // Newly created senders have no streams set, we have to set it ourselves.
+  sender->set_streams(streams);
+
+  // The stream IDs should match between layers, with one exception;
+  // in Plan B if no stream was supplied, the lower layer still generates a
+  // stream which has no blink layer correspondence.
+  DCHECK(sdp_semantics_ != WebRTCSdpSemantics::kPlanB ||
+         (streams.size() == 0u && stream_ids.size() == 1u) ||
+         stream_ids.size() == streams.size());
+  DCHECK(sdp_semantics_ != WebRTCSdpSemantics::kUnifiedPlan ||
+         stream_ids.size() == streams.size());
+  return sender;
 }
 
 void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
@@ -1533,17 +1578,28 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   }
 
   auto error_or_transceiver = peer_handler_->RemoveTrack(sender->web_sender());
-  if (!error_or_transceiver.ok()) {
-    // Operation aborted. This indicates that the sender is no longer used by
-    // the peer connection, i.e. that it was removed due to setting a remote
-    // description of type "rollback".
-    return;
+  if (sdp_semantics_ == WebRTCSdpSemantics::kPlanB) {
+    // Plan B: Was the sender removed?
+    if (!error_or_transceiver.ok()) {
+      // Operation aborted. This indicates that the sender is no longer used by
+      // the peer connection, i.e. that it was removed due to setting a remote
+      // description of type "rollback".
+      return;
+    }
+    // Successfully removing the track results in the sender's track property
+    // being nulled.
+    DCHECK(!sender->web_sender()->Track());
+    sender->SetTrack(nullptr);
+    rtp_senders_.erase(it);
+  } else {
+    // Unified Plan: Was the transceiver updated?
+    DCHECK_EQ(sdp_semantics_, WebRTCSdpSemantics::kUnifiedPlan);
+    if (!error_or_transceiver.ok()) {
+      ThrowExceptionFromRTCError(error_or_transceiver.error(), exception_state);
+      return;
+    }
+    CreateOrUpdateTransceiver(error_or_transceiver.MoveValue());
   }
-  // Successfully removing the track results in the sender's track property
-  // being nulled.
-  DCHECK(!sender->web_sender()->Track());
-  sender->SetTrack(nullptr);
-  rtp_senders_.erase(it);
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(
@@ -1632,6 +1688,104 @@ HeapVector<Member<RTCRtpReceiver>>::iterator RTCPeerConnection::FindReceiver(
   return rtp_receivers_.end();
 }
 
+HeapVector<Member<RTCRtpTransceiver>>::iterator
+RTCPeerConnection::FindTransceiver(
+    const WebRTCRtpTransceiver& web_transceiver) {
+  for (auto* it = transceivers_.begin(); it != transceivers_.end(); ++it) {
+    if ((*it)->web_transceiver()->Id() == web_transceiver.Id())
+      return it;
+  }
+  return transceivers_.end();
+}
+
+RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
+    std::unique_ptr<WebRTCRtpSender> web_sender,
+    String kind) {
+  // The track corresponding to |web_track| must already be known to us by being
+  // in |tracks_|, as is a prerequisite of CreateOrUpdateSender().
+  WebMediaStreamTrack web_track = web_sender->Track();
+  MediaStreamTrack* track;
+  if (web_track.IsNull()) {
+    track = nullptr;
+  } else {
+    track = tracks_.at(web_track);
+    DCHECK(track);
+  }
+
+  // Create or update sender. If the web sender has stream IDs the sender's
+  // streams need to be set separately outside of this method.
+  auto* sender_it = FindSender(*web_sender);
+  RTCRtpSender* sender;
+  if (sender_it == rtp_senders_.end()) {
+    // Create new sender (with empty stream set).
+    sender = new RTCRtpSender(this, std::move(web_sender), kind, track, {});
+    rtp_senders_.push_back(sender);
+  } else {
+    // Update existing sender (not touching the stream set).
+    sender = *sender_it;
+    DCHECK_EQ(sender->web_sender()->Id(), web_sender->Id());
+    sender->SetTrack(track);
+  }
+  return sender;
+}
+
+RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
+    std::unique_ptr<WebRTCRtpReceiver> web_receiver) {
+  auto* receiver_it = FindReceiver(*web_receiver);
+  // Create track.
+  MediaStreamTrack* track;
+  if (receiver_it == rtp_receivers_.end()) {
+    track =
+        MediaStreamTrack::Create(GetExecutionContext(), web_receiver->Track());
+    RegisterTrack(track);
+  } else {
+    track = (*receiver_it)->track();
+  }
+
+  // Create or update receiver. If the web receiver has stream IDs the
+  // receiver's streams need to be set separately outside of this method.
+  RTCRtpReceiver* receiver;
+  if (receiver_it == rtp_receivers_.end()) {
+    // Create new receiver.
+    receiver = new RTCRtpReceiver(std::move(web_receiver), track, {});
+    rtp_receivers_.push_back(receiver);
+  } else {
+    // Update existing receiver is a no-op.
+    receiver = *receiver_it;
+    DCHECK_EQ(receiver->web_receiver().Id(), web_receiver->Id());
+    DCHECK_EQ(receiver->track(), track);  // Its track should never change.
+  }
+  return receiver;
+}
+
+RTCRtpTransceiver* RTCPeerConnection::CreateOrUpdateTransceiver(
+    std::unique_ptr<WebRTCRtpTransceiver> web_transceiver) {
+  String kind = (web_transceiver->Receiver()->Track().Source().GetType() ==
+                 WebMediaStreamSource::kTypeAudio)
+                    ? "audio"
+                    : "video";
+  RTCRtpSender* sender = CreateOrUpdateSender(web_transceiver->Sender(), kind);
+  RTCRtpReceiver* receiver =
+      CreateOrUpdateReceiver(web_transceiver->Receiver());
+
+  RTCRtpTransceiver* transceiver;
+  auto* transceiver_it = FindTransceiver(*web_transceiver);
+  if (transceiver_it == transceivers_.end()) {
+    // Create new tranceiver.
+    transceiver = new RTCRtpTransceiver(this, std::move(web_transceiver),
+                                        sender, receiver);
+    transceivers_.push_back(transceiver);
+  } else {
+    // Update existing transceiver.
+    transceiver = *transceiver_it;
+    // The sender and receiver have already been updated above.
+    DCHECK_EQ(transceiver->sender(), sender);
+    DCHECK_EQ(transceiver->receiver(), receiver);
+    transceiver->UpdateMembers();
+  }
+  return transceiver;
+}
+
 RTCDTMFSender* RTCPeerConnection::createDTMFSender(
     MediaStreamTrack* track,
     ExceptionState& exception_state) {
@@ -1670,6 +1824,11 @@ void RTCPeerConnection::close() {
     return;
 
   CloseInternal();
+}
+
+void RTCPeerConnection::RegisterTrack(MediaStreamTrack* track) {
+  DCHECK(track);
+  tracks_.insert(track->Component(), track);
 }
 
 void RTCPeerConnection::NoteSdpCreated(const RTCSessionDescription& desc) {
@@ -1758,6 +1917,7 @@ void RTCPeerConnection::DidAddReceiverPlanB(
     std::unique_ptr<WebRTCRtpReceiver> web_receiver) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
+  DCHECK_EQ(sdp_semantics_, WebRTCSdpSemantics::kPlanB);
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
@@ -1806,13 +1966,14 @@ void RTCPeerConnection::DidAddReceiverPlanB(
       new RTCRtpReceiver(std::move(web_receiver), track, streams);
   rtp_receivers_.push_back(rtp_receiver);
   ScheduleDispatchEvent(
-      new RTCTrackEvent(rtp_receiver, rtp_receiver->track(), streams));
+      new RTCTrackEvent(rtp_receiver, rtp_receiver->track(), streams, nullptr));
 }
 
 void RTCPeerConnection::DidRemoveReceiverPlanB(
     std::unique_ptr<WebRTCRtpReceiver> web_receiver) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
+  DCHECK_EQ(sdp_semantics_, WebRTCSdpSemantics::kPlanB);
 
   auto* it = FindReceiver(*web_receiver);
   DCHECK(it != rtp_receivers_.end());
@@ -1845,11 +2006,122 @@ void RTCPeerConnection::DidRemoveReceiverPlanB(
 }
 
 void RTCPeerConnection::DidModifyTransceivers(
-    std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceiver,
+    std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers,
     bool is_remote_description) {
-  DCHECK_EQ(sdp_semantics_, WebRTCSdpSemantics::kUnifiedPlan);
-  // TODO(hbos): Exercise this codepath. https://crbug.com/777617
-  NOTREACHED();
+  HeapVector<Member<MediaStreamTrack>> mute_tracks;
+  HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>
+      remove_list;
+  HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>> add_list;
+  HeapVector<Member<RTCRtpTransceiver>> track_events;
+  for (auto& web_transceiver : web_transceivers) {
+    auto* it = FindTransceiver(*web_transceiver);
+    bool previously_had_recv =
+        (it != transceivers_.end()) ? (*it)->FiredDirectionHasRecv() : false;
+    RTCRtpTransceiver* transceiver =
+        CreateOrUpdateTransceiver(std::move(web_transceiver));
+
+    // The transceiver is now up-to-date. Compare before/after values of
+    // FiredDirectionHasRecv() and process the remote track if it changed.
+    if (is_remote_description && !previously_had_recv &&
+        transceiver->FiredDirectionHasRecv()) {
+      ProcessAdditionOfRemoteTrack(
+          transceiver, transceiver->web_transceiver()->Receiver()->StreamIds(),
+          &add_list, &track_events);
+    }
+    if (previously_had_recv && !transceiver->FiredDirectionHasRecv()) {
+      ProcessRemovalOfRemoteTrack(transceiver, &remove_list, &mute_tracks);
+    }
+  }
+
+  for (auto& track : mute_tracks) {
+    track->Component()->Source()->SetReadyState(
+        MediaStreamSource::kReadyStateMuted);
+  }
+  for (auto& pair : remove_list) {
+    auto& stream = pair.first;
+    auto& track = pair.second;
+    if (stream->getTracks().Contains(track)) {
+      stream->RemoveTrackAndFireEvents(track);
+    }
+  }
+  for (auto& pair : add_list) {
+    auto& stream = pair.first;
+    auto& track = pair.second;
+    if (!stream->getTracks().Contains(track)) {
+      stream->AddTrackAndFireEvents(track);
+    }
+  }
+
+  for (auto& transceiver : track_events) {
+    ScheduleDispatchEvent(new RTCTrackEvent(
+        transceiver->receiver(), transceiver->receiver()->track(),
+        transceiver->receiver()->streams(), transceiver));
+  }
+}
+
+void RTCPeerConnection::ProcessAdditionOfRemoteTrack(
+    RTCRtpTransceiver* transceiver,
+    const WebVector<WebString>& stream_ids,
+    HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+        add_list,
+    HeapVector<Member<RTCRtpTransceiver>>* track_events) {
+  SetAssociatedMediaStreams(transceiver->receiver(), stream_ids, nullptr,
+                            add_list);
+  track_events->push_back(transceiver);
+}
+
+void RTCPeerConnection::ProcessRemovalOfRemoteTrack(
+    RTCRtpTransceiver* transceiver,
+    HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+        remove_list,
+    HeapVector<Member<MediaStreamTrack>>* mute_tracks) {
+  WebVector<WebString> stream_ids = {};
+  SetAssociatedMediaStreams(transceiver->receiver(), stream_ids, remove_list,
+                            nullptr);
+  if (!transceiver->receiver()->track()->muted())
+    mute_tracks->push_back(transceiver->receiver()->track());
+}
+
+void RTCPeerConnection::SetAssociatedMediaStreams(
+    RTCRtpReceiver* receiver,
+    const WebVector<WebString>& stream_ids,
+    HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+        remove_list,
+    HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
+        add_list) {
+  MediaStreamVector known_streams = getRemoteStreams();
+
+  MediaStreamVector streams;
+  for (const auto& stream_id : stream_ids) {
+    MediaStream* curr_stream = nullptr;
+    for (const auto& known_stream : known_streams) {
+      if (static_cast<WebString>(known_stream->id()) == stream_id) {
+        curr_stream = known_stream;
+        break;
+      }
+    }
+    if (!curr_stream) {
+      curr_stream = MediaStream::Create(
+          GetExecutionContext(), MediaStreamDescriptor::Create(
+                                     static_cast<String>(stream_id), {}, {}));
+    }
+    streams.push_back(curr_stream);
+  }
+
+  const MediaStreamVector& prev_streams = receiver->streams();
+  if (remove_list) {
+    for (const auto& stream : prev_streams) {
+      if (!streams.Contains(stream))
+        remove_list->push_back(std::make_pair(stream, receiver->track()));
+    }
+  }
+  if (add_list) {
+    for (const auto& stream : streams) {
+      if (!prev_streams.Contains(stream))
+        add_list->push_back(std::make_pair(stream, receiver->track()));
+    }
+  }
+  receiver->set_streams(std::move(streams));
 }
 
 void RTCPeerConnection::DidAddRemoteDataChannel(
@@ -1982,6 +2254,10 @@ void RTCPeerConnection::CloseInternal() {
   ChangeIceConnectionState(kICEConnectionStateClosed);
   ChangeSignalingState(webrtc::PeerConnectionInterface::SignalingState::kClosed,
                        false);
+  for (auto& transceiver : transceivers_) {
+    transceiver->OnPeerConnectionClosed();
+  }
+
   Document* document = ToDocument(GetExecutionContext());
   HostsUsingFeatures::CountAnyWorld(
       *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);
@@ -2044,6 +2320,7 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(tracks_);
   visitor->Trace(rtp_senders_);
   visitor->Trace(rtp_receivers_);
+  visitor->Trace(transceivers_);
   visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);

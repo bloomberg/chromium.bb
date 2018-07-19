@@ -11,6 +11,5 @@
     readonly attribute MediaStreamTrack         track;
     [SameObject]
     readonly attribute FrozenArray<MediaStream> streams;
-    // TODO(hbos): When RTCRtpTransceiver is supported, add:
-    // readonly attribute RTCRtpTransceiver        transceiver;
+    readonly attribute RTCRtpTransceiver        transceiver;
 };

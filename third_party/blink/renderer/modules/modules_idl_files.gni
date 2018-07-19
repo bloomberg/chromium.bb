@@ -226,6 +226,7 @@ modules_idl_files =
           "peerconnection/rtc_rtp_contributing_source.idl",
           "peerconnection/rtc_rtp_receiver.idl",
           "peerconnection/rtc_rtp_sender.idl",
+          "peerconnection/rtc_rtp_transceiver.idl",
           "peerconnection/rtc_session_description.idl",
           "peerconnection/rtc_stats_report.idl",
           "peerconnection/rtc_stats_response.idl",

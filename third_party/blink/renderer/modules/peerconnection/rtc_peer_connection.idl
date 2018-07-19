@@ -132,6 +132,8 @@ enum RTCIceConnectionState {
     [CallWith=ScriptState] Promise<any> getStats(optional any callbackOrSelector);
 
     // RTP Media API
+    // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-gettransceivers
+    sequence<RTCRtpTranceiver> getTransceivers();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getsenders
     [Measure] sequence<RTCRtpSender> getSenders();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getreceivers

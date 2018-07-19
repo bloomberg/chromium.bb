@@ -21,11 +21,6 @@ RTCRtpReceiver::RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver> receiver,
       streams_(std::move(streams)) {
   DCHECK(receiver_);
   DCHECK(track_);
-  // Some bots require #if around the DCHECK to avoid compile error about
-  // |StateMatchesWebReceiver| (which is behind #if) not being defined.
-#if DCHECK_IS_ON()
-  DCHECK(StateMatchesWebReceiver());
-#endif  // DCHECK_IS_ON()
 }
 
 MediaStreamTrack* RTCRtpReceiver::track() const {
@@ -53,23 +48,9 @@ MediaStreamVector RTCRtpReceiver::streams() const {
   return streams_;
 }
 
-#if DCHECK_IS_ON()
-
-bool RTCRtpReceiver::StateMatchesWebReceiver() const {
-  if (track_->Component() !=
-      static_cast<MediaStreamComponent*>(receiver_->Track())) {
-    return false;
-  }
-  WebVector<WebString> stream_ids = receiver_->StreamIds();
-  if (streams_.size() != stream_ids.size())
-    return false;
-  for (size_t i = 0; i < streams_.size(); ++i)
-    if (static_cast<WebString>(streams_[i]->id()) != stream_ids[i])
-      return false;
-  return true;
+void RTCRtpReceiver::set_streams(MediaStreamVector streams) {
+  streams_ = std::move(streams);
 }
-
-#endif  // DCHECK_IS_ON()
 
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
   if (!contributing_sources_needs_updating_)

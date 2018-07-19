@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS addTrack when pc is closed should throw InvalidStateError
-FAIL addTrack with single track argument and no stream should succeed promise_test: Unhandled rejection with value: object "TypeError: pc.getTransceivers is not a function"
+PASS addTrack with single track argument and no stream should succeed
 PASS addTrack with single track argument and single stream should succeed
 PASS addTrack with single track argument and multiple streams should succeed
 PASS Adding the same track multiple times should throw InvalidAccessError

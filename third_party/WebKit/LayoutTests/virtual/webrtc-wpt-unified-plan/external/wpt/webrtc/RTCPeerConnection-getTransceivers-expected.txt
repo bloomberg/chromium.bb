@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Initial peer connection should have list of zero senders, receivers and transceivers
+Harness: the test ran to completion.
+

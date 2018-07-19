@@ -109,8 +109,10 @@ static std::string SerializeMediaStreamIds(
 static std::string SerializeTransceiver(
     const blink::WebRTCRtpSender* sender,
     const blink::WebRTCRtpReceiver* receiver) {
-  DCHECK((sender != nullptr) != (receiver != nullptr));
+  DCHECK(sender || receiver);
   std::string result;
+  if (sender && receiver)
+    result += "{ ";
   if (sender) {
     result += "sender: { ";
     if (sender->Track().IsNull())
@@ -119,13 +121,17 @@ static std::string SerializeTransceiver(
       result += "track: " + SerializeMediaStreamComponent(sender->Track());
     result += ", streams: " + SerializeMediaStreamIds(sender->StreamIds());
     result += " }";
-  } else {
-    DCHECK(receiver);
+  }
+  if (receiver) {
+    if (sender)
+      result += ", ";
     result += "receiver: { ";
     DCHECK(!receiver->Track().IsNull());
     result += "track: " + SerializeMediaStreamComponent(receiver->Track());
     result += ", streams: " + SerializeMediaStreamIds(receiver->StreamIds());
     result += " }";
+    if (sender)
+      result += " }";
   }
   return result;
 }
