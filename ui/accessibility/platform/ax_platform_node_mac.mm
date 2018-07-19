@@ -287,16 +287,20 @@ const ActionList& GetActionList() {
   return action_map;
 }
 
+void PostAnnouncementNotification(NSString* announcement) {
+  NSDictionary* notification_info = @{
+    NSAccessibilityAnnouncementKey : announcement,
+    NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
+  };
+  NSAccessibilityPostNotificationWithUserInfo(
+      [NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification,
+      notification_info);
+}
+
 void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {
   NSString* announcement_text = [target announcementTextForEvent:event_type];
   if (announcement_text) {
-    NSDictionary* notification_info = @{
-      NSAccessibilityAnnouncementKey : announcement_text,
-      NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
-    };
-    NSAccessibilityPostNotificationWithUserInfo(
-        [NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification,
-        notification_info);
+    PostAnnouncementNotification(announcement_text);
     return;
   }
   NSAccessibilityPostNotification(
@@ -978,6 +982,10 @@ void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
       break;
   }
   NotifyMacEvent(native_node_, event_type);
+}
+
+void AXPlatformNodeMac::AnnounceText(base::string16& text) {
+  PostAnnouncementNotification(base::SysUTF16ToNSString(text));
 }
 
 int AXPlatformNodeMac::GetIndexInParent() {

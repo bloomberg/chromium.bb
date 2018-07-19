@@ -91,6 +91,11 @@ class AX_EXPORT AXPlatformNode {
   // this object.
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) = 0;
 
+#if defined(OS_MACOSX)
+  // Fire a platform-specific notification to announce |text|.
+  virtual void AnnounceText(base::string16& text) = 0;
+#endif
+
   // Return this object's delegate.
   virtual AXPlatformNodeDelegate* GetDelegate() const = 0;
 

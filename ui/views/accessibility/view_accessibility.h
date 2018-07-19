@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
@@ -52,6 +53,9 @@ class VIEWS_EXPORT ViewAccessibility {
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
+#if defined(OS_MACOSX)
+  virtual void AnnounceText(base::string16& text) {}
+#endif
 
   virtual const ui::AXUniqueId& GetUniqueId() const;
 
