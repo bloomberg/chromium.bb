@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -34,8 +35,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
@@ -242,20 +242,6 @@ class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HangingPacRequestProxyScriptBrowserTest);
 };
 
-// URLFetcherDelegate that expects a request to hang.
-class HangingURLFetcherDelegate : public net::URLFetcherDelegate {
- public:
-  HangingURLFetcherDelegate() {}
-  ~HangingURLFetcherDelegate() override {}
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    ADD_FAILURE() << "This request should never complete.";
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HangingURLFetcherDelegate);
-};
-
 // Check that the URLRequest for a PAC that is still alive during shutdown is
 // safely cleaned up.  This test relies on AssertNoURLRequests being called on
 // the main URLRequestContext.
@@ -263,12 +249,20 @@ IN_PROC_BROWSER_TEST_F(HangingPacRequestProxyScriptBrowserTest, Shutdown) {
   // Request that should hang while trying to request the PAC script.
   // Enough requests are created on startup that this probably isn't needed, but
   // best to be safe.
-  HangingURLFetcherDelegate hanging_request_delegate;
-  std::unique_ptr<net::URLFetcher> hanging_fetcher = net::URLFetcher::Create(
-      GURL("http://blah/"), net::URLFetcher::GET, &hanging_request_delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS);
-  hanging_fetcher->SetRequestContext(browser()->profile()->GetRequestContext());
-  hanging_fetcher->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL("http://blah/");
+  auto simple_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  auto* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  auto url_loader_factory =
+      storage_partition->GetURLLoaderFactoryForBrowserProcess();
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(),
+      base::BindOnce([](std::unique_ptr<std::string> body) {
+        ADD_FAILURE() << "This request should never complete.";
+      }));
 
   connection_listener_->WaitForConnections();
 }
