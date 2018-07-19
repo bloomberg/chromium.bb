@@ -153,13 +153,13 @@ public class DownloadHistoryAdapter
     /** An item group containing the prefetched items. */
     private static class PrefetchItemGroup extends ItemGroup {
         @Override
-        public int priority() {
-            return GROUP_PRIORITY_ELEVATED_CONTENT;
+        public @GroupPriority int priority() {
+            return GroupPriority.ELEVATED_CONTENT;
         }
 
         @Override
-        public int getItemViewType(int index) {
-            return index == 0 ? TYPE_SUBSECTION_HEADER : TYPE_NORMAL;
+        public @ItemViewType int getItemViewType(int index) {
+            return index == 0 ? ItemViewType.SUBSECTION_HEADER : ItemViewType.NORMAL;
         }
 
         @Override

@@ -52,8 +52,8 @@ public class AccountPickerDialogFragment extends DialogFragment {
         void addAccount();
     }
 
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({ViewType.EXISTING_ACCOUNT, ViewType.NEW_ACCOUNT})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface ViewType {
         int EXISTING_ACCOUNT = 0;
         int NEW_ACCOUNT = 1;

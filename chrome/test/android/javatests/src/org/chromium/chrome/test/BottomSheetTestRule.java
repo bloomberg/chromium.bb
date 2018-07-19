@@ -93,7 +93,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /** A handle to the sheet's observer. */
     private Observer mObserver;
 
-    private @BottomSheet.SheetState int mStartingBottomSheetState = BottomSheet.SHEET_STATE_FULL;
+    private @BottomSheet.SheetState int mStartingBottomSheetState = BottomSheet.SheetState.FULL;
 
     protected void afterStartingActivity() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -108,7 +108,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         mObserver = new Observer();
         getBottomSheet().addObserver(mObserver);
 
-        if (mStartingBottomSheetState == BottomSheet.SHEET_STATE_PEEK) return;
+        if (mStartingBottomSheetState == BottomSheet.SheetState.PEEK) return;
 
         setSheetState(mStartingBottomSheetState, /* animate = */ false);
     }

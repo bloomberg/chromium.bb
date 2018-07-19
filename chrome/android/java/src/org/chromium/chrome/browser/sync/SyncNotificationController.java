@@ -106,7 +106,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER)
+                                true /* preferCompat */, ChannelDefinitions.ChannelId.BROWSER)
                         .setAutoCancel(true)
                         .setContentIntent(contentIntent)
                         .setContentTitle(title)
@@ -121,7 +121,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_SYNC, notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.SYNC,
-                ChannelDefinitions.CHANNEL_ID_BROWSER);
+                ChannelDefinitions.ChannelId.BROWSER);
     }
 
     private boolean shouldSyncAuthErrorBeShown() {

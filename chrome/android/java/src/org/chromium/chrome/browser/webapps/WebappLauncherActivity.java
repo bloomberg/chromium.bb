@@ -182,8 +182,8 @@ public class WebappLauncherActivity extends Activity {
                 : WebappActivity.class.getName();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             // Specifically assign the app to a particular WebappActivity instance.
-            int namespace = isWebApk
-                    ? ActivityAssigner.WEBAPK_NAMESPACE : ActivityAssigner.WEBAPP_NAMESPACE;
+            int namespace = isWebApk ? ActivityAssigner.ActivityAssignerNamespace.WEBAPK_NAMESPACE
+                                     : ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
             int activityIndex = ActivityAssigner.instance(namespace).assign(info.id());
             activityName += String.valueOf(activityIndex);
 

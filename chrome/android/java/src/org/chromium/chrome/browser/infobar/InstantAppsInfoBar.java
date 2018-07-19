@@ -42,7 +42,8 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
     protected void setButtons(InfoBarLayout layout, String primaryText, String secondaryText) {
         ImageView playLogo = new ImageView(layout.getContext());
         playLogo.setImageResource(R.drawable.google_play);
-        layout.setBottomViews(primaryText, playLogo, DualControlLayout.ALIGN_APART);
+        layout.setBottomViews(
+                primaryText, playLogo, DualControlLayout.DualControlLayoutAlignment.APART);
     }
 
     @CalledByNative

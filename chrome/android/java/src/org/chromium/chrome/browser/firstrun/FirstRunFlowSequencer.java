@@ -139,9 +139,10 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean shouldShowSearchEnginePage() {
+        @LocaleManager.SearchEnginePromoType
         int searchPromoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
-        return searchPromoType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_NEW
-                || searchPromoType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+        return searchPromoType == LocaleManager.SearchEnginePromoType.SHOW_NEW
+                || searchPromoType == LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
     }
 
     @VisibleForTesting

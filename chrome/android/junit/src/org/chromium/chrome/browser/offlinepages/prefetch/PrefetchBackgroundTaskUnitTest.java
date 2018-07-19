@@ -262,7 +262,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, battery conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 
     @Test
@@ -283,7 +283,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         // Nothing to do.
                     }
                 });
-        assertEquals(NativeBackgroundTask.LOAD_NATIVE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.LOAD_NATIVE, result);
     }
 
     @Test
@@ -304,7 +304,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, network conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 
     /**
@@ -335,7 +335,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, network conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 
     @Test
@@ -356,7 +356,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, network conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.LOAD_NATIVE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.LOAD_NATIVE, result);
     }
 
     @Test
@@ -377,7 +377,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, network conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 
     @Test
@@ -399,7 +399,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, network conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 
     @Test
@@ -421,7 +421,7 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, network conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 
     @Test
@@ -467,6 +467,6 @@ public class PrefetchBackgroundTaskUnitTest {
                         fail("Finished callback should not be run, battery conditions not met.");
                     }
                 });
-        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+        assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
     }
 }

@@ -438,12 +438,14 @@ public class SuggestionsSection extends InnerNode {
                 reportPrefetchedSuggestionsCount);
 
         if (!keepSectionSize) {
-            NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_APPENDED);
+            NewTabPageUma.recordUIUpdateResult(
+                    NewTabPageUma.ContentSuggestionsUIUpdateResult.SUCCESS_APPENDED);
             mHasAppended = true;
         } else {
             NewTabPageUma.recordNumberOfSuggestionsSeenBeforeUIUpdateSuccess(
                     numberOfSuggestionsExposed);
-            NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_REPLACED);
+            NewTabPageUma.recordUIUpdateResult(
+                    NewTabPageUma.ContentSuggestionsUIUpdateResult.SUCCESS_REPLACED);
         }
     }
 
@@ -473,7 +475,8 @@ public class SuggestionsSection extends InnerNode {
 
         if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
             Log.d(TAG, "updateSuggestions: replacing existing suggestion disabled");
-            NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_DISABLED);
+            NewTabPageUma.recordUIUpdateResult(
+                    NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_DISABLED);
             return false;
         }
 
@@ -481,7 +484,8 @@ public class SuggestionsSection extends InnerNode {
             // In case that suggestions got removed, we assume they already were seen. This might
             // be over-simplifying things, but given the rare occurences it should be good enough.
             Log.d(TAG, "updateSuggestions: replacing existing suggestion not possible, all seen");
-            NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_ALL_SEEN);
+            NewTabPageUma.recordUIUpdateResult(
+                    NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_ALL_SEEN);
             return false;
         }
 

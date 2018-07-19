@@ -164,7 +164,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
             boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
             boolean isFragmentNavigation, Integer pageTransition, int errorCode,
             int httpStatusCode) {
-        if (mActivityType == WebappActivity.ACTIVITY_TYPE_WEBAPP || !isInMainFrame) return;
+        if (mActivityType == WebappActivity.ActivityType.WEBAPP || !isInMainFrame) return;
 
         mErrorCode = errorCode;
         switch (mErrorCode) {
@@ -185,7 +185,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     protected boolean canHideSplashScreen() {
-        if (mActivityType == WebappActivity.ACTIVITY_TYPE_WEBAPP) return true;
+        if (mActivityType == WebappActivity.ActivityType.WEBAPP) return true;
         return mErrorCode != NetError.ERR_INTERNET_DISCONNECTED
                 && mErrorCode != NetError.ERR_NETWORK_CHANGED;
     }
@@ -220,7 +220,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
         mOfflineDialog = new WebappOfflineDialog();
         mOfflineDialog.show(tab.getActivity(), mAppName,
-                mActivityType == WebappActivity.ACTIVITY_TYPE_WEBAPK, errorCode);
+                mActivityType == WebappActivity.ActivityType.WEBAPK, errorCode);
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */

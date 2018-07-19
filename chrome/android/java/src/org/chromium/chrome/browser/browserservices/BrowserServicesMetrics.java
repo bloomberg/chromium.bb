@@ -18,28 +18,29 @@ import java.util.concurrent.TimeUnit;
  */
 public class BrowserServicesMetrics {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({VERIFICATION_RESULT_ONLINE_SUCCESS, VERIFICATION_RESULT_ONLINE_FAILURE,
-            VERIFICATION_RESULT_OFFLINE_SUCCESS, VERIFICATION_RESULT_OFFLINE_FAILURE,
-            VERIFICATION_RESULT_HTTPS_FAILURE, VERIFICATION_RESULT_REQUEST_FAILURE,
-            VERIFICATION_RESULT_CACHED_SUCCESS})
-    public @interface VerificationResultEnum {}
-
-    // Don't reuse values or reorder values. If you add something new, change ...COUNT as well.
-    public static final int VERIFICATION_RESULT_ONLINE_SUCCESS = 0;
-    public static final int VERIFICATION_RESULT_ONLINE_FAILURE = 1;
-    public static final int VERIFICATION_RESULT_OFFLINE_SUCCESS = 2;
-    public static final int VERIFICATION_RESULT_OFFLINE_FAILURE = 3;
-    public static final int VERIFICATION_RESULT_HTTPS_FAILURE = 4;
-    public static final int VERIFICATION_RESULT_REQUEST_FAILURE = 5;
-    public static final int VERIFICATION_RESULT_CACHED_SUCCESS = 6;
-    public static final int VERIFICATION_RESULT_COUNT = 7;
+    @IntDef({VerificationResult.ONLINE_SUCCESS, VerificationResult.ONLINE_FAILURE,
+            VerificationResult.OFFLINE_SUCCESS, VerificationResult.OFFLINE_FAILURE,
+            VerificationResult.HTTPS_FAILURE, VerificationResult.REQUEST_FAILURE,
+            VerificationResult.CACHED_SUCCESS})
+    public @interface VerificationResult {
+        // Don't reuse values or reorder values. If you add something new, change NUM_ENTRIES as
+        // well.
+        int ONLINE_SUCCESS = 0;
+        int ONLINE_FAILURE = 1;
+        int OFFLINE_SUCCESS = 2;
+        int OFFLINE_FAILURE = 3;
+        int HTTPS_FAILURE = 4;
+        int REQUEST_FAILURE = 5;
+        int CACHED_SUCCESS = 6;
+        int NUM_ENTRIES = 7;
+    }
 
     /**
      * Records the verification result for Trusted Web Activity verification.
      */
-    public static void recordVerificationResult(@VerificationResultEnum int result) {
-        RecordHistogram.recordEnumeratedHistogram("BrowserServices.VerificationResult", result,
-                VERIFICATION_RESULT_COUNT);
+    public static void recordVerificationResult(@VerificationResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "BrowserServices.VerificationResult", result, VerificationResult.NUM_ENTRIES);
     }
 
     /**

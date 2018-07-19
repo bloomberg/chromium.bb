@@ -55,7 +55,7 @@ public class HomeSheetNoTilesUiCaptureTest {
     @MediumTest
     @Feature({"UiCatalogue"})
     public void testNoTiles() {
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
         mScreenShooter.shoot("NoTiles");
     }

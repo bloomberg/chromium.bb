@@ -236,13 +236,13 @@ public class FirstRunIntegrationTest {
     @Test
     @MediumTest
     public void testDefaultSearchEngine_DontShow() throws Exception {
-        runSearchEnginePromptTest(LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW);
+        runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.DONT_SHOW);
     }
 
     @Test
     @MediumTest
     public void testDefaultSearchEngine_ShowExisting() throws Exception {
-        runSearchEnginePromptTest(LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING);
+        runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.SHOW_EXISTING);
     }
 
     private void runSearchEnginePromptTest(@SearchEnginePromoType final int searchPromoType)
@@ -305,7 +305,7 @@ public class FirstRunIntegrationTest {
         }
 
         // Select a default search engine.
-        if (searchPromoType == LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW) {
+        if (searchPromoType == LocaleManager.SearchEnginePromoType.DONT_SHOW) {
             Assert.assertFalse("Search engine page was shown.",
                     freProperties.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
         } else {

@@ -318,9 +318,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                 newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
             } else {
-                int activityIndex =
-                        ActivityAssigner.instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE)
-                                .assign(uuid);
+                int activityIndex = ActivityAssigner
+                                            .instance(ActivityAssigner.ActivityAssignerNamespace
+                                                              .SEPARATE_TASK_CCT_NAMESPACE)
+                                            .assign(uuid);
                 String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
                 newIntent.setClassName(context, className);
             }

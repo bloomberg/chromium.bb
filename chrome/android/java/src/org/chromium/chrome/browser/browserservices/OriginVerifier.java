@@ -198,7 +198,7 @@ public class OriginVerifier {
                 || !UrlConstants.HTTPS_SCHEME.equals(scheme.toLowerCase(Locale.US))) {
             Log.i(TAG, "Verification failed for %s as not https.", origin);
             BrowserServicesMetrics.recordVerificationResult(
-                    BrowserServicesMetrics.VERIFICATION_RESULT_HTTPS_FAILURE);
+                    BrowserServicesMetrics.VerificationResult.HTTPS_FAILURE);
             ThreadUtils.runOnUiThread(new VerifiedCallback(false, null));
             return;
         }
@@ -207,7 +207,7 @@ public class OriginVerifier {
         if (isValidOrigin(mPackageName, origin, mRelation)) {
             Log.i(TAG, "Verification succeeded for %s, it was cached.", origin);
             BrowserServicesMetrics.recordVerificationResult(
-                    BrowserServicesMetrics.VERIFICATION_RESULT_CACHED_SUCCESS);
+                    BrowserServicesMetrics.VerificationResult.CACHED_SUCCESS);
             ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
             return;
         }
@@ -236,7 +236,7 @@ public class OriginVerifier {
                 mSignatureFingerprint, mOrigin.toString(), relationship);
         if (!requestSent) {
             BrowserServicesMetrics.recordVerificationResult(
-                    BrowserServicesMetrics.VERIFICATION_RESULT_REQUEST_FAILURE);
+                    BrowserServicesMetrics.VerificationResult.REQUEST_FAILURE);
             ThreadUtils.runOnUiThread(new VerifiedCallback(false, false));
         }
     }
@@ -313,12 +313,12 @@ public class OriginVerifier {
         switch (result) {
             case RelationshipCheckResult.SUCCESS:
                 BrowserServicesMetrics.recordVerificationResult(
-                        BrowserServicesMetrics.VERIFICATION_RESULT_ONLINE_SUCCESS);
+                        BrowserServicesMetrics.VerificationResult.ONLINE_SUCCESS);
                 originVerified(true, true);
                 break;
             case RelationshipCheckResult.FAILURE:
                 BrowserServicesMetrics.recordVerificationResult(
-                        BrowserServicesMetrics.VERIFICATION_RESULT_ONLINE_FAILURE);
+                        BrowserServicesMetrics.VerificationResult.ONLINE_FAILURE);
                 originVerified(false, true);
                 break;
             case RelationshipCheckResult.NO_CONNECTION:
@@ -375,8 +375,8 @@ public class OriginVerifier {
             boolean verified = savedLinks.contains(link);
 
             BrowserServicesMetrics.recordVerificationResult(verified
-                    ? BrowserServicesMetrics.VERIFICATION_RESULT_OFFLINE_SUCCESS
-                    : BrowserServicesMetrics.VERIFICATION_RESULT_OFFLINE_FAILURE);
+                            ? BrowserServicesMetrics.VerificationResult.OFFLINE_SUCCESS
+                            : BrowserServicesMetrics.VerificationResult.OFFLINE_FAILURE);
 
             originVerified(verified, false);
         }

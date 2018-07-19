@@ -24,15 +24,15 @@ import java.lang.annotation.RetentionPolicy;
  * format requested by the compositor is also ignored.
  */
 public class VrCompositorSurfaceManager implements CompositorSurfaceManager {
-    private static final int SURFACE_NOT_REQUESTED = 0;
-    private static final int SURFACE_REQUESTED = 1;
-    private static final int SURFACE_PROVIDED = 2;
-
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SURFACE_NOT_REQUESTED, SURFACE_REQUESTED, SURFACE_PROVIDED})
-    private @interface SurfaceState {}
+    @IntDef({SurfaceState.NOT_REQUESTED, SurfaceState.REQUESTED, SurfaceState.PROVIDED})
+    private @interface SurfaceState {
+        int NOT_REQUESTED = 0;
+        int REQUESTED = 1;
+        int PROVIDED = 2;
+    }
 
-    private @SurfaceState int mSurfaceState = SURFACE_NOT_REQUESTED;
+    private @SurfaceState int mSurfaceState = SurfaceState.NOT_REQUESTED;
     private Surface mSurface;
     private int mFormat;
     private int mWidth;
@@ -46,15 +46,15 @@ public class VrCompositorSurfaceManager implements CompositorSurfaceManager {
     }
 
     /* package */ void setSurface(Surface surface, int format, int width, int height) {
-        if (mSurfaceState == SURFACE_PROVIDED) shutDown();
+        if (mSurfaceState == SurfaceState.PROVIDED) shutDown();
         mSurface = surface;
         mFormat = format;
         mWidth = width;
         mHeight = height;
-        if (mSurfaceState == SURFACE_REQUESTED) {
+        if (mSurfaceState == SurfaceState.REQUESTED) {
             mClient.surfaceCreated(mSurface);
             mClient.surfaceChanged(mSurface, mFormat, mWidth, mHeight);
-            mSurfaceState = SURFACE_PROVIDED;
+            mSurfaceState = SurfaceState.PROVIDED;
         }
     }
 
@@ -62,7 +62,7 @@ public class VrCompositorSurfaceManager implements CompositorSurfaceManager {
         assert mSurface != null;
         mWidth = width;
         mHeight = height;
-        if (mSurfaceState == SURFACE_PROVIDED) {
+        if (mSurfaceState == SurfaceState.PROVIDED) {
             mClient.surfaceChanged(mSurface, mFormat, mWidth, mHeight);
         }
     }
@@ -74,20 +74,20 @@ public class VrCompositorSurfaceManager implements CompositorSurfaceManager {
 
     @Override
     public void shutDown() {
-        if (mSurfaceState == SURFACE_PROVIDED) mClient.surfaceDestroyed(mSurface);
-        mSurfaceState = SURFACE_NOT_REQUESTED;
+        if (mSurfaceState == SurfaceState.PROVIDED) mClient.surfaceDestroyed(mSurface);
+        mSurfaceState = SurfaceState.NOT_REQUESTED;
     }
 
     @Override
     public void requestSurface(int format) {
         if (mSurface == null) {
-            mSurfaceState = SURFACE_REQUESTED;
+            mSurfaceState = SurfaceState.REQUESTED;
             return;
         }
-        if (mSurfaceState == SURFACE_PROVIDED) shutDown();
+        if (mSurfaceState == SurfaceState.PROVIDED) shutDown();
         mClient.surfaceCreated(mSurface);
         mClient.surfaceChanged(mSurface, mFormat, mWidth, mHeight);
-        mSurfaceState = SURFACE_PROVIDED;
+        mSurfaceState = SurfaceState.PROVIDED;
     }
 
     @Override

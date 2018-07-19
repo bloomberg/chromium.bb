@@ -56,7 +56,7 @@ public class LocaleManagerTest {
             @Override
             public int getSearchEnginePromoShowType() {
                 getShowTypeCallback.notifyCalled();
-                return LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW;
+                return LocaleManager.SearchEnginePromoType.DONT_SHOW;
             }
         });
 

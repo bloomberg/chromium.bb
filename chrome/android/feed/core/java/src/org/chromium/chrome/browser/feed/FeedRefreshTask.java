@@ -54,10 +54,10 @@ public class FeedRefreshTask extends NativeBackgroundTask {
     }
 
     @Override
-    protected int onStartTaskBeforeNativeLoaded(
+    protected @NativeBackgroundTask.StartBeforeNativeResult int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         // Nothing to setup without native, just wait.
-        return NativeBackgroundTask.LOAD_NATIVE;
+        return NativeBackgroundTask.StartBeforeNativeResult.LOAD_NATIVE;
     }
 
     @Override

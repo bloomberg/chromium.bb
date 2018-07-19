@@ -25,14 +25,14 @@ public class ToolbarButtonCoordinator {
     /** The mediator that handles events from outside the button. */
     private final ToolbarButtonMediator mMediator;
 
-    @IntDef({BROWSING_MODE, TAB_SWITCHER_MODE})
+    @IntDef({ButtonVisibility.BROWSING_MODE, ButtonVisibility.TAB_SWITCHER_MODE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ButtonVisibility {}
-
-    /* The button should be visible in browsing mode and not in tab switcher mode */
-    public static final int BROWSING_MODE = 0;
-    /* The button should be visible in tab switcher mode and not in browsing mode */
-    public static final int TAB_SWITCHER_MODE = 1;
+    public @interface ButtonVisibility {
+        /* The button should be visible in browsing mode and not in tab switcher mode */
+        int BROWSING_MODE = 0;
+        /* The button should be visible in tab switcher mode and not in browsing mode */
+        int TAB_SWITCHER_MODE = 1;
+    }
 
     /**
      * Build the controller that manages the button.

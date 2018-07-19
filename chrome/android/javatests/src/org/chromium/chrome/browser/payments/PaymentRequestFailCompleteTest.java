@@ -57,7 +57,7 @@ public class PaymentRequestFailCompleteTest implements MainActivityStartCallback
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_POSITIVE, mPaymentRequestTestRule.getResultReady());
+                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getResultReady());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.ok_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Transaction failed"});

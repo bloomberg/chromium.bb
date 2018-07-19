@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_OTHER;
-import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_WEBAPK;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -92,6 +89,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappCustomTabTimeSpentLogger;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -725,9 +723,9 @@ public class CustomTabActivity extends ChromeActivity {
                 getIntent(), IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
         Tab tab = new Tab(assignedTabId, parentTabId, mIntentDataProvider.isIncognito(),
                 getWindowAndroid(), TabLaunchType.FROM_EXTERNAL_APP, null, null);
-        if (getIntent().getIntExtra(
-                    CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, ACTIVITY_TYPE_OTHER)
-                == ACTIVITY_TYPE_WEBAPK) {
+        if (getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
+                    WebappActivity.ActivityType.OTHER)
+                == WebappActivity.ActivityType.WEBAPK) {
             String webapkPackageName = getIntent().getStringExtra(Browser.EXTRA_APPLICATION_ID);
             tab.setAppAssociatedWith(webapkPackageName);
         } else {
@@ -876,7 +874,7 @@ public class CustomTabActivity extends ChromeActivity {
         mIsInitialResume = false;
         mWebappTimeSpentLogger = WebappCustomTabTimeSpentLogger.createInstanceAndStartTimer(
                 getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
-                        ACTIVITY_TYPE_OTHER));
+                        WebappActivity.ActivityType.OTHER));
 
         if (mModuleActivityDelegate != null) {
             resumeModule();
@@ -1240,7 +1238,8 @@ public class CustomTabActivity extends ChromeActivity {
         } else if (id == R.id.info_menu_id) {
             if (getTabModelSelector().getCurrentTab() == null) return false;
             PageInfoController.show(this, getTabModelSelector().getCurrentTab(),
-                    getToolbarManager().getContentPublisher(), PageInfoController.OPENED_FROM_MENU);
+                    getToolbarManager().getContentPublisher(),
+                    PageInfoController.OpenedFromSource.MENU);
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

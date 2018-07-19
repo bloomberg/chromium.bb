@@ -60,14 +60,14 @@ public class HomeSheetCardsUiCaptureTest {
     @Before
     public void setup() throws InterruptedException {
         ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
-        mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SHEET_STATE_PEEK);
+        mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SheetState.PEEK);
     }
 
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
     public void testContextMenu() throws Exception {
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
 
         int position = mActivityRule.getFirstPositionForType(ItemViewType.SNIPPET);
@@ -79,7 +79,7 @@ public class HomeSheetCardsUiCaptureTest {
     @MediumTest
     @Feature({"UiCatalogue"})
     public void testScrolling() throws Exception {
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
 
         // When scrolling to a View, we wait until the View is no longer updating - when it is no
@@ -110,7 +110,7 @@ public class HomeSheetCardsUiCaptureTest {
         source.setSuggestionsForCategory(KnownCategories.ARTICLES, Collections.emptyList());
         source.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE_LOADING);
 
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
 
         mScreenShooter.shoot("ContentSuggestionsPlaceholder");

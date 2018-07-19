@@ -121,7 +121,7 @@ public class DefaultSearchEnginePromoDialogTest {
             @Override
             public DefaultSearchEnginePromoDialog call() throws Exception {
                 DefaultSearchEnginePromoDialog dialog = new DefaultSearchEnginePromoDialog(
-                        activity, LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING, null);
+                        activity, LocaleManager.SearchEnginePromoType.SHOW_EXISTING, null);
                 dialog.show();
                 return dialog;
             }

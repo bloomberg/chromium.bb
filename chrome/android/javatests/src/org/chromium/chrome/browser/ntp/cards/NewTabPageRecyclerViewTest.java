@@ -226,7 +226,7 @@ public class NewTabPageRecyclerViewTest {
         View suggestionView = getViewHolderAtPosition(suggestionPosition).itemView;
 
         // Dismiss the suggestion using the context menu.
-        invokeContextMenu(suggestionView, ContextMenuManager.ID_REMOVE);
+        invokeContextMenu(suggestionView, ContextMenuManager.ContextMenuItemId.REMOVE);
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), suggestionView);
 
         suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
@@ -247,7 +247,7 @@ public class NewTabPageRecyclerViewTest {
         View statusCardView = getViewHolderAtPosition(cardPosition).itemView;
 
         // Dismiss the status card using the context menu.
-        invokeContextMenu(statusCardView, ContextMenuManager.ID_REMOVE);
+        invokeContextMenu(statusCardView, ContextMenuManager.ContextMenuItemId.REMOVE);
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), statusCardView);
 
         assertArrayEquals(new int[0], mSource.getCategories());
@@ -266,7 +266,7 @@ public class NewTabPageRecyclerViewTest {
         View actionItemView = getViewHolderAtPosition(actionItemPosition).itemView;
 
         // Dismiss the action item using the context menu.
-        invokeContextMenu(actionItemView, ContextMenuManager.ID_REMOVE);
+        invokeContextMenu(actionItemView, ContextMenuManager.ContextMenuItemId.REMOVE);
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), actionItemView);
 
         assertArrayEquals(new int[0], mSource.getCategories());

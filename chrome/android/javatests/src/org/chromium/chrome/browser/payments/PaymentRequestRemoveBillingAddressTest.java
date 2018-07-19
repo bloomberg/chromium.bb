@@ -94,7 +94,7 @@ public class PaymentRequestRemoveBillingAddressTest implements MainActivityStart
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"4111111111111111", "Alice",
                 "12", "123", "Jane Smith", "Google", "1600 Amphitheatre Pkwy", "CA",
                 "Mountain View", "94043", "US", "+15155435555", "en-US"});

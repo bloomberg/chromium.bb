@@ -62,7 +62,7 @@ class WebappActionsNotificationManager {
         nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, createNotification());
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS,
-                ChannelDefinitions.CHANNEL_ID_WEBAPP_ACTIONS);
+                ChannelDefinitions.ChannelId.WEBAPP_ACTIONS);
     }
 
     private Notification createNotification() {
@@ -89,7 +89,7 @@ class WebappActionsNotificationManager {
 
         return NotificationBuilderFactory
                 .createChromeNotificationBuilder(
-                        true /* prefer compat */, ChannelDefinitions.CHANNEL_ID_WEBAPP_ACTIONS)
+                        true /* prefer compat */, ChannelDefinitions.ChannelId.WEBAPP_ACTIONS)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(mWebappActivity.getWebappInfo().shortName())
                 .setContentText(mWebappActivity.getString(R.string.webapp_tap_to_copy_url))

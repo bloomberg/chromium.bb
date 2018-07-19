@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.externalnav;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE;
-import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_OTHER;
-import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_TWA;
-import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_WEBAPK;
 
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -35,6 +32,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.WebappActivity.ActivityType;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
@@ -763,8 +761,8 @@ public class ExternalNavigationHandler {
         }
 
         int launchSource = IntentUtils.safeGetIntExtra(
-                tab.getActivity().getIntent(), EXTRA_BROWSER_LAUNCH_SOURCE, ACTIVITY_TYPE_OTHER);
-        if (launchSource != ACTIVITY_TYPE_WEBAPK && launchSource != ACTIVITY_TYPE_TWA) return false;
+                tab.getActivity().getIntent(), EXTRA_BROWSER_LAUNCH_SOURCE, ActivityType.OTHER);
+        if (launchSource != ActivityType.WEBAPK && launchSource != ActivityType.TWA) return false;
 
         String appId = IntentUtils.safeGetStringExtra(
                 tab.getActivity().getIntent(), Browser.EXTRA_APPLICATION_ID);

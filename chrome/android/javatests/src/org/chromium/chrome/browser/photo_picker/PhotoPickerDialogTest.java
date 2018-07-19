@@ -85,12 +85,12 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestFiles = new ArrayList<>();
-        mTestFiles.add(new PickerBitmap("a", 5L, PickerBitmap.PICTURE));
-        mTestFiles.add(new PickerBitmap("b", 4L, PickerBitmap.PICTURE));
-        mTestFiles.add(new PickerBitmap("c", 3L, PickerBitmap.PICTURE));
-        mTestFiles.add(new PickerBitmap("d", 2L, PickerBitmap.PICTURE));
-        mTestFiles.add(new PickerBitmap("e", 1L, PickerBitmap.PICTURE));
-        mTestFiles.add(new PickerBitmap("f", 0L, PickerBitmap.PICTURE));
+        mTestFiles.add(new PickerBitmap("a", 5L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("b", 4L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("c", 3L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("d", 2L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("e", 1L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("f", 0L, PickerBitmap.TileTypes.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
 
         DecoderServiceHost.setReadyCallback(this);

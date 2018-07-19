@@ -307,7 +307,7 @@ public class SavePasswordsPreferencesTest {
         // it will check the reauthentication result. First, update the reauth timestamp to indicate
         // a successful reauth:
         ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.BULK);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -367,10 +367,10 @@ public class SavePasswordsPreferencesTest {
                     (SavePasswordsPreferences) preferences.getFragmentForTest();
             // To show an error, the error type for UMA needs to be specified. Because it is not
             // relevant for cases when the error is forcibly displayed in tests,
-            // EXPORT_RESULT_NO_CONSUMER is passed as an arbitrarily chosen value.
+            // HistogramExportResult.NO_CONSUMER is passed as an arbitrarily chosen value.
             fragment.getExportFlowForTesting().showExportErrorAndAbort(
                     R.string.save_password_preferences_export_no_app, null, positiveButtonLabelId,
-                    ExportFlow.EXPORT_RESULT_NO_CONSUMER);
+                    ExportFlow.HistogramExportResult.NO_CONSUMER);
         });
     }
 
@@ -543,7 +543,7 @@ public class SavePasswordsPreferencesTest {
         // Ensure there are no saved passwords reported to settings.
         setPasswordSource(null);
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -562,7 +562,7 @@ public class SavePasswordsPreferencesTest {
     public void testExportMenuEnabled() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -580,7 +580,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     @DisableFeatures("PasswordExport")
     public void testExportMenuMissing() throws Exception {
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -605,9 +605,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportTriggersSerialization() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -618,7 +618,7 @@ public class SavePasswordsPreferencesTest {
         // Before tapping the menu item for export, pretend that the last successful
         // reauthentication just happened. This will allow the export flow to continue.
         ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.BULK);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
 
@@ -637,9 +637,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportMenuItem() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -653,7 +653,7 @@ public class SavePasswordsPreferencesTest {
 
         MetricsUtils.HistogramDelta userAbortedDelta =
                 new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        ExportFlow.EXPORT_RESULT_USER_ABORTED);
+                        ExportFlow.HistogramExportResult.USER_ABORTED);
 
         // Hit the Cancel button to cancel the flow.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -672,9 +672,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportReauthAfterCancel() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -727,9 +727,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportMenuItemNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_UNAVAILABLE);
+                ReauthenticationManager.OverrideState.UNAVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -756,9 +756,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportMenuItemReenabledNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_UNAVAILABLE);
+                ReauthenticationManager.OverrideState.UNAVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -785,7 +785,7 @@ public class SavePasswordsPreferencesTest {
     public void testExportMenuItemReenabledReauthFailure() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setSkipSystemReauth(true);
 
         final Preferences preferences =
@@ -818,9 +818,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportRequiresReauth() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -828,7 +828,7 @@ public class SavePasswordsPreferencesTest {
 
         // Ensure that the last reauthentication time stamp is recent enough.
         ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.BULK);
 
         // Start export.
         openActionBarOverflowOrOptionsMenu(
@@ -858,9 +858,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportIntent() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -878,8 +878,9 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
-        MetricsUtils.HistogramDelta successDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.ExportPasswordsToCSVResult", ExportFlow.EXPORT_RESULT_SUCCESS);
+        MetricsUtils.HistogramDelta successDelta =
+                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
+                        ExportFlow.HistogramExportResult.SUCCESS);
 
         MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.ExportedPasswordsPerUserInCSV", 123);
@@ -914,9 +915,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportIntentPaused() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -943,8 +944,9 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
-        MetricsUtils.HistogramDelta successDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.ExportPasswordsToCSVResult", ExportFlow.EXPORT_RESULT_SUCCESS);
+        MetricsUtils.HistogramDelta successDelta =
+                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
+                        ExportFlow.HistogramExportResult.SUCCESS);
 
         MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.ExportedPasswordsPerUserInCSV", 56);
@@ -974,9 +976,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportCancelOnWarning() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1002,9 +1004,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportWarningOnResume() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1043,9 +1045,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportWarningTimeoutOnResume() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1057,7 +1059,7 @@ public class SavePasswordsPreferencesTest {
         // Before exporting, pretend that the last successful reauthentication happend too long ago.
         ReauthenticationManager.recordLastReauth(System.currentTimeMillis()
                         - ReauthenticationManager.VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS - 1,
-                ReauthenticationManager.REAUTH_SCOPE_BULK);
+                ReauthenticationManager.ReauthScope.BULK);
 
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
@@ -1091,9 +1093,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportCancelOnWarningDismissal() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1122,9 +1124,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportProgressMinimalTime() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1186,9 +1188,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportProgress() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1243,9 +1245,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportCancelOnProgress() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1267,7 +1269,7 @@ public class SavePasswordsPreferencesTest {
 
         MetricsUtils.HistogramDelta userAbortedDelta =
                 new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        ExportFlow.EXPORT_RESULT_USER_ABORTED);
+                        ExportFlow.HistogramExportResult.USER_ABORTED);
 
         // Hit the Cancel button.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -1289,9 +1291,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportCancelOnError() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1331,9 +1333,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportRetry() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1369,9 +1371,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportHelpSite() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1418,9 +1420,9 @@ public class SavePasswordsPreferencesTest {
     public void testExportErrorUiAfterConfirmation() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1459,9 +1461,9 @@ public class SavePasswordsPreferencesTest {
     public void testViewPasswordNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_UNAVAILABLE);
+                ReauthenticationManager.OverrideState.UNAVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1486,9 +1488,9 @@ public class SavePasswordsPreferencesTest {
         setPasswordSource(
                 new SavedPasswordEntry("https://example.com", "test user", "test password"));
 
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1499,7 +1501,7 @@ public class SavePasswordsPreferencesTest {
         // Before tapping the view button, pretend that the last successful reauthentication just
         // happened. This will allow showing the password.
         ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
         Espresso.onView(withContentDescription(R.string.password_entry_editor_view_stored_password))
                 .perform(click());
         Espresso.onView(withText("test password")).check(matches(isDisplayed()));
@@ -1855,9 +1857,9 @@ public class SavePasswordsPreferencesTest {
     public void testSearchResultsPersistAfterEntryInspection() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         setPasswordExceptions(new String[] {"http://exclu.de", "http://not-inclu.de"});
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+                ReauthenticationManager.OverrideState.AVAILABLE);
         final Preferences prefs =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
@@ -1879,7 +1881,7 @@ public class SavePasswordsPreferencesTest {
         // Click "Zeus" to open edit field and verify the password. Pretend the user just passed the
         // reauthentication challenge.
         ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
         Instrumentation.ActivityMonitor monitor =
                 InstrumentationRegistry.getInstrumentation().addMonitor(
                         new IntentFilter(Intent.ACTION_VIEW), null, false);

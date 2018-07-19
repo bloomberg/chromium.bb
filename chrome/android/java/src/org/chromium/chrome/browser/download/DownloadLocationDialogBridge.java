@@ -58,12 +58,12 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     @Override
     public void onClick(@ModalDialogView.ButtonType int buttonType) {
         switch (buttonType) {
-            case ModalDialogView.BUTTON_POSITIVE:
+            case ModalDialogView.ButtonType.POSITIVE:
                 handleResponses(mLocationDialog.getFileName(), mLocationDialog.getDirectoryOption(),
                         mLocationDialog.getDontShowAgain());
                 mModalDialogManager.dismissDialog(mLocationDialog);
                 break;
-            case ModalDialogView.BUTTON_NEGATIVE:
+            case ModalDialogView.ButtonType.NEGATIVE:
             // Intentional fall-through.
             default:
                 cancel();

@@ -252,7 +252,7 @@ public class TabModalPresenter
             mActiveTab.onTabModalDialogStateChanged(true);
 
             if (mHasBottomControls) {
-                bottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                bottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
                 bottomSheet.addObserver(mBottomSheetObserver);
             } else {
                 mChromeActivity.getToolbarManager().setUrlBarFocus(false);

@@ -43,7 +43,7 @@ class ToolbarButtonMediator implements OverviewModeObserver {
     @Override
     public void onOverviewModeStartedShowing(boolean showToolbar) {
         mModel.setValue(ToolbarButtonProperties.IS_VISIBLE,
-                mButtonVisibility == ToolbarButtonCoordinator.TAB_SWITCHER_MODE);
+                mButtonVisibility == ToolbarButtonCoordinator.ButtonVisibility.TAB_SWITCHER_MODE);
     }
 
     @Override
@@ -52,7 +52,7 @@ class ToolbarButtonMediator implements OverviewModeObserver {
     @Override
     public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
         mModel.setValue(ToolbarButtonProperties.IS_VISIBLE,
-                mButtonVisibility == ToolbarButtonCoordinator.BROWSING_MODE);
+                mButtonVisibility == ToolbarButtonCoordinator.ButtonVisibility.BROWSING_MODE);
     }
 
     @Override

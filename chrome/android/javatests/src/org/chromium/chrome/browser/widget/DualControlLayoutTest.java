@@ -4,10 +4,6 @@
 
 package org.chromium.chrome.browser.widget;
 
-import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_APART;
-import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_END;
-import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_START;
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
@@ -31,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.DualControlLayout.DualControlLayoutAlignment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
@@ -67,36 +64,36 @@ public class DualControlLayoutTest {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testAlignSideBySide() {
-        runLayoutTest(ALIGN_START, false, false, false);
-        runLayoutTest(ALIGN_START, false, true, false);
-        runLayoutTest(ALIGN_START, true, false, false);
-        runLayoutTest(ALIGN_START, true, true, false);
+        runLayoutTest(DualControlLayoutAlignment.START, false, false, false);
+        runLayoutTest(DualControlLayoutAlignment.START, false, true, false);
+        runLayoutTest(DualControlLayoutAlignment.START, true, false, false);
+        runLayoutTest(DualControlLayoutAlignment.START, true, true, false);
 
-        runLayoutTest(ALIGN_APART, false, false, false);
-        runLayoutTest(ALIGN_APART, false, true, false);
-        runLayoutTest(ALIGN_APART, true, false, false);
-        runLayoutTest(ALIGN_APART, true, true, false);
+        runLayoutTest(DualControlLayoutAlignment.APART, false, false, false);
+        runLayoutTest(DualControlLayoutAlignment.APART, false, true, false);
+        runLayoutTest(DualControlLayoutAlignment.APART, true, false, false);
+        runLayoutTest(DualControlLayoutAlignment.APART, true, true, false);
 
-        runLayoutTest(ALIGN_END, false, false, false);
-        runLayoutTest(ALIGN_END, false, true, false);
-        runLayoutTest(ALIGN_END, true, false, false);
-        runLayoutTest(ALIGN_END, true, true, false);
+        runLayoutTest(DualControlLayoutAlignment.END, false, false, false);
+        runLayoutTest(DualControlLayoutAlignment.END, false, true, false);
+        runLayoutTest(DualControlLayoutAlignment.END, true, false, false);
+        runLayoutTest(DualControlLayoutAlignment.END, true, true, false);
 
         // Test the padding.
-        runLayoutTest(ALIGN_START, false, false, true);
-        runLayoutTest(ALIGN_START, false, true, true);
-        runLayoutTest(ALIGN_START, true, false, true);
-        runLayoutTest(ALIGN_START, true, true, true);
+        runLayoutTest(DualControlLayoutAlignment.START, false, false, true);
+        runLayoutTest(DualControlLayoutAlignment.START, false, true, true);
+        runLayoutTest(DualControlLayoutAlignment.START, true, false, true);
+        runLayoutTest(DualControlLayoutAlignment.START, true, true, true);
 
-        runLayoutTest(ALIGN_APART, false, false, true);
-        runLayoutTest(ALIGN_APART, false, true, true);
-        runLayoutTest(ALIGN_APART, true, false, true);
-        runLayoutTest(ALIGN_APART, true, true, true);
+        runLayoutTest(DualControlLayoutAlignment.APART, false, false, true);
+        runLayoutTest(DualControlLayoutAlignment.APART, false, true, true);
+        runLayoutTest(DualControlLayoutAlignment.APART, true, false, true);
+        runLayoutTest(DualControlLayoutAlignment.APART, true, true, true);
 
-        runLayoutTest(ALIGN_END, false, false, true);
-        runLayoutTest(ALIGN_END, false, true, true);
-        runLayoutTest(ALIGN_END, true, false, true);
-        runLayoutTest(ALIGN_END, true, true, true);
+        runLayoutTest(DualControlLayoutAlignment.END, false, false, true);
+        runLayoutTest(DualControlLayoutAlignment.END, false, true, true);
+        runLayoutTest(DualControlLayoutAlignment.END, true, false, true);
+        runLayoutTest(DualControlLayoutAlignment.END, true, true, true);
     }
 
     /** Lays out two controls that fit on the same line. */
@@ -130,8 +127,12 @@ public class DualControlLayoutTest {
         layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
 
         // Confirm that the primary View is in the correct place.
-        if ((isRtl && alignment == ALIGN_START)
-                || (!isRtl && (alignment == ALIGN_APART || alignment == ALIGN_END))) {
+        if ((isRtl && alignment == DualControlLayoutAlignment.START)
+                || (!isRtl
+                           && (alignment == DualControlLayoutAlignment.APART
+                                      || alignment
+                                              == DualControlLayout.DualControlLayoutAlignment
+                                                         .END))) {
             int expectedRight = INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0);
             Assert.assertEquals(
                     "Primary should be on the right.", expectedRight, primary.getRight());
@@ -153,7 +154,7 @@ public class DualControlLayoutTest {
             Assert.assertEquals(mTinyControlWidth, secondary.getMeasuredWidth());
             Assert.assertEquals(SECONDARY_HEIGHT, secondary.getMeasuredHeight());
             Assert.assertNotEquals(secondary.getLeft(), secondary.getRight());
-            if (alignment == ALIGN_START) {
+            if (alignment == DualControlLayoutAlignment.START) {
                 if (isRtl) {
                     // Secondary View is immediately to the left of the parent.
                     Assert.assertTrue(secondary.getRight() < primary.getLeft());
@@ -163,7 +164,7 @@ public class DualControlLayoutTest {
                     Assert.assertTrue(primary.getRight() < secondary.getLeft());
                     Assert.assertNotEquals(INFOBAR_WIDTH, secondary.getRight());
                 }
-            } else if (alignment == ALIGN_APART) {
+            } else if (alignment == DualControlLayoutAlignment.APART) {
                 if (isRtl) {
                     // Secondary View is on the far right.
                     Assert.assertTrue(primary.getRight() < secondary.getLeft());
@@ -176,7 +177,7 @@ public class DualControlLayoutTest {
                     Assert.assertEquals(expectedLeft, secondary.getLeft());
                 }
             } else {
-                Assert.assertEquals(ALIGN_END, alignment);
+                Assert.assertEquals(DualControlLayoutAlignment.END, alignment);
                 if (isRtl) {
                     // Secondary View is immediately to the right of the parent.
                     Assert.assertTrue(primary.getRight() < secondary.getLeft());
@@ -204,20 +205,20 @@ public class DualControlLayoutTest {
     @UiThreadTest
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testStacked() {
-        runStackedLayoutTest(ALIGN_START, false, false);
-        runStackedLayoutTest(ALIGN_START, true, false);
-        runStackedLayoutTest(ALIGN_APART, false, false);
-        runStackedLayoutTest(ALIGN_APART, true, false);
-        runStackedLayoutTest(ALIGN_END, false, false);
-        runStackedLayoutTest(ALIGN_END, true, false);
+        runStackedLayoutTest(DualControlLayoutAlignment.START, false, false);
+        runStackedLayoutTest(DualControlLayoutAlignment.START, true, false);
+        runStackedLayoutTest(DualControlLayoutAlignment.APART, false, false);
+        runStackedLayoutTest(DualControlLayoutAlignment.APART, true, false);
+        runStackedLayoutTest(DualControlLayoutAlignment.END, false, false);
+        runStackedLayoutTest(DualControlLayoutAlignment.END, true, false);
 
         // Test the padding.
-        runStackedLayoutTest(ALIGN_START, false, true);
-        runStackedLayoutTest(ALIGN_START, true, true);
-        runStackedLayoutTest(ALIGN_APART, false, true);
-        runStackedLayoutTest(ALIGN_APART, true, true);
-        runStackedLayoutTest(ALIGN_END, false, true);
-        runStackedLayoutTest(ALIGN_END, true, true);
+        runStackedLayoutTest(DualControlLayoutAlignment.START, false, true);
+        runStackedLayoutTest(DualControlLayoutAlignment.START, true, true);
+        runStackedLayoutTest(DualControlLayoutAlignment.APART, false, true);
+        runStackedLayoutTest(DualControlLayoutAlignment.APART, true, true);
+        runStackedLayoutTest(DualControlLayoutAlignment.END, false, true);
+        runStackedLayoutTest(DualControlLayoutAlignment.END, true, true);
     }
 
     /** Runs a test where the controls don't fit on the same line. */
@@ -285,7 +286,7 @@ public class DualControlLayoutTest {
     public void testInflation() {
         // Check that the basic DualControlLayout has nothing going on.
         DualControlLayout layout = new DualControlLayout(mContext, null);
-        Assert.assertEquals(DualControlLayout.ALIGN_START, layout.getAlignment());
+        Assert.assertEquals(DualControlLayoutAlignment.START, layout.getAlignment());
         Assert.assertEquals(0, layout.getStackedMargin());
         Assert.assertNull(layout.findViewById(R.id.button_primary));
         Assert.assertNull(layout.findViewById(R.id.button_secondary));
@@ -297,7 +298,7 @@ public class DualControlLayoutTest {
                 R.layout.autofill_editor_base_buttons, containerView, true);
         DualControlLayout inflatedLayout =
                 (DualControlLayout) containerView.findViewById(R.id.button_bar);
-        Assert.assertEquals(DualControlLayout.ALIGN_END, inflatedLayout.getAlignment());
+        Assert.assertEquals(DualControlLayoutAlignment.END, inflatedLayout.getAlignment());
         Assert.assertEquals(mContext.getResources().getDimensionPixelSize(
                                     R.dimen.infobar_margin_between_stacked_buttons),
                 inflatedLayout.getStackedMargin());

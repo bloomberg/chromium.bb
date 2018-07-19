@@ -194,7 +194,7 @@ public class ContextualSuggestionsTest {
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testOpenContextualSuggestionsBottomSheet() {
-        assertEquals("Sheet should still be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+        assertEquals("Sheet should still be hidden.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -214,7 +214,7 @@ public class ContextualSuggestionsTest {
         RecyclerView recyclerView = (RecyclerView) content.getContentView();
         assertEquals("RecyclerView should be empty.", 0, recyclerView.getChildCount());
 
-        assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
+        assertEquals("Sheet should be peeked.", BottomSheet.SheetState.PEEK,
                 mBottomSheet.getSheetState());
         assertNull("RecyclerView should still be empty.", recyclerView.getAdapter());
 
@@ -232,7 +232,7 @@ public class ContextualSuggestionsTest {
     public void testScrollPageToTrigger() throws InterruptedException, TimeoutException {
         ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(false);
         mMediator.setTargetScrollPercentageForTesting(0f);
-        assertEquals("Sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+        assertEquals("Sheet should be hidden.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
 
         CallbackHelper fullyPeekedCallback = new CallbackHelper();
@@ -250,7 +250,7 @@ public class ContextualSuggestionsTest {
 
         // Assert that the sheet is now visible.
         fullyPeekedCallback.waitForCallback(0);
-        assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
+        assertEquals("Sheet should be peeked.", BottomSheet.SheetState.PEEK,
                 mBottomSheet.getSheetState());
         assertTrue("Bottom sheet should contain suggestions content.",
                 mBottomSheet.getCurrentSheetContent()
@@ -319,7 +319,7 @@ public class ContextualSuggestionsTest {
 
         // Verify that the model is empty.
         assertEquals("Model should be empty.", 0, mModel.getClusterList().getItemCount());
-        assertEquals("Bottom sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+        assertEquals("Bottom sheet should be hidden.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
 
         // Switch to the first tab and verify that the suggestions can still be shown.
@@ -347,9 +347,9 @@ public class ContextualSuggestionsTest {
         String expectedUrl = holder.getUrl();
 
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule, holder.itemView,
-                ContextMenuManager.ID_OPEN_IN_NEW_TAB, false, expectedUrl);
+                ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB, false, expectedUrl);
 
-        assertEquals("Sheet should still be opened.", BottomSheet.SHEET_STATE_FULL,
+        assertEquals("Sheet should still be opened.", BottomSheet.SheetState.FULL,
                 mBottomSheet.getSheetState());
     }
 
@@ -364,7 +364,7 @@ public class ContextualSuggestionsTest {
         String expectedUrl = holder.getUrl();
 
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule, holder.itemView,
-                ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true, expectedUrl);
+                ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true, expectedUrl);
 
         ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
 
@@ -508,18 +508,18 @@ public class ContextualSuggestionsTest {
             assertNotEquals("There should be two bottom sheet contents", content1, content2);
         });
 
-        assertEquals("Sheet in the second activity should be peeked.", BottomSheet.SHEET_STATE_PEEK,
+        assertEquals("Sheet in the second activity should be peeked.", BottomSheet.SheetState.PEEK,
                 mBottomSheet2.getSheetState());
-        assertEquals("Sheet in the first activity should be open.", BottomSheet.SHEET_STATE_FULL,
+        assertEquals("Sheet in the first activity should be open.", BottomSheet.SheetState.FULL,
                 mBottomSheet.getSheetState());
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet2.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+                () -> mBottomSheet2.setSheetState(BottomSheet.SheetState.FULL, false));
 
         SnippetArticleViewHolder holder = getFirstSuggestionViewHolder(mBottomSheet2);
         String expectedUrl = holder.getUrl();
         ChromeTabUtils.invokeContextMenuAndOpenInOtherWindow(activity2, activity1, holder.itemView,
-                ContextMenuManager.ID_OPEN_IN_NEW_WINDOW, false, expectedUrl);
+                ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_WINDOW, false, expectedUrl);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mBottomSheet.endAnimations();
@@ -544,7 +544,7 @@ public class ContextualSuggestionsTest {
         mScreenShooter.shoot("Contextual suggestions: peeking" + postfix);
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, false));
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false));
         BottomSheetTestRule.waitForWindowUpdates();
         mScreenShooter.shoot("Contextual suggestions: half height, images loading" + postfix);
 
@@ -553,7 +553,7 @@ public class ContextualSuggestionsTest {
         mScreenShooter.shoot("Contextual suggestions: half height, images loaded" + postfix);
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.FULL, false));
         BottomSheetTestRule.waitForWindowUpdates();
         mScreenShooter.shoot("Contextual suggestions: full height" + postfix);
 
@@ -581,7 +581,7 @@ public class ContextualSuggestionsTest {
         // Open the sheet to cause the suggestions to be bound in the RecyclerView, then capture
         // a suggestion with its thumbnail loading.
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.FULL, false));
         BottomSheetTestRule.waitForWindowUpdates();
         mRenderTestRule.render(getFirstSuggestionViewHolder().itemView, "suggestion_image_loading");
 
@@ -633,7 +633,7 @@ public class ContextualSuggestionsTest {
         // Verify that suggestions are not shown before scroll.
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mMediator.showContentInSheetForTesting(false, true));
-        assertEquals("Bottom sheet should be hidden before scroll.", BottomSheet.SHEET_STATE_HIDDEN,
+        assertEquals("Bottom sheet should be hidden before scroll.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
 
         // Scroll the page to 30% and verify that the suggestions are not shown. The pixel to scroll
@@ -646,7 +646,7 @@ public class ContextualSuggestionsTest {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mMediator.showContentInSheetForTesting(false, true));
         assertEquals("Bottom sheet should be hidden on 30% scroll percentage.",
-                BottomSheet.SHEET_STATE_HIDDEN, mBottomSheet.getSheetState());
+                BottomSheet.SheetState.HIDDEN, mBottomSheet.getSheetState());
 
         // Scroll the page to approximately 60% and verify that the suggestions are shown.
         callCount = scrollChangedCallback.getCallCount();
@@ -657,7 +657,7 @@ public class ContextualSuggestionsTest {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mMediator.showContentInSheetForTesting(false, true));
         assertEquals("Bottom sheet should be shown on >=50% scroll percentage.",
-                BottomSheet.SHEET_STATE_PEEK, mBottomSheet.getSheetState());
+                BottomSheet.SheetState.PEEK, mBottomSheet.getSheetState());
 
         GestureListenerManager.fromWebContents(webContents).removeListener(gestureStateListener);
     }
@@ -677,14 +677,14 @@ public class ContextualSuggestionsTest {
         FetchHelper.setFetchTimeBaselineMillisForTesting(startTime);
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mMediator.requestSuggestions("http://www.testurl.com"));
-        assertEquals("Bottom sheet should be hidden before delay.", BottomSheet.SHEET_STATE_HIDDEN,
+        assertEquals("Bottom sheet should be hidden before delay.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
 
         // Simulate user scroll by calling showContentInSheet until the sheet is peeked.
         CriteriaHelper.pollUiThread(() -> {
             mMediator.showContentInSheetForTesting(true, false);
             mBottomSheet.endAnimations();
-            return mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK;
+            return mBottomSheet.getSheetState() == BottomSheet.SheetState.PEEK;
         });
 
         // Verify that suggestions is shown after the expected delay.
@@ -703,13 +703,13 @@ public class ContextualSuggestionsTest {
         forceShowSuggestions();
 
         // Opening the sheet and setting it back to peek state shouldn't affect the peek count.
-        setSheetOffsetForState(BottomSheet.SHEET_STATE_FULL);
-        setSheetOffsetForState(BottomSheet.SHEET_STATE_PEEK);
+        setSheetOffsetForState(BottomSheet.SheetState.FULL);
+        setSheetOffsetForState(BottomSheet.SheetState.PEEK);
 
         // Hide and peek the bottom sheet for (TEST_PEEK_COUNT - 1) number of times, since
         // #forceShowSuggestions() has already peeked the bottom sheet once.
         for (int i = 1; i < FakeContextualSuggestionsSource.TEST_PEEK_COUNT; ++i) {
-            setSheetOffsetForState(BottomSheet.SHEET_STATE_HIDDEN);
+            setSheetOffsetForState(BottomSheet.SheetState.HIDDEN);
 
             // Verify that the suggestions are not cleared.
             assertEquals("Model has incorrect number of items.",
@@ -718,11 +718,11 @@ public class ContextualSuggestionsTest {
             assertNotNull("Bottom sheet contents should not be null.",
                     mBottomSheet.getCurrentSheetContent());
 
-            setSheetOffsetForState(BottomSheet.SHEET_STATE_PEEK);
+            setSheetOffsetForState(BottomSheet.SheetState.PEEK);
         }
 
         // Hide the sheet and verify that the suggestions are cleared.
-        setSheetOffsetForState(BottomSheet.SHEET_STATE_HIDDEN);
+        setSheetOffsetForState(BottomSheet.SheetState.HIDDEN);
         assertEquals("Model should be empty.", 0, mModel.getClusterList().getItemCount());
         assertNull("Bottom sheet contents should be null.", mBottomSheet.getCurrentSheetContent());
     }
@@ -849,7 +849,7 @@ public class ContextualSuggestionsTest {
             mMediator.showContentInSheetForTesting(true, true);
             mBottomSheet.endAnimations();
 
-            assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
+            assertEquals("Sheet should be peeked.", BottomSheet.SheetState.PEEK,
                     mBottomSheet.getSheetState());
             assertTrue("Bottom sheet should contain suggestions content.",
                     mBottomSheet.getCurrentSheetContent()
@@ -866,14 +866,14 @@ public class ContextualSuggestionsTest {
             mBottomSheet.endAnimations();
         });
 
-        assertEquals("Sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+        assertEquals("Sheet should be hidden.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
         assertNull("Bottom sheet contents should be null.", mBottomSheet.getCurrentSheetContent());
     }
 
     private void openSheet() {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.FULL, false));
     }
 
     private void setSheetOffsetForState(@BottomSheet.SheetState int state) {

@@ -31,10 +31,10 @@ public class OfflineBackgroundTask extends NativeBackgroundTask {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID;
 
         if (!checkConditions(context, taskParameters.getExtras())) {
-            return RESCHEDULE;
+            return StartBeforeNativeResult.RESCHEDULE;
         }
 
-        return LOAD_NATIVE;
+        return StartBeforeNativeResult.LOAD_NATIVE;
     }
 
     @Override

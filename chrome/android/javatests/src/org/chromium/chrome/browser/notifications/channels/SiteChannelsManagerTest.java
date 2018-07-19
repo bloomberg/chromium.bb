@@ -72,7 +72,7 @@ public class SiteChannelsManagerTest {
             if (channel.getId().startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)
                     || (channel.getGroup() != null
                                && channel.getGroup().equals(
-                                          ChannelDefinitions.CHANNEL_GROUP_ID_SITES))) {
+                                          ChannelDefinitions.ChannelGroupId.SITES))) {
                 notificationManagerProxy.deleteNotificationChannel(channel.getId());
             }
         }

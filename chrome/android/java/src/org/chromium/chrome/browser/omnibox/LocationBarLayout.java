@@ -939,12 +939,13 @@ public class LocationBarLayout extends FrameLayout
         }
 
         if (pastedText != null) {
-            ToolbarManager.recordOmniboxFocusReason(ToolbarManager.FAKE_BOX_LONG_PRESS);
+            ToolbarManager.recordOmniboxFocusReason(
+                    ToolbarManager.OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
             // This must be happen after requestUrlFocus(), which changes the selection.
             mUrlBar.setUrl(UrlBarData.forNonUrlText(pastedText));
             mUrlBar.setSelection(mUrlBar.getText().length());
         } else {
-            ToolbarManager.recordOmniboxFocusReason(ToolbarManager.FAKE_BOX_TAP);
+            ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OmniboxFocusReason.FAKE_BOX_TAP);
         }
     }
 
@@ -1649,7 +1650,7 @@ public class LocationBarLayout extends FrameLayout
                 Activity activity = mWindowAndroid.getActivity().get();
                 if (activity != null) {
                     PageInfoController.show(activity, getCurrentTab(), null,
-                            PageInfoController.OPENED_FROM_TOOLBAR);
+                            PageInfoController.OpenedFromSource.TOOLBAR);
                 }
             }
         } else if (v == mMicButton && mVoiceRecognitionHandler != null) {

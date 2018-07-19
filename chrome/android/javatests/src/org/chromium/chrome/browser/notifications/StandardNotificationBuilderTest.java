@@ -86,7 +86,7 @@ public class StandardNotificationBuilderTest {
                 .setTitle("title")
                 .setBody("body")
                 .setOrigin("origin")
-                .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                .setChannelId(ChannelDefinitions.ChannelId.SITES)
                 .setTicker(new SpannableStringBuilder("ticker"))
                 .setImage(image)
                 .setLargeIcon(largeIcon)
@@ -187,7 +187,7 @@ public class StandardNotificationBuilderTest {
 
         notificationBuilder.setSmallIcon(R.drawable.ic_chrome);
         notificationBuilder.setSmallIcon(bitmap);
-        notificationBuilder.setChannelId(ChannelDefinitions.CHANNEL_ID_SITES);
+        notificationBuilder.setChannelId(ChannelDefinitions.ChannelId.SITES);
 
         Notification notification = notificationBuilder.build();
 
@@ -203,7 +203,7 @@ public class StandardNotificationBuilderTest {
 
             // Check using the same bitmap on another builder gives the same result.
             NotificationBuilderBase otherBuilder = new StandardNotificationBuilder(context);
-            otherBuilder.setSmallIcon(bitmap).setChannelId(ChannelDefinitions.CHANNEL_ID_SITES);
+            otherBuilder.setSmallIcon(bitmap).setChannelId(ChannelDefinitions.ChannelId.SITES);
             Notification otherNotification = otherBuilder.build();
             Assert.assertTrue(expected.sameAs(
                     NotificationTestUtil.getSmallIconFromNotification(context, otherNotification)));
@@ -225,7 +225,7 @@ public class StandardNotificationBuilderTest {
         Context context = InstrumentationRegistry.getTargetContext();
 
         Notification notification = new StandardNotificationBuilder(context)
-                                            .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                                            .setChannelId(ChannelDefinitions.ChannelId.SITES)
                                             .setSmallIcon(R.drawable.ic_chrome)
                                             .build();
 
@@ -233,7 +233,7 @@ public class StandardNotificationBuilderTest {
 
         Notification notificationWithBitmap =
                 new StandardNotificationBuilder(context)
-                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setSmallIcon(bitmap)
                         .build();
@@ -254,7 +254,7 @@ public class StandardNotificationBuilderTest {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new StandardNotificationBuilder(context)
-                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
                         .addTextAction(null, "Action Title", null, "Placeholder");
 
         Notification notification = notificationBuilder.build();

@@ -146,10 +146,10 @@ public class ChannelsUpdaterTest {
 
         assertThat(getChannelsIgnoringDefault(), hasSize((greaterThan(0))));
         assertThat(getChannelIds(getChannelsIgnoringDefault()),
-                containsInAnyOrder(ChannelDefinitions.CHANNEL_ID_BROWSER,
-                        ChannelDefinitions.CHANNEL_ID_DOWNLOADS,
-                        ChannelDefinitions.CHANNEL_ID_INCOGNITO,
-                        ChannelDefinitions.CHANNEL_ID_MEDIA));
+                containsInAnyOrder(ChannelDefinitions.ChannelId.BROWSER,
+                        ChannelDefinitions.ChannelId.DOWNLOADS,
+                        ChannelDefinitions.ChannelId.INCOGNITO,
+                        ChannelDefinitions.ChannelId.MEDIA));
         assertThat(mMockSharedPreferences.getInt(ChannelsUpdater.CHANNELS_VERSION_KEY, -1), is(21));
     }
 
@@ -162,7 +162,7 @@ public class ChannelsUpdaterTest {
         for (String id : ChannelDefinitions.getLegacyChannelIds()) {
             NotificationChannel channel =
                     new NotificationChannel(id, id, NotificationManager.IMPORTANCE_LOW);
-            channel.setGroup(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL);
+            channel.setGroup(ChannelDefinitions.ChannelGroupId.GENERAL);
             mNotificationManagerProxy.createNotificationChannel(channel);
         }
 
@@ -171,10 +171,10 @@ public class ChannelsUpdaterTest {
         updater.updateChannels();
 
         assertThat(getChannelIds(getChannelsIgnoringDefault()),
-                containsInAnyOrder(ChannelDefinitions.CHANNEL_ID_BROWSER,
-                        ChannelDefinitions.CHANNEL_ID_DOWNLOADS,
-                        ChannelDefinitions.CHANNEL_ID_INCOGNITO,
-                        ChannelDefinitions.CHANNEL_ID_MEDIA));
+                containsInAnyOrder(ChannelDefinitions.ChannelId.BROWSER,
+                        ChannelDefinitions.ChannelId.DOWNLOADS,
+                        ChannelDefinitions.ChannelId.INCOGNITO,
+                        ChannelDefinitions.ChannelId.MEDIA));
     }
 
     private static List<String> getChannelIds(List<NotificationChannel> channels) {

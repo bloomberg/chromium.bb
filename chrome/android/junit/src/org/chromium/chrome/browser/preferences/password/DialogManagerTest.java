@@ -109,7 +109,7 @@ public class DialogManagerTest {
         mManualDelayer.runCallbacksSynchronously();
         verify(callback, times(1)).run();
         assertEquals(FakeDialogFragment.DISMISSED, mDialogFragment.getState());
-        verify(mMockActionsConsumer, times(1)).consume(DialogManager.ACTION_HIDING_DELAYED);
+        verify(mMockActionsConsumer, times(1)).consume(DialogManager.HideActions.HIDING_DELAYED);
     }
 
     /**
@@ -125,7 +125,8 @@ public class DialogManagerTest {
         Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
         verify(callback, times(1)).run();
         assertEquals(FakeDialogFragment.DISMISSED, mDialogFragment.getState());
-        verify(mMockActionsConsumer, times(1)).consume(DialogManager.ACTION_HIDDEN_IMMEDIATELY);
+        verify(mMockActionsConsumer, times(1))
+                .consume(DialogManager.HideActions.HIDDEN_IMMEDIATELY);
     }
 
     /**
@@ -138,6 +139,6 @@ public class DialogManagerTest {
         Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
         verify(callback, times(1)).run();
         assertEquals(FakeDialogFragment.NEW, mDialogFragment.getState());
-        verify(mMockActionsConsumer, times(1)).consume(DialogManager.ACTION_NO_OP);
+        verify(mMockActionsConsumer, times(1)).consume(DialogManager.HideActions.NO_OP);
     }
 }

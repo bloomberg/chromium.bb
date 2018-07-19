@@ -49,15 +49,18 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class ConfirmSyncDataStateMachine
         implements ConfirmImportSyncDataDialog.Listener, ConfirmManagedSyncDataDialog.Listener {
+    @IntDef({State.BEFORE_OLD_ACCOUNT_DIALOG, State.BEFORE_NEW_ACCOUNT_DIALOG,
+            State.AFTER_NEW_ACCOUNT_DIALOG, State.DONE})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({BEFORE_OLD_ACCOUNT_DIALOG, BEFORE_NEW_ACCOUNT_DIALOG, AFTER_NEW_ACCOUNT_DIALOG, DONE})
-    private @interface State {}
-    private static final int BEFORE_OLD_ACCOUNT_DIALOG = 0;  // Start of state B.
-    private static final int BEFORE_NEW_ACCOUNT_DIALOG = 1;  // Start of state F.
-    private static final int AFTER_NEW_ACCOUNT_DIALOG = 2;   // Start of state H.
-    private static final int DONE = 4;
+    private @interface State {
+        int BEFORE_OLD_ACCOUNT_DIALOG = 0; // Start of state B.
+        int BEFORE_NEW_ACCOUNT_DIALOG = 1; // Start of state F.
+        int AFTER_NEW_ACCOUNT_DIALOG = 2; // Start of state H.
+        int DONE = 4;
+    }
 
-    @State private int mState = BEFORE_OLD_ACCOUNT_DIALOG;
+    @State
+    private int mState = State.BEFORE_OLD_ACCOUNT_DIALOG;
 
     private static final int ACCOUNT_CHECK_TIMEOUT_MS = 30000;
 
@@ -120,7 +123,7 @@ public class ConfirmSyncDataStateMachine
         ThreadUtils.assertOnUiThread();
 
         cancelTimeout();
-        mState = DONE;
+        mState = State.DONE;
 
         if (isBeingDestroyed) return;
         mCallback.onCancel();
@@ -143,8 +146,8 @@ public class ConfirmSyncDataStateMachine
      */
     private void progress() {
         switch (mState) {
-            case BEFORE_OLD_ACCOUNT_DIALOG:
-                mState = BEFORE_NEW_ACCOUNT_DIALOG;
+            case State.BEFORE_OLD_ACCOUNT_DIALOG:
+                mState = State.BEFORE_NEW_ACCOUNT_DIALOG;
 
                 if (TextUtils.isEmpty(mOldAccountName) || mNewAccountName.equals(mOldAccountName)) {
                     // If there is no old account or the user is just logging back into whatever
@@ -169,8 +172,8 @@ public class ConfirmSyncDataStateMachine
                 }
 
                 break;
-            case BEFORE_NEW_ACCOUNT_DIALOG:
-                mState = AFTER_NEW_ACCOUNT_DIALOG;
+            case State.BEFORE_NEW_ACCOUNT_DIALOG:
+                mState = State.AFTER_NEW_ACCOUNT_DIALOG;
                 if (mNewAccountManaged != null) {
                     // No need to show dialog if account management status is already known
                     handleNewAccountManagementStatus();
@@ -179,11 +182,11 @@ public class ConfirmSyncDataStateMachine
                     scheduleTimeout();
                 }
                 break;
-            case AFTER_NEW_ACCOUNT_DIALOG:
-                mState = DONE;
+            case State.AFTER_NEW_ACCOUNT_DIALOG:
+                mState = State.DONE;
                 mCallback.onConfirm(mWipeData);
                 break;
-            case DONE:
+            case State.DONE:
                 throw new IllegalStateException("Can't progress from DONE state!");
         }
     }
@@ -195,7 +198,7 @@ public class ConfirmSyncDataStateMachine
     private void setIsNewAccountManaged(Boolean isManaged) {
         assert isManaged != null;
         mNewAccountManaged = isManaged;
-        if (mState == AFTER_NEW_ACCOUNT_DIALOG) {
+        if (mState == State.AFTER_NEW_ACCOUNT_DIALOG) {
             cancelTimeout();
             handleNewAccountManagementStatus();
         }
@@ -203,7 +206,7 @@ public class ConfirmSyncDataStateMachine
 
     private void handleNewAccountManagementStatus() {
         assert mNewAccountManaged != null;
-        assert mState == AFTER_NEW_ACCOUNT_DIALOG;
+        assert mState == State.AFTER_NEW_ACCOUNT_DIALOG;
 
         mDelegate.dismissAllDialogs();
 
@@ -238,7 +241,7 @@ public class ConfirmSyncDataStateMachine
     }
 
     private void checkTimeout() {
-        assert mState == AFTER_NEW_ACCOUNT_DIALOG;
+        assert mState == State.AFTER_NEW_ACCOUNT_DIALOG;
         assert mNewAccountManaged == null;
 
         mDelegate.showFetchManagementPolicyTimeoutDialog(

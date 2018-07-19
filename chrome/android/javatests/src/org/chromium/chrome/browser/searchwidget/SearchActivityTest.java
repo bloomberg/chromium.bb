@@ -103,7 +103,7 @@ public class SearchActivityTest {
                 LocaleManager.setInstanceForTest(new LocaleManager() {
                     @Override
                     public int getSearchEnginePromoShowType() {
-                        return SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+                        return SearchEnginePromoType.SHOW_EXISTING;
                     }
 
                     @Override

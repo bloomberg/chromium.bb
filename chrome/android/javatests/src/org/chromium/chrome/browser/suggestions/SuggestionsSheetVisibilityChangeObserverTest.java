@@ -61,7 +61,7 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SHEET_STATE_PEEK);
+        mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SheetState.PEEK);
         // The home sheet should not be initialised.
         mEventReporter.surfaceOpenedHelper.verifyCallCount();
 
@@ -74,12 +74,12 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
     @MediumTest
     public void testHomeSheetVisibilityOnWebPage() {
         // Pull sheet to half. We use the animated variants to be closer to user triggered events.
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        mActivityRule.setSheetState(BottomSheet.SheetState.HALF, true);
         mObserver.expectEvents(InitialReveal, StateChange);
         mEventReporter.surfaceOpenedHelper.waitForCallback();
 
         // Pull sheet to full.
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, true);
         mObserver.expectEvents(StateChange);
 
         // close
@@ -95,14 +95,14 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
         waitForWindowUpdates();
 
         mObserver.expectEvents();
-        assertEquals(BottomSheet.SHEET_STATE_FULL, mActivityRule.getBottomSheet().getSheetState());
+        assertEquals(BottomSheet.SheetState.FULL, mActivityRule.getBottomSheet().getSheetState());
 
         // Back closes the bottom sheet.
         Espresso.pressBack();
         waitForWindowUpdates();
 
         mObserver.expectEvents();
-        assertEquals(BottomSheet.SHEET_STATE_PEEK, mActivityRule.getBottomSheet().getSheetState());
+        assertEquals(BottomSheet.SheetState.PEEK, mActivityRule.getBottomSheet().getSheetState());
 
         mEventReporter.surfaceOpenedHelper.verifyCallCount();
     }
@@ -115,17 +115,17 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
         waitForWindowUpdates();
 
         mObserver.expectEvents();
-        assertEquals(BottomSheet.SHEET_STATE_FULL, mActivityRule.getBottomSheet().getSheetState());
+        assertEquals(BottomSheet.SheetState.FULL, mActivityRule.getBottomSheet().getSheetState());
 
         // Changing the state of the sheet closes the omnibox suggestions and shows the home sheet.
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        mActivityRule.setSheetState(BottomSheet.SheetState.HALF, true);
         mObserver.expectEvents(InitialReveal, StateChange);
         mEventReporter.surfaceOpenedHelper.waitForCallback();
 
         // Back closes the bottom sheet.
         Espresso.pressBack();
         mObserver.expectEvents(Hidden, StateChange, StateChange);
-        assertEquals(BottomSheet.SHEET_STATE_PEEK, mActivityRule.getBottomSheet().getSheetState());
+        assertEquals(BottomSheet.SheetState.PEEK, mActivityRule.getBottomSheet().getSheetState());
 
         mEventReporter.surfaceOpenedHelper.verifyCallCount();
     }

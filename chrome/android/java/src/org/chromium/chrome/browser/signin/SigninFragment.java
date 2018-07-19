@@ -24,15 +24,15 @@ public class SigninFragment extends SigninFragmentBase {
     private static final String ARGUMENT_PERSONALIZED_PROMO_ACTION =
             "SigninFragment.PersonalizedPromoAction";
 
-    @IntDef({PROMO_ACTION_NONE, PROMO_ACTION_WITH_DEFAULT, PROMO_ACTION_NOT_DEFAULT,
-            PROMO_ACTION_NEW_ACCOUNT})
+    @IntDef({PromoAction.NONE, PromoAction.WITH_DEFAULT, PromoAction.NOT_DEFAULT,
+            PromoAction.NEW_ACCOUNT})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface PromoAction {}
-
-    public static final int PROMO_ACTION_NONE = 0;
-    public static final int PROMO_ACTION_WITH_DEFAULT = 1;
-    public static final int PROMO_ACTION_NOT_DEFAULT = 2;
-    public static final int PROMO_ACTION_NEW_ACCOUNT = 3;
+    public @interface PromoAction {
+        int NONE = 0;
+        int WITH_DEFAULT = 1;
+        int NOT_DEFAULT = 2;
+        int NEW_ACCOUNT = 3;
+    }
 
     private @PromoAction int mPromoAction;
 
@@ -52,7 +52,7 @@ public class SigninFragment extends SigninFragmentBase {
     public static Bundle createArgumentsForPromoDefaultFlow(
             @SigninAccessPoint int accessPoint, String accountName) {
         Bundle result = SigninFragmentBase.createArguments(accessPoint, accountName);
-        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_WITH_DEFAULT);
+        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.WITH_DEFAULT);
         return result;
     }
 
@@ -66,7 +66,7 @@ public class SigninFragment extends SigninFragmentBase {
             @SigninAccessPoint int accessPoint, String accountName) {
         Bundle result =
                 SigninFragmentBase.createArgumentsForChooseAccountFlow(accessPoint, accountName);
-        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_NOT_DEFAULT);
+        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NOT_DEFAULT);
         return result;
     }
 
@@ -77,7 +77,7 @@ public class SigninFragment extends SigninFragmentBase {
      */
     public static Bundle createArgumentsForPromoAddAccountFlow(@SigninAccessPoint int accessPoint) {
         Bundle result = SigninFragmentBase.createArgumentsForAddAccountFlow(accessPoint);
-        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_NEW_ACCOUNT);
+        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NEW_ACCOUNT);
         return result;
     }
 
@@ -89,7 +89,7 @@ public class SigninFragment extends SigninFragmentBase {
         super.onCreate(savedInstanceState);
 
         mPromoAction =
-                getSigninArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_NONE);
+                getSigninArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NONE);
 
         SigninManager.logSigninStartAccessPoint(getSigninAccessPoint());
         recordSigninStartedHistogramAccountInfo();
@@ -138,15 +138,15 @@ public class SigninFragment extends SigninFragmentBase {
     private void recordSigninCompletedHistogramAccountInfo() {
         final String histogram;
         switch (mPromoAction) {
-            case PROMO_ACTION_NONE:
+            case PromoAction.NONE:
                 return;
-            case PROMO_ACTION_WITH_DEFAULT:
+            case PromoAction.WITH_DEFAULT:
                 histogram = "Signin.SigninCompletedAccessPoint.WithDefault";
                 break;
-            case PROMO_ACTION_NOT_DEFAULT:
+            case PromoAction.NOT_DEFAULT:
                 histogram = "Signin.SigninCompletedAccessPoint.NotDefault";
                 break;
-            case PROMO_ACTION_NEW_ACCOUNT:
+            case PromoAction.NEW_ACCOUNT:
                 histogram = "Signin.SigninCompletedAccessPoint.NewAccount";
                 break;
             default:
@@ -161,15 +161,15 @@ public class SigninFragment extends SigninFragmentBase {
     private void recordSigninStartedHistogramAccountInfo() {
         final String histogram;
         switch (mPromoAction) {
-            case PROMO_ACTION_NONE:
+            case PromoAction.NONE:
                 return;
-            case PROMO_ACTION_WITH_DEFAULT:
+            case PromoAction.WITH_DEFAULT:
                 histogram = "Signin.SigninStartedAccessPoint.WithDefault";
                 break;
-            case PROMO_ACTION_NOT_DEFAULT:
+            case PromoAction.NOT_DEFAULT:
                 histogram = "Signin.SigninStartedAccessPoint.NotDefault";
                 break;
-            case PROMO_ACTION_NEW_ACCOUNT:
+            case PromoAction.NEW_ACCOUNT:
                 histogram = "Signin.SigninStartedAccessPoint.NewAccount";
                 break;
             default:

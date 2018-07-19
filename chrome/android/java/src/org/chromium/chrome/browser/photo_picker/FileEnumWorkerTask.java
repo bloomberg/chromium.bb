@@ -82,7 +82,7 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
                 if (!traverseDir(file, pickerBitmaps)) return false;
             } else {
                 pickerBitmaps.add(new PickerBitmap(
-                        file.getPath(), file.lastModified(), PickerBitmap.PICTURE));
+                        file.getPath(), file.lastModified(), PickerBitmap.TileTypes.PICTURE));
             }
         }
 
@@ -115,14 +115,14 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
 
         Collections.sort(pickerBitmaps);
 
-        pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.GALLERY));
+        pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.TileTypes.GALLERY));
         boolean hasCameraAppAvailable =
                 mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
         boolean hasOrCanRequestCameraPermission =
                 mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
                 || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA);
         if (hasCameraAppAvailable && hasOrCanRequestCameraPermission) {
-            pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.CAMERA));
+            pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.TileTypes.CAMERA));
         }
 
         return pickerBitmaps;

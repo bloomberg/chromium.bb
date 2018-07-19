@@ -691,8 +691,8 @@ public class ModalDialogManagerTest {
                 @Override
                 public void onClick(int buttonType) {
                     switch (buttonType) {
-                        case ModalDialogView.BUTTON_POSITIVE:
-                        case ModalDialogView.BUTTON_NEGATIVE:
+                        case ModalDialogView.ButtonType.POSITIVE:
+                        case ModalDialogView.ButtonType.NEGATIVE:
                             dismissDialog(index);
                             break;
                         default:

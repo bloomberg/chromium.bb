@@ -21,6 +21,9 @@ import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * WebContentsObserver used by Tab.
  */
@@ -39,21 +42,22 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     // TabRendererExitStatus defined in tools/metrics/histograms/histograms.xml.
     // Designed to replace TabRendererCrashStatus if numbers line up.
-    @IntDef({TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_RUNNING_APP,
-        TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_PAUSED_APP,
-        TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_BACKGROUND_APP,
-        TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_RUNNING_APP,
-        TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_PAUSED_APP,
-        TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_BACKGROUND_APP,
-        TAB_RENDERER_EXIT_STATUS_MAX})
-    private @interface TabRendererExitStatus {}
-    private static final int TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_RUNNING_APP = 0;
-    private static final int TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_PAUSED_APP = 1;
-    private static final int TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_BACKGROUND_APP = 2;
-    private static final int TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_RUNNING_APP = 3;
-    private static final int TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_PAUSED_APP = 4;
-    private static final int TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_BACKGROUND_APP = 5;
-    private static final int TAB_RENDERER_EXIT_STATUS_MAX = 6;
+    @IntDef({TabRendererExitStatus.OOM_PROTECTED_IN_RUNNING_APP,
+            TabRendererExitStatus.OOM_PROTECTED_IN_PAUSED_APP,
+            TabRendererExitStatus.OOM_PROTECTED_IN_BACKGROUND_APP,
+            TabRendererExitStatus.NOT_PROTECTED_IN_RUNNING_APP,
+            TabRendererExitStatus.NOT_PROTECTED_IN_PAUSED_APP,
+            TabRendererExitStatus.NOT_PROTECTED_IN_BACKGROUND_APP})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface TabRendererExitStatus {
+        int OOM_PROTECTED_IN_RUNNING_APP = 0;
+        int OOM_PROTECTED_IN_PAUSED_APP = 1;
+        int OOM_PROTECTED_IN_BACKGROUND_APP = 2;
+        int NOT_PROTECTED_IN_RUNNING_APP = 3;
+        int NOT_PROTECTED_IN_PAUSED_APP = 4;
+        int NOT_PROTECTED_IN_BACKGROUND_APP = 5;
+        int NUM_ENTRIES = 6;
+    }
 
     private final Tab mTab;
 
@@ -80,26 +84,27 @@ public class TabWebContentsObserver extends WebContentsObserver {
         int appState = ApplicationStatus.getStateForApplication();
         boolean applicationRunning = (appState == ApplicationState.HAS_RUNNING_ACTIVITIES);
         boolean applicationPaused = (appState == ApplicationState.HAS_PAUSED_ACTIVITIES);
-        @TabRendererExitStatus int rendererExitStatus = TAB_RENDERER_EXIT_STATUS_MAX;
+        @TabRendererExitStatus
+        int rendererExitStatus;
         if (processWasOomProtected) {
             if (applicationRunning) {
-                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_RUNNING_APP;
+                rendererExitStatus = TabRendererExitStatus.OOM_PROTECTED_IN_RUNNING_APP;
             } else if (applicationPaused) {
-                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_PAUSED_APP;
+                rendererExitStatus = TabRendererExitStatus.OOM_PROTECTED_IN_PAUSED_APP;
             } else {
-                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_BACKGROUND_APP;
+                rendererExitStatus = TabRendererExitStatus.OOM_PROTECTED_IN_BACKGROUND_APP;
             }
         } else {
             if (applicationRunning) {
-                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_RUNNING_APP;
+                rendererExitStatus = TabRendererExitStatus.NOT_PROTECTED_IN_RUNNING_APP;
             } else if (applicationPaused) {
-                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_PAUSED_APP;
+                rendererExitStatus = TabRendererExitStatus.NOT_PROTECTED_IN_PAUSED_APP;
             } else {
-                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_BACKGROUND_APP;
+                rendererExitStatus = TabRendererExitStatus.NOT_PROTECTED_IN_BACKGROUND_APP;
             }
         }
         RecordHistogram.recordEnumeratedHistogram(
-                "Tab.RendererExitStatus", rendererExitStatus, TAB_RENDERER_EXIT_STATUS_MAX);
+                "Tab.RendererExitStatus", rendererExitStatus, TabRendererExitStatus.NUM_ENTRIES);
 
         int activityState = ApplicationStatus.getStateForActivity(
                 mTab.getWindowAndroid().getActivity().get());

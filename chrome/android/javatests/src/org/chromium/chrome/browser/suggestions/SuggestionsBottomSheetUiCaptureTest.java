@@ -52,15 +52,15 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @MediumTest
     @Feature({"UiCatalogue"})
     public void testBottomSheetPosition() throws Exception {
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_HALF, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.HALF, false);
         waitForWindowUpdates();
         mScreenShooter.shoot("Half");
 
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
         mScreenShooter.shoot("Full");
 
-        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+        mActivityRule.setSheetState(BottomSheet.SheetState.PEEK, false);
         waitForWindowUpdates();
         mScreenShooter.shoot("Peek");
     }

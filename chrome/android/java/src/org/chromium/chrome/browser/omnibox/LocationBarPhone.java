@@ -325,12 +325,12 @@ public class LocationBarPhone extends LocationBarLayout {
 
         sheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
-            public void onSheetStateChanged(int state) {
+            public void onSheetStateChanged(@BottomSheet.SheetState int state) {
                 switch (state) {
-                    case BottomSheet.SHEET_STATE_FULL:
+                    case BottomSheet.SheetState.FULL:
                         setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
                         break;
-                    case BottomSheet.SHEET_STATE_PEEK:
+                    case BottomSheet.SheetState.PEEK:
                         setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
                         break;
                     default:

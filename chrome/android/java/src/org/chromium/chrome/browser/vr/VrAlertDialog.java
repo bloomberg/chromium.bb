@@ -85,11 +85,11 @@ public class VrAlertDialog extends AlertDialog {
         assert(whichButton == DialogInterface.BUTTON_POSITIVE
                 || whichButton == DialogInterface.BUTTON_NEGATIVE);
         if (whichButton == DialogInterface.BUTTON_POSITIVE) {
-            mButtonPositive =
-                    new DialogButton(ModalDialogView.BUTTON_POSITIVE, text.toString(), listener);
+            mButtonPositive = new DialogButton(
+                    ModalDialogView.ButtonType.POSITIVE, text.toString(), listener);
         } else if (whichButton == DialogInterface.BUTTON_NEGATIVE) {
-            mButtonNegative =
-                    new DialogButton(ModalDialogView.BUTTON_NEGATIVE, text.toString(), listener);
+            mButtonNegative = new DialogButton(
+                    ModalDialogView.ButtonType.NEGATIVE, text.toString(), listener);
         }
     }
 
@@ -108,9 +108,9 @@ public class VrAlertDialog extends AlertDialog {
 
             @Override
             public void onClick(int buttonType) {
-                if (buttonType == ModalDialogView.BUTTON_POSITIVE) {
+                if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
                     mButtonPositive.getListener().onClick(null, mButtonPositive.getId());
-                } else if (buttonType == ModalDialogView.BUTTON_NEGATIVE) {
+                } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
                     mButtonNegative.getListener().onClick(null, mButtonNegative.getId());
                 }
                 dismiss();

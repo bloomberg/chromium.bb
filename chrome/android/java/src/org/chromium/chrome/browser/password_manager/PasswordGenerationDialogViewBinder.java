@@ -21,10 +21,10 @@ public class PasswordGenerationDialogViewBinder {
         @Override
         public void onClick(int buttonType) {
             switch (buttonType) {
-                case ModalDialogView.BUTTON_POSITIVE:
+                case ModalDialogView.ButtonType.POSITIVE:
                     mPasswordActionCallback.onResult(true);
                     break;
-                case ModalDialogView.BUTTON_NEGATIVE:
+                case ModalDialogView.ButtonType.NEGATIVE:
                     mPasswordActionCallback.onResult(false);
                     break;
                 default:

@@ -61,7 +61,7 @@ public class WebApkInstallService {
         Context context = ContextUtils.getApplicationContext();
         ChromeNotificationBuilder notificationBuilder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
-                        false /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER);
+                        false /* preferCompat */, ChannelDefinitions.ChannelId.BROWSER);
         notificationBuilder.setContentTitle(shortName)
                 .setContentText(message)
                 .setLargeIcon(icon)

@@ -49,23 +49,17 @@ import java.util.List;
  * any unnecessary measures and layouts.
  */
 class SuggestionView extends ViewGroup {
+    @IntDef({SuggestionIcon.UNDEFINED, SuggestionIcon.BOOKMARK, SuggestionIcon.HISTORY,
+            SuggestionIcon.GLOBE, SuggestionIcon.MAGNIFIER, SuggestionIcon.VOICE})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-            SUGGESTION_ICON_UNDEFINED,
-            SUGGESTION_ICON_BOOKMARK,
-            SUGGESTION_ICON_HISTORY,
-            SUGGESTION_ICON_GLOBE,
-            SUGGESTION_ICON_MAGNIFIER,
-            SUGGESTION_ICON_VOICE
-    })
-    private @interface SuggestionIcon {}
-
-    private static final int SUGGESTION_ICON_UNDEFINED = -1;
-    private static final int SUGGESTION_ICON_BOOKMARK = 0;
-    private static final int SUGGESTION_ICON_HISTORY = 1;
-    private static final int SUGGESTION_ICON_GLOBE = 2;
-    private static final int SUGGESTION_ICON_MAGNIFIER = 3;
-    private static final int SUGGESTION_ICON_VOICE = 4;
+    private @interface SuggestionIcon {
+        int UNDEFINED = -1;
+        int BOOKMARK = 0;
+        int HISTORY = 1;
+        int GLOBE = 2;
+        int MAGNIFIER = 3;
+        int VOICE = 4;
+    }
 
     private static final long RELAYOUT_DELAY_MS = 20;
 
@@ -328,7 +322,7 @@ class SuggestionView extends ViewGroup {
         // suggestion type they are.
         if (mSuggestion.hasAnswer()) {
             setAnswer(mSuggestion.getAnswer());
-            mContentsView.setSuggestionIcon(SUGGESTION_ICON_MAGNIFIER, colorsChanged);
+            mContentsView.setSuggestionIcon(SuggestionIcon.MAGNIFIER, colorsChanged);
             mContentsView.mTextLine2.setVisibility(VISIBLE);
             setRefinable(true);
             return;
@@ -343,11 +337,11 @@ class SuggestionView extends ViewGroup {
         int suggestionType = mSuggestion.getType();
         if (mSuggestion.isUrlSuggestion()) {
             if (mSuggestion.isStarred()) {
-                mContentsView.setSuggestionIcon(SUGGESTION_ICON_BOOKMARK, colorsChanged);
+                mContentsView.setSuggestionIcon(SuggestionIcon.BOOKMARK, colorsChanged);
             } else if (suggestionType == OmniboxSuggestionType.HISTORY_URL) {
-                mContentsView.setSuggestionIcon(SUGGESTION_ICON_HISTORY, colorsChanged);
+                mContentsView.setSuggestionIcon(SuggestionIcon.HISTORY, colorsChanged);
             } else {
-                mContentsView.setSuggestionIcon(SUGGESTION_ICON_GLOBE, colorsChanged);
+                mContentsView.setSuggestionIcon(SuggestionIcon.GLOBE, colorsChanged);
             }
             boolean urlShown = !TextUtils.isEmpty(mSuggestion.getUrl());
             boolean urlHighlighted = false;
@@ -359,13 +353,14 @@ class SuggestionView extends ViewGroup {
             setSuggestedQuery(suggestionItem, true, urlShown, urlHighlighted);
             setRefinable(!sameAsTyped);
         } else {
-            @SuggestionIcon int suggestionIcon = SUGGESTION_ICON_MAGNIFIER;
+            @SuggestionIcon
+            int suggestionIcon = SuggestionIcon.MAGNIFIER;
             if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
-                suggestionIcon = SUGGESTION_ICON_VOICE;
+                suggestionIcon = SuggestionIcon.VOICE;
             } else if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
                     || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY)) {
                 // Show history icon for suggestions based on user queries.
-                suggestionIcon = SUGGESTION_ICON_HISTORY;
+                suggestionIcon = SuggestionIcon.HISTORY;
             }
             mContentsView.setSuggestionIcon(suggestionIcon, colorsChanged);
             setRefinable(!sameAsTyped);
@@ -656,7 +651,7 @@ class SuggestionView extends ViewGroup {
         private int mTextRight = Integer.MIN_VALUE;
         private Drawable mSuggestionIcon;
         @SuggestionIcon
-        private int mSuggestionIconType = SUGGESTION_ICON_UNDEFINED;
+        private int mSuggestionIconType = SuggestionIcon.UNDEFINED;
 
         private final TextView mTextLine1;
         private final TextView mTextLine2;
@@ -1031,20 +1026,20 @@ class SuggestionView extends ViewGroup {
         @SuppressLint("SwitchIntDef")
         private void setSuggestionIcon(@SuggestionIcon int type, boolean invalidateCurrentIcon) {
             if (mSuggestionIconType == type && !invalidateCurrentIcon) return;
-            assert type != SUGGESTION_ICON_UNDEFINED;
+            assert type != SuggestionIcon.UNDEFINED;
 
             int drawableId = R.drawable.ic_omnibox_page;
             switch (type) {
-                case SUGGESTION_ICON_BOOKMARK:
+                case SuggestionIcon.BOOKMARK:
                     drawableId = R.drawable.btn_star;
                     break;
-                case SUGGESTION_ICON_MAGNIFIER:
+                case SuggestionIcon.MAGNIFIER:
                     drawableId = R.drawable.ic_suggestion_magnifier;
                     break;
-                case SUGGESTION_ICON_HISTORY:
+                case SuggestionIcon.HISTORY:
                     drawableId = R.drawable.ic_suggestion_history;
                     break;
-                case SUGGESTION_ICON_VOICE:
+                case SuggestionIcon.VOICE:
                     drawableId = R.drawable.btn_mic;
                     break;
                 default:

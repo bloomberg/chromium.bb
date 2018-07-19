@@ -29,8 +29,8 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 @Config(manifest = Config.NONE)
 public class PasswordReauthenticationFragmentTest {
     // All reauthentication scopes to be checked in the tests.
-    private static final int[] ALL_SCOPES = {ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME,
-            ReauthenticationManager.REAUTH_SCOPE_BULK};
+    private static final int[] ALL_SCOPES = {ReauthenticationManager.ReauthScope.ONE_AT_A_TIME,
+            ReauthenticationManager.ReauthScope.BULK};
 
     /**
      * Creates a dummy fragment, pushes the reauth fragment on top of it, then resolves the activity

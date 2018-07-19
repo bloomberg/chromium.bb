@@ -178,8 +178,8 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                 if (!mBottomSheet.isSheetOpen()) return;
                 mBottomSheet.setSheetState(
                         mBottomSheet.getCurrentSheetContent().isPeekStateEnabled()
-                                ? BottomSheet.SHEET_STATE_PEEK
-                                : BottomSheet.SHEET_STATE_HIDDEN,
+                                ? BottomSheet.SheetState.PEEK
+                                : BottomSheet.SheetState.HIDDEN,
                         true, StateChangeReason.TAP_SCRIM);
             }
 
@@ -246,7 +246,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     private void suppressSheet(@StateChangeReason int reason) {
         mIsSuppressed = true;
-        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false, reason);
+        mBottomSheet.setSheetState(BottomSheet.SheetState.HIDDEN, false, reason);
     }
 
     /**
@@ -261,7 +261,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         mIsSuppressed = false;
 
         if (mBottomSheet.getCurrentSheetContent() != null) {
-            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+            mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
         } else {
             // In the event the previous content was hidden, try to show the next one.
             showNextContent();
@@ -295,7 +295,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         mFullShowRequestedSet.add(content);
         if (!loadInternal(content)) return false;
         if (!mBottomSheet.isSheetOpen() && !isOtherUIObscuring()) {
-            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, animate);
+            mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, animate);
         }
         mWasShownForCurrentTab = true;
         return true;
@@ -348,7 +348,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         if (mIsProcessingHideRequest) return;
 
         // Handle showing the next content if it exists.
-        if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_HIDDEN) {
+        if (mBottomSheet.getSheetState() == BottomSheet.SheetState.HIDDEN) {
             // If the sheet is already hidden, simply show the next content.
             showNextContent();
         } else {
@@ -357,7 +357,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                 @Override
                 public void onSheetStateChanged(int currentState) {
                     // Don't do anything until the sheet is completely hidden.
-                    if (currentState != BottomSheet.SHEET_STATE_HIDDEN) return;
+                    if (currentState != BottomSheet.SheetState.HIDDEN) return;
 
                     showNextContent();
                     mBottomSheet.removeObserver(this);
@@ -367,7 +367,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
 
             mIsProcessingHideRequest = true;
             mBottomSheet.addObserver(hiddenSheetObserver);
-            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, animate);
+            mBottomSheet.setSheetState(BottomSheet.SheetState.HIDDEN, animate);
         }
     }
 
@@ -376,7 +376,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     public void expandSheet() {
         if (mBottomSheet.getCurrentSheetContent() == null) return;
-        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, true);
         if (mContextualSearchManager != null) {
             mContextualSearchManager.hideContextualSearch(OverlayPanel.StateChangeReason.UNKNOWN);
         }
@@ -406,7 +406,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         BottomSheetContent nextContent = mContentQueue.poll();
         mBottomSheet.showContent(nextContent);
         if (mFullShowRequestedSet.contains(nextContent)) {
-            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+            mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
         }
     }
 

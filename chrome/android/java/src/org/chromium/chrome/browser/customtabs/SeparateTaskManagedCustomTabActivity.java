@@ -32,7 +32,9 @@ public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabA
         super.onStartWithNative();
 
         if (!isFinishing()) {
-            ActivityAssigner.instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE)
+            ActivityAssigner
+                    .instance(
+                            ActivityAssigner.ActivityAssignerNamespace.SEPARATE_TASK_CCT_NAMESPACE)
                     .markActivityUsed(getActivityIndex(), getIntent().getData().getAuthority());
         }
     }

@@ -164,8 +164,8 @@ public class MediaCaptureNotificationService extends Service {
      */
     private void createNotification(int notificationId, int mediaType, String url) {
         final String channelId = mediaType == MEDIATYPE_SCREEN_CAPTURE
-                ? ChannelDefinitions.CHANNEL_ID_SCREEN_CAPTURE
-                : ChannelDefinitions.CHANNEL_ID_MEDIA;
+                ? ChannelDefinitions.ChannelId.SCREEN_CAPTURE
+                : ChannelDefinitions.ChannelId.MEDIA;
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory

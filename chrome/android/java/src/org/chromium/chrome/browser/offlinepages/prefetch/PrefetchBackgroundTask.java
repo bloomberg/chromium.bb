@@ -10,6 +10,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
+import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
 import org.chromium.chrome.browser.offlinepages.DeviceConditions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
@@ -47,7 +48,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     }
 
     @Override
-    public int onStartTaskBeforeNativeLoaded(
+    public @StartBeforeNativeResult int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         // Ensure that the conditions are right to do work.  If the maximum time to
         // wait is reached, it is possible the task will fire even if network conditions are
@@ -73,10 +74,10 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         if (deviceConditions == null
                 || (areBatteryConditionsMet(deviceConditions)
                            && areNetworkConditionsMet(deviceConditions))) {
-            return NativeBackgroundTask.LOAD_NATIVE;
+            return StartBeforeNativeResult.LOAD_NATIVE;
         }
 
-        return NativeBackgroundTask.RESCHEDULE;
+        return StartBeforeNativeResult.RESCHEDULE;
     }
 
     /**

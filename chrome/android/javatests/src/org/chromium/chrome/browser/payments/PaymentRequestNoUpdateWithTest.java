@@ -68,7 +68,8 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(
+                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"freeShipping"});
     }
 
@@ -86,7 +87,8 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(
+                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"freeShipping"});
     }
 
@@ -103,7 +105,8 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(
+                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"updatedShipping"});
     }
 }

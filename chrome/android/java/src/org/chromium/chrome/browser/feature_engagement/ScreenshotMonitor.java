@@ -105,8 +105,7 @@ public class ScreenshotMonitor {
     }
 
     private void onEventOnUiThread(final int event, final String path) {
-        if (!mIsMonitoring) return;
-        if (path == null) return;
+        if (!mIsMonitoring || path == null) return;
         assert event == FileObserver.CREATE;
 
         mDelegate.onScreenshotTaken();

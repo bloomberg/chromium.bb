@@ -27,35 +27,41 @@ public class SuggestionsCategoryInfoTest {
     public void testDownloadContextMenu() {
         SuggestionsCategoryInfo categoryInfo =
                 new CategoryInfoBuilder(KnownCategories.DOWNLOADS).build();
-        assertThat(
-                categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW),
-                is(true));
-        assertThat(categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_OPEN_IN_NEW_TAB),
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_WINDOW),
                 is(true));
         assertThat(categoryInfo.isContextMenuItemSupported(
-                           ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB),
+                           ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB),
+                is(true));
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB),
                 is(false));
-        assertThat(categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_SAVE_FOR_OFFLINE),
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.SAVE_FOR_OFFLINE),
                 is(false));
-        assertThat(
-                categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_REMOVE), nullValue());
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.REMOVE),
+                nullValue());
     }
 
     @Test
     public void testArticleContextMenu() {
         SuggestionsCategoryInfo categoryInfo =
                 new CategoryInfoBuilder(KnownCategories.ARTICLES).build();
-        assertThat(
-                categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW),
-                is(true));
-        assertThat(categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_OPEN_IN_NEW_TAB),
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_WINDOW),
                 is(true));
         assertThat(categoryInfo.isContextMenuItemSupported(
-                           ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB),
+                           ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB),
                 is(true));
-        assertThat(categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_SAVE_FOR_OFFLINE),
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB),
                 is(true));
-        assertThat(
-                categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_REMOVE), nullValue());
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.SAVE_FOR_OFFLINE),
+                is(true));
+        assertThat(categoryInfo.isContextMenuItemSupported(
+                           ContextMenuManager.ContextMenuItemId.REMOVE),
+                nullValue());
     }
 }

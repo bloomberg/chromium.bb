@@ -72,9 +72,9 @@ public class NotificationPlatformBridgeUnitTest {
 
         // Returns null for a channel id that is not associated with a particular origin.
         assertNull(NotificationPlatformBridge.getOriginFromChannelId(
-                ChannelDefinitions.CHANNEL_ID_BROWSER));
+                ChannelDefinitions.ChannelId.BROWSER));
         assertNull(NotificationPlatformBridge.getOriginFromChannelId(
-                ChannelDefinitions.CHANNEL_ID_SITES));
+                ChannelDefinitions.ChannelId.SITES));
 
         // Returns null if channel id is null.
         assertNull(NotificationPlatformBridge.getOriginFromChannelId(null));

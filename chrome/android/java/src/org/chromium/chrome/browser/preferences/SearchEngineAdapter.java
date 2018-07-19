@@ -70,12 +70,14 @@ public class SearchEngineAdapter extends BaseAdapter
      * Type for source of search engine. This is needed because if a custom search engine is set as
      * default, it will be moved to the prepopulated list.
      */
-    @IntDef({TYPE_DEFAULT, TYPE_PREPOPULATED, TYPE_RECENT})
+    @IntDef({TemplateUrlSourceType.DEFAULT, TemplateUrlSourceType.PREPOPULATED,
+            TemplateUrlSourceType.RECENT})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface TemplateUrlSourceType {}
-    public static final int TYPE_DEFAULT = 0;
-    public static final int TYPE_PREPOPULATED = 1;
-    public static final int TYPE_RECENT = 2;
+    public @interface TemplateUrlSourceType {
+        int DEFAULT = 0;
+        int PREPOPULATED = 1;
+        int RECENT = 2;
+    }
 
     /** The current context. */
     private Context mContext;
@@ -176,7 +178,7 @@ public class SearchEngineAdapter extends BaseAdapter
         for (int i = 0; i < templateUrls.size(); i++) {
             TemplateUrl templateUrl = templateUrls.get(i);
             if (getSearchEngineSourceType(templateUrl, defaultSearchEngineTemplateUrl)
-                    == TYPE_RECENT) {
+                    == TemplateUrlSourceType.RECENT) {
                 mRecentSearchEngines.add(templateUrl);
             } else {
                 mPrepopulatedSearchEngines.add(templateUrl);
@@ -236,7 +238,8 @@ public class SearchEngineAdapter extends BaseAdapter
         Iterator<TemplateUrl> iterator = templateUrls.iterator();
         while (iterator.hasNext()) {
             TemplateUrl templateUrl = iterator.next();
-            if (getSearchEngineSourceType(templateUrl, defaultSearchEngine) != TYPE_RECENT) {
+            if (getSearchEngineSourceType(templateUrl, defaultSearchEngine)
+                    != TemplateUrlSourceType.RECENT) {
                 continue;
             }
             if (recentEngineNum < MAX_RECENT_ENGINE_NUM
@@ -251,11 +254,11 @@ public class SearchEngineAdapter extends BaseAdapter
     private static @TemplateUrlSourceType int getSearchEngineSourceType(
             TemplateUrl templateUrl, TemplateUrl defaultSearchEngine) {
         if (templateUrl.getIsPrepopulated()) {
-            return TYPE_PREPOPULATED;
+            return TemplateUrlSourceType.PREPOPULATED;
         } else if (templateUrl.equals(defaultSearchEngine)) {
-            return TYPE_DEFAULT;
+            return TemplateUrlSourceType.DEFAULT;
         } else {
-            return TYPE_RECENT;
+            return TemplateUrlSourceType.RECENT;
         }
     }
 

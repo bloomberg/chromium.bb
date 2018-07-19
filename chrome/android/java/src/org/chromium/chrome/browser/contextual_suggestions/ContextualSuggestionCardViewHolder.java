@@ -24,7 +24,8 @@ public class ContextualSuggestionCardViewHolder extends SnippetArticleViewHolder
 
     @Override
     public boolean isItemSupported(@ContextMenuManager.ContextMenuItemId int menuItemId) {
-        return menuItemId != ContextMenuManager.ID_LEARN_MORE && super.isItemSupported(menuItemId);
+        return menuItemId != ContextMenuManager.ContextMenuItemId.LEARN_MORE
+                && super.isItemSupported(menuItemId);
     }
 
     @Override

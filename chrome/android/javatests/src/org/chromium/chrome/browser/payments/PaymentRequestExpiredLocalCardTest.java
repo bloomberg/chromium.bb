@@ -71,7 +71,8 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
         mRule.setTextInExpiredCardUnmaskDialogAndWait(
                 new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
                 new String[] {"11", "26", "123"}, mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(
+                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"Jon Doe", "4111111111111111", "11", "2026",
                 "basic-card", "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US",
                 "en", "freeShippingOption"});
@@ -91,7 +92,8 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
         mRule.setTextInExpiredCardUnmaskDialogAndWait(
                 new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
                 new String[] {"11", "26", "123"}, mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(
+                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
 
         // Make sure the new expiration date was saved.
         CreditCard storedCard = mHelper.getCreditCard(mCreditCardId);

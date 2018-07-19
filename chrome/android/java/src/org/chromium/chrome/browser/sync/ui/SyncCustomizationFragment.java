@@ -97,16 +97,17 @@ public class SyncCustomizationFragment extends PreferenceFragment
     public static final String PREFERENCE_SYNC_ACCOUNT_LIST = "synced_account";
     public static final String PREFERENCE_SYNC_ERROR_CARD = "sync_error_card";
 
+    @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
+            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE, SyncError.OTHER_ERRORS})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SYNC_NO_ERROR, SYNC_ANDROID_SYNC_DISABLED, SYNC_AUTH_ERROR, SYNC_PASSPHRASE_REQUIRED,
-            SYNC_CLIENT_OUT_OF_DATE, SYNC_OTHER_ERRORS})
-    private @interface SyncError {}
-    private static final int SYNC_NO_ERROR = -1;
-    private static final int SYNC_ANDROID_SYNC_DISABLED = 0;
-    private static final int SYNC_AUTH_ERROR = 1;
-    private static final int SYNC_PASSPHRASE_REQUIRED = 2;
-    private static final int SYNC_CLIENT_OUT_OF_DATE = 3;
-    private static final int SYNC_OTHER_ERRORS = 128;
+    private @interface SyncError {
+        int NO_ERROR = -1;
+        int ANDROID_SYNC_DISABLED = 0;
+        int AUTH_ERROR = 1;
+        int PASSPHRASE_REQUIRED = 2;
+        int CLIENT_OUT_OF_DATE = 3;
+        int OTHER_ERRORS = 128;
+    }
 
     private ChromeSwitchPreference mSyncSwitchPreference;
     private boolean mIsEngineInitialized;
@@ -130,7 +131,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
     private ProfileSyncService mProfileSyncService;
 
-    @SyncError private int mCurrentSyncError = SYNC_NO_ERROR;
+    @SyncError
+    private int mCurrentSyncError = SyncError.NO_ERROR;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -579,7 +581,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
     private void updateSyncErrorCard() {
         mCurrentSyncError = getSyncError();
-        if (mCurrentSyncError != SYNC_NO_ERROR) {
+        if (mCurrentSyncError != SyncError.NO_ERROR) {
             String summary = getSyncErrorHint(mCurrentSyncError);
             mSyncErrorCard.setSummary(summary);
             getPreferenceScreen().addPreference(mSyncErrorCard);
@@ -591,34 +593,34 @@ public class SyncCustomizationFragment extends PreferenceFragment
     @SyncError
     private int getSyncError() {
         if (!AndroidSyncSettings.isMasterSyncEnabled()) {
-            return SYNC_ANDROID_SYNC_DISABLED;
+            return SyncError.ANDROID_SYNC_DISABLED;
         }
 
         if (!mSyncSwitchPreference.isChecked()) {
-            return SYNC_NO_ERROR;
+            return SyncError.NO_ERROR;
         }
 
         if (mProfileSyncService.getAuthError()
                 == GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS) {
-            return SYNC_AUTH_ERROR;
+            return SyncError.AUTH_ERROR;
         }
 
         if (mProfileSyncService.getProtocolErrorClientAction()
                 == ProtocolErrorClientAction.UPGRADE_CLIENT) {
-            return SYNC_CLIENT_OUT_OF_DATE;
+            return SyncError.CLIENT_OUT_OF_DATE;
         }
 
         if (mProfileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
                 || mProfileSyncService.hasUnrecoverableError()) {
-            return SYNC_OTHER_ERRORS;
+            return SyncError.OTHER_ERRORS;
         }
 
         if (mProfileSyncService.isSyncActive()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
-            return SYNC_PASSPHRASE_REQUIRED;
+            return SyncError.PASSPHRASE_REQUIRED;
         }
 
-        return SYNC_NO_ERROR;
+        return SyncError.NO_ERROR;
     }
 
     /**
@@ -628,41 +630,41 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private String getSyncErrorHint(@SyncError int error) {
         Resources res = getActivity().getResources();
         switch (error) {
-            case SYNC_ANDROID_SYNC_DISABLED:
+            case SyncError.ANDROID_SYNC_DISABLED:
                 return res.getString(R.string.hint_android_sync_disabled);
-            case SYNC_AUTH_ERROR:
+            case SyncError.AUTH_ERROR:
                 return res.getString(R.string.hint_sync_auth_error);
-            case SYNC_CLIENT_OUT_OF_DATE:
+            case SyncError.CLIENT_OUT_OF_DATE:
                 return res.getString(
                         R.string.hint_client_out_of_date, BuildInfo.getInstance().hostPackageLabel);
-            case SYNC_OTHER_ERRORS:
+            case SyncError.OTHER_ERRORS:
                 return res.getString(R.string.hint_other_sync_errors);
-            case SYNC_PASSPHRASE_REQUIRED:
+            case SyncError.PASSPHRASE_REQUIRED:
                 return res.getString(R.string.hint_passphrase_required);
-            case SYNC_NO_ERROR:
+            case SyncError.NO_ERROR:
             default:
                 return null;
         }
     }
 
     private void onSyncErrorCardClicked() {
-        if (mCurrentSyncError == SYNC_NO_ERROR) {
+        if (mCurrentSyncError == SyncError.NO_ERROR) {
             return;
         }
 
-        if (mCurrentSyncError == SYNC_ANDROID_SYNC_DISABLED) {
+        if (mCurrentSyncError == SyncError.ANDROID_SYNC_DISABLED) {
             SigninUtils.openAccountSettingsPage(
                     getActivity(), ChromeSigninController.get().getSignedInAccountName());
             return;
         }
 
-        if (mCurrentSyncError == SYNC_AUTH_ERROR) {
+        if (mCurrentSyncError == SyncError.AUTH_ERROR) {
             AccountManagerFacade.get().updateCredentials(
                     ChromeSigninController.get().getSignedInUser(), getActivity(), null);
             return;
         }
 
-        if (mCurrentSyncError == SYNC_CLIENT_OUT_OF_DATE) {
+        if (mCurrentSyncError == SyncError.CLIENT_OUT_OF_DATE) {
             // Opens the client in play store for update.
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("market://details?id="
@@ -671,13 +673,13 @@ public class SyncCustomizationFragment extends PreferenceFragment
             return;
         }
 
-        if (mCurrentSyncError == SYNC_OTHER_ERRORS) {
+        if (mCurrentSyncError == SyncError.OTHER_ERRORS) {
             final Account account = ChromeSigninController.get().getSignedInUser();
             SigninManager.get().signOut(() -> SigninManager.get().signIn(account, null, null));
             return;
         }
 
-        if (mCurrentSyncError == SYNC_PASSPHRASE_REQUIRED) {
+        if (mCurrentSyncError == SyncError.PASSPHRASE_REQUIRED) {
             displayPassphraseDialog();
             return;
         }

@@ -70,7 +70,7 @@ public abstract class AutofillEditorBase
         FadingEdgeScrollView scrollView =
                 (FadingEdgeScrollView) baseView.findViewById(R.id.scroll_view);
         scrollView.setEdgeVisibility(
-                FadingEdgeScrollView.DRAW_NO_EDGE, FadingEdgeScrollView.DRAW_FADING_EDGE);
+                FadingEdgeScrollView.EdgeType.NONE, FadingEdgeScrollView.EdgeType.FADING);
         scrollView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         scrollView, baseView.findViewById(R.id.shadow)));

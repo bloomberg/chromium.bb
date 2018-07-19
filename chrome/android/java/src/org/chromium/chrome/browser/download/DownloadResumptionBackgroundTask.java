@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
+import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 
 /**
@@ -18,9 +19,9 @@ import org.chromium.components.background_task_scheduler.TaskParameters;
 public class DownloadResumptionBackgroundTask extends NativeBackgroundTask {
     // NativeBackgroundTask implementation.
     @Override
-    protected int onStartTaskBeforeNativeLoaded(
+    protected @StartBeforeNativeResult int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-        return NativeBackgroundTask.LOAD_NATIVE;
+        return StartBeforeNativeResult.LOAD_NATIVE;
     }
 
     @Override

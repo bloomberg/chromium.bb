@@ -212,7 +212,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         // Hitting the "submit" button on the software keyboard should submit the form if valid.
         mCardUnmaskInput.setOnEditorActionListener((v14, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                Button positiveButton = mDialog.getButton(ModalDialogView.BUTTON_POSITIVE);
+                Button positiveButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
                 if (positiveButton.isEnabled()) positiveButton.performClick();
                 return true;
             }
@@ -279,7 +279,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
-        Button verifyButton = mDialog.getButton(ModalDialogView.BUTTON_POSITIVE);
+        Button verifyButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
         verifyButton.setEnabled(false);
         mCardUnmaskInput.addTextChangedListener(this);
         mCardUnmaskInput.post(() -> setInitialFocus());
@@ -346,7 +346,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
      * is wrong. Finally checks whether the focuse should move to the next field.
      */
     private void validate() {
-        Button positiveButton = mDialog.getButton(ModalDialogView.BUTTON_POSITIVE);
+        Button positiveButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
 
         @ErrorType int errorType = getExpirationAndCvcErrorType();
         positiveButton.setEnabled(errorType == ErrorType.NONE);
@@ -634,7 +634,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mMonthInput.setEnabled(enabled);
         mYearInput.setEnabled(enabled);
         mStoreLocallyCheckbox.setEnabled(enabled);
-        mDialog.getButton(ModalDialogView.BUTTON_POSITIVE).setEnabled(enabled);
+        mDialog.getButton(ModalDialogView.ButtonType.POSITIVE).setEnabled(enabled);
     }
 
     /**
@@ -739,12 +739,12 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     }
 
     @Override
-    public void onClick(int buttonType) {
-        if (buttonType == ModalDialogView.BUTTON_POSITIVE) {
+    public void onClick(@ModalDialogView.ButtonType int buttonType) {
+        if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
             mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
                     mMonthInput.getText().toString(), Integer.toString(getFourDigitYear()),
                     mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked());
-        } else if (buttonType == ModalDialogView.BUTTON_NEGATIVE) {
+        } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
             mModalDialogManager.cancelDialog(mDialog);
         }
     }

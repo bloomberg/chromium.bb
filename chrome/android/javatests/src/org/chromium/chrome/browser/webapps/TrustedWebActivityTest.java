@@ -166,7 +166,7 @@ public class TrustedWebActivityTest {
         mWebappActivityRule.waitUntilSplashscreenHides();
         mWebappActivityRule.waitUntilIdle();
         WebappActivity activity = mWebappActivityRule.getActivity();
-        assertEquals(WebappActivity.ACTIVITY_TYPE_TWA, activity.getActivityType());
+        assertEquals(WebappActivity.ActivityType.TWA, activity.getActivityType());
         return activity;
     }
 
