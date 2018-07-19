@@ -24,10 +24,14 @@
  */
 
 // https://html.spec.whatwg.org/#the-track-element
+
+// The `URLString` reference below is from Trusted Types:
+// https://github.com/WICG/trusted-types/, which is still WIP.
+// https://crbug.com/739170.
 [HTMLConstructor]
 interface HTMLTrackElement : HTMLElement {
     [CEReactions] attribute DOMString kind;
-    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions, Reflect] attribute DOMString srclang;
     [CEReactions, Reflect] attribute DOMString label;
     [CEReactions, Reflect] attribute boolean default;

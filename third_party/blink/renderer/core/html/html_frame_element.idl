@@ -19,11 +19,15 @@
  */
 
 // https://html.spec.whatwg.org/#htmlframeelement
+
+// The `URLString` reference below is from Trusted Types:
+// https://github.com/WICG/trusted-types/, which is still WIP.
+// https://crbug.com/739170.
 [HTMLConstructor]
 interface HTMLFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     [CEReactions, Reflect] attribute DOMString scrolling;
-    [CEReactions, Reflect, URL] attribute USVString src;
+    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions, Reflect] attribute DOMString frameBorder;
     [CEReactions, Reflect, URL] attribute USVString longDesc;
     [CEReactions, Reflect] attribute boolean noResize;
