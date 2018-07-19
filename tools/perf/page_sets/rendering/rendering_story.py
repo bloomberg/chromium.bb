@@ -32,6 +32,7 @@ class RenderingStory(page.Page):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   TAGS = None
   PLATFORM_SPECIFIC = False
+  YEAR = None
 
   def __init__(self,
                page_set,
@@ -45,9 +46,12 @@ class RenderingStory(page.Page):
       for t in self.TAGS:
         assert t in story_tags.ALL_TAGS
         tags.append(t.name)
+    name = self.BASE_NAME + name_suffix
+    if self.YEAR:
+      name += ('_' + self.YEAR)
     super(RenderingStory, self).__init__(
         page_set=page_set,
-        name=self.BASE_NAME + name_suffix,
+        name=name,
         url=self.URL,
         tags=tags,
         platform_specific=self.PLATFORM_SPECIFIC,
