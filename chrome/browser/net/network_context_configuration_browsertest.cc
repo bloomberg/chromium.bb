@@ -1052,6 +1052,13 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   if (system)
     return;
 
+  // The preference is expected to be reset in incognito mode.
+  if (GetParam().network_context_type ==
+      NetworkContextType::kIncognitoProfile) {
+    EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
+    return;
+  }
+
   // The kBlockThirdPartyCookies pref should carry over to the next session.
   EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
   SetCookie(/*third_party=*/true);
