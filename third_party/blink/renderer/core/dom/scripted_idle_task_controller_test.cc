@@ -57,6 +57,9 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override {}
 
+  void AddRAILModeObserver(
+      scheduler::WebThreadScheduler::RAILModeObserver*) override {}
+
   scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }

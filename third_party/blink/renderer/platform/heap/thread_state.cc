@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -179,6 +178,7 @@ ThreadState::ThreadState()
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
       reason_for_scheduled_gc_(BlinkGC::GCReason::kMaxValue),
+      should_optimize_for_load_time_(false),
       isolate_(nullptr),
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
@@ -211,6 +211,16 @@ ThreadState::~ThreadState() {
 void ThreadState::AttachMainThread() {
   thread_specific_ = new WTF::ThreadSpecific<ThreadState*>();
   new (main_thread_state_storage_) ThreadState();
+
+  // PpapiThread doesn't set the current thread.
+  WebThread* current_thread = Platform::Current()->CurrentThread();
+  if (current_thread) {
+    ThreadScheduler* scheduler = current_thread->Scheduler();
+    // Some binaries do not have a scheduler (e.g.
+    // v8_context_snapshot_generator)
+    if (scheduler)
+      scheduler->AddRAILModeObserver(MainThreadState());
+  }
 }
 
 void ThreadState::AttachCurrentThread() {
@@ -528,7 +538,10 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 
   if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
       ShouldScheduleV8FollowupGC()) {
-    if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled()) {
+    // When we want to optimize for load time, we should prioritize throughput
+    // over latency and not do incremental marking.
+    if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled() &&
+        !should_optimize_for_load_time_) {
       VLOG(2) << "[state:" << this << "] "
               << "ScheduleV8FollowupGCIfNeeded: Scheduled incremental v8 "
                  "followup GC";

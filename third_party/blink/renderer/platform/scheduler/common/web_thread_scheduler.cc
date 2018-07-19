@@ -153,7 +153,7 @@ void WebThreadScheduler::SetTopLevelBlameContext(
   NOTREACHED();
 }
 
-void WebThreadScheduler::SetRAILModeObserver(RAILModeObserver* observer) {
+void WebThreadScheduler::AddRAILModeObserver(RAILModeObserver* observer) {
   NOTREACHED();
 }
 
