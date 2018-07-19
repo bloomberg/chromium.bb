@@ -29,6 +29,7 @@ js_type_check("closure_compile") {
     ":files_confirm_dialog",
     ":files_menu",
     ":gear_menu",
+    ":install_linux_package_dialog",
     ":list_container",
     ":location_line",
     ":multi_profile_share_dialog",
@@ -207,6 +208,7 @@ js_library("file_manager_ui") {
     ":files_alert_dialog",
     ":files_confirm_dialog",
     ":gear_menu",
+    ":install_linux_package_dialog",
     ":list_container",
     ":location_line",
     ":multi_profile_share_dialog",
@@ -282,6 +284,12 @@ js_library("files_menu") {
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:menu",
     "//ui/webui/resources/js/cr/ui:menu_item",
+  ]
+}
+
+js_library("install_linux_package_dialog") {
+  deps = [
+    ":file_manager_dialog_base",
   ]
 }
 

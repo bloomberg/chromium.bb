@@ -81,21 +81,10 @@ void ExecuteCrostiniTask(
     const FileTaskFinishedCallback& done) {
   DCHECK(IsCrostiniUIAllowedForProfile(profile));
 
-  base::FilePath folder(util::GetCrostiniMountPointName(profile));
-
   std::vector<std::string> files;
   for (const storage::FileSystemURL& file_system_url : file_system_urls) {
-    DCHECK(file_system_url.mount_type() == storage::kFileSystemTypeExternal);
-    DCHECK(file_system_url.type() == storage::kFileSystemTypeNativeLocal);
-
-    // Reformat virtual_path()
-    // from <mount_label>/path/to/file
-    // to   /<home-directory>/path/to/file
-    base::FilePath result = HomeDirectoryForProfile(profile);
-    bool success =
-        folder.AppendRelativePath(file_system_url.virtual_path(), &result);
-    DCHECK(success);
-    files.emplace_back(result.AsUTF8Unsafe());
+    files.emplace_back(util::ConvertFileSystemURLToPathInsideCrostini(
+        profile, file_system_url));
   }
 
   LaunchCrostiniApp(profile, task.app_id, display::kInvalidDisplayId, files);

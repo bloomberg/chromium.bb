@@ -313,6 +313,23 @@ class FileManagerPrivateMountCrostiniContainerFunction
   scoped_refptr<FileManagerPrivateMountCrostiniContainerFunction> self_;
 };
 
+// Implements the chrome.fileManagerPrivate.installLinuxPackage method.
+// Starts installation of a Linux package.
+class FileManagerPrivateInternalInstallLinuxPackageFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.installLinuxPackage",
+                             FILEMANAGERPRIVATEINTERNAL_INSTALLLINUXPACKAGE)
+
+ protected:
+  ~FileManagerPrivateInternalInstallLinuxPackageFunction() override = default;
+
+ private:
+  ResponseAction Run() override;
+  void OnInstallLinuxPackage(crostini::ConciergeClientResult result,
+                             const std::string& failure_reason);
+};
+
 // Implements the chrome.fileManagerPrivate.getCustomActions method.
 class FileManagerPrivateInternalGetCustomActionsFunction
     : public UIThreadExtensionFunction {

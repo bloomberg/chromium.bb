@@ -1887,6 +1887,15 @@ body[drive='error'] #unmounted-panel > .error,
   width: auto;
 }
 
+#install-linux-package-dialog {
+  min-width: 300px;
+  width: 40%;
+}
+
+#install-linux-package-dialog .cr-dialog-text {
+  min-height: 30px;
+}
+
 .drive-welcome-wrapper {
   /* drive_welcome.css will override it once loaded. */
   display: none;

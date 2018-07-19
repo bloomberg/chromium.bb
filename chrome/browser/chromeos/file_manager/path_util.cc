@@ -132,6 +132,23 @@ base::FilePath GetCrostiniMountDirectory(Profile* profile) {
   return base::FilePath("/media/fuse/" + GetCrostiniMountPointName(profile));
 }
 
+std::string ConvertFileSystemURLToPathInsideCrostini(
+    Profile* profile,
+    const storage::FileSystemURL& file_system_url) {
+  DCHECK(file_system_url.mount_type() == storage::kFileSystemTypeExternal);
+  DCHECK(file_system_url.type() == storage::kFileSystemTypeNativeLocal);
+
+  // Reformat virtual_path()
+  // from <mount_label>/path/to/file
+  // to   /<home-directory>/path/to/file
+  base::FilePath folder(util::GetCrostiniMountPointName(profile));
+  base::FilePath result = HomeDirectoryForProfile(profile);
+  bool success =
+      folder.AppendRelativePath(file_system_url.virtual_path(), &result);
+  DCHECK(success);
+  return result.AsUTF8Unsafe();
+}
+
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

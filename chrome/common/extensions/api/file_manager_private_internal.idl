@@ -32,6 +32,9 @@ namespace fileManagerPrivateInternal {
   callback ValidatePathNameLengthCallback = void(boolean result);
   callback GetDirectorySizeCallback = void(double size);
   callback GetRecentFilesCallback = void(EntryDescription[] entries);
+  callback InstallLinuxPackageCallback =
+      void(fileManagerPrivate.InstallLinuxPackageResponse response,
+           optional DOMString failure_reason);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -97,5 +100,7 @@ namespace fileManagerPrivateInternal {
                                  GetDirectorySizeCallback callback);
     static void getRecentFiles(fileManagerPrivate.SourceRestriction restriction,
                                GetRecentFilesCallback callback);
+    static void installLinuxPackage(DOMString url,
+                                    InstallLinuxPackageCallback callback);
   };
 };
