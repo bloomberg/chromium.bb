@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "content/common/service_worker/service_worker_event_dispatcher.mojom";
+import "content/common/service_worker/service_worker.mojom";
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/url_loader.mojom";

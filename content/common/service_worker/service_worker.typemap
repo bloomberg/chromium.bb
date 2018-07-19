@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//content/common/service_worker/service_worker_event_dispatcher.mojom"
+mojom = "//content/common/service_worker/service_worker.mojom"
 public_headers = [
   "//content/common/background_fetch/background_fetch_types.h",
   "//third_party/blink/public/common/service_worker/service_worker_status_code.h",

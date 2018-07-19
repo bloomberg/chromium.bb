@@ -23,7 +23,7 @@
 #include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"

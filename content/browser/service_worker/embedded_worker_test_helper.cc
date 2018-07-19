@@ -23,7 +23,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"

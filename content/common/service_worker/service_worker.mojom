@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(falken): Merge this file to service_worker.mojom.
-
 module content.mojom;
 
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
