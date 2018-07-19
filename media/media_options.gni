@@ -177,14 +177,14 @@ _default_mojo_media_host = "none"
 # Can be overridden by gn build arguments from the --args command line flag
 # for local testing.
 if (enable_mojo_media) {
-  if (is_chromecast && is_cast_using_cma_backend) {
+  if (is_chromecast && is_cast_using_cma_backend && !is_android) {
     _default_mojo_media_services = [
       "cdm",
       "renderer",
     ]
     _default_mojo_media_host = "browser"
   } else if (is_android) {
-    # Both chrome for Android and cast for ATV belongs to this case
+    # Both chrome for Android and cast for Android belongs to this case
     _default_mojo_media_services = [
       "cdm",
       "audio_decoder",
