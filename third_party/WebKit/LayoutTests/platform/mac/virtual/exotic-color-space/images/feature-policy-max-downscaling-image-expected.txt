@@ -30,4 +30,7 @@ layer at (8,8) size 604x504
           LayoutText {#text} at (496,374) size 4x18
             text run at (496,374) width 4: " "
           LayoutImage {IMG} at (500,350.22) size 37.78x37.78
+          LayoutText {#text} at (537,374) size 5x18
+            text run at (537,374) width 5: " "
+          LayoutImage {IMG} at (541.78,348.22) size 39.78x39.78 [border: (1px solid #0000FF)]
           LayoutText {#text} at (0,0) size 0x0
