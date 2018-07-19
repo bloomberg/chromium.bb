@@ -738,4 +738,18 @@ void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
   [self updateWebContentsVisibility];
 }
 
+// AccessibilityHostable protocol implementation.
+- (void)setAccessibilityParentElement:(id)accessibilityParent {
+  accessibilityParent_.reset([accessibilityParent retain]);
+}
+
+// NSAccessibility informal protocol implementation.
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if (accessibilityParent_ &&
+      [attribute isEqualToString:NSAccessibilityParentAttribute]) {
+    return accessibilityParent_;
+  }
+  return [super accessibilityAttributeValue:attribute];
+}
+
 @end

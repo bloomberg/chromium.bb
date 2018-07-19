@@ -7,6 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
+#import "ui/accessibility/platform/ax_platform_node_mac.h"
+#import "ui/base/cocoa/accessibility_hostable.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -36,6 +38,17 @@ void EnsureNativeViewHasNoChildWidgets(NSView* native_view) {
   }
 }
 
+AXPlatformNodeCocoa* ClosestPlatformAncestorNode(views::View* view) {
+  do {
+    gfx::NativeViewAccessible accessible = view->GetNativeViewAccessible();
+    if ([accessible isKindOfClass:[AXPlatformNodeCocoa class]]) {
+      return NSAccessibilityUnignoredAncestor(accessible);
+    }
+    view = view->parent();
+  } while (view);
+  return nil;
+}
+
 }  // namespace
 
 NativeViewHostMac::NativeViewHostMac(NativeViewHost* host) : host_(host) {
@@ -56,6 +69,28 @@ void NativeViewHostMac::AttachNativeView() {
 
   if ([native_view_ respondsToSelector:@selector(cr_setParentUiLayer:)])
     [native_view_ cr_setParentUiLayer:host_->layer()];
+  if ([native_view_ conformsToProtocol:@protocol(AccessibilityHostable)]) {
+    // Find the closest ancestor view that participates in the views toolkit
+    // accessibility hierarchy and set its element as the native view's parent.
+    // This is necessary because a closer ancestor might already be attaching
+    // to the NSView/content hierarchy.
+    // For example, web content is currently embedded into the views hierarchy
+    // roughly like this:
+    // BrowserView (views)
+    // |_  WebView (views)
+    //   |_  NativeViewHost (views)
+    //     |_  WebContentView (Cocoa, is |native_view_| in this scenario,
+    //         |               accessibility ignored).
+    //         |_ RenderWidgetHostView (Cocoa)
+    // WebView specifies either the RenderWidgetHostView or the native view as
+    // its accessibility element. That means that if we were to set it as
+    // |native_view_|'s parent, the RenderWidgetHostView would be its own
+    // accessibility parent! Instead, we want to find the browser view and
+    // attach to its node.
+    id hostable = native_view_;
+    [hostable setAccessibilityParentElement:ClosestPlatformAncestorNode(
+                                                host_->parent())];
+  }
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
   BridgedNativeWidget* bridge = NativeWidgetMac::GetBridgeForNativeWindow(
@@ -85,6 +120,10 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
 
   if ([native_view_ respondsToSelector:@selector(cr_setParentUiLayer:)])
     [native_view_ cr_setParentUiLayer:nullptr];
+  if ([native_view_ conformsToProtocol:@protocol(AccessibilityHostable)]) {
+    id hostable = native_view_;
+    [hostable setAccessibilityParentElement:nil];
+  }
 
   EnsureNativeViewHasNoChildWidgets(host_->native_view());
   BridgedNativeWidget* bridge = NativeWidgetMac::GetBridgeForNativeWindow(
@@ -164,7 +203,7 @@ void NativeViewHostMac::SetFocus() {
 }
 
 gfx::NativeViewAccessible NativeViewHostMac::GetNativeViewAccessible() {
-  return NULL;
+  return nullptr;
 }
 
 gfx::NativeCursor NativeViewHostMac::GetCursor(int x, int y) {
