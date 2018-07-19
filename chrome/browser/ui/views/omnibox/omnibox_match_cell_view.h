@@ -52,7 +52,7 @@ class OmniboxMatchCellView : public views::View {
   bool is_old_style_answer_;
   bool is_rich_suggestion_;
   bool is_search_type_;
-  bool has_tab_match_ = false;
+  bool should_show_tab_match_ = false;
 
   // Weak pointers for easy reference.
   views::ImageView* icon_view_;   // An icon representing the type or content.

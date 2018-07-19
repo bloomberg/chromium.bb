@@ -274,7 +274,7 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = 0;
-  if (is_rich_suggestion_ || has_tab_match_) {
+  if (is_rich_suggestion_ || should_show_tab_match_) {
     height = content_view_->GetLineHeight() +
              description_view_->GetHeightForWidth(width() - kTextIndent);
   } else if (is_old_style_answer_) {
@@ -314,7 +314,10 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
       (OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
-  has_tab_match_ = match.has_tab_match;
+
+  // For the purpose of layout & presentation, we care about whether the match
+  // is using the tab switch button, not simply the presence of a matching tab.
+  should_show_tab_match_ = match.ShouldShowTabMatch();
 
   // Set up the small icon.
   if (is_rich_suggestion_) {
@@ -324,7 +327,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   }
 
   // Set up the separator.
-  if (is_old_style_answer_ || is_rich_suggestion_ || has_tab_match_) {
+  if (is_old_style_answer_ || is_rich_suggestion_ || should_show_tab_match_) {
     separator_view_->SetSize(gfx::Size());
   } else {
     separator_view_->SetSize(separator_view_->GetPreferredSize());
@@ -409,7 +412,7 @@ void OmniboxMatchCellView::Layout() {
   // Update the margins.
   gfx::Insets insets = GetMarginInsets(
       content()->GetLineHeight(),
-      is_rich_suggestion_ || has_tab_match_ || is_old_style_answer_);
+      is_rich_suggestion_ || should_show_tab_match_ || is_old_style_answer_);
   SetBorder(views::CreateEmptyBorder(insets.top(), insets.left(),
                                      insets.bottom(), insets.right()));
   // Layout children *after* updating the margins.
@@ -422,7 +425,7 @@ void OmniboxMatchCellView::Layout() {
                               ? kTextIndent
                               : icon_view_->width() + HorizontalPadding();
 
-  if (is_rich_suggestion_ || has_tab_match_) {
+  if (is_rich_suggestion_ || should_show_tab_match_) {
     LayoutNewStyleTwoLineSuggestion();
   } else if (is_old_style_answer_) {
     LayoutOldStyleAnswer(icon_view_width, text_indent);

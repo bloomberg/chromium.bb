@@ -89,7 +89,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   keyword_view_->OnMatchUpdate(this, match_);
 
   // Set up 'switch to tab' button.
-  if (match.has_tab_match && !match_.associated_keyword.get()) {
+  if (match.ShouldShowTabMatch()) {
     suggestion_tab_switch_button_ =
         std::make_unique<OmniboxTabSwitchButton>(model_, this);
     suggestion_tab_switch_button_->set_owned_by_client();
