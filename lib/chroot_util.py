@@ -88,7 +88,7 @@ def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
   cros_build_lib.SudoRunCommand(cmd + packages)
 
 
-def UpdateChroot(brick=None, board=None, update_host_packages=True):
+def UpdateChroot(board=None, update_host_packages=True):
   """Update the chroot."""
   # Run chroot update hooks.
   logging.notice('Updating the chroot. This may take several minutes.')
@@ -97,9 +97,7 @@ def UpdateChroot(brick=None, board=None, update_host_packages=True):
 
   # Update toolchains.
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')]
-  if brick:
-    cmd += ['--targets=bricks', '--include-bricks=%s' % brick.brick_locator]
-  elif board:
+  if board:
     cmd += ['--targets=boards', '--include-boards=%s' % board]
   cros_build_lib.SudoRunCommand(cmd, debug_level=logging.DEBUG)
 
@@ -114,33 +112,25 @@ def UpdateChroot(brick=None, board=None, update_host_packages=True):
                                 debug_level=logging.DEBUG)
 
 
-def SetupBoard(brick=None, board=None, update_chroot=True,
+def SetupBoard(board, update_chroot=True,
                update_host_packages=True, use_binary=True):
-  """Set up a sysroot for |brick| or |board| (either must be provided).
+  """Set up a sysroot for |board|.
 
-  This invokes UpdateChroot() with the given brick/board values, unless
+  This invokes UpdateChroot() with the given board values, unless
   otherwise instructed.
 
   Args:
-    brick: Brick object we need to set up a sysroot for.
-    board: Board name to set up a sysroot for. Ignored if |brick| is provided.
+    board: Board name to set up a sysroot for.
     update_chroot: Whether we should update the chroot first.
     update_host_packages: Whether to update host packages in the chroot.
     use_binary: If okay to use binary packages during the update.
   """
   if update_chroot:
-    UpdateChroot(brick=brick, board=board,
-                 update_host_packages=update_host_packages)
+    UpdateChroot(board=board, update_host_packages=update_host_packages)
 
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
-         '--skip_toolchain_update', '--skip_chroot_upgrade']
-  if brick:
-    brick.GeneratePortageConfig()
-    cmd.append('--brick=%s' % brick.brick_locator)
-  elif board:
-    cmd.append('--board=%s' % board)
-  else:
-    raise ValueError('Either brick or board must be provided')
+         '--skip_toolchain_update', '--skip_chroot_upgrade',
+         '--board=%s' % board]
 
   if not use_binary:
     cmd.append('--nousepkg')

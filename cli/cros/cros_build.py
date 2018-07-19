@@ -48,7 +48,6 @@ To just build a single package:
     self.build_pkgs = options.packages
     self.host = False
     self.board = None
-    self.brick = None
 
     if self.options.host:
       self.host = True
@@ -150,14 +149,9 @@ To just build a single package:
     self.options.Freeze()
 
     if not self.host:
-      if not (self.board or self.brick):
-        cros_build_lib.Die('You did not specify a board/brick to build for. '
-                           'You need to be in a brick directory or set '
-                           '--board/--brick/--host')
-
-      if self.brick and self.brick.legacy:
-        cros_build_lib.Die('--brick should not be used with board names. Use '
-                           '--board=%s instead.' % self.brick.config['name'])
+      if not self.board:
+        cros_build_lib.Die('You did not specify a board to build for. '
+                           'You need to use --board or --host.')
 
     if self.board:
       chroot_args = ['--board', self.board]
@@ -170,9 +164,9 @@ To just build a single package:
       cros_build_lib.Die('No packages found, nothing to build.')
 
     # Set up the sysroots if not building for host.
-    if self.brick or self.board:
+    if self.board:
       chroot_util.SetupBoard(
-          brick=self.brick, board=self.board,
+          board=self.board,
           update_chroot=self.chroot_update,
           update_host_packages=self.options.host_packages_update,
           use_binary=self.options.binary)
