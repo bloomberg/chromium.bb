@@ -4115,6 +4115,60 @@ def TryjobMirrors(site_config):
     site_config[tryjob_name] = tryjob_config
 
 
+def BranchScheduleConfig():
+  """Create a list of configs to schedule for branch builds.
+
+  This function returns a list of build configs with just enough
+  information to correctly schedule builds on branches. This function
+  is only used by scripts/gen_luci_scheduler.
+
+  After making changes to this function, they must be deployed to take
+  effect. See gen_luci_scheduler --help for details.
+
+  Returns:
+    List of config_lib.BuildConfig instances.
+  """
+  release_label = config_lib.DISPLAY_LABEL_RELEASE
+
+  #
+  # Define each branched schedule with:
+  #   branch_name: Name of the branch to build as a string.
+  #   config_name: Name of the buidl config already present on the branch.
+  #   label: Display label for UI use. Usually release, factory, firmware.
+  #   schedule: When to do the build. Can take several formats.
+  #     'triggered' for manual builds.
+  #     Cron style in UTC timezone: '0 15 * * *'
+  #     'with 30d interval' to run X time after previous build.
+  #
+  #     https://github.com/luci/luci-go/blob/master/scheduler/
+  #                        appengine/messages/config.proto
+  #
+
+  branch_builds = (
+      ('release-R69-10895.B', 'master-release',
+       release_label, '0 3 * * *', None),
+      ('release-R69-10895.B', 'reef-android-nyc-pre-flight-branch',
+       release_label, '0 1,5,9,13,17,21 * * *', None),
+      ('release-R69-10895.B', 'samus-chrome-pre-flight-branch',
+       release_label, '0 1,5,9,13,17,21 * * *', None),
+  )
+
+  default_config = config_lib.GetConfig().GetDefault()
+
+  result = []
+  for branch, config_name, label, schedule, trigger in branch_builds:
+    result.append(default_config.derive(
+        name=config_name,
+        display_label=label,
+        luci_builder=config_lib.LUCI_BUILDER_PROD,
+        schedule_branch=branch,
+        schedule=schedule,
+        triggered_gitiles=trigger,
+    ))
+
+  return result
+
+
 @factory.CachedFunctionCall
 def GetConfig():
   """Create the Site configuration for all ChromeOS builds.

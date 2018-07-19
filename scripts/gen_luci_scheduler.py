@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import sys
 
+from chromite.config import chromeos_config
 from chromite.lib import commandline
 from chromite.lib import config_lib
 
@@ -61,7 +62,7 @@ def genSchedulerJob(build_config):
   # TODO: Move --buildbot arg into recipe, and remove from here.
   template = """
 job {
-  id: "%(name)s"
+  id: "%(job_name)s"
   acl_sets: "default"
   schedule: "%(schedule)s"
   buildbucket: {
@@ -78,10 +79,18 @@ job {
   }
 }
 """
+  if 'schedule_branch' in build_config:
+    branch = build_config.schedule_branch
+    job_name = '%s-%s' % (branch, build_config.name)
+  else:
+    branch = 'master'
+    job_name = build_config.name
+
   return template % {
+      'job_name': job_name,
       'name': build_config.name,
       'builder': build_config.luci_builder,
-      'branch': 'master',
+      'branch': branch,
       'display_label': build_config.display_label,
       'schedule': build_config.schedule,
   }
@@ -120,11 +129,12 @@ trigger {
   }
 
 
-def genLuciSchedulerConfig(site_config):
+def genLuciSchedulerConfig(site_config, branch_config):
   """Generate a luciSchedulerConfig as a string.
 
   Args:
     site_config: A config_lib.SiteConfig instance.
+    branch_config: A list of BuildConfig instances to schedule.
 
   Returns:
     The complete scheduler configuration contents as a string.
@@ -136,9 +146,11 @@ def genLuciSchedulerConfig(site_config):
   trigger_collection = {}
 
   jobs = []
-  for name in sorted(site_config):
-    config = site_config[name]
 
+  # Order the configs consistently.
+  configs = [site_config[name] for name in sorted(site_config)] + branch_config
+
+  for config in configs:
     # Populate jobs.
     if config.schedule:
       jobs.append(genSchedulerJob(config))
@@ -181,6 +193,7 @@ def main(argv):
   options.Freeze()
 
   site_config = config_lib.GetConfig()
+  branch_config = chromeos_config.BranchScheduleConfig()
 
   with (open(options.file_out, 'w') if options.file_out else sys.stdout) as fh:
-    fh.write(genLuciSchedulerConfig(site_config))
+    fh.write(genLuciSchedulerConfig(site_config, branch_config))
