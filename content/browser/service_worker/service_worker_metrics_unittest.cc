@@ -8,6 +8,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -96,11 +97,15 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
         kPreparationType, static_cast<int>(WorkerPreparationType::STARTING), 1);
     histogram_tester.ExpectTotalCount(
         kPreparationType + kNavigationPreloadSuffix, 0);
-    histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
-    histogram_tester.ExpectTimeBucketCount(kPreparationTime + "_StartingWorker",
-                                           time, 1);
-    histogram_tester.ExpectTotalCount(
-        kPreparationTime + kNavigationPreloadSuffix, 0);
+
+    // We don't record .Time histograms when S13nServiceWorker is enabled.
+    if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+      histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
+      histogram_tester.ExpectTimeBucketCount(
+          kPreparationTime + "_StartingWorker", time, 1);
+      histogram_tester.ExpectTotalCount(
+          kPreparationTime + kNavigationPreloadSuffix, 0);
+    }
   }
 
   {
@@ -115,11 +120,16 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
     histogram_tester.ExpectUniqueSample(
         kPreparationType + kNavigationPreloadSuffix,
         static_cast<int>(WorkerPreparationType::START_DURING_STARTUP), 1);
-    histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
-    histogram_tester.ExpectTimeBucketCount(
-        kPreparationTime + kNavigationPreloadSuffix, time, 1);
-    histogram_tester.ExpectTotalCount(
-        kPreparationTime + kWorkerStartOccurred + kNavigationPreloadSuffix, 1);
+
+    // We don't record .Time histograms when S13nServiceWorker is enabled.
+    if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+      histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
+      histogram_tester.ExpectTimeBucketCount(
+          kPreparationTime + kNavigationPreloadSuffix, time, 1);
+      histogram_tester.ExpectTotalCount(
+          kPreparationTime + kWorkerStartOccurred + kNavigationPreloadSuffix,
+          1);
+    }
   }
 
   {
@@ -139,12 +149,16 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
         static_cast<int>(
             WorkerPreparationType::START_IN_EXISTING_READY_PROCESS),
         1);
-    histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
-    histogram_tester.ExpectTimeBucketCount(
-        kPreparationTime + kNavigationPreloadSuffix, time, 1);
-    histogram_tester.ExpectTimeBucketCount(
-        kPreparationTime + kWorkerStartOccurred + kNavigationPreloadSuffix,
-        time, 1);
+
+    // We don't record .Time histograms when S13nServiceWorker is enabled.
+    if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+      histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
+      histogram_tester.ExpectTimeBucketCount(
+          kPreparationTime + kNavigationPreloadSuffix, time, 1);
+      histogram_tester.ExpectTimeBucketCount(
+          kPreparationTime + kWorkerStartOccurred + kNavigationPreloadSuffix,
+          time, 1);
+    }
   }
 
   // Suffixed metric test.
