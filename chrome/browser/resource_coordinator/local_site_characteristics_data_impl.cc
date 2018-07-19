@@ -346,7 +346,8 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
       // feature then there's nothing to do, otherwise update it with the values
       // from the database.
       if (!(*this_features_iter)->has_use_timestamp()) {
-        if ((*db_features_iter)->has_use_timestamp()) {
+        if ((*db_features_iter)->has_use_timestamp() &&
+            (*db_features_iter)->use_timestamp() != 0) {
           // Keep the use timestamp from the database, if any.
           (*this_features_iter)
               ->set_use_timestamp((*db_features_iter)->use_timestamp());
@@ -367,6 +368,11 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
               (*this_features_iter),
               InternalRepresentationToTimeDelta(
                   (*db_features_iter)->observation_duration()));
+          // Makes sure that the |use_timestamp| field gets initialized.
+          (*this_features_iter)
+              ->set_use_timestamp(
+                  LocalSiteCharacteristicsDataImpl::
+                      TimeDeltaToInternalRepresentation(base::TimeDelta()));
         }
       }
     }
