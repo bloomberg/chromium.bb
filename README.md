@@ -70,28 +70,56 @@ for this which essentially amounts to:
   git push origin HEAD:refs/for/master
 ```
 
-You may also wish to install the [Change-Id commit-msg
-hook](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/cmd-hook-commit-msg.html).
-This adds a Change-Id line to each commit message locally, which Gerrit uses to
-track changes.  Once installed, this can be toggled with `git config
+You may also wish to install the
+[Change-Id commit-msg hook](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/cmd-hook-commit-msg.html).
+This adds a `Change-Id` line to each commit message locally, which Gerrit uses
+to track changes.  Once installed, this can be toggled with `git config
 gerrit.createChangeId <true|false>`.
 
-The important thing to note, however, is that each commit in
-`origin/master..HEAD` will get its own Gerrit change.  If you only want one
-change for your current branch, which has multiple commits, you will need to
-squash them with `git rebase -i`.  If you wish to upload a new patchset to the
-same change later, you can use `git commit --amend` to preserve the Change-Id.
+To download the commit-msg hook for the Open Screen repository, use the
+following command:
+
+```bash
+  curl -Lo .git/hooks/commit-msg https://chromium-review.googlesource.com/tools/hooks/commit-msg
+```
+
+Gerrit keeps track of changes using a [Change-Id
+line](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-changeid.html)
+in each commit.
+
+When there is no `Change-Id` line, Gerrit creates a new `Change-Id` for the
+commit, and therefore a new change.  Gerrit's documentation for
+[replacing a change](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-upload.html#push_replace)
+describes this.  So if you want to upload a new patchset to an existing review,
+it should contain the matching `Change-Id` line in the commit message.
 
 ### Adding a new patchset to an existing change
 
-Gerrit keeps track of changes using a
-[Change-Id
-line](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-changeid.html)
-in each commit.  When there is no Change-Id line, Gerrit creates a new Change-Id
-for the commit, and therefore a new change.  Gerrit's documentation for
-[replacing a
-change](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-upload.html#push_replace)
-describes this.  So if you want to upload a new patchset to an existing review,
-it should contain the appropriate Change-Id line in the commit message.  Of
-course, the same note above about commits and changes being 1:1 still applies
-here.
+By default, each commit to your local branch will get its own Gerrit change when
+pushed, unless it has a `Change-Id` corresponding to an existing review.
+
+If you need to modify commits on your local branch to ensure they have the
+correct `Change-Id`, you can do one of two things:
+
+After committing to the local branch, run:
+
+```bash
+  git commit --amend
+  git show
+```
+
+to attach the current `Change-Id` to the most recent commit. Check that the
+correct one was inserted by comparing it with the one shown on
+`chromium-review.googlesource.com` for the existing review.
+
+If you have made multiple local commits, you can squash them all into a single
+commit with the correct Change-Id:
+
+```bash
+  git rebase -i HEAD~4
+  git show
+```
+
+where '4' means that you want to squash three additional commits onto an
+existing commit that has been uploaded for review.
+
