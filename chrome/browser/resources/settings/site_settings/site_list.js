@@ -11,7 +11,11 @@ Polymer({
 
   is: 'site-list',
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    SiteSettingsBehavior,
+    WebUIListenerBehavior,
+    ListPropertyUpdateBehavior,
+  ],
 
   properties: {
     /** @private */
@@ -233,53 +237,24 @@ Polymer({
    */
   populateList_: function() {
     this.browserProxy_.getExceptionList(this.category).then(exceptionList => {
-      this.processExceptions_([exceptionList]);
+      this.processExceptions_(exceptionList);
       this.closeActionMenu_();
     });
   },
 
   /**
    * Process the exception list returned from the native layer.
-   * @param {!Array<!Array<RawSiteException>>} data List of sites (exceptions)
-   *     to process.
+   * @param {!Array<RawSiteException>} exceptionList
    * @private
    */
-  processExceptions_: function(data) {
-    const sites = /** @type {!Array<RawSiteException>} */ ([]);
-    for (let i = 0; i < data.length; ++i) {
-      const exceptionList = data[i];
-      for (let k = 0; k < exceptionList.length; ++k) {
-        if (exceptionList[k].setting == settings.ContentSetting.DEFAULT ||
-            exceptionList[k].setting != this.categorySubtype) {
-          continue;
-        }
-
-        sites.push(exceptionList[k]);
-      }
-    }
-    this.sites = this.toSiteArray_(sites);
-  },
-
-  /**
-   * Converts a list of exceptions received from the C++ handler to
-   * full SiteException objects.
-   * @param {!Array<RawSiteException>} sites A list of sites to convert.
-   * @return {!Array<SiteException>} A list of full SiteExceptions.
-   * @private
-   */
-  toSiteArray_: function(sites) {
-    const results = /** @type {!Array<SiteException>} */ ([]);
-    let lastOrigin = '';
-    let lastEmbeddingOrigin = '';
-    for (let i = 0; i < sites.length; ++i) {
-      /** @type {!SiteException} */
-      const siteException = this.expandSiteException(sites[i]);
-
-      results.push(siteException);
-      lastOrigin = siteException.origin;
-      lastEmbeddingOrigin = siteException.embeddingOrigin;
-    }
-    return results;
+  processExceptions_: function(exceptionList) {
+    const sites =
+        exceptionList
+            .filter(
+                site => site.setting != settings.ContentSetting.DEFAULT &&
+                    site.setting == this.categorySubtype)
+            .map(site => this.expandSiteException(site));
+    this.updateList('sites', x => x.origin, sites);
   },
 
   /**
