@@ -604,19 +604,6 @@ class EditingBoundaryAdjuster final {
     return HasEditableStyle(node) != is_previous_node_editable;
   }
 
-  template <>
-  inline bool IsEditingBoundary<EditingInFlatTreeStrategy>(
-      const Node& node,
-      const Node& previous_node,
-      bool is_previous_node_editable) {
-    // We want to treat shadow host as not editable element if |previous_node|
-    // is in the shadow tree attached to the shadow host.
-    if (IsShadowHost(&node) && is_previous_node_editable &&
-        previous_node.OwnerShadowHost() == &node)
-      return true;
-    return HasEditableStyle(node) != is_previous_node_editable;
-  }
-
   // Returns the highest ancestor of |start| along the parent chain, so that
   // all node in between them including the ancestor have the same
   // HasEditableStyle() bit with |start|. Note that it only consider the <body>
@@ -695,6 +682,20 @@ class EditingBoundaryAdjuster final {
     return PositionTemplate<Strategy>::AfterNode(*boundary);
   }
 };
+
+template <>
+inline bool
+EditingBoundaryAdjuster::IsEditingBoundary<EditingInFlatTreeStrategy>(
+    const Node& node,
+    const Node& previous_node,
+    bool is_previous_node_editable) {
+  // We want to treat shadow host as not editable element if |previous_node|
+  // is in the shadow tree attached to the shadow host.
+  if (IsShadowHost(&node) && is_previous_node_editable &&
+      previous_node.OwnerShadowHost() == &node)
+    return true;
+  return HasEditableStyle(node) != is_previous_node_editable;
+}
 
 SelectionInDOMTree
 SelectionAdjuster::AdjustSelectionToAvoidCrossingEditingBoundaries(
