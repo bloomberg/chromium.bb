@@ -413,58 +413,6 @@ class TabLifecycleUnitSourceTest
                     .GetPendingEntry());
   }
 
-  void CanOnlyDiscardOnceTest(DiscardReason reason) {
-    LifecycleUnit* background_lifecycle_unit = nullptr;
-    LifecycleUnit* foreground_lifecycle_unit = nullptr;
-    CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
-                  &foreground_lifecycle_unit);
-    content::WebContents* initial_web_contents =
-        tab_strip_model_->GetWebContentsAt(0);
-
-    // It should be possible to discard the background tab.
-    ExpectCanDiscardTrueAllReasons(background_lifecycle_unit);
-
-    // Discard the tab.
-    EXPECT_EQ(LifecycleUnitState::ACTIVE,
-              background_lifecycle_unit->GetState());
-    EXPECT_CALL(tab_observer_, OnDiscardedStateChange(::testing::_, true));
-    background_lifecycle_unit->Discard(reason);
-
-    ::testing::Mock::VerifyAndClear(&tab_observer_);
-
-    TransitionFromPendingDiscardToDiscardedIfNeeded(reason,
-                                                    background_lifecycle_unit);
-
-    EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
-    EXPECT_FALSE(tab_strip_model_->GetWebContentsAt(0)
-                     ->GetController()
-                     .GetPendingEntry());
-
-    // Explicitly reload the tab. Expect the state to be LOADED.
-    EXPECT_CALL(tab_observer_, OnDiscardedStateChange(::testing::_, false));
-    tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
-        content::ReloadType::NORMAL, false);
-    ::testing::Mock::VerifyAndClear(&tab_observer_);
-    EXPECT_EQ(LifecycleUnitState::ACTIVE,
-              background_lifecycle_unit->GetState());
-    EXPECT_TRUE(tab_strip_model_->GetWebContentsAt(0)
-                    ->GetController()
-                    .GetPendingEntry());
-
-    // It shouldn't be possible to discard the background tab again, except for
-    // an urgent discard on ChromeOS.
-    ExpectCanDiscardFalseTrivial(background_lifecycle_unit,
-                                 DiscardReason::kExternal);
-    ExpectCanDiscardFalseTrivial(background_lifecycle_unit,
-                                 DiscardReason::kProactive);
-#if defined(OS_CHROMEOS)
-    ExpectCanDiscardTrue(background_lifecycle_unit, DiscardReason::kUrgent);
-#else
-    ExpectCanDiscardFalseTrivial(background_lifecycle_unit,
-                                 DiscardReason::kUrgent);
-#endif
-  }
-
   TabLifecycleUnitSource* source_ = nullptr;
   ::testing::StrictMock<MockLifecycleUnitSourceObserver> source_observer_;
   ::testing::StrictMock<MockTabLifecycleObserver> tab_observer_;
@@ -643,18 +591,6 @@ TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_Proactive) {
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_External) {
   DiscardAndExplicitlyReloadTest(DiscardReason::kExternal);
-}
-
-TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce_Urgent) {
-  CanOnlyDiscardOnceTest(DiscardReason::kUrgent);
-}
-
-TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce_Proactive) {
-  CanOnlyDiscardOnceTest(DiscardReason::kProactive);
-}
-
-TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce_External) {
-  CanOnlyDiscardOnceTest(DiscardReason::kExternal);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
