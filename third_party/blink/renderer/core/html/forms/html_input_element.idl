@@ -21,6 +21,9 @@
 
 // https://html.spec.whatwg.org/#the-input-element
 
+// The `URLString` reference below is from Trusted Types:
+// https://github.com/WICG/trusted-types/, which is still WIP.
+// https://crbug.com/739170.
 enum SelectionMode { "select", "start", "end", "preserve" };
 
 [
@@ -58,7 +61,7 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     [CEReactions, Reflect] attribute boolean readOnly;
     [CEReactions, Reflect] attribute boolean required;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute unsigned long size;
-    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions, Reflect] attribute DOMString step;
     [CEReactions, CustomElementCallbacks] attribute DOMString type;
     [CEReactions, Reflect=value, CustomElementCallbacks] attribute DOMString defaultValue;
