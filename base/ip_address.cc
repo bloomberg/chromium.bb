@@ -46,7 +46,7 @@ bool IPv4Address::Parse(const std::string& s, IPv4Address* address) {
   return true;
 }
 
-IPv4Address::IPv4Address() = default;
+IPv4Address::IPv4Address() : bytes({}) {}
 IPv4Address::IPv4Address(const std::array<uint8_t, 4>& bytes) : bytes(bytes) {}
 IPv4Address::IPv4Address(const uint8_t (&b)[4])
     : bytes{{b[0], b[1], b[2], b[3]}} {}
@@ -62,6 +62,10 @@ bool IPv4Address::operator==(const IPv4Address& o) const {
 
 bool IPv4Address::operator!=(const IPv4Address& o) const {
   return !(*this == o);
+}
+
+IPv4Address::operator bool() const {
+  return bytes[0] | bytes[1] | bytes[2] | bytes[3];
 }
 
 // static
@@ -132,7 +136,7 @@ bool IPv6Address::Parse(const std::string& s, IPv6Address* address) {
   return true;
 }
 
-IPv6Address::IPv6Address() = default;
+IPv6Address::IPv6Address() : bytes({}) {}
 IPv6Address::IPv6Address(const std::array<uint8_t, 16>& bytes) : bytes(bytes) {}
 IPv6Address::IPv6Address(const uint8_t (&b)[16])
     : bytes{{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10],
@@ -165,6 +169,13 @@ bool IPv6Address::operator==(const IPv6Address& o) const {
 
 bool IPv6Address::operator!=(const IPv6Address& o) const {
   return !(*this == o);
+}
+
+IPv6Address::operator bool() const {
+  for (const auto& byte : bytes)
+    if (byte) return true;
+
+  return false;
 }
 
 }  // namespace openscreen

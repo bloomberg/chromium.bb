@@ -31,18 +31,22 @@ TEST(IPv4AddressTest, Constructors) {
   EXPECT_THAT(address5.bytes, ElementsAreArray({1, 2, 3, 4}));
 }
 
-TEST(IPv4AddressTest, Comparison) {
+TEST(IPv4AddressTest, ComparisonAndBoolean) {
   IPv4Address address1;
   EXPECT_EQ(address1, address1);
+  EXPECT_FALSE(address1);
 
   IPv4Address address2({4, 3, 2, 1});
   EXPECT_NE(address1, address2);
+  EXPECT_TRUE(address2);
 
   IPv4Address address3({4, 3, 2, 1});
   EXPECT_EQ(address2, address3);
+  EXPECT_TRUE(address3);
 
   address2 = address1;
   EXPECT_EQ(address1, address2);
+  EXPECT_FALSE(address2);
 }
 
 TEST(IPv4AddressTest, Parse) {
@@ -104,18 +108,22 @@ TEST(IPv6AddressTest, Constructors) {
                                                 8, 7, 6, 5, 4, 3, 2, 1}));
 }
 
-TEST(IPv6AddressTest, Comparison) {
+TEST(IPv6AddressTest, ComparisonAndBoolean) {
   IPv6Address address1;
   EXPECT_EQ(address1, address1);
+  EXPECT_FALSE(address1);
 
   IPv6Address address2({16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1});
   EXPECT_NE(address1, address2);
+  EXPECT_TRUE(address2);
 
   IPv6Address address3({16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1});
   EXPECT_EQ(address2, address3);
+  EXPECT_TRUE(address3);
 
   address2 = address1;
   EXPECT_EQ(address1, address2);
+  EXPECT_FALSE(address2);
 }
 
 TEST(IPv6AddressTest, ParseBasic) {

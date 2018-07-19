@@ -6,6 +6,7 @@
 # source_sets).
 group("gn_all") {
   deps = [
+    "//api",
     "//base",
     "//platform",
     "//sample:hello",
