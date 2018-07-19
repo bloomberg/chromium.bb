@@ -200,7 +200,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   const base::DictionaryValue* user_settings = nullptr;
 
   if (ui_data && profile) {
-    user_settings = ui_data->user_settings();
+    user_settings = ui_data->GetUserSettingsDictionary();
   } else if (profile) {
     NET_LOG_DEBUG("Service contains empty or invalid UIData", service_path);
     // TODO(pneubeck): add a conversion of user configured entries of old

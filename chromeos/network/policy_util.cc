@@ -379,7 +379,7 @@ std::unique_ptr<base::DictionaryValue> CreateShillConfiguration(
     std::unique_ptr<base::DictionaryValue> sanitized_user_settings(
         onc::MaskCredentialsInOncObject(onc::kNetworkConfigurationSignature,
                                         *user_settings, kFakeCredential));
-    ui_data->set_user_settings(std::move(sanitized_user_settings));
+    ui_data->SetUserSettingsDictionary(std::move(sanitized_user_settings));
   }
 
   shill_property_util::SetUIData(*ui_data, shill_dictionary.get());

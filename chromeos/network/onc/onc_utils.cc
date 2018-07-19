@@ -12,7 +12,6 @@
 
 #include "base/base64.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1217,12 +1216,8 @@ void ImportNetworksForUser(const user_manager::User* user,
 
     std::unique_ptr<NetworkUIData> ui_data(
         NetworkUIData::CreateFromONC(::onc::ONC_SOURCE_USER_IMPORT));
-    base::DictionaryValue ui_data_dict;
-    ui_data->FillDictionary(&ui_data_dict);
-    std::string ui_data_json;
-    base::JSONWriter::Write(ui_data_dict, &ui_data_json);
-    shill_dict->SetKey(shill::kUIDataProperty, base::Value(ui_data_json));
-
+    shill_dict->SetKey(shill::kUIDataProperty,
+                       base::Value(ui_data->GetAsJson()));
     shill_dict->SetKey(shill::kProfileProperty, base::Value(profile->path));
 
     std::string type;
