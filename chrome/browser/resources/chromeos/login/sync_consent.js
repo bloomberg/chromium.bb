@@ -18,7 +18,9 @@ Polymer({
   },
 
   focus: function() {
-    this.$.syncConsentOverviewDialog.focus();
+    let activeScreen = this.getActiveScreen_();
+    if (activeScreen)
+      activeScreen.focus();
   },
 
   /**
@@ -29,6 +31,19 @@ Polymer({
     var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
     for (let screen of screens)
       screen.hidden = true;
+  },
+
+  /**
+   * Returns active screen or null if none.
+   * @private
+   */
+  getActiveScreen_: function() {
+    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
+    for (let screen of screens) {
+      if (!screen.hidden)
+        return screen;
+    }
+    return null;
   },
 
   /**
@@ -43,6 +58,7 @@ Polymer({
     assert(screen);
     screen.hidden = false;
     screen.show();
+    screen.focus();
   },
 
   /**
