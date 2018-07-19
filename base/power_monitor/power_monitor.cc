@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/power_monitor/power_monitor_source.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 
@@ -54,11 +55,15 @@ void PowerMonitor::NotifyPowerStateChange(bool battery_in_use) {
 }
 
 void PowerMonitor::NotifySuspend() {
+  TRACE_EVENT_INSTANT0("base", "PowerMonitor::NotifySuspend",
+                       TRACE_EVENT_SCOPE_GLOBAL);
   DVLOG(1) << "Power Suspending";
   observers_->Notify(FROM_HERE, &PowerObserver::OnSuspend);
 }
 
 void PowerMonitor::NotifyResume() {
+  TRACE_EVENT_INSTANT0("base", "PowerMonitor::NotifyResume",
+                       TRACE_EVENT_SCOPE_GLOBAL);
   DVLOG(1) << "Power Resuming";
   observers_->Notify(FROM_HERE, &PowerObserver::OnResume);
 }
