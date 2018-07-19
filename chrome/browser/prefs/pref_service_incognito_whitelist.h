@@ -10,7 +10,7 @@
 namespace prefs {
 
 // Populate a whitelist of all preferences that are stored on disk in incognito
-// mode. Please refere to the comments in .cc file.
+// mode. Please refer to the comments in .cc file.
 void GetIncognitoWhitelist(std::vector<const char*>* whitelist);
 
 }  // namespace prefs
