@@ -94,9 +94,11 @@ void OnEmbed(bool success) {
 }
 
 #if defined(ADDRESS_SANITIZER)
+// See https://crbug.com/838520.
 #define MAYBE_OpenWindow DISABLED_OpenWindow
 #else
-#define MAYBE_OpenWindow OpenWindow
+// See https://crbug.com/865316.
+#define MAYBE_OpenWindow DISABLED_OpenWindow
 #endif
 TEST_F(WindowManagerServiceTest, MAYBE_OpenWindow) {
   display::ScreenBase screen;
