@@ -39,3 +39,26 @@ def LoginDesktopAccount(action_runner, credential,
   search_bar_function = (
       'document.getElementsByClassName("nav-search-bar")[0]')
   action_runner.WaitForElement(element_function=search_bar_function)
+
+
+def LoginMobileAccount(action_runner, credential,
+                 credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+  """Mobile equivalent of above"""
+
+  account_name, password = login_utils.GetAccountNameAndPassword(
+      credential, credentials_path=credentials_path)
+
+  action_runner.Navigate('https://www.linkedin.com/uas/login')
+  action_runner.Wait(1) # Error page happens if this wait is not here.
+  login_utils.InputWithSelector(
+      action_runner, '%s@gmail.com' % account_name, 'input[type=email]')
+  login_utils.InputWithSelector(
+      action_runner, password, 'input[type=password]')
+
+  login_button_function = (
+      'document.getElementById("signin-submit")')
+  action_runner.WaitForElement(element_function=login_button_function)
+  action_runner.ClickElement(element_function=login_button_function)
+
+  action_runner.Wait(2)
+  action_runner.ReloadPage()
