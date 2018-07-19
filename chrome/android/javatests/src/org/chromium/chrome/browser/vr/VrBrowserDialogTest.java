@@ -107,8 +107,7 @@ public class VrBrowserDialogTest {
                 PAGE_LOAD_TIMEOUT_S);
 
         // Display the given permission prompt.
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         mVrBrowserTestFramework.runJavaScriptOrFail(navigationCommand, POLL_TIMEOUT_SHORT_MS);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
@@ -123,8 +122,7 @@ public class VrBrowserDialogTest {
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
 
         // Display the JavaScript dialog.
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         // We can't use runJavaScriptOrFail here because JavaScript execution is blocked while a
         // JS dialog is visible, so runJavaScriptOrFail will always time out.
         JavaScriptUtils.executeJavaScript(
@@ -140,8 +138,7 @@ public class VrBrowserDialogTest {
             throws InterruptedException, TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue(VrBrowserTransitionUtils.forceEnterVrBrowser());
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         Thread.sleep(VR_ENTRY_SLEEP_MS);
         NativeUiUtils.clickElementAndWaitForUiQuiescence(elementName, new PointF(0, 0));
         // Technically not necessary, but clicking on native elements causes the laser to originate

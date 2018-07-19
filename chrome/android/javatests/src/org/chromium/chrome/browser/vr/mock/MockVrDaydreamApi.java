@@ -37,15 +37,8 @@ public class MockVrDaydreamApi extends VrDaydreamApiImpl {
         return super.launchInVr(intent);
     }
 
-    @Override
-    public boolean exitFromVr(Activity activity, int requestCode, final Intent intent) {
-        mExitFromVrCalled = true;
-        if (mExitFromVrReturnValue == null) return super.exitFromVr(activity, requestCode, intent);
-        return mExitFromVrReturnValue.booleanValue();
-    }
-
-    public void setExitFromVrReturnValue(Boolean value) {
-        mExitFromVrReturnValue = value;
+    public boolean getLaunchInVrCalled() {
+        return mLaunchInVrCalled;
     }
 
     @Override
@@ -54,15 +47,22 @@ public class MockVrDaydreamApi extends VrDaydreamApiImpl {
         return super.launchVrHomescreen();
     }
 
-    public boolean getLaunchInVrCalled() {
-        return mLaunchInVrCalled;
+    public boolean getLaunchVrHomescreenCalled() {
+        return mLaunchVrHomescreenCalled;
+    }
+
+    @Override
+    public boolean exitFromVr(Activity activity, int requestCode, final Intent intent) {
+        mExitFromVrCalled = true;
+        if (mExitFromVrReturnValue == null) return super.exitFromVr(activity, requestCode, intent);
+        return mExitFromVrReturnValue.booleanValue();
     }
 
     public boolean getExitFromVrCalled() {
         return mExitFromVrCalled;
     }
 
-    public boolean getLaunchVrHomescreenCalled() {
-        return mLaunchVrHomescreenCalled;
+    public void setExitFromVrReturnValue(Boolean value) {
+        mExitFromVrReturnValue = value;
     }
 }

@@ -34,6 +34,17 @@ public class EmulatedVrController {
         return mApi;
     }
 
+    /**
+     * Touch and release the touchpad to perform a controller click.
+     */
+    public void performControllerClick() {
+        // pressReleaseTouchpadButton() appears to be flaky for clicking on things, as sometimes
+        // it happens too fast for Chrome to register. So, manually press and release with a delay
+        sendClickButtonToggleEvent();
+        SystemClock.sleep(50);
+        sendClickButtonToggleEvent();
+    }
+
     public void sendClickButtonToggleEvent() {
         mApi.buttonEvent.sendClickButtonToggleEvent();
     }
@@ -75,30 +86,6 @@ public class EmulatedVrController {
      */
     public void goToDaydreamHome() {
         mApi.buttonEvent.sendShortHomeButtonEvent();
-    }
-
-    /**
-     * Simulates a touch down-drag-touch up sequence on the touchpad between two points.
-     *
-     * @param xStart the x coordinate to start the touch sequence at, in range [0.0f, 1.0f]
-     * @param yStart the y coordinate to start the touch sequence at, in range [0.0f, 1.0f]
-     * @param xEnd the x coordinate to end the touch sequence at, in range [0.0f, 1.0f]
-     * @param yEnd the y coordinate to end the touch sequence at, in range [0.0f, 1.0f]
-     * @param steps the number of steps the drag will have
-     * @param speed how long to wait between steps in the sequence. Generally, higher numbers
-     * result in faster movement, e.g. when used for scrolling, a higher number results in faster
-     * scrolling.
-     */
-    public void performLinearTouchpadMovement(
-            float xStart, float yStart, float xEnd, float yEnd, int steps, int speed) {
-        // Touchpad events have timestamps attached to them in nanoseconds - for smooth scrolling,
-        // the timestamps should increase at a similar rate to the amount of time we actually wait
-        // between sending events, which is determined by the given speed.
-        long simulatedDelay = TimeUnit.MILLISECONDS.toNanos(speed);
-        long timestamp = mApi.touchEvent.startTouchSequence(xStart, yStart, simulatedDelay, speed);
-        timestamp = mApi.touchEvent.dragFromTo(
-                xStart, yStart, xEnd, yEnd, steps, timestamp, simulatedDelay, speed);
-        mApi.touchEvent.endTouchSequence(xEnd, yEnd, timestamp, simulatedDelay, speed);
     }
 
     /**
@@ -153,6 +140,30 @@ public class EmulatedVrController {
     }
 
     /**
+     * Simulates a touch down-drag-touch up sequence on the touchpad between two points.
+     *
+     * @param xStart the x coordinate to start the touch sequence at, in range [0.0f, 1.0f]
+     * @param yStart the y coordinate to start the touch sequence at, in range [0.0f, 1.0f]
+     * @param xEnd the x coordinate to end the touch sequence at, in range [0.0f, 1.0f]
+     * @param yEnd the y coordinate to end the touch sequence at, in range [0.0f, 1.0f]
+     * @param steps the number of steps the drag will have
+     * @param speed how long to wait between steps in the sequence. Generally, higher numbers
+     * result in faster movement, e.g. when used for scrolling, a higher number results in faster
+     * scrolling.
+     */
+    public void performLinearTouchpadMovement(
+            float xStart, float yStart, float xEnd, float yEnd, int steps, int speed) {
+        // Touchpad events have timestamps attached to them in nanoseconds - for smooth scrolling,
+        // the timestamps should increase at a similar rate to the amount of time we actually wait
+        // between sending events, which is determined by the given speed.
+        long simulatedDelay = TimeUnit.MILLISECONDS.toNanos(speed);
+        long timestamp = mApi.touchEvent.startTouchSequence(xStart, yStart, simulatedDelay, speed);
+        timestamp = mApi.touchEvent.dragFromTo(
+                xStart, yStart, xEnd, yEnd, steps, timestamp, simulatedDelay, speed);
+        mApi.touchEvent.endTouchSequence(xEnd, yEnd, timestamp, simulatedDelay, speed);
+    }
+
+    /**
      * Instantly moves the controller to the specified quaternion coordinates.
      *
      * @param x the x component of the quaternion
@@ -181,17 +192,4 @@ public class EmulatedVrController {
                 new float[] {startAngles[1], endAngles[1]},
                 new float[] {startAngles[2], endAngles[2]}, steps, delayBetweenSteps);
     }
-
-    /**
-     * Touch and release the touchpad to perform a controller click.
-     */
-    public void performControllerClick() {
-        // pressReleaseTouchpadButton() appears to be flaky for clicking on things, as sometimes
-        // it happens too fast for Chrome to register. So, manually press and release with a delay
-        sendClickButtonToggleEvent();
-        SystemClock.sleep(50);
-        sendClickButtonToggleEvent();
-    }
-
-    // TODO(bsheedy): Add support for more complex actions, e.g. click/drag/release
 }

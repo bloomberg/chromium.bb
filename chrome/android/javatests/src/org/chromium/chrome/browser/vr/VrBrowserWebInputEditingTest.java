@@ -63,8 +63,7 @@ public class VrBrowserWebInputEditingTest {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"),
                 PAGE_LOAD_TIMEOUT_S);
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
         MockBrowserKeyboardInterface keyboard = new MockBrowserKeyboardInterface();

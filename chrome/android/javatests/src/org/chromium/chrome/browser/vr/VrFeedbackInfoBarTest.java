@@ -70,8 +70,7 @@ public class VrFeedbackInfoBarTest {
     }
 
     private void enterThenExitVr() {
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         VrBrowserTransitionUtils.forceExitVr();
     }

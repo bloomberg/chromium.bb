@@ -43,8 +43,7 @@ public class VrBrowserNativeUiTest {
 
     @Before
     public void setUp() throws Exception {
-        VrBrowserTransitionUtils.forceEnterVrBrowser();
-        VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
     }
 
     /**

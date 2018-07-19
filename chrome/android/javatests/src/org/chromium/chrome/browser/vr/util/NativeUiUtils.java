@@ -41,16 +41,6 @@ public class NativeUiUtils {
     }
 
     /**
-     * Sets the native code to start using the real controller data again instead of fake testing
-     * data.
-     */
-    public static void revertToRealController() {
-        TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                0 /* elementName, unused */, VrControllerTestAction.REVERT_TO_REAL_CONTROLLER,
-                new PointF() /* position, unused */);
-    }
-
-    /**
      * Clicks on a UI element as if done via a controller and waits until all resulting
      * animations have finished and propogated to the point of being visible in screenshots.
      * @param elementName The UserFriendlyElementName that will be clicked on.
@@ -58,6 +48,30 @@ public class NativeUiUtils {
     public static void clickElementAndWaitForUiQuiescence(
             final int elementName, final PointF position) throws InterruptedException {
         performActionAndWaitForUiQuiescence(() -> { clickElement(elementName, position); });
+    }
+
+    /**
+     * Clicks on a fallback UI element's positive button, e.g. "Allow" or "Confirm".
+     */
+    public static void clickFallbackUiPositiveButton() throws InterruptedException {
+        clickFallbackUiButton(R.id.positive_button);
+    }
+
+    /**
+     * Clicks on a fallback UI element's negative button, e.g. "Deny" or "Cancel".
+     */
+    public static void clickFallbackUiNegativeButton() throws InterruptedException {
+        clickFallbackUiButton(R.id.negative_button);
+    }
+
+    /**
+     * Sets the native code to start using the real controller data again instead of fake testing
+     * data.
+     */
+    public static void revertToRealController() {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                0 /* elementName, unused */, VrControllerTestAction.REVERT_TO_REAL_CONTROLLER,
+                new PointF() /* position, unused */);
     }
 
     /**
@@ -88,20 +102,6 @@ public class NativeUiUtils {
         resultLatch.await();
         Assert.assertEquals(
                 VrUiTestActivityResult.QUIESCENT, instance.getLastUiActivityResultForTesting());
-    }
-
-    /**
-     * Clicks on a fallback UI element's positive button, e.g. "Allow" or "Confirm".
-     */
-    public static void clickFallbackUiPositiveButton() throws InterruptedException {
-        clickFallbackUiButton(R.id.positive_button);
-    }
-
-    /**
-     * Clicks on a fallback UI element's negative button, e.g. "Deny" or "Cancel".
-     */
-    public static void clickFallbackUiNegativeButton() throws InterruptedException {
-        clickFallbackUiButton(R.id.negative_button);
     }
 
     /**
