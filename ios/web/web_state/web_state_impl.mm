@@ -459,6 +459,12 @@ void WebStateImpl::OnAuthRequired(
   }
 }
 
+bool WebStateImpl::ShouldAllowAppLaunching() {
+  if (delegate_)
+    return delegate_->ShouldAllowAppLaunching(this);
+  return false;
+}
+
 void WebStateImpl::CancelDialogs() {
   if (delegate_) {
     JavaScriptDialogPresenter* presenter =

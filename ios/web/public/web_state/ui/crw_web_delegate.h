@@ -33,13 +33,6 @@ class GURL;
               sourceURL:(const GURL&)sourceURL
             linkClicked:(BOOL)linkClicked;
 
-@optional
-
-// Called to ask if external URL should be opened. External URL is one that
-// cannot be presented by CRWWebController.
-- (BOOL)webController:(CRWWebController*)webController
-    shouldOpenExternalURL:(const GURL&)URL;
-
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_

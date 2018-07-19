@@ -510,11 +510,6 @@ NSString* const kTabUrlKey = @"url";
   return NO;
 }
 
-- (BOOL)webController:(CRWWebController*)webController
-    shouldOpenExternalURL:(const GURL&)URL {
-  return YES;
-}
-
 #pragma mark - Private methods
 
 - (OpenInController*)openInController {

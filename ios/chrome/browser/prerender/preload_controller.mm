@@ -470,6 +470,12 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   }
 }
 
+- (BOOL)isAppLaunchingAllowedForWebState:(web::WebState*)webState {
+  DCHECK([self isWebStatePrerendered:webState]);
+  [self schedulePrerenderCancel];
+  return NO;
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
@@ -502,12 +508,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   DCHECK(webState_);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
   return [tab openExternalURL:URL sourceURL:sourceURL linkClicked:linkClicked];
-}
-
-- (BOOL)webController:(CRWWebController*)webController
-    shouldOpenExternalURL:(const GURL&)URL {
-  [self schedulePrerenderCancel];
-  return NO;
 }
 
 #pragma mark - ManageAccountsDelegate

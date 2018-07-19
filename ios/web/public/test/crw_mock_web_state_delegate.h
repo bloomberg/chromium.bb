@@ -46,6 +46,8 @@
 @property(nonatomic, readonly) UIViewController* previewingViewController;
 // Whether |webState:commitPreviewingViewController:| has been called or not.
 @property(nonatomic, readonly) BOOL commitPreviewingViewControllerRequested;
+// Specifies the return value of |isAppLaunchingAllowedForWebState:|.
+@property(nonatomic) BOOL isAppLaunchingAllowedForWebStateReturnValue;
 
 @end
 
