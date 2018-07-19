@@ -9,30 +9,27 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/md_util.h"
+#include "chrome/browser/ui/cocoa/spinner_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/native_theme/native_theme.h"
 
-namespace {
-constexpr CGFloat kDegrees90 = gfx::DegToRad(90.0f);
-constexpr CGFloat kDegrees135 = gfx::DegToRad(135.0f);
-constexpr CGFloat kDegrees180 = gfx::DegToRad(180.0f);
-constexpr CGFloat kDegrees270 = gfx::DegToRad(270.0f);
-constexpr CGFloat kDegrees360 = gfx::DegToRad(360.0f);
-constexpr CGFloat kSpinnerViewUnitWidth = 28.0;
-constexpr CGFloat kSpinnerUnitInset = 2.0;
-constexpr CGFloat kArcDiameter =
-    (kSpinnerViewUnitWidth - kSpinnerUnitInset * 2.0);
-constexpr CGFloat kArcRadius = kArcDiameter / 2.0;
-constexpr CGFloat kArcLength =
-    kDegrees135 * kArcDiameter;  // 135 degrees of circumference.
-constexpr CGFloat kArcStrokeWidth = 3.0;
-constexpr CGFloat kArcAnimationTime = 1.333;
-constexpr CGFloat kRotationTime = 1.56863;
-NSString* const kSpinnerAnimationName  = @"SpinnerAnimationName";
-NSString* const kRotationAnimationName = @"RotationAnimationName";
-}
+using cocoa_spinner_util::kDegrees90;
+using cocoa_spinner_util::kDegrees135;
+using cocoa_spinner_util::kDegrees180;
+using cocoa_spinner_util::kDegrees270;
+using cocoa_spinner_util::kDegrees360;
+using cocoa_spinner_util::kSpinnerViewUnitWidth;
+using cocoa_spinner_util::kSpinnerUnitInset;
+using cocoa_spinner_util::kArcDiameter;
+using cocoa_spinner_util::kArcRadius;
+using cocoa_spinner_util::kArcLength;
+using cocoa_spinner_util::kArcStrokeWidth;
+using cocoa_spinner_util::kArcAnimationTime;
+using cocoa_spinner_util::kRotationTime;
+using cocoa_spinner_util::kSpinnerAnimationName;
+using cocoa_spinner_util::kRotationAnimationName;
 
 @implementation SpinnerView {
   CAShapeLayer* shapeLayer_;  // Weak.

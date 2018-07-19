@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/views/widget/util_mac.h"
 #include "ui/views/widget/widget.h"
 
 @interface NSWindow (PrivateBrowserNativeWidgetAPI)

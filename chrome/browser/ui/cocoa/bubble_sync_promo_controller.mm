@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/cocoa/chrome_style.h"
+#include "chrome/browser/ui/cocoa/cocoa_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
@@ -17,16 +18,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
-
-// Remove underlining from the specified range of characters in a text view.
-void RemoveUnderlining(NSTextView* textView, int offset, int length) {
-  [textView setLinkTextAttributes:nil];
-  NSTextStorage* text = [textView textStorage];
-  NSRange range = NSMakeRange(offset, length);
-  [text addAttribute:NSUnderlineStyleAttributeName
-               value:[NSNumber numberWithInt:NSUnderlineStyleNone]
-               range:range];
-}
 
 const SkColor kTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kPromoViewBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
@@ -102,7 +93,7 @@ const int kFontSize = 11;
                 linkColor:linkColor];
   [textView_ setRefusesFirstResponder:YES];
   [[textView_ textContainer] setLineFragmentPadding:0.0];
-  RemoveUnderlining(textView_, offset, linkText.size());
+  cocoa_util::RemoveUnderlining(textView_, offset, linkText.size());
   [textView_ setDelegate:self];
 
   [promoView setContentView:textView_];

@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
+#include "chrome/browser/ui/cocoa/cocoa_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -53,12 +54,6 @@ const int64_t kHideDelayMS = 250;
 // How long each fade should last.
 const NSTimeInterval kShowFadeInDurationSeconds = 0.120;
 const NSTimeInterval kHideFadeOutDurationSeconds = 0.200;
-
-// The minimum representable time interval.  This can be used as the value
-// passed to +[NSAnimationContext setDuration:] to stop an in-progress
-// animation as quickly as possible.
-const NSTimeInterval kMinimumTimeInterval =
-    std::numeric_limits<NSTimeInterval>::min();
 
 // How quickly the status bubble should expand.
 const CGFloat kExpansionDurationSeconds = 0.125;
@@ -283,9 +278,10 @@ void StatusBubbleMac::Hide() {
 
     if (!immediate_) {
       // An animation is in progress.  Cancel it by starting a new animation.
-      // Use kMinimumTimeInterval to set the opacity as rapidly as possible.
+      // Use cocoa_util::kMinimumTimeInterval to set the opacity as rapidly as
+      // possible.
       fade_out = true;
-      AnimateWindowAlpha(0.0, kMinimumTimeInterval);
+      AnimateWindowAlpha(0.0, cocoa_util::kMinimumTimeInterval);
     }
   }
 
@@ -300,7 +296,8 @@ void StatusBubbleMac::Hide() {
   // Stop any width animation and reset the bubble size.
   if (!immediate_) {
     [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
+    [[NSAnimationContext currentContext]
+        setDuration:cocoa_util::kMinimumTimeInterval];
     [[window_ animator] setFrame:frame display:NO];
     [NSAnimationContext endGrouping];
   } else {
@@ -538,7 +535,7 @@ void StatusBubbleMac::Fade(bool show) {
 
   // 0.0 will not cancel an in-progress animation.
   if (duration == 0.0)
-    duration = kMinimumTimeInterval;
+    duration = cocoa_util::kMinimumTimeInterval;
 
   // Cancel an in-progress transition and replace it with this fade.
   AnimateWindowAlpha(opacity, duration);

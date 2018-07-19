@@ -239,6 +239,7 @@ jumbo_component("views") {
     "widget/root_view.h",
     "widget/root_view_targeter.h",
     "widget/tooltip_manager.h",
+    "widget/util_mac.h",
     "widget/widget.h",
     "widget/widget_aura_utils.h",
     "widget/widget_delegate.h",

@@ -33,6 +33,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_util.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
@@ -79,6 +80,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 using base::UserMetricsAction;
+using bookmarks::bookmark_bar_util::ValueInRangeInclusive;
 using bookmarks::BookmarkBarLayout;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -1528,11 +1530,6 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 }
 
 #pragma mark Drag & Drop
-
-// Find something like std::is_between<T>?  I can't believe one doesn't exist.
-static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
-  return ((value >= low) && (value <= high));
-}
 
 // Return the proposed drop target for a hover open button from the
 // given array, or nil if none.  We use this for distinguishing

@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_hover_state.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_util.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -32,6 +33,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/resources/grit/ui_resources.h"
 
+using bookmarks::bookmark_bar_util::ValueInRangeInclusive;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
@@ -1220,12 +1222,6 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 }
 
 #pragma mark Drag & Drop
-
-// Find something like std::is_between<T>?  I can't believe one doesn't exist.
-// http://crbug.com/35966
-static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
-  return ((value >= low) && (value <= high));
-}
 
 // Return the proposed drop target for a hover open button, or nil if none.
 //
