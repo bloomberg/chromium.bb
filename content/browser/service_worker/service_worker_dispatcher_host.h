@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker.mojom.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"

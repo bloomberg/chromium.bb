@@ -553,7 +553,6 @@ mojom("mojo_bindings") {
     "renderer_host.mojom",
     "service_worker/controller_service_worker.mojom",
     "service_worker/embedded_worker.mojom",
-    "service_worker/service_worker.mojom",
     "service_worker/service_worker_container.mojom",
     "service_worker/service_worker_event_dispatcher.mojom",
     "service_worker/service_worker_fetch_response_callback.mojom",
