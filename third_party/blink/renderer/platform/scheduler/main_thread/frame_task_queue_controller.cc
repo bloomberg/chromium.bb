@@ -10,11 +10,9 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -30,6 +28,7 @@ FrameTaskQueueController::FrameTaskQueueController(
     : main_thread_scheduler_impl_(main_thread_scheduler_impl),
       frame_scheduler_impl_(frame_scheduler_impl),
       delegate_(delegate) {
+  DCHECK(main_thread_scheduler_impl_);
   DCHECK(frame_scheduler_impl_);
   DCHECK(delegate_);
 }
@@ -37,29 +36,12 @@ FrameTaskQueueController::FrameTaskQueueController(
 FrameTaskQueueController::~FrameTaskQueueController() = default;
 
 scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::LoadingTaskQueue() {
-  if (!loading_task_queue_)
-    CreateLoadingTaskQueue();
-  DCHECK(loading_task_queue_);
-  return loading_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::LoadingControlTaskQueue() {
-  if (!loading_control_task_queue_)
-    CreateLoadingControlTaskQueue();
-  DCHECK(loading_control_task_queue_);
-  return loading_control_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::NonLoadingTaskQueue(
-    MainThreadTaskQueue::QueueTraits queue_traits) {
-  if (!non_loading_task_queues_.Contains(queue_traits.Key()))
-    CreateNonLoadingTaskQueue(queue_traits);
+FrameTaskQueueController::GetNonLoadingTaskQueue(
+    QueueTraits queue_traits) const {
   auto it = non_loading_task_queues_.find(queue_traits.Key());
-  DCHECK(it != non_loading_task_queues_.end());
-  return it->value;
+  if (it != non_loading_task_queues_.end())
+    return it->value;
+  return nullptr;
 }
 
 const std::vector<FrameTaskQueueController::TaskQueueAndEnabledVoterPair>&
@@ -67,26 +49,26 @@ FrameTaskQueueController::GetAllTaskQueuesAndVoters() const {
   return all_task_queues_and_voters_;
 }
 
-void FrameTaskQueueController::CreateLoadingTaskQueue() {
+scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::NewLoadingTaskQueue() {
   DCHECK(!loading_task_queue_);
-  // |main_thread_scheduler_impl_| can be null in unit tests.
-  DCHECK(main_thread_scheduler_impl_);
 
   loading_task_queue_ = main_thread_scheduler_impl_->NewLoadingTaskQueue(
       MainThreadTaskQueue::QueueType::kFrameLoading, frame_scheduler_impl_);
   TaskQueueCreated(loading_task_queue_);
+  return loading_task_queue_;
 }
 
-void FrameTaskQueueController::CreateLoadingControlTaskQueue() {
+scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::NewLoadingControlTaskQueue() {
   DCHECK(!loading_control_task_queue_);
-  // |main_thread_scheduler_impl_| can be null in unit tests.
-  DCHECK(main_thread_scheduler_impl_);
 
   loading_control_task_queue_ =
       main_thread_scheduler_impl_->NewLoadingTaskQueue(
           MainThreadTaskQueue::QueueType::kFrameLoadingControl,
           frame_scheduler_impl_);
   TaskQueueCreated(loading_control_task_queue_);
+  return loading_control_task_queue_;
 }
 
 scoped_refptr<MainThreadTaskQueue>
@@ -99,11 +81,9 @@ FrameTaskQueueController::NewResourceLoadingTaskQueue() {
   return task_queue;
 }
 
-void FrameTaskQueueController::CreateNonLoadingTaskQueue(
-    QueueTraits queue_traits) {
-  DCHECK(!non_loading_task_queues_.Contains(queue_traits.Key()));
-  // |main_thread_scheduler_impl_| can be null in unit tests.
-  DCHECK(main_thread_scheduler_impl_);
+scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::NewNonLoadingTaskQueue(QueueTraits queue_traits) {
+  DCHECK(!GetNonLoadingTaskQueue(queue_traits));
 
   scoped_refptr<MainThreadTaskQueue> task_queue =
       main_thread_scheduler_impl_->NewTaskQueue(
@@ -117,6 +97,7 @@ void FrameTaskQueueController::CreateNonLoadingTaskQueue(
               .SetFrameScheduler(frame_scheduler_impl_));
   TaskQueueCreated(task_queue);
   non_loading_task_queues_.insert(queue_traits.Key(), task_queue);
+  return task_queue;
 }
 
 void FrameTaskQueueController::TaskQueueCreated(
@@ -170,31 +151,6 @@ bool FrameTaskQueueController::RemoveResourceLoadingTaskQueue(
   }
   DCHECK(found_task_queue);
   return true;
-}
-
-void FrameTaskQueueController::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  if (loading_task_queue_) {
-    state->SetString("loading_task_queue",
-                     PointerToString(loading_task_queue_.get()));
-  }
-  if (loading_control_task_queue_) {
-    state->SetString("loading_control_task_queue",
-                     PointerToString(loading_control_task_queue_.get()));
-  }
-  state->BeginArray("non_loading_task_queues");
-  for (const auto it : non_loading_task_queues_) {
-    state->AppendString(PointerToString(it.value.get()));
-  }
-  state->EndArray();
-
-  state->BeginArray("resource_loading_task_queues");
-  for (const auto& queue : resource_loading_task_queues_) {
-    state->AppendString(PointerToString(queue.get()));
-  }
-  state->EndArray();
-
-  state->EndDictionary();
 }
 
 // static
