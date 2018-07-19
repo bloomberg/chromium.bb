@@ -1550,8 +1550,9 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
     view_.RequestDisallowInterceptTouchEvent();
 }
 
-gfx::Vector2d RenderWidgetHostViewAndroid::GetOffsetFromRootSurface() {
-  return gfx::Vector2d(
+void RenderWidgetHostViewAndroid::TransformPointToRootSurface(
+    gfx::PointF* point) {
+  *point += gfx::Vector2d(
       0, DoBrowserControlsShrinkBlinkSize() ? GetTopControlsHeight() : 0);
 }
 

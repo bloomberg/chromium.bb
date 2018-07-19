@@ -1042,10 +1042,9 @@ bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
   return browser_compositor_->RequestRepaintForTesting();
 }
 
-gfx::Vector2d RenderWidgetHostViewMac::GetOffsetFromRootSurface() {
+void RenderWidgetHostViewMac::TransformPointToRootSurface(gfx::PointF* point) {
   if (display_only_using_parent_ui_layer_)
-    return view_bounds_in_window_dip_.OffsetFromOrigin();
-  return gfx::Vector2d();
+    *point += view_bounds_in_window_dip_.OffsetFromOrigin();
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {

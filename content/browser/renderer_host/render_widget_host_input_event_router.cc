@@ -62,7 +62,8 @@ gfx::PointF ComputePointInRootInPixels(
     const gfx::PointF& point,
     content::RenderWidgetHostViewBase* root_view,
     float device_scale_factor) {
-  gfx::PointF point_in_root = point + root_view->GetOffsetFromRootSurface();
+  gfx::PointF point_in_root = point;
+  root_view->TransformPointToRootSurface(&point_in_root);
   return gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
 }
 

@@ -488,9 +488,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Displays the requested tooltip on the screen.
   virtual void DisplayTooltipText(const base::string16& tooltip_text) {}
 
-  // Returns the offset of the view from the origin of the browser compositor's
+  // Transforms |point| to be in the coordinate space of browser compositor's
   // surface. This is in DIP.
-  virtual gfx::Vector2d GetOffsetFromRootSurface() = 0;
+  virtual void TransformPointToRootSurface(gfx::PointF* point);
 
   // Gets the bounds of the top-level window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;

@@ -518,6 +518,10 @@ CursorManager* RenderWidgetHostViewBase::GetCursorManager() {
   return nullptr;
 }
 
+void RenderWidgetHostViewBase::TransformPointToRootSurface(gfx::PointF* point) {
+  return;
+}
+
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
