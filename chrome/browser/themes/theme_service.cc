@@ -316,11 +316,9 @@ void ThemeService::UseDefaultTheme() {
     return;
   }
 #endif
-#if defined(OS_MACOSX)
-  // TODO(ellyjones): Expand ShouldIncreaseContrast() to non-Mac platforms.
-  if (original_theme_provider_.ShouldIncreaseContrast())
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  if (native_theme && native_theme->UsesHighContrastColors())
     SetCustomDefaultTheme(new IncreasedContrastThemeSupplier);
-#endif
   ClearAllThemeData();
   NotifyThemeChanged();
 }
