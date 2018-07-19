@@ -12,6 +12,7 @@
 #include "ash/shell_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/ash/browser_image_registrar.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
@@ -227,6 +228,8 @@ class BrowserNonClientFrameViewAsh
 
   // The binding this instance uses to implement mojom::SplitViewObserver.
   mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_{this};
+
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   // Indicates whether overview mode is active. Hide the header for V1 apps in
   // overview mode because a fake header is added for better UX. If also in

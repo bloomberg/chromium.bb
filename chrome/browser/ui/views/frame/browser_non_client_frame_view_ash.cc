@@ -173,10 +173,8 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
   if (immersive_controller)
     immersive_controller->RemoveObserver(this);
 
-  if (frame() && frame()->GetNativeWindow() &&
-      frame()->GetNativeWindow()->HasObserver(this)) {
-    frame()->GetNativeWindow()->RemoveObserver(this);
-  }
+  window_observer_.RemoveAll();
+
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
@@ -208,22 +206,22 @@ void BrowserNonClientFrameViewAsh::Init() {
   if (browser->is_app() && IsV1AppBackButtonEnabled())
     browser->command_controller()->AddCommandObserver(IDC_BACK, this);
 
-  frame()->GetNativeWindow()->SetProperty(
+  aura::Window* window = frame()->GetNativeWindow();
+  window->SetProperty(
       aura::client::kAppType,
       static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
                                          : ash::AppType::BROWSER));
 
+  window_observer_.Add(IsMash() ? window->GetRootWindow() : window);
+
   // To preserve privacy, tag incognito windows so that they won't be included
   // in screenshot sent to assistant server.
-  if (browser->profile()->IsOffTheRecord()) {
-    frame()->GetNativeWindow()->SetProperty(
-        ash::kBlockedForAssistantSnapshotKey, true);
-  }
+  if (browser->profile()->IsOffTheRecord())
+    window->SetProperty(ash::kBlockedForAssistantSnapshotKey, true);
 
   // TODO(estade): how much of the rest of this needs porting to Mash?
   if (IsMash()) {
-    frame()->GetNativeWindow()->SetProperty(ash::kFrameTextColorKey,
-                                            GetTitleColor());
+    window->SetProperty(ash::kFrameTextColorKey, GetTitleColor());
     OnThemeChanged();
     return;
   }
@@ -239,8 +237,6 @@ void BrowserNonClientFrameViewAsh::Init() {
   // TabletModeClient may not be initialized during unit tests.
   if (TabletModeClient::Get())
     TabletModeClient::Get()->AddObserver(this);
-
-  frame()->GetNativeWindow()->AddObserver(this);
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
 
@@ -837,20 +833,27 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
 // TODO(estade): remove this interface. Ash handles it for us with HeaderView.
 
 void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
-  DCHECK(!IsMash());
-  DCHECK_EQ(frame()->GetNativeWindow(), window);
-  window->RemoveObserver(this);
+  window_observer_.RemoveAll();
 }
 
 void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                            const void* key,
                                                            intptr_t old) {
-  DCHECK(!IsMash());
-  DCHECK_EQ(frame()->GetNativeWindow(), window);
   if (key != aura::client::kShowStateKey)
     return;
-  frame_header_->OnShowStateChanged(
-      window->GetProperty(aura::client::kShowStateKey));
+
+  if (IsMash()) {
+    const ui::WindowShowState new_state =
+        window->GetProperty(aura::client::kShowStateKey);
+    if (new_state == ui::SHOW_STATE_NORMAL ||
+        new_state == ui::SHOW_STATE_MAXIMIZED) {
+      InvalidateLayout();
+      frame()->GetRootView()->Layout();
+    }
+  } else {
+    frame_header_->OnShowStateChanged(
+        window->GetProperty(aura::client::kShowStateKey));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
