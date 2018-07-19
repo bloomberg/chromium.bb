@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/widget/widget_observer.h"
@@ -24,7 +25,8 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
                                  public MouseWatcherListener,
                                  public WidgetObserver {
  public:
-  explicit TooltipIcon(const base::string16& tooltip);
+  explicit TooltipIcon(const base::string16& tooltip,
+                       int tooltip_icon_size = 16);
   ~TooltipIcon() override;
 
   // ImageView:
@@ -45,6 +47,10 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
     preferred_width_ = preferred_width;
   }
 
+  void set_anchor_point_arrow(BubbleBorder::Arrow arrow) {
+    anchor_point_arrow_ = arrow;
+  }
+
  private:
   // Changes the color to reflect the hover node_data.
   void SetDrawAsHovered(bool hovered);
@@ -58,6 +64,14 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
 
   // The text to show in a bubble when hovered.
   base::string16 tooltip_;
+
+  // The size of the tooltip icon, in dip.
+  // Must be set in the constructor, otherwise the pre-hovered icon will show
+  // the default size.
+  int tooltip_icon_size_;
+
+  // The point at which to anchor the tooltip.
+  BubbleBorder::Arrow anchor_point_arrow_ = BubbleBorder::TOP_RIGHT;
 
   // Whether the mouse is inside this tooltip.
   bool mouse_inside_;

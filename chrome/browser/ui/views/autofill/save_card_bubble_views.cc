@@ -28,6 +28,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -50,11 +51,7 @@ const int kGooglePayLogoHeight = 16;
 
 const int kGooglePayLogoSeparatorHeight = 12;
 
-// Using custom padding instead of reusing left/right padding from
-// INSETS_DIALOG_TITLE, because it gives too much spacing when there is a
-// separator line between the icon and the title.
-// TODO(ftirelo): This padding should come from the layout provider.
-const int kTitleSeparatorPadding = 8;
+const int kTooltipIconSize = 12;
 
 const SkColor kTitleSeparatorColor = SkColorSetRGB(0x9E, 0x9E, 0x9E);
 
@@ -188,10 +185,15 @@ void SaveCardBubbleViews::AddedToWidget() {
   // is added to the widget, so the bubble frame view is guaranteed to exist.
   if (GetCurrentFlowStep() != UPLOAD_SAVE_ONLY_STEP)
     return;
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   auto title_container = std::make_unique<views::View>();
+  // TODO(ftirelo): DISTANCE_RELATED_BUTTON_HORIZONTAL isn't the right choice
+  //                here, but INSETS_DIALOG_TITLE gives too much padding.
+  //                Make a new Harmony DistanceMetric?
   title_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kTitleSeparatorPadding));
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
@@ -348,11 +350,14 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
         std::make_unique<views::View>();
 
     // Set up cardholder name label.
+    // TODO(jsaul): DISTANCE_RELATED_BUTTON_HORIZONTAL isn't the right choice
+    //              here, but DISTANCE_RELATED_CONTROL_HORIZONTAL gives too much
+    //              padding. Make a new Harmony DistanceMetric?
     cardholder_name_label_row->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::kHorizontal, gfx::Insets(),
             provider->GetDistanceMetric(
-                views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+                views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
     std::unique_ptr<views::Label> cardholder_name_label =
         std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
@@ -372,8 +377,12 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
     // textfield will be prefilled.
     if (!prefilled_name.empty()) {
       std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
-          std::make_unique<views::TooltipIcon>(l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP));
+          std::make_unique<views::TooltipIcon>(
+              l10n_util::GetStringUTF16(
+                  IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP),
+              kTooltipIconSize);
+      cardholder_name_tooltip->set_anchor_point_arrow(
+          views::BubbleBorder::Arrow::TOP_LEFT);
       cardholder_name_tooltip->set_id(DialogViewId::CARDHOLDER_NAME_TOOLTIP);
       cardholder_name_label_row->AddChildView(
           cardholder_name_tooltip.release());
