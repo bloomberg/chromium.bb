@@ -4,9 +4,11 @@
 
 #include "services/network/cors/cors_url_loader_factory.h"
 
+#include "base/logging.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/network_context.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -66,6 +68,11 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  if (!IsSane(resource_request)) {
+    client->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    return;
+  }
+
   if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS) &&
       !disable_web_security_) {
     auto loader = std::make_unique<CORSURLLoader>(
@@ -94,6 +101,33 @@ void CORSURLLoaderFactory::DeleteIfNeeded() {
     return;
   if (bindings_.empty() && loaders_.empty())
     context_->DestroyURLLoaderFactory(this);
+}
+
+bool CORSURLLoaderFactory::IsSane(const ResourceRequest& request) {
+  // CORS needs a proper origin (including a unique opaque origin). If the
+  // request doesn't have one, CORS cannot work.
+  if (!request.request_initiator &&
+      request.fetch_request_mode != mojom::FetchRequestMode::kNavigate &&
+      request.fetch_request_mode != mojom::FetchRequestMode::kNoCORS) {
+    LOG(WARNING) << "|fetch_request_mode| is " << request.fetch_request_mode
+                 << ", but |request_initiator| is not set.";
+    return false;
+  }
+
+  const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                  net::LOAD_DO_NOT_SEND_COOKIES |
+                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  // The credentials mode and load_flags should match.
+  if (request.fetch_credentials_mode == mojom::FetchCredentialsMode::kOmit &&
+      (request.load_flags & load_flags_pattern) != load_flags_pattern) {
+    LOG(WARNING) << "|fetch_credentials_mode| and |load_flags| contradict each "
+                    "other.";
+    return false;
+  }
+
+  // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
+  // be "follow".
+  return true;
 }
 
 }  // namespace cors

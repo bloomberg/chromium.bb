@@ -126,6 +126,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // https://fetch.spec.whatwg.org/#concept-request-mode
   // Used mainly by CORS handling (out-of-blink CORS), CORB, Service Worker.
+  // CORS handling needs a proper origin (including a unique opaque origin).
+  // Hence a request with kSameOrigin, kCORS, or kCORSWithForcedPreflight should
+  // have a non-null request_initiator.
   mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
 
   // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
