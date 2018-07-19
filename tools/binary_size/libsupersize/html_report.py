@@ -9,7 +9,6 @@ import collections
 import json
 import logging
 import os
-import shutil
 
 import archive
 import diff
@@ -42,19 +41,6 @@ _SMALL_SYMBOL_DESCRIPTIONS = {
   'P': 'Other small non-locale pak entries',
   'o': 'Other small entries',
 }
-
-_TEMPLATE_FILES = [
-  'index.html',
-  'favicon.ico',
-  'options.css',
-  'infocard.css',
-  'start-worker.js',
-  'shared.js',
-  'state.js',
-  'infocard-ui.js',
-  'tree-ui.js',
-  'tree-worker.js',
-]
 
 _DEFAULT_SYMBOL_COUNT = 100000
 
@@ -195,32 +181,12 @@ def _MakeDirIfDoesNotExist(rel_path):
       raise
 
 
-def _CopyTreeViewTemplateFiles(template_src, dest_dir):
-  """Copy and format template files for the tree view UI.
-
-  The index.html file uses basic mustache syntax to denote where strings
-  should be replaced. Only variable tags are supported.
-
-  Args:
-    template_src: Path to the directory containing the template files.
-    dest_dir: Path to the directory where the outputted files will be saved.
-    kwags: Dict of key-value pairs which will be used to replace {{<key>}}
-      strings in the index.html template.
-
-  Throws:
-    KeyError: thrown if a variable tag does not have a corresponding kwarg.
-  """
-  _MakeDirIfDoesNotExist(dest_dir)
-  for path in _TEMPLATE_FILES:
-    shutil.copy(os.path.join(template_src, path), dest_dir)
-
-
 def AddArguments(parser):
   parser.add_argument('input_file',
                       help='Path to input .size file.')
-  parser.add_argument('--report-dir', metavar='PATH', required=True,
-                      help='Write output to the specified directory. An HTML '
-                            'report is generated here.')
+  parser.add_argument('--report-file', metavar='PATH', required=True,
+                      help='Write generated data to the specified '
+                           '.ndjson file.')
   parser.add_argument('--all-symbols', action='store_true',
                       help='Include all symbols. Will cause the data file to '
                            'take longer to load.')
@@ -233,6 +199,8 @@ def Run(args, parser):
     parser.error('Input must end with ".size"')
   if args.diff_with and not args.diff_with.endswith('.size'):
     parser.error('Diff input must end with ".size"')
+  if not args.report_file.endswith('.ndjson'):
+    parser.error('Output must end with ".ndjson"')
 
   logging.info('Reading .size file')
   size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
@@ -245,8 +213,6 @@ def Run(args, parser):
   else:
     symbols = size_info.raw_symbols
 
-  template_src = os.path.join(os.path.dirname(__file__), 'template_tree_view')
-  _CopyTreeViewTemplateFiles(template_src, args.report_dir)
   logging.info('Creating JSON objects')
   meta, tree_nodes = _MakeTreeViewList(symbols, args.all_symbols)
   meta.update({
@@ -263,16 +229,22 @@ def Run(args, parser):
 
   logging.info('Serializing JSON')
   # Write newline-delimited JSON file
-  data_file_path = os.path.join(args.report_dir, 'data.ndjson')
-  with codecs.open(data_file_path, 'w', encoding='ascii') as out_file:
+  with codecs.open(args.report_file, 'w', encoding='ascii') as out_file:
     # Use separators without whitespace to get a smaller file.
-    json.dump(meta, out_file, ensure_ascii=False, check_circular=False,
-              separators=(',', ':'))
+    json_dump_args = {
+      'separators': (',', ':'),
+      'ensure_ascii': True,
+      'check_circular': False,
+    }
+
+    json.dump(meta, out_file, **json_dump_args)
     out_file.write('\n')
 
     for tree_node in tree_nodes:
-      json.dump(tree_node, out_file, ensure_ascii=False, check_circular=False,
-                separators=(',', ':'))
+      json.dump(tree_node, out_file, **json_dump_args)
       out_file.write('\n')
 
-  logging.warning('Report saved to %s/index.html', args.report_dir)
+  logging.warning('Report saved to %s', args.report_file)
+  logging.warning('Open server by running: \n'
+                  'tools/binary_size/supersize start_server %s',
+                  args.report_file)
