@@ -82,7 +82,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale);
   void ShowFeedback();
-  void ShowResetScreen();
   void LaunchKioskApp(const std::string& app_id);
   void LaunchArcKioskApp(const AccountId& account_id);
 

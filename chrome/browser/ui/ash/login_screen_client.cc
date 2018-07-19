@@ -9,13 +9,11 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -151,19 +149,6 @@ void LoginScreenClient::RequestPublicSessionKeyboardLayouts(
 void LoginScreenClient::ShowFeedback() {
   if (chromeos::LoginDisplayHost::default_host())
     chromeos::LoginDisplayHost::default_host()->ShowFeedback();
-}
-
-void LoginScreenClient::ShowResetScreen() {
-  if (chromeos::LoginDisplayHost::default_host()->GetOobeUI()) {
-    // If gaia init is in progress, cancel it so the screen doesn't race with
-    // the reset wizard.
-    chromeos::LoginDisplayHost::default_host()
-        ->GetOobeUI()
-        ->GetGaiaScreenView()
-        ->CancelShowGaiaAsync();
-    chromeos::LoginDisplayHost::default_host()->StartWizard(
-        chromeos::OobeScreen::SCREEN_OOBE_RESET);
-  }
 }
 
 void LoginScreenClient::LaunchKioskApp(const std::string& app_id) {

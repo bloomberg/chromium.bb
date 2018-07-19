@@ -104,7 +104,6 @@ class ASH_EXPORT LockContentsView
     kShowFeedback,
     kFocusNextUser,
     kFocusPreviousUser,
-    kShowResetScreen,
   };
 
   // Number of login attempts before a login dialog is shown. For example, if
