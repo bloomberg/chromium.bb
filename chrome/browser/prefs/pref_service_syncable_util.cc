@@ -34,7 +34,7 @@ CreateIncognitoPrefServiceSyncable(
 
   // TODO(https://crbug.com/861722): Remove |GetIncognitoWhitelist| and its
   // file. This list is ONLY added for transition of code from blacklist to
-  // whitelist. All whitelisted prefs can be added here to
+  // whitelist. All whitelisted prefs should be added here to
   // |persistent_pref_names|.
   prefs::GetIncognitoWhitelist(&persistent_pref_names);
 
