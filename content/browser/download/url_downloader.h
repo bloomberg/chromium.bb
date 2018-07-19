@@ -42,8 +42,6 @@ class UrlDownloader : public net::URLRequest::Delegate,
       bool is_parallel_request);
 
  private:
-  class RequestHandle;
-
   void Start();
 
   // URLRequest::Delegate:
@@ -64,9 +62,10 @@ class UrlDownloader : public net::URLRequest::Delegate,
       override;
   void OnReadyToRead() override;
 
-  void PauseRequest();
-  void ResumeRequest();
-  void CancelRequest();
+  // UrlDownloadHandler implementations.
+  void PauseRequest() override;
+  void ResumeRequest() override;
+  void CancelRequest() override;
 
   // Called when the UrlDownloader is done with the request. Posts a task to
   // remove itself from its download manager, which in turn would cause the
