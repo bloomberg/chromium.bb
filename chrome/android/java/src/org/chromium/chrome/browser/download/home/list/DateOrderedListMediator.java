@@ -28,6 +28,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -124,6 +125,11 @@ class DateOrderedListMediator {
         }
     }
 
+    /** Called to delete a list of items specified by {@code items}. */
+    public void onDeletionRequested(List<ListItem> items) {
+        onDeleteItems(getOfflineItems(items));
+    }
+
     /**
      * @return The {@link OfflineItemFilterSource} that should be used to determine which filter
      *         options are available.
@@ -168,6 +174,16 @@ class DateOrderedListMediator {
                 new ThumbnailRequestGlue(mProvider, item, iconWidthPx, iconHeightPx, callback);
         mThumbnailProvider.getThumbnail(request);
         return () -> mThumbnailProvider.cancelRetrieval(request);
+    }
+
+    private List<OfflineItem> getOfflineItems(List<ListItem> items) {
+        List<OfflineItem> offlineItems = new ArrayList<>();
+        for (ListItem item : items) {
+            if (item instanceof ListItem.OfflineItemListItem) {
+                offlineItems.add(((ListItem.OfflineItemListItem) item).item);
+            }
+        }
+        return offlineItems;
     }
 
     /** Helper class to disable animations for certain list changes. */

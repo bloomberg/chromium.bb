@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -25,9 +27,13 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.snackbars.DeleteUndoCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 
 import java.io.Closeable;
@@ -53,6 +59,20 @@ class DownloadManagerCoordinatorImpl
     private TextView mEmptyView;
 
     private SelectionDelegate<ListItem> mSelectionDelegate;
+
+    private SelectableListToolbar.SearchDelegate mSearchDelegate =
+            new SelectableListToolbar.SearchDelegate() {
+                @Override
+                public void onSearchTextChanged(String query) {
+                    mListCoordinator.setSearchQuery(query);
+                }
+
+                @Override
+                public void onEndSearch() {
+                    mSelectableListLayout.onEndSearch();
+                    mListCoordinator.setSearchQuery(null);
+                }
+            };
 
     /** Builds a {@link DownloadManagerCoordinatorImpl} instance. */
     @SuppressWarnings({"unchecked"}) // mSelectableListLayout
@@ -89,7 +109,7 @@ class DownloadManagerCoordinatorImpl
                 isSeparateActivity);
         mToolbar.getMenu().setGroupVisible(normalGroupId, true);
         mToolbar.initializeSearchView(
-                /* searchDelegate = */ null, R.string.download_manager_search, mSearchMenuId);
+                mSearchDelegate, R.string.download_manager_search, mSearchMenuId);
 
         mIsSeparateActivity = isSeparateActivity;
         if (!mIsSeparateActivity) mToolbar.removeCloseButton();
@@ -147,7 +167,49 @@ class DownloadManagerCoordinatorImpl
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        // TODO(shaktisahu): Handle menu items.
+        if ((item.getItemId() == R.id.close_menu_id
+                    || item.getItemId() == R.id.with_settings_close_menu_id)
+                && mIsSeparateActivity) {
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_CLOSE);
+            mActivity.finish();
+            return true;
+        } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_MULTI_DELETE);
+            RecordHistogram.recordCount100Histogram(
+                    "Android.DownloadManager.Menu.Delete.SelectedCount",
+                    mSelectionDelegate.getSelectedItems().size());
+            mListCoordinator.onDeletionRequested(mSelectionDelegate.getSelectedItems());
+            mSelectionDelegate.clearSelection();
+            return true;
+        } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
+            // TODO(twellington): ideally the intent chooser would be started with
+            //                    startActivityForResult() and the selection would only be cleared
+            //                    after receiving an OK response. See https://crbug.com/638916.
+
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_MULTI_SHARE);
+            RecordHistogram.recordCount100Histogram(
+                    "Android.DownloadManager.Menu.Share.SelectedCount",
+                    mSelectionDelegate.getSelectedItems().size());
+
+            // TODO(shaktisahu): Share selected items.
+            mSelectionDelegate.clearSelection();
+            return true;
+        } else if (item.getItemId() == mSearchMenuId) {
+            // The header should be removed as soon as a search is started. Also it should be added
+            // back when the search is ended.
+            // TODO(shaktisahu): Check with UX and remove header.
+            mSelectableListLayout.onStartSearch();
+            mToolbar.showSearchView();
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_SEARCH);
+            RecordUserAction.record("Android.DownloadManager.Search");
+            return true;
+        } else if (item.getItemId() == R.id.settings_menu_id) {
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                    mActivity, DownloadPreferences.class.getName());
+            mActivity.startActivity(intent);
+            RecordUserAction.record("Android.DownloadManager.Settings");
+            return true;
+        }
         return false;
     }
 

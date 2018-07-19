@@ -93,4 +93,9 @@ public class DateOrderedListCoordinator {
     public void setSelectedFilter(@FilterType int filter) {
         mFilterCoordinator.setSelectedFilter(filter);
     }
+
+    /** Called to delete a list of items specified by {@code items}. */
+    public void onDeletionRequested(List<ListItem> items) {
+        mMediator.onDeletionRequested(items);
+    }
 }
