@@ -75,7 +75,7 @@ WebViewSigninManagerFactory::BuildServiceInstanceFor(
       WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state),
       WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(browser_state),
       WebViewSigninErrorControllerFactory::GetForBrowserState(browser_state),
-      signin::AccountConsistencyMethod::kMirror);
+      signin::AccountConsistencyMethod::kDisabled);
   service->Initialize(ApplicationContext::GetInstance()->GetLocalState());
   return service;
 }
