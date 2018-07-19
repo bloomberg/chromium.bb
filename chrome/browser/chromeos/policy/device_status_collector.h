@@ -25,7 +25,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/system/version_loader.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
 #include "ui/base/idle/idle.h"

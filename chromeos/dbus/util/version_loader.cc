@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/system/version_loader.h"
+#include "chromeos/dbus/util/version_loader.h"
 
 #include <stddef.h>
 
@@ -48,8 +48,7 @@ const char kPathFirmware[] = "/var/log/bios_info.txt";
 
 std::string GetVersion(VersionFormat format) {
   std::string version;
-  std::string key = (format == VERSION_FULL ?
-                     kFullVersionKey : kVersionKey);
+  std::string key = (format == VERSION_FULL ? kFullVersionKey : kVersionKey);
   if (!base::SysInfo::GetLsbReleaseValue(key, &version)) {
     LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
         << "No LSB version key: " << key;
@@ -58,10 +57,8 @@ std::string GetVersion(VersionFormat format) {
   if (format == VERSION_SHORT_WITH_DATE) {
     base::Time::Exploded ctime;
     base::SysInfo::GetLsbReleaseTime().UTCExplode(&ctime);
-    version += base::StringPrintf("-%02u.%02u.%02u",
-                                  ctime.year % 100,
-                                  ctime.month,
-                                  ctime.day_of_month);
+    version += base::StringPrintf("-%02u.%02u.%02u", ctime.year % 100,
+                                  ctime.month, ctime.day_of_month);
   }
 
   return version;

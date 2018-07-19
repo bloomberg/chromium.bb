@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_switches.h"
-#include "chromeos/system/version_loader.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

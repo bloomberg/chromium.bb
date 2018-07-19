@@ -12,7 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/system/version_loader.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"

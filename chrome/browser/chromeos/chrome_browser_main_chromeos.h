@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
-#include "chromeos/system/version_loader.h"
 
 class SpokenFeedbackEventRewriterDelegate;
 
