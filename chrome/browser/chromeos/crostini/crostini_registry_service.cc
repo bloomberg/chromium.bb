@@ -121,15 +121,28 @@ base::Time GetTime(const base::Value& pref, const char* key) {
       base::TimeDelta::FromMicroseconds(time));
 }
 
+bool MatchingString(const std::string& search_string,
+                    const std::string& value_string,
+                    bool ignore_space) {
+  std::string search = search_string;
+  std::string value = value_string;
+  if (ignore_space) {
+    base::RemoveChars(search, " ", &search);
+    base::RemoveChars(value, " ", &value);
+  }
+  return base::EqualsCaseInsensitiveASCII(search, value);
+}
+
 enum class FindAppIdResult { NoMatch, UniqueMatch, NonUniqueMatch };
 // Looks for an app where prefs_key is set to search_value. Returns the apps id
 // if there was only one app matching, otherwise returns an empty string.
 FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
-                          base::StringPiece prefs_key,
-                          base::StringPiece search_value,
+                          const base::StringPiece& prefs_key,
+                          const base::StringPiece& search_value,
                           std::string* result,
                           bool require_startup_notify = false,
-                          bool need_display = false) {
+                          bool need_display = false,
+                          bool ignore_space = false) {
   result->clear();
   for (const auto& item : prefs->DictItems()) {
     if (item.first == kCrostiniTerminalId)
@@ -152,13 +165,15 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
     if (!value)
       continue;
     if (value->type() == base::Value::Type::STRING) {
-      if (!EqualsCaseInsensitiveASCII(search_value, value->GetString()))
+      if (!MatchingString(search_value.as_string(), value->GetString(),
+                          ignore_space)) {
         continue;
+      }
     } else if (value->type() == base::Value::Type::DICTIONARY) {
       // Look at the unlocalized name to see if that matches.
       value = value->FindKeyOfType("", base::Value::Type::STRING);
-      if (!value ||
-          !EqualsCaseInsensitiveASCII(search_value, value->GetString())) {
+      if (!value || !MatchingString(search_value.as_string(),
+                                    value->GetString(), ignore_space)) {
         continue;
       }
     } else {
@@ -404,7 +419,8 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
 
   if (FindAppId(apps, kAppNameKey, key, &app_id,
                 false /* require_startup_notification */,
-                true /* need_display */) == FindAppIdResult::UniqueMatch)
+                true /* need_display */,
+                true /* ignore_space */) == FindAppIdResult::UniqueMatch)
     return app_id;
 
   auto it = wmclass_to_name.find(key.as_string());
