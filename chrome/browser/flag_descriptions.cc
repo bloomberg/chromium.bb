@@ -3389,6 +3389,12 @@ const char kZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
 const char kZipArchiverUnpackerDescription[] =
     "Enable or disable the ability to unpack archives in incognito mode";
 
+extern const char kEnableContinueReadingName[] = "Enable continue reading";
+extern const char kEnableContinueReadingDescription[] =
+    "Enable continue reading feature in Launcher, which allows users to "
+    "seamlessly continue reading a web page when they switch devices from "
+    "phones or tablets to Chromebooks.";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
