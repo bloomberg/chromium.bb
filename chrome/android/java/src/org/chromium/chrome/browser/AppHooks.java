@@ -22,7 +22,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.AsyncFeedbackSource;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
@@ -144,14 +143,6 @@ public abstract class AppHooks {
      */
     public ExternalAuthUtils createExternalAuthUtils() {
         return new ExternalAuthUtils();
-    }
-
-    /**
-     * @return An external observer of data use.
-     * @param nativePtr Pointer to the native ExternalDataUseObserver object.
-     */
-    public ExternalDataUseObserver createExternalDataUseObserver(long nativePtr) {
-        return new ExternalDataUseObserver(nativePtr);
     }
 
     /**

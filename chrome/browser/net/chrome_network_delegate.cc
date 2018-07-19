@@ -32,7 +32,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/data_usage/core/data_use_aggregator.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -173,9 +172,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       allowed_domains_for_apps_(nullptr),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures)),
-      data_use_aggregator_(nullptr),
-      is_data_usage_off_the_record_(true) {}
+              switches::kEnableExperimentalWebPlatformFeatures)) {}
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
@@ -192,13 +189,6 @@ void ChromeNetworkDelegate::set_profile(void* profile) {
 void ChromeNetworkDelegate::set_cookie_settings(
     content_settings::CookieSettings* cookie_settings) {
   cookie_settings_ = cookie_settings;
-}
-
-void ChromeNetworkDelegate::set_data_use_aggregator(
-    data_usage::DataUseAggregator* data_use_aggregator,
-    bool is_data_usage_off_the_record) {
-  data_use_aggregator_ = data_use_aggregator;
-  is_data_usage_off_the_record_ = is_data_usage_off_the_record;
 }
 
 // static
@@ -314,8 +304,6 @@ void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
   // not FTP or other types, so those kinds of bytes will not be reported here.
   task_manager::TaskManagerInterface::OnRawBytesRead(*request, bytes_received);
 #endif  // !defined(OS_ANDROID)
-
-  ReportDataUsageStats(request, 0 /* tx_bytes */, bytes_received);
 }
 
 void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
@@ -325,8 +313,6 @@ void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
   // not FTP or other types, so those kinds of bytes will not be reported here.
   task_manager::TaskManagerInterface::OnRawBytesSent(*request, bytes_sent);
 #endif  // !defined(OS_ANDROID)
-
-  ReportDataUsageStats(request, bytes_sent, 0 /* rx_bytes */);
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
@@ -476,18 +462,4 @@ bool ChromeNetworkDelegate::OnCanUseReportingClient(
     return false;
 
   return cookie_settings_->IsCookieAccessAllowed(endpoint, origin.GetURL());
-}
-
-void ChromeNetworkDelegate::ReportDataUsageStats(net::URLRequest* request,
-                                                 int64_t tx_bytes,
-                                                 int64_t rx_bytes) {
-  if (!data_use_aggregator_)
-    return;
-
-  if (is_data_usage_off_the_record_) {
-    data_use_aggregator_->ReportOffTheRecordDataUse(tx_bytes, rx_bytes);
-    return;
-  }
-
-  data_use_aggregator_->ReportDataUse(request, tx_bytes, rx_bytes);
 }

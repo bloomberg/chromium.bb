@@ -1682,12 +1682,6 @@ group("strings") {
 }
 
 if (is_android) {
-  java_cpp_enum("data_use_ui_message_enum_javagen") {
-    sources = [
-      "browser/android/data_usage/data_use_tab_ui_manager_android.cc",
-    ]
-  }
-
   java_cpp_enum("content_setting_javagen") {
     sources = [
       "../components/content_settings/core/common/content_settings.h",

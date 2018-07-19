@@ -1650,18 +1650,6 @@
             ]
         }
     ],
-    "ExternalDataUseObserver": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "FrameAndTaskTypePriorityDuringLoading": [
         {
             "platforms": [

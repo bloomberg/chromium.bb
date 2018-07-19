@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityHostImpl;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
-import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -675,7 +674,6 @@ public class CustomTabActivity extends ChromeActivity {
         if (TextUtils.isEmpty(packageName)) {
             packageName = mConnection.extractCreatorPackage(getIntent());
         }
-        DataUseTabUIManager.onCustomTabInitialNavigation(mMainTab, packageName, url);
 
         if (!mHasCreatedTabEarly && !successfulStateRestore && !mMainTab.isLoading()) {
             loadUrlInTab(mMainTab, new LoadUrlParams(url),

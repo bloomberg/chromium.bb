@@ -10,7 +10,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -24,8 +23,7 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
 
 /**
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
- * certain navigations to Intents to 3rd party applications and to "pause" navigations when data use
- * tracking has ended.
+ * certain navigations to Intents to 3rd party applications.
  * Note the Intent is often created together with a new empty tab which then should be closed
  * immediately. Closing the tab will cancel the navigation that this delegate is running for,
  * hence can cause UAF error. It should be done in an asynchronous fashion to avoid it.
@@ -151,8 +149,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                     logBlockedNavigationToDevToolsConsole(url);
                     return true;
                 }
-                return DataUseTabUIManager.shouldOverrideUrlLoading(mTab.getActivity(), mTab, url,
-                        navigationParams.pageTransitionType, navigationParams.referrer);
+                return false;
         }
     }
 

@@ -73,7 +73,6 @@ import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchTabPromotionDelegate;
-import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerUIUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -116,7 +115,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
-import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -254,7 +252,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private ModalDialogManager mModalDialogManager;
-    private DataUseSnackbarController mDataUseSnackbarController;
     private DataReductionPromoSnackbarController mDataReductionPromoSnackbarController;
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
@@ -352,7 +349,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
 
             mSnackbarManager = new SnackbarManager(this, null);
-            mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 
             mAssistStatusHandler = createAssistStatusHandler();
             if (mAssistStatusHandler != null) {
@@ -608,16 +604,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)
-                        && DataUseTabUIManager.shouldShowDataUseStartedUI()) {
-                    mDataUseSnackbarController.showDataUseTrackingStartedBar();
-                } else if (DataUseTabUIManager.shouldShowDataUseEndedUI()
-                        && DataUseTabUIManager.shouldShowDataUseEndedSnackbar(
-                                   getApplicationContext())
-                        && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
-                    mDataUseSnackbarController.showDataUseTrackingEndedBar();
-                }
-
                 // Only alert about data savings once the first paint has happened. It
                 // doesn't make sense to show a snackbar about savings when nothing has been
                 // displayed yet.
@@ -637,16 +623,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void onShown(Tab tab) {
                 setStatusBarColor(tab, tab.getThemeColor());
                 OfflineIndicatorController.onUpdate();
-            }
-
-            @Override
-            public void onHidden(Tab tab) {
-                mDataUseSnackbarController.dismissDataUseBar();
-            }
-
-            @Override
-            public void onDestroyed(Tab tab) {
-                mDataUseSnackbarController.dismissDataUseBar();
             }
 
             @Override
