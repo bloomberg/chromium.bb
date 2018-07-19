@@ -40,13 +40,7 @@ const CGFloat kDefaultCornerRadius = 3;
 
     _faviconFallbackLabel = [[UILabel alloc] initWithFrame:self.bounds];
     _faviconFallbackLabel.textAlignment = NSTextAlignmentCenter;
-    UIFontDescriptor* baseDescriptor = [UIFontDescriptor
-        preferredFontDescriptorWithTextStyle:UIFontTextStyleCaption1];
-    UIFontDescriptor* styleDescriptor = [baseDescriptor
-        fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-    // Use a |size| of 0.0 to use the default size for the descriptor.
-    _faviconFallbackLabel.font =
-        [UIFont fontWithDescriptor:styleDescriptor size:0.0];
+    _faviconFallbackLabel.font = [UIFont boldSystemFontOfSize:12.0f];
     _faviconFallbackLabel.isAccessibilityElement = NO;
     _faviconFallbackLabel.clipsToBounds = YES;
     _faviconFallbackLabel.layer.cornerRadius = kDefaultCornerRadius;
@@ -88,19 +82,6 @@ const CGFloat kDefaultCornerRadius = 3;
 
 - (void)setFont:(UIFont*)font {
   self.faviconFallbackLabel.font = font;
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)pTC {
-  if (pTC.preferredContentSizeCategory !=
-      self.traitCollection.preferredContentSizeCategory) {
-    UIFontDescriptor* baseDescriptor = [UIFontDescriptor
-        preferredFontDescriptorWithTextStyle:UIFontTextStyleCaption1];
-    UIFontDescriptor* styleDescriptor = [baseDescriptor
-        fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-    // Use a |size| of 0.0 to use the default size for the descriptor.
-    _faviconFallbackLabel.font =
-        [UIFont fontWithDescriptor:styleDescriptor size:0.0];
-  }
 }
 
 #pragma mark - UIView
