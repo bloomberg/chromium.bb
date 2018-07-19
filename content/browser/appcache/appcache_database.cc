@@ -890,7 +890,7 @@ bool AppCacheDatabase::DeleteDeletableResponseIds(
 }
 
 bool AppCacheDatabase::RunCachedStatementWithIds(
-    const sql::StatementID& statement_id,
+    sql::StatementID statement_id,
     const char* sql,
     const std::vector<int64_t>& ids) {
   DCHECK(sql);

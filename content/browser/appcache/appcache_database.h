@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
+#include "sql/statement_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -25,7 +26,6 @@ namespace sql {
 class Connection;
 class MetaTable;
 class Statement;
-class StatementID;
 }
 
 namespace content {
@@ -196,7 +196,7 @@ class CONTENT_EXPORT AppCacheDatabase {
   }
 
  private:
-  bool RunCachedStatementWithIds(const sql::StatementID& statement_id,
+  bool RunCachedStatementWithIds(sql::StatementID statement_id,
                                  const char* sql,
                                  const std::vector<int64_t>& ids);
   bool RunUniqueStatementWithInt64Result(const char* sql, int64_t* result);

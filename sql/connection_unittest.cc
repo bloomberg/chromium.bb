@@ -270,7 +270,7 @@ TEST_F(SQLConnectionTest, ExecuteWithErrorCode) {
 }
 
 TEST_F(SQLConnectionTest, CachedStatement) {
-  sql::StatementID id1("foo", 12);
+  sql::StatementID id1 = SQL_FROM_HERE;
 
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   ASSERT_TRUE(db().Execute("INSERT INTO foo(a, b) VALUES (12, 13)"));
