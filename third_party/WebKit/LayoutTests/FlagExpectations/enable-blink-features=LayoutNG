@@ -41,6 +41,7 @@ crbug.com/591099 svg/wicd/rightsizing-grid.html [ Failure Pass ]
 
 # Features that do not have active plans to support or turn on.
 crbug.com/591099 fast/css3-text/css3-text-justify/text-justify-distribute.html [ Skip ]
+crbug.com/591099 fast/css3-text/css3-text-indent/text-indent-out-of-flow-each-line-hanging.html [ Skip ]
 
 # New passes
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
@@ -542,7 +543,6 @@ crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/tex
 crbug.com/591099 fast/css3-text/css3-text-indent/negative-text-indent-leading-out-of-flow-text-align-left-and-right.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-indent/negative-text-indent-leading-out-of-flow.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-indent/text-indent-leading-out-of-flow.html [ Failure ]
-crbug.com/591099 fast/css3-text/css3-text-indent/text-indent-out-of-flow-each-line-hanging.html [ Failure ]
 crbug.com/591099 fast/dom/HTMLAreaElement/area-download.html [ Failure ]
 crbug.com/755750 fast/dom/Range/get-bounding-client-rect-empty-and-non-empty.html [ Failure ]
 crbug.com/755750 fast/dom/Range/getBoundingClientRect-linebreak-character.html [ Failure ]
