@@ -449,10 +449,30 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   // This is useful for cases like file URLs.
   if (!origin.unique()) {
     // Prefer to use the scheme of |origin| rather than |url|, to correctly
-    // cover blob: and filesystem: URIs (see also https://crbug.com/697111).
+    // cover blob:file: and filesystem:file: URIs (see also
+    // https://crbug.com/697111).
     DCHECK(!origin.scheme().empty());
     return GURL(origin.scheme() + ":");
   } else if (url.has_scheme()) {
+    // In some cases, it is not safe to use just the scheme as a site URL, as
+    // that might allow two URLs created by different sites to to share a
+    // process.  See https://crbug.com/863623.
+    //
+    // TODO(alexmos,creis): This should eventually be expanded to certain other
+    // schemes, such as data: and file:.
+    if (url.SchemeIsBlob()) {
+      // We get here for blob URLs of form blob:null/guid.  Use the full URL
+      // with the guid in that case, which isolates all blob URLs with unique
+      // origins from each other.  Remove hash from the URL, since
+      // same-document navigations shouldn't use a different site URL.
+      if (url.has_ref()) {
+        GURL::Replacements replacements;
+        replacements.ClearRef();
+        url = url.ReplaceComponents(replacements);
+      }
+      return url;
+    }
+
     DCHECK(!url.scheme().empty());
     return GURL(url.scheme() + ":");
   }

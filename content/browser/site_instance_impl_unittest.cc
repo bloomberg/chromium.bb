@@ -344,6 +344,17 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
 
+  // Blob URLs created from a unique origin use the full URL as the site URL,
+  // except for the hash.
+  test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(site_url, test_url);
+  test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb#foo");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_NE(site_url, test_url);
+  EXPECT_FALSE(site_url.has_ref());
+  EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
+
   // Private domains are preserved, appspot being such a site.
   test_url = GURL(
       "blob:http://www.example.appspot.com:44/"
