@@ -384,6 +384,20 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo(ui_latency);
   }
 
+  void ForwardGestureEventWithLatencyInfo(
+      const blink::WebGestureEvent& gesture_event,
+      const ui::LatencyInfo& ui_latency) override {
+    RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(gesture_event,
+                                                             ui_latency);
+    last_forwarded_gesture_event_ = gesture_event;
+  }
+
+  base::Optional<WebGestureEvent> GetAndResetLastForwardedGestureEvent() {
+    base::Optional<WebGestureEvent> ret;
+    last_forwarded_gesture_event_.swap(ret);
+    return ret;
+  }
+
   static MockRenderWidgetHostImpl* Create(RenderWidgetHostDelegate* delegate,
                                           RenderProcessHost* process,
                                           int32_t routing_id) {
@@ -430,6 +444,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
 
   bool new_content_rendering_timeout_fired_ = false;
   std::unique_ptr<MockWidgetImpl> widget_impl_;
+  base::Optional<WebGestureEvent> last_forwarded_gesture_event_;
 };
 
 class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
@@ -2438,6 +2453,43 @@ TEST_F(RenderWidgetHostViewAuraTest,
       events[2]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin, gesture_event->GetType());
   EXPECT_EQ(blink::kWebGestureDeviceTouchscreen, gesture_event->SourceDevice());
+}
+
+TEST_F(RenderWidgetHostViewAuraTest,
+       SyntheticFlingCancelAtTouchpadScrollBegin) {
+  ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(2, 2),
+                               ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
+
+  // Send the beginning scroll event. This should generate a synthetic fling
+  // cancel to cancel any ongoing flings before the start of this scroll.
+  view_->OnScrollEvent(&scroll_event);
+  base::RunLoop().RunUntilIdle();
+  base::Optional<WebGestureEvent> last_gesture =
+      widget_host_->GetAndResetLastForwardedGestureEvent();
+  ASSERT_TRUE(last_gesture);
+  EXPECT_EQ(WebInputEvent::kGestureFlingCancel, last_gesture->GetType());
+
+  // Consume the wheel to prevent gesture scrolls from interfering with the
+  // rest of the test.
+  MockWidgetInputHandler::MessageVector dispatched_events =
+      GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(dispatched_events));
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  dispatched_events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(0U, dispatched_events.size());
+
+  // Send a scroll update. A synthetic fling cancel has already been sent for
+  // this sequence, so we should not generate another.
+  view_->OnScrollEvent(&scroll_event);
+  base::RunLoop().RunUntilIdle();
+  last_gesture = widget_host_->GetAndResetLastForwardedGestureEvent();
+  EXPECT_FALSE(last_gesture);
+
+  dispatched_events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(dispatched_events));
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  dispatched_events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(0U, dispatched_events.size());
 }
 
 // Checks that touch-event state is maintained correctly for multiple touch
