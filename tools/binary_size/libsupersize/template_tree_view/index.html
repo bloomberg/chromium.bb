@@ -31,7 +31,6 @@
             padding: 0 48px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
         }
         .appbar-progress {
             display: block;
@@ -67,6 +66,7 @@
         }
 
         .options {
+            visibility: hidden;
             grid-area: options;
         }
 
@@ -85,6 +85,7 @@
             font-weight: normal;
             color: #202124;
             font-size: 22px;
+            flex: 1;
         }
         .subtitle {
             font-weight: 500;
@@ -214,12 +215,19 @@
     <header class="appbar">
         <div class="appbar-inner">
             <h1 class="headline">Binary Size Analysis</h1>
-            <button type="button" class="icon-button toggle-options" title="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
+            <input type="file" name="upload" id="upload" accept=".ndjson" >
+            <label for="upload" class="text-button filled-button with-icon">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#fff">
                     <!--
                     Icons from https://material.io/tools/icons/?style=outline
                     with some custom icons designed in the same style
                     -->
+                    <path d="M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm6 7l-4 4h3v4h2v-4h3l-4-4z" />
+                </svg>
+                Upload data
+            </label>
+            <button type="button" class="icon-button toggle-options" title="Settings">
+                <svg class="settings" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
                     <path d="M19.43,12.98c0.04-0.32,0.07-0.64,0.07-0.98c0-0.34-0.03-0.66-0.07-0.98l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46
                             c-0.09-0.16-0.26-0.25-0.44-0.25c-0.06,0-0.12,0.01-0.17,0.03l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65
                             C14.46,2.18,14.25,2,14,2h-4C9.75,2,9.54,2.18,9.51,2.42L9.13,5.07C8.52,5.32,7.96,5.66,7.44,6.05l-2.49-1
@@ -253,7 +261,7 @@
 
         <h2 class="subhead">Size options</h2>
         <p class="select-wrapper">
-            <select id="byteunit" name="byteunit" data-dynamic>
+            <select id="byteunit" name="byteunit">
                 <option value="B">B - bytes</option>
                 <option value="KiB">KiB - kilibytes</option>
                 <option value="MiB" selected>MiB - megabytes</option>

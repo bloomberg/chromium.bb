@@ -428,23 +428,35 @@ class TreeBuilder {
  * Wrapper around fetch for requesting the same resource multiple times.
  */
 class DataFetcher {
+  constructor(input) {
+    /** @type {AbortController | null} */
+    this._controller = null;
+    this.setInput(input);
+  }
+
   /**
-   * @param {string} url URL to the resource you want to fetch.
+   * Sets the input that describes what will be fetched. Also clears the cache.
+   * @param {string | Request} input URL to the resource you want to fetch.
    */
-  constructor(url) {
-    this._controller = new AbortController();
-    this._url = url;
+  setInput(input) {
+    if (typeof this._input === 'string' && this._input.startsWith('blob:')) {
+      // Revoke the previous Blob url to prevent memory leaks
+      URL.revokeObjectURL(this._input);
+    }
+
     /** @type {Uint8Array | null} */
     this._cache = null;
+    this._input = input;
   }
 
   /**
    * Starts a new request and aborts the previous one.
+   * @param {string | Request} url
    */
-  fetch() {
-    this._controller.abort();
+  async fetch(url) {
+    if (this._controller) this._controller.abort();
     this._controller = new AbortController();
-    return fetch(this._url, {
+    return fetch(url, {
       credentials: 'same-origin',
       signal: this._controller.signal,
     });
@@ -460,11 +472,11 @@ class DataFetcher {
       return;
     }
 
-    const response = await this.fetch();
+    const response = await this.fetch(this._input);
     let result;
     // Use streams, if supported, so that we can show in-progress data instead
     // of waiting for the entire data file to download. The file can be >100 MB,
-    // so on streams ensure slow connections still see some data.
+    // so streams ensure slow connections still see some data.
     if (response.body) {
       const reader = response.body.getReader();
 
@@ -692,14 +704,16 @@ async function buildTree(options, onProgress) {
   }
 }
 
-/** @type {{[action:string]: (data:any) => Promise<any>}} */
 const actions = {
+  /** @param {{input:string,options:string}} data */
   load(data) {
-    return buildTree(data, progress => {
+    if (data.input) fetcher.setInput(data.input);
+    return buildTree(data.options, progress => {
       // @ts-ignore
       self.postMessage(progress);
     });
   },
+  /** @param {string} path */
   async open(path) {
     if (!builder) throw new Error('Called open before load');
     const node = builder.find(path);

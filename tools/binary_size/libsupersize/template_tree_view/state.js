@@ -135,6 +135,7 @@ function _initState() {
       } else {
         _filterParams.set(key, value);
       }
+      history.replaceState(null, null, state.toString());
     },
   });
 
