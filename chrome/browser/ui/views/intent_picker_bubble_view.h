@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
@@ -124,7 +125,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // the internal ScrollView.
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
   void RunCallback(const std::string& launch_name,
-                   chromeos::AppType app_type,
+                   apps::mojom::AppType app_type,
                    chromeos::IntentPickerCloseReason close_reason,
                    bool should_persist);
 

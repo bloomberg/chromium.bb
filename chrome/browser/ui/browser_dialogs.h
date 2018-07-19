@@ -20,10 +20,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
-#endif  // OS_CHROMEOS
-
 class Browser;
 class LoginHandler;
 class Profile;
@@ -307,22 +303,6 @@ void ShowChromeCleanerRebootPrompt(
 #endif  // OS_WIN
 
 }  // namespace chrome
-
-#if defined(OS_CHROMEOS)
-
-// TODO(djacobo): Find a better place for IntentPickerResponse.
-// This callback informs the launch name and type of the app selected by the
-// user, along with the reason why the Bubble was closed and whether the
-// decision should be persisted. When the reason is ERROR or DIALOG_DEACTIVATED,
-// the values of the launch name, app type, and persistence boolean are all
-// ignored.
-using IntentPickerResponse =
-    base::OnceCallback<void(const std::string&,
-                            chromeos::AppType,
-                            chromeos::IntentPickerCloseReason,
-                            bool should_persist)>;
-
-#endif  // OS_CHROMEOS
 
 void ShowFolderUploadConfirmationDialog(
     const base::FilePath& path,

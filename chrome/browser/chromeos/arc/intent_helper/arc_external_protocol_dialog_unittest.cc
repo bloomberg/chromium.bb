@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/intent_helper/page_transition_util.h"
 #include "url/gurl.h"
 
 namespace arc {

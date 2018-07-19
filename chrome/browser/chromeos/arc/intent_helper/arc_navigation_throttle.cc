@@ -224,7 +224,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceivedForNavigation(
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     chromeos::AppsNavigationThrottle::RecordUma(
-        std::string(), chromeos::AppType::INVALID,
+        std::string(), apps::mojom::AppType::kUnknown,
         chromeos::IntentPickerCloseReason::ERROR, /*should_persist=*/false);
     std::move(callback).Run(chromeos::AppsNavigationAction::RESUME, {});
     return;
@@ -281,7 +281,7 @@ chromeos::PreferredPlatform ArcNavigationThrottle::DidLaunchPreferredArcApp(
 
   chromeos::PreferredPlatform preferred_platform =
       chromeos::PreferredPlatform::NONE;
-  chromeos::AppType app_type = chromeos::AppType::INVALID;
+  apps::mojom::AppType app_type = apps::mojom::AppType::kUnknown;
   const size_t index = FindPreferredApp(app_candidates, url);
 
   if (index != app_candidates.size()) {
@@ -307,7 +307,7 @@ chromeos::PreferredPlatform ArcNavigationThrottle::DidLaunchPreferredArcApp(
     } else {
       instance->HandleUrl(url.spec(), package_name);
       preferred_platform = chromeos::PreferredPlatform::ARC;
-      app_type = chromeos::AppType::ARC;
+      app_type = apps::mojom::AppType::kArc;
     }
     chromeos::AppsNavigationThrottle::RecordUma(
         package_name, app_type, close_reason, /*should_persist=*/false);
@@ -328,7 +328,7 @@ void ArcNavigationThrottle::GetArcAppIcons(
   if (!intent_helper_bridge) {
     LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
     chromeos::AppsNavigationThrottle::RecordUma(
-        std::string(), chromeos::AppType::INVALID,
+        std::string(), apps::mojom::AppType::kUnknown,
         chromeos::IntentPickerCloseReason::ERROR, /*should_persist=*/false);
     std::move(callback).Run({});
     return;
@@ -361,7 +361,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
         candidate->package_name, candidate->activity_name);
     const auto it = icons->find(activity);
 
-    app_info.emplace_back(chromeos::AppType::ARC,
+    app_info.emplace_back(apps::mojom::AppType::kArc,
                           it != icons->end() ? it->second.icon16 : gfx::Image(),
                           candidate->package_name, candidate->name);
   }

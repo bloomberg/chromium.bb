@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
@@ -52,12 +53,12 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void OnIntentPickerClosed(content::WebContents* web_contents,
                                    const GURL& url,
                                    const std::string& launch_name,
-                                   AppType app_type,
+                                   apps::mojom::AppType app_type,
                                    IntentPickerCloseReason close_reason,
                                    bool should_persist);
 
   static void RecordUma(const std::string& selected_app_package,
-                        AppType app_type,
+                        apps::mojom::AppType app_type,
                         IntentPickerCloseReason close_reason,
                         bool should_persist);
 
@@ -128,7 +129,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   // Converts the provided |app_type|, |close_reason| and |should_persist|
   // boolean to a PickerAction value for recording in UMA.
-  static PickerAction GetPickerAction(AppType app_type,
+  static PickerAction GetPickerAction(apps::mojom::AppType app_type,
                                       IntentPickerCloseReason close_reason,
                                       bool should_persist);
 

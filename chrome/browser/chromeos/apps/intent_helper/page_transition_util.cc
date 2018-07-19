@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/intent_helper/page_transition_util.h"
+#include "chrome/browser/chromeos/apps//intent_helper/page_transition_util.h"
 
-namespace arc {
+namespace chromeos {
 
 bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
                             bool allow_form_submit,
@@ -42,4 +42,4 @@ ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
   return ui::PageTransitionFromInt(page_transition & ~mask);
 }
 
-}  // namespace arc
+}  // namespace chromeos

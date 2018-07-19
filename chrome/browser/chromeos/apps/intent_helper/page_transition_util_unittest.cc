@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
-#include "components/arc/intent_helper/page_transition_util.h"
+#include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
-namespace arc {
+namespace chromeos {
 
 // Tests that ShouldIgnoreNavigation returns false only for
 // PAGE_TRANSITION_LINK.
@@ -215,4 +213,4 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithNonProdScenarios) {
       false, true));
 }
 
-}  // namespace arc
+}  // namespace chromeos
