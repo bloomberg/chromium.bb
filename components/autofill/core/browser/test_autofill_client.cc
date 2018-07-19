@@ -52,8 +52,7 @@ void TestAutofillClient::InitializeUKMSources() {
 }
 
 AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
-  // TODO(crbug.com/788432): Should use a TestAddressNormalizer.
-  return nullptr;
+  return &test_address_normalizer_;
 }
 
 security_state::SecurityLevel
