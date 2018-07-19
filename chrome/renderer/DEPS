@@ -36,6 +36,7 @@ include_rules = [
   "+components/strings/grit",
   "+components/subresource_filter/content/common",
   "+components/subresource_filter/content/renderer",
+  "+components/subresource_filter/core/common/common_features.h",
   "+components/task_scheduler_util",
   "+components/translate/content/common",
   "+components/translate/content/renderer",

@@ -353,7 +353,8 @@ void LocalFrame::Detach(FrameDetachType type) {
 
   if (IsLocalRoot()) {
     performance_monitor_->Shutdown();
-    ad_tracker_->Shutdown();
+    if (ad_tracker_)
+      ad_tracker_->Shutdown();
   }
   idleness_detector_->Shutdown();
   if (inspector_trace_events_)
@@ -941,10 +942,12 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       interface_registry_(interface_registry) {
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
-    ad_tracker_ = new AdTracker(this);
     performance_monitor_ = new PerformanceMonitor(this);
     inspector_trace_events_ = new InspectorTraceEvents();
     probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
+    if (RuntimeEnabledFeatures::AdTaggingEnabled()) {
+      ad_tracker_ = new AdTracker(this);
+    }
   } else {
     // Inertness only needs to be updated if this frame might inherit the
     // inert state from a higher-level frame. If this is an OOPIF local root,
@@ -958,7 +961,11 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   idleness_detector_ = new IdlenessDetector(this);
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 
-  SetIsAdSubframeIfNecessary();
+  if (ad_tracker_) {
+    SetIsAdSubframeIfNecessary();
+  }
+  DCHECK(ad_tracker_ ? RuntimeEnabledFeatures::AdTaggingEnabled()
+                     : !RuntimeEnabledFeatures::AdTaggingEnabled());
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
@@ -1262,7 +1269,8 @@ PluginData* LocalFrame::GetPluginData() const {
 }
 
 void LocalFrame::SetAdTrackerForTesting(AdTracker* ad_tracker) {
-  ad_tracker_->Shutdown();
+  if (ad_tracker_)
+    ad_tracker_->Shutdown();
   ad_tracker_ = ad_tracker;
 }
 
