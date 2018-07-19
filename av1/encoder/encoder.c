@@ -2435,6 +2435,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   av1_zero(*cpi);
 
+  // The jmp_buf is valid only for the duration of the function that calls
+  // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
+  // before it returns.
   if (setjmp(cm->error.jmp)) {
     cm->error.setjmp = 0;
     av1_remove_compressor(cpi);

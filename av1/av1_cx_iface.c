@@ -1229,6 +1229,9 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
   volatile aom_enc_frame_flags_t flags = enc_flags;
 
+  // The jmp_buf is valid only for the duration of the function that calls
+  // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
+  // before it returns.
   if (setjmp(cpi->common.error.jmp)) {
     cpi->common.error.setjmp = 0;
     res = update_error_state(ctx, &cpi->common.error);

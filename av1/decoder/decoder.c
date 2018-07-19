@@ -82,6 +82,9 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
 
   av1_zero(*pbi);
 
+  // The jmp_buf is valid only for the duration of the function that calls
+  // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
+  // before it returns.
   if (setjmp(cm->error.jmp)) {
     cm->error.setjmp = 0;
     av1_decoder_remove(pbi);
@@ -448,6 +451,9 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
 
+  // The jmp_buf is valid only for the duration of the function that calls
+  // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
+  // before it returns.
   if (setjmp(cm->error.jmp)) {
     const AVxWorkerInterface *const winterface = aom_get_worker_interface();
     int i;

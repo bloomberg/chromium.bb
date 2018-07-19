@@ -3071,6 +3071,9 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   ThreadData *const td = thread_data->td;
   uint8_t allow_update_cdf;
 
+  // The jmp_buf is valid only for the duration of the function that calls
+  // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
+  // before it returns.
   if (setjmp(thread_data->error_info.jmp)) {
     thread_data->error_info.setjmp = 0;
     thread_data->td->xd.corrupted = 1;
@@ -3222,6 +3225,9 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
   AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
   td->xd.corrupted = 0;
 
+  // The jmp_buf is valid only for the duration of the function that calls
+  // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
+  // before it returns.
   if (setjmp(thread_data->error_info.jmp)) {
     thread_data->error_info.setjmp = 0;
     thread_data->td->xd.corrupted = 1;
