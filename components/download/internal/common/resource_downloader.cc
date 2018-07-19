@@ -8,6 +8,7 @@
 
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
+#include "components/download/public/common/url_download_request_handle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace network {
@@ -198,6 +199,8 @@ void ResourceDownloader::InterceptResponse(
 void ResourceDownloader::OnResponseStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
     mojom::DownloadStreamHandlePtr stream_handle) {
+  download_create_info->request_handle.reset(new UrlDownloadRequestHandle(
+      weak_ptr_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
   download_create_info->is_new_download = is_new_download_;
   download_create_info->guid = guid_;
   download_create_info->site_url = site_url_;
@@ -217,6 +220,21 @@ void ResourceDownloader::OnResponseStarted(
 
 void ResourceDownloader::OnReceiveRedirect() {
   url_loader_->FollowRedirect(base::nullopt, base::nullopt);
+}
+
+void ResourceDownloader::OnResponseCompleted() {
+  Destroy();
+}
+
+void ResourceDownloader::CancelRequest() {
+  Destroy();
+}
+
+void ResourceDownloader::Destroy() {
+  delegate_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStopped,
+                     delegate_, this));
 }
 
 }  // namespace download
