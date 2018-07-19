@@ -319,6 +319,14 @@ cvox.PanStrategy.prototype = {
   },
 
   /**
+   * Gets the current cursor.
+   * @return {{start: (number), end: (number)}}
+   */
+  getCursor: function() {
+    return this.cursor_;
+  },
+
+  /**
    *
    */
   maybeSetWrappedCursor_: function(unwrappedIndex, wrappedIndex) {
