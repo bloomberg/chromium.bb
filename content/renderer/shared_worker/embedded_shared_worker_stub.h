@@ -15,6 +15,7 @@
 #include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "content/common/shared_worker/shared_worker_info.mojom.h"
+#include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -59,6 +60,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
+      const RendererPreferences& renderer_preferences,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
@@ -106,6 +108,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   const std::string name_;
   bool running_ = false;
   GURL url_;
+  RendererPreferences renderer_preferences_;
   std::unique_ptr<blink::WebSharedWorker> impl_;
 
   using PendingChannel =

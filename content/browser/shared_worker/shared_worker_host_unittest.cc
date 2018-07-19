@@ -14,6 +14,8 @@
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_storage_partition.h"
 #include "content/public/test/test_utils.h"
@@ -31,7 +33,8 @@ namespace content {
 class SharedWorkerHostTest : public testing::Test {
  public:
   SharedWorkerHostTest()
-      : service_(&storage_partition_, nullptr /* service_worker_context */) {
+      : mock_render_process_host_(&browser_context_),
+        service_(&storage_partition_, nullptr /* service_worker_context */) {
     storage_partition_.set_network_context(&network_context_);
   }
 
@@ -52,7 +55,7 @@ class SharedWorkerHostTest : public testing::Test {
         content_security_policy_type, creation_address_space,
         creation_context_type);
     auto host = std::make_unique<SharedWorkerHost>(
-        &service_, std::move(instance), 11 /* dummy process_id */);
+        &service_, std::move(instance), mock_render_process_host_.GetID());
     auto weak_host = host->AsWeakPtr();
     service_.worker_hosts_.insert(std::move(host));
     return weak_host;
@@ -79,6 +82,8 @@ class SharedWorkerHostTest : public testing::Test {
   TestBrowserThreadBundle test_browser_thread_bundle_;
   TestStoragePartition storage_partition_;
   network::TestNetworkContext network_context_;
+  TestBrowserContext browser_context_;
+  MockRenderProcessHost mock_render_process_host_;
 
   SharedWorkerServiceImpl service_;
 

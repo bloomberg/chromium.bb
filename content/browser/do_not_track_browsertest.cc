@@ -34,11 +34,30 @@ class MockContentBrowserClient final : public ContentBrowserClient {
 
 class DoNotTrackTest : public ContentBrowserTest {
  protected:
-  void EnableDoNotTrack() {
+  void TearDownOnMainThread() override {
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
+  }
+
+  // Returns false if we cannot enable do not track. It happens only when
+  // Android Kitkat or older systems.
+  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+  // this test available on KitKat.
+  bool EnableDoNotTrack() {
+#if defined(OS_ANDROID)
+    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                                 &bugfix_version);
+    if (major_version < 5)
+      return false;
+#endif
+    original_client_ = SetBrowserClientForTesting(&client_);
     RendererPreferences* prefs =
         shell()->web_contents()->GetMutableRendererPrefs();
     EXPECT_FALSE(prefs->enable_do_not_track);
     prefs->enable_do_not_track = true;
+    return true;
   }
 
   void ExpectPageTextEq(const std::string& expected_content) {
@@ -59,6 +78,10 @@ class DoNotTrackTest : public ContentBrowserTest {
         &value));
     return value;
   }
+
+ private:
+  ContentBrowserClient* original_client_ = nullptr;
+  MockContentBrowserClient client_;
 };
 
 std::unique_ptr<net::test_server::HttpResponse> CaptureHeaderHandler(
@@ -88,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, NotEnabled) {
 // Checks that the DNT header is sent when the corresponding preference is set.
 IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Simple) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   GURL url = embedded_test_server()->GetURL("/echoheader?DNT");
   EXPECT_TRUE(NavigateToURL(shell(), url));
   ExpectPageTextEq("1");
@@ -100,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Redirect) {
   GURL final_url = embedded_test_server()->GetURL("/echoheader?DNT");
   GURL url = embedded_test_server()->GetURL(std::string("/server-redirect?") +
                                             final_url.spec());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   // We don't check the result NavigateToURL as it returns true only if the
   // final URL is equal to the passed URL.
   NavigateToURL(shell(), url);
@@ -111,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Redirect) {
 IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DOMProperty) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/echo");
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ("1", GetDOMDoNotTrackProperty());
 }
@@ -124,7 +150,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Worker) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &CaptureHeaderHandler, "/capture", &header_map, loop.QuitClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   const GURL url = embedded_test_server()->GetURL(
       std::string("/workers/create_worker.html?worker_url=/capture"));
   NavigateToURL(shell(), url);
@@ -143,7 +170,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_SharedWorker) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &CaptureHeaderHandler, "/capture", &header_map, loop.QuitClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   const GURL url = embedded_test_server()->GetURL(
       std::string("/workers/create_shared_worker.html?worker_url=/capture"));
   NavigateToURL(shell(), url);
@@ -162,7 +190,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_ServiceWorker) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &CaptureHeaderHandler, "/capture", &header_map, loop.QuitClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   const GURL url = embedded_test_server()->GetURL(std::string(
       "/service_worker/create_service_worker.html?worker_url=/capture"));
   NavigateToURL(shell(), url);
@@ -176,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_ServiceWorker) {
 // worker.
 IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
   const GURL url = embedded_test_server()->GetURL(
       std::string("/workers/fetch_from_worker.html?url=") + fetch_url.spec());
@@ -190,10 +220,17 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromWorker) {
 }
 
 // Checks that the DNT header is preserved when fetching from a shared worker.
-// Disabled due to crbug.com/853085.
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromSharedWorker) {
+//
+// Disabled on Android since a shared worker is not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_FetchFromSharedWorker DISABLED_FetchFromSharedWorker
+#else
+#define MAYBE_FetchFromSharedWorker FetchFromSharedWorker
+#endif
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_FetchFromSharedWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
   const GURL url = embedded_test_server()->GetURL(
       std::string("/workers/fetch_from_shared_worker.html?url=") +
@@ -209,21 +246,9 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromSharedWorker) {
 
 // Checks that the DNT header is preserved when fetching from a service worker.
 IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromServiceWorker) {
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-  // this test available on KitKat.
-  int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  if (major_version < 5)
-    return;
-#endif
-  MockContentBrowserClient client;
-  ContentBrowserClient* original_client = SetBrowserClientForTesting(&client);
-
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDoNotTrack();
+  if (!EnableDoNotTrack())
+    return;
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
   const GURL url = embedded_test_server()->GetURL(
       std::string("/service_worker/fetch_from_service_worker.html?url=") +
@@ -235,7 +260,6 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromServiceWorker) {
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 
   ExpectPageTextEq("1");
-  SetBrowserClientForTesting(original_client);
 }
 
 }  // namespace
