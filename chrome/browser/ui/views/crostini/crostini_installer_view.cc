@@ -55,8 +55,8 @@ constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 constexpr int kOOBEButtonRowInset = 32;
 constexpr int kOOBEWindowWidth = 768;
 constexpr int kOOBEWindowHeight = 640 - 2 * kOOBEButtonRowInset;
-constexpr int kLinuxIllustrationWidth = 256;
-constexpr int kLinuxIllustrationHeight = 3 * kLinuxIllustrationWidth / 4;
+constexpr int kLinuxIllustrationWidth = 448;
+constexpr int kLinuxIllustrationHeight = 180;
 
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
