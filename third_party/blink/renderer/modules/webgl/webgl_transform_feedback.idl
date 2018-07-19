@@ -4,5 +4,7 @@
 
 // https://www.khronos.org/registry/webgl/specs/latest/2.0/#3.5
 
-interface WebGLTransformFeedback {
+[
+    Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
+] interface WebGLTransformFeedback {
 };

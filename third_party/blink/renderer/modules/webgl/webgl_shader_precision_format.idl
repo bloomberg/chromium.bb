@@ -26,7 +26,9 @@
 
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.12
 
-interface WebGLShaderPrecisionFormat {
+[
+    Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
+] interface WebGLShaderPrecisionFormat {
     readonly attribute long rangeMin;
     readonly attribute long rangeMax;
     readonly attribute long precision;
