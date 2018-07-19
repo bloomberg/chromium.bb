@@ -1071,9 +1071,7 @@ TEST_F(PipelineIntegrationTest, PipelineStoppedWhileAudioRestartPending) {
   Stop();
 }
 
-// Flaky crashes on multiple platforms. crbug.com/864018
-TEST_F(PipelineIntegrationTest,
-       DISABLED_PipelineStoppedWhileVideoRestartPending) {
+TEST_F(PipelineIntegrationTest, PipelineStoppedWhileVideoRestartPending) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
   Play();
 
