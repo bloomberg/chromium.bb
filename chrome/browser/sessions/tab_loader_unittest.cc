@@ -69,6 +69,12 @@ class TabLoaderTest : public testing::Test {
     tab_loader_.ForceLoadTimerFired();
   }
 
+  void SimulateStartedToLoad(size_t tab_index) {
+    auto* contents = restored_tabs_[tab_index].contents();
+    auto* tracker = TabLoadTracker::Get();
+    tracker->TransitionStateForTesting(contents, LoadingState::LOADING);
+  }
+
   void SimulateLoaded(size_t tab_index) {
     // Transition to a LOADED state. This has to pass through the LOADING state
     // in order to satisfy the internal logic of SessionRestoreStatsCollector.
@@ -385,4 +391,23 @@ TEST_F(TabLoaderTest, DelegatePolicyIsApplied) {
   EXPECT_TRUE(restored_tabs_[3].contents()->GetController().NeedsReload());
   EXPECT_TRUE(restored_tabs_[4].contents()->GetController().NeedsReload());
   EXPECT_TRUE(TabLoaderTester::shared_tab_loader() == nullptr);
+}
+
+TEST_F(TabLoaderTest, ObservesExternallyInitiatedLoads) {
+  CreateMultipleRestoredWebContents(1, 2);
+
+  // Create the tab loader with 1 loading slots. This should initially start
+  // loading 1 tab, due to exclusive initial loading of active tabs.
+  max_simultaneous_loads_ = 1;
+  TabLoader::RestoreTabs(restored_tabs_, clock_.NowTicks());
+  EXPECT_EQ(2u, tab_loader_.tabs_to_load().size());
+  EXPECT_EQ(1u, tab_loader_.scheduled_to_load_count());
+  EXPECT_TRUE(tab_loader_.IsSharedTabLoader());
+
+  // Manually initiate the load on one of the tabs, as would occur if a user
+  // focused a tab. The tab should no longer be in the scheduled to load bucket.
+  SimulateStartedToLoad(1);
+  EXPECT_EQ(1u, tab_loader_.tabs_to_load().size());
+  EXPECT_EQ(2u, tab_loader_.scheduled_to_load_count());
+  EXPECT_TRUE(tab_loader_.IsSharedTabLoader());
 }

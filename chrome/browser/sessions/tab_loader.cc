@@ -207,7 +207,7 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
       }
     }
 
-    AddTab(restored_tab.contents(), restored_tab.is_active());
+    AddTab(restored_tab.contents());
   }
 
   StartTimerIfNeeded();
@@ -347,7 +347,7 @@ size_t TabLoader::GetMaxNewTabLoads() const {
   return tabs_to_load;
 }
 
-void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
+void TabLoader::AddTab(WebContents* contents) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
 
   // Handle tabs that have already started or finished loading.
@@ -360,15 +360,7 @@ void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
     return;
   }
 
-  // Otherwise place it in one of the |tabs_load_initiated_| or
-  // |tabs_to_load_| containers.
-  if (loading_initiated) {
-    delegate_->NotifyTabLoadStarted();
-    ++scheduled_to_load_count_;
-    tabs_load_initiated_.insert(contents);
-  } else {
-    tabs_to_load_.push_back(contents);
-  }
+  tabs_to_load_.push_back(contents);
 }
 
 void TabLoader::RemoveTab(WebContents* contents) {
@@ -418,11 +410,30 @@ void TabLoader::MarkTabAsLoading(WebContents* contents) {
 
   // We get notifications for tabs that we're not explicitly tracking, so
   // gracefully handle this.
-  auto it = tabs_load_initiated_.find(contents);
-  if (it == tabs_load_initiated_.end())
-    return;
-  tabs_load_initiated_.erase(it);
-  tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
+
+  // First check to see if the tab corresponds to one for which we initiated
+  // loading and were waiting for a transition.
+  {
+    auto it = tabs_load_initiated_.find(contents);
+    if (it != tabs_load_initiated_.end()) {
+      tabs_load_initiated_.erase(it);
+      tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
+      return;
+    }
+  }
+
+  // Second check to see if its a tab load that we did not initiate, but which
+  // is being tracked by us.
+  {
+    auto it = std::find(tabs_to_load_.begin(), tabs_to_load_.end(), contents);
+    if (it != tabs_to_load_.end()) {
+      tabs_to_load_.erase(it);
+      tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
+      delegate_->NotifyTabLoadStarted();
+      ++scheduled_to_load_count_;
+      return;
+    }
+  }
 }
 
 void TabLoader::MarkTabAsDeferred(content::WebContents* contents) {
