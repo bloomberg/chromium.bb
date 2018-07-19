@@ -78,6 +78,7 @@ message SystemProfileProto {
   optional string application_locale = 4;
 
   // Information on the user's operating system.
+  // Next tag: 7
   message OS {
     // The user's operating system. This should be one of:
     // - Android
@@ -99,6 +100,11 @@ message SystemProfileProto {
     // DynamicLibraries/ directory. It's a necessary but insufficient indicator
     // of whether the operating system has been jailbroken.
     optional bool is_jailbroken = 4;
+
+    // The version of the kernel. Linux based operating systems, such as
+    // ChromeOS and Android, have a kernel version that the OS release version
+    // was built with that differs from the version field above.
+    optional string kernel_version = 6;
   }
   optional OS os = 5;
 

@@ -15,6 +15,7 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/metrics/delegating_provider.h"
@@ -153,7 +154,10 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->mutable_os()->set_name(base::SysInfo::OperatingSystemName());
   system_profile->mutable_os()->set_version(
       base::SysInfo::OperatingSystemVersion());
-#if defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+  system_profile->mutable_os()->set_kernel_version(
+      base::SysInfo::KernelVersion());
+#elif defined(OS_ANDROID)
   system_profile->mutable_os()->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
   system_profile->set_app_package_name("test app");
