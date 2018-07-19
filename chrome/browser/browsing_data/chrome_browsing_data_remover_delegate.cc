@@ -108,6 +108,7 @@
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "components/feed/buildflags.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "sql/connection.h"
@@ -412,11 +413,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
 #if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
     feed::FeedHostService* feed_host_service =
         feed::FeedHostServiceFactory::GetForBrowserContext(profile_);
     if (feed_host_service) {
       feed_host_service->GetSchedulerHost()->OnHistoryCleared();
     }
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #endif  // defined(OS_ANDROID)
 
     language::UrlLanguageHistogram* language_histogram =

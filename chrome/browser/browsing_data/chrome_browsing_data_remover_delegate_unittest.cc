@@ -96,6 +96,7 @@
 #include "chrome/browser/android/customtabs/origin_verifier.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
+#include "components/feed/buildflags.h"
 #else  // !defined(OS_ANDROID)
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -2958,6 +2959,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeOriginVerifierData) {
       customtabs::OriginVerifier::GetClearBrowsingDataCallCountForTesting());
 }
 
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, FeedClearsLastFetchAttempt) {
   PrefService* prefs = GetProfile()->GetPrefs();
   prefs->SetTime(feed::prefs::kLastFetchAttemptTime, base::Time::Now());
@@ -2968,4 +2970,5 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, FeedClearsLastFetchAttempt) {
 
   EXPECT_EQ(base::Time(), prefs->GetTime(feed::prefs::kLastFetchAttemptTime));
 }
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #endif  // defined(OS_ANDROID)

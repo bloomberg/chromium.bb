@@ -50,6 +50,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
+#include "components/feed/buildflags.h"
 #include "components/feed/core/pref_names.h"
 #endif  // defined(OS_ANDROID)
 
@@ -82,7 +83,6 @@ namespace {
 // storage default, from on disk to in memory. All items in this list will be
 // audited and checked with owners and removed from whitelist.
 const char* incognito_whitelist[] = {
-
 // ash/public/cpp/ash_pref_names.h
 #if defined(OS_CHROMEOS)
     ash::prefs::kAccessibilityLargeCursorEnabled,
@@ -1082,11 +1082,13 @@ const char* incognito_whitelist[] = {
 
 // components/feed/core/pref_names.h
 #if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
     feed::prefs::kBackgroundRefreshPeriod, feed::prefs::kLastFetchAttemptTime,
     feed::prefs::kUserClassifierAverageNTPOpenedPerHour,
     feed::prefs::kUserClassifierAverageSuggestionsUsedPerHour,
     feed::prefs::kUserClassifierLastTimeToOpenNTP,
     feed::prefs::kUserClassifierLastTimeToUseSuggestions,
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #endif  // defined(OS_ANDROID)
 
     // components/flags_ui/flags_ui_pref_names.h
