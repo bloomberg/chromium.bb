@@ -381,5 +381,6 @@ run other checks (e.g. pyflakes, etc.)
             q.put([linter, path])
 
     if errors.value:
-      logging.error('linter found errors in %i files', errors.value)
+      logging.error("I found errors in %i files.  I'm not even mad, just "
+                    'disappointed.', errors.value)
       sys.exit(1)
