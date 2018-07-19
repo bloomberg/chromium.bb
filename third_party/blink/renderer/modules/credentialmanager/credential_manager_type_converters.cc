@@ -114,16 +114,6 @@ CredentialManagerError
 TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     const AuthenticatorStatus& status) {
   switch (status) {
-    case webauth::mojom::blink::AuthenticatorStatus::
-        AUTHENTICATOR_CRITERIA_UNSUPPORTED:
-      return CredentialManagerError::AUTHENTICATOR_CRITERIA_UNSUPPORTED;
-    case webauth::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
-      return CredentialManagerError::ALGORITHM_UNSUPPORTED;
-    case webauth::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
-      return CredentialManagerError::EMPTY_ALLOW_CREDENTIALS;
-    case webauth::mojom::blink::AuthenticatorStatus::
-        USER_VERIFICATION_UNSUPPORTED:
-      return CredentialManagerError::USER_VERIFICATION_UNSUPPORTED;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
       return CredentialManagerError::NOT_ALLOWED;
     case webauth::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
@@ -140,6 +130,16 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
       return CredentialManagerError::NOT_IMPLEMENTED;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:
       return CredentialManagerError::NOT_FOCUSED;
+    case webauth::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
+      return CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED;
+    case webauth::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
+      return CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS;
+    case webauth::mojom::blink::AuthenticatorStatus::
+        ANDROID_NOT_SUPPORTED_ERROR:
+      return CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR;
+    case webauth::mojom::blink::AuthenticatorStatus::
+        USER_VERIFICATION_UNSUPPORTED:
+      return CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED;
     case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;

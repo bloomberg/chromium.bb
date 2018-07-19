@@ -85,11 +85,11 @@ bool EnumTraits<blink::mojom::CredentialManagerError,
           password_manager::CredentialManagerError::PASSWORDSTOREUNAVAILABLE;
       return true;
     case blink::mojom::CredentialManagerError::NOT_ALLOWED:
+    case blink::mojom::CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR:
+    case blink::mojom::CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
+    case blink::mojom::CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS:
     case blink::mojom::CredentialManagerError::
-        AUTHENTICATOR_CRITERIA_UNSUPPORTED:
-    case blink::mojom::CredentialManagerError::ALGORITHM_UNSUPPORTED:
-    case blink::mojom::CredentialManagerError::EMPTY_ALLOW_CREDENTIALS:
-    case blink::mojom::CredentialManagerError::USER_VERIFICATION_UNSUPPORTED:
+        ANDROID_USER_VERIFICATION_UNSUPPORTED:
     case blink::mojom::CredentialManagerError::INVALID_DOMAIN:
     case blink::mojom::CredentialManagerError::CREDENTIAL_EXCLUDED:
     case blink::mojom::CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:

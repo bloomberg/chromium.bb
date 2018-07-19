@@ -219,30 +219,6 @@ DOMException* CredentialManagerErrorToDOMException(
           DOMExceptionCode::kNotAllowedError,
           "The operation either timed out or was not allowed. See: "
           "https://w3c.github.io/webauthn/#sec-assertion-privacy.");
-    case CredentialManagerError::AUTHENTICATOR_CRITERIA_UNSUPPORTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "The specified `authenticatorSelection` "
-                                  "criteria cannot be fulfilled by CTAP1/U2F "
-                                  "authenticators, and CTAP2 authenticators "
-                                  "are not yet supported.");
-    case CredentialManagerError::ALGORITHM_UNSUPPORTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "None of the algorithms specified in "
-                                  "`pubKeyCredParams` are compatible with "
-                                  "CTAP1/U2F authenticators, and CTAP2 "
-                                  "authenticators are not yet supported.");
-    case CredentialManagerError::EMPTY_ALLOW_CREDENTIALS:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "The `allowCredentials` list cannot be left "
-                                  "empty for CTAP1/U2F authenticators, and "
-                                  "support for CTAP2 authenticators is not yet "
-                                  "implemented.");
-    case CredentialManagerError::USER_VERIFICATION_UNSUPPORTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "The specified `userVerification` "
-                                  "requirement cannot be fulfilled by "
-                                  "CTAP1/U2F authenticators, and CTAP2 "
-                                  "authenticators are not yet supported.");
     case CredentialManagerError::INVALID_DOMAIN:
       return DOMException::Create(DOMExceptionCode::kSecurityError,
                                   "This is an invalid domain.");
@@ -263,6 +239,26 @@ DOMException* CredentialManagerErrorToDOMException(
       return DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                   "The operation is not allowed at this time "
                                   "because the page does not have focus.");
+    case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "None of the algorithms specified in "
+                                  "`pubKeyCredParams` are supported by "
+                                  "this device.");
+    case CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "Use of an empty `allowCredentials` list is "
+                                  "not supported on this device.");
+    case CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "Either the device has received unexpected "
+                                  "request parameters, or the device "
+                                  "cannot support this request.");
+    case CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "The specified `userVerification` "
+                                  "requirement cannot be fulfilled by "
+                                  "this device unless the device is secured "
+                                  "with a screen lock.");
     case CredentialManagerError::UNKNOWN:
       return DOMException::Create(DOMExceptionCode::kNotReadableError,
                                   "An unknown error occurred while talking "
