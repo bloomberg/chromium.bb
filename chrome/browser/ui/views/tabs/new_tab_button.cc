@@ -73,13 +73,13 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
 
 // Returns the ID of the resource that should be used for the button fill if
 // any. |has_custom_image| will be set to true if the images of either the
-// tab, the frame background, (or the toolbar if |is_touch_ui| is true) have
-// been customized.
+// tab, the frame background, (or the toolbar if |is_non_refresh_touch_ui| is
+// true) have been customized.
 int GetButtonFillResourceIdIfAny(const TabStrip* tab_strip,
                                  const ui::ThemeProvider* theme_provider,
-                                 bool is_touch_ui,
+                                 bool is_non_refresh_touch_ui,
                                  bool* has_custom_image) {
-  if (!is_touch_ui)
+  if (!is_non_refresh_touch_ui)
     return tab_strip->GetBackgroundResourceId(has_custom_image);
 
   constexpr int kTouchBackgroundId = IDR_THEME_TOOLBAR;
@@ -262,16 +262,19 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Fill.
   SkPath fill, stroke;
-  if (!MD::IsRefreshUi()) {
-    fill = MD::IsTouchOptimizedUiEnabled()
-               ? GetTouchOptimizedButtonPath(0, scale, false, true)
-               : GetNonTouchOptimizedButtonPath(0, contents_bounds.height(),
-                                                scale, false, true);
-    PaintFill(pressed, scale, fill, canvas);
+  const bool non_refresh_touch_ui =
+      MD::GetMode() == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+  fill =
+      MD::IsNewerMaterialUi()
+          ? GetNewerMaterialUiButtonPath(0, scale, false, non_refresh_touch_ui)
+          : GetMaterialUiButtonPath(0, contents_bounds.height(), scale, false,
+                                    true);
+  // The ink drop is used to represent the pressed state under Refresh.
+  PaintFill(!MD::IsRefreshUi() && pressed, scale, fill, canvas);
 
-    // Stroke.
+  // Stroke.
+  if (!MD::IsRefreshUi())
     GetBorderPath(0, scale, false, &stroke);
-  }
 
   if (MD::IsNewerMaterialUi()) {
     const int plus_icon_size = MD::IsTouchOptimizedUiEnabled() ? 14 : 12;
@@ -422,42 +425,43 @@ void NewTabButton::GetBorderPath(float button_y,
 
   *path =
       MD::IsTouchOptimizedUiEnabled()
-          ? GetTouchOptimizedButtonPath(button_y, scale, extend_to_top, false)
-          : GetNonTouchOptimizedButtonPath(button_y, contents_bounds.height(),
-                                           scale, extend_to_top, false);
+          ? GetNewerMaterialUiButtonPath(button_y, scale, extend_to_top, false)
+          : GetMaterialUiButtonPath(button_y, contents_bounds.height(), scale,
+                                    extend_to_top, false);
 }
 
 void NewTabButton::PaintFill(bool pressed,
                              float scale,
                              const SkPath& fill,
                              gfx::Canvas* canvas) const {
-  DCHECK(!MD::IsRefreshUi());
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->UndoDeviceScaleFactor();
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
 
   // For unpressed buttons, draw the fill and its shadow.
-  // Note that for touch-optimized UI, we always draw the fill since the button
-  // has a flat design with no hover highlight.
-  const bool is_touch_ui = MD::IsTouchOptimizedUiEnabled();
-  if (is_touch_ui || !pressed) {
+  // Note that for newer UI, we always draw the fill since the button
+  // has a flat design. Hover highlights are handled by the ink drop.
+  const bool is_newer_ui = MD::IsNewerMaterialUi();
+  if (is_newer_ui || !pressed) {
+    const bool non_refresh_touch_ui =
+        MD::GetMode() == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
     // First we compute the background image coordinates and scale, in case we
     // need to draw a custom background image.
     const ui::ThemeProvider* tp = GetThemeProvider();
     bool custom_image;
-    const int bg_id = GetButtonFillResourceIdIfAny(tab_strip_, tp, is_touch_ui,
-                                                   &custom_image);
+    const int bg_id = GetButtonFillResourceIdIfAny(
+        tab_strip_, tp, non_refresh_touch_ui, &custom_image);
     if (custom_image && !new_tab_promo_observer_.IsObservingSources()) {
-      // For non-touch, the background starts at |background_offset_| unless
-      // there's a custom tab background image, which starts at the top of
-      // the tabstrip (which is also the top of this button, i.e. y = 0).
-      const int non_touch_offset_y =
-          tp->HasCustomImage(bg_id) ? 0 : background_offset_.y();
-      // For touch, the background matches the active tab background
-      // positioning in Tab::PaintTab().
-      const int offset_y =
-          is_touch_ui ? -Tab::GetStrokeHeight() : non_touch_offset_y;
+      // For non-refresh touch UI, the background is that of the active tab, so
+      // the positioning must match that in Tab::PaintTab().  For all other
+      // cases, the background is that of the inactive tab, so the positioning
+      // must match that in Tab::PaintInactiveTabBackground().
+      int offset_y;
+      if (non_refresh_touch_ui)
+        offset_y = -Tab::GetStrokeHeight();
+      else
+        offset_y = tp->HasCustomImage(bg_id) ? 0 : background_offset_.y();
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
       float x_scale = 1.0f;
@@ -478,16 +482,19 @@ void NewTabButton::PaintFill(bool pressed,
       flags.setColor(GetButtonFillColor());
     }
 
-    const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
-    const SkAlpha alpha =
-        static_cast<SkAlpha>(std::round(SkColorGetA(stroke_color) * 0.59375f));
     cc::PaintFlags shadow_flags = flags;
-    shadow_flags.setLooper(
-        CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha)));
+    // For Refresh, don't draw a shadow.
+    if (!MD::IsRefreshUi()) {
+      const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
+      const SkAlpha alpha = static_cast<SkAlpha>(
+          std::round(SkColorGetA(stroke_color) * 0.59375f));
+      shadow_flags.setLooper(
+          CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha)));
+    }
     canvas->DrawPath(fill, shadow_flags);
 
-    if (is_touch_ui) {
-      // We don't have hover/pressed states in the touch-optimized UI design.
+    if (is_newer_ui) {
+      // We don't have hover/pressed states in the newer UI design.
       // Instead we are using an ink drop effect.
       return;
     }
@@ -545,9 +552,8 @@ SkColor NewTabButton::GetButtonFillColor() const {
 }
 
 SkColor NewTabButton::GetIconColor() const {
-  return color_utils::IsDark(tab_strip_->GetTabForegroundColor(TAB_INACTIVE))
-             ? gfx::kChromeIconGrey
-             : SK_ColorWHITE;
+  return tab_strip_->GetTabForegroundColor(MD::IsRefreshUi() ? TAB_INACTIVE
+                                                             : TAB_ACTIVE);
 }
 
 void NewTabButton::InitIncognitoIcon() {
@@ -556,12 +562,11 @@ void NewTabButton::InitIncognitoIcon() {
       gfx::CreateVectorIcon(kNewTabButtonIncognitoIcon, GetIconColor());
 }
 
-SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
-                                                 float scale,
-                                                 bool extend_to_top,
-                                                 bool for_fill) const {
-  DCHECK(MD::IsTouchOptimizedUiEnabled());
-  DCHECK(!MD::IsRefreshUi());
+SkPath NewTabButton::GetNewerMaterialUiButtonPath(float button_y,
+                                                  float scale,
+                                                  bool extend_to_top,
+                                                  bool for_fill) const {
+  DCHECK(MD::IsNewerMaterialUi());
 
   const float radius = GetCornerRadius() * scale;
   const float rect_width =
@@ -592,11 +597,11 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
   return path;
 }
 
-SkPath NewTabButton::GetNonTouchOptimizedButtonPath(int button_y,
-                                                    int button_height,
-                                                    float scale,
-                                                    bool extend_to_top,
-                                                    bool for_fill) const {
+SkPath NewTabButton::GetMaterialUiButtonPath(int button_y,
+                                             int button_height,
+                                             float scale,
+                                             bool extend_to_top,
+                                             bool for_fill) const {
   const float inverse_slope = Tab::GetInverseDiagonalSlope();
   float bottom = (button_height - 2) * scale;
   const float diag_height = bottom - 3.5 * scale;
