@@ -120,7 +120,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
                                             kTrafficAnnotation)),
         connect_delegate_(std::move(connect_delegate)),
         handshake_stream_(nullptr),
-        on_handshake_stream_created_has_been_called_(false),
         perform_upgrade_has_been_called_(false),
         api_delegate_(std::move(api_delegate)) {
     create_helper->set_stream_request(this);
@@ -187,14 +186,19 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   void PerformUpgrade() {
     DCHECK(timer_);
     CHECK(!perform_upgrade_has_been_called_);
-    CHECK(on_handshake_stream_created_has_been_called_);
     // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
-    CHECK(handshake_stream_);
     CHECK(connect_delegate_);
 
     perform_upgrade_has_been_called_ = true;
 
     timer_->Stop();
+
+    if (!handshake_stream_) {
+      // TODO(https://crbug.com/850183):
+      // Find out why this can happen and make it stop.
+      ReportFailureWithMessage("No handshake stream has been created.");
+      return;
+    }
 
     std::unique_ptr<URLRequest> url_request = std::move(url_request_);
     WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_;
@@ -267,8 +271,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
     CHECK(handshake_stream);
 
-    on_handshake_stream_created_has_been_called_ = true;
-
     handshake_stream_ = handshake_stream;
   }
 
@@ -291,7 +293,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   WebSocketHandshakeStreamBase* handshake_stream_;
 
   // TODO(bnc): Remove after https://crbug.com/850183 is fixed.
-  bool on_handshake_stream_created_has_been_called_;
   bool perform_upgrade_has_been_called_;
 
   // The failure message supplied by WebSocketBasicHandshakeStream, if any.
