@@ -52,9 +52,7 @@ OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
 void OmniboxPopupViewIOS::UpdateEditViewIcon() {
   const AutocompleteResult& result = model_->result();
   const AutocompleteMatch& match = result.match_at(model_->selected_line());
-  int image_id = GetIconForAutocompleteMatchType(
-      match.type, /* is_starred */ false, /* is_incognito */ false);
-  delegate_->OnTopmostSuggestionImageChanged(image_id);
+  delegate_->OnTopmostSuggestionImageChanged(match.type);
 }
 
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {

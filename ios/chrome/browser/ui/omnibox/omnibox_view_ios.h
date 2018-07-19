@@ -104,7 +104,8 @@ class OmniboxViewIOS : public OmniboxView,
 
   // OmniboxPopupViewSuggestionsDelegate methods
 
-  void OnTopmostSuggestionImageChanged(int imageId) override;
+  void OnTopmostSuggestionImageChanged(
+      AutocompleteMatchType::Type type) override;
   void OnResultsChanged(const AutocompleteResult& result) override;
   void OnPopupDidScroll() override;
   void OnSelectedMatchForAppending(const base::string16& str) override;
@@ -121,9 +122,6 @@ class OmniboxViewIOS : public OmniboxView,
 
   // Clears the text from the omnibox.
   void ClearText();
-
-  // Set first result image.
-  void SetLeftImage(const int imageId);
 
   // Hide keyboard and call OnDidEndEditing.  This dismisses the keyboard and
   // also finalizes the editing state of the omnibox.
