@@ -14,6 +14,7 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -82,9 +83,6 @@ constexpr int kImageLabelSpacingDp = 8;
 // The width of the four margins of each button.
 constexpr int kButtonMarginDp = 13;
 
-// The color of the button image and label.
-constexpr SkColor kButtonColor = SK_ColorWHITE;
-
 // The size of the icons in the apps menu.
 constexpr gfx::Size kAppIconSize(16, 16);
 
@@ -92,10 +90,15 @@ class LoginShelfButton : public views::LabelButton {
  public:
   LoginShelfButton(views::ButtonListener* listener,
                    const base::string16& text,
-                   const gfx::ImageSkia& image)
+                   const gfx::VectorIcon& icon)
       : LabelButton(listener, text) {
     SetAccessibleName(text);
-    SetImage(views::Button::STATE_NORMAL, image);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(icon, login_constants::kButtonEnabledColor));
+    SetImage(views::Button::STATE_DISABLED,
+             gfx::CreateVectorIcon(
+                 icon, SkColorSetA(login_constants::kButtonEnabledColor,
+                                   login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
         kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
@@ -106,9 +109,15 @@ class LoginShelfButton : public views::LabelButton {
     SetTextSubpixelRenderingEnabled(false);
 
     SetImageLabelSpacing(kImageLabelSpacingDp);
-    SetTextColor(views::Button::STATE_NORMAL, kButtonColor);
-    SetTextColor(views::Button::STATE_HOVERED, kButtonColor);
-    SetTextColor(views::Button::STATE_PRESSED, kButtonColor);
+    SetTextColor(views::Button::STATE_NORMAL,
+                 login_constants::kButtonEnabledColor);
+    SetTextColor(views::Button::STATE_HOVERED,
+                 login_constants::kButtonEnabledColor);
+    SetTextColor(views::Button::STATE_PRESSED,
+                 login_constants::kButtonEnabledColor);
+    SetTextColor(views::Button::STATE_DISABLED,
+                 SkColorSetA(login_constants::kButtonEnabledColor,
+                             login_constants::kButtonDisabledAlpha));
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
@@ -160,9 +169,12 @@ class KioskAppsButton : public views::MenuButton,
 
     SetImage(views::Button::STATE_NORMAL, image);
     SetImageLabelSpacing(kImageLabelSpacingDp);
-    SetTextColor(views::Button::STATE_NORMAL, kButtonColor);
-    SetTextColor(views::Button::STATE_HOVERED, kButtonColor);
-    SetTextColor(views::Button::STATE_PRESSED, kButtonColor);
+    SetTextColor(views::Button::STATE_NORMAL,
+                 login_constants::kButtonEnabledColor);
+    SetTextColor(views::Button::STATE_HOVERED,
+                 login_constants::kButtonEnabledColor);
+    SetTextColor(views::Button::STATE_PRESSED,
+                 login_constants::kButtonEnabledColor);
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
@@ -273,16 +285,16 @@ LoginShelfView::LoginShelfView(
   auto add_button = [this](ButtonId id, int text_resource_id,
                            const gfx::VectorIcon& icon) {
     const base::string16 text = l10n_util::GetStringUTF16(text_resource_id);
-    gfx::ImageSkia image = CreateVectorIcon(icon, kButtonColor);
-    LoginShelfButton* button = new LoginShelfButton(this, text, image);
+    LoginShelfButton* button = new LoginShelfButton(this, text, icon);
     button->set_id(id);
     AddChildView(button);
   };
   add_button(kShutdown, IDS_ASH_SHELF_SHUTDOWN_BUTTON,
              kShelfShutdownButtonIcon);
-  kiosk_apps_button_ =
-      new KioskAppsButton(l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON),
-                          CreateVectorIcon(kShelfAppsButtonIcon, kButtonColor));
+  kiosk_apps_button_ = new KioskAppsButton(
+      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON),
+      CreateVectorIcon(kShelfAppsButtonIcon,
+                       login_constants::kButtonEnabledColor));
   kiosk_apps_button_->set_id(kApps);
   AddChildView(kiosk_apps_button_);
   add_button(kRestart, IDS_ASH_SHELF_RESTART_BUTTON, kShelfShutdownButtonIcon);
@@ -408,6 +420,10 @@ void LoginShelfView::SetAllowLoginAsGuest(bool allow_guest) {
   UpdateUi();
 }
 
+void LoginShelfView::SetAddUserButtonEnabled(bool enable_add_user) {
+  GetViewByID(kAddUser)->SetEnabled(enable_add_user);
+}
+
 void LoginShelfView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   UpdateUi();
@@ -467,6 +483,7 @@ void LoginShelfView::UpdateUi() {
   GetViewByID(kAddUser)->SetVisible(!dialog_visible_ && is_login_primary);
   kiosk_apps_button_->SetVisible(
       !dialog_visible_ && kiosk_apps_button_->HasApps() && is_login_primary);
+
   Layout();
 }
 

@@ -94,6 +94,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowFeedback() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
+  void UpdateAddUserButtonStatus() override;
 
   // LoginScreenClient::Delegate:
   void HandleAuthenticateUser(const AccountId& account_id,

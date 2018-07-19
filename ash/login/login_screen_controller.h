@@ -140,6 +140,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                                  mojom::FingerprintUnlockState state) override;
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
   void NotifyOobeDialogVisibility(bool is_visible) override;
+  void SetAddUserButtonEnabled(bool enable) override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();

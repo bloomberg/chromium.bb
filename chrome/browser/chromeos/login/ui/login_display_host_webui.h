@@ -82,6 +82,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowFeedback() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
+  void UpdateAddUserButtonStatus() override;
 
   void OnCancelPasswordChangedFlow() override;
 

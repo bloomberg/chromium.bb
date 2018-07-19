@@ -205,6 +205,9 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
 
   // Start to request version info.
   version_info_updater_->StartUpdate();
+
+  // Update status of add user button in the shelf.
+  UpdateAddUserButtonStatus();
 }
 
 void LoginDisplayHostMojo::OnPreferencesChanged() {
@@ -284,6 +287,12 @@ const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
 void LoginDisplayHostMojo::ShowFeedback() {
   DCHECK(GetOobeUI());
   GetOobeUI()->ForwardAccelerator(kAccelSendFeedback);
+}
+
+void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {
+  DCHECK(GetOobeUI());
+  LoginScreenClient::Get()->login_screen()->SetAddUserButtonEnabled(
+      !GetOobeUI()->signin_screen_handler()->AllWhitelistedUsersPresent());
 }
 
 void LoginDisplayHostMojo::OnCancelPasswordChangedFlow() {
