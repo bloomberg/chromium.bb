@@ -11,9 +11,9 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_connection_tracker.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/network_change_notifier.h"
 
 namespace net {
 class DatagramServerSocket;
@@ -28,13 +28,15 @@ namespace cloud_print {
 // When traffic is detected, class fires callback and shutdowns itself.
 class PrivetTrafficDetector
     : public base::RefCountedThreadSafe<
-          PrivetTrafficDetector, content::BrowserThread::DeleteOnIOThread>,
-      private net::NetworkChangeNotifier::NetworkChangeObserver {
+          PrivetTrafficDetector,
+          content::BrowserThread::DeleteOnIOThread>,
+      private content::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   PrivetTrafficDetector(net::AddressFamily address_family,
                         const base::Closure& on_traffic_detected);
 
   void Start();
+  void Stop();
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -42,11 +44,10 @@ class PrivetTrafficDetector
   friend class base::DeleteHelper<PrivetTrafficDetector>;
   ~PrivetTrafficDetector() override;
 
-    // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  void StartOnIOThread();
+  void HandleConnectionChanged(network::mojom::ConnectionType type);
   void ScheduleRestart();
   void Restart(const net::NetworkInterfaceList& networks);
   int Bind();
