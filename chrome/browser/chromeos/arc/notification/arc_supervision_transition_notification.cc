@@ -88,21 +88,9 @@ const char kSupervisionTransitionNotificationId[] =
 
 void ShowSupervisionTransitionNotification(Profile* profile) {
   const ArcSupervisionTransition transition = GetSupervisionTransition(profile);
-  int message_id = 0;
-  int title_id = 0;
-  switch (transition) {
-    case ArcSupervisionTransition::CHILD_TO_REGULAR:
-      title_id = IDS_ARC_CHILD_TRANSITION_TO_REGULAR_TITLE;
-      message_id = IDS_ARC_CHILD_TRANSITION_TO_REGULAR_MESSAGE;
-      break;
-    case ArcSupervisionTransition::REGULAR_TO_CHILD:
-      title_id = IDS_ARC_CHILD_TRANSITION_FROM_REGULAR_TITLE;
-      message_id = IDS_ARC_CHILD_TRANSITION_FROM_REGULAR_MESSAGE;
-      break;
-    default:
-      NOTREACHED() << "Notification requested with no transition in progress";
-      return;
-  }
+  DCHECK(transition == ArcSupervisionTransition::CHILD_TO_REGULAR ||
+         transition == ArcSupervisionTransition::REGULAR_TO_CHILD);
+
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id =
@@ -112,8 +100,9 @@ void ShowSupervisionTransitionNotification(Profile* profile) {
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kSupervisionTransitionNotificationId,
-          l10n_util::GetStringUTF16(title_id),
-          l10n_util::GetStringUTF16(message_id), gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_ARC_CHILD_TRANSITION_TITLE),
+          l10n_util::GetStringUTF16(IDS_ARC_CHILD_TRANSITION_MESSAGE),
+          gfx::Image(),
           l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
           GURL(), notifier_id, message_center::RichNotificationData(),
           new NotificationDelegate(profile), ash::kNotificationFamilyLinkIcon,
