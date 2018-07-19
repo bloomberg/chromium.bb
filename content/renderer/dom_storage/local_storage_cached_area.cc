@@ -85,7 +85,6 @@ LocalStorageCachedArea::LocalStorageCachedArea(
       main_thread_scheduler_(main_thread_scheduler),
       weak_factory_(this) {
   DCHECK(!namespace_id_.empty());
-
   blink::mojom::StorageAreaAssociatedPtrInfo wrapper_ptr_info;
   session_namespace->OpenArea(origin_, mojo::MakeRequest(&wrapper_ptr_info));
   leveldb_.Bind(std::move(wrapper_ptr_info),

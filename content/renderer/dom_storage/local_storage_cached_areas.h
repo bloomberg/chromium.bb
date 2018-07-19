@@ -56,7 +56,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
   size_t TotalCacheSize() const;
 
   void set_cache_limit_for_testing(size_t limit) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    CHECK(sequence_checker_.CalledOnValidSequence());
     total_cache_limit_ = limit;
   }
 
@@ -68,7 +68,9 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
       const url::Origin& origin,
       blink::scheduler::WebThreadScheduler* scheduler);
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  // TODO(dmurph): Remove release check when crashing has stopped.
+  // http://crbug.com/857464
+  base::SequenceCheckerImpl sequence_checker_;
 
   blink::mojom::StoragePartitionService* const storage_partition_service_;
 
