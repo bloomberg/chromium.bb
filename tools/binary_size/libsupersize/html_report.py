@@ -42,7 +42,7 @@ _SMALL_SYMBOL_DESCRIPTIONS = {
   'o': 'Other small entries',
 }
 
-_DEFAULT_SYMBOL_COUNT = 100000
+_DEFAULT_SYMBOL_COUNT = 250000
 
 
 def _GetSymbolType(symbol):
@@ -113,7 +113,7 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   if include_all_symbols:
     symbol_count = len(ordered_symbols)
   else:
-    symbol_count = _DEFAULT_SYMBOL_COUNT - len(dex_symbols)
+    symbol_count = max(_DEFAULT_SYMBOL_COUNT - len(dex_symbols), 0)
 
   main_symbols = dex_symbols + ordered_symbols[:symbol_count]
   extra_symbols = ordered_symbols[symbol_count:]
