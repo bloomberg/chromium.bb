@@ -103,7 +103,22 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   Destroy();
 }
 
-bool RenderWidgetHostViewMac::SynchronizeVisualProperties() {
+bool RenderWidgetHostViewMac::SynchronizeVisualProperties(
+    const base::Optional<viz::LocalSurfaceId>&
+        child_allocated_local_surface_id) {
+  if (child_allocated_local_surface_id) {
+    browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
+        *child_allocated_local_surface_id);
+  } else {
+    browser_compositor_->AllocateNewRendererLocalSurfaceId();
+  }
+
+  if (auto* host = browser_compositor_->GetDelegatedFrameHost()) {
+    host->EmbedSurface(browser_compositor_->GetRendererLocalSurfaceId(),
+                       browser_compositor_->GetRendererSize(),
+                       cc::DeadlinePolicy::UseDefaultDeadline());
+  }
+
   return host()->SynchronizeVisualProperties();
 }
 
@@ -367,11 +382,7 @@ void RenderWidgetHostViewMac::Show() {
   ns_view_bridge_->SetVisible(is_visible_);
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
-  host()->WasShown(true /* record_presentation_time */);
-
-  // If there is not a frame being currently drawn, kick one, so that the below
-  // pause will have a frame to wait on.
-  host()->RequestRepaintForTesting();
+  WasUnOccluded();
 }
 
 void RenderWidgetHostViewMac::Hide() {
@@ -383,7 +394,28 @@ void RenderWidgetHostViewMac::Hide() {
 
 void RenderWidgetHostViewMac::WasUnOccluded() {
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
-  host()->WasShown(false /* record_presentation_time */);
+
+  DelegatedFrameHost* delegated_frame_host =
+      browser_compositor_->GetDelegatedFrameHost();
+
+  bool has_saved_frame =
+      delegated_frame_host ? delegated_frame_host->HasSavedFrame() : false;
+
+  // If the primary surface was evicted, we should create a new primary.
+  if (delegated_frame_host && delegated_frame_host->IsPrimarySurfaceEvicted())
+    SynchronizeVisualProperties(base::nullopt);
+
+  const bool renderer_should_record_presentation_time = !has_saved_frame;
+  host()->WasShown(renderer_should_record_presentation_time);
+
+  if (delegated_frame_host) {
+    // If the frame for the renderer is already available, then the
+    // tab-switching time is the presentation time for the browser-compositor.
+    const bool record_presentation_time = has_saved_frame;
+    delegated_frame_host->WasShown(
+        browser_compositor_->GetRendererLocalSurfaceId(),
+        browser_compositor_->GetRendererSize(), record_presentation_time);
+  }
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
@@ -752,7 +784,7 @@ void RenderWidgetHostViewMac::CopyFromSurface(
 
 void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  SynchronizeVisualProperties();
+  SynchronizeVisualProperties(base::nullopt);
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
