@@ -131,6 +131,11 @@ class InterfacePtrState : public InterfacePtrStateBase {
     endpoint_client()->FlushForTesting();
   }
 
+  void FlushAsyncForTesting(base::OnceClosure callback) {
+    ConfigureProxyIfNecessary();
+    endpoint_client()->FlushAsyncForTesting(std::move(callback));
+  }
+
   void CloseWithReason(uint32_t custom_reason, const std::string& description) {
     ConfigureProxyIfNecessary();
     endpoint_client()->CloseWithReason(custom_reason, description);

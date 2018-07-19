@@ -127,6 +127,12 @@ class InterfacePtr {
   // stimulus.
   void FlushForTesting() { internal_state_.FlushForTesting(); }
 
+  // Same as |FlushForTesting()| but will call |callback| when the flush is
+  // complete.
+  void FlushAsyncForTesting(base::OnceClosure callback) {
+    internal_state_.FlushAsyncForTesting(std::move(callback));
+  }
+
   // Closes the bound message pipe, if any.
   void reset() {
     State doomed;
