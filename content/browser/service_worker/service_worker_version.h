@@ -37,7 +37,7 @@
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -326,7 +326,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Creates a callback that is to be used for marking simple events dispatched
   // through mojom::ServiceWorker as finished for the |request_id|.
   // Simple event means those events expecting a response with only a status
-  // code and the dispatch time. See service_worker_event_dispatcher.mojom.
+  // code and the dispatch time. See service_worker.mojom.
   SimpleEventCallback CreateSimpleEventCallback(int request_id);
 
   // This must be called when the worker is running.

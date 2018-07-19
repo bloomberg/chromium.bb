@@ -20,7 +20,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_response_info.h"
