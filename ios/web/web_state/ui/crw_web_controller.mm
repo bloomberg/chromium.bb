@@ -768,8 +768,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)optOutScrollsToTopForSubviews;
 // Returns YES if the navigation action is associated with a main frame request.
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
-// Returns whether external URL navigation action should be opened.
-- (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action;
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
@@ -2937,7 +2935,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // TODO(droger):  Check transition type before opening an external
   // application? For example, only allow it for TYPED and LINK transitions.
   if (![CRWWebController webControllerCanShow:requestURL]) {
-    if (![self shouldOpenExternalURLForNavigationAction:action]) {
+    if (!_webStateImpl->ShouldAllowAppLaunching()) {
       return NO;
     }
     web::NavigationItem* item = self.currentNavItem;
@@ -3680,13 +3678,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // navigation, target frame will be nil. In this case check if the
   // |sourceFrame| is the mainFrame.
   return action.sourceFrame.mainFrame;
-}
-
-- (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action {
-  GURL requestURL = net::GURLWithNSURL(action.request.URL);
-  return [_delegate respondsToSelector:@selector(webController:
-                                           shouldOpenExternalURL:)] &&
-         [_delegate webController:self shouldOpenExternalURL:requestURL];
 }
 
 - (void)updateSSLStatusForCurrentNavigationItem {

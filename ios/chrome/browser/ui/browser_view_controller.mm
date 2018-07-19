@@ -3703,6 +3703,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                       completionHandler:handler];
 }
 
+- (BOOL)isAppLaunchingAllowedForWebState:(web::WebState*)webState {
+  return YES;
+}
+
 #pragma mark - CRWWebStateDelegate helpers
 
 // Evaluates Javascript asynchronously using the current page context.

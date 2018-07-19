@@ -33,6 +33,8 @@
 @synthesize previewingViewController = _previewingViewController;
 @synthesize commitPreviewingViewControllerRequested =
     _commitPreviewingViewControllerRequested;
+@synthesize isAppLaunchingAllowedForWebStateReturnValue =
+    _isAppLaunchingAllowedForWebStateReturnValue;
 
 - (web::WebState*)webState:(web::WebState*)webState
     createNewWebStateForURL:(const GURL&)URL
@@ -114,6 +116,11 @@
   _webState = webState;
   _previewingViewController = previewingViewController;
   _commitPreviewingViewControllerRequested = YES;
+}
+
+- (BOOL)isAppLaunchingAllowedForWebState:(web::WebState*)webState {
+  _webState = webState;
+  return _isAppLaunchingAllowedForWebStateReturnValue;
 }
 
 @end

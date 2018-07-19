@@ -72,6 +72,10 @@ void WebStateDelegate::CommitPreviewingViewController(
     WebState* source,
     UIViewController* previewing_view_controller) {}
 
+bool WebStateDelegate::ShouldAllowAppLaunching(WebState* source) {
+  return false;
+}
+
 void WebStateDelegate::Attach(WebState* source) {
   DCHECK(attached_states_.find(source) == attached_states_.end());
   attached_states_.insert(source);
