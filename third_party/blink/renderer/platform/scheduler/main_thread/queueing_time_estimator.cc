@@ -15,6 +15,8 @@ namespace scheduler {
 
 namespace {
 
+using QueueType = MainThreadTaskQueue::QueueType;
+
 #define FRAME_STATUS_PREFIX \
   "RendererScheduler.ExpectedQueueingTimeByFrameStatus2."
 #define TASK_QUEUE_PREFIX "RendererScheduler.ExpectedQueueingTimeByTaskQueue2."
@@ -145,84 +147,6 @@ QueueingTimeEstimator::Calculator::Calculator(int steps_per_window)
     : steps_per_window_(steps_per_window),
       step_queueing_times_(steps_per_window) {}
 
-// static
-const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromQueueType(
-    MainThreadTaskQueue::QueueType queue_type) {
-  switch (queue_type) {
-    case MainThreadTaskQueue::QueueType::kDefault:
-      return TASK_QUEUE_PREFIX "Default";
-    case MainThreadTaskQueue::QueueType::kUnthrottled:
-      return TASK_QUEUE_PREFIX "Unthrottled";
-    case MainThreadTaskQueue::QueueType::kFrameLoading:
-      return TASK_QUEUE_PREFIX "FrameLoading";
-    case MainThreadTaskQueue::QueueType::kCompositor:
-      return TASK_QUEUE_PREFIX "Compositor";
-    case MainThreadTaskQueue::QueueType::kFrameThrottleable:
-      return TASK_QUEUE_PREFIX "FrameThrottleable";
-    case MainThreadTaskQueue::QueueType::kFramePausable:
-      return TASK_QUEUE_PREFIX "FramePausable";
-    case MainThreadTaskQueue::QueueType::kControl:
-    case MainThreadTaskQueue::QueueType::kIdle:
-    case MainThreadTaskQueue::QueueType::kTest:
-    case MainThreadTaskQueue::QueueType::kFrameLoadingControl:
-    case MainThreadTaskQueue::QueueType::kFrameDeferrable:
-    case MainThreadTaskQueue::QueueType::kFrameUnpausable:
-    case MainThreadTaskQueue::QueueType::kV8:
-    case MainThreadTaskQueue::QueueType::kOther:
-    case MainThreadTaskQueue::QueueType::kCount:
-    // Using default here as well because there are some values less than COUNT
-    // that have been removed and do not correspond to any QueueType.
-    default:
-      return TASK_QUEUE_PREFIX "Other";
-  }
-}
-
-// static
-const char*
-QueueingTimeEstimator::Calculator::GetReportingMessageFromFrameStatus(
-    FrameStatus frame_status) {
-  switch (frame_status) {
-    case FrameStatus::kMainFrameVisible:
-    case FrameStatus::kMainFrameVisibleService:
-      return FRAME_STATUS_PREFIX "MainFrameVisible";
-    case FrameStatus::kMainFrameHidden:
-    case FrameStatus::kMainFrameHiddenService:
-      return FRAME_STATUS_PREFIX "MainFrameHidden";
-    case FrameStatus::kMainFrameBackground:
-    case FrameStatus::kMainFrameBackgroundExemptSelf:
-    case FrameStatus::kMainFrameBackgroundExemptOther:
-      return FRAME_STATUS_PREFIX "MainFrameBackground";
-    case FrameStatus::kSameOriginVisible:
-    case FrameStatus::kSameOriginVisibleService:
-      return FRAME_STATUS_PREFIX "SameOriginVisible";
-    case FrameStatus::kSameOriginHidden:
-    case FrameStatus::kSameOriginHiddenService:
-      return FRAME_STATUS_PREFIX "SameOriginHidden";
-    case FrameStatus::kSameOriginBackground:
-    case FrameStatus::kSameOriginBackgroundExemptSelf:
-    case FrameStatus::kSameOriginBackgroundExemptOther:
-      return FRAME_STATUS_PREFIX "SameOriginBackground";
-    case FrameStatus::kCrossOriginVisible:
-    case FrameStatus::kCrossOriginVisibleService:
-      return FRAME_STATUS_PREFIX "CrossOriginVisible";
-    case FrameStatus::kCrossOriginHidden:
-    case FrameStatus::kCrossOriginHiddenService:
-      return FRAME_STATUS_PREFIX "CrossOriginHidden";
-    case FrameStatus::kCrossOriginBackground:
-    case FrameStatus::kCrossOriginBackgroundExemptSelf:
-    case FrameStatus::kCrossOriginBackgroundExemptOther:
-      return FRAME_STATUS_PREFIX "CrossOriginBackground";
-    case FrameStatus::kNone:
-    case FrameStatus::kDetached:
-      return FRAME_STATUS_PREFIX "Other";
-    case FrameStatus::kCount:
-      NOTREACHED();
-      return "";
-  }
-  NOTREACHED();
-  return "";
-}
-
 void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
     MainThreadTaskQueue* queue) {
   current_queue_type_ =
@@ -243,6 +167,7 @@ void QueueingTimeEstimator::Calculator::AddQueueingTime(
 void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
   step_queueing_times_.Add(step_expected_queueing_time_);
 
+  DCHECK(client);
   // MainThreadSchedulerImpl reports the queueing time once per disjoint window.
   //          |stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|
   // Report:  |-------window EQT------|
@@ -255,21 +180,64 @@ void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
   if (!step_queueing_times_.IndexIsZero())
     return;
 
-  std::map<const char*, base::TimeDelta> delta_by_message;
-  for (int i = 0; i < static_cast<int>(MainThreadTaskQueue::QueueType::kCount);
-       ++i) {
-    delta_by_message[GetReportingMessageFromQueueType(
-        static_cast<MainThreadTaskQueue::QueueType>(i))] +=
-        eqt_by_queue_type_[i];
-  }
-  for (int i = 0; i < static_cast<int>(FrameStatus::kCount); ++i) {
-    delta_by_message[GetReportingMessageFromFrameStatus(
-        static_cast<FrameStatus>(i))] += eqt_by_frame_status_[i];
-  }
-  for (auto it : delta_by_message) {
-    client->OnReportFineGrainedExpectedQueueingTime(
-        it.first, it.second / steps_per_window_);
-  }
+// Report splits by task queue type.
+#define REPORT_BY_TASK_QUEUE(queue)                               \
+  client->OnReportFineGrainedExpectedQueueingTime(                \
+      TASK_QUEUE_PREFIX #queue,                                   \
+      eqt_by_queue_type_[static_cast<int>(QueueType::k##queue)] / \
+          steps_per_window_);
+  REPORT_BY_TASK_QUEUE(Default)
+  REPORT_BY_TASK_QUEUE(Unthrottled)
+  REPORT_BY_TASK_QUEUE(FrameLoading)
+  REPORT_BY_TASK_QUEUE(Compositor)
+  REPORT_BY_TASK_QUEUE(FrameThrottleable)
+  REPORT_BY_TASK_QUEUE(FramePausable)
+#undef REPORT_BY_TASK_QUEUE
+  client->OnReportFineGrainedExpectedQueueingTime(
+      TASK_QUEUE_PREFIX "Other",
+      (eqt_by_queue_type_[static_cast<int>(QueueType::kControl)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kIdle)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kTest)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kFrameLoadingControl)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kFrameDeferrable)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kFrameUnpausable)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kV8)] +
+       eqt_by_queue_type_[static_cast<int>(QueueType::kOther)]) /
+          steps_per_window_);
+
+// Report splits by frame status.
+#define REPORT_BY_FRAME_TYPE(frame)                                            \
+  client->OnReportFineGrainedExpectedQueueingTime(                             \
+      FRAME_STATUS_PREFIX #frame "Visible",                                    \
+      (eqt_by_frame_status_[static_cast<int>(                                  \
+           FrameStatus::k##frame##Visible)] +                                  \
+       eqt_by_frame_status_[static_cast<int>(                                  \
+           FrameStatus::k##frame##VisibleService)]) /                          \
+          steps_per_window_);                                                  \
+  client->OnReportFineGrainedExpectedQueueingTime(                             \
+      FRAME_STATUS_PREFIX #frame "Hidden",                                     \
+      (eqt_by_frame_status_[static_cast<int>(FrameStatus::k##frame##Hidden)] + \
+       eqt_by_frame_status_[static_cast<int>(                                  \
+           FrameStatus::k##frame##HiddenService)]) /                           \
+          steps_per_window_);                                                  \
+  client->OnReportFineGrainedExpectedQueueingTime(                             \
+      FRAME_STATUS_PREFIX #frame "Background",                                 \
+      (eqt_by_frame_status_[static_cast<int>(                                  \
+           FrameStatus::k##frame##Background)] +                               \
+       eqt_by_frame_status_[static_cast<int>(                                  \
+           FrameStatus::k##frame##BackgroundExemptSelf)] +                     \
+       eqt_by_frame_status_[static_cast<int>(                                  \
+           FrameStatus::k##frame##BackgroundExemptOther)]) /                   \
+          steps_per_window_);
+  REPORT_BY_FRAME_TYPE(MainFrame)
+  REPORT_BY_FRAME_TYPE(SameOrigin)
+  REPORT_BY_FRAME_TYPE(CrossOrigin)
+#undef REPORT_BY_FRAME_TYPE
+  client->OnReportFineGrainedExpectedQueueingTime(
+      FRAME_STATUS_PREFIX "Other",
+      (eqt_by_frame_status_[static_cast<int>(FrameStatus::kNone)] +
+       eqt_by_frame_status_[static_cast<int>(FrameStatus::kDetached)]) /
+          steps_per_window_);
   std::fill(eqt_by_queue_type_.begin(), eqt_by_queue_type_.end(),
             base::TimeDelta());
   std::fill(eqt_by_frame_status_.begin(), eqt_by_frame_status_.end(),

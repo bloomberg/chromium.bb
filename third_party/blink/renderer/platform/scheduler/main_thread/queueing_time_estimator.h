@@ -53,10 +53,6 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
   class PLATFORM_EXPORT Calculator {
    public:
     explicit Calculator(int steps_per_window);
-    static const char* GetReportingMessageFromQueueType(
-        MainThreadTaskQueue::QueueType queue_type);
-    static const char* GetReportingMessageFromFrameStatus(
-        FrameStatus frame_status);
 
     void UpdateStatusFromTaskQueue(MainThreadTaskQueue* queue);
     void AddQueueingTime(base::TimeDelta queuing_time);
