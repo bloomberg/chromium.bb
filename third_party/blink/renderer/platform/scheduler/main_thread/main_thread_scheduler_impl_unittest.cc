@@ -276,6 +276,10 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return any_thread().begin_main_frame_on_critical_path;
   }
 
+  void RemoveRAILModeObserver(RAILModeObserver const* observer) {
+    main_thread_only().rail_mode_observers.RemoveObserver(observer);
+  }
+
   bool waiting_for_meaningful_paint() const {
     base::AutoLock lock(any_thread_lock_);
     return any_thread().waiting_for_meaningful_paint;
@@ -3361,30 +3365,30 @@ class MockRAILModeObserver : public WebThreadScheduler::RAILModeObserver {
 
 TEST_F(MainThreadSchedulerImplTest, TestResponseRAILMode) {
   MockRAILModeObserver observer;
-  scheduler_->SetRAILModeObserver(&observer);
+  scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_RESPONSE));
 
   scheduler_->SetHaveSeenABlockingGestureForTesting(true);
   ForceBlockingInputToBeExpectedSoon();
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(v8::PERFORMANCE_RESPONSE, GetRAILMode());
-  scheduler_->SetRAILModeObserver(nullptr);
+  scheduler_->RemoveRAILModeObserver(&observer);
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestAnimateRAILMode) {
   MockRAILModeObserver observer;
-  scheduler_->SetRAILModeObserver(&observer);
+  scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION)).Times(0);
 
   EXPECT_FALSE(BeginFrameNotExpectedSoon());
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(v8::PERFORMANCE_ANIMATION, GetRAILMode());
-  scheduler_->SetRAILModeObserver(nullptr);
+  scheduler_->RemoveRAILModeObserver(&observer);
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestIdleRAILMode) {
   MockRAILModeObserver observer;
-  scheduler_->SetRAILModeObserver(&observer);
+  scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_IDLE));
 
@@ -3394,12 +3398,12 @@ TEST_F(MainThreadSchedulerImplTest, TestIdleRAILMode) {
   scheduler_->SetAllRenderWidgetsHidden(false);
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(v8::PERFORMANCE_ANIMATION, GetRAILMode());
-  scheduler_->SetRAILModeObserver(nullptr);
+  scheduler_->RemoveRAILModeObserver(&observer);
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestLoadRAILMode) {
   MockRAILModeObserver observer;
-  scheduler_->SetRAILModeObserver(&observer);
+  scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
 
@@ -3409,12 +3413,12 @@ TEST_F(MainThreadSchedulerImplTest, TestLoadRAILMode) {
   scheduler_->OnFirstMeaningfulPaint();
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(v8::PERFORMANCE_ANIMATION, GetRAILMode());
-  scheduler_->SetRAILModeObserver(nullptr);
+  scheduler_->RemoveRAILModeObserver(&observer);
 }
 
 TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
   MockRAILModeObserver observer;
-  scheduler_->SetRAILModeObserver(&observer);
+  scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
 
@@ -3430,7 +3434,7 @@ TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
   EXPECT_EQ(UseCase::kCompositorGesture,
             ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(v8::PERFORMANCE_ANIMATION, GetRAILMode());
-  scheduler_->SetRAILModeObserver(nullptr);
+  scheduler_->RemoveRAILModeObserver(&observer);
 }
 
 TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {

@@ -50,7 +50,7 @@ class FakeRendererScheduler : public WebThreadScheduler {
   void Shutdown() override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
-  void SetRAILModeObserver(RAILModeObserver* observer) override;
+  void AddRAILModeObserver(RAILModeObserver* observer) override;
   void SetRendererProcessType(RendererProcessType type) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const char* name,

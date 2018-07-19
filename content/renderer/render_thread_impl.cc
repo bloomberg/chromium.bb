@@ -1254,7 +1254,7 @@ void RenderThreadImpl::InitializeWebKit(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
-  main_thread_scheduler_->SetRAILModeObserver(this);
+  main_thread_scheduler_->AddRAILModeObserver(this);
 
   main_thread_compositor_task_runner_ =
       main_thread_scheduler_->CompositorTaskRunner();

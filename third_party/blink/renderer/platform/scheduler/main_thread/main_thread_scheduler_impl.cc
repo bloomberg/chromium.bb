@@ -580,7 +580,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
                                &main_thread_scheduler_impl->tracing_controller_,
                                YesNoStateToString),
       background_status_changed_at(now),
-      rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       metrics_helper(
           main_thread_scheduler_impl,
@@ -738,7 +737,7 @@ void MainThreadSchedulerImpl::Shutdown() {
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
   helper_.Shutdown();
-  main_thread_only().rail_mode_observer = nullptr;
+  main_thread_only().rail_mode_observers.Clear();
   was_shutdown_ = true;
 }
 
@@ -1698,10 +1697,10 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   main_thread_only().rail_mode_for_tracing = new_policy.rail_mode();
-  if (main_thread_only().rail_mode_observer &&
-      new_policy.rail_mode() != main_thread_only().current_policy.rail_mode()) {
-    main_thread_only().rail_mode_observer->OnRAILModeChanged(
-        new_policy.rail_mode());
+  if (new_policy.rail_mode() != main_thread_only().current_policy.rail_mode()) {
+    for (auto& observer : main_thread_only().rail_mode_observers) {
+      observer.OnRAILModeChanged(new_policy.rail_mode());
+    }
   }
 
   if (new_policy.should_disable_throttling() !=
@@ -2447,8 +2446,9 @@ void MainThreadSchedulerImpl::SetTopLevelBlameContext(
   ipc_task_queue_->SetBlameContext(blame_context);
 }
 
-void MainThreadSchedulerImpl::SetRAILModeObserver(RAILModeObserver* observer) {
-  main_thread_only().rail_mode_observer = observer;
+void MainThreadSchedulerImpl::AddRAILModeObserver(RAILModeObserver* observer) {
+  main_thread_only().rail_mode_observers.AddObserver(observer);
+  observer->OnRAILModeChanged(main_thread_only().current_policy.rail_mode());
 }
 
 void MainThreadSchedulerImpl::SetRendererProcessType(RendererProcessType type) {
