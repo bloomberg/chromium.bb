@@ -421,7 +421,7 @@ void FeatureInfo::InitializeFeatures() {
   gl_version_info_.reset(
       new gl::GLVersionInfo(version_str, renderer_str, extensions));
 
-  bool enable_es3 = IsWebGL2OrES3Context();
+  bool enable_es3 = IsWebGL2OrES3OrHigherContext();
 
   // Pixel buffer bindings can be manipulated by the client if ES3 is enabled or
   // the GL_NV_pixel_buffer_object extension is exposed by ANGLE when using the
@@ -1194,7 +1194,7 @@ void FeatureInfo::InitializeFeatures() {
                                      !have_es2_draw_buffers_vendor_agnostic;
   }
 
-  if (IsWebGL2OrES3Context() || have_es2_draw_buffers) {
+  if (IsWebGL2OrES3OrHigherContext() || have_es2_draw_buffers) {
     GLint max_color_attachments = 0;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments);
     for (GLenum i = GL_COLOR_ATTACHMENT1_EXT;
@@ -1506,7 +1506,7 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
 
   bool may_enable_chromium_color_buffer_float = false;
 
-  bool enable_es3 = IsWebGL2OrES3Context();
+  bool enable_es3 = IsWebGL2OrES3OrHigherContext();
 
   // These extensions allow a variety of floating point formats to be
   // rendered to via framebuffer objects.
@@ -1823,6 +1823,14 @@ bool FeatureInfo::IsWebGL1OrES2Context() const {
 
 bool FeatureInfo::IsWebGL2OrES3Context() const {
   return IsWebGL2OrES3ContextType(context_type_);
+}
+
+bool FeatureInfo::IsWebGL2OrES3OrHigherContext() const {
+  return IsWebGL2OrES3OrHigherContextType(context_type_);
+}
+
+bool FeatureInfo::IsWebGL2ComputeContext() const {
+  return IsWebGL2ComputeContextType(context_type_);
 }
 
 void FeatureInfo::AddExtensionString(const base::StringPiece& extension) {

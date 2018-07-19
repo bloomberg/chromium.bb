@@ -56,6 +56,38 @@ bool IsWebGL2OrES3ContextType(ContextType context_type) {
   return false;
 }
 
+bool IsWebGL2OrES3OrHigherContextType(ContextType context_type) {
+  // Switch statement to cause a compile-time error if we miss a case.
+  switch (context_type) {
+    case CONTEXT_TYPE_OPENGLES3:
+    case CONTEXT_TYPE_WEBGL2:
+    case CONTEXT_TYPE_WEBGL2_COMPUTE:
+      return true;
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_OPENGLES2:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool IsWebGL2ComputeContextType(ContextType context_type) {
+  // Switch statement to cause a compile-time error if we miss a case.
+  switch (context_type) {
+    case CONTEXT_TYPE_WEBGL2_COMPUTE:
+      return true;
+    case CONTEXT_TYPE_OPENGLES3:
+    case CONTEXT_TYPE_WEBGL2:
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_OPENGLES2:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 ContextCreationAttribs::ContextCreationAttribs() = default;
 
 ContextCreationAttribs::ContextCreationAttribs(
