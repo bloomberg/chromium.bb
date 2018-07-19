@@ -30,7 +30,7 @@ class LocationIconView : public IconLabelBubbleView {
                       base::string16* tooltip) const override;
   SkColor GetTextColor() const override;
   bool ShouldShowSeparator() const override;
-  bool ShouldShowExtraSpace() const override;
+  bool ShouldShowExtraEndSpace() const override;
   bool ShowBubble(const ui::Event& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool IsBubbleShowing() const override;

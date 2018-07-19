@@ -78,7 +78,7 @@ bool LocationIconView::ShouldShowSeparator() const {
           !location_bar_->GetOmniboxView()->IsEditingOrEmpty());
 }
 
-bool LocationIconView::ShouldShowExtraSpace() const {
+bool LocationIconView::ShouldShowExtraEndSpace() const {
   return ui::MaterialDesignController::IsRefreshUi() &&
          location_bar_->GetOmniboxView()->IsEditingOrEmpty();
 }

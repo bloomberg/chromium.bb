@@ -188,7 +188,11 @@ bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
 
-bool IconLabelBubbleView::ShouldShowExtraSpace() const {
+bool IconLabelBubbleView::ShouldShowExtraEndSpace() const {
+  return false;
+}
+
+bool IconLabelBubbleView::ShouldShowExtraInternalSpace() const {
   return false;
 }
 
@@ -441,14 +445,18 @@ int IconLabelBubbleView::GetInternalSpacing() const {
 
   // In touch, the icon-to-label spacing is a custom value.
   constexpr int kIconLabelSpacingTouch = 4;
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-             ? kIconLabelSpacingTouch
-             : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-                   GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
+  const int default_spacing =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+          ? kIconLabelSpacingTouch
+          : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
+                GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
+
+  return default_spacing +
+         (ShouldShowExtraInternalSpace() ? GetPrefixedSeparatorWidth() : 0);
 }
 
 int IconLabelBubbleView::GetPrefixedSeparatorWidth() const {
-  return ShouldShowSeparator() || ShouldShowExtraSpace()
+  return ShouldShowSeparator() || ShouldShowExtraEndSpace()
              ? kSeparatorWidth + kSpaceBesideSeparator
              : 0;
 }

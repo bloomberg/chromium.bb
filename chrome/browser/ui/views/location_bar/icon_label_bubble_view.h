@@ -113,7 +113,13 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // should be added to the end of the view. This is useful in the case where
   // it's required to layout subsequent views in the same position regardless
   // of whether the separator is shown or not.
-  virtual bool ShouldShowExtraSpace() const;
+  virtual bool ShouldShowExtraEndSpace() const;
+
+  // Returns true when additional padding equal to GetPrefixedSeparatorWidth()
+  // should be added between the icon and the label. This is useful in the case
+  // where it's required to align the label in the same position as text that
+  // would normally follow this view.
+  virtual bool ShouldShowExtraInternalSpace() const;
 
   // Returns a multiplier used to calculate the actual width of the view based
   // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
