@@ -12,6 +12,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -73,6 +75,58 @@ int GetScrimVerticalThreshold(const gfx::Rect& work_area_bounds) {
   return work_area_bounds.y() +
          work_area_bounds.height() * kScrimResetThresholdRatio;
 }
+
+// The class to observe the source window's bounds change animation. When the
+// bounds animation is running, set the dragged window not be able to attach to
+// any window to prevent it accidently attach into the animating source window.
+class SourceWindowAnimationObserver : public ui::ImplicitAnimationObserver,
+                                      public ui::LayerObserver,
+                                      public aura::WindowObserver {
+ public:
+  SourceWindowAnimationObserver(ui::Layer* source_window_layer,
+                                aura::Window* dragged_window)
+      : source_window_layer_(source_window_layer),
+        dragged_window_(dragged_window) {
+    source_window_layer_->AddObserver(this);
+    dragged_window_->AddObserver(this);
+  }
+
+  ~SourceWindowAnimationObserver() override {
+    if (source_window_layer_)
+      source_window_layer_->RemoveObserver(this);
+
+    if (dragged_window_) {
+      dragged_window_->RemoveObserver(this);
+      dragged_window_->ClearProperty(ash::kCanAttachToAnotherWindowKey);
+    }
+  }
+
+  // ui::ImplicitAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
+    DCHECK(dragged_window_);
+    dragged_window_->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
+  }
+
+  void OnImplicitAnimationsCompleted() override { delete this; }
+
+  // ui::LayerObserver:
+  void LayerDestroyed(ui::Layer* layer) override {
+    DCHECK_EQ(source_window_layer_, layer);
+    delete this;
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(dragged_window_, window);
+    delete this;
+  }
+
+ private:
+  ui::Layer* source_window_layer_;
+  aura::Window* dragged_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(SourceWindowAnimationObserver);
+};
 
 }  // namespace
 
@@ -166,10 +220,17 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
                              : SplitViewController::LEFT);
     }
   }
+  ::wm::ConvertRectFromScreen(source_window->parent(), &expected_bounds);
 
-  source_window->SetBoundsInScreen(
-      expected_bounds,
-      display::Screen::GetScreen()->GetDisplayNearestWindow(source_window));
+  if (expected_bounds != source_window->GetTargetBounds()) {
+    ui::ScopedLayerAnimationSettings settings(
+        source_window->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.AddObserver(new SourceWindowAnimationObserver(
+        source_window->layer(), dragged_window_));
+    source_window->SetBounds(expected_bounds);
+  }
 }
 
 void TabletModeBrowserWindowDragDelegate::UpdateScrim(
@@ -210,8 +271,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateScrim(
 
   bool should_show_blurred_scrim = false;
   if (location_in_screen.y() >=
-      TabletModeWindowDragDelegate::GetMaximizeVerticalThreshold(
-          work_area_bounds)) {
+      GetMaximizeVerticalThreshold(work_area_bounds)) {
     if (split_view_controller_->IsSplitViewModeActive() !=
         (snap_position == SplitViewController::NONE)) {
       should_show_blurred_scrim = true;

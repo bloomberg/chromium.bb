@@ -262,12 +262,12 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       if (bounds_in_parent.IsEmpty())
         return;
 
-      if (wm::IsDraggingTabs(window_state->window())) {
+      if (wm::IsDraggingTabs(window_state->window()) ||
+          IsTabDraggingSourceWindow(window_state->window())) {
+        // If the window is the current tab-dragged window or the current tab-
+        // dragged window's source window, we may need to update its bounds
+        // during dragging.
         window_state->SetBoundsDirect(bounds_in_parent);
-      } else if (IsTabDraggingSourceWindow(window_state->window())) {
-        // If the window is the current tab-dragged window's source window,
-        // we may need to update its bounds during dragging.
-        window_state->SetBoundsDirectAnimated(bounds_in_parent);
       } else if (current_state_type_ == mojom::WindowStateType::MAXIMIZED) {
         // Having a maximized window, it could have been created with an empty
         // size and the caller should get his size upon leaving the maximized

@@ -68,6 +68,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kBlockedForAssistantSnapshotKey;
 
+// If true, the window can attach into another window.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kCanAttachToAnotherWindowKey;
+
 // If true, will send system keys to the window for dispatch.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;

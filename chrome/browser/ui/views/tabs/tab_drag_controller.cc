@@ -147,6 +147,13 @@ bool ShouldAttachOnEnd(TabStrip* target_tabstrip) {
   return IsShowingInOverview(target_tabstrip);
 }
 
+// Returns true if |tabstrip| can detach from the current tabstrip and attach
+// into another eligible browser window's tabstrip.
+bool CanDetachFromTabStrip(TabStrip* tabstrip) {
+  return tabstrip && tabstrip->GetWidget()->GetNativeWindow()->GetProperty(
+                         ash::kCanAttachToAnotherWindowKey);
+}
+
 #else
 bool IsSnapped(const TabStrip* tab_strip) {
   return false;
@@ -158,6 +165,10 @@ bool IsShowingInOverview(TabStrip* tabstrip) {
 
 bool ShouldAttachOnEnd(TabStrip* target_tabstrip) {
   return false;
+}
+
+bool CanDetachFromTabStrip(TabStrip* tabstrip) {
+  return true;
 }
 
 #endif  // #if defined(OS_CHROMEOS)
@@ -876,6 +887,13 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
   *tab_strip = nullptr;
   TRACE_EVENT1("views", "TabDragController::GetTargetTabStripForPoint",
                "point_in_screen", point_in_screen.ToString());
+
+  // Do not change the current attached tabstrip if it's not allowed to detach
+  // from the current tabstrip and attach into another window's tabstrip.
+  if (attached_tabstrip_ && !CanDetachFromTabStrip(attached_tabstrip_)) {
+    *tab_strip = attached_tabstrip_;
+    return Liveness::ALIVE;
+  }
 
   if (move_only() && attached_tabstrip_) {
     // move_only() is intended for touch, in which case we only want to detach
