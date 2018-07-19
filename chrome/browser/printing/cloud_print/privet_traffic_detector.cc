@@ -14,8 +14,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
@@ -74,30 +76,42 @@ PrivetTrafficDetector::PrivetTrafficDetector(
       restart_attempts_(kMaxRestartAttempts),
       weak_ptr_factory_(this) {}
 
+PrivetTrafficDetector::~PrivetTrafficDetector() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+}
+
 void PrivetTrafficDetector::Start() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PrivetTrafficDetector::StartOnIOThread,
+      base::BindOnce(&PrivetTrafficDetector::ScheduleRestart,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-PrivetTrafficDetector::~PrivetTrafficDetector() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+void PrivetTrafficDetector::Stop() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
 }
 
-void PrivetTrafficDetector::StartOnIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  ScheduleRestart();
+void PrivetTrafficDetector::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PrivetTrafficDetector::HandleConnectionChanged,
+                     weak_ptr_factory_.GetWeakPtr(), type));
 }
 
-void PrivetTrafficDetector::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void PrivetTrafficDetector::HandleConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   restart_attempts_ = kMaxRestartAttempts;
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type != network::mojom::ConnectionType::CONNECTION_NONE) {
     ScheduleRestart();
+  }
 }
 
 void PrivetTrafficDetector::ScheduleRestart() {

@@ -209,6 +209,11 @@ PrivetNotificationService::PrivetNotificationService(
 }
 
 PrivetNotificationService::~PrivetNotificationService() {
+#if BUILDFLAG(ENABLE_MDNS)
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (traffic_detector_)
+    traffic_detector_->Stop();
+#endif
 }
 
 void PrivetNotificationService::DeviceChanged(
