@@ -7,21 +7,16 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/request_priority.h"
-#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
@@ -58,8 +53,7 @@ namespace page_scheduler_impl_unittest {
 class PageSchedulerImplTest;
 }
 
-class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
-                                           FrameTaskQueueController::Delegate {
+class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
  public:
   static std::unique_ptr<FrameSchedulerImpl> Create(
       PageSchedulerImpl* page_scheduler,
@@ -126,21 +120,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
       MainThreadTaskQueue* task_queue) const;
 
-  // FrameTaskQueueController::Delegate implementation.
-  void OnTaskQueueCreated(
-      MainThreadTaskQueue*,
-      base::sequence_manager::TaskQueue::QueueEnabledVoter*) override;
-
-  using FrameTaskTypeToQueueTraitsArray =
-      std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
-                 static_cast<size_t>(TaskType::kCount)>;
-
-  // Initializes the mapping from TaskType to QueueTraits for frame-level tasks.
-  // We control the policy and initialize this, but the map is stored with main
-  // thread scheduling settings to avoid redundancy.
-  static void InitializeTaskTypeQueueTraitsMap(
-      FrameTaskTypeToQueueTraitsArray&);
-
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
                      PageSchedulerImpl* parent_page_scheduler,
@@ -157,8 +136,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void DidChangeResourceLoadingPriority(
       scoped_refptr<MainThreadTaskQueue> task_queue,
       net::RequestPriority priority);
-
-  scoped_refptr<MainThreadTaskQueue> GetTaskQueue(TaskType);
 
  private:
   friend class PageSchedulerImpl;
@@ -195,9 +172,21 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
     DISALLOW_COPY_AND_ASSIGN(PauseSubresourceLoadingHandleImpl);
   };
 
+  struct ResourceLoadingTaskQueueMetadata {
+    ResourceLoadingTaskQueueMetadata(){};
+
+    ResourceLoadingTaskQueueMetadata(
+        base::sequence_manager::TaskQueue::QueuePriority queue_priority,
+        std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+            queue_voter)
+        : priority(queue_priority), voter(std::move(queue_voter)) {}
+
+    base::sequence_manager::TaskQueue::QueuePriority priority;
+    std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter> voter;
+  };
+
   void DetachFromPageScheduler();
-  void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
-      MainThreadTaskQueue*);
+  void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
   SchedulingLifecycleState CalculateLifecycleState(
@@ -216,41 +205,46 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
   CreateResourceLoadingTaskRunnerHandleImpl();
 
-  FrameTaskQueueController* FrameTaskQueueControllerForTest() {
-    return frame_task_queue_controller_.get();
-  }
+  std::pair<
+      scoped_refptr<MainThreadTaskQueue>,
+      std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>>
+  CreateNewLoadingTaskQueue();
 
-  // Create the QueueTraits for a specific TaskType. This returns base::nullopt
-  // for loading tasks and non-frame-level tasks.
-  static base::Optional<MainThreadTaskQueue::QueueTraits>
-      CreateQueueTraitsForTaskType(TaskType);
-
-  // Create QueueTraits for the default (non-finch) task queues.
-  static MainThreadTaskQueue::QueueTraits ThrottleableTaskQueueTraits();
-  static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();
-  static MainThreadTaskQueue::QueueTraits PausableTaskQueueTraits();
-  static MainThreadTaskQueue::QueueTraits UnpausableTaskQueueTraits();
+  scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> DeferrableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> PausableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> UnpausableTaskQueue();
 
   const FrameScheduler::FrameType frame_type_;
 
   bool is_ad_frame_;
 
   TraceableVariableController tracing_controller_;
-  std::unique_ptr<FrameTaskQueueController> frame_task_queue_controller_;
+  scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> throttleable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> deferrable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> pausable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> unpausable_task_queue_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      loading_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      loading_control_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      throttleable_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      deferrable_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      pausable_queue_enabled_voter_;
 
-  using ResourceLoadingTaskQueuePriorityMap =
+  using ResourceLoadingTaskQueueMetadataMap =
       WTF::HashMap<scoped_refptr<MainThreadTaskQueue>,
-                   base::sequence_manager::TaskQueue::QueuePriority>;
+                   ResourceLoadingTaskQueueMetadata>;
 
-  // Queue to priority map of resource loading task queues created by
-  // |frame_task_queue_controller_| via CreateResourceLoadingTaskRunnerHandle.
-  ResourceLoadingTaskQueuePriorityMap resource_loading_task_queue_priorities_;
-
-  // List of QueueTraits indexed by TaskType, containing TaskType::kCount
-  // entries. This is initialized early with all valid entries. Entries that
-  // aren't valid task types, i.e. non-frame level, are base::nullopt.
-  std::vector<base::Optional<MainThreadTaskQueue::QueueTraits>>
-      task_type_to_queue_traits_map_;
+  // Holds queues created by CreateResourceLoadingTaskRunnerHandle.
+  ResourceLoadingTaskQueueMetadataMap resource_loading_task_queues_;
 
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
