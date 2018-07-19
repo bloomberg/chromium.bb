@@ -18,27 +18,30 @@
 // TODO(pasko): add histograms for shader cache as soon as it becomes possible
 // for a user to get shader cache with the |SimpleBackendImpl| without altering
 // any flags.
-#define SIMPLE_CACHE_UMA(uma_type, uma_name, cache_type, ...)          \
-  do {                                                                 \
-    switch (cache_type) {                                              \
-      case net::DISK_CACHE:                                            \
-        SIMPLE_CACHE_THUNK(                                            \
-            uma_type, ("SimpleCache.Http." uma_name, ##__VA_ARGS__));  \
-        break;                                                         \
-      case net::APP_CACHE:                                             \
-        SIMPLE_CACHE_THUNK(                                            \
-            uma_type, ("SimpleCache.App." uma_name, ##__VA_ARGS__));   \
-        break;                                                         \
-      case net::MEDIA_CACHE:                                           \
-        SIMPLE_CACHE_THUNK(                                            \
-            uma_type, ("SimpleCache.Media." uma_name, ##__VA_ARGS__)); \
-        break;                                                         \
-      case net::SHADER_CACHE:                                          \
-        break;                                                         \
-      default:                                                         \
-        NOTREACHED();                                                  \
-        break;                                                         \
-    }                                                                  \
+// TODO(mythria): add histograms for generated_code_cache when we actually start
+// using the generated_code_cache.
+#define SIMPLE_CACHE_UMA(uma_type, uma_name, cache_type, ...)               \
+  do {                                                                      \
+    switch (cache_type) {                                                   \
+      case net::DISK_CACHE:                                                 \
+        SIMPLE_CACHE_THUNK(uma_type,                                        \
+                           ("SimpleCache.Http." uma_name, ##__VA_ARGS__));  \
+        break;                                                              \
+      case net::APP_CACHE:                                                  \
+        SIMPLE_CACHE_THUNK(uma_type,                                        \
+                           ("SimpleCache.App." uma_name, ##__VA_ARGS__));   \
+        break;                                                              \
+      case net::MEDIA_CACHE:                                                \
+        SIMPLE_CACHE_THUNK(uma_type,                                        \
+                           ("SimpleCache.Media." uma_name, ##__VA_ARGS__)); \
+        break;                                                              \
+      case net::GENERATED_CODE_CACHE:                                       \
+      case net::SHADER_CACHE:                                               \
+        break;                                                              \
+      default:                                                              \
+        NOTREACHED();                                                       \
+        break;                                                              \
+    }                                                                       \
   } while (0)
 
 #endif  // NET_DISK_CACHE_SIMPLE_SIMPLE_HISTOGRAM_MACROS_H_
