@@ -1049,6 +1049,10 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
     this.add(item);
     item.updateSubDirectories(false);
   }
+  // When My files is disabled Drive should be expanded by default.
+  // TODO(crbug.com/850348): Remove this once flag is removed.
+  if (this.parentTree_.dataModel.disableMyFilesNavigation)
+    this.expanded = true;
 };
 
 /**
@@ -1628,8 +1632,8 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
       if (recursive && currentItem instanceof VolumeItem)
         currentItem.updateSubDirectories(true);
       // EntryListItem can contain volumes that might have been updated: ask
-      // them to re-draw. It only needs to update the first level of children,
-      // so it doesn't need to be recursive.
+      // them to re-draw. Updates recursively so any created or removed children
+      // folder can be reflected on directory tree.
       if (currentItem instanceof EntryListItem)
         currentItem.updateSubDirectories(true);
     } else {
