@@ -4,15 +4,31 @@
 
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/keyboard_brightness/unified_keyboard_brightness_slider_controller.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 
 using chromeos::CrasAudioHandler;
 
 namespace ash {
+
+namespace {
+
+// Return true if a system tray bubble is shown in any display.
+bool IsAnyMainBubbleShown() {
+  for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+    if (root->GetStatusAreaWidget()->unified_system_tray()->IsBubbleShown())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 UnifiedSliderBubbleController::UnifiedSliderBubbleController(
     UnifiedSystemTray* tray)
@@ -83,7 +99,7 @@ void UnifiedSliderBubbleController::OnKeyboardBrightnessChanged(bool by_user) {
 }
 
 void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
-  if (tray_->IsBubbleShown()) {
+  if (IsAnyMainBubbleShown()) {
     tray_->EnsureBubbleExpanded();
     return;
   }
