@@ -20,8 +20,8 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   TestLifecycleUnit(base::TimeTicks last_focused_time = base::TimeTicks(),
                     base::ProcessHandle process_handle = base::ProcessHandle(),
                     bool can_discard = true);
-  explicit TestLifecycleUnit(content::Visibility visibility,
-                             UsageClock* usage_clock);
+  TestLifecycleUnit(content::Visibility visibility, UsageClock* usage_clock);
+  explicit TestLifecycleUnit(LifecycleUnitSourceBase* source);
   ~TestLifecycleUnit() override;
 
   void SetLastFocusedTime(base::TimeTicks last_focused_time) {

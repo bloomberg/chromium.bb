@@ -11,7 +11,7 @@
 
 namespace resource_coordinator {
 
-class LifecycleUnit;
+class LifecycleUnitBase;
 
 // Base class for a class that creates and destroys LifecycleUnits.
 class LifecycleUnitSourceBase : public LifecycleUnitSource {
@@ -23,13 +23,41 @@ class LifecycleUnitSourceBase : public LifecycleUnitSource {
   void AddObserver(LifecycleUnitSourceObserver* observer) override;
   void RemoveObserver(LifecycleUnitSourceObserver* observer) override;
 
+  size_t lifecycle_unit_count() const { return lifecycle_unit_count_; }
+
  protected:
-  // Notifies observers that a LifecycleUnit was created.
-  void NotifyLifecycleUnitCreated(LifecycleUnit* lifecycle_unit);
+  friend class LifecycleUnitBase;
+
+  // Called by LifecycleUnitBase when a new one is created. Used to update
+  // |lifecycle_unit_count|. Note that the |lifecycle_unit| will be half built
+  // at this point so not usable.
+  void NotifyLifecycleUnitBeingCreated(LifecycleUnitBase* lifecycle_unit);
+
+  // Intended to be called by the a concrete LifecycleUnitSourceBase
+  // implementation. This dispatches the creation event to registered
+  // observers.
+  void NotifyLifecycleUnitCreated(LifecycleUnitBase* lifecycle_unit);
+
+  // Called by LifecycleUnitBase when it is being torn down. Used to update
+  // |lifecycle_unit_count|. Note that the |lifecycle_unit| will be half torn
+  // down at this point so not usable.
+  void NotifyLifecycleUnitBeingDestroyed(LifecycleUnitBase* lifecycle_unit);
+
+  // Called when a first lifecycle unit comes into being. This is an empty stub
+  // which can optionally be overridden by derived classes.
+  virtual void OnFirstLifecycleUnitCreated();
+
+  // Called when all lifecycle units belonging to this source have been
+  // destroyed. This is an empty stub which can optionally be overridden by
+  // derived classes.
+  virtual void OnAllLifecycleUnitsDestroyed();
 
  private:
   // Observers notified when a LifecycleUnit is created.
   base::ObserverList<LifecycleUnitSourceObserver> observers_;
+
+  // The count of lifecycle units associated with this source.
+  size_t lifecycle_unit_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LifecycleUnitSourceBase);
 };

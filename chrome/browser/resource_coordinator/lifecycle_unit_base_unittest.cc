@@ -8,6 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_source_base.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/usage_clock.h"
@@ -198,6 +199,44 @@ TEST_F(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
   testing::Mock::VerifyAndClear(&observer_);
 
   lifecycle_unit.RemoveObserver(&observer_);
+}
+
+namespace {
+
+class MockLifecycleUnitSource : public LifecycleUnitSourceBase {
+ public:
+  MockLifecycleUnitSource() = default;
+  virtual ~MockLifecycleUnitSource() = default;
+
+  MOCK_METHOD0(OnFirstLifecycleUnitCreated, void());
+  MOCK_METHOD0(OnAllLifecycleUnitsDestroyed, void());
+};
+
+}  // namespace
+
+TEST_F(LifecycleUnitBaseTest, SourceIsNotifiedOfUnitDeath) {
+  MockLifecycleUnitSource source;
+  EXPECT_EQ(0u, source.lifecycle_unit_count());
+
+  EXPECT_CALL(source, OnFirstLifecycleUnitCreated());
+  std::unique_ptr<TestLifecycleUnit> unit1 =
+      std::make_unique<TestLifecycleUnit>(&source);
+  testing::Mock::VerifyAndClear(&source);
+  EXPECT_EQ(1u, source.lifecycle_unit_count());
+
+  std::unique_ptr<TestLifecycleUnit> unit2 =
+      std::make_unique<TestLifecycleUnit>(&source);
+  testing::Mock::VerifyAndClear(&source);
+  EXPECT_EQ(2u, source.lifecycle_unit_count());
+
+  unit1.reset();
+  testing::Mock::VerifyAndClear(&source);
+  EXPECT_EQ(1u, source.lifecycle_unit_count());
+
+  EXPECT_CALL(source, OnAllLifecycleUnitsDestroyed());
+  unit2.reset();
+  testing::Mock::VerifyAndClear(&source);
+  EXPECT_EQ(0u, source.lifecycle_unit_count());
 }
 
 }  // namespace resource_coordinator

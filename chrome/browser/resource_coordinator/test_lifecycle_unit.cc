@@ -4,6 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 
+#include "chrome/browser/resource_coordinator/lifecycle_unit_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -11,14 +12,17 @@ namespace resource_coordinator {
 TestLifecycleUnit::TestLifecycleUnit(base::TimeTicks last_focused_time,
                                      base::ProcessHandle process_handle,
                                      bool can_discard)
-    : LifecycleUnitBase(content::Visibility::VISIBLE, nullptr),
+    : LifecycleUnitBase(nullptr, content::Visibility::VISIBLE, nullptr),
       last_focused_time_(last_focused_time),
       process_handle_(process_handle),
       can_discard_(can_discard) {}
 
 TestLifecycleUnit::TestLifecycleUnit(content::Visibility visibility,
                                      UsageClock* usage_clock)
-    : LifecycleUnitBase(visibility, usage_clock) {}
+    : LifecycleUnitBase(nullptr, visibility, usage_clock) {}
+
+TestLifecycleUnit::TestLifecycleUnit(LifecycleUnitSourceBase* source)
+    : LifecycleUnitBase(source, content::Visibility::VISIBLE, nullptr) {}
 
 TestLifecycleUnit::~TestLifecycleUnit() {
   OnLifecycleUnitDestroyed();

@@ -26,6 +26,7 @@ using ::mojom::LifecycleUnitState;
 
 class DecisionDetails;
 class LifecycleUnitObserver;
+class LifecycleUnitSource;
 class TabLifecycleUnitExternal;
 
 // A LifecycleUnit represents a unit that can switch between the "loaded" and
@@ -69,6 +70,9 @@ class LifecycleUnit {
   };
 
   virtual ~LifecycleUnit();
+
+  // Returns the LifecycleUnitSource associated with this unit.
+  virtual LifecycleUnitSource* GetSource() const = 0;
 
   // Returns the TabLifecycleUnitExternal associated with this LifecycleUnit, if
   // any.

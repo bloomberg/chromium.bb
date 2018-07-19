@@ -5,22 +5,35 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_base.h"
 
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_source_base.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/usage_clock.h"
 
 namespace resource_coordinator {
 
-LifecycleUnitBase::LifecycleUnitBase(content::Visibility visibility,
+LifecycleUnitBase::LifecycleUnitBase(LifecycleUnitSourceBase* source,
+                                     content::Visibility visibility,
                                      UsageClock* usage_clock)
-    : wall_time_when_hidden_(visibility == content::Visibility::VISIBLE
+    : source_(source),
+      wall_time_when_hidden_(visibility == content::Visibility::VISIBLE
                                  ? base::TimeTicks::Max()
                                  : NowTicks()),
       usage_clock_(usage_clock),
       chrome_usage_time_when_hidden_(visibility == content::Visibility::VISIBLE
                                          ? base::TimeDelta::Max()
-                                         : usage_clock_->GetTotalUsageTime()) {}
+                                         : usage_clock_->GetTotalUsageTime()) {
+  if (source_)
+    source_->NotifyLifecycleUnitBeingCreated(this);
+}
 
-LifecycleUnitBase::~LifecycleUnitBase() = default;
+LifecycleUnitBase::~LifecycleUnitBase() {
+  if (source_)
+    source_->NotifyLifecycleUnitBeingDestroyed(this);
+}
+
+LifecycleUnitSource* LifecycleUnitBase::GetSource() const {
+  return source_;
+}
 
 int32_t LifecycleUnitBase::GetID() const {
   return id_;

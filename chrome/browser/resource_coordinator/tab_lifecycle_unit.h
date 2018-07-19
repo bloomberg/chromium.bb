@@ -49,8 +49,10 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // of this TabLifecycleUnit, but only on the sequence on which this
   // constructor is invoked. |usage_clock| is a clock that measures Chrome usage
   // time. |web_contents| and |tab_strip_model| are the WebContents and
-  // TabStripModel associated with this tab.
-  TabLifecycleUnit(base::ObserverList<TabLifecycleObserver>* observers,
+  // TabStripModel associated with this tab. The |source| is optional and may be
+  // nullptr.
+  TabLifecycleUnit(TabLifecycleUnitSource* source,
+                   base::ObserverList<TabLifecycleObserver>* observers,
                    UsageClock* usage_clock,
                    content::WebContents* web_contents,
                    TabStripModel* tab_strip_model);
@@ -121,6 +123,9 @@ class TabLifecycleUnitSource::TabLifecycleUnit
     kProactive,
     kExternalOrUrgent,
   };
+
+  // Same as GetSource, but cast to the most derived type.
+  TabLifecycleUnitSource* GetTabSource() const;
 
   // Determines if the tab is a media tab, and populates an optional
   // |decision_details| with full details.

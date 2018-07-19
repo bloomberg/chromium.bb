@@ -228,18 +228,15 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
   CheckFeatureUsage(reader.get(), details);
 }
 
-InterventionPolicyDatabase* GetInterventionPolicyDatabase() {
-  return TabLifecycleUnitSource::GetInstance()->intervention_policy_database();
-}
-
 }  // namespace
 
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
+    TabLifecycleUnitSource* source,
     base::ObserverList<TabLifecycleObserver>* observers,
     UsageClock* usage_clock,
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model)
-    : LifecycleUnitBase(web_contents->GetVisibility(), usage_clock),
+    : LifecycleUnitBase(source, web_contents->GetVisibility(), usage_clock),
       content::WebContentsObserver(web_contents),
       observers_(observers),
       tab_strip_model_(tab_strip_model) {
@@ -460,8 +457,14 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     return false;
   }
 
-  auto intervention_policy = GetInterventionPolicyDatabase()->GetFreezingPolicy(
-      url::Origin::Create(GetWebContents()->GetLastCommittedURL()));
+  if (!GetTabSource()->tab_lifecycles_enterprise_policy()) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
+  }
+
+  auto intervention_policy =
+      GetTabSource()->intervention_policy_database()->GetFreezingPolicy(
+          url::Origin::Create(GetWebContents()->GetLastCommittedURL()));
 
   switch (intervention_policy) {
     case OriginInterventions::OPT_IN:
@@ -526,9 +529,14 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   // This ensures that the decision details lists all possible reasons that the
   // transition can be denied.
 
+  if (!GetTabSource()->tab_lifecycles_enterprise_policy()) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
+  }
+
   if (reason == DiscardReason::kProactive) {
     auto intervention_policy =
-        GetInterventionPolicyDatabase()->GetDiscardingPolicy(
+        GetTabSource()->intervention_policy_database()->GetDiscardingPolicy(
             url::Origin::Create(GetWebContents()->GetLastCommittedURL()));
 
     switch (intervention_policy) {
@@ -739,6 +747,11 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
 content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()
     const {
   return web_contents();
+}
+
+TabLifecycleUnitSource* TabLifecycleUnitSource::TabLifecycleUnit::GetTabSource()
+    const {
+  return static_cast<TabLifecycleUnitSource*>(GetSource());
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTab() const {
