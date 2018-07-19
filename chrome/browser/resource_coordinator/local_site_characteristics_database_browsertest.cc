@@ -61,6 +61,15 @@ base::TimeDelta GetLongestObservationWindow() {
                    params.notifications_usage_observation_window});
 }
 
+// Returns the SiteCharacteristicsProto that backs |reader|.
+const SiteCharacteristicsProto* GetSiteCharacteristicsProtoFromReader(
+    SiteCharacteristicsDataReader* reader) {
+  const internal::LocalSiteCharacteristicsDataImpl* impl =
+      static_cast<LocalSiteCharacteristicsDataReader*>(reader)
+          ->impl_for_testing();
+  return &impl->site_characteristics_for_testing();
+}
+
 }  // namespace
 
 class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
@@ -555,6 +564,61 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, ClearHistory) {
   // The history has been cleared, we shouldn't know if this feature is used.
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
+}
+
+// Ensure that the observation time gets tracked across sessions.
+IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
+                       PRE_DatabaseObservationTimeTrackedAcrossSessions) {
+  GURL test_url(test_server().GetURL("foo.com", kTestPage));
+
+  auto reader =
+      GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
+  const SiteCharacteristicsProto* site_characteristics =
+      GetSiteCharacteristicsProtoFromReader(reader.get());
+
+  EXPECT_EQ(0, site_characteristics->updates_title_in_background()
+                   .observation_duration());
+
+  // Navigate to the test url and background it.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WaitForTransitionToLoaded(GetActiveWebContents());
+  GetActiveWebContents()->WasHidden();
+
+  test_clock().Advance(base::TimeDelta::FromSeconds(10));
+  EXPECT_GE(10, site_characteristics->updates_title_in_background()
+                    .observation_duration());
+}
+
+IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
+                       DatabaseObservationTimeTrackedAcrossSessions) {
+  GURL test_url(test_server().GetURL("foo.com", kTestPage));
+
+  auto reader =
+      GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
+  const SiteCharacteristicsProto* site_characteristics =
+      GetSiteCharacteristicsProtoFromReader(reader.get());
+
+  auto observation_duration =
+      site_characteristics->updates_title_in_background()
+          .observation_duration();
+  // The observation duration shouldn't be null as this has been augmented in
+  // the 'PRE' part of this test.
+  EXPECT_NE(0, observation_duration);
+
+  // Advance the clock and reset this reader. This should increase the
+  // observation duration that we have for this origin in the database.
+  test_clock().Advance(base::TimeDelta::FromSeconds(10));
+  reader.reset();
+
+  reader =
+      GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
+  site_characteristics = GetSiteCharacteristicsProtoFromReader(reader.get());
+
+  EXPECT_GE(observation_duration,
+            site_characteristics->updates_title_in_background()
+                .observation_duration());
 }
 
 }  // namespace resource_coordinator
