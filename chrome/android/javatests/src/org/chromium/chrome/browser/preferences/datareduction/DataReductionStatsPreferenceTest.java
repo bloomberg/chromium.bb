@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.preferences.datareduction;
 
+import static org.chromium.third_party.android.datausagechart.ChartDataUsageView.MAXIMUM_DAYS_IN_CHART;
+import static org.chromium.third_party.android.datausagechart.ChartDataUsageView.MINIMUM_DAYS_IN_CHART;
+
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
@@ -152,5 +155,99 @@ public class DataReductionStatsPreferenceTest {
         Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 <= afterTime);
+    }
+
+    /**
+     * Tests the timespan of the usage graph when Data Saver was enabled today.
+     */
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"DataReduction"})
+    public void testUpdateReductionStatisticsEnabledToday() throws Throwable {
+        DataReductionStatsPreference pref = new DataReductionStatsPreference(mContext, null);
+        long now = System.currentTimeMillis();
+        long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
+        long dataSaverEnableTime = now - DateUtils.HOUR_IN_MILLIS;
+        mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
+                        dataSaverEnableTime)
+                .apply();
+        pref.updateReductionStatistics(now);
+
+        Assert.assertEquals(MINIMUM_DAYS_IN_CHART, pref.getNumDaysInChart());
+    }
+
+    /**
+     * Tests the timespan of the usage graph when Data Saver was enabled yesterday.
+     */
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"DataReduction"})
+    public void testUpdateReductionStatisticsEnabledYesterday() throws Throwable {
+        DataReductionStatsPreference pref = new DataReductionStatsPreference(mContext, null);
+        long now = System.currentTimeMillis();
+        long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
+        long dataSaverEnableTime = now - DateUtils.DAY_IN_MILLIS;
+        mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
+                        dataSaverEnableTime)
+                .apply();
+        pref.updateReductionStatistics(now);
+
+        Assert.assertEquals(MINIMUM_DAYS_IN_CHART, pref.getNumDaysInChart());
+    }
+
+    /**
+     * Tests the timespan of the usage graph when Data Saver was enabled 31 days ago.
+     */
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"DataReduction"})
+    public void testUpdateReductionStatisticsEnabled31DaysAgo() throws Throwable {
+        DataReductionStatsPreference pref = new DataReductionStatsPreference(mContext, null);
+        long now = System.currentTimeMillis();
+        long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
+        long dataSaverEnableTime = now - 31 * DateUtils.DAY_IN_MILLIS;
+        mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
+                        dataSaverEnableTime)
+                .apply();
+        pref.updateReductionStatistics(now);
+
+        Assert.assertEquals(MAXIMUM_DAYS_IN_CHART, pref.getNumDaysInChart());
+    }
+
+    /**
+     * Tests the timespan of the usage graph when the stats have not been
+     * updated recently.
+     */
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"DataReduction"})
+    public void testUpdateReductionStatisticsStatsNotUpdatedRecently() throws Throwable {
+        DataReductionStatsPreference pref = new DataReductionStatsPreference(mContext, null);
+        long now = System.currentTimeMillis();
+        long lastUpdateTime = now - 7 * DateUtils.DAY_IN_MILLIS;
+        int numDaysDataSaverEnabled = 10;
+        long dataSaverEnableTime = now - numDaysDataSaverEnabled * DateUtils.DAY_IN_MILLIS;
+        mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
+                        dataSaverEnableTime)
+                .apply();
+        pref.updateReductionStatistics(now);
+
+        Assert.assertEquals(numDaysDataSaverEnabled + 1, pref.getNumDaysInChart());
     }
 }
