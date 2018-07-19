@@ -73,6 +73,9 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   // Gets the default output buffer size in frames.
   virtual void GetDefaultOutputBufferSize(DBusMethodCallback<int> callback) = 0;
 
+  // Gets if system AEC is supported.
+  virtual void GetSystemAecSupported(DBusMethodCallback<bool> callback) = 0;
+
   // Gets an array of audio input and output nodes.
   virtual void GetNodes(DBusMethodCallback<AudioNodeList> callback) = 0;
 
