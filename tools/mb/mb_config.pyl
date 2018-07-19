@@ -38,14 +38,12 @@
       'Android Cronet Builder': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Builder (dbg)': 'android_cronet_debug_static_bot_arm_no_neon',
       'Android Cronet Builder Asan': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan',
-      'Android Cronet Data Reduction Proxy Builder': 'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet KitKat Builder': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Lollipop Builder': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Marshmallow 64bit Builder': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet Marshmallow 64bit Perf': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet x86 Builder': 'android_cronet_release_bot_minimal_symbols_x86',
       'Android Cronet x86 Builder (dbg)': 'android_cronet_debug_static_bot_x86',
-      'Android N5X Swarm Builder': 'android_release_bot_minimal_symbols_arm64',
       'Android arm Builder (dbg)': 'android_debug_static_bot',
       'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
@@ -60,11 +58,8 @@
     'chromium.android.fyi': {
       'Android Cronet Builder (dbg)': 'android_cronet_debug_static_bot_arm_no_neon',
       'Android Cronet Builder Asan': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan',
-      'Android Cronet Data Reduction Proxy Builder': 'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet KitKat Builder': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'Memory Infra Tester': 'android_release_thumb_bot',
-      'NDK Next MIPS Builder':
-        'android_ndk_next_release_bot_minimal_symbols_mipsel',
       'NDK Next arm Builder':
         'android_ndk_next_release_bot_minimal_symbols',
       'NDK Next arm64 Builder':
@@ -93,9 +88,6 @@
     },
 
     'chromium.chromiumos': {
-      'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk',
-      'ChromiumOS daisy Compile': 'cros_chrome_sdk',
-      'Linux ChromiumOS Builder (dbg)': 'chromeos_with_codecs_debug_bot',
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
@@ -185,11 +177,9 @@
       'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols',
       'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
 
-      'EarlGreyiOS': 'ios',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
-      'Fuchsia': 'release_bot_fuchsia',
 
       'ios-device-goma-canary-clobber': 'ios',
 
@@ -198,19 +188,12 @@
       'Jumbo Linux x64': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'Jumbo Mac': 'jumbo_release_bot_minimal_symbols',
       'Jumbo Win x64': 'jumbo_release_bot_minimal_symbols',
-      'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
-      'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
-      'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
-      'MD Top Chrome Linux material': 'debug_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan Debug': 'libfuzzer_asan_debug_bot',
       'Libfuzzer Upload Linux MSan': 'libfuzzer_msan_release_bot',
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_release_bot',
       'Linux ARM': 'release_bot_arm',
-      'Linux ARM (dbg)': 'debug_bot_arm',
-      'Linux ARM64': 'release_bot_arm64',
-      'Linux ARM64 (dbg)': 'debug_bot_arm64',
       'Linux Clang Analyzer': 'linux_chromium_analysis',
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
@@ -230,7 +213,6 @@
       'Win 10 Fast Ring': 'release_trybot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
-      'Windows Clang Analyzer': 'windows_chromium_analysis',
       'win-annotator-rel': 'release_bot',
     },
 
@@ -540,8 +522,6 @@
       'android_mojo': 'android_release_trybot_arm64',
       'android_n5x_swarming_dbg': 'android_debug_trybot_arm64',
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
-      'android_unswarmed_n5_rel': 'android_release_trybot',
-      'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
       'android_unswarmed_pixel_aosp': 'android_debug_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
       'gpu-manual-try-android-p-pixel-2-32': 'gpu_tests_android_vulkan_release_trybot',
@@ -770,11 +750,6 @@
       'dcheck_always_on',
     ],
 
-    'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon',
-      'strip_debug_info',
-    ],
-
     'android_cronet_debug_static_bot_arm64': [
       'android', 'cronet', 'debug_static_bot', 'arm64',
     ],
@@ -785,11 +760,6 @@
 
     'android_cronet_debug_static_bot_x86': [
       'android', 'cronet', 'debug_static_bot', 'x86',
-    ],
-
-    'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon',
-      'strip_debug_info',
     ],
 
     'android_cronet_debug_static_bot_arm64': [
@@ -886,10 +856,6 @@
 
     'android_ndk_next_release_bot_minimal_symbols_arm64': [
       'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'arm64', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_mipsel': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'mipsel', 'strip_debug_info',
     ],
 
     'android_ndk_next_release_bot_minimal_symbols_x64': [
@@ -1203,14 +1169,6 @@
       'debug_bot',
     ],
 
-    'debug_bot_arm': [
-      'debug_bot', 'arm',
-    ],
-
-    'debug_bot_arm64': [
-      'debug_bot', 'arm64',
-    ],
-
     'debug_bot_enable_blink_heap_incremental_marking': [
       'debug_bot', 'enable_blink_heap_incremental_marking',
     ],
@@ -1404,10 +1362,6 @@
       'analysis'
     ],
 
-    'windows_chromium_analysis': [
-      'analysis'
-    ],
-
     'mac_views_browser_release_bot': [
       'mac_views_browser', 'release_bot',
     ],
@@ -1479,10 +1433,6 @@
 
     'release_bot_arm': [
       'release_bot', 'arm',
-    ],
-
-    'release_bot_arm64': [
-      'release_bot', 'arm64',
     ],
 
     'release_bot_chrome_with_codecs': [
@@ -1936,10 +1886,6 @@
 
     'minimal_symbols': {
       'gn_args': 'symbol_level=1',
-    },
-
-    'mipsel': {
-      'gn_args': 'target_cpu="mipsel"',
     },
 
     'msan': {
