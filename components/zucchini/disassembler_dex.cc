@@ -162,6 +162,7 @@ class CodeItemParser {
       return kInvalidOffset;
     DCHECK(Is32BitAligned(code_item_offset));
 
+    // TODO(huangs): Fail if |code_item->insns_size == 0| (Constraint A1).
     // Skip instruction bytes.
     if (!source_.GetArray<uint16_t>(code_item->insns_size))
       return kInvalidOffset;
