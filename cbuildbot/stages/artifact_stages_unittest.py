@@ -266,6 +266,18 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     self.stage = None
 
+  def _Prepare(self, extra_config=None, **kwargs):
+    """Prepare this stage for testing."""
+    if extra_config is None:
+      extra_config = {
+          'archive_build_debug': True,
+          'vm_tests': True,
+          'upload_symbols': True,
+      }
+    super(DebugSymbolsStageTest, self)._Prepare(extra_config=extra_config,
+                                                **kwargs)
+    self._run.attrs.release_tag = self.VERSION
+
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
     self._run.GetArchive().SetupArchivePath()
@@ -279,15 +291,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
   def _TestPerformStage(self, extra_config=None,
                         create_android_symbols_archive=False):
     """Run PerformStage for the stage with the given extra config."""
-    if not extra_config:
-      extra_config = {
-          'archive_build_debug': True,
-          'vm_tests': True,
-          'upload_symbols': True,
-      }
-
     self._Prepare(extra_config=extra_config)
-    self._run.attrs.release_tag = self.VERSION
 
     self.tar_mock.side_effect = '/my/tar/ball'
     self.stage = self.ConstructStage()
@@ -363,13 +367,32 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testUploadCrashStillNotifies(self):
     """Crashes in symbol upload should still notify external events."""
-    self.upload_mock.side_effect = \
-        artifact_stages.DebugSymbolsUploadException('mew')
+    self.upload_mock.side_effect = failures_lib.BuildScriptFailure(
+        cros_build_lib.RunCommandError('mew', cros_build_lib.CommandResult()),
+        'mew')
     result = self._TestPerformStage()
     self.assertIs(result[0], results_lib.Results.FORGIVEN)
 
     self.assertBoardAttrEqual('breakpad_symbols_generated', True)
     self.assertBoardAttrEqual('debug_tarball_generated', True)
+
+  def testUploadCrashUploadsList(self):
+    """A crash in symbol upload should still post the failed list file."""
+    self.upload_mock.side_effect = failures_lib.BuildScriptFailure(
+        cros_build_lib.RunCommandError('mew', cros_build_lib.CommandResult()),
+        'mew')
+    self._Prepare()
+    stage = self.ConstructStage()
+
+    with mock.patch.object(os.path, 'exists') as mock_exists, \
+         mock.patch.object(artifact_stages.DebugSymbolsStage,
+                           'UploadArtifact') as mock_upload:
+      mock_exists.return_value = True
+      self.assertRaises(artifact_stages.DebugSymbolsUploadException,
+                        stage.UploadSymbols, stage._build_root,
+                        stage._current_board)
+      self.assertEqual(mock_exists.call_count, 1)
+      self.assertEqual(mock_upload.call_count, 1)
 
 
 class UploadTestArtifactsStageMock(

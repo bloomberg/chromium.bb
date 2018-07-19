@@ -486,7 +486,8 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   def UploadSymbols(self, buildroot, board):
     """Upload generated debug symbols."""
-    failed_list = os.path.join(self.archive_path, 'failed_upload_symbols.list')
+    failed_name = 'failed_upload_symbols.list'
+    failed_list = os.path.join(self.archive_path, failed_name)
 
     if self._run.options.remote_trybot or self._run.debug:
       # For debug builds, limit ourselves to just uploading 1 symbol.
@@ -497,13 +498,24 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
       cnt = None
       official = self._run.config.chromeos_official
 
+    upload_passed = True
     try:
       commands.UploadSymbols(buildroot, board, official, cnt, failed_list)
     except failures_lib.BuildScriptFailure:
-      raise DebugSymbolsUploadException('Failed to upload all symbols.')
+      upload_passed = False
 
     if os.path.exists(failed_list):
-      self.UploadArtifact(os.path.basename(failed_list), archive=False)
+      self.UploadArtifact(failed_name, archive=False)
+
+      logging.notice('To upload the missing symbols from this build, run:')
+      for url in self._GetUploadUrls(filename=failed_name):
+        logging.notice('upload_symbols --failed-list %s %s',
+                       os.path.join(url, failed_name),
+                       os.path.join(url, 'debug_breakpad.tar.xz'))
+
+    # Delay throwing the exception until after we uploaded the list.
+    if not upload_passed:
+      raise DebugSymbolsUploadException('Failed to upload all symbols.')
 
   def _SymbolsNotGenerated(self):
     """Tell other stages that our symbols were not generated."""
