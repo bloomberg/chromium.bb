@@ -408,7 +408,7 @@ class TestView : public TestRenderWidgetHostView {
   float GetBottomControlsHeight() const override {
     return bottom_controls_height_;
   }
-  viz::LocalSurfaceId GetLocalSurfaceId() const override {
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const override {
     return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   }
 

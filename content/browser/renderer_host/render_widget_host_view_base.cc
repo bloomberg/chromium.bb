@@ -515,10 +515,6 @@ void RenderWidgetHostViewBase::OnFrameTokenChangedForView(
     host()->DidProcessFrame(frame_token);
 }
 
-viz::LocalSurfaceId RenderWidgetHostViewBase::GetLocalSurfaceId() const {
-  return viz::LocalSurfaceId();
-}
-
 viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,

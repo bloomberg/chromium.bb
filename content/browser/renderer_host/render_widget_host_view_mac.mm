@@ -1122,7 +1122,7 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetMac(host, cocoa_view()));
 }
 
-viz::LocalSurfaceId RenderWidgetHostViewMac::GetLocalSurfaceId() const {
+const viz::LocalSurfaceId& RenderWidgetHostViewMac::GetLocalSurfaceId() const {
   return browser_compositor_->GetRendererLocalSurfaceId();
 }
 
