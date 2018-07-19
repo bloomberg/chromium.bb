@@ -39,9 +39,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_url_fetchers.h"
 #include "chromeos/login/auth/user_context.h"
@@ -840,8 +840,8 @@ class ExistingUserControllerActiveDirectoryTest
   void SetUpInProcessBrowserTestFixture() override {
     ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
     fake_authpolicy_client()->DisableOperationDelayForTesting();
-    ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
-        kActiveDirectoryRealm));
+    ASSERT_TRUE(
+        tpm_util::LockDeviceActiveDirectoryForTesting(kActiveDirectoryRealm));
     RefreshDevicePolicy();
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));

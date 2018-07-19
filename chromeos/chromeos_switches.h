@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_switches.h"
 
 namespace chromeos {
 namespace switches {
@@ -38,7 +39,6 @@ CHROMEOS_EXPORT extern const char kArcStartMode[];
 CHROMEOS_EXPORT extern const char kArcTransitionMigrationRequired[];
 CHROMEOS_EXPORT extern const char kArtifactsDir[];
 CHROMEOS_EXPORT extern const char kAshWebUIInit[];
-CHROMEOS_EXPORT extern const char kAttestationServer[];
 CHROMEOS_EXPORT extern const char kCellularFirst[];
 CHROMEOS_EXPORT extern const char kChildWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kChildWallpaperSmall[];
@@ -49,7 +49,6 @@ CHROMEOS_EXPORT extern const char kCrosRegionsMode[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeHide[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeOverride[];
 CHROMEOS_EXPORT extern const char kDataSaverPromptDemoMode[];
-CHROMEOS_EXPORT extern const char kDbusStub[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperIsOem[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperSmall[];
@@ -156,13 +155,10 @@ CHROMEOS_EXPORT extern const char kProfileRequiresPolicy[];
 CHROMEOS_EXPORT extern const char kRlzPingDelay[];
 CHROMEOS_EXPORT extern const char kShelfHoverPreviews[];
 CHROMEOS_EXPORT extern const char kShelfNewUi[];
-CHROMEOS_EXPORT extern const char kShillStub[];
 CHROMEOS_EXPORT extern const char kShowAndroidFilesInFilesApp[];
 CHROMEOS_EXPORT extern const char kFilesAppDisableMyFilesNavigation[];
 CHROMEOS_EXPORT extern const char kShowLoginDevOverlay[];
-CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
-CHROMEOS_EXPORT extern const char kSystemDevMode[];
 CHROMEOS_EXPORT extern const char kTestEncryptionMigrationUI[];
 CHROMEOS_EXPORT extern const char kTetherStub[];
 CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];

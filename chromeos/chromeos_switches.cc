@@ -126,9 +126,6 @@ const char kArtifactsDir[] = "artifacts-dir";
 // Possible values: parallel|postpone. Default: parallel.
 const char kAshWebUIInit[] = "ash-webui-init";
 
-// Determines which Google Privacy CA to use for attestation.
-const char kAttestationServer[] = "attestation-server";
-
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
 // their primary means of connecting to the internet.
@@ -165,9 +162,6 @@ const char kCrosRegionsModeOverride[] = "override";
 
 // Optional value for Data Saver prompt on cellular networks.
 const char kDataSaverPromptDemoMode[] = "demo";
-
-// Forces the stub implementation of dbus clients.
-const char kDbusStub[] = "dbus-stub";
 
 // Indicates that the wallpaper images specified by
 // kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
@@ -557,23 +551,6 @@ const char kShelfHoverPreviews[] = "shelf-hover-previews";
 // Resdesigned shelf UI.
 const char kShelfNewUi[] = "shelf-new-ui";
 
-// Overrides network stub behavior. By default, ethernet, wifi and vpn are
-// enabled, and transitions occur instantaneously. Multiple options can be
-// comma separated (no spaces). Note: all options are in the format 'foo=x'.
-// Values are case sensitive and based on Shill names in service_constants.h.
-// See FakeShillManagerClient::SetInitialNetworkState for implementation.
-// Examples:
-//  'clear=1' - Clears all default configurations
-//  'wifi=on' - A wifi network is initially connected ('1' also works)
-//  'wifi=off' - Wifi networks are all initially disconnected ('0' also works)
-//  'wifi=disabled' - Wifi is initially disabled
-//  'wifi=none' - Wifi is unavailable
-//  'wifi=portal' - Wifi connection will be in Portal state
-//  'cellular=1' - Cellular is initially connected
-//  'cellular=LTE' - Cellular is initially connected, technology is LTE
-//  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
-const char kShillStub[] = "shill-stub";
-
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
 
@@ -588,19 +565,12 @@ const char kFilesAppDisableMyFilesNavigation[] = "disable-my-files-navigation";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
-// Sends test messages on first call to RequestUpdate (stub only).
-const char kSmsTestMessages[] = "sms-test-messages";
-
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
 // This also modifies OwnerSettingsServiceChromeOS::HandlesSetting such that no
 // settings are handled by OwnerSettingsServiceChromeOS.
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[] = "stub-cros-settings";
-
-// Indicates that the system is running in dev mode. The dev mode probing is
-// done by session manager.
-const char kSystemDevMode[] = "system-developer-mode";
 
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";

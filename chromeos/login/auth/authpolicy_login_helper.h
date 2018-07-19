@@ -46,13 +46,6 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
                                    const std::string& password,
                                    OnDecryptedCallback callback);
 
-  // Checks if device is locked for Active Directory management.
-  static bool IsAdLocked();
-
-  // Sets install attributes for Active Directory managed device. Persists it on
-  // disk.
-  static bool LockDeviceActiveDirectoryForTesting(const std::string& realm);
-
   // Packs arguments and calls AuthPolicyClient::JoinAdDomain. Joins machine to
   // Active directory domain. Then it calls RefreshDevicePolicy to cache the
   // policy on the authpolicyd side. |machine_name| is a name for a local
