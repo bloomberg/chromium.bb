@@ -14,7 +14,7 @@ namespace {
 
 constexpr char kSignedExchangeMagic[] = "sxg1-b1";
 constexpr size_t kMaximumSignatureHeaderFieldLength = 16 * 1024;
-constexpr size_t kMaximumCBORHeaderLength = 16 * 1024;
+constexpr size_t kMaximumCBORHeaderLength = 512 * 1024;
 
 }  // namespace
 
