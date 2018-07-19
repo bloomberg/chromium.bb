@@ -50,6 +50,16 @@ class DescriptorDeviceProvider
     return iter->display_name();
   }
 
+  VideoFacingMode GetCameraFacing(const std::string& device_id,
+                                  const std::string& model_id) override {
+    return MEDIA_VIDEO_FACING_NONE;
+  }
+
+  int GetOrientation(const std::string& device_id,
+                     const std::string& model_id) override {
+    return 0;
+  }
+
  private:
   std::vector<VideoCaptureDeviceDescriptor> descriptors_;
 };
@@ -76,11 +86,6 @@ class VideoCaptureDeviceFactoryLinuxTest : public ::testing::Test {
   std::unique_ptr<VideoCaptureDeviceFactoryLinux> factory_;
 };
 
-// The ChromeOS code path still does some hard-coded reading of files that
-// depend on a real device being present.
-// TODO(chfremer): Enable this for ChromeOS after making the ChromeOS code path
-// testable.
-#if !defined(OS_CHROMEOS)
 TEST_F(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2Device) {
   // Setup
   const std::string stub_display_name = "Fake Device 0";
@@ -98,6 +103,5 @@ TEST_F(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2Device) {
   ASSERT_EQ(stub_device_id, descriptors[0].device_id);
   ASSERT_EQ(stub_display_name, descriptors[0].display_name());
 }
-#endif
 
 };  // namespace media
