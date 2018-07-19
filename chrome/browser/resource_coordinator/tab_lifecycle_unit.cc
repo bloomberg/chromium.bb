@@ -228,6 +228,11 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
   CheckFeatureUsage(reader.get(), details);
 }
 
+bool GetTabLifecyclesEnterprisePolicy() {
+  return TabLifecycleUnitSource::GetInstance()
+      ->tab_lifecycles_enterprise_policy();
+}
+
 InterventionPolicyDatabase* GetInterventionPolicyDatabase() {
   return TabLifecycleUnitSource::GetInstance()->intervention_policy_database();
 }
@@ -460,6 +465,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     return false;
   }
 
+  if (!GetTabLifecyclesEnterprisePolicy()) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
+  }
+
   auto intervention_policy = GetInterventionPolicyDatabase()->GetFreezingPolicy(
       url::Origin::Create(GetWebContents()->GetLastCommittedURL()));
 
@@ -542,6 +552,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   // We deliberately run through all of the logic without early termination.
   // This ensures that the decision details lists all possible reasons that the
   // transition can be denied.
+
+  if (!GetTabLifecyclesEnterprisePolicy()) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
+  }
 
   if (reason == DiscardReason::kProactive) {
     auto intervention_policy =
