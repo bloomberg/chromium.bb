@@ -301,10 +301,11 @@ void VideoFrameSubmitter::OnContextLost() {
   }
   waiting_for_compositor_ack_ = false;
 
+  resource_provider_->OnContextLost();
+
   // |compositor_frame_sink_| should be reset last.
   compositor_frame_sink_.reset();
 
-  resource_provider_->OnContextLost();
   context_provider_callback_.Run(
       base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
                      weak_ptr_factory_.GetWeakPtr()));
