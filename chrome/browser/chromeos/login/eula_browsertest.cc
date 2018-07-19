@@ -181,7 +181,10 @@ class EulaTest : public OobeBaseTest {
 };
 
 // Tests that online version is shown when it is accessible.
-IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
+
+// https://crbug.com/865710: Flaky (crashes intermittently) on
+// linux-chromeos-rel builder.
+IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOnline) {
   set_allow_online_eula(true);
   ShowEulaScreen();
 
