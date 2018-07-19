@@ -80,7 +80,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   [self.view addSubview:self.widgetView];
 
   self.extensionContext.widgetLargestAvailableDisplayMode =
-      NCWidgetDisplayModeExpanded;
+      NCWidgetDisplayModeCompact;
 
   self.widgetView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.widgetView, self.view);
@@ -149,6 +149,9 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   }
   self.sites = newSites;
   [self.widgetView updateSites:self.sites];
+  self.extensionContext.widgetLargestAvailableDisplayMode =
+      [self.widgetView sitesFitSingleRow] ? NCWidgetDisplayModeCompact
+                                          : NCWidgetDisplayModeExpanded;
   return YES;
 }
 
