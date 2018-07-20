@@ -313,6 +313,19 @@ class ConfigClassTest(ChromeosConfigTestBase):
 class CBuildBotTest(ChromeosConfigTestBase):
   """General tests of chromeos_config."""
 
+  def findAllSlaveBuilds(self):
+    """Test helper for finding all slave builds.
+
+    Returns:
+      Set of slave build config names.
+    """
+    all_slaves = set()
+    for config in self.site_config.itervalues():
+      if config.master:
+        all_slaves.update(config.slave_configs)
+
+    return all_slaves
+
   def _GetBoardTypeToBoardsDict(self):
     """Get boards dict.
 
@@ -387,10 +400,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
   def testOnlySlaveConfigsNotImportant(self):
     """Configs listing slave configs, must list valid configs."""
-    all_slaves = set()
-    for config in self.site_config.itervalues():
-      if config.master:
-        all_slaves.update(config.slave_configs)
+    all_slaves = self.findAllSlaveBuilds()
 
     for config in self.site_config.itervalues():
       self.assertTrue(config.important or config.name in all_slaves,
@@ -1165,6 +1175,19 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.fail(('%s has a triggered_gitiles that is malformed: %r\n'
                      "Simple example: [['url', ['refs/heads/master']]]") %
                     (config.name, config.triggered_gitiles))
+
+  def testTryjobsOnLegoland(self):
+    """LUCI Scheduler entries only work for swarming builds."""
+    not_legoland = []
+    for config in self.site_config.itervalues():
+      if (config.active_waterfall != waterfall.WATERFALL_SWARMING and
+          config_lib.isTryjobConfig(config)):
+        not_legoland.append(config.name)
+
+    self.assertFalse(not_legoland,
+                     "Tryjob not on legoland: %s" %
+                     ', '.join(not_legoland))
+
 
 class TemplateTest(ChromeosConfigTestBase):
   """Tests for templates."""

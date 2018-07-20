@@ -3812,6 +3812,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.SucessBuilder',
       description='Builder always passes as quickly as possible.',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   # Used by cbuildbot/stages/sync_stages_unittest
@@ -3821,7 +3822,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
-      luci_builder=config_lib.LUCI_BUILDER_TRY,
+      luci_builder=config_lib.LUCI_BUILDER_PROD,
       builder_class_name='test_builders.SucessBuilder',
       description='Used by sync_stages_unittest.',
   )
@@ -3836,6 +3837,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.FailBuilder',
       description='Builder always fails as quickly as possible.',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.AddWithoutTemplate(
