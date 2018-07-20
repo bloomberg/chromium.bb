@@ -426,6 +426,18 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   config_name = 'debug_symbols'
 
+  def WaitUntilReady(self):
+    """Block until UnitTest completes.
+
+    The attribute 'unittest_completed' is set by UnitTestStage.
+
+    Returns:
+      Boolean that authorizes running of this stage.
+    """
+    return self.board_runattrs.GetParallel('unittest_completed',
+                                           timeout=None)
+
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""

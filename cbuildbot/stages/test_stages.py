@@ -49,6 +49,16 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
   # minutes, so we picked 90 minutes because it gives us a little buffer time.
   UNIT_TEST_TIMEOUT = 90 * 60
 
+  def HandleSkip(self):
+    """Launch DebugSymbolsStage if UnitTestStage is skipped."""
+    self.board_runattrs.SetParallel('unittest_completed', True)
+    return super(UnitTestStage, self).HandleSkip()
+
+  def _HandleStageException(self, exc_info):
+    """Launch DebugSymbolStage if UnitTestStage is raising an exception."""
+    self.board_runattrs.SetParallel('unittest_completed', True)
+    return super(UnitTestStage, self)._HandleStageException()
+
   def PerformStage(self):
     extra_env = {}
     if self._run.config.useflags:
@@ -59,6 +69,8 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
                             self._current_board,
                             blacklist=self._run.config.unittest_blacklist,
                             extra_env=extra_env)
+    # The attribute 'unittest_completed' is used in DebugSymbolsStage.
+    self.board_runattrs.SetParallel('unittest_completed', True)
     # Package UnitTest binaries.
     tarball = commands.BuildUnitTestTarball(
         self._build_root, self._current_board, self.archive_path)

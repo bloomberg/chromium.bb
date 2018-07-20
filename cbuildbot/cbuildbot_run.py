@@ -188,6 +188,7 @@ class RunAttributes(object):
       'packages_under_test',          # Set by BuildPackagesStage.
       'signed_images_ready',          # Set by SigningStage
       'paygen_test_payloads_ready',   # Set by PaygenStage
+      'unittest_completed',           # Set by UnitTestStage.
   ))
 
   # Attributes that need to be set by stages that can run in parallel
