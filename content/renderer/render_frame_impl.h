@@ -248,8 +248,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Just like RenderFrame::FromWebFrame but returns the implementation.
   static RenderFrameImpl* FromWebFrame(blink::WebFrame* web_frame);
 
-  // Used by content_layouttest_support to hook into the creation of
-  // RenderFrameImpls.
+  // Constructor parameters are bundled into a struct.
   struct CONTENT_EXPORT CreateParams {
     CreateParams(
         RenderViewImpl* render_view,

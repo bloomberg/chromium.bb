@@ -61,75 +61,8 @@ using blink::WebThemeEngine;
 
 namespace content {
 
-namespace {
-
-void WebViewTestProxyCreated(RenderView* render_view,
-                             test_runner::WebViewTestProxyBase* proxy) {
-  test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-
-  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
-  // TODO(lukasza): Using the 1st BlinkTestRunner as the main delegate is wrong,
-  // but it is difficult to change because this behavior has been baked for a
-  // long time into test assumptions (i.e. which PrintMessage gets delivered to
-  // the browser depends on this).
-  static bool first_test_runner = true;
-  if (first_test_runner) {
-    first_test_runner = false;
-    interfaces->SetDelegate(test_runner);
-  }
-
-  auto* test_interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-
-  proxy->set_delegate(test_runner);
-
-  std::unique_ptr<test_runner::WebViewTestClient> view_test_client =
-      test_interfaces->CreateWebViewTestClient(proxy, nullptr);
-  proxy->set_view_test_client(std::move(view_test_client));
-  std::unique_ptr<test_runner::WebWidgetTestClient> widget_test_client =
-      test_interfaces->CreateWebWidgetTestClient(
-          proxy->web_widget_test_proxy_base());
-  proxy->web_widget_test_proxy_base()->set_widget_test_client(
-      std::move(widget_test_client));
-  proxy->SetInterfaces(interfaces);
-  proxy->SetUpWidgetClient();
-}
-
-void WebWidgetTestProxyCreated(blink::WebWidget* web_widget,
-                               test_runner::WebWidgetTestProxyBase* proxy) {
-  CHECK(web_widget->IsWebFrameWidget());
-  proxy->set_web_widget(web_widget);
-  blink::WebFrameWidget* web_frame_widget =
-      static_cast<blink::WebFrameWidget*>(web_widget);
-  blink::WebView* web_view = web_frame_widget->LocalRoot()->View();
-  RenderView* render_view = RenderView::FromWebView(web_view);
-  test_runner::WebViewTestProxyBase* view_proxy =
-      GetWebViewTestProxyBase(render_view);
-  std::unique_ptr<test_runner::WebWidgetTestClient> widget_test_client =
-      LayoutTestRenderThreadObserver::GetInstance()
-          ->test_interfaces()
-          ->CreateWebWidgetTestClient(proxy);
-  proxy->set_web_view_test_proxy_base(view_proxy);
-  proxy->set_widget_test_client(std::move(widget_test_client));
-}
-
-void WebFrameTestProxyCreated(RenderFrame* render_frame,
-                              test_runner::WebFrameTestProxyBase* proxy) {
-  test_runner::WebViewTestProxyBase* web_view_test_proxy_base =
-      GetWebViewTestProxyBase(render_frame->GetRenderView());
-  proxy->set_test_client(
-      LayoutTestRenderThreadObserver::GetInstance()
-          ->test_interfaces()
-          ->CreateWebFrameTestClient(web_view_test_proxy_base, proxy));
-}
-
-}  // namespace
-
 LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
-  EnableWebTestProxyCreation(base::Bind(&WebViewTestProxyCreated),
-                             base::Bind(&WebWidgetTestProxyCreated),
-                             base::Bind(&WebFrameTestProxyCreated));
+  EnableWebTestProxyCreation();
   SetWorkerRewriteURLFunction(RewriteLayoutTestsURL);
 }
 

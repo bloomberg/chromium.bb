@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "content/renderer/render_widget.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_widget_test_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -19,9 +20,14 @@ class WebString;
 class WebWidget;
 }
 
+namespace content {
+class RenderViewImpl;
+}
+
 namespace test_runner {
 
 class EventSender;
+class WebTestInterfaces;
 class WebViewTestProxyBase;
 
 class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
@@ -64,19 +70,18 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
   }
 
  private:
-  blink::WebWidget* web_widget_;
-  WebViewTestProxyBase* web_view_test_proxy_base_;
+  blink::WebWidget* web_widget_ = nullptr;
+  WebViewTestProxyBase* web_view_test_proxy_base_ = nullptr;
   std::unique_ptr<WebWidgetTestClient> widget_test_client_;
   std::unique_ptr<EventSender> event_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWidgetTestProxyBase);
 };
 
-// WebWidgetTestProxy is used during LayoutTests and always instantiated, at
-// time of writing with Base=RenderWidget. It does not directly inherit from it
-// for layering purposes.
-// The intent of that class is to wrap RenderWidget for tests purposes in
-// order to reduce the amount of test specific code in the production code.
+// WebWidgetTestProxy is used during LayoutTests. The intent of the class is to
+// wrap RenderWidget for tests purposes in order to reduce the amount of test
+// specific code in the production code.
+//
 // WebWidgetTestProxy is only doing the glue between RenderWidget and
 // WebWidgetTestProxyBase, that means that there is no logic living in this
 // class except deciding which base class should be called (could be both).
@@ -89,57 +94,33 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
 //    override RenderViewImpl's getter and call a getter from
 //    WebWidgetTestProxyBase instead. In addition, WebWidgetTestProxyBase will
 //    have a public setter that could be called from the TestRunner.
-template <class Base>
-class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
+class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget,
+                                              public WebWidgetTestProxyBase {
  public:
   template <typename... Args>
   explicit WebWidgetTestProxy(Args&&... args)
-      : Base(std::forward<Args>(args)...) {}
+      : RenderWidget(std::forward<Args>(args)...) {}
+  void Initialize(WebTestInterfaces* interfaces,
+                  blink::WebWidget* web_widget,
+                  content::RenderViewImpl* render_view_for_local_root);
 
   // WebWidgetClient implementation.
-  blink::WebLayerTreeView* InitializeLayerTreeView() override {
-    return Base::InitializeLayerTreeView();
-  }
-  blink::WebScreenInfo GetScreenInfo() override {
-    blink::WebScreenInfo info = Base::GetScreenInfo();
-    blink::WebScreenInfo test_info = widget_test_client()->GetScreenInfo();
-    if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
-      info.orientation_type = test_info.orientation_type;
-      info.orientation_angle = test_info.orientation_angle;
-    }
-    return info;
-  }
-  void ScheduleAnimation() override {
-    Base::ScheduleAnimation();
-    widget_test_client()->ScheduleAnimation();
-  }
-  bool RequestPointerLock() override {
-    return widget_test_client()->RequestPointerLock();
-  }
-  void RequestPointerUnlock() override {
-    widget_test_client()->RequestPointerUnlock();
-  }
-  bool IsPointerLocked() override {
-    return widget_test_client()->IsPointerLocked();
-  }
+  blink::WebScreenInfo GetScreenInfo() override;
+  void ScheduleAnimation() override;
+  bool RequestPointerLock() override;
+  void RequestPointerUnlock() override;
+  bool IsPointerLocked() override;
   void SetToolTipText(const blink::WebString& text,
-                      blink::WebTextDirection hint) override {
-    Base::SetToolTipText(text, hint);
-    widget_test_client()->SetToolTipText(text, hint);
-  }
+                      blink::WebTextDirection hint) override;
   void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
-                     const blink::WebPoint& image_offset) override {
-    widget_test_client()->StartDragging(policy, data, mask, drag_image,
-                                        image_offset);
-    // Don't forward this call to Base because we don't want to do a real
-    // drag-and-drop.
-  }
+                     const blink::WebPoint& image_offset) override;
 
  private:
-  virtual ~WebWidgetTestProxy() {}
+  // RenderWidet does not have a public destructor.
+  ~WebWidgetTestProxy() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebWidgetTestProxy);
 };

@@ -1,6 +1,7 @@
 include_rules = [
   "+cc",
   "+content/public/test",
+  "+content/renderer",
   "+device/gamepad/public/cpp",
   "+device/gamepad/public/mojom",
   "+gin",

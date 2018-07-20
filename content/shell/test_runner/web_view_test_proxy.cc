@@ -147,13 +147,8 @@ void ProxyWebWidgetClient::StartDragging(blink::WebReferrerPolicy policy,
   // want to do a real drag-and-drop.
 }
 
-WebViewTestProxyBase::WebViewTestProxyBase(
-    blink::WebWidgetClient* base_class_widget_client)
-    : test_interfaces_(nullptr),
-      delegate_(nullptr),
-      web_view_(nullptr),
-      base_class_widget_client_(base_class_widget_client),
-      accessibility_controller_(new AccessibilityController(this)),
+WebViewTestProxyBase::WebViewTestProxyBase()
+    : accessibility_controller_(new AccessibilityController(this)),
       text_input_controller_(new TextInputController(this)),
       view_test_runner_(new TestRunnerForSpecificView(this)) {
   WebWidgetTestProxyBase::set_web_view_test_proxy_base(this);
@@ -163,11 +158,6 @@ WebViewTestProxyBase::~WebViewTestProxyBase() {
   test_interfaces_->WindowClosed(this);
   if (test_interfaces_->GetDelegate() == delegate_)
     test_interfaces_->SetDelegate(nullptr);
-}
-
-void WebViewTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
-  test_interfaces_ = interfaces->GetTestInterfaces();
-  test_interfaces_->WindowOpened(this);
 }
 
 void WebViewTestProxyBase::Reset() {
@@ -188,5 +178,64 @@ void WebViewTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
   text_input_controller_->Install(frame);
   view_test_runner_->Install(frame);
 }
+
+void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
+                                  WebTestDelegate* delegate) {
+  // On WebViewTestProxyBase.
+  set_delegate(delegate);
+
+  std::unique_ptr<WebWidgetTestClient> web_widget_client =
+      interfaces->CreateWebWidgetTestClient(web_widget_test_proxy_base());
+  view_test_client_ = interfaces->CreateWebViewTestClient(this, nullptr);
+  // This uses the widget_test_client set above on WebWidgetTestProxyBase.
+  proxy_widget_client_ = std::make_unique<ProxyWebWidgetClient>(
+      RenderViewImpl::WidgetClient(), web_widget_client.get());
+
+  // On WebWidgetTestProxyBase.
+  // It's weird that the WebView has the proxy client, but the
+  // WebWidgetProxyBase has the test one only, but that's because the
+  // WebWidgetTestProxyBase does not itself use the WebWidgetClient, only its
+  // subclasses do.
+  web_widget_test_proxy_base()->set_widget_test_client(
+      std::move(web_widget_client));
+
+  // On WebViewTestProxyBase.
+  set_test_interfaces(interfaces->GetTestInterfaces());
+  test_interfaces()->WindowOpened(this);
+}
+
+blink::WebView* WebViewTestProxy::CreateView(
+    blink::WebLocalFrame* creator,
+    const blink::WebURLRequest& request,
+    const blink::WebWindowFeatures& features,
+    const blink::WebString& frame_name,
+    blink::WebNavigationPolicy policy,
+    bool suppress_opener,
+    blink::WebSandboxFlags sandbox_flags) {
+  if (!view_test_client_->CreateView(creator, request, features, frame_name,
+                                     policy, suppress_opener, sandbox_flags))
+    return nullptr;
+  return RenderViewImpl::CreateView(creator, request, features, frame_name,
+                                    policy, suppress_opener, sandbox_flags);
+}
+
+void WebViewTestProxy::PrintPage(blink::WebLocalFrame* frame) {
+  view_test_client_->PrintPage(frame);
+}
+
+blink::WebString WebViewTestProxy::AcceptLanguages() {
+  return view_test_client_->AcceptLanguages();
+}
+
+void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
+  view_test_client_->DidFocus(calling_frame);
+  RenderViewImpl::DidFocus(calling_frame);
+}
+
+blink::WebWidgetClient* WebViewTestProxy::WidgetClient() {
+  return proxy_widget_client_.get();
+}
+
+WebViewTestProxy::~WebViewTestProxy() = default;
 
 }  // namespace test_runner
