@@ -130,7 +130,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
       item->GetReceivedBytes(), item->GetTotalBytes(),
-      browser_context ? false : browser_context->IsOffTheRecord(),
+      browser_context ? browser_context->IsOffTheRecord() : false,
       item->GetState(), item->PercentComplete(), item->IsPaused(),
       has_user_gesture, item->CanResume(), item->IsParallelDownload(),
       ConvertUTF8ToJavaString(env, original_url),
