@@ -1140,20 +1140,14 @@ float WindowSelectorItem::GetOpacity() {
 }
 
 bool WindowSelectorItem::ShouldAnimateWhenEntering() const {
-  if (!IsNewOverviewAnimationsEnabled())
-    return true;
   return should_animate_when_entering_;
 }
 
 bool WindowSelectorItem::ShouldAnimateWhenExiting() const {
-  if (!IsNewOverviewAnimationsEnabled())
-    return true;
   return should_animate_when_exiting_;
 }
 
 bool WindowSelectorItem::ShouldBeObservedWhenExiting() const {
-  if (!IsNewOverviewAnimationsEnabled())
-    return false;
   return should_be_observed_when_exiting_;
 }
 

@@ -101,10 +101,6 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
   return wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned();
 }
 
-bool IsNewOverviewAnimationsEnabled() {
-  return base::FeatureList::IsEnabled(features::kNewOverviewAnimations);
-}
-
 bool IsOverviewSwipeToCloseEnabled() {
   return base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
 }

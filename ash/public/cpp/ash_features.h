@@ -39,11 +39,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewerApp;
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
-// Enables the new overview animations.
-// TODO(wutao): Remove this after the feature is fully launched.
-// https://crbug.com/801465.
-ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewAnimations;
-
 // Enables the new wallpaper picker.
 // TODO(wzang): Remove this after the feature is fully launched.
 // https://crbug.com/777293.
