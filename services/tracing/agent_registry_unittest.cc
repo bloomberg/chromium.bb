@@ -19,11 +19,9 @@ namespace tracing {
 
 class AgentRegistryTest : public testing::Test {
  public:
-  AgentRegistryTest() : service_ref_factory_(base::DoNothing()) {}
-
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
-    registry_.reset(new AgentRegistry(&service_ref_factory_));
+    registry_ = std::make_unique<AgentRegistry>();
   }
 
   void TearDown() override {
@@ -47,7 +45,6 @@ class AgentRegistryTest : public testing::Test {
   }
 
   std::unique_ptr<AgentRegistry> registry_;
-  service_manager::ServiceContextRefFactory service_ref_factory_;
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;

@@ -66,15 +66,9 @@ class PerfettoTracingCoordinator::TracingSession {
   DISALLOW_COPY_AND_ASSIGN(TracingSession);
 };
 
-// static
-void PerfettoTracingCoordinator::DestroyOnSequence(
-    std::unique_ptr<PerfettoTracingCoordinator> coordinator) {
-  PerfettoService::GetInstance()->task_runner()->DeleteSoon(
-      FROM_HERE, std::move(coordinator));
-}
-
-PerfettoTracingCoordinator::PerfettoTracingCoordinator()
-    : binding_(this), weak_factory_(this) {
+PerfettoTracingCoordinator::PerfettoTracingCoordinator(
+    AgentRegistry* agent_registry)
+    : Coordinator(agent_registry), binding_(this), weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -136,18 +130,6 @@ void PerfettoTracingCoordinator::StopAndFlushAgent(
 
 void PerfettoTracingCoordinator::IsTracing(IsTracingCallback callback) {
   std::move(callback).Run(tracing_session_ != nullptr);
-}
-
-void PerfettoTracingCoordinator::RequestBufferUsage(
-    RequestBufferUsageCallback callback) {
-  std::move(callback).Run(false /* success */, 0.0f /* percent_full */,
-                          0 /* approximate_count */);
-}
-
-// TODO(oysteine): Old tracing and Perfetto need to both be active for
-// about://tracing to enumerate categories.
-void PerfettoTracingCoordinator::GetCategories(GetCategoriesCallback callback) {
-  std::move(callback).Run(false /* success */, "" /* categories_list */);
 }
 
 }  // namespace tracing

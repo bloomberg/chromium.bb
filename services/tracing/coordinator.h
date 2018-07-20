@@ -41,22 +41,20 @@ namespace tracing {
 // should guard against it using timeouts.
 class Coordinator : public mojom::Coordinator {
  public:
-  static Coordinator* GetInstance();
-
-  explicit Coordinator(
-      service_manager::ServiceContextRefFactory* service_ref_factory);
+  explicit Coordinator(AgentRegistry* agent_registry);
 
   void BindCoordinatorRequest(
       mojom::CoordinatorRequest request,
       const service_manager::BindSourceInfo& source_info);
+
+ protected:
+  ~Coordinator() override;
 
  private:
   friend std::default_delete<Coordinator>;
   friend class CoordinatorTest;  // For testing.
 
   class TraceStreamer;
-
-  ~Coordinator() override;
 
   // mojom::Coordinator
   void StartTracing(const std::string& config,
@@ -110,7 +108,6 @@ class Coordinator : public mojom::Coordinator {
   // For getting categories.
   std::set<std::string> category_set_;
   GetCategoriesCallback get_categories_callback_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   base::WeakPtrFactory<Coordinator> weak_ptr_factory_;
 

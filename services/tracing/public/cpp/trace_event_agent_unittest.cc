@@ -83,7 +83,7 @@ class TraceEventAgentTest : public testing::Test {
  public:
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
-    agent_.reset(new TraceEventAgentImpl(nullptr, false));
+    agent_.reset(new LegacyTraceEventAgent(nullptr, false));
   }
 
   void TearDown() override {
@@ -130,7 +130,7 @@ class TraceEventAgentTest : public testing::Test {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<TraceEventAgentImpl> agent_;
+  std::unique_ptr<LegacyTraceEventAgent> agent_;
   std::unique_ptr<MockRecorder> recorder_;
 };
 

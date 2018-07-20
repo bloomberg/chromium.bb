@@ -37,7 +37,6 @@ class PerfettoService : public mojom::PerfettoService {
   ~PerfettoService() override;
 
   static PerfettoService* GetInstance();
-  static void DestroyOnSequence(std::unique_ptr<PerfettoService>);
 
   void BindRequest(mojom::PerfettoServiceRequest request,
                    const service_manager::BindSourceInfo& source_info);

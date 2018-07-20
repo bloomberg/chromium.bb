@@ -42,8 +42,6 @@ const char kRequestClockSyncMarkerClosureName[] =
     "RequestClockSyncMarkerClosure";
 const char kStartTracingClosureName[] = "StartTracingClosure";
 
-tracing::Coordinator* g_coordinator = nullptr;
-
 }  // namespace
 
 namespace tracing {
@@ -269,22 +267,12 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   DISALLOW_COPY_AND_ASSIGN(TraceStreamer);
 };
 
-// static
-Coordinator* Coordinator::GetInstance() {
-  DCHECK(g_coordinator);
-  return g_coordinator;
-}
-
-Coordinator::Coordinator(
-    service_manager::ServiceContextRefFactory* service_ref_factory)
+Coordinator::Coordinator(AgentRegistry* agent_registry)
     : binding_(this),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      agent_registry_(AgentRegistry::GetInstance()),
-      service_ref_(service_ref_factory->CreateRef()),
+      agent_registry_(agent_registry),
       weak_ptr_factory_(this) {
-  DCHECK(!g_coordinator);
   DCHECK(agent_registry_);
-  g_coordinator = this;
   constexpr base::TaskTraits traits = {base::MayBlock(),
                                        base::WithBaseSyncPrimitives(),
                                        base::TaskPriority::BACKGROUND};
@@ -313,8 +301,6 @@ Coordinator::~Coordinator() {
     trace_streamer_->CloseStream();
     background_task_runner_->DeleteSoon(FROM_HERE, trace_streamer_.release());
   }
-
-  g_coordinator = nullptr;
 }
 
 void Coordinator::BindCoordinatorRequest(
