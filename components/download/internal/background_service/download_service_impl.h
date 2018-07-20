@@ -11,6 +11,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/download/internal/background_service/config.h"
 #include "components/download/internal/background_service/service_config_impl.h"
 #include "components/download/public/background_service/download_service.h"
@@ -59,6 +60,8 @@ class DownloadServiceImpl : public DownloadService {
   base::circular_deque<base::OnceClosure> pending_actions_;
   std::map<DownloadTaskType, base::OnceClosure> pending_tasks_;
   bool startup_completed_;
+
+  base::WeakPtrFactory<DownloadServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);
 };
