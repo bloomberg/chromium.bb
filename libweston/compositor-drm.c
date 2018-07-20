@@ -463,6 +463,7 @@ struct drm_head {
 
 struct drm_output {
 	struct weston_output base;
+	struct drm_backend *backend;
 
 	uint32_t crtc_id; /* object ID to pass to DRM functions */
 	int pipe; /* index of CRTC in resource array / bitmasks */
@@ -6103,6 +6104,8 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
 	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return NULL;
+
+	output->backend = b;
 
 	weston_output_init(&output->base, compositor, name);
 
