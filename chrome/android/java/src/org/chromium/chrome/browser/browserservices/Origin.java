@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.browserservices;
 
 import android.net.Uri;
 
+import org.chromium.chrome.browser.UrlConstants;
+
 /**
  * A class to canonically represent a web origin in Java. In comparison to
  * {@link org.chromium.net.GURLUtils#getOrigin} it can be used before native is loaded and lets us
@@ -41,8 +43,9 @@ public class Origin {
 
         // Make explicit ports implicit and remove any user:password.
         int port = uri.getPort();
-        if (uri.getScheme().equals("http") && port == HTTP_DEFAULT_PORT) port = -1;
-        if (uri.getScheme().equals("https") && port == HTTPS_DEFAULT_PORT) port = -1;
+        String scheme = uri.getScheme();
+        if (scheme.equals(UrlConstants.HTTP_SCHEME) && port == HTTP_DEFAULT_PORT) port = -1;
+        if (scheme.equals(UrlConstants.HTTPS_SCHEME) && port == HTTPS_DEFAULT_PORT) port = -1;
 
         String authority = uri.getHost();
         if (port != -1) authority += ":" + port;

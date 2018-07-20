@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -55,6 +56,38 @@ public class BrowserServicesMetrics {
      */
     public static void recordTwaOpenTime(long duration, TimeUnit unit) {
         RecordHistogram.recordTimesHistogram("BrowserServices.TwaOpenTime", duration, unit);
+    }
+
+    /**
+     * Returns a {@link TimingMetric} that records the amount of time spent querying the Android
+     * system for ResolveInfos that will deal with a given URL when launching from a background
+     * service.
+     */
+    public static TimingMetric getServiceTabResolveInfoTimingContext() {
+        return new TimingMetric("BrowserServices.ServiceTabResolveInfoQuery");
+    }
+
+    /**
+     * A class to be used with a try-with-resources to record the elapsed time within the try block.
+     */
+    public static class TimingMetric implements AutoCloseable {
+        private final String mMetric;
+        private final long mStart;
+
+        private static long now() {
+            return SystemClock.uptimeMillis();
+        }
+
+        public TimingMetric(String metric) {
+            mMetric = metric;
+            mStart = now();
+        }
+
+        @Override
+        public void close() {
+            RecordHistogram.recordMediumTimesHistogram(
+                    mMetric, now() - mStart, TimeUnit.MILLISECONDS);
+        }
     }
 
     // Don't let anyone instantiate.
