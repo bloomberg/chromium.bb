@@ -1685,6 +1685,9 @@ weston_layer_set_mask(struct weston_layer *layer, int x, int y, int width, int h
 void
 weston_layer_set_mask_infinite(struct weston_layer *layer);
 
+bool
+weston_layer_mask_is_infinite(struct weston_layer *layer);
+
 void
 weston_plane_init(struct weston_plane *plane,
 			struct weston_compositor *ec,

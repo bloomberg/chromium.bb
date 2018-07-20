@@ -2746,6 +2746,15 @@ weston_layer_set_mask_infinite(struct weston_layer *layer)
 				     UINT32_MAX, UINT32_MAX);
 }
 
+WL_EXPORT bool
+weston_layer_mask_is_infinite(struct weston_layer *layer)
+{
+	return layer->mask.x1 == INT32_MIN &&
+	       layer->mask.y1 == INT32_MIN &&
+	       layer->mask.x2 == INT32_MIN + UINT32_MAX &&
+	       layer->mask.y2 == INT32_MIN + UINT32_MAX;
+}
+
 WL_EXPORT void
 weston_output_schedule_repaint(struct weston_output *output)
 {
