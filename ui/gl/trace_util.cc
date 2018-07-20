@@ -40,4 +40,10 @@ base::trace_event::MemoryAllocatorDumpGuid GetGLRenderbufferGUIDForTracing(
                          share_group_guid, renderbuffer_id));
 }
 
+base::trace_event::MemoryAllocatorDumpGuid GetGLTextureRasterGUIDForTracing(
+    uint32_t texture_id) {
+  return base::trace_event::MemoryAllocatorDumpGuid(
+      base::StringPrintf("gl-texture-raster-gpu-process/%d", texture_id));
+}
+
 }  // namespace gl

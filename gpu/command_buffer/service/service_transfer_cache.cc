@@ -12,6 +12,8 @@
 #include "base/sys_info.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/paint/image_transfer_cache_entry.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "ui/gl/trace_util.h"
 
 namespace gpu {
 namespace {
@@ -21,6 +23,34 @@ size_t CacheSizeLimit() {
   if (base::SysInfo::IsLowEndDevice())
     memory_usage = 4 * 1024 * 1024;
   return memory_usage;
+}
+
+// TODO(ericrk): Move this into ServiceImageTransferCacheEntry - here for now
+// due to ui/gl dependency.
+void DumpMemoryForImageTransferCacheEntry(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& dump_name,
+    const cc::ServiceImageTransferCacheEntry* entry) {
+  using base::trace_event::MemoryAllocatorDump;
+
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
+
+  // Alias the image entry to its skia counterpart, taking ownership of the
+  // memory and preventing double counting.
+  DCHECK(entry->image());
+  GrBackendTexture image_backend_texture =
+      entry->image()->getBackendTexture(false /* flushPendingGrContextIO */);
+  GrGLTextureInfo info;
+  if (image_backend_texture.getGLTextureInfo(&info)) {
+    auto guid = gl::GetGLTextureRasterGUIDForTracing(info.fID);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    // Importance of 3 gives this dump priority over the dump made by Skia
+    // (importance 2), attributing memory here.
+    const int kImportance = 3;
+    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+  }
 }
 
 }  // namespace
@@ -160,7 +190,6 @@ bool ServiceTransferCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   using base::trace_event::MemoryAllocatorDump;
-  using base::trace_event::MemoryAllocatorDumpGuid;
   using base::trace_event::MemoryDumpLevelOfDetail;
 
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
@@ -179,23 +208,26 @@ bool ServiceTransferCache::OnMemoryDump(
     uint32_t entry_id = it->first.entry_id;
     auto entry_type = it->first.entry_type;
     const auto* entry = it->second.entry.get();
+    const cc::ServiceImageTransferCacheEntry* image_entry = nullptr;
 
-    std::string dump_name;
-    if (entry_type == cc::TransferCacheEntryType::kImage &&
-        static_cast<const cc::ServiceImageTransferCacheEntry*>(entry)
-            ->fits_on_gpu()) {
-      dump_name = base::StringPrintf(
-          "gpu/transfer_cache/cache_0x%" PRIXPTR "/gpu/entry_%d",
-          reinterpret_cast<uintptr_t>(this), entry_id);
-    } else {
-      dump_name = base::StringPrintf(
-                "gpu/transfer_cache/cache_0x%" PRIXPTR "/cpu/entry_%d",
-                reinterpret_cast<uintptr_t>(this), entry_id);
+    if (entry_type == cc::TransferCacheEntryType::kImage) {
+      image_entry =
+          static_cast<const cc::ServiceImageTransferCacheEntry*>(entry);
     }
 
-    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                    MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
+    if (image_entry && image_entry->fits_on_gpu()) {
+      std::string dump_name = base::StringPrintf(
+          "gpu/transfer_cache/cache_0x%" PRIXPTR "/gpu/entry_%d",
+          reinterpret_cast<uintptr_t>(this), entry_id);
+      DumpMemoryForImageTransferCacheEntry(pmd, dump_name, image_entry);
+    } else {
+      std::string dump_name = base::StringPrintf(
+          "gpu/transfer_cache/cache_0x%" PRIXPTR "/cpu/entry_%d",
+          reinterpret_cast<uintptr_t>(this), entry_id);
+      MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+      dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                      MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
+    }
   }
 
   return true;
