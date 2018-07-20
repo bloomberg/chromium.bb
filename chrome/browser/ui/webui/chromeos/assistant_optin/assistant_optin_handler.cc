@@ -62,67 +62,86 @@ assistant::SettingsUiUpdate GetEmailOptInUpdate(bool opted_in) {
 using SettingZippyList = google::protobuf::RepeatedPtrField<
     assistant::ClassicActivityControlUiTexts::SettingZippy>;
 // Helper method to create zippy data.
-base::ListValue CreateZippyData(const SettingZippyList& zippy_list) {
-  base::ListValue zippy_data;
+base::Value CreateZippyData(const SettingZippyList& zippy_list) {
+  base::Value zippy_data(base::Value::Type::LIST);
   for (auto& setting_zippy : zippy_list) {
-    base::DictionaryValue data;
-    data.SetString("title", setting_zippy.title());
+    base::Value data(base::Value::Type::DICTIONARY);
+    data.SetKey("title", base::Value(setting_zippy.title()));
     if (setting_zippy.description_paragraph_size()) {
-      data.SetString("description", setting_zippy.description_paragraph(0));
+      data.SetKey("description",
+                  base::Value(setting_zippy.description_paragraph(0)));
     }
     if (setting_zippy.additional_info_paragraph_size()) {
-      data.SetString("additionalInfo",
-                     setting_zippy.additional_info_paragraph(0));
+      data.SetKey("additionalInfo",
+                  base::Value(setting_zippy.additional_info_paragraph(0)));
     }
-    data.SetString("iconUri", setting_zippy.icon_uri());
+    data.SetKey("iconUri", base::Value(setting_zippy.icon_uri()));
     zippy_data.GetList().push_back(std::move(data));
   }
   return zippy_data;
 }
 
 // Helper method to create disclosure data.
-base::ListValue CreateDisclosureData(const SettingZippyList& disclosure_list) {
-  base::ListValue disclosure_data;
+base::Value CreateDisclosureData(const SettingZippyList& disclosure_list) {
+  base::Value disclosure_data(base::Value::Type::LIST);
   for (auto& disclosure : disclosure_list) {
-    base::DictionaryValue data;
-    data.SetString("title", disclosure.title());
+    base::Value data(base::Value::Type::DICTIONARY);
+    data.SetKey("title", base::Value(disclosure.title()));
     if (disclosure.description_paragraph_size()) {
-      data.SetString("description", disclosure.description_paragraph(0));
+      data.SetKey("description",
+                  base::Value(disclosure.description_paragraph(0)));
     }
     if (disclosure.additional_info_paragraph_size()) {
-      data.SetString("additionalInfo", disclosure.additional_info_paragraph(0));
+      data.SetKey("additionalInfo",
+                  base::Value(disclosure.additional_info_paragraph(0)));
     }
-    data.SetString("iconUri", disclosure.icon_uri());
+    data.SetKey("iconUri", base::Value(disclosure.icon_uri()));
     disclosure_data.GetList().push_back(std::move(data));
   }
   return disclosure_data;
 }
 
 // Helper method to create get more screen data.
-base::ListValue CreateGetMoreData(
-    bool email_optin_needed,
-    const assistant::EmailOptInUi& email_optin_ui) {
-  base::ListValue get_more_data;
+base::Value CreateGetMoreData(bool email_optin_needed,
+                              const assistant::EmailOptInUi& email_optin_ui) {
+  base::Value get_more_data(base::Value::Type::LIST);
+
+  // Process hotword data.
+  base::Value hotword_data(base::Value::Type::DICTIONARY);
+  hotword_data.SetKey(
+      "title",
+      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_TITLE)));
+  hotword_data.SetKey(
+      "description",
+      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_DESC)));
+  hotword_data.SetKey("defaultEnabled", base::Value(true));
+  hotword_data.SetKey(
+      "iconUri",
+      base::Value("https://www.gstatic.com/images/icons/material/system/"
+                  "2x/mic_none_grey600_48dp.png"));
+  get_more_data.GetList().push_back(std::move(hotword_data));
 
   // Process screen context data.
-  base::DictionaryValue context_data;
-  context_data.SetString(
-      "title", l10n_util::GetStringUTF16(IDS_ASSISTANT_SCREEN_CONTEXT_TITLE));
-  context_data.SetString("description", l10n_util::GetStringUTF16(
-                                            IDS_ASSISTANT_SCREEN_CONTEXT_DESC));
-  context_data.SetBoolean("defaultEnabled", true);
-  context_data.SetString("iconUri",
-                         "https://www.gstatic.com/images/icons/material/system/"
-                         "2x/laptop_chromebook_grey600_24dp.png");
+  base::Value context_data(base::Value::Type::DICTIONARY);
+  context_data.SetKey("title", base::Value(l10n_util::GetStringUTF16(
+                                   IDS_ASSISTANT_SCREEN_CONTEXT_TITLE)));
+  context_data.SetKey("description", base::Value(l10n_util::GetStringUTF16(
+                                         IDS_ASSISTANT_SCREEN_CONTEXT_DESC)));
+  context_data.SetKey("defaultEnabled", base::Value(true));
+  context_data.SetKey(
+      "iconUri",
+      base::Value("https://www.gstatic.com/images/icons/material/system/"
+                  "2x/laptop_chromebook_grey600_24dp.png"));
   get_more_data.GetList().push_back(std::move(context_data));
 
   // Process email optin data.
   if (email_optin_needed) {
-    base::DictionaryValue data;
-    data.SetString("title", email_optin_ui.title());
-    data.SetString("description", email_optin_ui.description());
-    data.SetBoolean("defaultEnabled", email_optin_ui.default_enabled());
-    data.SetString("iconUri", email_optin_ui.icon_uri());
+    base::Value data(base::Value::Type::DICTIONARY);
+    data.SetKey("title", base::Value(email_optin_ui.title()));
+    data.SetKey("description", base::Value(email_optin_ui.description()));
+    data.SetKey("defaultEnabled",
+                base::Value(email_optin_ui.default_enabled()));
+    data.SetKey("iconUri", base::Value(email_optin_ui.icon_uri()));
     get_more_data.GetList().push_back(std::move(data));
   }
 
@@ -130,73 +149,72 @@ base::ListValue CreateGetMoreData(
 }
 
 // Get string constants for settings ui.
-base::DictionaryValue GetSettingsUiStrings(
-    const assistant::SettingsUi& settings_ui,
-    bool activity_control_needed) {
+base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
+                                 bool activity_control_needed) {
   auto consent_ui = settings_ui.consent_flow_ui().consent_ui();
   auto confirm_reject_ui = consent_ui.activity_control_confirm_reject_ui();
   auto activity_control_ui = consent_ui.activity_control_ui();
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
-  base::DictionaryValue dictionary;
+  base::Value dictionary(base::Value::Type::DICTIONARY);
 
   // Add activity controll string constants.
   if (activity_control_needed) {
-    dictionary.SetString("valuePropIdentity", activity_control_ui.identity());
+    dictionary.SetKey("valuePropIdentity",
+                      base::Value(activity_control_ui.identity()));
     if (activity_control_ui.intro_text_paragraph_size()) {
-      dictionary.SetString("valuePropIntro",
-                           activity_control_ui.intro_text_paragraph(0));
+      dictionary.SetKey(
+          "valuePropIntro",
+          base::Value(activity_control_ui.intro_text_paragraph(0)));
     }
     if (activity_control_ui.footer_paragraph_size()) {
-      dictionary.SetString("valuePropFooter",
-                           activity_control_ui.footer_paragraph(0));
+      dictionary.SetKey("valuePropFooter",
+                        base::Value(activity_control_ui.footer_paragraph(0)));
     }
-    dictionary.SetString("valuePropNextButton",
-                         consent_ui.accept_button_text());
-    dictionary.SetString("valuePropSkipButton",
-                         consent_ui.reject_button_text());
+    dictionary.SetKey("valuePropNextButton",
+                      base::Value(consent_ui.accept_button_text()));
+    dictionary.SetKey("valuePropSkipButton",
+                      base::Value(consent_ui.reject_button_text()));
   }
 
   // Add confirm reject screen string constants.
   // TODO(updowndota) Use remote strings after server bug fixed.
-  dictionary.SetString(
-      "confirmRejectTitle",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_TITLE));
-  dictionary.SetString(
-      "confirmRejectAcceptTitle",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_TITLE));
-  dictionary.SetString(
-      "confirmRejectAcceptMessage",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE));
-  dictionary.SetString(
-      "confirmRejectAcceptMessageExpanded",
-      l10n_util::GetStringUTF16(
-          IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE_EXPANDED));
-  dictionary.SetString(
-      "confirmRejectRejectTitle",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_TITLE));
-  dictionary.SetString(
-      "confirmRejectRejectMessage",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_MESSAGE));
-  dictionary.SetString(
+  dictionary.SetKey("confirmRejectTitle",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_CONFIRM_SCREEN_TITLE)));
+  dictionary.SetKey("confirmRejectAcceptTitle",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_TITLE)));
+  dictionary.SetKey("confirmRejectAcceptMessage",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE)));
+  dictionary.SetKey("confirmRejectAcceptMessageExpanded",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE_EXPANDED)));
+  dictionary.SetKey("confirmRejectRejectTitle",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_TITLE)));
+  dictionary.SetKey("confirmRejectRejectMessage",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_MESSAGE)));
+  dictionary.SetKey(
       "confirmRejectContinueButton",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON));
+      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));
 
   // Add third party string constants.
-  dictionary.SetString(
-      "thirdPartyTitle",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE));
-  dictionary.SetString(
+  dictionary.SetKey("thirdPartyTitle",
+                    base::Value(l10n_util::GetStringUTF16(
+                        IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE)));
+  dictionary.SetKey(
       "thirdPartyContinueButton",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON));
-  dictionary.SetString("thirdPartyFooter", consent_ui.tos_pp_links());
+      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));
+  dictionary.SetKey("thirdPartyFooter", base::Value(consent_ui.tos_pp_links()));
 
   // Add get more screen string constants.
-  dictionary.SetString(
-      "getMoreTitle",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_GET_MORE_SCREEN_TITLE));
-  dictionary.SetString(
+  dictionary.SetKey("getMoreTitle", base::Value(l10n_util::GetStringUTF16(
+                                        IDS_ASSISTANT_GET_MORE_SCREEN_TITLE)));
+  dictionary.SetKey(
       "getMoreContinueButton",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON));
+      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));
 
   return dictionary;
 }
@@ -219,6 +237,7 @@ void AssistantOptInHandler::DeclareLocalizedValues(
 
 void AssistantOptInHandler::RegisterMessages() {
   AddCallback("initialized", &AssistantOptInHandler::HandleInitialized);
+  AddCallback("hotwordResult", &AssistantOptInHandler::HandleHotwordResult);
 }
 
 void AssistantOptInHandler::Initialize() {
@@ -245,7 +264,6 @@ void AssistantOptInHandler::OnActivityControlOptInResult(bool opted_in) {
     prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                       false);
     prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     CallJSOrDefer("closeDialog");
   }
 }
@@ -290,12 +308,12 @@ void AssistantOptInHandler::SendGetSettingsRequest() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void AssistantOptInHandler::ReloadContent(const base::DictionaryValue& dict) {
+void AssistantOptInHandler::ReloadContent(const base::Value& dict) {
   CallJSOrDefer("reloadContent", dict);
 }
 
 void AssistantOptInHandler::AddSettingZippy(const std::string& type,
-                                            const base::ListValue& data) {
+                                            const base::Value& data) {
   CallJSOrDefer("addSettingZippy", type, data);
 }
 
@@ -319,7 +337,6 @@ void AssistantOptInHandler::OnGetSettingsResponse(const std::string& settings) {
     prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                       true);
     prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     ShowNextScreen();
   } else {
     AddSettingZippy("settings",
@@ -356,7 +373,6 @@ void AssistantOptInHandler::OnUpdateSettingsResponse(
       prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                         true);
       prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     }
   }
 
@@ -366,6 +382,12 @@ void AssistantOptInHandler::OnUpdateSettingsResponse(
       // TODO(updowndta): Handle email optin update failure.
       LOG(ERROR) << "Email OptIn udpate error.";
     }
+    // Update hotword will cause Assistant restart. In order to make sure email
+    // optin request is successfully sent to server, update the hotword after
+    // email optin result has been received.
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
+                      enable_hotword_);
   }
 
   ShowNextScreen();
@@ -373,6 +395,18 @@ void AssistantOptInHandler::OnUpdateSettingsResponse(
 
 void AssistantOptInHandler::HandleInitialized() {
   ExecuteDeferredJSCalls();
+}
+
+void AssistantOptInHandler::HandleHotwordResult(bool enable_hotword) {
+  enable_hotword_ = enable_hotword;
+
+  if (!email_optin_needed_) {
+    // No need to send email optin result. Safe to update hotword pref and
+    // restart Assistant here.
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
+                      enable_hotword);
+  }
 }
 
 }  // namespace chromeos

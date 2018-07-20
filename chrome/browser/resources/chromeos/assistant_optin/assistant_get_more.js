@@ -43,10 +43,13 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    var screenContext = (this.$$('#toggle0').getAttribute('checked') != null);
-    var emailOptedIn = (this.$$('#toggle1') != null) &&
-        (this.$$('#toggle1').getAttribute('checked') != null);
+    var hotword = this.$$('#toggle0').hasAttribute('checked');
+    var screenContext = this.$$('#toggle1').hasAttribute('checked');
+    var toggle2 = this.$$('#toggle2');
+    var emailOptedIn = toggle2 != null && toggle2.hasAttribute('checked');
 
+    // TODO(updowndota): Wrap chrome.send() calls with a proxy object.
+    chrome.send('hotwordResult', [hotword]);
     chrome.send(
         'AssistantGetMoreScreen.userActed', [screenContext, emailOptedIn]);
   },
@@ -76,7 +79,7 @@ Polymer({
    * Add a setting zippy with the provided data.
    */
   addSettingZippy: function(zippy_data) {
-    assert(zippy_data.length <= 2);
+    assert(zippy_data.length <= 3);
     for (var i in zippy_data) {
       var data = zippy_data[i];
       var zippy = document.createElement('setting-zippy');
