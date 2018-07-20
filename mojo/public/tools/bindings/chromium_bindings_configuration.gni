@@ -18,7 +18,6 @@ _typemap_imports = [
   "//components/typemaps.gni",
   "//content/common/bluetooth/typemaps.gni",
   "//content/common/indexed_db/typemaps.gni",
-  "//content/common/presentation/typemaps.gni",
   "//content/common/typemaps.gni",
   "//content/public/common/typemaps.gni",
   "//device/bluetooth/public/mojom/typemaps.gni",

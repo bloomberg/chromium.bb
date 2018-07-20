@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "content/public/common/presentation_connection_message.h"
 #include "media/base/flinging_controller.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 

@@ -42,16 +42,16 @@ BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
 BrowserPresentationConnectionProxy::~BrowserPresentationConnectionProxy() {}
 
 void BrowserPresentationConnectionProxy::OnMessage(
-    content::PresentationConnectionMessage message,
+    blink::mojom::PresentationConnectionMessagePtr message,
     OnMessageCallback on_message_callback) {
   DVLOG(2) << "BrowserPresentationConnectionProxy::OnMessage";
-  if (message.is_binary()) {
+  if (message->is_data()) {
     router_->SendRouteBinaryMessage(
         route_id_,
-        std::make_unique<std::vector<uint8_t>>(std::move(message.data.value())),
+        std::make_unique<std::vector<uint8_t>>(std::move(message->get_data())),
         std::move(on_message_callback));
   } else {
-    router_->SendRouteMessage(route_id_, message.message.value(),
+    router_->SendRouteMessage(route_id_, message->get_message(),
                               std::move(on_message_callback));
   }
 }

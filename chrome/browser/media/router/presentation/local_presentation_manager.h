@@ -80,7 +80,8 @@ namespace media_router {
 //   PresentationConnctionPtr::SendString(
 //       const blink::WebString& message) {
 //     target_connection_->OnMessage(
-//         content::PresentationConnectionMessage(message.Utf8()),
+//         blink::mojom::PresentationConnectionMessage::NewMessage(
+//             message.Utf8()),
 //         base::BindOnce(&OnMessageReceived));
 //   }
 //
