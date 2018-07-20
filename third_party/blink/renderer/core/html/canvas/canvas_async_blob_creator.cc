@@ -30,8 +30,11 @@ namespace blink {
 
 namespace {
 
-// a small slack period between deadline and current time for safety
-constexpr TimeDelta kSlackBeforeDeadline = TimeDelta::FromMilliseconds(1);
+// small slack period between deadline and current time for safety
+constexpr TimeDelta kCreateBlobSlackBeforeDeadline =
+    TimeDelta::FromMilliseconds(1);
+constexpr TimeDelta kEncodeRowSlackBeforeDeadline =
+    TimeDelta::FromMicroseconds(100);
 
 /* The value is based on user statistics on Nov 2017. */
 #if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN))
@@ -53,8 +56,19 @@ const double kIdleTaskCompleteTimeoutDelayMs = 5700.0;
 const double kIdleTaskCompleteTimeoutDelayMs = 9000.0;
 #endif
 
-bool IsDeadlineNearOrPassed(TimeTicks deadline) {
-  return CurrentTimeTicks() >= deadline - kSlackBeforeDeadline;
+bool IsCreateBlobDeadlineNearOrPassed(TimeTicks deadline) {
+  return CurrentTimeTicks() >= deadline - kCreateBlobSlackBeforeDeadline;
+}
+
+bool IsEncodeRowDeadlineNearOrPassed(TimeTicks deadline, size_t image_width) {
+  // Rough estimate of the row encoding time in micro seconds. We will consider
+  // a slack time later to not pass the idle task deadline.
+  int row_encode_time_us = 1000 * (kIdleTaskCompleteTimeoutDelayMs / 4000.0) *
+                           (image_width / 4000.0);
+  TimeDelta row_encode_time_delta =
+      TimeDelta::FromMicroseconds(row_encode_time_us);
+  return CurrentTimeTicks() >=
+         deadline - row_encode_time_delta - kEncodeRowSlackBeforeDeadline;
 }
 
 String ConvertMimeTypeEnumToString(ImageEncoder::MimeType mime_type_enum) {
@@ -184,6 +198,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     ExecutionContext* context,
     ScriptPromiseResolver* resolver)
     : fail_encoder_initialization_for_test_(false),
+      enforce_idle_encoding_for_test_(false),
       image_(image),
       context_(context),
       encode_options_(options),
@@ -328,7 +343,8 @@ bool CanvasAsyncBlobCreator::EncodeImage(const double& quality) {
   std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(src_data_);
   if (!buffer)
     return false;
-  return buffer->EncodeImage("image/webp", quality, &encoded_image_);
+  return buffer->EncodeImage(ConvertMimeTypeEnumToString(mime_type_), quality,
+                             &encoded_image_);
 }
 
 void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
@@ -339,7 +355,17 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
                              WrapPersistent(this)));
     return;
   }
-  if (mime_type_ == ImageEncoder::kMimeTypeWebp) {
+  // Webp encoder does not support progressive encoding. We also don't use idle
+  // encoding for layout tests, since the idle task start and completition
+  // deadlines (6.7s or 13s) bypass the layout test running deadline (6s)
+  // and result in timeouts on different tests. We use
+  // enforce_idle_encoding_for_test_ to test idle encoding in unit tests.
+  bool use_idle_encoding =
+      (mime_type_ != ImageEncoder::kMimeTypeWebp) &&
+      (enforce_idle_encoding_for_test_ ||
+       !RuntimeEnabledFeatures::NoIdleEncodingForLayoutTestsEnabled());
+
+  if (!use_idle_encoding) {
     if (!IsMainThread()) {
       DCHECK(function_type_ == kHTMLCanvasConvertToBlobPromise ||
              function_type_ == kOffscreenCanvasConvertToBlobPromise);
@@ -416,7 +442,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(TimeTicks deadline) {
   }
 
   for (int y = num_rows_completed_; y < src_data_.height(); ++y) {
-    if (IsDeadlineNearOrPassed(deadline)) {
+    if (IsEncodeRowDeadlineNearOrPassed(deadline, src_data_.width())) {
       num_rows_completed_ = y;
       Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
           FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::IdleEncodeRows,
@@ -436,7 +462,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(TimeTicks deadline) {
   TimeDelta elapsed_time =
       WTF::CurrentTimeTicks() - schedule_idle_task_start_time_;
   RecordElapsedTimeHistogram(kCompleteEncodingDelay, mime_type_, elapsed_time);
-  if (IsDeadlineNearOrPassed(deadline)) {
+  if (IsCreateBlobDeadlineNearOrPassed(deadline)) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
@@ -514,8 +540,6 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
 
 void CanvasAsyncBlobCreator::EncodeImageOnEncoderThread(double quality) {
   DCHECK(!IsMainThread());
-  DCHECK(mime_type_ == ImageEncoder::kMimeTypeWebp);
-
   if (!EncodeImage(quality)) {
     PostCrossThreadTask(
         *parent_frame_task_runner_, FROM_HERE,

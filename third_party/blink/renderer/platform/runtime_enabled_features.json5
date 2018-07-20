@@ -840,6 +840,10 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
+      name: "NoIdleEncodingForLayoutTests",
+      status: "test",
+    },
+    {
       name: "NotificationConstructor",
       status: "stable",
     },
