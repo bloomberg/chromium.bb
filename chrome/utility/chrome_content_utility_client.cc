@@ -16,8 +16,6 @@
 #include "chrome/common/buildflags.h"
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
-#include "components/services/patch/patch_service.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/common/content_switches.h"
@@ -33,6 +31,8 @@
 #if !defined(OS_ANDROID)
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "chrome/utility/importer/profile_import_service.h"
+#include "components/services/patch/patch_service.h"  // nogncheck
+#include "components/services/patch/public/interfaces/constants.mojom.h"  // nogncheck
 #include "services/network/url_request_context_builder_mojo.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"  // nogncheck
@@ -248,12 +248,14 @@ void ChromeContentUtilityClient::RegisterServices(
   }
 #endif
 
+#if !defined(OS_ANDROID)
   {
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory =
         base::BindRepeating(&patch::PatchService::CreateService);
     services->emplace(patch::mojom::kServiceName, service_info);
   }
+#endif
 
   {
     service_manager::EmbeddedServiceInfo service_info;
