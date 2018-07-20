@@ -19417,6 +19417,7 @@ Called by update_net_error_codes.py.-->
   <int value="2508" label="CSSFillAvailableLogicalHeight"/>
   <int value="2509" label="PopupOpenWhileFileChooserOpened"/>
   <int value="2510" label="CookieStoreAPI"/>
+  <int value="2511" label="FeaturePolicyJSAPI"/>
 </enum>
 
 <enum name="FeedbackSource">

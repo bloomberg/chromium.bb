@@ -1969,6 +1969,7 @@ enum WebFeature {
   kCSSFillAvailableLogicalHeight = 2508,
   kPopupOpenWhileFileChooserOpened = 2509,
   kCookieStoreAPI = 2510,
+  kFeaturePolicyJSAPI = 2511,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

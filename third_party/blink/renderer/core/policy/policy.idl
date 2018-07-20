@@ -8,9 +8,9 @@
 // https://docs.google.com/a/chromium.org/document/d/1wvk3cXkblNnbkMcsKayseK-k0SMGiP9b9fQFgfpqQpc/edit?usp=sharing
 [
   NoInterfaceObject,
-  RuntimeEnabled=FeaturePolicyJavaScriptInterface
+  OriginTrialEnabled=FeaturePolicyJavaScriptInterface
 ] interface Policy {
-  boolean allowsFeature(DOMString feature, optional DOMString url);
-  sequence<DOMString> allowedFeatures();
-  sequence<DOMString> getAllowlistForFeature(DOMString feature);
+  [MeasureAs=FeaturePolicyJSAPI] boolean allowsFeature(DOMString feature, optional DOMString url);
+  [MeasureAs=FeaturePolicyJSAPI] sequence<DOMString> allowedFeatures();
+  [MeasureAs=FeaturePolicyJSAPI] sequence<DOMString> getAllowlistForFeature(DOMString feature);
 };
