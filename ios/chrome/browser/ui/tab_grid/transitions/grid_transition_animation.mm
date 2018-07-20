@@ -215,13 +215,12 @@ CGFloat DeviceCornerRadius() {
 }
 
 - (void)buildExpandingAnimations {
-  // The transition is structured as four or six separate animations. They are
+  // The transition is structured as four to six separate animations. They are
   // timed based on two sub-durations which are expressed as fractions of the
   // overall animation duration.
   CGFloat partialDuration = 0.66;
   CGFloat briefDuration = 0.3;
-  CGFloat veryBriefDuration = 0.2;
-  CGFloat delay = (1.0 - veryBriefDuration) / 2.0;
+  CGFloat delay = 0.1;
 
   // Damping ratio for the resize animation.
   CGFloat resizeDamping = 0.7;
@@ -230,13 +229,14 @@ CGFloat DeviceCornerRadius() {
   //   (A) Zooming the active cell out into the expanded position.
   //   (B) Crossfading the active cell's top views.
   //   (C) Squaring the corners of the active cell.
-  //   (D) Fading out the main cell view and fading in the main tab view.
+  //   (D) Fading out the main cell view and fading in the main tab view, if
+  //       necessary.
   // These parts are timed over |duration| like this:
   //
   //  {0%}--[A]-----------------------------------{100%}
   //  {0%}--[B]---{30%}
   //  {0%}--[C]---{30%}
-  //                   {40%}-[D]-{60%}
+  //    {10%}--[D]---{40%}
 
   // If there's more than once cell, the animation adds:
   //   (E) Scaling the inactive cells to 95%
@@ -246,7 +246,7 @@ CGFloat DeviceCornerRadius() {
   //  {0%}--[A]-----------------------------------{100%}
   //  {0%}--[B]---{30%}
   //  {0%}--[C]---{30%}
-  //                   {40%}-[D]-{60%}
+  //    {10%}--[D]---{40%}
   //  {0%}--[E]-----------------------------------{100%}
   //  {0%}--[F]-------------------{66%}
   //
@@ -302,25 +302,28 @@ CGFloat DeviceCornerRadius() {
             animations:squareCornersKeyframeAnimation];
   [self.animations addAnimator:squareCorners];
 
-  // D: crossfade the main cell content.
-  // Two notes on this transition. (1) In cases where the cell and tab views are
-  // the same, having both alphas change at the same time means the overall
-  // transition is seamless. (2) using a linear animation curve means that the
-  // sum of the opacities is contstant though the animation, which will help it
-  // seem less abrupt by keeping a relatively constant brightness.
-  auto crossfadeContentAnimation =
-      [self keyframeAnimationWithRelativeStart:delay
-                              relativeDuration:veryBriefDuration
-                                    animations:^{
-                                      activeCell.mainCellView.alpha = 0;
-                                      activeCell.mainTabView.alpha = 1.0;
-                                    }];
-  UIViewPropertyAnimator* crossfadeContent = [[UIViewPropertyAnimator alloc]
-      initWithDuration:self.duration
-                 curve:UIViewAnimationCurveLinear
-            animations:crossfadeContentAnimation];
-  [self.animations addAnimator:crossfadeContent];
-
+  // D: crossfade the main cell content, if necessary.
+  // This crossfade is needed if the aspect ratio of the tab being animated
+  // to doesn't match the aspect ratio of the tab that originally generated the
+  // cell content being animated; this happens when the tab grid is exited in a
+  // diffferent orientation than it was entered.
+  // Using a linear animation curve means that the sum of the opacities is
+  // contstant though the animation, which will help it seem less abrupt by
+  // keeping a relatively constant brightness.
+  if (self.layout.frameChanged) {
+    auto crossfadeContentAnimation =
+        [self keyframeAnimationWithRelativeStart:delay
+                                relativeDuration:briefDuration
+                                      animations:^{
+                                        activeCell.mainCellView.alpha = 0;
+                                        activeCell.mainTabView.alpha = 1.0;
+                                      }];
+    UIViewPropertyAnimator* crossfadeContent = [[UIViewPropertyAnimator alloc]
+        initWithDuration:self.duration
+                   curve:UIViewAnimationCurveLinear
+              animations:crossfadeContentAnimation];
+    [self.animations addAnimator:crossfadeContent];
+  }
   // If there's only a single cell, that's all.
   if (self.layout.inactiveItems.count == 0)
     return;
