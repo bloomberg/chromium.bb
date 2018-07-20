@@ -89,16 +89,16 @@
 -->
 <dom-module id="oobe-back-button">
   <template>
-    <style
-        include="iron-flex iron-flex-alignment iron-positioning paper-button-style cr-icons cr-shared-style">
-    </style>
-    <link rel="stylesheet" href="oobe_back_button.css">
+    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
+    <style include="paper-button-style cr-icons cr-shared-style"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
+    <link rel="stylesheet" href="oobe_back_button.css">
     <paper-button id="button" on-tap="onClick_" disabled="[[disabled]]"
         aria-label$="[[labelForAria]]" class="action-button">
       <div class="flex horizontal layout start center">
         <hd-iron-icon
-            icon1x="oobe-buttons-20:arrow-forward" icon2x="oobe-buttons-40:arrow-forward">
+            icon1x="oobe-buttons-20:arrow-forward"
+            icon2x="oobe-buttons-40:arrow-forward">
         </hd-iron-icon>
         <slot>
           <div id="text" i18n-content="back"></div>
@@ -110,9 +110,8 @@
 
 <dom-module id="oobe-next-button">
   <template>
-    <style
-        include="iron-flex iron-flex-alignment iron-positioning paper-button-style cr-icons cr-shared-style">
-    </style>
+    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
+    <style include="paper-button-style cr-icons cr-shared-style"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <link rel="stylesheet" href="oobe_next_button.css">
     <paper-button id="button" on-tap="onClick_" disabled="[[disabled]]"
@@ -122,7 +121,8 @@
           <div id="text" i18n-content="next"></div>
         </slot>
         <hd-iron-icon
-            icon1x="oobe-buttons-20:arrow-forward" icon2x="oobe-buttons-40:arrow-forward">
+            icon1x="oobe-buttons-20:arrow-forward"
+            icon2x="oobe-buttons-40:arrow-forward">
         </hd-iron-icon>
       </div>
     </paper-button>
@@ -145,11 +145,10 @@
 -->
 <dom-module id="oobe-welcome-secondary-button">
   <template>
-    <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
-    <style
-        include="iron-flex iron-flex-alignment iron-positioning paper-button-style cr-icons cr-shared-style">
-    </style>
+    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
+    <style include="paper-button-style cr-icons cr-shared-style"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
+    <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
     <paper-button id="button" aria-label$="[[labelForAria]]">
       <div id="container" class="flex vertical layout center self-stretch">
         <div class="flex layout horizontal center self-stretch center-justified">

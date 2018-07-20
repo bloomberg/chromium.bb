@@ -51,10 +51,11 @@ h1 {
   font-size: var(--subtitle-font-size);
   line-height: var(--subtitle-line-height);
   /* margin 12px = 32 - line-height
-                   - 5 (lihe height - font size)
+                   - 5 (line height - font size)
                    + 3 (distance to baseline 13px)
                  =  32 + font size + distance to baseline 13px */
-  margin: calc(32 + var(--subtitle-font-size)
+  margin: calc(32px - var(--subtitle-line-height)
+               - (var(--subtitle-line-height) - var(--subtitle-font-size))
                + var(--subtitle-font-distance-to-baseline)) 0 0 0;
 }
 

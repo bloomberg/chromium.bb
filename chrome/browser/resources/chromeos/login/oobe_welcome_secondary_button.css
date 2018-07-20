@@ -3,7 +3,6 @@
    found in the LICENSE file. */
 
 ::slotted(*) {
-  font-size: 12px;
   text-transform: none;
 }
 

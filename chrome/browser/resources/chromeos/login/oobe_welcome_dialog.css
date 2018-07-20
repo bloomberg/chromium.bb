@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .vertical-margin {
-  width: 62px; /* = 64 - (button border 2px) */
+  width: calc(64px - 4px); /* = real width - button border */
 }
 
 #bottom-margin {
@@ -25,10 +25,6 @@
 
 .welcome-illustration {
   user-select: none;
-}
-
-oobe-welcome-secondary-button {
-  margin-right: 8px;
 }
 
 #buttons {
