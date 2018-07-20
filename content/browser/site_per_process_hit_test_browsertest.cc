@@ -465,16 +465,6 @@ void HitTestRootWindowTransform(
 }
 #endif  // defined(USE_AURA)
 
-// This helper accounts for Android devices which use page scale factor
-// different from 1.0. Coordinate targeting needs to be adjusted before
-// hit testing.
-double GetPageScaleFactor(Shell* shell) {
-  return RenderWidgetHostImpl::From(
-             shell->web_contents()->GetRenderViewHost()->GetWidget())
-      ->last_frame_metadata()
-      .page_scale_factor;
-}
-
 #if defined(USE_AURA)
 bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
@@ -985,6 +975,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
@@ -1017,7 +1010,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gfx::Rect bounds = child_rwhv->GetViewBounds();
-  float scale_factor = GetPageScaleFactor(shell());
+  float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
   gfx::Point position_in_widget(
       gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x() + 5) *
                        scale_factor),
@@ -1067,6 +1062,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       "/frame_tree/page_with_positioned_scaled_frame.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
@@ -1084,7 +1082,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   WaitForHitTestDataOrChildSurfaceReady(iframe_node->current_frame_host());
 
-  const float scale_factor = GetPageScaleFactor(shell());
+  const float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
   // Due to the CSS scaling of the iframe, the position in the child view's
   // coordinates is (96, 96) and not (48, 48) (or approximately these values
   // if there's rounding due to the scale factor).
@@ -1328,6 +1328,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
@@ -1371,7 +1374,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
     // to the child.
     const gfx::Rect root_bounds = rwhv_root->GetViewBounds();
     const gfx::Rect child_bounds = rwhv_child->GetViewBounds();
-    const float page_scale_factor = GetPageScaleFactor(shell());
+    const float page_scale_factor =
+        render_frame_submission_observer.LastRenderFrameMetadata()
+            .page_scale_factor;
     const gfx::PointF point_in_child(
         (child_bounds.x() - root_bounds.x() + 10) * page_scale_factor,
         (child_bounds.y() - root_bounds.y() + 10) * page_scale_factor);
@@ -2229,6 +2234,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b,c(d))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
@@ -2274,7 +2282,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetHostMouseEventMonitor d_frame_monitor(
       d_node->current_frame_host()->GetRenderWidgetHost());
 
-  float scale_factor = GetPageScaleFactor(shell());
+  float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
 
   // Get the view bounds of the child iframe, which should account for the
   // relative offset of its direct parent within the root frame, for use in
@@ -2348,6 +2358,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       "/frame_tree/page_with_large_scrollable_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
@@ -2376,7 +2389,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
 
-  float scale_factor = GetPageScaleFactor(shell());
+  float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
 
   // Get the view bounds of the child iframe, which should account for the
   // relative offset of its direct parent within the root frame, for use in
@@ -3608,6 +3623,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
   WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
@@ -3627,7 +3645,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
   EXPECT_EQ(nullptr, router->touchpad_gesture_target_.target);
 
-  const float scale_factor = GetPageScaleFactor(shell());
+  const float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
   const gfx::Point point_in_child(gfx::ToCeiledInt(100 * scale_factor),
                                   gfx::ToCeiledInt(100 * scale_factor));
 
@@ -3694,6 +3714,9 @@ void CreateContextMenuTestHelper(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell, main_url));
 
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell->web_contents());
+
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell->web_contents())
                             ->GetFrameTree()
@@ -3724,7 +3747,9 @@ void CreateContextMenuTestHelper(
       static_cast<WebContentsImpl*>(shell->web_contents())
           ->GetInputEventRouter();
 
-  float scale_factor = GetPageScaleFactor(shell);
+  float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
 
   gfx::Rect root_bounds = root_view->GetViewBounds();
   gfx::Rect bounds = rwhv_child->GetViewBounds();
