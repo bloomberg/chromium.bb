@@ -1777,12 +1777,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
 }
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, RootWindowTransform) {
+// TODO(https://crbug.com/865945): Fix this test.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       DISABLED_RootWindowTransform) {
   HitTestRootWindowTransform(shell(), embedded_test_server());
 }
 
+// TODO(https://crbug.com/865945): Fix this test.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       RootWindowTransform) {
+                       DISABLED_RootWindowTransform) {
   HitTestRootWindowTransform(shell(), embedded_test_server());
 }
 #endif  // defined(USE_AURA)
