@@ -10,6 +10,7 @@
 
 #import "remoting/ios/display/gl_display_handler.h"
 
+#include "remoting/base/chromoting_event.h"
 #include "remoting/client/feedback_data.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -50,9 +51,11 @@ extern NSString* const kHostSessionPin;
 // |hostInfo| is all the details around a host.
 // |username| is the username to be used when connecting.
 // |accessToken| is the oAuth access token to provided to create the session.
+// |entryPoint| is the entry point of the session. Only used for telemetry.
 - (void)connectToHost:(HostInfo*)hostInfo
              username:(NSString*)username
-          accessToken:(NSString*)accessToken;
+          accessToken:(NSString*)accessToken
+           entryPoint:(remoting::ChromotingEvent::SessionEntryPoint)entryPoint;
 
 // Disconnect the current host connection.
 - (void)disconnectFromHost;

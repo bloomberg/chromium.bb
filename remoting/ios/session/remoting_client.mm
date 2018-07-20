@@ -100,7 +100,8 @@ static void ResolveFeedbackDataCallback(
 
 - (void)connectToHost:(HostInfo*)hostInfo
              username:(NSString*)username
-          accessToken:(NSString*)accessToken {
+          accessToken:(NSString*)accessToken
+           entryPoint:(remoting::ChromotingEvent::SessionEntryPoint)entryPoint {
   DCHECK(_runtime->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(hostInfo);
   DCHECK(hostInfo.jabberId);
@@ -123,6 +124,8 @@ static void ResolveFeedbackDataCallback(
       GetCurrentUserId(), info.host_id);
   info.pairing_id = pairing.pairing_id();
   info.pairing_secret = pairing.pairing_secret();
+
+  info.session_entry_point = entryPoint;
 
   info.capabilities = "";
   if ([RemotingPreferences.instance boolForFlag:RemotingFlagUseWebRTC]) {

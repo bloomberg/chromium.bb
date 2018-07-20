@@ -89,8 +89,9 @@ class ClientTelemetryLoggerTest : public testing::Test {
 
 void ClientTelemetryLoggerTest::SetUp() {
   log_writer_.reset(new FakeLogWriter());
-  logger_.reset(new ClientTelemetryLogger(log_writer_.get(),
-                                          ChromotingEvent::Mode::ME2ME));
+  logger_.reset(new ClientTelemetryLogger(
+      log_writer_.get(), ChromotingEvent::Mode::ME2ME,
+      ChromotingEvent::SessionEntryPoint::CONNECT_BUTTON));
 }
 
 TEST_F(ClientTelemetryLoggerTest, LogSessionStateChange) {
