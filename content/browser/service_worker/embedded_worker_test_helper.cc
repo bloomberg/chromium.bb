@@ -361,7 +361,11 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
 
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
-  void SetIdleTimerDelayToZero() override { NOTIMPLEMENTED(); }
+  void SetIdleTimerDelayToZero() override {
+    if (!helper_)
+      return;
+    helper_->OnSetIdleTimerDelayToZero(embedded_worker_id_);
+  }
 
  private:
   base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
@@ -708,6 +712,11 @@ void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
       payments::mojom::PaymentHandlerResponse::New(), base::Time::Now());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                           base::Time::Now());
+}
+
+void EmbeddedWorkerTestHelper::OnSetIdleTimerDelayToZero(
+    int embedded_worker_id) {
+  // Subclasses may implement this method.
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(

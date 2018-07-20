@@ -128,13 +128,26 @@ class MockServiceWorkerRegistrationObject
       binding_;
 };
 
+// We need this for NoInflightRequest test. The test expects that a worker
+// will be terminated when SetIdleTimerDelayToZero() is called.
+class RegistrationTestHelper : public EmbeddedWorkerTestHelper {
+ public:
+  RegistrationTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  ~RegistrationTestHelper() override = default;
+
+ protected:
+  void OnSetIdleTimerDelayToZero(int embedded_worker_id) override {
+    GetEmbeddedWorkerInstanceHost(embedded_worker_id)->RequestTermination();
+  }
+};
+
 class ServiceWorkerRegistrationTest : public testing::Test {
  public:
   ServiceWorkerRegistrationTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<RegistrationTestHelper>();
 
     context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();

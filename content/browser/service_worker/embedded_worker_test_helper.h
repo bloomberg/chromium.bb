@@ -229,6 +229,7 @@ class EmbeddedWorkerTestHelper {
       payments::mojom::PaymentRequestEventDataPtr data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback);
+  virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
   // These functions simulate making Mojo calls to the browser.
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
@@ -246,6 +247,11 @@ class EmbeddedWorkerTestHelper {
   blink::mojom::ServiceWorkerHost* GetServiceWorkerHost(
       int embedded_worker_id) {
     return embedded_worker_id_host_map_[embedded_worker_id].get();
+  }
+
+  mojom::EmbeddedWorkerInstanceHostProxy* GetEmbeddedWorkerInstanceHost(
+      int embedded_worker_id) {
+    return embedded_worker_id_instance_host_ptr_map_[embedded_worker_id].get();
   }
 
  private:
