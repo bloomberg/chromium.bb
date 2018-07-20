@@ -19,7 +19,7 @@ class IOSChromeFieldTrials : public variations::PlatformFieldTrials {
   void SetupFieldTrials() override {}
   void SetupFeatureControllingFieldTrials(
       bool has_seed,
-      base::FeatureList* feature_list) override {}
+      base::FeatureList* feature_list) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IOSChromeFieldTrials);
