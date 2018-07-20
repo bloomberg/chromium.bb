@@ -545,6 +545,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       render_frame_created_(false),
       is_waiting_for_beforeunload_ack_(false),
       unload_ack_is_for_navigation_(false),
+      beforeunload_timeout_delay_(base::TimeDelta::FromMilliseconds(
+          RenderViewHostImpl::kUnloadTimeoutMS)),
       was_discarded_(false),
       is_loading_(false),
       nav_entry_id_(0),
@@ -2280,18 +2282,6 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnRunBeforeUnloadConfirm",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
 
-  // While a JS beforeunload dialog is showing, tabs in the same process
-  // shouldn't process input events.
-  GetProcess()->SetIgnoreInputEvents(true);
-
-  // The beforeunload dialog for this frame may have been triggered by a
-  // browser-side request to this frame or a frame up in the frame hierarchy.
-  // Stop any timers that are waiting.
-  for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
-    if (frame->beforeunload_timeout_)
-      frame->beforeunload_timeout_->Stop();
-  }
-
   // Allow at most one attempt to show a beforeunload dialog per navigation.
   RenderFrameHostImpl* beforeunload_initiator = GetBeforeUnloadInitiator();
   if (beforeunload_initiator) {
@@ -2300,9 +2290,8 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
       // for Document.BeforeUnloadDialog and add the intervention console
       // message to match renderer-side behavior in
       // Document::DispatchBeforeUnloadEvent().
-      JavaScriptDialogClosed(reply_msg,
-                             true /* allow the navigation to proceed */,
-                             base::string16());
+      SendJavaScriptDialogReply(reply_msg, true /* success */,
+                                base::string16());
       return;
     }
     beforeunload_initiator->has_shown_beforeunload_dialog_ = true;
@@ -2315,6 +2304,18 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
     // just set |has_shown_beforeunload_dialog_| because we don't know which
     // frame is navigating/closing here.  Plumb enough information here to fix
     // this.
+  }
+
+  // While a JS beforeunload dialog is showing, tabs in the same process
+  // shouldn't process input events.
+  GetProcess()->SetIgnoreInputEvents(true);
+
+  // The beforeunload dialog for this frame may have been triggered by a
+  // browser-side request to this frame or a frame up in the frame hierarchy.
+  // Stop any timers that are waiting.
+  for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
+    if (frame->beforeunload_timeout_)
+      frame->beforeunload_timeout_->Stop();
   }
 
   delegate_->RunBeforeUnloadConfirm(this, is_reload, reply_msg);
@@ -3688,10 +3689,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     } else {
       // Start a timer that will be shared by all frames that need to run
       // beforeunload in the current frame's subtree.
-      if (beforeunload_timeout_) {
-        beforeunload_timeout_->Start(
-            TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
-      }
+      if (beforeunload_timeout_)
+        beforeunload_timeout_->Start(beforeunload_timeout_delay_);
 
       beforeunload_pending_replies_.clear();
 
@@ -3805,6 +3804,11 @@ bool RenderFrameHostImpl::ShouldDispatchBeforeUnload(
       check_subframes_only, false /* send_ipc */, false /* is_reload */);
 }
 
+void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
+    const base::TimeDelta& timeout) {
+  beforeunload_timeout_delay_ = timeout;
+}
+
 void RenderFrameHostImpl::UpdateOpener() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::UpdateOpener",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
@@ -3851,8 +3855,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
     if (frame->is_waiting_for_beforeunload_ack_ &&
         frame->beforeunload_timeout_) {
-      frame->beforeunload_timeout_->Start(
-          TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+      frame->beforeunload_timeout_->Start(beforeunload_timeout_delay_);
     }
   }
 }

@@ -12,9 +12,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/interface_provider_filtering.h"
+#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -833,6 +835,73 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // beforeunload handler and complete the navigation.
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), new_url));
+}
+
+// Ensure that the beforeunload timeout isn't restarted when a frame attempts
+// to show a beforeunload dialog and fails because the dialog is already being
+// shown by another frame.  See https://crbug.com/865223.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       TimerNotRestartedBySecondDialog) {
+  // This test exercises a scenario that's only possible with
+  // --site-per-process.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+
+  // Install a beforeunload handler to show a dialog in both frames.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root, SHOW_DIALOG);
+  InstallBeforeUnloadHandler(root->child_at(0), SHOW_DIALOG);
+
+  // Extend the beforeunload timeout to prevent flakiness.  This test can't use
+  // PrepContentsForBeforeUnloadTest(), as that clears the timer altogether,
+  // and this test needs the timer to be valid, to see whether it gets paused
+  // and not restarted correctly.
+  main_frame->SetBeforeUnloadTimeoutDelayForTesting(
+      base::TimeDelta::FromSeconds(30));
+
+  // Start a navigation in the main frame.
+  GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  shell()->LoadURL(new_url);
+
+  // We should have two pending beforeunload ACKs at this point, and the
+  // beforeunload timer should be running.
+  EXPECT_EQ(2u, main_frame->beforeunload_pending_replies_.size());
+  EXPECT_TRUE(main_frame->beforeunload_timeout_->IsRunning());
+
+  // Wait for the dialog from one of the frames.  Note that either frame could
+  // be the first to trigger the dialog.
+  dialog_manager()->Wait();
+
+  // The dialog should've canceled the timer.
+  EXPECT_FALSE(main_frame->beforeunload_timeout_->IsRunning());
+
+  // Don't close the dialog and allow the second beforeunload to come in and
+  // attempt to show a dialog.  This should fail due to the intervention of at
+  // most one dialog per navigation and respond to the renderer with the
+  // confirmation to proceed, which should trigger a beforeunload ACK
+  // from the second frame. Wait for that beforeunload ACK.  After it's
+  // received, there will be one ACK remaining for the frame that's currently
+  // showing the dialog.
+  while (main_frame->beforeunload_pending_replies_.size() > 1) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Ensure that the beforeunload timer hasn't been restarted, since the first
+  // beforeunload dialog is still up at this point.
+  EXPECT_FALSE(main_frame->beforeunload_timeout_->IsRunning());
+
+  // Cancel the dialog and make sure we stay on the old page.
+  CloseDialogAndCancel();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(main_url, web_contents()->GetLastCommittedURL());
 }
 
 namespace {

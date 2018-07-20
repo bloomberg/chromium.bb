@@ -474,6 +474,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // only checks the frame's descendants but not the frame itself.
   bool ShouldDispatchBeforeUnload(bool check_subframes_only);
 
+  // Allow tests to override how long to wait for beforeunload ACKs to arrive
+  // before timing out.
+  void SetBeforeUnloadTimeoutDelayForTesting(const base::TimeDelta& timeout);
+
   // Update the frame's opener in the renderer process in response to the
   // opener being modified (e.g., with window.open or being set to null) in
   // another renderer process.
@@ -799,6 +803,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            TwoNavigationsRacingCommit);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
                            SubframeShowsDialogWhenMainFrameNavigates);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
+                           TimerNotRestartedBySecondDialog);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, DontSelectInvalidFiles);
@@ -1347,6 +1353,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // DispatchBeforeUnload() until either the render process ACKs it with an IPC
   // to OnBeforeUnloadACK(), or until the timeout triggers.
   std::unique_ptr<TimeoutMonitor> beforeunload_timeout_;
+
+  // The delay to use for the beforeunload timeout monitor above.
+  base::TimeDelta beforeunload_timeout_delay_;
 
   // When this frame is asked to execute beforeunload, this maintains a list of
   // frames that need to receive beforeunload ACKs.  This may include this
