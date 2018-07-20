@@ -116,6 +116,4 @@ TEST_F(WebViewTest, EvaluateJavaScript) {
   EXPECT_NSNE(nil, error);
 }
 
-// TODO(crbug.com/862537): Write more tests.
-
 }  // namespace ios_web_view
