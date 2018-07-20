@@ -65,6 +65,10 @@
   [containerView insertSubview:gridView belowSubview:dismissingView];
   gridView.frame =
       [transitionContext finalFrameForViewController:gridViewController];
+  // Normally this view will layout before it's displayed, but in order to build
+  // the layout for the animation, |gridView|'s layout needs to be current, so
+  // force an update here.
+  [gridView layoutIfNeeded];
 
   // Ask the state provider for the views to use when inserting the animation.
   UIView* proxyContainer =

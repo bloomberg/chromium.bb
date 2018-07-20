@@ -181,17 +181,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [super viewWillDisappear:animated];
 }
 
-- (void)viewWillLayoutSubviews {
-  [super viewWillLayoutSubviews];
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
   // Call the current page setter to sync the scroll view offset to the current
   // page value, if the scroll view isn't scrolling. Don't animate this.
   if (!self.scrollView.dragging && !self.scrollView.decelerating) {
     self.currentPage = _currentPage;
   }
-}
 
-- (void)viewDidLayoutSubviews {
-  [super viewDidLayoutSubviews];
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
   CGFloat bottomInset = self.configuration == TabGridConfigurationBottomToolbar
