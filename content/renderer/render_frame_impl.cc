@@ -4203,9 +4203,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // main frame documents. Subframes inherit from the main frame and should not
   // change at commit time.
   if (is_main_frame_) {
-    previews_state_ = PREVIEWS_OFF;
+    previews_state_ =
+        frame_->GetDocumentLoader()->GetRequest().GetPreviewsState();
     if (extra_data) {
-      previews_state_ = extra_data->previews_state();
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(
               extra_data->effective_connection_type());

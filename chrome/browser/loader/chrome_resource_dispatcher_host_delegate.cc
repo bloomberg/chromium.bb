@@ -595,7 +595,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     network::ResourceResponse* response) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
   signin::ResponseAdapter signin_response_adapter(request);
@@ -618,7 +618,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 #endif
 
   // Update the PreviewsState for main frame response if needed.
-  if (previews::HasEnabledPreviews(response->head.previews_state) &&
+  if (previews::HasEnabledPreviews(info->GetPreviewsState()) &&
       info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
       request->url().SchemeIsHTTPOrHTTPS()) {
     // Annotate request if no-transform directive found in response headers.
@@ -633,11 +633,11 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 
     // Determine effective PreviewsState for this committed main frame response.
     content::PreviewsState committed_state = DetermineCommittedPreviews(
-        request, io_data->previews_decider_impl(),
-        static_cast<content::PreviewsState>(response->head.previews_state));
+        request, io_data->previews_decider_impl(), info->GetPreviewsState());
 
-    // Update previews state in response to renderer.
-    response->head.previews_state = static_cast<int>(committed_state);
+    // Update previews state in ResourceRequestInfo before it is sent to
+    // renderer.
+    info->SetPreviewsState(committed_state);
 
     // Update previews state in nav data to UI.
     ChromeNavigationData* data =

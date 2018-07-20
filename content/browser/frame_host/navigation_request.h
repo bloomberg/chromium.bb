@@ -237,6 +237,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const GlobalRequestID& request_id,
       bool is_download,
       bool is_stream,
+      PreviewsState previews_state,
       base::Optional<SubresourceLoaderParams> subresource_loader_params)
       override;
   void OnRequestFailed(

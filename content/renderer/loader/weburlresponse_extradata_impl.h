@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/public/common/previews_state.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -55,12 +54,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl
     is_ftp_directory_listing_ = is_ftp_directory_listing;
   }
 
-  // Returns a bitmask of potentially several Previews optimizations.
-  PreviewsState previews_state() const { return previews_state_; }
-  void set_previews_state(PreviewsState previews_state) {
-    previews_state_ = previews_state;
-  }
-
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
@@ -74,7 +67,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl
   bool was_fetched_via_spdy_;
   bool was_alpn_negotiated_;
   bool was_alternate_protocol_available_;
-  PreviewsState previews_state_;
   net::EffectiveConnectionType effective_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);

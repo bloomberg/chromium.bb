@@ -146,12 +146,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   std::string cache_storage_cache_name;
 
-  // A bitmask of potentially several Previews optimizations that the resource
-  // could have requested.
-  // TODO(rdsmith, reillyg): Only used by DRP; should be removed as part of DRP
-  // servicification.
-  int previews_state;
-
   // Effective connection type when the resource was fetched. This is populated
   // only for responses that correspond to main frame requests.
   net::EffectiveConnectionType effective_connection_type;

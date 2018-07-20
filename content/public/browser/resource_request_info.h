@@ -173,6 +173,9 @@ class ResourceRequestInfo {
   // Returns the current state of Previews.
   virtual PreviewsState GetPreviewsState() const = 0;
 
+  // Sets the PreviewsState to |previews_state|.
+  virtual void SetPreviewsState(PreviewsState previews_state) = 0;
+
   // PlzNavigate
   // Only used for navigations. Returns opaque data set by the embedder on the
   // UI thread at the beginning of navigation.

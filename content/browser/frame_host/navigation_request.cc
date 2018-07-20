@@ -925,6 +925,7 @@ void NavigationRequest::OnResponseStarted(
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream,
+    PreviewsState previews_state,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   DCHECK(state_ == STARTED);
   DCHECK(response);
@@ -993,8 +994,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Update the previews state of the request.
-  common_params_.previews_state =
-      static_cast<PreviewsState>(response->head.previews_state);
+  common_params_.previews_state = previews_state;
 
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host = nullptr;
