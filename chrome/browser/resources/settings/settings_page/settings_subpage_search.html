@@ -83,7 +83,7 @@
     <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
     <cr-input id="searchInput" on-search="onSearchTermSearch" incremental
         on-input="onSearchTermInput" aria-label$="[[label]]" type="search"
-        autofocus="[[autofocus]]" placeholder="[[label]]">
+        autofocus="[[autofocus]]" placeholder="[[label]]" spellcheck="false">
       <paper-icon-button-light id="clearSearchContainer" class="icon-cancel"
           hidden$="[[!hasSearchText]]" slot="suffix">
         <button id="clearSearch" on-click="onTapClear_" title="[[clearLabel]]">
