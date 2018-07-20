@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -87,6 +88,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, assign) TabGridConfiguration configuration;
 // Setting the current page will adjust the scroll view to the correct position.
 @property(nonatomic, assign) TabGridPage currentPage;
+// The frame of |self.view| when it initially appeared.
+@property(nonatomic, assign) CGRect initialFrame;
 @end
 
 @implementation TabGridViewController
@@ -115,6 +118,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @synthesize floatingButton = _floatingButton;
 @synthesize configuration = _configuration;
 @synthesize currentPage = _currentPage;
+@synthesize initialFrame = _initialFrame;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -157,6 +161,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   [self broadcastIncognitoContentVisibility];
   [super viewWillAppear:animated];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  self.initialFrame = self.view.frame;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -290,8 +298,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     (id<UIViewControllerContextTransitioning>)context {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.activePage];
-  return gridViewController == nil ? nil
-                                   : [gridViewController transitionLayout];
+  if (!gridViewController)
+    return nil;
+
+  GridTransitionLayout* layout = [gridViewController transitionLayout];
+  layout.frameChanged = !CGRectEqualToRect(self.view.frame, self.initialFrame);
+  return layout;
 }
 
 - (UIView*)proxyContainerForTransitionContext:

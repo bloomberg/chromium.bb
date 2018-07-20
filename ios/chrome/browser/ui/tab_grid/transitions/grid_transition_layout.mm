@@ -23,6 +23,7 @@
 @synthesize selectionItem = _selectionItem;
 @synthesize inactiveItems = _inactiveItems;
 @synthesize expandedRect = _expandedRect;
+@synthesize frameChanged = _frameChanged;
 
 + (instancetype)layoutWithInactiveItems:(NSArray<GridTransitionItem*>*)items
                              activeItem:(GridTransitionActiveItem*)activeItem

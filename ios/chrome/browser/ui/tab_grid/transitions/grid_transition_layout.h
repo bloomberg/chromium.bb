@@ -30,7 +30,11 @@
 @property(nonatomic, strong, readonly) GridTransitionItem* selectionItem;
 
 // The rect, in UIWindow coordinates, that an "expanded" item should occupy.
-@property(nonatomic) CGRect expandedRect;
+@property(nonatomic, assign) CGRect expandedRect;
+
+// YES if the initial frame of the grid is different from the frame used for
+// the animation.
+@property(nonatomic, assign) BOOL frameChanged;
 
 // Creates a new layout object.
 // |inactiveItems| should be non-nil, but it may be empty.
