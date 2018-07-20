@@ -18,6 +18,31 @@ namespace autofill {
 class CreditCard;
 class PersonalDataManager;
 
+// MigratableCreditCard class is used as a DataStructure to work as an
+// intermediary between the UI side and the migration manager. Besides the basic
+// credit card information, it also includes a boolean that represents whether
+// the card was chosen for upload.
+// TODO(crbug.com/852904): Create one Enum to represent migration status such as
+// whether the card is successfully uploaded or failure on uploading.
+class MigratableCreditCard {
+ public:
+  MigratableCreditCard(const CreditCard& credit_card);
+  ~MigratableCreditCard();
+
+  CreditCard credit_card() const { return credit_card_; }
+
+  bool is_chosen() const { return is_chosen_; }
+  void set_is_chosen(bool is_chosen) { is_chosen_ = is_chosen; }
+
+ private:
+  // The main card information of the current migratable card.
+  CreditCard credit_card_;
+
+  // Whether the user has decided to migrate the this card; shown as a checkbox
+  // in the UI.
+  bool is_chosen_ = true;
+};
+
 // Manages logic for determining whether migration of locally saved credit cards
 // to Google Payments is available as well as multiple local card uploading.
 // Owned by FormDataImporter.
@@ -37,6 +62,10 @@ class LocalCardMigrationManager : public payments::PaymentsClientSaveDelegate {
   // Called from FormDataImporter when all migration requirements are met.
   // Fetches legal documents and triggers the OnDidGetUploadDetails callback.
   void AttemptToOfferLocalCardMigration();
+
+  // Callback function when user agrees to migration on the intermediate dialog.
+  // Pops up a larger, modal dialog showing the local cards to be uploaded.
+  void OnUserAcceptedIntermediateMigrationDialog();
 
   // Check that the user is signed in, syncing, and the proper experiment
   // flags are enabled. Override in the test class.
@@ -72,6 +101,11 @@ class LocalCardMigrationManager : public payments::PaymentsClientSaveDelegate {
   payments::PaymentsClient* payments_client_;
 
  private:
+  // Callback function when user confirms migration on the main migration
+  // dialog. Sets |user_accepted_main_migration_dialog_| and sends the upload
+  // request.
+  void OnUserAcceptedMainMigrationDialog();
+
   std::unique_ptr<base::DictionaryValue> legal_message_;
 
   std::string app_locale_;
@@ -86,7 +120,13 @@ class LocalCardMigrationManager : public payments::PaymentsClientSaveDelegate {
   payments::PaymentsClient::UploadRequestDetails upload_request_;
 
   // The local credit cards to be uploaded.
-  std::vector<CreditCard> migratable_credit_cards_;
+  std::vector<MigratableCreditCard> migratable_credit_cards_;
+
+  // |true| if the user has accepted migrating their local cards to Google Pay
+  // on the main dialog.
+  bool user_accepted_main_migration_dialog_ = false;
+
+  base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationManager);
 };

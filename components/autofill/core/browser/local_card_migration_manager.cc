@@ -21,6 +21,11 @@
 
 namespace autofill {
 
+MigratableCreditCard::MigratableCreditCard(const CreditCard& credit_card)
+    : credit_card_(credit_card) {}
+
+MigratableCreditCard::~MigratableCreditCard() {}
+
 LocalCardMigrationManager::LocalCardMigrationManager(
     AutofillClient* client,
     payments::PaymentsClient* payments_client,
@@ -29,7 +34,8 @@ LocalCardMigrationManager::LocalCardMigrationManager(
     : client_(client),
       payments_client_(payments_client),
       app_locale_(app_locale),
-      personal_data_manager_(personal_data_manager) {
+      personal_data_manager_(personal_data_manager),
+      weak_ptr_factory_(this) {
   if (payments_client_)
     payments_client_->SetSaveDelegate(this);
 }
@@ -56,12 +62,12 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   migratable_credit_cards_.clear();
 
   // Initialize the local credit card list and queue for showing and uploading.
-  for (CreditCard* card : local_credit_cards) {
+  for (CreditCard* credit_card : local_credit_cards) {
     // If the card is valid (has a valid card number, expiration date, and is
     // not expired) and is not a server card, add it to the list of migratable
     // cards.
-    if (card->IsValid() && !IsServerCard(card))
-      migratable_credit_cards_.push_back(*card);
+    if (credit_card->IsValid() && !IsServerCard(credit_card))
+      migratable_credit_cards_.push_back(MigratableCreditCard(*credit_card));
   }
 
   // If the form was submitted with a local card, only offer migration instead
@@ -98,6 +104,14 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
       app_locale_);
 }
 
+// TODO(crbug.com/852904): Pops up a larger, modal dialog showing the local
+// cards to be uploaded. Pass the reference of vector<MigratableCreditCard> and
+// the callback function is OnConfirmLocalCardsMigration().
+void LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog() {
+  user_accepted_main_migration_dialog_ = false;
+  // Pops up a larger, modal dialog showing the local cards to be uploaded.
+}
+
 bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   // Confirm that the user is signed in, syncing, and the proper experiment
   // flags are enabled.
@@ -122,13 +136,18 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     legal_message_ = std::move(legal_message);
     // If we successfully received the legal docs, trigger the offer-to-migrate
     // dialog.
-    // TODO(crbug.com/852904): Show intermediate migration prompt here! Relies
-    // on CL/1117929 first.
+    client_->ShowLocalCardMigrationPrompt(base::BindOnce(
+        &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,
+        weak_ptr_factory_.GetWeakPtr()));
+    // TODO(crbug.com/852904): Call the client LoadRiskData()
   }
 }
 
-// TODO(crbug.com/852904): Starts the upload of the next local card if one
-// exists.
+// TODO(crbug.com/852904): Send the upload request once risk data is available.
+void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
+  user_accepted_main_migration_dialog_ = true;
+}
+
 void LocalCardMigrationManager::OnDidUploadCard(
     AutofillClient::PaymentsRpcResult result,
     const std::string& server_id) {}
@@ -139,9 +158,11 @@ int LocalCardMigrationManager::GetDetectedValues() const {
   // If all cards to be migrated have a cardholder name, include it in the
   // detected values.
   bool all_cards_have_cardholder_name = true;
-  for (CreditCard card : migratable_credit_cards_) {
+  for (MigratableCreditCard migratable_credit_card : migratable_credit_cards_) {
     all_cards_have_cardholder_name &=
-        !card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), app_locale_).empty();
+        !migratable_credit_card.credit_card()
+             .GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), app_locale_)
+             .empty();
   }
   if (all_cards_have_cardholder_name)
     detected_values |= CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME;
