@@ -469,6 +469,8 @@ void DataReductionProxyCompressionStats::Init() {
         weak_factory_.GetWeakPtr()));
   }
 
+  InitializeWeeklyAggregateDataUse(base::Time::Now());
+
   if (delay_.is_zero())
     return;
 
@@ -517,8 +519,6 @@ void DataReductionProxyCompressionStats::Init() {
   InitListPref(prefs::kDailyHttpReceivedContentLength);
   InitListPref(prefs::kDailyOriginalContentLengthViaDataReductionProxy);
   InitListPref(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
-
-  InitializeWeeklyAggregateDataUse(base::Time::Now());
 }
 
 void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
