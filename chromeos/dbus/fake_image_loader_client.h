@@ -5,20 +5,29 @@
 #ifndef CHROMEOS_DBUS_FAKE_IMAGE_LOADER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_IMAGE_LOADER_CLIENT_H_
 
+#include <map>
 #include <string>
 
 #include "base/macros.h"
 #include "chromeos/dbus/image_loader_client.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace chromeos {
 
 // A fake implementation of ImageLoaderClient. This class does nothing.
 class CHROMEOS_EXPORT FakeImageLoaderClient : public ImageLoaderClient {
  public:
-  FakeImageLoaderClient() {}
-  ~FakeImageLoaderClient() override {}
+  FakeImageLoaderClient();
+  ~FakeImageLoaderClient() override;
 
-  // DBusClient ovveride.
+  // Sets intended mount path for a component.
+  void SetMountPathForComponent(const std::string& component_name,
+                                const base::FilePath& mount_path);
+
+  // DBusClient override.
   void Init(dbus::Bus* dbus) override {}
 
   // ImageLoaderClient override:
@@ -41,6 +50,14 @@ class CHROMEOS_EXPORT FakeImageLoaderClient : public ImageLoaderClient {
                         DBusMethodCallback<bool> callback) override;
 
  private:
+  // Maps registered component name to its registered varsion.
+  std::map<std::string, std::string> registered_components_;
+
+  // Maps component names to paths to which they should be mounted.
+  // Registered using SetMountPathForComponent() before LoadComponent*() is
+  // called, and removed by a later call to UnmountComponent().
+  std::map<std::string, base::FilePath> mount_paths_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeImageLoaderClient);
 };
 
