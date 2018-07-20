@@ -112,6 +112,9 @@ class ChromeAppListItem {
 
   std::string ToDebugString() const;
 
+  // Set the default position if it exists.
+  void SetDefaultPositionIfApplicable();
+
  protected:
   ChromeAppListItem(Profile* profile, const std::string& app_id);
 
@@ -129,9 +132,6 @@ class ChromeAppListItem {
   // Updates item position and name from |sync_item|. |sync_item| must be valid.
   void UpdateFromSync(
       const app_list::AppListSyncableService::SyncItem* sync_item);
-
-  // Set the default position if it exists.
-  void SetDefaultPositionIfApplicable();
 
   // Get the context menu of a certain app. This could be different for
   // different kinds of items.

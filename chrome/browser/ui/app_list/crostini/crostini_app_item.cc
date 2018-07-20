@@ -35,6 +35,10 @@ CrostiniAppItem::CrostiniAppItem(
     UpdateFromSync(sync_item);
   } else {
     SetDefaultPositionIfApplicable();
+
+    // Crostini app is created from scratch. Move it to default folder.
+    DCHECK(folder_id().empty());
+    SetFolderId(kCrostiniFolderId);
   }
 
   // Set model updater last to avoid being called during construction.
