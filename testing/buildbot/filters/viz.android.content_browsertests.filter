@@ -2,15 +2,3 @@
 # Flaky failures with incorrect Input event acks. https://crbug.com/855532
 -TouchInputBrowserTest.TouchHandlerConsume
 -TouchInputBrowserTest.TouchHandlerNoConsume
-
-## Base viz.content_browsertests.filter since we cannot chain filter files
-#### Hit Testing
-# Test failure: https://crbug.com/848325
--SitePerProcessHitTestBrowserTest.RootConsumesScrollDuringOverscrollGesture*
-
-# InputEventAckWaiter never receives the event: https://crbug.com/848348
--SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest*
--SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture*
-
-# /2 Variant does not handle overlapping surfaces: https://crbug.com/846798
--SitePerProcessHitTestBrowserTest.HitTestStaleDataDeletedView*
