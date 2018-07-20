@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
@@ -1880,14 +1881,16 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
 }
 
 // Tests collecting device status for registered consumer device.
-class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
+class ConsumerDeviceStatusCollectorTimeLimitDisabledTest
+    : public DeviceStatusCollectorTest {
  public:
-  ConsumerDeviceStatusCollectorTest() {
+  ConsumerDeviceStatusCollectorTimeLimitDisabledTest() {
     user_account_id_ = AccountId::FromUserEmail("user0@gmail.com");
     MockChildUser(user_account_id_);
+    scoped_feature_list_.InitAndDisableFeature(features::kUsageTimeLimitPolicy);
   }
 
-  ~ConsumerDeviceStatusCollectorTest() override = default;
+  ~ConsumerDeviceStatusCollectorTimeLimitDisabledTest() override = default;
 
  protected:
   void RestartStatusCollector(
@@ -1903,9 +1906,10 @@ class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
   }
 
   AccountId user_account_id_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(ConsumerDeviceStatusCollectorTest, ReportingBootMode) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingBootMode) {
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey,
       chromeos::system::kDevSwitchBootValueVerified);
@@ -1916,8 +1920,7 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingBootMode) {
   EXPECT_EQ("Verified", device_status_.boot_mode());
 }
 
-
-TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingArcStatus) {
   RestartStatusCollector(
       base::BindRepeating(&GetEmptyVolumeInfo),
       base::BindRepeating(&GetEmptyCPUStatistics),
@@ -1936,7 +1939,8 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
   EXPECT_EQ(user_account_id_.GetUserEmail(), session_status_.user_dm_token());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, ReportingPartialVersionInfo) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
+       ReportingPartialVersionInfo) {
   GetStatus();
 
   // Should only report OS version.
@@ -1946,7 +1950,8 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingPartialVersionInfo) {
   EXPECT_FALSE(device_status_.has_tpm_version_info());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingVolumeInfo) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
+       NotReportingVolumeInfo) {
   std::vector<std::string> expected_mount_points;
   std::vector<em::VolumeInfo> expected_volume_info;
   for (const auto& mount_info :
@@ -1976,7 +1981,7 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingVolumeInfo) {
   EXPECT_EQ(0, device_status_.volume_info_size());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingUsers) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, NotReportingUsers) {
   const AccountId account_id0(AccountId::FromUserEmail("user0@gmail.com"));
   const AccountId account_id1(AccountId::FromUserEmail("user1@gmail.com"));
   user_manager_->AddUserWithAffiliationAndType(account_id0, true,
@@ -1989,7 +1994,8 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingUsers) {
   EXPECT_EQ(0, device_status_.user_size());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingOSUpdateStatus) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
+       NotReportingOSUpdateStatus) {
   MockPlatformVersion("1234.0.0");
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1234.0.0");
@@ -1999,7 +2005,8 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingOSUpdateStatus) {
   EXPECT_FALSE(device_status_.has_os_update_status());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingDeviceHardwareStatus) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
+       NotReportingDeviceHardwareStatus) {
   const std::string full_cpu_usage("cpu  500 0 500 0");
 
   std::vector<em::CPUTempInfo> expected_temp_info;
@@ -2028,7 +2035,7 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingDeviceHardwareStatus) {
   EXPECT_FALSE(device_status_.has_system_ram_total());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, TimeZoneReporting) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, TimeZoneReporting) {
   const std::string timezone =
       base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                             ->GetCurrentTimezoneID());
@@ -2039,7 +2046,8 @@ TEST_F(ConsumerDeviceStatusCollectorTest, TimeZoneReporting) {
   EXPECT_EQ(timezone, session_status_.time_zone());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, ActivityTimesFeatureDisable) {
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
+       ActivityTimesFeatureDisable) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
   ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
@@ -2053,7 +2061,7 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ActivityTimesFeatureDisable) {
 // Tests collecting device status for registered consumer device when time
 // limit feature is enabled.
 class ConsumerDeviceStatusCollectorTimeLimitEnabledTest
-    : public ConsumerDeviceStatusCollectorTest {
+    : public ConsumerDeviceStatusCollectorTimeLimitDisabledTest {
  public:
   ConsumerDeviceStatusCollectorTimeLimitEnabledTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kUsageTimeLimitPolicy);
