@@ -63,6 +63,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
@@ -995,10 +996,9 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
-  bool oopd_enabled =
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
-  if (oopd_enabled && client_id == gpu::kInProcessCommandBufferClientId) {
-    // The display-compositor in the gpu process uses this special client id.
+  if (gpu::IsReservedClientId(client_id)) {
+    // The display-compositor/GrShaderCache in the gpu process uses these
+    // special client ids.
     callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
                  gpu::GpuFeatureInfo(),
                  EstablishChannelStatus::GPU_ACCESS_DENIED);
@@ -1008,9 +1008,10 @@ void GpuProcessHost::EstablishGpuChannel(
   DCHECK_EQ(preempts, allow_view_command_buffers);
   DCHECK_EQ(preempts, allow_real_time_streams);
   bool is_gpu_host = preempts;
+  bool cache_shaders_on_disk =
+      GetShaderCacheFactorySingleton()->Get(client_id) != nullptr;
 
   channel_requests_.push(callback);
-  const bool cache_shaders_on_disk = true;
   gpu_service_ptr_->EstablishGpuChannel(
       client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk,
       base::BindOnce(&GpuProcessHost::OnChannelEstablished,
@@ -1019,8 +1020,16 @@ void GpuProcessHost::EstablishGpuChannel(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id);
+
+    bool oopd_enabled =
+        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
     if (oopd_enabled)
       CreateChannelCache(gpu::kInProcessCommandBufferClientId);
+
+    bool oopr_enabled =
+        base::FeatureList::IsEnabled(features::kDefaultEnableOopRasterization);
+    if (oopr_enabled)
+      CreateChannelCache(gpu::kGrShaderCacheClientId);
   }
 }
 
