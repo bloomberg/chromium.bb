@@ -141,8 +141,7 @@ class AURA_EXPORT WindowTreeClient
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
       bool create_discardable_memory = true,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      Config config = Config::kMashDeprecated);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
 
   // Creates a WindowTreeClient such that the Window Service creates a single
   // WindowTreeHost. This is useful for testing and examples.

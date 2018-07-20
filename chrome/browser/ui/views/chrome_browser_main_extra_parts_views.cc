@@ -168,7 +168,6 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
       content::BrowserThread::IO);
   // WMState is owned as a member, so don't have MusClient create it.
   params.create_wm_state = false;
-  params.wtc_config = aura::WindowTreeClient::Config::kMus2;
   mus_client_ = std::make_unique<views::MusClient>(params);
 #endif  // defined(OS_CHROMEOS)
 }

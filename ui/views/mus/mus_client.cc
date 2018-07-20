@@ -20,6 +20,7 @@
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
@@ -112,8 +113,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     DCHECK(io_task_runner);
     owned_window_tree_client_ =
         aura::WindowTreeClient::CreateForWindowTreeFactory(
-            connector, this, true, std::move(io_task_runner),
-            params.wtc_config);
+            connector, this, true, std::move(io_task_runner));
     window_tree_client_ = owned_window_tree_client_.get();
     aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_);
   } else {
@@ -130,10 +130,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     input_device_client_->Connect(std::move(input_device_server));
 
     screen_ = std::make_unique<ScreenMus>(this);
-    if (params.wtc_config == aura::WindowTreeClient::Config::kMashDeprecated)
-      screen_->InitDeprecated(connector);
-    else
-      window_tree_client_->WaitForDisplays();
+    window_tree_client_->WaitForDisplays();
 
     ui::mojom::ClipboardHostPtr clipboard_host_ptr;
     connector->BindInterface(ui::mojom::kServiceName, &clipboard_host_ptr);

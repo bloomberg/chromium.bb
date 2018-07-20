@@ -15,7 +15,6 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
@@ -68,15 +67,13 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     InitParams();
     ~InitParams();
 
-    // Production code should provide |connector|, |identity|, |wtc_config|
-    // and an |io_task_runner| if the process already has one. Test code may
-    // skip these parameters (e.g. a unit test that does not need to connect
-    // to the window service does not need to provide a connector).
+    // Production code should provide |connector|, |identity|, and an
+    // |io_task_runner| if the process already has one. Test code may skip these
+    // parameters (e.g. a unit test that does not need to connect to the window
+    // service does not need to provide a connector).
     service_manager::Connector* connector = nullptr;
     service_manager::Identity identity;
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr;
-    aura::WindowTreeClient::Config wtc_config =
-        aura::WindowTreeClient::Config::kMashDeprecated;
 
     // Create a wm::WMState. Some processes (e.g. the browser) may already
     // have one.

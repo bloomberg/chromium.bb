@@ -5,14 +5,9 @@
 #ifndef UI_VIEWS_MUS_SCREEN_MUS_H_
 #define UI_VIEWS_MUS_SCREEN_MUS_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "ui/display/screen_base.h"
 #include "ui/views/mus/mus_export.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace views {
 
@@ -24,9 +19,6 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
  public:
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
-
-  // TODO(sky): not used with ws2. Remove. https://crbug.com/842365.
-  void InitDeprecated(service_manager::Connector* connector);
 
   // ui::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
@@ -44,9 +36,6 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
 
   ScreenMusDelegate* delegate_;
-  ui::mojom::ScreenProviderPtr screen_provider_;
-  mojo::Binding<ui::mojom::ScreenProviderObserver>
-      screen_provider_observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

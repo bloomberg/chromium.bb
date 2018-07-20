@@ -36,7 +36,6 @@ void ShortcutViewerApplication::OnStart() {
   views::AuraInit::InitParams params;
   params.connector = context()->connector();
   params.identity = context()->identity();
-  params.mode = views::AuraInit::Mode::AURA_MUS2;
   params.register_path_provider = false;
   params.use_accessibility_host = true;
   aura_init_ = views::AuraInit::Create(params);

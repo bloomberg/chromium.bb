@@ -114,8 +114,7 @@ TEST_F(AshServiceTest, MAYBE_OpenWindow) {
   // |ash|, but is async.
   std::unique_ptr<aura::WindowTreeClient> client =
       aura::WindowTreeClient::CreateForWindowTreeFactory(
-          connector(), &window_tree_delegate, false, nullptr,
-          aura::WindowTreeClient::Config::kMus2);
+          connector(), &window_tree_delegate, false, nullptr);
   aura::test::EnvWindowTreeClientSetter env_window_tree_client_setter(
       client.get());
   std::map<std::string, std::vector<uint8_t>> properties;

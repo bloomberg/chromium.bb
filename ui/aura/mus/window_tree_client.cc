@@ -260,11 +260,10 @@ std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowTreeFactory(
     service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     bool create_discardable_memory,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    Config config) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   std::unique_ptr<WindowTreeClient> wtc(
       new WindowTreeClient(connector, delegate, nullptr, nullptr, nullptr,
-                           create_discardable_memory, config));
+                           create_discardable_memory, Config::kMus2));
   ui::mojom::WindowTreeFactoryPtr factory;
   connector->BindInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;

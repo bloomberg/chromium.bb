@@ -33,20 +33,6 @@ class ViewsDelegate;
 // |resource_file| is the path to the apk file containing the resources.
 class VIEWS_MUS_EXPORT AuraInit {
  public:
-  // TODO(sky): remove Mode. https://crbug.com/842365.
-  enum class Mode {
-    // Indicates AuraInit should target using aura with mus. This is deprecated.
-    AURA_MUS,
-
-    // Indicates AuraInit should target using aura with mus, for a Window
-    // Manager client. This is deprecated.
-    AURA_MUS_WINDOW_MANAGER,
-
-    // Targets ws2. Mode will eventually be removed entirely and this will be
-    // the default.
-    AURA_MUS2,
-  };
-
   ~AuraInit();
 
   struct VIEWS_MUS_EXPORT InitParams {
@@ -59,7 +45,6 @@ class VIEWS_MUS_EXPORT AuraInit {
     // File for 2x icons. Can be empty.
     std::string resource_file_200;
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr;
-    Mode mode = Mode::AURA_MUS;
     bool register_path_provider = true;
     // When true the client application will connect to the accessibility host
     // in the browser to supply AX node trees and handle AX actions (e.g. to
@@ -72,7 +57,6 @@ class VIEWS_MUS_EXPORT AuraInit {
   // unusable state, and calling services should shutdown.
   static std::unique_ptr<AuraInit> Create(const InitParams& params);
 
-  // Only valid if Mode::AURA_MUS was passed to constructor.
   MusClient* mus_client() { return mus_client_.get(); }
 
  private:
