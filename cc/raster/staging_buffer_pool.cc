@@ -115,17 +115,9 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
   const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
-  auto shared_memory_guid = gpu_memory_buffer->GetHandle().handle.GetGUID();
   const int kImportance = 2;
-  if (!shared_memory_guid.is_empty()) {
-    pmd->CreateSharedMemoryOwnershipEdge(buffer_dump->guid(),
-                                         shared_memory_guid, kImportance);
-  } else {
-    auto shared_buffer_guid =
-        gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
-    pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
-    pmd->AddOwnershipEdge(buffer_dump->guid(), shared_buffer_guid, kImportance);
-  }
+  gpu_memory_buffer->OnMemoryDump(pmd, buffer_dump->guid(), tracing_process_id,
+                                  kImportance);
 }
 
 StagingBufferPool::StagingBufferPool(

@@ -438,8 +438,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the CreateImage IPC below.
-  gfx::GpuMemoryBufferHandle handle =
-      gfx::CloneHandleForIPC(gpu_memory_buffer->GetHandle());
+  gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
   bool requires_sync_token = handle.type == gfx::IO_SURFACE_BUFFER;
 
   uint64_t image_fence_sync = 0;

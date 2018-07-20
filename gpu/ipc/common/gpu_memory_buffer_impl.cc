@@ -4,7 +4,8 @@
 
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 
-#include "base/logging.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
+#include "base/trace_event/process_memory_dump.h"
 
 namespace gpu {
 
@@ -38,6 +39,17 @@ gfx::GpuMemoryBufferId GpuMemoryBufferImpl::GetId() const {
 
 ClientBuffer GpuMemoryBufferImpl::AsClientBuffer() {
   return reinterpret_cast<ClientBuffer>(this);
+}
+
+void GpuMemoryBufferImpl::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+    uint64_t tracing_process_id,
+    int importance) const {
+  auto shared_buffer_guid =
+      gfx::GetGenericSharedGpuMemoryGUIDForTracing(tracing_process_id, GetId());
+  pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+  pmd->AddOwnershipEdge(buffer_dump_guid, shared_buffer_guid, importance);
 }
 
 }  // namespace gpu

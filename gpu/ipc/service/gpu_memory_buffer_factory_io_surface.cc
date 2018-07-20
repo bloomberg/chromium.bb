@@ -105,7 +105,7 @@ bool GpuMemoryBufferFactoryIOSurface::SupportsCreateAnonymousImage() const {
 
 scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,

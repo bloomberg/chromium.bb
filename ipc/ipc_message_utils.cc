@@ -572,15 +572,13 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
-void ParamTraits<AHardwareBuffer*>::Write(base::Pickle* m,
-                                          const param_type& p) {
-  const bool is_valid = p != nullptr;
+void ParamTraits<base::android::ScopedHardwareBufferHandle>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  const bool is_valid = p.is_valid();
   WriteParam(m, is_valid);
   if (!is_valid)
     return;
-
-  // Assume ownership of the input AHardwareBuffer.
-  auto handle = base::android::ScopedHardwareBufferHandle::Adopt(p);
 
   // We must keep a ref to the AHardwareBuffer alive until the receiver has
   // acquired its own reference. We do this by sending a message pipe handle
@@ -590,19 +588,20 @@ void ParamTraits<AHardwareBuffer*>::Write(base::Pickle* m,
   mojo::MessagePipe tracking_pipe;
   m->WriteAttachment(new internal::MojoHandleAttachment(
       mojo::ScopedHandle::From(std::move(tracking_pipe.handle0))));
-  WriteParam(m,
-             base::FileDescriptor(handle.SerializeAsFileDescriptor().release(),
-                                  true /* auto_close */));
+  WriteParam(m, base::FileDescriptor(p.SerializeAsFileDescriptor().release(),
+                                     true /* auto_close */));
 
   // Pass ownership of the input handle to our tracking pipe to keep the AHB
   // alive long enough to be deserialized by the receiver.
-  mojo::ScopeToMessagePipe(std::move(handle), std::move(tracking_pipe.handle1));
+  mojo::ScopeToMessagePipe(std::move(const_cast<param_type&>(p)),
+                           std::move(tracking_pipe.handle1));
 }
 
-bool ParamTraits<AHardwareBuffer*>::Read(const base::Pickle* m,
-                                         base::PickleIterator* iter,
-                                         param_type* r) {
-  *r = nullptr;
+bool ParamTraits<base::android::ScopedHardwareBufferHandle>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  *r = base::android::ScopedHardwareBufferHandle();
 
   bool is_valid;
   if (!ReadParam(m, iter, &is_valid))
@@ -633,13 +632,15 @@ bool ParamTraits<AHardwareBuffer*>::Read(const base::Pickle* m,
     return false;
 
   *r = base::android::ScopedHardwareBufferHandle::DeserializeFromFileDescriptor(
-           std::move(scoped_fd))
-           .Take();
+      std::move(scoped_fd));
   return true;
 }
 
-void ParamTraits<AHardwareBuffer*>::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("AHardwareBuffer(%p)", p));
+void ParamTraits<base::android::ScopedHardwareBufferHandle>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append(base::StringPrintf("base::android::ScopedHardwareBufferHandle(%p)",
+                               p.get()));
 }
 #endif  // defined(OS_ANDROID)
 

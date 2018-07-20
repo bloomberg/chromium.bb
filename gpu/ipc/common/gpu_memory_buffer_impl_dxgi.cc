@@ -98,13 +98,24 @@ int GpuMemoryBufferImplDXGI::stride(size_t plane) const {
   return gfx::RowSizeForBufferFormat(size_.width(), format_, plane);
 }
 
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImplDXGI::GetHandle() const {
+gfx::GpuMemoryBufferType GpuMemoryBufferImplDXGI::GetType() const {
+  return gfx::DXGI_SHARED_HANDLE;
+}
+
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplDXGI::CloneHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::DXGI_SHARED_HANDLE;
   handle.id = id_;
   handle.offset = 0;
   handle.stride = stride(0);
-  handle.dxgi_handle = IPC::PlatformFileForTransit(dxgi_handle_.Get());
+  base::ProcessHandle process = ::GetCurrentProcess();
+  HANDLE duplicated_handle;
+  BOOL result =
+      ::DuplicateHandle(process, dxgi_handle_.Get(), process,
+                        &duplicated_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+  if (!result)
+    DPLOG(ERROR) << "Failed to duplicate DXGI resource handle.";
+  handle.dxgi_handle = IPC::PlatformFileForTransit(duplicated_handle);
   return handle;
 }
 

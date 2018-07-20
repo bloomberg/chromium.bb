@@ -28,7 +28,7 @@ class GPU_EXPORT GpuMemoryBufferImplAndroidHardwareBuffer
       const DestructionCallback& callback);
 
   static std::unique_ptr<GpuMemoryBufferImplAndroidHardwareBuffer>
-  CreateFromHandle(const gfx::GpuMemoryBufferHandle& handle,
+  CreateFromHandle(gfx::GpuMemoryBufferHandle handle,
                    const gfx::Size& size,
                    gfx::BufferFormat format,
                    gfx::BufferUsage usage,
@@ -44,7 +44,8 @@ class GPU_EXPORT GpuMemoryBufferImplAndroidHardwareBuffer
   void* memory(size_t plane) override;
   void Unmap() override;
   int stride(size_t plane) const override;
-  gfx::GpuMemoryBufferHandle GetHandle() const override;
+  gfx::GpuMemoryBufferType GetType() const override;
+  gfx::GpuMemoryBufferHandle CloneHandle() const override;
 
  private:
   GpuMemoryBufferImplAndroidHardwareBuffer(

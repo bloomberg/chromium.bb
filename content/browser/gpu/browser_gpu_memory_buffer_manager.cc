@@ -294,16 +294,17 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  request->result = gpu::GpuMemoryBufferImplSharedMemory::Create(
+  auto shared_memory_buffer = gpu::GpuMemoryBufferImplSharedMemory::Create(
       new_id, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
                      base::Unretained(this), new_id, request->client_id)));
-  if (request->result) {
+  if (shared_memory_buffer) {
     buffers.find(new_id)->second.shared_memory_guid =
-        request->result->GetHandle().handle.GetGUID();
+        shared_memory_buffer->GetSharedMemoryGUID();
+    request->result = std::move(shared_memory_buffer);
   }
   request->event.Signal();
 }

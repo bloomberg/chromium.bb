@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
@@ -108,13 +109,17 @@ class HudGpuBacking : public ResourcePool::GpuBacking {
     gl->DeleteTextures(1, &texture_id);
   }
 
-  base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
-      uint64_t tracing_process_id) override {
-    return gl::GetGLTextureClientGUIDForTracing(
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {
+    auto texture_tracing_guid = gl::GetGLTextureClientGUIDForTracing(
         compositor_context_provider->ContextSupport()->ShareGroupTracingGUID(),
         texture_id);
+    pmd->CreateSharedGlobalAllocatorDump(texture_tracing_guid);
+    pmd->AddOwnershipEdge(buffer_dump_guid, texture_tracing_guid, importance);
   }
-  base::UnguessableToken SharedMemoryGuid() override { return {}; }
 
   viz::ContextProvider* compositor_context_provider;
   GLuint texture_id;
@@ -126,8 +131,13 @@ class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
     layer_tree_frame_sink->DidDeleteSharedBitmap(shared_bitmap_id);
   }
 
-  base::UnguessableToken SharedMemoryGuid() override {
-    return shared_memory->mapped_id();
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {
+    pmd->CreateSharedMemoryOwnershipEdge(
+        buffer_dump_guid, shared_memory->mapped_id(), importance);
   }
 
   LayerTreeFrameSink* layer_tree_frame_sink;

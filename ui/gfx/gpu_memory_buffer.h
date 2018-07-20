@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/memory/shared_memory.h"
-#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/generic_shared_memory_id.h"
@@ -22,13 +21,18 @@
 #include "ui/gfx/mac/io_surface.h"
 #elif defined(OS_WIN)
 #include "ipc/ipc_platform_file.h"  // nogncheck
+#elif defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_handle.h"
 #endif
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 
-#if defined(OS_ANDROID)
-extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
-#endif
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+class MemoryAllocatorDumpGuid;
+}  // namespace trace_event
+}  // namespace base
 
 namespace gfx {
 
@@ -46,6 +50,9 @@ enum GpuMemoryBufferType {
 
 using GpuMemoryBufferId = GenericSharedMemoryId;
 
+// TODO(crbug.com/863011): Convert this to a proper class to ensure the state is
+// always consistent, particularly that the only one handle is set at the same
+// time and it corresponds to |type|.
 struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle();
   GpuMemoryBufferHandle(GpuMemoryBufferHandle&& other);
@@ -54,17 +61,20 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   bool is_null() const { return type == EMPTY_BUFFER; }
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;
+  // TODO(crbug.com/863011): convert this to a scoped handle.
   base::SharedMemoryHandle handle;
   uint32_t offset;
   int32_t stride;
 #if defined(OS_LINUX)
+  // TODO(crbug.com/863011): convert this to a scoped handle.
   NativePixmapHandle native_pixmap_handle;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   ScopedRefCountedIOSurfaceMachPort mach_port;
 #elif defined(OS_WIN)
+  // TODO(crbug.com/863011): convert this to a scoped handle.
   IPC::PlatformFileForTransit dxgi_handle;
 #elif defined(OS_ANDROID)
-  AHardwareBuffer* android_hardware_buffer = nullptr;
+  base::android::ScopedHardwareBufferHandle android_hardware_buffer;
 #endif
 };
 
@@ -106,22 +116,28 @@ class GFX_EXPORT GpuMemoryBuffer {
   // Returns a unique identifier associated with buffer.
   virtual GpuMemoryBufferId GetId() const = 0;
 
-  // Returns a platform specific handle for this buffer.
-  virtual GpuMemoryBufferHandle GetHandle() const = 0;
+  // Returns the type of this buffer.
+  virtual GpuMemoryBufferType GetType() const = 0;
+
+  // Returns a platform specific handle for this buffer which in particular can
+  // be sent over IPC. This duplicates file handles as appropriate, so that a
+  // caller takes ownership of the returned handle.
+  virtual GpuMemoryBufferHandle CloneHandle() const = 0;
 
   // Type-checking downcast routine.
   virtual ClientBuffer AsClientBuffer() = 0;
 
-  // Returns the GUID for tracing.
-  virtual base::trace_event::MemoryAllocatorDumpGuid GetGUIDForTracing(
-      uint64_t tracing_process_id) const;
+  // Dumps information about the memory backing the GpuMemoryBuffer to |pmd|.
+  // The memory usage is attributed to |buffer_dump_guid|.
+  // |tracing_process_id| uniquely identifies the process owning the memory.
+  // |importance| is relevant only for the cases of co-ownership, the memory
+  // gets attributed to the owner with the highest importance.
+  virtual void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const = 0;
 };
-
-// Returns an instance of |handle| which can be sent over IPC. This duplicates
-// the file-handles as appropriate, so that the IPC code take ownership of them,
-// without invalidating |handle| itself.
-GFX_EXPORT GpuMemoryBufferHandle
-CloneHandleForIPC(const GpuMemoryBufferHandle& handle);
 
 }  // namespace gfx
 

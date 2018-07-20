@@ -36,7 +36,7 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryAndroidHardwareBuffer
 
   // Overridden from ImageFactory:
   scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       unsigned internalformat,

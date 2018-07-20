@@ -851,8 +851,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
   // This handle is owned by the GPU thread and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // queuing of the CreateImage task below.
-  gfx::GpuMemoryBufferHandle handle =
-      gfx::CloneHandleForIPC(gpu_memory_buffer->GetHandle());
+  gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
   bool requires_sync_point = handle.type == gfx::IO_SURFACE_BUFFER;
 
   uint64_t fence_sync = 0;

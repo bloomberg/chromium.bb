@@ -599,8 +599,9 @@ void VrShellGl::WebVrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
   scoped_refptr<gl::GLImageAHardwareBuffer> img(
       new gl::GLImageAHardwareBuffer(webvr_surface_size_));
 
-  AHardwareBuffer* ahb = buffer->gmb->GetHandle().android_hardware_buffer;
-  bool ret = img->Initialize(ahb, false /* preserved */);
+  base::android::ScopedHardwareBufferHandle ahb =
+      buffer->gmb->CloneHandle().android_hardware_buffer;
+  bool ret = img->Initialize(ahb.get(), false /* preserved */);
   if (!ret) {
     DLOG(WARNING) << __FUNCTION__ << ": ERROR: failed to initialize image!";
     // Exiting VR is a bit drastic, but this error shouldn't occur under normal

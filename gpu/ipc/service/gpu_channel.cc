@@ -715,7 +715,7 @@ uint64_t GpuChannel::GetMemoryUsage() const {
 }
 
 scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     uint32_t internalformat,
@@ -740,8 +740,9 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
 
       return manager->gpu_memory_buffer_factory()
           ->AsImageFactory()
-          ->CreateImageForGpuMemoryBuffer(handle, size, format, internalformat,
-                                          client_id_, surface_handle);
+          ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
+                                          internalformat, client_id_,
+                                          surface_handle);
     }
   }
 }

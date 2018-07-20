@@ -134,15 +134,20 @@ int GpuMemoryBufferImplNativePixmap::stride(size_t plane) const {
   return pixmap_->GetStride(plane);
 }
 
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImplNativePixmap::GetHandle() const {
+gfx::GpuMemoryBufferType GpuMemoryBufferImplNativePixmap::GetType() const {
+  return gfx::NATIVE_PIXMAP;
+}
+
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplNativePixmap::CloneHandle()
+    const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
   handle.id = id_;
-  if (fd_.is_valid()) {
-    handle.native_pixmap_handle.fds.emplace_back(fd_.get(),
-                                                 false /* auto_close */);
-  }
-  handle.native_pixmap_handle.planes = planes_;
+  gfx::NativePixmapHandle native_pixmap_handle;
+  if (fd_.is_valid())
+    native_pixmap_handle.fds.emplace_back(fd_.get(), false /* auto_close */);
+  native_pixmap_handle.planes = planes_;
+  handle.native_pixmap_handle = gfx::CloneHandleForIPC(native_pixmap_handle);
   return handle;
 }
 

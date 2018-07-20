@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 #endif
@@ -93,14 +95,31 @@ class FakeGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 
   gfx::GpuMemoryBufferId GetId() const override { return handle_.id; }
 
-  gfx::GpuMemoryBufferHandle GetHandle() const override {
-    return gfx::CloneHandleForIPC(handle_);
+  gfx::GpuMemoryBufferType GetType() const override {
+    return gfx::NATIVE_PIXMAP;
+  }
+
+  gfx::GpuMemoryBufferHandle CloneHandle() const override {
+    gfx::GpuMemoryBufferHandle handle;
+    handle.type = gfx::NATIVE_PIXMAP;
+    handle.id = handle_.id;
+#if defined(OS_LINUX)
+    handle.native_pixmap_handle =
+        gfx::CloneHandleForIPC(handle_.native_pixmap_handle);
+#endif
+    return handle;
   }
 
   ClientBuffer AsClientBuffer() override {
     NOTREACHED();
     return ClientBuffer();
   }
+
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {}
 
  private:
   gfx::Size size_;

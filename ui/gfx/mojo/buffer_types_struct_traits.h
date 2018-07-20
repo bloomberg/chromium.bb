@@ -339,7 +339,7 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 
 #if defined(OS_ANDROID)
   static gfx::mojom::AHardwareBufferHandlePtr android_hardware_buffer_handle(
-      const gfx::GpuMemoryBufferHandle& handle);
+      gfx::GpuMemoryBufferHandle& handle);
 #endif
 
   static bool Read(gfx::mojom::GpuMemoryBufferHandleDataView data,

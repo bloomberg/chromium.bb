@@ -93,16 +93,15 @@ GpuMemoryBufferImplAndroidHardwareBuffer::Create(
 // static
 std::unique_ptr<GpuMemoryBufferImplAndroidHardwareBuffer>
 GpuMemoryBufferImplAndroidHardwareBuffer::CreateFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-  DCHECK(handle.android_hardware_buffer);
+  DCHECK(handle.android_hardware_buffer.is_valid());
   return base::WrapUnique(new GpuMemoryBufferImplAndroidHardwareBuffer(
       handle.id, size, format, callback,
-      base::android::ScopedHardwareBufferHandle::Adopt(
-          handle.android_hardware_buffer)));
+      std::move(handle.android_hardware_buffer)));
 }
 
 bool GpuMemoryBufferImplAndroidHardwareBuffer::Map() {
@@ -119,12 +118,17 @@ int GpuMemoryBufferImplAndroidHardwareBuffer::stride(size_t plane) const {
   return 0;
 }
 
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImplAndroidHardwareBuffer::GetHandle()
+gfx::GpuMemoryBufferType GpuMemoryBufferImplAndroidHardwareBuffer::GetType()
     const {
+  return gfx::ANDROID_HARDWARE_BUFFER;
+}
+
+gfx::GpuMemoryBufferHandle
+GpuMemoryBufferImplAndroidHardwareBuffer::CloneHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::ANDROID_HARDWARE_BUFFER;
   handle.id = id_;
-  handle.android_hardware_buffer = hardware_buffer_handle_.get();
+  handle.android_hardware_buffer = hardware_buffer_handle_.Clone();
   return handle;
 }
 
@@ -141,7 +145,8 @@ base::Closure GpuMemoryBufferImplAndroidHardwareBuffer::AllocateForTesting(
   AHardwareBuffer_Desc desc = GetBufferDescription(size, format, usage);
   base::AndroidHardwareBufferCompat::GetInstance().Allocate(&desc, &buffer);
   DCHECK(buffer);
-  handle->android_hardware_buffer = buffer;
+  handle->android_hardware_buffer =
+      base::android::ScopedHardwareBufferHandle::Adopt(buffer);
   return base::DoNothing();
 }
 

@@ -101,13 +101,21 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     NOTREACHED();
     return gfx::GpuMemoryBufferId(0);
   }
-  gfx::GpuMemoryBufferHandle GetHandle() const override {
+  gfx::GpuMemoryBufferType GetType() const override {
+    return gfx::NATIVE_PIXMAP;
+  }
+  gfx::GpuMemoryBufferHandle CloneHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {}
 
   base::RefCountedBytes* bytes() { return bytes_.get(); }
 
@@ -159,13 +167,21 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
     NOTREACHED();
     return gfx::GpuMemoryBufferId(0);
   }
-  gfx::GpuMemoryBufferHandle GetHandle() const override {
+  gfx::GpuMemoryBufferType GetType() const override {
+    return gfx::IO_SURFACE_BUFFER;
+  }
+  gfx::GpuMemoryBufferHandle CloneHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {}
 
   IOSurfaceRef iosurface() { return iosurface_; }
 
@@ -509,13 +525,12 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
     gfx::GpuMemoryBuffer* gpu_memory_buffer =
         reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
     DCHECK(gpu_memory_buffer);
-    if (gpu_memory_buffer->GetHandle().type == gfx::NATIVE_PIXMAP) {
-      gfx::GpuMemoryBufferHandle handle =
-          gfx::CloneHandleForIPC(gpu_memory_buffer->GetHandle());
+    if (gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP) {
+      gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
       gfx::BufferFormat format = gpu_memory_buffer->GetFormat();
       gl_image = gpu_memory_buffer_factory_->AsImageFactory()
                      ->CreateImageForGpuMemoryBuffer(
-                         handle, size, format, internalformat,
+                         std::move(handle), size, format, internalformat,
                          gpu::kInProcessCommandBufferClientId,
                          gpu::kNullSurfaceHandle);
       if (!gl_image)
