@@ -47,6 +47,18 @@ Polymer({
   },
 
   /**
+   * @param {!KeyboardEvent} e Event containing the key
+   * @private
+   */
+  onKeydown_: function(e) {
+    e.stopPropagation();
+    if (e.key == 'Escape' && !this.$.searchBox.getSearchInput().value.trim()) {
+      this.$.dialog.cancel();
+      e.preventDefault();
+    }
+  },
+
+  /**
    * @return {boolean} Whether there is more than one vendor item to display.
    * @private
    */
