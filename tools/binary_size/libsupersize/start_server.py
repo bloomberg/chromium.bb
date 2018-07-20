@@ -38,7 +38,7 @@ def AddArguments(parser):
 
 def Run(args, _parser):
   logging.info('Starting server')
-  server_addr = ('', args.port)
+  server_addr = (args.address, args.port)
 
   static_files = os.path.join(os.path.dirname(__file__), 'static')
 
