@@ -10,6 +10,9 @@
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
@@ -131,6 +134,18 @@ void WideFrameView::Layout() {
     const int height = header_view_->GetPreferredHeight();
     header_view_->SetBounds(0, onscreen_height - height, width(), height);
     header_view_->SetVisible(true);
+  }
+}
+
+void WideFrameView::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->IsOnlyLeftMouseButton()) {
+    if ((event->flags() & ui::EF_IS_DOUBLE_CLICK)) {
+      base::RecordAction(
+          base::UserMetricsAction("Caption_ClickTogglesMaximize"));
+      const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
+      wm::GetWindowState(target_->GetNativeWindow())->OnWMEvent(&wm_event);
+    }
+    event->SetHandled();
   }
 }
 
