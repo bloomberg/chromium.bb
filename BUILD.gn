@@ -630,7 +630,6 @@ group("gn_all") {
       "//mash:all",
       "//media/mojo/services:media_service_unittests",
       "//mojo",
-      "//services/ui/ws:tests",
       "//ui/views/mus:views_mus_interactive_ui_tests",
       "//ui/views/mus:views_mus_unittests",
     ]

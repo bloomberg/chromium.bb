@@ -19,7 +19,6 @@ group("all") {
     "//mash/example",
     "//mash/runner",
     "//mash/session",
-    "//mash/simple_wm",
     "//mash/task_viewer",
   ]
 
