@@ -58,7 +58,6 @@ void WatchTimeComponent<T>::SetPendingValue(T new_value) {
 template <typename T>
 void WatchTimeComponent<T>::SetCurrentValue(T new_value) {
   current_value_ = new_value;
-  end_timestamp_ = kNoTimestamp;
 }
 
 template <typename T>
@@ -67,14 +66,11 @@ void WatchTimeComponent<T>::RecordWatchTime(base::TimeDelta current_timestamp) {
   DCHECK_NE(current_timestamp, kInfiniteDuration);
   DCHECK_GE(current_timestamp, base::TimeDelta());
 
-  // If we're finalizing, use the media time at time of finalization.
-  if (NeedsFinalize()) {
-    // TODO(dalecurtis): This should be std::min(end_timestamp_,
-    // current_timestamp), to ensure a later finalize doesn't extend the watch
-    // time that should be reported in the event that we're processing a total
-    // finalize. Fix later to avoid changing too many things at once.
+  // If we're finalizing, use the media time at time of finalization. We only
+  // use the |end_timestamp_| if it's less than the current timestamp, otherwise
+  // we may report more watch time than expected.
+  if (NeedsFinalize() && end_timestamp_ < current_timestamp)
     current_timestamp = end_timestamp_;
-  }
 
   // Don't update watch time if media time hasn't changed since the last run;
   // this may occur if a seek is taking some time to complete or the playback

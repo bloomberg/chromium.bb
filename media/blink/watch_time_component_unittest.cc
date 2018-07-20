@@ -160,6 +160,30 @@ TEST_F(WatchTimeComponentTest, SetCurrentValue) {
   EXPECT_EQ(test_component->end_timestamp(), kNoTimestamp);
 }
 
+TEST_F(WatchTimeComponentTest, RecordDuringFinalizeRespectsCurrentTime) {
+  auto test_component = CreateComponent<bool>(
+      true, {kTestKey}, WatchTimeComponent<bool>::ValueToKeyCB());
+  EXPECT_TRUE(test_component->current_value_for_testing());
+  EXPECT_FALSE(test_component->NeedsFinalize());
+  EXPECT_EQ(test_component->end_timestamp(), kNoTimestamp);
+
+  // Simulate the flag being flipped to false while the timer is running; which
+  // should trigger a finalize, but not yet set the current value.
+  const base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(3);
+  EXPECT_CALL(*this, GetMediaTime()).WillOnce(testing::Return(kWatchTime1));
+  test_component->SetPendingValue(false);
+  EXPECT_TRUE(test_component->current_value_for_testing());
+  EXPECT_TRUE(test_component->NeedsFinalize());
+  EXPECT_EQ(test_component->end_timestamp(), kWatchTime1);
+
+  // Now issue a RecordWatchTime() call with a media time before the finalize
+  // time. This can happen when the TimeDelta provided to RecordWatchTime has
+  // been clamped for some reason (e.g., a superseding finalize).
+  const base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(2);
+  EXPECT_CALL(recorder_, RecordWatchTime(kTestKey, kWatchTime2));
+  test_component->RecordWatchTime(kWatchTime2);
+}
+
 TEST_F(WatchTimeComponentTest, SetPendingValue) {
   auto test_component = CreateComponent<bool>(
       true, {kTestKey}, WatchTimeComponent<bool>::ValueToKeyCB());
