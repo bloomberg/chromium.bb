@@ -866,11 +866,11 @@
 	Maximize the surface.
 
 	After requesting that the surface should be maximized, the compositor
-	will respond by emitting a configure event with the "maximized" state
-	and the required window geometry. The client should then update its
-	content, drawing it in a maximized state. The client must also
-	acknowledge the configure when committing the new content (see
-	ack_configure).
+	will respond by emitting a configure event. Whether this configure
+	actually sets the window maximized is subject to compositor policies.
+	The client must then update its content, drawing in the configured
+	state. The client must also acknowledge the configure when committing
+	the new content (see ack_configure).
 
 	It is up to the compositor to decide how and where to maximize the
 	surface, for example which output and what region of the screen should
@@ -880,8 +880,8 @@
 	a configure event with the "maximized" state.
 
 	If the surface is in a fullscreen state, this request has no direct
-	effect. It will alter the state the surface is returned to when
-	unmaximized if not overridden by the compositor.
+	effect. It may alter the state the surface is returned to when
+	unmaximized unless overridden by the compositor.
       </description>
     </request>
 
@@ -890,13 +890,13 @@
 	Unmaximize the surface.
 
 	After requesting that the surface should be unmaximized, the compositor
-	will respond by emitting a configure event without the "maximized"
-	state. If available, the compositor will include the window geometry
-	dimensions the window had prior to being maximized in the configure
-	event. The client must then update its content, drawing it in a
-	regular state, i.e. potentially with shadow, etc. The client must also
-	acknowledge the configure when committing the new content (see
-	ack_configure).
+	will respond by emitting a configure event. Whether this actually
+	un-maximizes the window is subject to compositor policies.
+	If available and applicable, the compositor will include the window
+	geometry dimensions the window had prior to being maximized in the
+	configure event. The client must then update its content, drawing it in
+	the configured state. The client must also acknowledge the configure
+	when committing the new content (see ack_configure).
 
 	It is up to the compositor to position the surface after it was
 	unmaximized; usually the position the surface had before maximizing, if
@@ -906,8 +906,8 @@
 	emit a configure event without the "maximized" state.
 
 	If the surface is in a fullscreen state, this request has no direct
-	effect. It will alter the state the surface is returned to when
-	unmaximized if not overridden by the compositor.
+	effect. It may alter the state the surface is returned to when
+	unmaximized unless overridden by the compositor.
       </description>
     </request>
 
@@ -916,10 +916,10 @@
 	Make the surface fullscreen.
 
 	After requesting that the surface should be fullscreened, the
-	compositor will respond by emitting a configure event with the
-	"fullscreen" state and the fullscreen window geometry. The client must
-	also acknowledge the configure when committing the new content (see
-	ack_configure).
+	compositor will respond by emitting a configure event. Whether the
+	client is actually put into a fullscreen state is subject to compositor
+	policies. The client must also acknowledge the configure when
+	committing the new content (see ack_configure).
 
 	The output passed by the request indicates the client's preference as
 	to which display it should be set fullscreen on. If this value is NULL,
@@ -945,8 +945,9 @@
 	Make the surface no longer fullscreen.
 
 	After requesting that the surface should be unfullscreened, the
-	compositor will respond by emitting a configure event without the
-	"fullscreen" state.
+	compositor will respond by emitting a configure event.
+	Whether this actually removes the fullscreen state of the client is
+	subject to compositor policies.
 
 	Making a surface unfullscreen sets states for the surface based on the following:
 	* the state(s) it may have had before becoming fullscreen
