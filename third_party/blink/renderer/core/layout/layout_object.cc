@@ -3182,6 +3182,9 @@ void LayoutObject::SetNeedsPaintPropertyUpdate() {
   bitfields_.SetNeedsPaintPropertyUpdate(true);
 
   LayoutObject* ancestor = ParentCrossingFrames();
+
+  GetFrameView()->SetNeedsIntersectionObservation(LocalFrameView::kDesired);
+
   while (ancestor && !ancestor->DescendantNeedsPaintPropertyUpdate()) {
     ancestor->bitfields_.SetDescendantNeedsPaintPropertyUpdate(true);
     ancestor = ancestor->ParentCrossingFrames();

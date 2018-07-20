@@ -191,7 +191,8 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRendering());
 
   // An intersection observation overrides...
-  inner_frame_document->View()->SetNeedsIntersectionObservation();
+  inner_frame_document->View()->SetNeedsIntersectionObservation(
+      LocalFrameView::kRequired);
   EXPECT_FALSE(inner_frame_document->View()->ShouldThrottleRendering());
   inner_frame_document->View()->ScheduleAnimation();
 

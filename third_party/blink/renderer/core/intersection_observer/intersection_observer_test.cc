@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -150,6 +151,53 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 3);
+}
+
+TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <div id='leading-space' style='height: 700px;'></div>
+    <div id='target'></div>
+    <div id='trailing-space' style='height: 700px;'></div>
+  )HTML");
+
+  IntersectionObserverInit observer_init;
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exception_state);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+
+  GetDocument().View()->ScheduleAnimation();
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
+                                                          kProgrammaticScroll);
+
+  HitTestLocation location(LayoutPoint(0, 0));
+  HitTestResult result(
+      HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                     HitTestRequest::kAllowChildFrameContent),
+      location);
+  GetDocument().View()->GetLayoutView()->HitTest(location, result);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  EXPECT_EQ(observer_delegate->CallCount(), 2);
 }
 
 TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {

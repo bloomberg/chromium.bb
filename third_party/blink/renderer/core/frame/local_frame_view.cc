@@ -234,7 +234,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       past_layout_lifecycle_update_(false),
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
-      needs_intersection_observation_(false),
+      intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
       main_thread_scrolling_reasons_(0),
@@ -2516,7 +2516,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
         }
       }
 
-      {
+      if (intersection_observation_state_ != kNotNeeded) {
         TRACE_EVENT0("blink,benchmark",
                      "LocalFrameView::UpdateViewportIntersectionsForSubtree");
         SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
@@ -3899,7 +3899,7 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree() {
     child->View()->UpdateViewportIntersectionsForSubtree();
   }
 
-  needs_intersection_observation_ = false;
+  intersection_observation_state_ = kNotNeeded;
 }
 
 void LocalFrameView::UpdateThrottlingStatusForSubtree() {
@@ -4088,10 +4088,13 @@ void LocalFrameView::SetNeedsForcedCompositingUpdate() {
     parent->SetNeedsForcedCompositingUpdate();
 }
 
-void LocalFrameView::SetNeedsIntersectionObservation() {
-  needs_intersection_observation_ = true;
+void LocalFrameView::SetNeedsIntersectionObservation(
+    IntersectionObservationState state) {
+  if (intersection_observation_state_ >= state)
+    return;
+  intersection_observation_state_ = state;
   if (LocalFrameView* parent = ParentFrameView())
-    parent->SetNeedsIntersectionObservation();
+    parent->SetNeedsIntersectionObservation(state);
 }
 
 bool LocalFrameView::ShouldThrottleRendering() const {
@@ -4103,7 +4106,7 @@ bool LocalFrameView::ShouldThrottleRendering() const {
 
   // Only lifecycle phases up to layout are needed to generate an
   // intersection observation.
-  return !needs_intersection_observation_ ||
+  return intersection_observation_state_ != kRequired ||
          GetFrame().LocalFrameRoot().View()->past_layout_lifecycle_update_;
 }
 
