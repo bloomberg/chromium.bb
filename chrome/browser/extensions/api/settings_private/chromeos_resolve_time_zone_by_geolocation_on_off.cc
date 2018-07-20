@@ -66,10 +66,12 @@ SetPrefResult GeneratedResolveTimezoneByGeolocationOnOff::SetPref(
   if (!value->is_bool())
     return SetPrefResult::PREF_TYPE_MISMATCH;
 
-  // Check if preference is policy or primary-user controlled.
+  // Check if preference is policy or primary-user controlled, or if the user is
+  // a child, and therefore cannot deactivate automatic timezone.
   if (chromeos::system::TimeZoneResolverManager::
           IsTimeZoneResolutionPolicyControlled() ||
-      !profile_->IsSameProfile(ProfileManager::GetPrimaryUserProfile())) {
+      !profile_->IsSameProfile(ProfileManager::GetPrimaryUserProfile()) ||
+      profile_->IsChild()) {
     return SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 
