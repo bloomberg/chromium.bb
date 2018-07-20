@@ -319,6 +319,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                               GLenum internal_format,
                               bool immutable);
 
+  // Marks a particular level as cleared or uncleared.
+  void SetLevelCleared(GLenum target, GLint level, bool cleared);
+
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
@@ -423,9 +426,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   void SetLevelClearedRect(GLenum target,
                            GLint level,
                            const gfx::Rect& cleared_rect);
-
-  // Marks a particular level as cleared or uncleared.
-  void SetLevelCleared(GLenum target, GLint level, bool cleared);
 
   // Updates the cleared flag for this texture by inspecting all the mips.
   void UpdateCleared();

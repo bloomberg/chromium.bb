@@ -138,11 +138,11 @@ static void RasterizeSourceOOP(
 
   // TODO(enne): Use the |texture_target|? GpuMemoryBuffer backed textures don't
   // use GL_TEXTURE_2D.
-  ri->BeginRasterCHROMIUM(texture_id, raster_source->background_color(),
-                          msaa_sample_count, playback_settings.use_lcd_text,
+  ri->BeginRasterCHROMIUM(raster_source->background_color(), msaa_sample_count,
+                          playback_settings.use_lcd_text,
                           viz::ResourceFormatToClosestSkColorType(
                               /*gpu_compositing=*/true, resource_format),
-                          playback_settings.raster_color_space);
+                          playback_settings.raster_color_space, mailbox.name);
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());

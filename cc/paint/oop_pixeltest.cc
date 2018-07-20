@@ -138,18 +138,21 @@ class OopPixelTest : public testing::Test {
 
     RasterColorSpace color_space(options.color_space, ++color_space_id_);
 
+    gpu::Mailbox mailbox;
+    raster_implementation->ProduceTextureDirect(raster_texture_id,
+                                                mailbox.name);
     if (options.preclear) {
       raster_implementation->BeginRasterCHROMIUM(
-          raster_texture_id, options.preclear_color, options.msaa_sample_count,
-          options.use_lcd_text, options.color_type, color_space);
+          options.preclear_color, options.msaa_sample_count,
+          options.use_lcd_text, options.color_type, color_space, mailbox.name);
       raster_implementation->EndRasterCHROMIUM();
     }
 
     // "Out of process" raster! \o/
 
     raster_implementation->BeginRasterCHROMIUM(
-        raster_texture_id, options.background_color, options.msaa_sample_count,
-        options.use_lcd_text, options.color_type, color_space);
+        options.background_color, options.msaa_sample_count,
+        options.use_lcd_text, options.color_type, color_space, mailbox.name);
     raster_implementation->RasterCHROMIUM(
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
@@ -161,12 +164,6 @@ class OopPixelTest : public testing::Test {
           options.post_translate, options.post_scale, options.requires_clear);
     }
     raster_implementation->EndRasterCHROMIUM();
-
-    // Produce a mailbox and insert an ordering barrier (assumes the raster
-    // interface and gl are on the same scheduling group).
-    gpu::Mailbox mailbox;
-    raster_implementation->ProduceTextureDirect(raster_texture_id,
-                                                mailbox.name);
     raster_implementation->OrderingBarrierCHROMIUM();
 
     EXPECT_EQ(raster_implementation->GetError(),

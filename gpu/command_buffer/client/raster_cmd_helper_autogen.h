@@ -134,17 +134,20 @@ void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
   }
 }
 
-void BeginRasterCHROMIUM(GLuint texture_id,
-                         GLuint sk_color,
-                         GLuint msaa_sample_count,
-                         GLboolean can_use_lcd_text,
-                         GLint color_type,
-                         GLuint color_space_transfer_cache_id) {
-  raster::cmds::BeginRasterCHROMIUM* c =
-      GetCmdSpace<raster::cmds::BeginRasterCHROMIUM>();
+void BeginRasterCHROMIUMImmediate(GLuint sk_color,
+                                  GLuint msaa_sample_count,
+                                  GLboolean can_use_lcd_text,
+                                  GLint color_type,
+                                  GLuint color_space_transfer_cache_id,
+                                  const GLbyte* mailbox) {
+  const uint32_t size =
+      raster::cmds::BeginRasterCHROMIUMImmediate::ComputeSize();
+  raster::cmds::BeginRasterCHROMIUMImmediate* c =
+      GetImmediateCmdSpaceTotalSize<raster::cmds::BeginRasterCHROMIUMImmediate>(
+          size);
   if (c) {
-    c->Init(texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
-            color_type, color_space_transfer_cache_id);
+    c->Init(sk_color, msaa_sample_count, can_use_lcd_text, color_type,
+            color_space_transfer_cache_id, mailbox);
   }
 }
 

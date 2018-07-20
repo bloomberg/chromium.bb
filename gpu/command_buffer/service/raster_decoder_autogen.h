@@ -200,21 +200,33 @@ error::Error RasterDecoderImpl::HandleUnpremultiplyAndDitherCopyCHROMIUM(
   return error::kNoError;
 }
 
-error::Error RasterDecoderImpl::HandleBeginRasterCHROMIUM(
+error::Error RasterDecoderImpl::HandleBeginRasterCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile raster::cmds::BeginRasterCHROMIUM& c =
-      *static_cast<const volatile raster::cmds::BeginRasterCHROMIUM*>(cmd_data);
-  GLuint texture_id = static_cast<GLuint>(c.texture_id);
+  const volatile raster::cmds::BeginRasterCHROMIUMImmediate& c =
+      *static_cast<const volatile raster::cmds::BeginRasterCHROMIUMImmediate*>(
+          cmd_data);
   GLuint sk_color = static_cast<GLuint>(c.sk_color);
   GLuint msaa_sample_count = static_cast<GLuint>(c.msaa_sample_count);
   GLboolean can_use_lcd_text = static_cast<GLboolean>(c.can_use_lcd_text);
   GLint color_type = static_cast<GLint>(c.color_type);
   GLuint color_space_transfer_cache_id =
       static_cast<GLuint>(c.color_space_transfer_cache_id);
-  DoBeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                        can_use_lcd_text, color_type,
-                        color_space_transfer_cache_id);
+  uint32_t data_size;
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailbox =
+      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, data_size,
+                                                        immediate_data_size);
+  if (mailbox == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoBeginRasterCHROMIUM(sk_color, msaa_sample_count, can_use_lcd_text,
+                        color_type, color_space_transfer_cache_id, mailbox);
   return error::kNoError;
 }
 
