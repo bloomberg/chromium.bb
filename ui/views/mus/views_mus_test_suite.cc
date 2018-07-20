@@ -104,7 +104,6 @@ class ServiceManagerConnection {
     params.connector = GetConnector();
     params.identity = service_manager_identity_;
     params.bind_test_ws_interfaces = true;
-    params.wtc_config = aura::WindowTreeClient::Config::kMus2;
     return std::make_unique<MusClient>(params);
   }
 

@@ -96,7 +96,6 @@ void AutoclickApplication::OnStart() {
   views::AuraInit::InitParams params;
   params.connector = context()->connector();
   params.identity = context()->identity();
-  params.mode = views::AuraInit::Mode::AURA_MUS;
   params.register_path_provider = running_standalone_;
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_) {
