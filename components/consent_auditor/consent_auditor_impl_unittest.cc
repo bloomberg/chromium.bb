@@ -244,8 +244,11 @@ TEST_F(ConsentAuditorImplTest, RecordingEnabled) {
   SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
   BuildConsentAuditorImpl();
 
-  consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
-                                       ConsentStatus::GIVEN);
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+
+  consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
 }
@@ -258,8 +261,10 @@ TEST_F(ConsentAuditorImplTest, RecordingDisabled) {
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
-  consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
-                                       ConsentStatus::GIVEN);
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+  consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(0U, events.size());
 }
@@ -275,9 +280,14 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserEvent) {
   std::vector<int> kDescriptionMessageIds = {12, 37, 42};
   int kConfirmationMessageId = 47;
   base::Time t1 = base::Time::Now();
-  consent_auditor()->RecordGaiaConsent(
-      kAccountId, Feature::CHROME_SYNC, kDescriptionMessageIds,
-      kConfirmationMessageId, ConsentStatus::GIVEN);
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+  sync_consent.set_confirmation_grd_id(kConfirmationMessageId);
+  for (int id : kDescriptionMessageIds) {
+    sync_consent.add_description_grd_ids(id);
+  }
+  consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
   base::Time t2 = base::Time::Now();
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
@@ -312,9 +322,14 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
   int kConfirmationMessageId = 47;
   // TODO(vitaliii): Inject a fake clock instead.
   base::Time time_before = base::Time::Now();
-  consent_auditor()->RecordGaiaConsent(
-      kAccountId, Feature::CHROME_SYNC, kDescriptionMessageIds,
-      kConfirmationMessageId, ConsentStatus::GIVEN);
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+  sync_consent.set_confirmation_grd_id(kConfirmationMessageId);
+  for (int id : kDescriptionMessageIds) {
+    sync_consent.add_description_grd_ids(id);
+  }
+  consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
   base::Time time_after = base::Time::Now();
 
   std::vector<UserConsentSpecifics> consents =
@@ -365,6 +380,35 @@ TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
   // there should be a delegate as well.
   EXPECT_EQ(expected_delegate_ptr.get(),
             consent_auditor()->GetControllerDelegateOnUIThread().get());
+}
+
+// Test that RecordSyncConsent and RecordGaiaConsent record an identical user
+// consent proto with the user event service. This test ensures that the two
+// methods don't diverge during the migration to the new dedicated protos for
+// user events.
+TEST_F(ConsentAuditorImplTest, RecordGaiaUserRecordSyncConsentEquivalence) {
+  SetIsSeparateConsentTypeEnabledFeature(false);
+  SetConsentSyncBridge(nullptr);
+  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
+  BuildConsentAuditorImpl();
+
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+  sync_consent.set_confirmation_grd_id(21);
+  sync_consent.add_description_grd_ids(1);
+  sync_consent.add_description_grd_ids(2);
+  sync_consent.add_description_grd_ids(3);
+
+  consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
+  consent_auditor()->RecordGaiaConsent(
+      kAccountId, consent_auditor::Feature::CHROME_SYNC, {1, 2, 3}, 21,
+      consent_auditor::ConsentStatus::GIVEN);
+
+  auto& events = user_event_service()->GetRecordedUserEvents();
+  EXPECT_EQ(2U, events.size());
+  EXPECT_EQ(events.at(0).user_consent().SerializeAsString(),
+            events.at(1).user_consent().SerializeAsString());
 }
 
 }  // namespace consent_auditor

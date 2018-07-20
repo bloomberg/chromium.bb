@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/sha1.h"
 #include "base/values.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -79,6 +80,19 @@ UserConsentSpecifics::Feature FeatureToUserConsentProtoEnum(
   }
   NOTREACHED();
   return UserConsentSpecifics::FEATURE_UNSPECIFIED;
+}
+
+ConsentStatus ConvertConsentStatus(
+    UserConsentTypes::ConsentStatus consent_status) {
+  DCHECK_NE(consent_status,
+            UserConsentTypes::ConsentStatus::
+                UserConsentTypes_ConsentStatus_CONSENT_STATUS_UNSPECIFIED);
+
+  if (consent_status ==
+      UserConsentTypes::ConsentStatus::UserConsentTypes_ConsentStatus_GIVEN) {
+    return ConsentStatus::GIVEN;
+  }
+  return ConsentStatus::NOT_GIVEN;
 }
 
 }  // namespace
@@ -199,6 +213,73 @@ ConsentAuditorImpl::ConstructUserConsentSpecifics(
   specifics->set_locale(app_locale_);
   specifics->set_status(StatusToProtoEnum(status));
   return specifics;
+}
+
+void ConsentAuditorImpl::RecordArcPlayConsent(
+    const std::string& account_id,
+    const UserConsentTypes::ArcPlayTermsOfServiceConsent& consent) {
+  std::vector<int> description_grd_ids;
+  description_grd_ids.push_back(consent.play_terms_of_service_text_length());
+
+  // TODO(markusheintz): The code below is a copy from the ARC code base. This
+  // will go away when the consent proto is set on the user consent specifics
+  // proto.
+  const std::string& hash_str = consent.play_terms_of_service_hash();
+  DCHECK_EQ(base::kSHA1Length, hash_str.size());
+  const uint8_t* hash = reinterpret_cast<const uint8_t*>(hash_str.data());
+  for (size_t i = 0; i < base::kSHA1Length; i += 4) {
+    uint32_t acc =
+        hash[i] << 24 | hash[i + 1] << 16 | hash[i + 2] << 8 | hash[i + 3];
+    description_grd_ids.push_back(static_cast<int>(acc));
+  }
+
+  RecordGaiaConsent(account_id, Feature::PLAY_STORE, description_grd_ids,
+                    consent.confirmation_grd_id(),
+                    ConvertConsentStatus(consent.status()));
+}
+
+void ConsentAuditorImpl::RecordArcGoogleLocationServiceConsent(
+    const std::string& account_id,
+    const UserConsentTypes::ArcGoogleLocationServiceConsent& consent) {
+  std::vector<int> description_grd_ids(consent.description_grd_ids().begin(),
+                                       consent.description_grd_ids().end());
+
+  RecordGaiaConsent(account_id, Feature::GOOGLE_LOCATION_SERVICE,
+                    description_grd_ids, consent.confirmation_grd_id(),
+                    ConvertConsentStatus(consent.status()));
+}
+
+void ConsentAuditorImpl::RecordArcBackupAndRestoreConsent(
+    const std::string& account_id,
+    const UserConsentTypes::ArcBackupAndRestoreConsent& consent) {
+  std::vector<int> description_grd_ids(consent.description_grd_ids().begin(),
+                                       consent.description_grd_ids().end());
+
+  RecordGaiaConsent(account_id, Feature::BACKUP_AND_RESTORE,
+                    description_grd_ids, consent.confirmation_grd_id(),
+                    ConvertConsentStatus(consent.status()));
+}
+
+void ConsentAuditorImpl::RecordSyncConsent(
+    const std::string& account_id,
+    const UserConsentTypes::SyncConsent& consent) {
+  std::vector<int> description_grd_ids(consent.description_grd_ids().begin(),
+                                       consent.description_grd_ids().end());
+
+  RecordGaiaConsent(account_id, Feature::CHROME_SYNC, description_grd_ids,
+                    consent.confirmation_grd_id(),
+                    ConvertConsentStatus(consent.status()));
+}
+
+void ConsentAuditorImpl::RecordUnifiedConsent(
+    const std::string& account_id,
+    const sync_pb::UserConsentTypes::UnifiedConsent& consent) {
+  std::vector<int> description_grd_ids(consent.description_grd_ids().begin(),
+                                       consent.description_grd_ids().end());
+
+  RecordGaiaConsent(account_id, Feature::CHROME_UNIFIED_CONSENT,
+                    description_grd_ids, consent.confirmation_grd_id(),
+                    ConvertConsentStatus(consent.status()));
 }
 
 void ConsentAuditorImpl::RecordLocalConsent(

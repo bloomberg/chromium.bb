@@ -18,6 +18,29 @@ class FakeConsentAuditor : public ConsentAuditor {
   ~FakeConsentAuditor() override;
 
   // ConsentAuditor implementation.
+  void RecordSyncConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::SyncConsent& consent) override;
+
+  void RecordArcPlayConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent& consent)
+      override;
+
+  void RecordArcGoogleLocationServiceConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent& consent)
+      override;
+
+  void RecordArcBackupAndRestoreConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent& consent)
+      override;
+
+  void RecordUnifiedConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::UnifiedConsent& consent) override;
+
   void RecordGaiaConsent(const std::string& account_id,
                          consent_auditor::Feature feature,
                          const std::vector<int>& description_grd_ids,
@@ -31,6 +54,10 @@ class FakeConsentAuditor : public ConsentAuditor {
 
   // Methods for fake.
   const std::string& account_id() const { return account_id_; }
+
+  const sync_pb::UserConsentTypes::SyncConsent& recorded_sync_consent() const {
+    return recorded_sync_consent_;
+  }
 
   const std::vector<std::vector<int>>& recorded_id_vectors() {
     return recorded_id_vectors_;
@@ -46,8 +73,10 @@ class FakeConsentAuditor : public ConsentAuditor {
     return recorded_statuses_;
   }
 
- private:
   std::string account_id_;
+
+  sync_pb::UserConsentTypes::SyncConsent recorded_sync_consent_;
+
   std::vector<std::vector<int>> recorded_id_vectors_;
   std::vector<int> recorded_confirmation_ids_;
   std::vector<Feature> recorded_features_;

@@ -277,10 +277,16 @@ enum AuthenticationState {
           ->PickAccountIdForAccount(
               base::SysNSStringToUTF8([_selectedIdentity gaiaID]),
               base::SysNSStringToUTF8([_selectedIdentity userEmail]));
+
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+  sync_consent.set_confirmation_grd_id(consent_confirmation_id);
+  for (int id : consent_text_ids) {
+    sync_consent.add_description_grd_ids(id);
+  }
   ConsentAuditorFactory::GetForBrowserState(_browserState)
-      ->RecordGaiaConsent(account_id, consent_auditor::Feature::CHROME_SYNC,
-                          consent_text_ids, consent_confirmation_id,
-                          consent_auditor::ConsentStatus::GIVEN);
+      ->RecordSyncConsent(account_id, sync_consent);
   _didAcceptSignIn = YES;
   if (!_didFinishSignIn) {
     _didFinishSignIn = YES;
