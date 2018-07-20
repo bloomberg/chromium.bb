@@ -642,9 +642,12 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   scroll_view_->set_draw_overflow_indicator(false);
   scroll_view_->ClipHeightTo(0, body_container->GetPreferredSize().height());
 
-  // Use an additional container to apply padding outside the scroll view.
-  // This ensures that the rounded corners appear properly by cutting them
-  // out of normal, static padding.
+  // Use an additional container to apply padding outside the scroll view, so
+  // that the padding area is stationary. This ensures that the rounded corners
+  // appear properly; on Mac, the clipping path will not apply properly to a
+  // scrollable area.
+  // NOTE: GetContentsVerticalPadding is guaranteed to return a size which
+  // accommodates the rounded corners.
   views::View* padding_wrapper = new views::View();
   padding_wrapper->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
