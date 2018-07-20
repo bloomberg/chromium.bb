@@ -55,6 +55,8 @@
 #include "timeline.h"
 
 #include "compositor.h"
+#include "weston-debug.h"
+#include "linux-dmabuf.h"
 #include "viewporter-server-protocol.h"
 #include "presentation-time-server-protocol.h"
 #include "shared/helpers.h"
@@ -6306,6 +6308,221 @@ timeline_key_binding_handler(struct weston_keyboard *keyboard,
 		weston_timeline_open(compositor);
 }
 
+static const char *
+output_repaint_status_text(struct weston_output *output)
+{
+	switch (output->repaint_status) {
+	case REPAINT_NOT_SCHEDULED:
+		return "no repaint";
+	case REPAINT_BEGIN_FROM_IDLE:
+		return "start_repaint_loop scheduled";
+	case REPAINT_SCHEDULED:
+		return "repaint scheduled";
+	case REPAINT_AWAITING_COMPLETION:
+		return "awaiting completion";
+	}
+
+	assert(!"output_repaint_status_text missing enum");
+	return NULL;
+}
+
+static void
+debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
+{
+	struct weston_buffer *buffer = view->surface->buffer_ref.buffer;
+	struct wl_shm_buffer *shm;
+	struct linux_dmabuf_buffer *dmabuf;
+
+	if (!buffer) {
+		fprintf(fp, "\t\t[buffer not available]\n");
+		return;
+	}
+
+	shm = wl_shm_buffer_get(buffer->resource);
+	if (shm) {
+		fprintf(fp, "\t\tSHM buffer\n");
+		fprintf(fp, "\t\t\tformat: 0x%lx\n",
+			(unsigned long) wl_shm_buffer_get_format(shm));
+		return;
+	}
+
+	dmabuf = linux_dmabuf_buffer_get(buffer->resource);
+	if (dmabuf) {
+		fprintf(fp, "\t\tdmabuf buffer\n");
+		fprintf(fp, "\t\t\tformat: 0x%lx\n",
+			(unsigned long) dmabuf->attributes.format);
+		fprintf(fp, "\t\t\tmodifier: 0x%llx\n",
+			(unsigned long long) dmabuf->attributes.modifier[0]);
+		return;
+	}
+
+	fprintf(fp, "\t\tEGL buffer");
+}
+
+static void
+debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+{
+	struct weston_compositor *ec = view->surface->compositor;
+	struct weston_output *output;
+	char desc[512];
+	pixman_box32_t *box;
+	uint32_t surface_id = 0;
+	pid_t pid = 0;
+
+	if (view->surface->resource) {
+		struct wl_resource *resource = view->surface->resource;
+		wl_client_get_credentials(wl_resource_get_client(resource),
+				  	  &pid, NULL, NULL);
+		surface_id = wl_resource_get_id(view->surface->resource);
+	}
+
+	if (!view->surface->get_label ||
+	    view->surface->get_label(view->surface, desc, sizeof(desc)) < 0) {
+		strcpy(desc, "[no description available]");
+	}
+	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p):\n",
+		view_idx, view->surface->role_name, pid, surface_id,
+		desc, view);
+
+	box = pixman_region32_extents(&view->transform.boundingbox);
+	fprintf(fp, "\t\tposition: (%d, %d) -> (%d, %d)\n",
+		box->x1, box->y1, box->x2, box->y2);
+	box = pixman_region32_extents(&view->transform.opaque);
+
+	if (pixman_region32_equal(&view->transform.opaque,
+				  &view->transform.boundingbox)) {
+		fprintf(fp, "\t\t[fully opaque]\n");
+	} else if (!pixman_region32_not_empty(&view->transform.opaque)) {
+		fprintf(fp, "\t\t[not opaque]\n");
+	} else {
+		fprintf(fp, "\t\t[opaque: (%d, %d) -> (%d, %d)]\n",
+			box->x1, box->y1, box->x2, box->y2);
+	}
+
+	if (view->alpha < 1.0)
+		fprintf(fp, "\t\talpha: %f\n", view->alpha);
+
+	if (view->output_mask != 0) {
+		bool first_output = true;
+		fprintf(fp, "\t\toutputs: ");
+		wl_list_for_each(output, &ec->output_list, link) {
+			if (!(view->output_mask & (1 << output->id)))
+				continue;
+			fprintf(fp, "%s%d (%s)%s",
+				(first_output) ? "" : ", ",
+				output->id, output->name,
+				(view->output == output) ? " (primary)" : "");
+			first_output = false;
+		}
+	} else {
+		fprintf(fp, "\t\t[no outputs]");
+	}
+
+	fprintf(fp, "\n");
+
+	debug_scene_view_print_buffer(fp, view);
+}
+
+/**
+ * Output information on how libweston is currently composing the scene
+ * graph.
+ */
+WL_EXPORT char *
+weston_compositor_print_scene_graph(struct weston_compositor *ec)
+{
+	struct weston_output *output;
+	struct weston_layer *layer;
+	struct timespec now;
+	int layer_idx = 0;
+	FILE *fp;
+	char *ret;
+	size_t len;
+	int err;
+
+	fp = open_memstream(&ret, &len);
+	assert(fp);
+
+	weston_compositor_read_presentation_clock(ec, &now);
+	fprintf(fp, "Weston scene graph at %ld.%09ld:\n\n",
+		now.tv_sec, now.tv_nsec);
+
+	wl_list_for_each(output, &ec->output_list, link) {
+		struct weston_head *head;
+		int head_idx = 0;
+
+		fprintf(fp, "Output %d (%s):\n", output->id, output->name);
+		assert(output->enabled);
+
+		fprintf(fp, "\tposition: (%d, %d) -> (%d, %d)\n",
+			output->x, output->y,
+			output->x + output->width,
+			output->y + output->height);
+		fprintf(fp, "\tmode: %dx%d@%.3fHz\n",
+			output->current_mode->width,
+			output->current_mode->height,
+			output->current_mode->refresh / 1000.0);
+		fprintf(fp, "\tscale: %d\n", output->scale);
+
+		fprintf(fp, "\trepaint status: %s\n",
+			output_repaint_status_text(output));
+		if (output->repaint_status == REPAINT_SCHEDULED)
+			fprintf(fp, "\tnext repaint: %ld.%09ld\n",
+				output->next_repaint.tv_sec,
+				output->next_repaint.tv_nsec);
+
+		wl_list_for_each(head, &output->head_list, output_link) {
+			fprintf(fp, "\tHead %d (%s): %sconnected\n",
+				head_idx++, head->name,
+				(head->connected) ? "" : "not ");
+		}
+	}
+
+	fprintf(fp, "\n");
+
+	wl_list_for_each(layer, &ec->layer_list, link) {
+		struct weston_view *view;
+		int view_idx = 0;
+
+		fprintf(fp, "Layer %d (pos 0x%lx):\n", layer_idx++,
+			(unsigned long) layer->position);
+
+		if (!weston_layer_mask_is_infinite(layer)) {
+			fprintf(fp, "\t[mask: (%d, %d) -> (%d,%d)]\n\n",
+				layer->mask.x1, layer->mask.y1,
+				layer->mask.x2, layer->mask.y2);
+		}
+
+		wl_list_for_each(view, &layer->view_list.link, layer_link.link)
+			debug_scene_view_print(fp, view, view_idx++);
+
+		if (wl_list_empty(&layer->view_list.link))
+			fprintf(fp, "\t[no views]\n");
+
+		fprintf(fp, "\n");
+	}
+
+	err = fclose(fp);
+	assert(err == 0);
+
+	return ret;
+}
+
+/**
+ * Called when the 'scene-graph' debug scope is bound by a client. This
+ * one-shot weston-debug scope prints the current scene graph when bound,
+ * and then terminates the stream.
+ */
+static void
+debug_scene_graph_cb(struct weston_debug_stream *stream, void *data)
+{
+	struct weston_compositor *ec = data;
+	char *str = weston_compositor_print_scene_graph(ec);
+
+	weston_debug_stream_printf(stream, "%s", str);
+	free(str);
+	weston_debug_stream_complete(stream);
+}
+
 /** Create the compositor.
  *
  * This functions creates and initializes a compositor instance.
@@ -6414,6 +6631,12 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 
 	weston_compositor_add_debug_binding(ec, KEY_T,
 					    timeline_key_binding_handler, ec);
+
+	ec->debug_scene =
+		weston_compositor_add_debug_scope(ec, "scene-graph",
+						  "Scene graph details\n",
+					  	  debug_scene_graph_cb,
+					  	  ec);
 
 	return ec;
 
@@ -6714,6 +6937,8 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 	if (compositor->heads_changed_source)
 		wl_event_source_remove(compositor->heads_changed_source);
 
+	weston_debug_scope_destroy(compositor->debug_scene);
+	compositor->debug_scene = NULL;
 	weston_debug_compositor_destroy(compositor);
 
 	free(compositor);
