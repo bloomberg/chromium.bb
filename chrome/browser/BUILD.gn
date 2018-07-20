@@ -1011,8 +1011,6 @@ jumbo_split_static_library("browser") {
     "password_manager/password_store_factory.h",
     "password_manager/password_store_mac.cc",
     "password_manager/password_store_mac.h",
-    "password_manager/password_store_win.cc",
-    "password_manager/password_store_win.h",
     "password_manager/reauth_purpose.h",
     "payments/payment_handler_permission_context.cc",
     "payments/payment_handler_permission_context.h",
