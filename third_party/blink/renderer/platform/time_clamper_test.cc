@@ -45,6 +45,16 @@ TEST(TimeClamperTest, ClampingIsConsistent) {
   }
 }
 
+TEST(TimeClamperTest, ClampingNegativeNumbersIsConsistent) {
+  TimeClamper clamper;
+  for (double time_seconds = -kInterval * 100; time_seconds <= 0;
+       time_seconds += kInterval * 0.1) {
+    double t1 = clamper.ClampTimeResolution(time_seconds);
+    double t2 = clamper.ClampTimeResolution(time_seconds);
+    EXPECT_EQ(t1, t2);
+  }
+}
+
 TEST(TimeClamperTest, ClampingIsPerInstance) {
   const double kEpsilon = 1e-10;
   TimeClamper clamper1;
