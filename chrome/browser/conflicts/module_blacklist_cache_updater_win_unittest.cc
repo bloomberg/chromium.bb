@@ -351,25 +351,3 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
 
   EXPECT_TRUE(internal::ModuleEqual()(expected, blacklisted_modules[0]));
 }
-
-// This tests that if a new blocked load attempt arrives, an update will still
-// be triggered even if the Module Database never goes idle afterwards.
-TEST_F(ModuleBlacklistCacheUpdaterTest, NewModulesBlockedOnly) {
-  EXPECT_FALSE(base::PathExists(module_blacklist_cache_path()));
-
-  auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
-
-  // Simulate a new blocked load attempt.
-  std::vector<third_party_dlls::PackedListModule> blocked_modules;
-  const third_party_dlls::PackedListModule module = {
-      {}, {}, 123456u,
-  };
-  blocked_modules.push_back(module);
-  module_blacklist_cache_updater->OnNewModulesBlocked(
-      std::move(blocked_modules));
-
-  FastForwardBy(ModuleBlacklistCacheUpdater::kUpdateTimerDuration);
-  EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
-  EXPECT_TRUE(on_cache_updated_callback_invoked());
-  EXPECT_TRUE(RegistryKeyExists());
-}

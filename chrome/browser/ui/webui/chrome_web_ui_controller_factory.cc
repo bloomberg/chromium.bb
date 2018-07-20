@@ -180,7 +180,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/webui/conflicts_ui.h"
+#include "chrome/browser/ui/webui/conflicts/conflicts_ui.h"
 #include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
 #include "chrome/browser/ui/webui/welcome_win10_ui.h"
 #endif

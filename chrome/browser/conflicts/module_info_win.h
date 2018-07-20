@@ -89,6 +89,8 @@ struct ModuleInfoData {
     kPropertyIme = 1 << 2,
     // The module was added to the module blacklist cache.
     kPropertyAddedToBlacklist = 1 << 3,
+    // These modules were blocked from loading into the process.
+    kPropertyBlocked = 1 << 4,
   };
 
   ModuleInfoData();

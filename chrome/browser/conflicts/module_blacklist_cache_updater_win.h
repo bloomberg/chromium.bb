@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
-#include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 
@@ -99,6 +98,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     kTolerated,
     // Blacklisted and will be blocked next launch.
     kBlacklisted,
+    // The module was blocked from loading into the process.
+    kBlocked,
   };
 
   struct CacheUpdateResult {
@@ -143,10 +144,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
                            const ModuleInfoData& module_data) override;
   void OnModuleDatabaseIdle() override;
 
-  // Callback for |module_load_attempt_log_listener_|;
-  void OnNewModulesBlocked(
-      std::vector<third_party_dlls::PackedListModule>&& blocked_modules);
-
   // Returns the blocking decision for a module.
   ModuleBlockingDecision GetModuleBlockingDecision(
       ModuleInfoKey module_key) const;
@@ -173,8 +170,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // Temporarily holds newly blacklisted modules before they are added to the
   // module blacklist cache.
   std::vector<third_party_dlls::PackedListModule> newly_blacklisted_modules_;
-
-  ModuleLoadAttemptLogListener module_load_attempt_log_listener_;
 
   // Temporarily holds modules that were blocked from loading into the browser
   // until they are used to update the cache.

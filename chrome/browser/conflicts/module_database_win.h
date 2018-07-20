@@ -18,6 +18,10 @@
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
+#endif
+
 class ModuleDatabaseObserver;
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -97,6 +101,10 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
                     uint32_t module_size,
                     uint32_t module_time_date_stamp,
                     uintptr_t module_load_address);
+
+  void OnModuleBlocked(const base::FilePath& module_path,
+                       uint32_t module_size,
+                       uint32_t module_time_date_stamp);
 
   // Marks the module as added to the module blacklist cache, which means it
   // will be blocked on the next browser launch.
@@ -220,6 +228,10 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
 
   // Indicates if all input method editors have been enumerated.
   bool ime_enumerated_;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  ModuleLoadAttemptLogListener module_load_attempt_log_listener_;
+#endif
 
   // Inspects new modules on a blocking task runner.
   ModuleInspector module_inspector_;
