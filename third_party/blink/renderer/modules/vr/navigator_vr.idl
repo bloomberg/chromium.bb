@@ -10,5 +10,5 @@
     [SecureContext, OriginTrialEnabled=WebXR, MeasureAs=NavigatorXR] readonly attribute XR xr;
 
     // Legacy API
-    [OriginTrialEnabled=WebVR, CallWith=ScriptState] Promise getVRDisplays();
+    [RuntimeEnabled=WebVR, CallWith=ScriptState] Promise getVRDisplays();
 };
