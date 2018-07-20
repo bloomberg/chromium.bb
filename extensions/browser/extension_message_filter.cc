@@ -118,10 +118,6 @@ void ExtensionMessageFilter::OnDestruct() const {
 }
 
 bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  // If we have been shut down already, return.
-  if (!browser_context_)
-    return true;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionMessageFilter, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener,
@@ -429,6 +425,7 @@ void ExtensionMessageFilter::OnOpenChannelToTab(
 void ExtensionMessageFilter::OnOpenMessagePort(
     int routing_id,
     const PortId& port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
 
@@ -440,6 +437,7 @@ void ExtensionMessageFilter::OnCloseMessagePort(
     int routing_id,
     const PortId& port_id,
     bool force_close) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
 
@@ -449,6 +447,7 @@ void ExtensionMessageFilter::OnCloseMessagePort(
 
 void ExtensionMessageFilter::OnPostMessage(const PortId& port_id,
                                            const Message& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
 
