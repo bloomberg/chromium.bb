@@ -29,7 +29,7 @@ class SyncErrorController : public SyncServiceObserver {
   ~SyncErrorController() override;
 
   // True if there exists an error worth elevating to the user.
-  bool HasError();
+  bool HasError() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

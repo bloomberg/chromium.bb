@@ -270,7 +270,7 @@ class ProfileSyncService : public syncer::SyncService,
       const override;
   void ReenableDatatype(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
-  bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
+  bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   std::unique_ptr<base::Value> GetTypeStatusMap() override;
@@ -429,6 +429,9 @@ class ProfileSyncService : public syncer::SyncService,
   bool encryption_pending() const;
 
   syncer::SyncErrorController* sync_error_controller() {
+    return sync_error_controller_.get();
+  }
+  const syncer::SyncErrorController* sync_error_controller() const {
     return sync_error_controller_.get();
   }
 

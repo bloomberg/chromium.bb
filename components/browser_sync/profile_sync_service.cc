@@ -1267,7 +1267,7 @@ bool ProfileSyncService::IsSetupInProgress() const {
 }
 
 bool ProfileSyncService::QueryDetailedSyncStatus(
-    syncer::SyncEngine::Status* result) {
+    syncer::SyncEngine::Status* result) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (engine_ && engine_initialized_) {
     *result = engine_->GetDetailedStatus();

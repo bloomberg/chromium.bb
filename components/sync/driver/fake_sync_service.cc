@@ -169,7 +169,7 @@ syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
   return syncer::SyncTokenStatus();
 }
 
-bool FakeSyncService::QueryDetailedSyncStatus(SyncStatus* result) {
+bool FakeSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
   return false;
 }
 
