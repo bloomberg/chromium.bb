@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -37,7 +39,15 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   };
 
   struct ActionForTest {
-    enum class ActionType { kCreateTaskQueue, kPostDelayedTask };
+    enum class ActionType {
+      kCreateTaskQueue,
+      kPostDelayedTask,
+      kSetQueuePriority,
+      kSetQueueEnabled,
+      kCreateQueueVoter,
+      kCancelTask,
+      kShutdownTaskQueue,
+    };
 
     ActionForTest(uint64_t id, ActionType type, uint64_t start);
     bool operator==(const ActionForTest& rhs) const;
@@ -59,15 +69,51 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   const std::vector<ActionForTest>& ordered_actions() const;
 
  private:
-  void CreateTaskQueueFromAction(
+  class Task {
+   public:
+    Task(SequenceManagerFuzzerProcessor* processor);
+    ~Task() = default;
+
+    void Execute(const SequenceManagerTestDescription::Task& task);
+
+    bool is_running;
+    SequenceManagerFuzzerProcessor* processor_;
+    base::WeakPtrFactory<Task> weak_ptr_factory_;
+  };
+
+  struct TaskQueueWithVoters {
+    TaskQueueWithVoters(scoped_refptr<TestTaskQueue> task_queue)
+        : queue(std::move(task_queue)){};
+
+    scoped_refptr<TestTaskQueue> queue;
+    std::vector<std::unique_ptr<TaskQueue::QueueEnabledVoter>> voters;
+  };
+
+  void ExecuteCreateTaskQueueAction(
       uint64_t action_id,
       const SequenceManagerTestDescription::CreateTaskQueueAction& action);
-
-  void PostDelayedTaskFromAction(
+  void ExecutePostDelayedTaskAction(
       uint64_t action_id,
       const SequenceManagerTestDescription::PostDelayedTaskAction& action);
+  void ExecuteSetQueuePriorityAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::SetQueuePriorityAction& action);
+  void ExecuteSetQueueEnabledAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::SetQueueEnabledAction& action);
+  void ExecuteCreateQueueVoterAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::CreateQueueVoterAction& action);
+  void ExecuteShutdownTaskQueueAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::ShutdownTaskQueueAction& action);
+  void ExecuteCancelTaskAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::CancelTaskAction& action);
 
   void ExecuteTask(const SequenceManagerTestDescription::Task& task);
+
+  void DeleteTask(Task* task);
 
   void LogTaskForTesting(uint64_t task_id,
                          TimeTicks start_time,
@@ -83,7 +129,14 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   // manager.
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
 
-  std::vector<scoped_refptr<TestTaskQueue>> task_queues_;
+  // For testing purposes, this should follow the order in which the queues were
+  // created.
+  std::vector<TaskQueueWithVoters> task_queues_;
+
+  // Used to be able to cancel pending tasks from the sequence manager. For
+  // testing purposes, this should follow the order in which the tasks were
+  // posted.
+  std::vector<std::unique_ptr<Task>> pending_tasks_;
 
   const bool log_for_testing_;
 

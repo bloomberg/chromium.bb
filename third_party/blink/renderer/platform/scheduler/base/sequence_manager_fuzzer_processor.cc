@@ -10,6 +10,29 @@
 namespace base {
 namespace sequence_manager {
 
+namespace {
+
+TaskQueue::QueuePriority ToTaskQueuePriority(
+    SequenceManagerTestDescription::QueuePriority priority) {
+  switch (priority) {
+    case SequenceManagerTestDescription::BEST_EFFORT:
+      return TaskQueue::kBestEffortPriority;
+    case SequenceManagerTestDescription::LOW:
+      return TaskQueue::kLowPriority;
+    case SequenceManagerTestDescription::UNDEFINED:
+    case SequenceManagerTestDescription::NORMAL:
+      return TaskQueue::kNormalPriority;
+    case SequenceManagerTestDescription::HIGH:
+      return TaskQueue::kHighPriority;
+    case SequenceManagerTestDescription::HIGHEST:
+      return TaskQueue::kHighestPriority;
+    case SequenceManagerTestDescription::CONTROL:
+      return TaskQueue::kControlPriority;
+  }
+}
+
+}  // namespace
+
 void SequenceManagerFuzzerProcessor::ParseAndRun(
     const SequenceManagerTestDescription& description) {
   SequenceManagerFuzzerProcessor processor;
@@ -35,7 +58,7 @@ SequenceManagerFuzzerProcessor::SequenceManagerFuzzerProcessor(
                                      test_task_runner_->GetMockTickClock());
 
   TaskQueue::Spec spec = TaskQueue::Spec("default_task_queue");
-  task_queues_.push_back(manager_->CreateTaskQueue<TestTaskQueue>(spec));
+  task_queues_.emplace_back(manager_->CreateTaskQueue<TestTaskQueue>(spec));
 }
 
 void SequenceManagerFuzzerProcessor::RunTest(
@@ -50,15 +73,29 @@ void SequenceManagerFuzzerProcessor::RunTest(
 void SequenceManagerFuzzerProcessor::RunAction(
     const SequenceManagerTestDescription::Action& action) {
   if (action.has_create_task_queue()) {
-    return CreateTaskQueueFromAction(action.action_id(),
-                                     action.create_task_queue());
+    ExecuteCreateTaskQueueAction(action.action_id(),
+                                 action.create_task_queue());
+  } else if (action.has_set_queue_priority()) {
+    ExecuteSetQueuePriorityAction(action.action_id(),
+                                  action.set_queue_priority());
+  } else if (action.has_set_queue_enabled()) {
+    ExecuteSetQueueEnabledAction(action.action_id(),
+                                 action.set_queue_enabled());
+  } else if (action.has_create_queue_voter()) {
+    ExecuteCreateQueueVoterAction(action.action_id(),
+                                  action.create_queue_voter());
+  } else if (action.has_shutdown_task_queue()) {
+    ExecuteShutdownTaskQueueAction(action.action_id(),
+                                   action.shutdown_task_queue());
+  } else if (action.has_cancel_task()) {
+    ExecuteCancelTaskAction(action.action_id(), action.cancel_task());
+  } else {
+    ExecutePostDelayedTaskAction(action.action_id(),
+                                 action.post_delayed_task());
   }
-
-  return PostDelayedTaskFromAction(action.action_id(),
-                                   action.post_delayed_task());
 }
 
-void SequenceManagerFuzzerProcessor::PostDelayedTaskFromAction(
+void SequenceManagerFuzzerProcessor::ExecutePostDelayedTaskAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::PostDelayedTaskAction& action) {
   DCHECK(!task_queues_.empty());
@@ -66,27 +103,114 @@ void SequenceManagerFuzzerProcessor::PostDelayedTaskFromAction(
   LogActionForTesting(action_id, ActionForTest::ActionType::kPostDelayedTask,
                       test_task_runner_->GetMockTickClock()->NowTicks());
 
-  size_t index = action.task_queue_id() % task_queues_.size();
-  TestTaskQueue* chosen_task_queue = task_queues_[index].get();
+  size_t queue_index = action.task_queue_id() % task_queues_.size();
+  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
+
+  std::unique_ptr<Task> pending_task = std::make_unique<Task>(this);
 
   // TODO(farahcharab) After adding non-nestable/nestable tasks, fix this to
-  // PostNonnestableDelayedTask for the former and PostDelayedTask for the
+  // PostNonNestableDelayedTask for the former and PostDelayedTask for the
   // latter.
   chosen_task_queue->PostDelayedTask(
       FROM_HERE,
-      BindOnce(&SequenceManagerFuzzerProcessor::ExecuteTask, Unretained(this),
+      BindOnce(&Task::Execute, pending_task->weak_ptr_factory_.GetWeakPtr(),
                action.task()),
       TimeDelta::FromMilliseconds(action.delay_ms()));
+
+  pending_tasks_.push_back(std::move(pending_task));
 }
 
-void SequenceManagerFuzzerProcessor::CreateTaskQueueFromAction(
+void SequenceManagerFuzzerProcessor::ExecuteCreateTaskQueueAction(
     uint64_t action_id,
     const SequenceManagerTestDescription::CreateTaskQueueAction& action) {
   LogActionForTesting(action_id, ActionForTest::ActionType::kCreateTaskQueue,
                       test_task_runner_->GetMockTickClock()->NowTicks());
 
   TaskQueue::Spec spec = TaskQueue::Spec("test_task_queue");
-  task_queues_.push_back(manager_->CreateTaskQueue<TestTaskQueue>(spec));
+  task_queues_.emplace_back(manager_->CreateTaskQueue<TestTaskQueue>(spec));
+  task_queues_.back().queue->SetQueuePriority(
+      ToTaskQueuePriority(action.initial_priority()));
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteSetQueuePriorityAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::SetQueuePriorityAction& action) {
+  DCHECK(!task_queues_.empty());
+
+  LogActionForTesting(action_id, ActionForTest::ActionType::kSetQueuePriority,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  size_t queue_index = action.task_queue_id() % task_queues_.size();
+  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
+
+  chosen_task_queue->SetQueuePriority(ToTaskQueuePriority(action.priority()));
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteSetQueueEnabledAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::SetQueueEnabledAction& action) {
+  DCHECK(!task_queues_.empty());
+
+  LogActionForTesting(action_id, ActionForTest::ActionType::kSetQueueEnabled,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  size_t queue_index = action.task_queue_id() % task_queues_.size();
+  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
+
+  if (task_queues_[queue_index].voters.empty()) {
+    task_queues_[queue_index].voters.push_back(
+        chosen_task_queue->CreateQueueEnabledVoter());
+  }
+
+  size_t voter_index =
+      action.voter_id() % task_queues_[queue_index].voters.size();
+  task_queues_[queue_index].voters[voter_index]->SetQueueEnabled(
+      action.enabled());
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteCreateQueueVoterAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::CreateQueueVoterAction& action) {
+  LogActionForTesting(action_id, ActionForTest::ActionType::kCreateQueueVoter,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  size_t queue_index = action.task_queue_id() % task_queues_.size();
+  TestTaskQueue* chosen_task_queue = task_queues_[queue_index].queue.get();
+
+  task_queues_[queue_index].voters.push_back(
+      chosen_task_queue->CreateQueueEnabledVoter());
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteShutdownTaskQueueAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::ShutdownTaskQueueAction& action) {
+  LogActionForTesting(action_id, ActionForTest::ActionType::kShutdownTaskQueue,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  // We always want to have a default task queue.
+  if (task_queues_.size() > 1) {
+    size_t queue_index = action.task_queue_id() % task_queues_.size();
+    task_queues_[queue_index].queue.get()->ShutdownTaskQueue();
+    task_queues_.erase(task_queues_.begin() + queue_index);
+  }
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteCancelTaskAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::CancelTaskAction& action) {
+  LogActionForTesting(action_id, ActionForTest::ActionType::kCancelTask,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  if (!pending_tasks_.empty()) {
+    size_t queue_index = action.task_id() % pending_tasks_.size();
+    pending_tasks_[queue_index]->weak_ptr_factory_.InvalidateWeakPtrs();
+
+    // If it is already running, it is a parent task and will be deleted when
+    // it is done.
+    if (!pending_tasks_[queue_index]->is_running) {
+      pending_tasks_.erase(pending_tasks_.begin() + queue_index);
+    }
+  }
 }
 
 void SequenceManagerFuzzerProcessor::ExecuteTask(
@@ -95,7 +219,7 @@ void SequenceManagerFuzzerProcessor::ExecuteTask(
 
   // We can limit the depth of the nested post delayed action when processing
   // the proto.
-  for (const auto& task_action : task.action()) {
+  for (const auto& task_action : task.actions()) {
     // TODO(farahcharab) Add run loop to deal with nested tasks later. So far,
     // we are assuming tasks are non-nestable.
     RunAction(task_action);
@@ -109,6 +233,14 @@ void SequenceManagerFuzzerProcessor::ExecuteTask(
 
   LogTaskForTesting(task.task_id(), start_time,
                     test_task_runner_->GetMockTickClock()->NowTicks());
+}
+
+void SequenceManagerFuzzerProcessor::DeleteTask(Task* task) {
+  size_t i = 0;
+  while (i < pending_tasks_.size() && task != pending_tasks_[i].get()) {
+    i++;
+  }
+  pending_tasks_.erase(pending_tasks_.begin() + i);
 }
 
 void SequenceManagerFuzzerProcessor::LogTaskForTesting(uint64_t task_id,
@@ -142,6 +274,17 @@ SequenceManagerFuzzerProcessor::ordered_tasks() const {
 const std::vector<SequenceManagerFuzzerProcessor::ActionForTest>&
 SequenceManagerFuzzerProcessor::ordered_actions() const {
   return ordered_actions_;
+}
+
+SequenceManagerFuzzerProcessor::Task::Task(
+    SequenceManagerFuzzerProcessor* processor)
+    : is_running(false), processor_(processor), weak_ptr_factory_(this) {}
+
+void SequenceManagerFuzzerProcessor::Task::Execute(
+    const SequenceManagerTestDescription::Task& task) {
+  is_running = true;
+  processor_->ExecuteTask(task);
+  processor_->DeleteTask(this);
 }
 
 SequenceManagerFuzzerProcessor::TaskForTest::TaskForTest(uint64_t id,
