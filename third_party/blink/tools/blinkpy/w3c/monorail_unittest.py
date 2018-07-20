@@ -16,6 +16,10 @@ class MonorailIssueTest(unittest.TestCase):
         MonorailIssue('chromium', summary='test', status='Untriaged', description='body',
                       cc=['foo@chromium.org'], labels=['Flaky'], components=['Infra'])
 
+    def test_init_fills_project_id(self):
+        issue = MonorailIssue('chromium', summary='test', status='Untriaged')
+        self.assertEqual(issue.body['projectId'], 'chromium')
+
     def test_str(self):
         issue = MonorailIssue('chromium', summary='test', status='Untriaged', description='body',
                               cc=['foo@chromium.org', 'bar@chromium.org'], labels=['Flaky'], components=['Infra'])

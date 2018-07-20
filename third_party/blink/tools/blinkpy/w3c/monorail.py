@@ -31,6 +31,7 @@ class MonorailIssue(object):
     def _normalize(self):
         # These requirements are based on trial and error. No docs were found.
         assert self.project_id, 'project_id cannot be empty.'
+        self._body['projectId'] = self.project_id
         for field in self._STRING_LIST_FIELDS:
             if field in self._body:
                 # Not a str or unicode.
