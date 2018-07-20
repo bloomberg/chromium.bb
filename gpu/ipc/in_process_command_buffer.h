@@ -187,8 +187,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
   int GetRasterDecoderIdForTest() const;
 
-  static const int kGpuClientId;
-
   CommandBufferTaskExecutor* service_for_testing() const {
     return task_executor_.get();
   }

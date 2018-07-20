@@ -39,7 +39,8 @@ RasterDecoderContextState::~RasterDecoderContextState() {
 }
 
 void RasterDecoderContextState::InitializeGrContext(
-    const GpuDriverBugWorkarounds& workarounds) {
+    const GpuDriverBugWorkarounds& workarounds,
+    GrContextOptions::PersistentCache* cache) {
   DCHECK(context->IsCurrent(surface.get()));
 
   sk_sp<const GrGLInterface> interface(
@@ -61,6 +62,7 @@ void RasterDecoderContextState::InitializeGrContext(
   raster::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
   options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
+  options.fPersistentCache = cache;
   gr_context = GrContext::MakeGL(std::move(interface), options);
   if (!gr_context) {
     LOG(ERROR) << "OOP raster support disabled: GrContext creation "

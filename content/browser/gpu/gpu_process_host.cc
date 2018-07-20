@@ -64,6 +64,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media_switches.h"
@@ -996,7 +997,7 @@ void GpuProcessHost::EstablishGpuChannel(
 
   bool oopd_enabled =
       base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
-  if (oopd_enabled && client_id == gpu::InProcessCommandBuffer::kGpuClientId) {
+  if (oopd_enabled && client_id == gpu::kInProcessCommandBufferClientId) {
     // The display-compositor in the gpu process uses this special client id.
     callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
                  gpu::GpuFeatureInfo(),
@@ -1009,8 +1010,9 @@ void GpuProcessHost::EstablishGpuChannel(
   bool is_gpu_host = preempts;
 
   channel_requests_.push(callback);
+  const bool cache_shaders_on_disk = true;
   gpu_service_ptr_->EstablishGpuChannel(
-      client_id, client_tracing_id, is_gpu_host,
+      client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk,
       base::BindOnce(&GpuProcessHost::OnChannelEstablished,
                      weak_ptr_factory_.GetWeakPtr(), client_id, callback));
 
@@ -1018,7 +1020,7 @@ void GpuProcessHost::EstablishGpuChannel(
       switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id);
     if (oopd_enabled)
-      CreateChannelCache(gpu::InProcessCommandBuffer::kGpuClientId);
+      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
   }
 }
 
@@ -1588,7 +1590,8 @@ std::string GpuProcessHost::GetShaderPrefixKey() {
   return shader_prefix_key_;
 }
 
-void GpuProcessHost::LoadedShader(const std::string& key,
+void GpuProcessHost::LoadedShader(int32_t client_id,
+                                  const std::string& key,
                                   const std::string& data) {
   std::string prefix = GetShaderPrefixKey();
   bool prefix_ok = !key.compare(0, prefix.length(), prefix);
@@ -1596,7 +1599,7 @@ void GpuProcessHost::LoadedShader(const std::string& key,
   if (prefix_ok) {
     // Remove the prefix from the key before load.
     std::string key_no_prefix = key.substr(prefix.length() + 1);
-    gpu_service_ptr_->LoadedShader(key_no_prefix, data);
+    gpu_service_ptr_->LoadedShader(client_id, key_no_prefix, data);
   }
 }
 
@@ -1614,7 +1617,8 @@ void GpuProcessHost::CreateChannelCache(int32_t client_id) {
     return;
 
   cache->set_shader_loaded_callback(base::Bind(&GpuProcessHost::LoadedShader,
-                                               weak_ptr_factory_.GetWeakPtr()));
+                                               weak_ptr_factory_.GetWeakPtr(),
+                                               client_id));
 
   client_id_to_shader_cache_[client_id] = cache;
 }

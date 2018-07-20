@@ -28,6 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -386,7 +387,7 @@ void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
   GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
     GetShaderCacheFactorySingleton()->SetCacheInfo(
-        gpu::InProcessCommandBuffer::kGpuClientId, cache_dir);
+        gpu::kInProcessCommandBufferClientId, cache_dir);
   }
 }
 
