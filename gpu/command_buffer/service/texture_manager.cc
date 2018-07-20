@@ -843,6 +843,14 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
     return false;
   }
 
+  // According to the OpenGL extension spec EXT_sRGB.txt, EXT_SRGB is based on
+  // ES 2.0 and generateMipmap is not allowed if texture format is SRGB_EXT or
+  // SRGB_ALPHA_EXT.
+  if (feature_info->IsWebGL1OrES2Context() &&
+      (base.format == GL_SRGB_EXT || base.format == GL_SRGB_ALPHA_EXT)) {
+    return false;
+  }
+
   if (!feature_info->validators()->texture_unsized_internal_format.IsValid(
       base.internal_format)) {
     if (!Texture::ColorRenderable(feature_info, base.internal_format,
