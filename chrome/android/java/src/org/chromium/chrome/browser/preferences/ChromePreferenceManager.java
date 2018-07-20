@@ -109,6 +109,7 @@ public class ChromePreferenceManager {
     private static final String HOMEPAGE_TILE_ENABLED_KEY = "homepage_tile_enabled";
 
     private static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
+    private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     private static final String BOTTOM_TOOLBAR_ENABLED_KEY = "bottom_toolbar_enabled";
 
@@ -399,6 +400,23 @@ public class ChromePreferenceManager {
     }
 
     /**
+     * Set the new tab page button variant.
+     * @param variant The new tab page button variant.
+     */
+    public void setNewTabPageButtonVariant(String variant) {
+        writeString(NTP_BUTTON_VARIANT_KEY, variant);
+    }
+
+    /**
+     * Get the variant of the new tab page button.
+     * @return The stored variant of the new tab page button or the empty string if nothing is
+     *         stored.
+     */
+    public String getNewTabPageButtonVariant() {
+        return mSharedPreferences.getString(NTP_BUTTON_VARIANT_KEY, "");
+    }
+
+    /**
      * Get whether or not the new tab page button is enabled.
      * @return True if the new tab page button is enabled.
      */
@@ -661,6 +679,18 @@ public class ChromePreferenceManager {
     private void writeBoolean(String key, boolean value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putBoolean(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Writes the given string to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    private void writeString(String key, String value) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putString(key, value);
         ed.apply();
     }
 
