@@ -758,7 +758,13 @@ const char kEnableWasmDescription[] =
 
 const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
 const char kEnableWebAuthenticationAPIDescription[] =
-    "Enable Web Authentication API support";
+    "Enable Web Authentication API support.";
+
+extern const char kEnableWebAuthenticationCableSupportName[] =
+    "Web Authentication caBLE support";
+extern const char kEnableWebAuthenticationCableSupportDescription[] =
+    "Enable the cloud-assisted pairingless BLE protocol for use with "
+    "the Web Authentication API.";
 
 const char kEnableImageCaptureAPIName[] = "Image Capture API";
 const char kEnableImageCaptureAPIDescription[] =
@@ -2669,7 +2675,7 @@ const char kEnableNewAppMenuIconDescription[] =
 const char kEnableWebAuthenticationCtap2SupportName[] =
     "Enable Web Authentication API support for CTAP2 security keys";
 const char kEnableWebAuthenticationCtap2SupportDescription[] =
-    "Enable CTAP2 security keys for the Web Authenication API.";
+    "Enable CTAP2 security keys for the Web Authentication API.";
 
 const char kEnableWebAuthenticationTestingAPIName[] =
     "Web Authentication Testing API";

@@ -27605,6 +27605,7 @@ from previous Chrome versions.
   <int value="-1811887751" label="ChromeModernFullRoll:disabled"/>
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
   <int value="-1810294310" label="AndroidPaymentApps:enabled"/>
+  <int value="-1809891158" label="WebAuthenticationCable:enabled"/>
   <int value="-1809835803" label="LayoutNG:disabled"/>
   <int value="-1808576075" label="SystemTrayUnified:enabled"/>
   <int value="-1808477331" label="MidiManagerCros:disabled"/>
@@ -28022,6 +28023,7 @@ from previous Chrome versions.
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
   <int value="-978700508" label="disable-simplified-fullscreen-ui"/>
   <int value="-977476498" label="disable-eol-notification"/>
+  <int value="-974378602" label="WebAuthenticationCable:disabled"/>
   <int value="-973509424" label="NewTabPageIcons:disabled"/>
   <int value="-972737445" label="ArcUseAuthEndpoint:disabled"/>
   <int value="-972425050" label="gesture-editing"/>

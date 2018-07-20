@@ -480,6 +480,9 @@ extern const char kEnableWasmDescription[];
 extern const char kEnableWebAuthenticationAPIName[];
 extern const char kEnableWebAuthenticationAPIDescription[];
 
+extern const char kEnableWebAuthenticationCableSupportName[];
+extern const char kEnableWebAuthenticationCableSupportDescription[];
+
 extern const char kEnableWebPaymentsSingleAppUiSkipName[];
 extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 
