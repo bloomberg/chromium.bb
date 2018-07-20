@@ -19,7 +19,6 @@ import tokenize
 
 import astroid
 from astroid import bases
-
 from pylint import checkers, interfaces
 from pylint.utils import WarningScope
 from pylint.checkers import utils
@@ -51,7 +50,7 @@ def _check_dict_node(node):
 def _is_builtin(node):
     return getattr(node, 'name', None) in ('__builtin__', 'builtins')
 
-_ACCEPTS_ITERATOR = {'iter', 'list', 'tuple', 'sorted', 'set', 'sum', 'any',
+_accepts_iterator = {'iter', 'list', 'tuple', 'sorted', 'set', 'sum', 'any',
                      'all', 'enumerate', 'dict'}
 
 def _in_iterating_context(node):
@@ -72,12 +71,12 @@ def _in_iterating_context(node):
             return True
     # Various built-ins can take in an iterable or list and lead to the same
     # value.
-    elif isinstance(parent, astroid.Call):
+    elif isinstance(parent, astroid.CallFunc):
         if isinstance(parent.func, astroid.Name):
             parent_scope = parent.func.lookup(parent.func.name)[0]
-            if _is_builtin(parent_scope) and parent.func.name in _ACCEPTS_ITERATOR:
+            if _is_builtin(parent_scope) and parent.func.name in _accepts_iterator:
                 return True
-        elif isinstance(parent.func, astroid.Attribute):
+        elif isinstance(parent.func, astroid.Getattr):
             if parent.func.attrname == 'join':
                 return True
     # If the call is in an unpacking, there's no need to warn,
@@ -131,11 +130,6 @@ class Python3Checker(checkers.BaseChecker):
                   {'scope': WarningScope.NODE,
                    'maxversion': (3, 0),
                    'old_names': [('W0333', 'backtick')]}),
-        'E1609': ('Import * only allowed at module level',
-                  'import-star-module-level',
-                  'Used when the import star syntax is used somewhere '
-                  'else than the module level.',
-                  {'maxversion': (3, 0)}),
         'W1601': ('apply built-in referenced',
                   'apply-builtin',
                   'Used when the apply built-in function is referenced '
@@ -248,7 +242,7 @@ class Python3Checker(checkers.BaseChecker):
                   "Used when an object's next() method is called "
                   '(Python 3 uses the next() built-in function)',
                   {'maxversion': (3, 0)}),
-        'W1623': ("Assigning to a class's __metaclass__ attribute",
+        'W1623': ("Assigning to a class' __metaclass__ attribute",
                   'metaclass-assignment',
                   "Used when a metaclass is specified by assigning to __metaclass__ "
                   '(Python 3 specifies the metaclass as a class statement argument)',
@@ -384,7 +378,7 @@ class Python3Checker(checkers.BaseChecker):
         self._future_division = False
         self._future_absolute_import = False
 
-    def visit_functiondef(self, node):
+    def visit_function(self, node):
         if node.is_method() and node.name in self._unused_magic_methods:
             method_name = node.name
             if node.name.startswith('__'):
@@ -409,7 +403,8 @@ class Python3Checker(checkers.BaseChecker):
     def visit_print(self, node):
         self.add_message('print-statement', node=node)
 
-    def visit_importfrom(self, node):
+    @utils.check_messages('no-absolute-import')
+    def visit_from(self, node):
         if node.modname == '__future__':
             for name, _ in node.names:
                 if name == 'division':
@@ -417,12 +412,7 @@ class Python3Checker(checkers.BaseChecker):
                 elif name == 'absolute_import':
                     self._future_absolute_import = True
         elif not self._future_absolute_import:
-            if self.linter.is_message_enabled('no-absolute-import'):
-                self.add_message('no-absolute-import', node=node)
-        if node.names[0][0] == '*':
-            if self.linter.is_message_enabled('import-star-module-level'):
-                if not isinstance(node.scope(), astroid.Module):
-                    self.add_message('import-star-module-level', node=node)
+            self.add_message('no-absolute-import', node=node)
 
     @utils.check_messages('no-absolute-import')
     def visit_import(self, node):
@@ -430,7 +420,7 @@ class Python3Checker(checkers.BaseChecker):
             self.add_message('no-absolute-import', node=node)
 
     @utils.check_messages('metaclass-assignment')
-    def visit_classdef(self, node):
+    def visit_class(self, node):
         if '__metaclass__' in node.locals:
             self.add_message('metaclass-assignment', node=node)
 
@@ -445,8 +435,8 @@ class Python3Checker(checkers.BaseChecker):
 
     def _check_cmp_argument(self, node):
         # Check that the `cmp` argument is used
-        kwargs = []
-        if (isinstance(node.func, astroid.Attribute)
+        args = []
+        if (isinstance(node.func, astroid.Getattr)
                 and node.func.attrname == 'sort'):
             inferred = utils.safe_infer(node.func.expr)
             if not inferred:
@@ -455,28 +445,28 @@ class Python3Checker(checkers.BaseChecker):
             builtins_list = "{}.list".format(bases.BUILTINS)
             if (isinstance(inferred, astroid.List)
                     or inferred.qname() == builtins_list):
-                kwargs = node.keywords
+                args = node.args
 
         elif (isinstance(node.func, astroid.Name)
-              and node.func.name == 'sorted'):
+                and node.func.name == 'sorted'):
             inferred = utils.safe_infer(node.func)
             if not inferred:
                 return
 
             builtins_sorted = "{}.sorted".format(bases.BUILTINS)
             if inferred.qname() == builtins_sorted:
-                kwargs = node.keywords
+                args = node.args
 
-        for kwarg in kwargs or []:
-            if kwarg.arg == 'cmp':
+        for arg in args:
+            if isinstance(arg, astroid.Keyword) and arg.arg == 'cmp':
                 self.add_message('using-cmp-argument', node=node)
                 return
 
-    def visit_call(self, node):
+    def visit_callfunc(self, node):
         self._check_cmp_argument(node)
 
-        if isinstance(node.func, astroid.Attribute):
-            if any([node.args, node.keywords]):
+        if isinstance(node.func, astroid.Getattr):
+            if any([node.args, node.starargs, node.kwargs]):
                 return
             if node.func.attrname == 'next':
                 self.add_message('next-method-called', node=node)
@@ -514,7 +504,7 @@ class Python3Checker(checkers.BaseChecker):
             self.add_message('unpacking-in-except', node=node)
 
     @utils.check_messages('backtick')
-    def visit_repr(self, node):
+    def visit_backquote(self, node):
         self.add_message('backtick', node=node)
 
     @utils.check_messages('raising-string', 'old-raise-syntax')

@@ -44,7 +44,8 @@ import sys
 import tokenize
 import warnings
 
-from pylint.config import OptionsProviderMixIn
+from logilab.common.configuration import OptionsProviderMixIn
+
 from pylint.reporters import diff_string
 from pylint.utils import register_plugins
 from pylint.interfaces import UNDEFINED

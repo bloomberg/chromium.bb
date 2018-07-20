@@ -19,26 +19,27 @@ from __future__ import print_function
 import collections
 import contextlib
 import functools
-from glob import glob
 import os
-from os import linesep, getcwd, sep
-from os.path import abspath, basename, dirname, isdir, join, splitext
 import sys
 import re
 import unittest
 import tempfile
 import tokenize
 
-import six
-from six.moves import StringIO
+from glob import glob
+from os import linesep, getcwd, sep
+from os.path import abspath, basename, dirname, isdir, join, splitext
 
-import astroid
+from astroid import test_utils
+
 from pylint import checkers
 from pylint.utils import PyLintASTWalker
 from pylint.reporters import BaseReporter
 from pylint.interfaces import IReporter
 from pylint.lint import PyLinter
 
+import six
+from six.moves import StringIO
 
 
 # Utils
@@ -125,10 +126,8 @@ class TestReporter(BaseReporter):
         self.reset()
         return result
 
-    def display_reports(self, layout):
+    def display_results(self, layout):
         """ignore layouts"""
-
-    _display = None
 
 
 class Message(collections.namedtuple('Message',
@@ -169,9 +168,9 @@ class UnittestLinter(object):
 
 def set_config(**kwargs):
     """Decorator for setting config values on a checker."""
-    def _wrapper(fun):
+    def _Wrapper(fun):
         @functools.wraps(fun)
-        def _forward(self):
+        def _Forward(self):
             for key, value in six.iteritems(kwargs):
                 setattr(self.checker.config, key, value)
             if isinstance(self, CheckerTestCase):
@@ -179,8 +178,8 @@ def set_config(**kwargs):
                 self.checker.open()
             fun(self)
 
-        return _forward
-    return _wrapper
+        return _Forward
+    return _Wrapper
 
 
 class CheckerTestCase(unittest.TestCase):
@@ -229,6 +228,7 @@ linter = PyLinter()
 linter.set_reporter(test_reporter)
 linter.config.persistent = 0
 checkers.initialize(linter)
+linter.global_set_option('required-attributes', ('__revision__',))
 
 if linesep != '\n':
     LINE_RGX = re.compile(linesep)
@@ -271,7 +271,6 @@ class LintTestUsingModule(unittest.TestCase):
 
     def test_functionality(self):
         tocheck = [self.package+'.'+self.module]
-        # pylint: disable=not-an-iterable; can't handle boolean checks for now
         if self.depends:
             tocheck += [self.package+'.%s' % name.replace('.py', '')
                         for name, _ in self.depends]
@@ -317,9 +316,8 @@ class LintTestUsingFile(LintTestUsingModule):
         if not isdir(importable):
             importable += '.py'
         tocheck = [importable]
-        # pylint: disable=not-an-iterable; can't handle boolean checks for now
         if self.depends:
-            tocheck += [join(self.INPUT_DIR, name) for name, _ in self.depends]
+            tocheck += [join(self.INPUT_DIR, name) for name, _file in self.depends]
         self._test(tocheck)
 
 class LintTestUpdate(LintTestUsingModule):
@@ -365,7 +363,7 @@ def make_tests(input_dir, msg_dir, filter_rgx, callbacks):
     for module_file, messages_file in (
             get_tests_info(input_dir, msg_dir, 'func_', '')
     ):
-        if not is_to_run(module_file) or module_file.endswith(('.pyc', "$py.class")):
+        if not is_to_run(module_file) or module_file.endswith('.pyc'):
             continue
         base = module_file.replace('func_', '').replace('.py', '')
 
@@ -392,23 +390,23 @@ def create_tempfile(content=None):
     # Can't use tempfile.NamedTemporaryFile here
     # because on Windows the file must be closed before writing to it,
     # see http://bugs.python.org/issue14243
-    file_handle, tmp = tempfile.mkstemp()
+    fd, tmp = tempfile.mkstemp()
     if content:
         if sys.version_info >= (3, 0):
             # erff
-            os.write(file_handle, bytes(content, 'ascii'))
+            os.write(fd, bytes(content, 'ascii'))
         else:
-            os.write(file_handle, content)
+            os.write(fd, content)
     try:
         yield tmp
     finally:
-        os.close(file_handle)
+        os.close(fd)
         os.remove(tmp)
 
 @contextlib.contextmanager
 def create_file_backed_module(code):
     """Create an astroid module for the given code, backed by a real file."""
     with create_tempfile() as temp:
-        module = astroid.parse(code)
+        module = test_utils.build_module(code)
         module.file = temp
         yield module

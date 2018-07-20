@@ -48,13 +48,9 @@ its output.
 """
 from __future__ import print_function
 
-import os
+import sys, os
 import os.path as osp
-import sys
 from subprocess import Popen, PIPE
-
-import six
-
 
 def _get_env():
     '''Extracts the environment PYTHONPATH and appends the current sys.path to
@@ -158,12 +154,12 @@ def py_run(command_options='', return_std=False, stdout=None, stderr=None,
         else:
             stderr = sys.stderr
     # Call pylint in a subprocess
-    process = Popen(command_line, shell=True, stdout=stdout, stderr=stderr,
-                    env=_get_env(), universal_newlines=True)
-    proc_stdout, proc_stderr = process.communicate()
+    p = Popen(command_line, shell=True, stdout=stdout, stderr=stderr,
+              env=_get_env(), universal_newlines=True)
+    p.wait()
     # Return standard output and error
     if return_std:
-        return six.moves.StringIO(proc_stdout), six.moves.StringIO(proc_stderr)
+        return (p.stdout, p.stderr)
 
 
 def Run():

@@ -20,17 +20,17 @@ distname = 'astroid'
 
 modname = 'astroid'
 
-numversion = (1, 4, 9)
+numversion = (1, 3, 8)
 version = '.'.join([str(num) for num in numversion])
 
-install_requires = ['six', 'lazy_object_proxy', 'wrapt']
+install_requires = ['logilab-common>=0.63.0', 'six']
 
 license = 'LGPL'
 
-author = 'Python Code Quality Authority'
-author_email = 'code-quality@python.org'
+author = 'Logilab'
+author_email = 'pylint-dev@lists.logilab.org'
 mailinglist = "mailto://%s" % author_email
-web = 'https://github.com/PyCQA/astroid'
+web = 'http://bitbucket.org/logilab/astroid'
 
 description = "A abstract syntax tree for Python with inference support."
 

@@ -27,7 +27,7 @@ from six.moves.tkinter import (
     Tk, Frame, Listbox, Entry, Label, Button, Scrollbar,
     Checkbutton, Radiobutton, IntVar, StringVar, PanedWindow,
     TOP, LEFT, RIGHT, BOTTOM, END, X, Y, BOTH, SUNKEN, W,
-    HORIZONTAL, DISABLED, NORMAL,
+    HORIZONTAL, DISABLED, NORMAL, W,
 )
 from six.moves.tkinter_tkfiledialog import (
     askopenfilename, askdirectory,
@@ -455,7 +455,7 @@ class LintGui(object):
         try:
             view_history = open(HOME+HISTORY, 'r')
             for hist in view_history.readlines():
-                if hist not in self.filenames:
+                if not hist in self.filenames:
                     self.filenames.append(hist)
                 self.showhistory.insert(END, hist.split('\n')[0])
             view_history.close()

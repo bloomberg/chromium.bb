@@ -13,6 +13,8 @@
 """Interfaces for Pylint objects"""
 from collections import namedtuple
 
+from logilab.common.interface import Interface
+
 Confidence = namedtuple('Confidence', ['name', 'description'])
 # Warning Certainties
 HIGH = Confidence('HIGH', 'No false positive possible.')
@@ -23,26 +25,6 @@ UNDEFINED = Confidence('UNDEFINED',
                        'Warning without any associated confidence level.')
 
 CONFIDENCE_LEVELS = [HIGH, INFERENCE, INFERENCE_FAILURE, UNDEFINED]
-
-
-class Interface(object):
-    """Base class for interfaces."""
-    @classmethod
-    def is_implemented_by(cls, instance):
-        return implements(instance, cls)
-
-
-def implements(obj, interface):
-    """Return true if the give object (maybe an instance or class) implements
-    the interface.
-    """
-    kimplements = getattr(obj, '__implements__', ())
-    if not isinstance(kimplements, (list, tuple)):
-        kimplements = (kimplements,)
-    for implementedinterface in kimplements:
-        if issubclass(implementedinterface, interface):
-            return True
-    return False
 
 
 class IChecker(Interface):
@@ -94,7 +76,7 @@ class IReporter(Interface):
         msg is the actual message
         """
 
-    def display_reports(self, layout):
+    def display_results(self, layout):
         """display results encapsulated in the layout tree
         """
 

@@ -19,10 +19,9 @@ Check source code is ascii only or has an encoding declaration (PEP 263)
 
 import re
 
-import six
-
 from pylint.interfaces import IRawChecker
 from pylint.checkers import BaseChecker
+import six
 
 
 MSGS = {
