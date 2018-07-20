@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_view_test_client.h"
 #include "content/shell/test_runner/web_widget_test_client.h"
@@ -124,35 +125,11 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
     web_view_ = view;
   }
 
-  void set_view_test_client(
-      std::unique_ptr<WebViewTestClient> view_test_client) {
-    DCHECK(view_test_client);
-    DCHECK(!view_test_client_);
-    view_test_client_ = std::move(view_test_client);
-  }
-
-  // To be called once the WebWidgetTestClient has been set up, to build the
-  // indirection used by this class.
-  void SetUpWidgetClient() {
-    DCHECK(widget_test_client());
-    proxy_widget_client_ = std::make_unique<ProxyWebWidgetClient>(
-        base_class_widget_client_, widget_test_client());
-  }
-
   WebTestDelegate* delegate() { return delegate_; }
-  void set_delegate(WebTestDelegate* delegate) {
-    DCHECK(delegate);
-    DCHECK(!delegate_);
-    delegate_ = delegate;
-  }
-
   TestInterfaces* test_interfaces() { return test_interfaces_; }
-  void SetInterfaces(WebTestInterfaces* web_test_interfaces);
-
   AccessibilityController* accessibility_controller() {
     return accessibility_controller_.get();
   }
-
   TestRunnerForSpecificView* view_test_runner() {
     return view_test_runner_.get();
   }
@@ -165,29 +142,19 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
   WebWidgetTestProxyBase* web_widget_test_proxy_base() { return this; }
 
  protected:
-  explicit WebViewTestProxyBase(
-      blink::WebWidgetClient* base_class_widget_client);
+  WebViewTestProxyBase();
   ~WebViewTestProxyBase();
 
-  blink::WebViewClient* view_test_client() { return view_test_client_.get(); }
-  // Wraps the widget_test_client() and the base class' WidgetClient().
-  blink::WebWidgetClient* proxy_widget_client() {
-    return proxy_widget_client_.get();
+  void set_delegate(WebTestDelegate* delegate) { delegate_ = delegate; }
+  void set_test_interfaces(TestInterfaces* interfaces) {
+    test_interfaces_ = interfaces;
   }
 
  private:
-  // Hide widget_test_client(), the proxy_widget_client() should be used
-  // instead. Which decides to redirect some calls to the widget_test_client()
-  // as needed.
-  using WebWidgetTestProxyBase::widget_test_client;
-
-  TestInterfaces* test_interfaces_;
-  WebTestDelegate* delegate_;
-  blink::WebView* web_view_;
-  blink::WebWidget* web_widget_;
-  blink::WebWidgetClient* base_class_widget_client_;
-  std::unique_ptr<ProxyWebWidgetClient> proxy_widget_client_;
-  std::unique_ptr<WebViewTestClient> view_test_client_;
+  TestInterfaces* test_interfaces_ = nullptr;
+  WebTestDelegate* delegate_ = nullptr;
+  blink::WebView* web_view_ = nullptr;
+  blink::WebWidget* web_widget_ = nullptr;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<TextInputController> text_input_controller_;
   std::unique_ptr<TestRunnerForSpecificView> view_test_runner_;
@@ -195,11 +162,10 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxyBase);
 };
 
-// WebViewTestProxy is used during LayoutTests and always instantiated, at time
-// of writing with Base=RenderViewImpl. It does not directly inherit from it for
-// layering purposes.
-// The intent of that class is to wrap RenderViewImpl for tests purposes in
-// order to reduce the amount of test specific code in the production code.
+// WebViewTestProxy is used during LayoutTests. The intent of that class is to
+// wrap RenderViewImpl for tests purposes in order to reduce the amount of test
+// specific code in the production code.
+//
 // WebViewTestProxy is only doing the glue between RenderViewImpl and
 // WebViewTestProxyBase, that means that there is no logic living in this class
 // except deciding which base class should be called (could be both).
@@ -212,13 +178,13 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
 //    override RenderViewImpl's getter and call a getter from
 //    WebViewTestProxyBase instead. In addition, WebViewTestProxyBase will have
 //    a public setter that could be called from the TestRunner.
-template <class Base>
-class WebViewTestProxy : public Base, public WebViewTestProxyBase {
+class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
+                                            public WebViewTestProxyBase {
  public:
   template <typename... Args>
   explicit WebViewTestProxy(Args&&... args)
-      : Base(std::forward<Args>(args)...),
-        WebViewTestProxyBase(Base::WidgetClient()) {}
+      : RenderViewImpl(std::forward<Args>(args)...) {}
+  void Initialize(WebTestInterfaces* interfaces, WebTestDelegate* delegate);
 
   // WebViewClient implementation.
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
@@ -227,29 +193,18 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener,
-                             blink::WebSandboxFlags sandbox_flags) override {
-    if (!view_test_client()->CreateView(creator, request, features, frame_name,
-                                        policy, suppress_opener, sandbox_flags))
-      return nullptr;
-    return Base::CreateView(creator, request, features, frame_name, policy,
-                            suppress_opener, sandbox_flags);
-  }
-  void PrintPage(blink::WebLocalFrame* frame) override {
-    view_test_client()->PrintPage(frame);
-  }
-  blink::WebString AcceptLanguages() override {
-    return view_test_client()->AcceptLanguages();
-  }
-  void DidFocus(blink::WebLocalFrame* calling_frame) override {
-    view_test_client()->DidFocus(calling_frame);
-    Base::DidFocus(calling_frame);
-  }
-  blink::WebWidgetClient* WidgetClient() override {
-    return proxy_widget_client();
-  }
+                             blink::WebSandboxFlags sandbox_flags) override;
+  void PrintPage(blink::WebLocalFrame* frame) override;
+  blink::WebString AcceptLanguages() override;
+  void DidFocus(blink::WebLocalFrame* calling_frame) override;
+  blink::WebWidgetClient* WidgetClient() override;
 
  private:
-  virtual ~WebViewTestProxy() {}
+  // RenderViewImpl has no public destructor.
+  ~WebViewTestProxy() override;
+
+  std::unique_ptr<ProxyWebWidgetClient> proxy_widget_client_;
+  std::unique_ptr<WebViewTestClient> view_test_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxy);
 };

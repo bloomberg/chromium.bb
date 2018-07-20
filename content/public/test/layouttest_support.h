@@ -24,7 +24,6 @@ struct WebSize;
 class WebURL;
 class WebURLRequest;
 class WebView;
-class WebWidget;
 }
 
 namespace gfx {
@@ -79,21 +78,7 @@ test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
 // Enable injecting of a WebViewTestProxy between WebViews and RenderViews,
 // WebWidgetTestProxy between WebWidgets and RenderWidgets and WebFrameTestProxy
 // between WebFrames and RenderFrames.
-// |view_proxy_creation_callback| is invoked after creating WebViewTestProxy.
-// |widget_proxy_creation_callback| is invoked after creating
-// WebWidgetTestProxy.
-// |frame_proxy_creation_callback| is called after creating WebFrameTestProxy.
-using ViewProxyCreationCallback =
-    base::Callback<void(RenderView*, test_runner::WebViewTestProxyBase*)>;
-using WidgetProxyCreationCallback =
-    base::Callback<void(blink::WebWidget*,
-                        test_runner::WebWidgetTestProxyBase*)>;
-using FrameProxyCreationCallback =
-    base::Callback<void(RenderFrame*, test_runner::WebFrameTestProxyBase*)>;
-void EnableWebTestProxyCreation(
-    const ViewProxyCreationCallback& view_proxy_creation_callback,
-    const WidgetProxyCreationCallback& widget_proxy_creation_callback,
-    const FrameProxyCreationCallback& frame_proxy_creation_callback);
+void EnableWebTestProxyCreation();
 
 typedef base::OnceCallback<void(const GURL&, const blink::Manifest&)>
     FetchManifestCallback;

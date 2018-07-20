@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -44,8 +43,11 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/renderer/layout_test/blink_test_runner.h"
+#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
+#include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -83,25 +85,26 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<ViewProxyCreationCallback>::Leaky
-    g_view_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<WidgetProxyCreationCallback>::Leaky
-    g_widget_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<FrameProxyCreationCallback>::Leaky
-    g_frame_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
-
-using WebViewTestProxyType = test_runner::WebViewTestProxy<RenderViewImpl>;
-using WebWidgetTestProxyType = test_runner::WebWidgetTestProxy<RenderWidget>;
-using WebFrameTestProxyType = test_runner::WebFrameTestProxy<RenderFrameImpl>;
-
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
-  WebViewTestProxyType* render_view_proxy = new WebViewTestProxyType(
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+
+  auto* render_view_proxy = new test_runner::WebViewTestProxy(
       compositor_deps, params, base::ThreadTaskRunnerHandle::Get());
-  if (g_view_test_proxy_callback.IsCreated())
-    g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
+
+  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view_proxy);
+  // TODO(lukasza): Using the 1st BlinkTestRunner as the main delegate is wrong,
+  // but it is difficult to change because this behavior has been baked for a
+  // long time into test assumptions (i.e. which PrintMessage gets delivered to
+  // the browser depends on this).
+  static bool first_test_runner = true;
+  if (first_test_runner) {
+    first_test_runner = false;
+    interfaces->SetDelegate(test_runner);
+  }
+
+  render_view_proxy->Initialize(interfaces, test_runner);
   return render_view_proxy;
 }
 
@@ -112,28 +115,44 @@ RenderWidget* CreateWebWidgetTestProxy(int32_t routing_id,
                                        bool swapped_out,
                                        bool hidden,
                                        bool never_visible) {
-  WebWidgetTestProxyType* render_widget_proxy = new WebWidgetTestProxyType(
+  auto* render_widget_proxy = new test_runner::WebWidgetTestProxy(
       routing_id, compositor_deps, popup_type, screen_info, swapped_out, hidden,
       never_visible, base::ThreadTaskRunnerHandle::Get());
   return render_widget_proxy;
 }
 
 void RenderWidgetInitialized(RenderWidget* render_widget) {
-  WebWidgetTestProxyType* render_widget_proxy =
-      static_cast<WebWidgetTestProxyType*>(render_widget);
-  if (!g_widget_test_proxy_callback.Get().is_null()) {
-    g_widget_test_proxy_callback.Get().Run(render_widget->GetWebWidget(),
-                                           render_widget_proxy);
-  }
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+
+  blink::WebWidget* web_widget = render_widget->GetWebWidget();
+  // This callback is run only for RenderWidgets that are for a frame.
+  CHECK(web_widget->IsWebFrameWidget());
+  auto* web_frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
+  // RenderWidgets for a frame will have a local root with a RenderView.
+  blink::WebView* web_view = web_frame_widget->LocalRoot()->View();
+  RenderView* render_view = content::RenderView::FromWebView(web_view);
+  // RenderViews are always RenderViewImpls internally.
+  auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+
+  // We are here because CreateWebWidgetTestProxy() was used to make the
+  // RenderWidget, and it creates a WebWidgetTestProxy instead, which is-a
+  // RenderWidget.
+  auto* render_widget_proxy =
+      static_cast<test_runner::WebWidgetTestProxy*>(render_widget);
+  render_widget_proxy->Initialize(interfaces, web_widget, render_view_impl);
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
-  WebFrameTestProxyType* render_frame_proxy =
-      new WebFrameTestProxyType(std::move(params));
-  if (g_frame_test_proxy_callback.IsCreated()) {
-    g_frame_test_proxy_callback.Get().Run(render_frame_proxy,
-                                          render_frame_proxy);
-  }
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+
+  // RenderFrameImpl always has a RenderViewImpl for it.
+  RenderViewImpl* render_view_impl = params.render_view;
+
+  auto* render_frame_proxy =
+      new test_runner::WebFrameTestProxy(std::move(params));
+  render_frame_proxy->Initialize(interfaces, render_view_impl);
   return render_frame_proxy;
 }
 
@@ -158,15 +177,15 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
 
 test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
     RenderView* render_view) {
-  WebViewTestProxyType* render_view_proxy =
-      static_cast<WebViewTestProxyType*>(render_view);
+  auto* render_view_proxy =
+      static_cast<test_runner::WebViewTestProxy*>(render_view);
   return static_cast<test_runner::WebViewTestProxyBase*>(render_view_proxy);
 }
 
 test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
     RenderFrame* render_frame) {
-  WebFrameTestProxyType* render_frame_proxy =
-      static_cast<WebFrameTestProxyType*>(render_frame);
+  auto* render_frame_proxy =
+      static_cast<test_runner::WebFrameTestProxy*>(render_frame);
   return static_cast<test_runner::WebFrameTestProxyBase*>(render_frame_proxy);
 }
 
@@ -187,8 +206,8 @@ test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
     RenderWidget* render_widget =
         static_cast<RenderFrameImpl*>(local_root)->GetRenderWidget();
     DCHECK(render_widget);
-    WebWidgetTestProxyType* render_widget_proxy =
-        static_cast<WebWidgetTestProxyType*>(render_widget);
+    auto* render_widget_proxy =
+        static_cast<test_runner::WebWidgetTestProxy*>(render_widget);
     auto* web_widget_test_proxy_base =
         static_cast<test_runner::WebWidgetTestProxyBase*>(render_widget_proxy);
     DCHECK(web_widget_test_proxy_base->web_widget()->IsWebFrameWidget());
@@ -205,14 +224,14 @@ RenderWidget* GetRenderWidget(
   if (widget->IsWebView()) {
     test_runner::WebViewTestProxyBase* render_view_proxy_base =
         web_widget_test_proxy_base->web_view_test_proxy_base();
-    WebViewTestProxyType* render_view_proxy =
-        static_cast<WebViewTestProxyType*>(render_view_proxy_base);
+    auto* render_view_proxy =
+        static_cast<test_runner::WebViewTestProxy*>(render_view_proxy_base);
     RenderViewImpl* render_view_impl =
         static_cast<RenderViewImpl*>(render_view_proxy);
     return render_view_impl->GetWidget();
   } else if (widget->IsWebFrameWidget()) {
-    WebWidgetTestProxyType* render_widget_proxy =
-        static_cast<WebWidgetTestProxyType*>(web_widget_test_proxy_base);
+    auto* render_widget_proxy = static_cast<test_runner::WebWidgetTestProxy*>(
+        web_widget_test_proxy_base);
     return static_cast<RenderWidget*>(render_widget_proxy);
   } else {
     NOTREACHED();
@@ -220,13 +239,7 @@ RenderWidget* GetRenderWidget(
   }
 }
 
-void EnableWebTestProxyCreation(
-    const ViewProxyCreationCallback& view_proxy_creation_callback,
-    const WidgetProxyCreationCallback& widget_proxy_creation_callback,
-    const FrameProxyCreationCallback& frame_proxy_creation_callback) {
-  g_view_test_proxy_callback.Get() = view_proxy_creation_callback;
-  g_widget_test_proxy_callback.Get() = widget_proxy_creation_callback;
-  g_frame_test_proxy_callback.Get() = frame_proxy_creation_callback;
+void EnableWebTestProxyCreation() {
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
   RenderWidget::InstallCreateHook(CreateWebWidgetTestProxy,
                                   RenderWidgetInitialized);
