@@ -36,7 +36,6 @@ fuchsia_sdk_pkg("async_default") {
 fuchsia_sdk_pkg("fdio") {
   sources = [
     "include/lib/fdio/debug.h",
-    "include/lib/fdio/io.fidl.h",
     "include/lib/fdio/io.h",
     "include/lib/fdio/limits.h",
     "include/lib/fdio/module.modulemap",
