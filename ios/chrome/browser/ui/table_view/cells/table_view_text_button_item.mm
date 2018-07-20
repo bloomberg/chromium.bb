@@ -28,6 +28,8 @@ const CGFloat buttonTitleHorizontalContentInset = 40.0;
 const CGFloat buttonTitleVerticalContentInset = 8.0;
 // Button corner radius.
 const CGFloat buttonCornerRadius = 8;
+// Font Size for Button Title Label.
+const CGFloat buttonTitleFontSize = 17.0;
 }  // namespace
 
 @implementation TableViewTextButtonItem
@@ -83,7 +85,7 @@ const CGFloat buttonCornerRadius = 8;
                       forState:UIControlStateNormal];
     self.button.translatesAutoresizingMaskIntoConstraints = NO;
     [self.button.titleLabel
-        setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
+        setFont:[UIFont boldSystemFontOfSize:buttonTitleFontSize]];
     self.button.layer.cornerRadius = buttonCornerRadius;
     self.button.clipsToBounds = YES;
     self.button.contentEdgeInsets = UIEdgeInsetsMake(
