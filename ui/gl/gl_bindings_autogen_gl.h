@@ -44,6 +44,10 @@ typedef void(GL_BINDING_CALL* glBindFragDataLocationIndexedProc)(
     GLuint colorNumber,
     GLuint index,
     const char* name);
+typedef void(GL_BINDING_CALL* glBindFragmentInputLocationCHROMIUMProc)(
+    GLuint program,
+    GLint location,
+    const char* name);
 typedef void(GL_BINDING_CALL* glBindFramebufferEXTProc)(GLenum target,
                                                         GLuint framebuffer);
 typedef void(GL_BINDING_CALL* glBindImageTextureEXTProc)(GLuint index,
@@ -1539,8 +1543,10 @@ struct ExtensionsGL {
   bool b_GL_CHROMIUM_compressed_copy_texture;
   bool b_GL_CHROMIUM_copy_compressed_texture;
   bool b_GL_CHROMIUM_copy_texture;
+  bool b_GL_CHROMIUM_framebuffer_mixed_samples;
   bool b_GL_CHROMIUM_gles_depth_binding_hack;
   bool b_GL_CHROMIUM_glgetstringi_hack;
+  bool b_GL_CHROMIUM_path_rendering;
   bool b_GL_EXT_blend_func_extended;
   bool b_GL_EXT_debug_marker;
   bool b_GL_EXT_direct_state_access;
@@ -1593,6 +1599,7 @@ struct ProcsGL {
   glBindBufferRangeProc glBindBufferRangeFn;
   glBindFragDataLocationProc glBindFragDataLocationFn;
   glBindFragDataLocationIndexedProc glBindFragDataLocationIndexedFn;
+  glBindFragmentInputLocationCHROMIUMProc glBindFragmentInputLocationCHROMIUMFn;
   glBindFramebufferEXTProc glBindFramebufferEXTFn;
   glBindImageTextureEXTProc glBindImageTextureEXTFn;
   glBindRenderbufferEXTProc glBindRenderbufferEXTFn;
@@ -2024,6 +2031,9 @@ class GL_EXPORT GLApi {
                                                GLuint colorNumber,
                                                GLuint index,
                                                const char* name) = 0;
+  virtual void glBindFragmentInputLocationCHROMIUMFn(GLuint program,
+                                                     GLint location,
+                                                     const char* name) = 0;
   virtual void glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) = 0;
   virtual void glBindImageTextureEXTFn(GLuint index,
                                        GLuint texture,
@@ -3343,6 +3353,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glBindFragDataLocationFn
 #define glBindFragDataLocationIndexed \
   ::gl::g_current_gl_context->glBindFragDataLocationIndexedFn
+#define glBindFragmentInputLocationCHROMIUM \
+  ::gl::g_current_gl_context->glBindFragmentInputLocationCHROMIUMFn
 #define glBindFramebufferEXT ::gl::g_current_gl_context->glBindFramebufferEXTFn
 #define glBindImageTextureEXT \
   ::gl::g_current_gl_context->glBindImageTextureEXTFn

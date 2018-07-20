@@ -152,6 +152,14 @@ MockGLInterface::Mock_glBindFragDataLocationIndexedEXT(GLuint program,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glBindFragmentInputLocationCHROMIUM(GLuint program,
+                                                          GLint location,
+                                                          const char* name) {
+  MakeFunctionUnique("glBindFragmentInputLocationCHROMIUM");
+  interface_->BindFragmentInputLocationCHROMIUM(program, location, name);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glBindFramebuffer(GLenum target, GLuint framebuffer) {
   MakeFunctionUnique("glBindFramebuffer");
   interface_->BindFramebufferEXT(target, framebuffer);
@@ -671,6 +679,26 @@ MockGLInterface::Mock_glCopyTextureCHROMIUM(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glCoverFillPathCHROMIUM(GLuint path, GLenum coverMode) {
+  MakeFunctionUnique("glCoverFillPathCHROMIUM");
+  interface_->CoverFillPathNV(path, coverMode);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glCoverFillPathInstancedCHROMIUM");
+  interface_->CoverFillPathInstancedNV(numPaths, pathNameType, paths, pathBase,
+                                       coverMode, transformType,
+                                       transformValues);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathInstancedNV(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -691,6 +719,26 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathNV(GLuint path,
   interface_->CoverFillPathNV(path, coverMode);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glCoverStrokePathCHROMIUM(GLuint name, GLenum coverMode) {
+  MakeFunctionUnique("glCoverStrokePathCHROMIUM");
+  interface_->CoverStrokePathNV(name, coverMode);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glCoverStrokePathInstancedCHROMIUM");
+  interface_->CoverStrokePathInstancedNV(numPaths, pathNameType, paths,
+                                         pathBase, coverMode, transformType,
+                                         transformValues);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glCoverStrokePathInstancedNV(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -709,6 +757,12 @@ void GL_BINDING_CALL
 MockGLInterface::Mock_glCoverStrokePathNV(GLuint name, GLenum coverMode) {
   MakeFunctionUnique("glCoverStrokePathNV");
   interface_->CoverStrokePathNV(name, coverMode);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glCoverageModulationCHROMIUM(GLenum components) {
+  MakeFunctionUnique("glCoverageModulationCHROMIUM");
+  interface_->CoverageModulationNV(components);
 }
 
 void GL_BINDING_CALL
@@ -820,6 +874,12 @@ MockGLInterface::Mock_glDeleteFramebuffersEXT(GLsizei n,
                                               const GLuint* framebuffers) {
   MakeFunctionUnique("glDeleteFramebuffersEXT");
   interface_->DeleteFramebuffersEXT(n, framebuffers);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glDeletePathsCHROMIUM(GLuint path, GLsizei range) {
+  MakeFunctionUnique("glDeletePathsCHROMIUM");
+  interface_->DeletePathsNV(path, range);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glDeletePathsNV(GLuint path,
@@ -1268,6 +1328,11 @@ void GL_BINDING_CALL
 MockGLInterface::Mock_glGenFramebuffersEXT(GLsizei n, GLuint* framebuffers) {
   MakeFunctionUnique("glGenFramebuffersEXT");
   interface_->GenFramebuffersEXT(n, framebuffers);
+}
+
+GLuint GL_BINDING_CALL MockGLInterface::Mock_glGenPathsCHROMIUM(GLsizei range) {
+  MakeFunctionUnique("glGenPathsCHROMIUM");
+  return interface_->GenPathsNV(range);
 }
 
 GLuint GL_BINDING_CALL MockGLInterface::Mock_glGenPathsNV(GLsizei range) {
@@ -2589,6 +2654,11 @@ MockGLInterface::Mock_glIsFramebufferEXT(GLuint framebuffer) {
   return interface_->IsFramebufferEXT(framebuffer);
 }
 
+GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsPathCHROMIUM(GLuint path) {
+  MakeFunctionUnique("glIsPathCHROMIUM");
+  return interface_->IsPathNV(path);
+}
+
 GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsPathNV(GLuint path) {
   MakeFunctionUnique("glIsPathNV");
   return interface_->IsPathNV(path);
@@ -2710,9 +2780,22 @@ MockGLInterface::Mock_glMapBufferRangeEXT(GLenum target,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glMatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
+  MakeFunctionUnique("glMatrixLoadIdentityCHROMIUM");
+  interface_->MatrixLoadIdentityEXT(matrixMode);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glMatrixLoadIdentityEXT(GLenum matrixMode) {
   MakeFunctionUnique("glMatrixLoadIdentityEXT");
   interface_->MatrixLoadIdentityEXT(matrixMode);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMatrixLoadfCHROMIUM(GLenum matrixMode,
+                                            const GLfloat* m) {
+  MakeFunctionUnique("glMatrixLoadfCHROMIUM");
+  interface_->MatrixLoadfEXT(matrixMode, m);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glMatrixLoadfEXT(GLenum matrixMode,
@@ -2765,6 +2848,18 @@ MockGLInterface::Mock_glObjectPtrLabelKHR(void* ptr,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glPathCommandsCHROMIUM(GLuint path,
+                                             GLsizei numCommands,
+                                             const GLubyte* commands,
+                                             GLsizei numCoords,
+                                             GLenum coordType,
+                                             const GLvoid* coords) {
+  MakeFunctionUnique("glPathCommandsCHROMIUM");
+  interface_->PathCommandsNV(path, numCommands, commands, numCoords, coordType,
+                             coords);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glPathCommandsNV(GLuint path,
                                        GLsizei numCommands,
                                        const GLubyte* commands,
@@ -2776,6 +2871,14 @@ MockGLInterface::Mock_glPathCommandsNV(GLuint path,
                              coords);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glPathParameterfCHROMIUM(GLuint path,
+                                               GLenum pname,
+                                               GLfloat value) {
+  MakeFunctionUnique("glPathParameterfCHROMIUM");
+  interface_->PathParameterfNV(path, pname, value);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glPathParameterfNV(GLuint path,
                                                               GLenum pname,
                                                               GLfloat value) {
@@ -2783,11 +2886,27 @@ void GL_BINDING_CALL MockGLInterface::Mock_glPathParameterfNV(GLuint path,
   interface_->PathParameterfNV(path, pname, value);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glPathParameteriCHROMIUM(GLuint path,
+                                               GLenum pname,
+                                               GLint value) {
+  MakeFunctionUnique("glPathParameteriCHROMIUM");
+  interface_->PathParameteriNV(path, pname, value);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glPathParameteriNV(GLuint path,
                                                               GLenum pname,
                                                               GLint value) {
   MakeFunctionUnique("glPathParameteriNV");
   interface_->PathParameteriNV(path, pname, value);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glPathStencilFuncCHROMIUM(GLenum func,
+                                                GLint ref,
+                                                GLuint mask) {
+  MakeFunctionUnique("glPathStencilFuncCHROMIUM");
+  interface_->PathStencilFuncNV(func, ref, mask);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glPathStencilFuncNV(GLenum func,
@@ -2869,6 +2988,18 @@ void GL_BINDING_CALL MockGLInterface::Mock_glProgramParameteri(GLuint program,
                                                                GLint value) {
   MakeFunctionUnique("glProgramParameteri");
   interface_->ProgramParameteri(program, pname, value);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glProgramPathFragmentInputGenCHROMIUM(
+    GLuint program,
+    GLint location,
+    GLenum genMode,
+    GLint components,
+    const GLfloat* coeffs) {
+  MakeFunctionUnique("glProgramPathFragmentInputGenCHROMIUM");
+  interface_->ProgramPathFragmentInputGenNV(program, location, genMode,
+                                            components, coeffs);
 }
 
 void GL_BINDING_CALL
@@ -3156,6 +3287,29 @@ MockGLInterface::Mock_glShaderSource(GLuint shader,
   interface_->ShaderSource(shader, count, str, length);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilFillPathCHROMIUM(GLuint path,
+                                                GLenum fillMode,
+                                                GLuint mask) {
+  MakeFunctionUnique("glStencilFillPathCHROMIUM");
+  interface_->StencilFillPathNV(path, fillMode, mask);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glStencilFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilFillPathInstancedCHROMIUM");
+  interface_->StencilFillPathInstancedNV(numPaths, pathNameType, paths,
+                                         pathBase, fillMode, mask,
+                                         transformType, transformValues);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glStencilFillPathInstancedNV(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -3219,6 +3373,29 @@ void GL_BINDING_CALL MockGLInterface::Mock_glStencilOpSeparate(GLenum face,
   interface_->StencilOpSeparate(face, fail, zfail, zpass);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilStrokePathCHROMIUM(GLuint path,
+                                                  GLint reference,
+                                                  GLuint mask) {
+  MakeFunctionUnique("glStencilStrokePathCHROMIUM");
+  interface_->StencilStrokePathNV(path, reference, mask);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glStencilStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilStrokePathInstancedCHROMIUM");
+  interface_->StencilStrokePathInstancedNV(numPaths, pathNameType, paths,
+                                           pathBase, ref, mask, transformType,
+                                           transformValues);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glStencilStrokePathInstancedNV(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -3240,6 +3417,32 @@ MockGLInterface::Mock_glStencilStrokePathNV(GLuint path,
                                             GLuint mask) {
   MakeFunctionUnique("glStencilStrokePathNV");
   interface_->StencilStrokePathNV(path, reference, mask);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilThenCoverFillPathCHROMIUM(GLuint path,
+                                                         GLenum fillMode,
+                                                         GLuint mask,
+                                                         GLenum coverMode) {
+  MakeFunctionUnique("glStencilThenCoverFillPathCHROMIUM");
+  interface_->StencilThenCoverFillPathNV(path, fillMode, mask, coverMode);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilThenCoverFillPathInstancedCHROMIUM");
+  interface_->StencilThenCoverFillPathInstancedNV(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
 }
 
 void GL_BINDING_CALL
@@ -3266,6 +3469,32 @@ MockGLInterface::Mock_glStencilThenCoverFillPathNV(GLuint path,
                                                    GLenum coverMode) {
   MakeFunctionUnique("glStencilThenCoverFillPathNV");
   interface_->StencilThenCoverFillPathNV(path, fillMode, mask, coverMode);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilThenCoverStrokePathCHROMIUM(GLuint path,
+                                                           GLint reference,
+                                                           GLuint mask,
+                                                           GLenum coverMode) {
+  MakeFunctionUnique("glStencilThenCoverStrokePathCHROMIUM");
+  interface_->StencilThenCoverStrokePathNV(path, reference, mask, coverMode);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilThenCoverStrokePathInstancedCHROMIUM");
+  interface_->StencilThenCoverStrokePathInstancedNV(
+      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
+      transformType, transformValues);
 }
 
 void GL_BINDING_CALL
@@ -4083,6 +4312,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glBindFragDataLocationIndexedEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glBindFragDataLocationIndexedEXT);
+  if (strcmp(name, "glBindFragmentInputLocationCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBindFragmentInputLocationCHROMIUM);
   if (strcmp(name, "glBindFramebuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glBindFramebuffer);
   if (strcmp(name, "glBindFramebufferEXT") == 0)
@@ -4204,16 +4436,31 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyTexSubImage3D);
   if (strcmp(name, "glCopyTextureCHROMIUM") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyTextureCHROMIUM);
+  if (strcmp(name, "glCoverFillPathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverFillPathCHROMIUM);
+  if (strcmp(name, "glCoverFillPathInstancedCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverFillPathInstancedCHROMIUM);
   if (strcmp(name, "glCoverFillPathInstancedNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glCoverFillPathInstancedNV);
   if (strcmp(name, "glCoverFillPathNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCoverFillPathNV);
+  if (strcmp(name, "glCoverStrokePathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverStrokePathCHROMIUM);
+  if (strcmp(name, "glCoverStrokePathInstancedCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverStrokePathInstancedCHROMIUM);
   if (strcmp(name, "glCoverStrokePathInstancedNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glCoverStrokePathInstancedNV);
   if (strcmp(name, "glCoverStrokePathNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCoverStrokePathNV);
+  if (strcmp(name, "glCoverageModulationCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverageModulationCHROMIUM);
   if (strcmp(name, "glCoverageModulationNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCoverageModulationNV);
   if (strcmp(name, "glCreateProgram") == 0)
@@ -4248,6 +4495,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glDeleteFramebuffersEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glDeleteFramebuffersEXT);
+  if (strcmp(name, "glDeletePathsCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeletePathsCHROMIUM);
   if (strcmp(name, "glDeletePathsNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glDeletePathsNV);
   if (strcmp(name, "glDeleteProgram") == 0)
@@ -4401,6 +4650,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glGenFramebuffers);
   if (strcmp(name, "glGenFramebuffersEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glGenFramebuffersEXT);
+  if (strcmp(name, "glGenPathsCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenPathsCHROMIUM);
   if (strcmp(name, "glGenPathsNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glGenPathsNV);
   if (strcmp(name, "glGenQueries") == 0)
@@ -4780,6 +5031,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFramebuffer);
   if (strcmp(name, "glIsFramebufferEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFramebufferEXT);
+  if (strcmp(name, "glIsPathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsPathCHROMIUM);
   if (strcmp(name, "glIsPathNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsPathNV);
   if (strcmp(name, "glIsProgram") == 0)
@@ -4822,9 +5075,14 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMapBufferRange);
   if (strcmp(name, "glMapBufferRangeEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMapBufferRangeEXT);
+  if (strcmp(name, "glMatrixLoadIdentityCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMatrixLoadIdentityCHROMIUM);
   if (strcmp(name, "glMatrixLoadIdentityEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glMatrixLoadIdentityEXT);
+  if (strcmp(name, "glMatrixLoadfCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfCHROMIUM);
   if (strcmp(name, "glMatrixLoadfEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfEXT);
   if (strcmp(name, "glMemoryBarrier") == 0)
@@ -4839,12 +5097,23 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabel);
   if (strcmp(name, "glObjectPtrLabelKHR") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabelKHR);
+  if (strcmp(name, "glPathCommandsCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPathCommandsCHROMIUM);
   if (strcmp(name, "glPathCommandsNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPathCommandsNV);
+  if (strcmp(name, "glPathParameterfCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glPathParameterfCHROMIUM);
   if (strcmp(name, "glPathParameterfNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPathParameterfNV);
+  if (strcmp(name, "glPathParameteriCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glPathParameteriCHROMIUM);
   if (strcmp(name, "glPathParameteriNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPathParameteriNV);
+  if (strcmp(name, "glPathStencilFuncCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glPathStencilFuncCHROMIUM);
   if (strcmp(name, "glPathStencilFuncNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPathStencilFuncNV);
   if (strcmp(name, "glPauseTransformFeedback") == 0)
@@ -4873,6 +5142,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glProgramBinaryOES);
   if (strcmp(name, "glProgramParameteri") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glProgramParameteri);
+  if (strcmp(name, "glProgramPathFragmentInputGenCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glProgramPathFragmentInputGenCHROMIUM);
   if (strcmp(name, "glProgramPathFragmentInputGenNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glProgramPathFragmentInputGenNV);
@@ -4954,6 +5226,12 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glShaderBinary);
   if (strcmp(name, "glShaderSource") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glShaderSource);
+  if (strcmp(name, "glStencilFillPathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilFillPathCHROMIUM);
+  if (strcmp(name, "glStencilFillPathInstancedCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilFillPathInstancedCHROMIUM);
   if (strcmp(name, "glStencilFillPathInstancedNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilFillPathInstancedNV);
@@ -4971,17 +5249,35 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilOp);
   if (strcmp(name, "glStencilOpSeparate") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilOpSeparate);
+  if (strcmp(name, "glStencilStrokePathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilStrokePathCHROMIUM);
+  if (strcmp(name, "glStencilStrokePathInstancedCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilStrokePathInstancedCHROMIUM);
   if (strcmp(name, "glStencilStrokePathInstancedNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilStrokePathInstancedNV);
   if (strcmp(name, "glStencilStrokePathNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilStrokePathNV);
+  if (strcmp(name, "glStencilThenCoverFillPathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverFillPathCHROMIUM);
+  if (strcmp(name, "glStencilThenCoverFillPathInstancedCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverFillPathInstancedCHROMIUM);
   if (strcmp(name, "glStencilThenCoverFillPathInstancedNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilThenCoverFillPathInstancedNV);
   if (strcmp(name, "glStencilThenCoverFillPathNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilThenCoverFillPathNV);
+  if (strcmp(name, "glStencilThenCoverStrokePathCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverStrokePathCHROMIUM);
+  if (strcmp(name, "glStencilThenCoverStrokePathInstancedCHROMIUM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverStrokePathInstancedCHROMIUM);
   if (strcmp(name, "glStencilThenCoverStrokePathInstancedNV") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilThenCoverStrokePathInstancedNV);

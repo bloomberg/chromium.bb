@@ -338,10 +338,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_CHROMIUM_copy_compressed_texture");
   ext.b_GL_CHROMIUM_copy_texture =
       gfx::HasExtension(extensions, "GL_CHROMIUM_copy_texture");
+  ext.b_GL_CHROMIUM_framebuffer_mixed_samples =
+      gfx::HasExtension(extensions, "GL_CHROMIUM_framebuffer_mixed_samples");
   ext.b_GL_CHROMIUM_gles_depth_binding_hack =
       gfx::HasExtension(extensions, "GL_CHROMIUM_gles_depth_binding_hack");
   ext.b_GL_CHROMIUM_glgetstringi_hack =
       gfx::HasExtension(extensions, "GL_CHROMIUM_glgetstringi_hack");
+  ext.b_GL_CHROMIUM_path_rendering =
+      gfx::HasExtension(extensions, "GL_CHROMIUM_path_rendering");
   ext.b_GL_EXT_blend_func_extended =
       gfx::HasExtension(extensions, "GL_EXT_blend_func_extended");
   ext.b_GL_EXT_debug_marker =
@@ -471,6 +475,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glBindFragDataLocationIndexedFn =
         reinterpret_cast<glBindFragDataLocationIndexedProc>(
             GetGLProcAddress("glBindFragDataLocationIndexedEXT"));
+  }
+
+  if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glBindFragmentInputLocationCHROMIUMFn =
+        reinterpret_cast<glBindFragmentInputLocationCHROMIUMProc>(
+            GetGLProcAddress("glBindFragmentInputLocationCHROMIUM"));
   }
 
   if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
@@ -656,28 +666,45 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_NV_framebuffer_mixed_samples) {
     fn.glCoverageModulationNVFn = reinterpret_cast<glCoverageModulationNVProc>(
         GetGLProcAddress("glCoverageModulationNV"));
+  } else if (ext.b_GL_CHROMIUM_framebuffer_mixed_samples) {
+    fn.glCoverageModulationNVFn = reinterpret_cast<glCoverageModulationNVProc>(
+        GetGLProcAddress("glCoverageModulationCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glCoverFillPathInstancedNVFn =
         reinterpret_cast<glCoverFillPathInstancedNVProc>(
             GetGLProcAddress("glCoverFillPathInstancedNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glCoverFillPathInstancedNVFn =
+        reinterpret_cast<glCoverFillPathInstancedNVProc>(
+            GetGLProcAddress("glCoverFillPathInstancedCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glCoverFillPathNVFn = reinterpret_cast<glCoverFillPathNVProc>(
         GetGLProcAddress("glCoverFillPathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glCoverFillPathNVFn = reinterpret_cast<glCoverFillPathNVProc>(
+        GetGLProcAddress("glCoverFillPathCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glCoverStrokePathInstancedNVFn =
         reinterpret_cast<glCoverStrokePathInstancedNVProc>(
             GetGLProcAddress("glCoverStrokePathInstancedNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glCoverStrokePathInstancedNVFn =
+        reinterpret_cast<glCoverStrokePathInstancedNVProc>(
+            GetGLProcAddress("glCoverStrokePathInstancedCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glCoverStrokePathNVFn = reinterpret_cast<glCoverStrokePathNVProc>(
         GetGLProcAddress("glCoverStrokePathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glCoverStrokePathNVFn = reinterpret_cast<glCoverStrokePathNVProc>(
+        GetGLProcAddress("glCoverStrokePathCHROMIUM"));
   }
 
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
@@ -727,6 +754,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_NV_path_rendering) {
     fn.glDeletePathsNVFn = reinterpret_cast<glDeletePathsNVProc>(
         GetGLProcAddress("glDeletePathsNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glDeletePathsNVFn = reinterpret_cast<glDeletePathsNVProc>(
+        GetGLProcAddress("glDeletePathsCHROMIUM"));
   }
 
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -969,6 +999,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_NV_path_rendering) {
     fn.glGenPathsNVFn =
         reinterpret_cast<glGenPathsNVProc>(GetGLProcAddress("glGenPathsNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glGenPathsNVFn = reinterpret_cast<glGenPathsNVProc>(
+        GetGLProcAddress("glGenPathsCHROMIUM"));
   }
 
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -1617,6 +1650,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_NV_path_rendering) {
     fn.glIsPathNVFn =
         reinterpret_cast<glIsPathNVProc>(GetGLProcAddress("glIsPathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glIsPathNVFn =
+        reinterpret_cast<glIsPathNVProc>(GetGLProcAddress("glIsPathCHROMIUM"));
   }
 
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -1689,12 +1725,19 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_EXT_direct_state_access || ext.b_GL_NV_path_rendering) {
     fn.glMatrixLoadfEXTFn = reinterpret_cast<glMatrixLoadfEXTProc>(
         GetGLProcAddress("glMatrixLoadfEXT"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glMatrixLoadfEXTFn = reinterpret_cast<glMatrixLoadfEXTProc>(
+        GetGLProcAddress("glMatrixLoadfCHROMIUM"));
   }
 
   if (ext.b_GL_EXT_direct_state_access || ext.b_GL_NV_path_rendering) {
     fn.glMatrixLoadIdentityEXTFn =
         reinterpret_cast<glMatrixLoadIdentityEXTProc>(
             GetGLProcAddress("glMatrixLoadIdentityEXT"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glMatrixLoadIdentityEXTFn =
+        reinterpret_cast<glMatrixLoadIdentityEXTProc>(
+            GetGLProcAddress("glMatrixLoadIdentityCHROMIUM"));
   }
 
   if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 1u) ||
@@ -1725,21 +1768,33 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_NV_path_rendering) {
     fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
         GetGLProcAddress("glPathCommandsNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
+        GetGLProcAddress("glPathCommandsCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glPathParameterfNVFn = reinterpret_cast<glPathParameterfNVProc>(
         GetGLProcAddress("glPathParameterfNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glPathParameterfNVFn = reinterpret_cast<glPathParameterfNVProc>(
+        GetGLProcAddress("glPathParameterfCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glPathParameteriNVFn = reinterpret_cast<glPathParameteriNVProc>(
         GetGLProcAddress("glPathParameteriNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glPathParameteriNVFn = reinterpret_cast<glPathParameteriNVProc>(
+        GetGLProcAddress("glPathParameteriCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glPathStencilFuncNVFn = reinterpret_cast<glPathStencilFuncNVProc>(
         GetGLProcAddress("glPathStencilFuncNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glPathStencilFuncNVFn = reinterpret_cast<glPathStencilFuncNVProc>(
+        GetGLProcAddress("glPathStencilFuncCHROMIUM"));
   }
 
   if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
@@ -1797,6 +1852,10 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glProgramPathFragmentInputGenNVFn =
         reinterpret_cast<glProgramPathFragmentInputGenNVProc>(
             GetGLProcAddress("glProgramPathFragmentInputGenNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glProgramPathFragmentInputGenNVFn =
+        reinterpret_cast<glProgramPathFragmentInputGenNVProc>(
+            GetGLProcAddress("glProgramPathFragmentInputGenCHROMIUM"));
   }
 
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
@@ -1958,46 +2017,76 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glStencilFillPathInstancedNVFn =
         reinterpret_cast<glStencilFillPathInstancedNVProc>(
             GetGLProcAddress("glStencilFillPathInstancedNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilFillPathInstancedNVFn =
+        reinterpret_cast<glStencilFillPathInstancedNVProc>(
+            GetGLProcAddress("glStencilFillPathInstancedCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilFillPathNVFn = reinterpret_cast<glStencilFillPathNVProc>(
         GetGLProcAddress("glStencilFillPathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilFillPathNVFn = reinterpret_cast<glStencilFillPathNVProc>(
+        GetGLProcAddress("glStencilFillPathCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilStrokePathInstancedNVFn =
         reinterpret_cast<glStencilStrokePathInstancedNVProc>(
             GetGLProcAddress("glStencilStrokePathInstancedNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilStrokePathInstancedNVFn =
+        reinterpret_cast<glStencilStrokePathInstancedNVProc>(
+            GetGLProcAddress("glStencilStrokePathInstancedCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilStrokePathNVFn = reinterpret_cast<glStencilStrokePathNVProc>(
         GetGLProcAddress("glStencilStrokePathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilStrokePathNVFn = reinterpret_cast<glStencilStrokePathNVProc>(
+        GetGLProcAddress("glStencilStrokePathCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilThenCoverFillPathInstancedNVFn =
         reinterpret_cast<glStencilThenCoverFillPathInstancedNVProc>(
             GetGLProcAddress("glStencilThenCoverFillPathInstancedNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilThenCoverFillPathInstancedNVFn =
+        reinterpret_cast<glStencilThenCoverFillPathInstancedNVProc>(
+            GetGLProcAddress("glStencilThenCoverFillPathInstancedCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilThenCoverFillPathNVFn =
         reinterpret_cast<glStencilThenCoverFillPathNVProc>(
             GetGLProcAddress("glStencilThenCoverFillPathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilThenCoverFillPathNVFn =
+        reinterpret_cast<glStencilThenCoverFillPathNVProc>(
+            GetGLProcAddress("glStencilThenCoverFillPathCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilThenCoverStrokePathInstancedNVFn =
         reinterpret_cast<glStencilThenCoverStrokePathInstancedNVProc>(
             GetGLProcAddress("glStencilThenCoverStrokePathInstancedNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilThenCoverStrokePathInstancedNVFn =
+        reinterpret_cast<glStencilThenCoverStrokePathInstancedNVProc>(
+            GetGLProcAddress("glStencilThenCoverStrokePathInstancedCHROMIUM"));
   }
 
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilThenCoverStrokePathNVFn =
         reinterpret_cast<glStencilThenCoverStrokePathNVProc>(
             GetGLProcAddress("glStencilThenCoverStrokePathNV"));
+  } else if (ext.b_GL_CHROMIUM_path_rendering) {
+    fn.glStencilThenCoverStrokePathNVFn =
+        reinterpret_cast<glStencilThenCoverStrokePathNVProc>(
+            GetGLProcAddress("glStencilThenCoverStrokePathCHROMIUM"));
   }
 
   if (ext.b_GL_APPLE_fence) {
@@ -2312,6 +2401,12 @@ void GLApiBase::glBindFragDataLocationIndexedFn(GLuint program,
                                                 const char* name) {
   driver_->fn.glBindFragDataLocationIndexedFn(program, colorNumber, index,
                                               name);
+}
+
+void GLApiBase::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
+                                                      GLint location,
+                                                      const char* name) {
+  driver_->fn.glBindFragmentInputLocationCHROMIUMFn(program, location, name);
 }
 
 void GLApiBase::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -4936,6 +5031,14 @@ void TraceGLApi::glBindFragDataLocationIndexedFn(GLuint program,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "TraceGLAPI::glBindFragDataLocationIndexed")
   gl_api_->glBindFragDataLocationIndexedFn(program, colorNumber, index, name);
+}
+
+void TraceGLApi::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
+                                                       GLint location,
+                                                       const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glBindFragmentInputLocationCHROMIUM")
+  gl_api_->glBindFragmentInputLocationCHROMIUMFn(program, location, name);
 }
 
 void TraceGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -8022,6 +8125,14 @@ void DebugGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                  << "(" << program << ", " << colorNumber << ", " << index
                  << ", " << name << ")");
   gl_api_->glBindFragDataLocationIndexedFn(program, colorNumber, index, name);
+}
+
+void DebugGLApi::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
+                                                       GLint location,
+                                                       const char* name) {
+  GL_SERVICE_LOG("glBindFragmentInputLocationCHROMIUM"
+                 << "(" << program << ", " << location << ", " << name << ")");
+  gl_api_->glBindFragmentInputLocationCHROMIUMFn(program, location, name);
 }
 
 void DebugGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -12075,6 +12186,12 @@ void NoContextGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                                                      GLuint index,
                                                      const char* name) {
   NoContextHelper("glBindFragDataLocationIndexed");
+}
+
+void NoContextGLApi::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
+                                                           GLint location,
+                                                           const char* name) {
+  NoContextHelper("glBindFragmentInputLocationCHROMIUM");
 }
 
 void NoContextGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {

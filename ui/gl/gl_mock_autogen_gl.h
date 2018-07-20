@@ -28,6 +28,8 @@ MOCK_METHOD3(BindFragDataLocation,
 MOCK_METHOD4(
     BindFragDataLocationIndexed,
     void(GLuint program, GLuint colorNumber, GLuint index, const char* name));
+MOCK_METHOD3(BindFragmentInputLocationCHROMIUM,
+             void(GLuint program, GLint location, const char* name));
 MOCK_METHOD2(BindFramebufferEXT, void(GLenum target, GLuint framebuffer));
 MOCK_METHOD7(BindImageTextureEXT,
              void(GLuint index,

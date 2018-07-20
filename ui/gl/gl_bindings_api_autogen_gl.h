@@ -30,6 +30,9 @@ void glBindFragDataLocationIndexedFn(GLuint program,
                                      GLuint colorNumber,
                                      GLuint index,
                                      const char* name) override;
+void glBindFragmentInputLocationCHROMIUMFn(GLuint program,
+                                           GLint location,
+                                           const char* name) override;
 void glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) override;
 void glBindImageTextureEXTFn(GLuint index,
                              GLuint texture,
