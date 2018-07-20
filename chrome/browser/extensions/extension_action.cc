@@ -129,8 +129,9 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     std::string binary_string64;
     IPC::Message pickle;
     if (iter.value().is_blob()) {
-      pickle = IPC::Message(iter.value().GetBlob().data(),
-                            iter.value().GetBlob().size());
+      pickle = IPC::Message(
+          reinterpret_cast<const char*>(iter.value().GetBlob().data()),
+          iter.value().GetBlob().size());
     } else if (iter.value().GetAsString(&binary_string64)) {
       std::string binary_string;
       if (!base::Base64Decode(binary_string64, &binary_string))

@@ -789,7 +789,7 @@ TEST(ValuesTest, BinaryValue) {
 
   // Test the common case of a non-empty buffer
   Value::BlobStorage buffer(15);
-  char* original_buffer = buffer.data();
+  uint8_t* original_buffer = buffer.data();
   binary.reset(new Value(std::move(buffer)));
   ASSERT_TRUE(binary.get());
   ASSERT_TRUE(binary->GetBlob().data());
@@ -801,7 +801,8 @@ TEST(ValuesTest, BinaryValue) {
   binary = Value::CreateWithCopiedBuffer(stack_buffer, 42);
   ASSERT_TRUE(binary.get());
   ASSERT_TRUE(binary->GetBlob().data());
-  ASSERT_NE(stack_buffer, binary->GetBlob().data());
+  ASSERT_NE(stack_buffer,
+            reinterpret_cast<const char*>(binary->GetBlob().data()));
   ASSERT_EQ(42U, binary->GetBlob().size());
   ASSERT_EQ(0, memcmp(stack_buffer, binary->GetBlob().data(),
                       binary->GetBlob().size()));

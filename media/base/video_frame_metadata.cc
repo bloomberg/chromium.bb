@@ -111,8 +111,8 @@ bool VideoFrameMetadata::GetString(Key key, std::string* value) const {
   DCHECK(value);
   const base::Value* const binary_value = GetBinaryValue(key);
   if (binary_value)
-    value->assign(binary_value->GetBlob().data(),
-                  binary_value->GetBlob().size());
+    value->assign(binary_value->GetBlob().begin(),
+                  binary_value->GetBlob().end());
   return !!binary_value;
 }
 

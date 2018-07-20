@@ -122,7 +122,7 @@ void PopulateCharacteristic(
   if (value.empty())
     return;
 
-  out->value.reset(new std::vector<char>(value.begin(), value.end()));
+  out->value.reset(new std::vector<uint8_t>(value));
 }
 
 void PopulateDescriptor(const BluetoothRemoteGattDescriptor* descriptor,
@@ -140,7 +140,7 @@ void PopulateDescriptor(const BluetoothRemoteGattDescriptor* descriptor,
   if (value.empty())
     return;
 
-  out->value.reset(new std::vector<char>(value.begin(), value.end()));
+  out->value.reset(new std::vector<uint8_t>(value));
 }
 
 void PopulateDevice(const device::BluetoothDevice* device,
@@ -1131,8 +1131,7 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicWriteRequest(
   request.request_id = StoreSentRequest(
       extension_id,
       std::make_unique<AttributeValueRequest>(callback, error_callback));
-  request.value =
-      std::make_unique<std::vector<char>>(value.begin(), value.end());
+  request.value = std::make_unique<std::vector<uint8_t>>(value);
   PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,
@@ -1207,8 +1206,7 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
   request.request_id = StoreSentRequest(
       extension_id,
       std::make_unique<AttributeValueRequest>(callback, error_callback));
-  request.value =
-      std::make_unique<std::vector<char>>(value.begin(), value.end());
+  request.value = std::make_unique<std::vector<uint8_t>>(value);
   PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,

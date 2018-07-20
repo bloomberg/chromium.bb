@@ -564,8 +564,8 @@ bool SocketWriteFunction::Prepare() {
 
   socket_id_ = socket_id_value.GetInt();
   io_buffer_size_ = data_value.GetBlob().size();
-  io_buffer_ =
-      base::MakeRefCounted<net::WrappedIOBuffer>(data_value.GetBlob().data());
+  io_buffer_ = base::MakeRefCounted<net::WrappedIOBuffer>(
+      reinterpret_cast<const char*>(data_value.GetBlob().data()));
   return true;
 }
 
@@ -662,8 +662,8 @@ bool SocketSendToFunction::Prepare() {
   hostname_ = hostname_value.GetString();
 
   io_buffer_size_ = data_value.GetBlob().size();
-  io_buffer_ =
-      base::MakeRefCounted<net::WrappedIOBuffer>(data_value.GetBlob().data());
+  io_buffer_ = base::MakeRefCounted<net::WrappedIOBuffer>(
+      reinterpret_cast<const char*>(data_value.GetBlob().data()));
   return true;
 }
 

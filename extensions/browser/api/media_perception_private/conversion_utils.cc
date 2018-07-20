@@ -413,7 +413,7 @@ ImageFrame ImageFrameProtoToIdl(const mri::ImageFrame& image_frame) {
   }
 
   if (image_frame.has_pixel_data()) {
-    image_frame_result.frame = std::make_unique<std::vector<char>>(
+    image_frame_result.frame = std::make_unique<std::vector<uint8_t>>(
         image_frame.pixel_data().begin(), image_frame.pixel_data().end());
   }
 

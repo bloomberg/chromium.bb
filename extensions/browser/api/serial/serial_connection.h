@@ -39,7 +39,7 @@ class SerialConnection : public ApiResource {
   // does not necessarily imply an empty |data| string, since a receive may
   // complete partially before being interrupted by an error condition.
   using ReceiveCompleteCallback =
-      base::OnceCallback<void(std::vector<char> data,
+      base::OnceCallback<void(std::vector<uint8_t> data,
                               api::serial::ReceiveError error)>;
 
   // This is the callback type expected by Send. Note that an error result
@@ -108,7 +108,7 @@ class SerialConnection : public ApiResource {
   // Begins an asynchronous send operation. Calling this while a Send
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  virtual bool Send(const std::vector<char>& data,
+  virtual bool Send(const std::vector<uint8_t>& data,
                     SendCompleteCallback callback);
 
   // Flushes input and output buffers.

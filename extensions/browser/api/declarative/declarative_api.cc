@@ -96,7 +96,7 @@ void ConvertBinaryDictionaryValuesToBase64(base::Value* dict);
 // Encodes |binary| as base64 and returns a new StringValue populated with the
 // encoded string.
 base::Value ConvertBinaryToBase64(const base::Value& binary) {
-  std::string binary_data(binary.GetBlob().data(), binary.GetBlob().size());
+  std::string binary_data(binary.GetBlob().begin(), binary.GetBlob().end());
   std::string data64;
   base::Base64Encode(binary_data, &data64);
   return base::Value(std::move(data64));

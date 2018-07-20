@@ -162,7 +162,8 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
   }
 
   std::vector<base::StringPiece> der_cert_chain;
-  for (const std::vector<char>& cert_der : details.server_certificate_chain) {
+  for (const std::vector<uint8_t>& cert_der :
+       details.server_certificate_chain) {
     if (cert_der.empty()) {
       callback.Run(platform_keys::kErrorInvalidX509Cert, 0, 0);
       return;

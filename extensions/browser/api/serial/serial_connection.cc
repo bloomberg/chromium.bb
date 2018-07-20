@@ -263,20 +263,19 @@ bool SerialConnection::Receive(ReceiveCompleteCallback callback) {
   return true;
 }
 
-bool SerialConnection::Send(const std::vector<char>& data,
+bool SerialConnection::Send(const std::vector<uint8_t>& data,
                             SendCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (send_complete_)
     return false;
   DCHECK(io_handler_);
   send_complete_ = std::move(callback);
-  io_handler_->Write(
-      std::vector<uint8_t>(data.data(), data.data() + data.size()),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce(&SerialConnection::OnAsyncWriteComplete,
-                         weak_factory_.GetWeakPtr()),
-          static_cast<uint32_t>(0),
-          device::mojom::SerialSendError::DISCONNECTED));
+  io_handler_->Write(data,
+                     mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                         base::BindOnce(&SerialConnection::OnAsyncWriteComplete,
+                                        weak_factory_.GetWeakPtr()),
+                         static_cast<uint32_t>(0),
+                         device::mojom::SerialSendError::DISCONNECTED));
   send_timeout_task_.Cancel();
   if (send_timeout_ > 0) {
     send_timeout_task_.Reset(base::Bind(&SerialConnection::OnSendTimeout,
@@ -411,9 +410,7 @@ void SerialConnection::OnAsyncReadComplete(
   DCHECK(receive_complete_);
   receive_timeout_task_.Cancel();
   std::move(receive_complete_)
-      .Run(std::vector<char>(data_read.data(),
-                             data_read.data() + data_read.size()),
-           ConvertReceiveErrorFromMojo(error));
+      .Run(data_read, ConvertReceiveErrorFromMojo(error));
 }
 
 void SerialConnection::OnAsyncWriteComplete(

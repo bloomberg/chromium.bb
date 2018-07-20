@@ -366,7 +366,7 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
 
   ASSERT_TRUE(value->is_blob());
   EXPECT_EQ("response",
-            std::string(value->GetBlob().data(), value->GetBlob().size()));
+            std::string(value->GetBlob().begin(), value->GetBlob().end()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
@@ -395,7 +395,7 @@ TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
 
   ASSERT_TRUE(value->is_blob());
   EXPECT_EQ("response",
-            std::string(value->GetBlob().data(), value->GetBlob().size()));
+            std::string(value->GetBlob().begin(), value->GetBlob().end()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, AttestationNotPrepared) {
@@ -563,7 +563,7 @@ TEST_F(EPKChallengeUserKeyTest, Success) {
 
   ASSERT_TRUE(value->is_blob());
   EXPECT_EQ("response",
-            std::string(value->GetBlob().data(), value->GetBlob().size()));
+            std::string(value->GetBlob().begin(), value->GetBlob().end()));
 }
 
 TEST_F(EPKChallengeUserKeyTest, AttestationNotPrepared) {

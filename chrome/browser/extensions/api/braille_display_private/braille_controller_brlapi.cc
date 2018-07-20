@@ -100,7 +100,7 @@ std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
   return display_state;
 }
 
-void BrailleControllerImpl::WriteDots(const std::vector<char>& cells,
+void BrailleControllerImpl::WriteDots(const std::vector<uint8_t>& cells,
                                       unsigned int cells_cols,
                                       unsigned int cells_rows) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

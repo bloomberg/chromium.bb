@@ -105,11 +105,8 @@ struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     return value.GetString();
   }
 
-  static base::span<const uint8_t> binary_value(const base::Value& value) {
-    // TODO(dcheng): Change base::Value::BlobStorage to uint8_t.
-    return base::make_span(
-        reinterpret_cast<const uint8_t*>(value.GetBlob().data()),
-        value.GetBlob().size());
+  static const std::vector<uint8_t>& binary_value(const base::Value& value) {
+    return value.GetBlob();
   }
 
   static const base::Value& list_value(const base::Value& value) {

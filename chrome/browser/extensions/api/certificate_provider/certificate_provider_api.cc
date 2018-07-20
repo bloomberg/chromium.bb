@@ -96,7 +96,7 @@ CertificateProviderInternalReportCertificatesFunction::Run() {
   }
 
   chromeos::certificate_provider::CertificateInfoList cert_infos;
-  std::vector<std::vector<char>> rejected_certificates;
+  std::vector<std::vector<uint8_t>> rejected_certificates;
   for (const api_cp::CertificateInfo& input_cert_info : *params->certificates) {
     chromeos::certificate_provider::CertificateInfo parsed_cert_info;
 
@@ -122,7 +122,7 @@ bool CertificateProviderInternalReportCertificatesFunction::
     ParseCertificateInfo(
         const api_cp::CertificateInfo& info,
         chromeos::certificate_provider::CertificateInfo* out_info) {
-  const std::vector<char>& cert_der = info.certificate;
+  const std::vector<uint8_t>& cert_der = info.certificate;
   if (cert_der.empty()) {
     WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
                    kCertificateProviderErrorInvalidX509Cert);
@@ -134,7 +134,7 @@ bool CertificateProviderInternalReportCertificatesFunction::
   net::X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   out_info->certificate = net::X509Certificate::CreateFromBytesUnsafeOptions(
-      cert_der.data(), cert_der.size(), options);
+      reinterpret_cast<const char*>(cert_der.data()), cert_der.size(), options);
   if (!out_info->certificate) {
     WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
                    kCertificateProviderErrorInvalidX509Cert);

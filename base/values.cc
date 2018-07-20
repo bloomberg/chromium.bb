@@ -153,8 +153,11 @@ Value::Value(const char16* in_string16) : Value(StringPiece16(in_string16)) {}
 
 Value::Value(StringPiece16 in_string16) : Value(UTF16ToUTF8(in_string16)) {}
 
-Value::Value(const BlobStorage& in_blob)
-    : type_(Type::BINARY), binary_value_(in_blob) {}
+Value::Value(const std::vector<char>& in_blob)
+    : type_(Type::BINARY), binary_value_(in_blob.begin(), in_blob.end()) {}
+
+Value::Value(base::span<const uint8_t> in_blob)
+    : type_(Type::BINARY), binary_value_(in_blob.begin(), in_blob.end()) {}
 
 Value::Value(BlobStorage&& in_blob) noexcept
     : type_(Type::BINARY), binary_value_(std::move(in_blob)) {}

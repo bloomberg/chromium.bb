@@ -30,9 +30,9 @@ bool PopulateItem(const base::Value& from, std::string* out);
 bool PopulateItem(const base::Value& from,
                   std::string* out,
                   base::string16* error);
-bool PopulateItem(const base::Value& from, std::vector<char>* out);
+bool PopulateItem(const base::Value& from, std::vector<uint8_t>* out);
 bool PopulateItem(const base::Value& from,
-                  std::vector<char>* out,
+                  std::vector<uint8_t>* out,
                   base::string16* error);
 bool PopulateItem(const base::Value& from,
                   std::unique_ptr<base::Value>* out,
@@ -161,7 +161,7 @@ void AddItemToList(const int from, base::ListValue* out);
 void AddItemToList(const bool from, base::ListValue* out);
 void AddItemToList(const double from, base::ListValue* out);
 void AddItemToList(const std::string& from, base::ListValue* out);
-void AddItemToList(const std::vector<char>& from, base::ListValue* out);
+void AddItemToList(const std::vector<uint8_t>& from, base::ListValue* out);
 void AddItemToList(const std::unique_ptr<base::Value>& from,
                    base::ListValue* out);
 void AddItemToList(const std::unique_ptr<base::DictionaryValue>& from,
