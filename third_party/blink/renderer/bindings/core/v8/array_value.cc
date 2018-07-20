@@ -36,7 +36,7 @@ bool ArrayValue::IsUndefinedOrNull() const {
   return blink::IsUndefinedOrNull(array_);
 }
 
-bool ArrayValue::length(size_t& length) const {
+bool ArrayValue::length(uint32_t& length) const {
   if (IsUndefinedOrNull())
     return false;
 
@@ -44,7 +44,7 @@ bool ArrayValue::length(size_t& length) const {
   return true;
 }
 
-bool ArrayValue::Get(size_t index, Dictionary& value) const {
+bool ArrayValue::Get(uint32_t index, Dictionary& value) const {
   if (IsUndefinedOrNull())
     return false;
 
