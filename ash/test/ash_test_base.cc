@@ -29,8 +29,6 @@
 #include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
-#include "ash/window_manager.h"
-#include "ash/window_manager_service.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/ws/window_service_owner.h"
@@ -136,10 +134,6 @@ ui::mojom::WindowType MusWindowTypeFromWindowType(
 
 AshTestBase::AshTestBase()
     : setup_called_(false), teardown_called_(false), start_session_(true) {
-  if (AshTestHelper::config() != Config::CLASSIC) {
-    CHECK(aura::Env::GetInstance());
-    aura::Env::GetInstance()->AddObserver(this);
-  }
   ash_test_environment_ = AshTestEnvironment::Create();
 
   // Must initialize |ash_test_helper_| here because some tests rely on
@@ -152,8 +146,6 @@ AshTestBase::~AshTestBase() {
       << "You have overridden SetUp but never called AshTestBase::SetUp";
   CHECK(teardown_called_)
       << "You have overridden TearDown but never called AshTestBase::TearDown";
-  if (AshTestHelper::config() != Config::CLASSIC)
-    aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void AshTestBase::SetUp() {
@@ -288,12 +280,6 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
 
   const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWindowType(type);
-  if (AshTestHelper::config() == Config::MASH_DEPRECATED) {
-    // For mash route creation through the window manager. This better simulates
-    // what happens when a client creates a top level window.
-    return CreateTestWindowMash(mus_window_type, shell_window_id, &properties);
-  }
-
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(mus_window_type));
@@ -310,11 +296,6 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
 std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
     const gfx::Rect& bounds_in_screen,
     int shell_window_id) {
-  if (AshTestHelper::config() == Config::MASH_DEPRECATED) {
-    return CreateTestWindow(bounds_in_screen, aura::client::WINDOW_TYPE_NORMAL,
-                            shell_window_id);
-  }
-
   aura::test::TestWindowDelegate* delegate =
       aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
   return base::WrapUnique<aura::Window>(
@@ -558,20 +539,6 @@ ui::ws2::WindowTree* AshTestBase::GetWindowTree() {
   return window_tree_.get();
 }
 
-std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(
-    ui::mojom::WindowType window_type,
-    int shell_window_id,
-    std::map<std::string, std::vector<uint8_t>>* properties) {
-  WindowManager* window_manager =
-      ash_test_helper_->window_manager_service()->window_manager();
-  aura::Window* window = CreateAndParentTopLevelWindow(
-      window_manager, window_type, window_manager->property_converter(),
-      properties);
-  window->set_id(shell_window_id);
-  window->Show();
-  return base::WrapUnique<aura::Window>(window);
-}
-
 void AshTestBase::CreateWindowTreeIfNecessary() {
   if (window_tree_client_)
     return;
@@ -584,23 +551,6 @@ void AshTestBase::CreateWindowTreeIfNecessary() {
   window_tree_->InitFromFactory();
   window_tree_test_helper_ =
       std::make_unique<ui::ws2::WindowTreeTestHelper>(window_tree_.get());
-}
-
-void AshTestBase::OnWindowInitialized(aura::Window* window) {}
-
-void AshTestBase::OnHostInitialized(aura::WindowTreeHost* host) {
-  // AshTestBase outlives all the WindowTreeHosts. So RemoveObserver() is not
-  // necessary.
-  host->AddObserver(this);
-  OnHostResized(host);
-}
-
-void AshTestBase::OnHostResized(aura::WindowTreeHost* host) {
-  // The local surface id comes from the window server. However, there is no
-  // window server in tests. So a fake id is assigned so that the layer
-  // compositor can submit compositor frames.
-  viz::LocalSurfaceId id(1, base::UnguessableToken::Create());
-  host->compositor()->SetLocalSurfaceId(id);
 }
 
 }  // namespace ash

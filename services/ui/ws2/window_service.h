@@ -105,9 +105,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Called when a WindowServiceClient is about to be destroyed.
   void OnWillDestroyWindowTree(WindowTree* tree);
 
-  // Asks the client that created |window| to close |window|. |window| must be
-  // a top-level window.
-  void RequestClose(aura::Window* window);
+  // Asks the client that created |window| to close |window|. Returns true if
+  // |window| is a top-level created by a remote client, false otherwise.
+  bool RequestClose(aura::Window* window);
 
   // Called when the metrics of a display changes. It is expected the local
   // environment call this *before* the change is applied to any

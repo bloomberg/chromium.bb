@@ -16,6 +16,7 @@ class Window;
 
 namespace ash {
 
+// TODO: fold this back into WorkspaceEventHandler. https://crbug.com/842365
 class ASH_EXPORT WorkspaceEventHandlerClassic : public ui::EventHandler,
                                                 public WorkspaceEventHandler {
  public:

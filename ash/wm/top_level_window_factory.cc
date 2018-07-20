@@ -10,7 +10,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
-#include "ash/window_manager.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/property_util.h"
@@ -24,7 +23,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -126,7 +124,6 @@ gfx::Rect CalculateDefaultBounds(
 // Does the real work of CreateAndParentTopLevelWindow() once the appropriate
 // RootWindowController was found.
 aura::Window* CreateAndParentTopLevelWindowInRoot(
-    aura::WindowManagerClient* window_manager_client,
     RootWindowController* root_window_controller,
     ui::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
@@ -154,7 +151,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     NonClientFrameController* non_client_frame_controller =
         new NonClientFrameController(container_window, context, bounds,
                                      window_type, property_converter,
-                                     properties, window_manager_client);
+                                     properties);
     return non_client_frame_controller->window();
   }
 
@@ -202,7 +199,6 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 }  // namespace
 
 aura::Window* CreateAndParentTopLevelWindow(
-    WindowManager* window_manager,
     ui::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
@@ -212,7 +208,6 @@ aura::Window* CreateAndParentTopLevelWindow(
   RootWindowController* root_window_controller =
       GetRootWindowControllerForNewTopLevelWindow(properties);
   aura::Window* window = CreateAndParentTopLevelWindowInRoot(
-      window_manager ? window_manager->window_manager_client() : nullptr,
       root_window_controller, window_type, property_converter, properties);
   DisconnectedAppHandler::Create(window);
 
@@ -231,9 +226,6 @@ aura::Window* CreateAndParentTopLevelWindow(
       properties->find(ui::mojom::WindowManager::kFocusable_InitProperty);
   if (focusable_iter != properties->end()) {
     bool can_focus = mojo::ConvertTo<bool>(focusable_iter->second);
-    // TODO(crbug.com/842301): Add support for window-service as a library.
-    if (window_manager)
-      window_manager->window_tree_client()->SetCanFocus(window, can_focus);
     NonClientFrameController* non_client_frame_controller =
         NonClientFrameController::Get(window);
     window->SetProperty(ui::ws2::kCanFocus, can_focus);

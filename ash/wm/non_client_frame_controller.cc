@@ -17,7 +17,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/move_event_handler.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
@@ -34,7 +33,6 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
-#include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
@@ -175,7 +173,6 @@ class ImmersiveFullscreenControllerDelegateMus
 class WmNativeWidgetAura : public views::NativeWidgetAura {
  public:
   WmNativeWidgetAura(views::internal::NativeWidgetDelegate* delegate,
-                     aura::WindowManagerClient* window_manager_client,
                      bool remove_standard_frame,
                      bool enable_immersive,
                      mojom::WindowStyle window_style)
@@ -186,8 +183,7 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
             true /* is_parallel_widget_in_window_manager */),
         remove_standard_frame_(remove_standard_frame),
         enable_immersive_(enable_immersive),
-        window_style_(window_style),
-        window_manager_client_(window_manager_client) {}
+        window_style_(window_style) {}
   ~WmNativeWidgetAura() override = default;
 
   void SetHeaderHeight(int height) {
@@ -199,10 +195,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
 
   // views::NativeWidgetAura:
   views::NonClientFrameView* CreateNonClientFrameView() override {
-    if (window_manager_client_) {
-      move_event_handler_ = std::make_unique<MoveEventHandler>(
-          window_manager_client_, GetNativeView());
-    }
     // TODO(sky): investigate why we have this. Seems this should be the same
     // as not specifying client area insets.
     if (remove_standard_frame_)
@@ -238,12 +230,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   const bool remove_standard_frame_;
   const bool enable_immersive_;
   const mojom::WindowStyle window_style_;
-
-  // TODO: this is no longer necessary once --mash is removed,
-  // https://crbug.com/842365.
-  std::unique_ptr<MoveEventHandler> move_event_handler_;
-
-  aura::WindowManagerClient* window_manager_client_;
 
   std::unique_ptr<ImmersiveFullscreenControllerDelegateMus> immersive_delegate_;
 
@@ -296,13 +282,8 @@ class ClientViewMus : public views::ClientView {
     // pass the request to the remote client and return false (to cancel the
     // close). If the remote client wants the window to close, it will close it
     // in a way that does not reenter this code path.
-    if (frame_controller_->window_manager_client()) {
-      frame_controller_->window_manager_client()->RequestClose(
-          frame_controller_->window());
-    } else {
-      Shell::Get()->window_service_owner()->window_service()->RequestClose(
-          frame_controller_->window());
-    }
+    Shell::Get()->window_service_owner()->window_service()->RequestClose(
+        frame_controller_->window());
     return false;
   }
 
@@ -323,11 +304,8 @@ NonClientFrameController::NonClientFrameController(
     const gfx::Rect& bounds,
     ui::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
-    std::map<std::string, std::vector<uint8_t>>* properties,
-    aura::WindowManagerClient* window_manager_client)
-    : window_manager_client_(window_manager_client),
-      widget_(new views::Widget),
-      window_(nullptr) {
+    std::map<std::string, std::vector<uint8_t>>* properties)
+    : widget_(new views::Widget), window_(nullptr) {
   // To simplify things this code creates a Widget. While a Widget is created
   // we need to ensure we don't inadvertently change random properties of the
   // underlying ui::Window. For example, showing the Widget shouldn't change
@@ -347,7 +325,7 @@ NonClientFrameController::NonClientFrameController(
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   params.layer_type = ui::LAYER_SOLID_COLOR;
   WmNativeWidgetAura* native_widget = new WmNativeWidgetAura(
-      widget_, window_manager_client_, ShouldRemoveStandardFrame(*properties),
+      widget_, ShouldRemoveStandardFrame(*properties),
       ShouldEnableImmersive(*properties), GetWindowStyle(*properties));
   window_ = native_widget->GetNativeView();
   window_->SetProperty(aura::client::kEmbedType,

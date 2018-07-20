@@ -9,8 +9,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/window_manager.h"
-#include "ash/window_manager_service.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/base/math_util.h"
@@ -118,11 +116,9 @@ TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
     return;  // TODO: decide if this test should be made to work with ws2.
 
   std::map<std::string, std::vector<uint8_t>> properties;
-  auto* window_manager =
-      ash_test_helper()->window_manager_service()->window_manager();
   std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
-      window_manager, ui::mojom::WindowType::WINDOW,
-      window_manager->property_converter(), &properties));
+      ui::mojom::WindowType::WINDOW,
+      /* property_converter */ nullptr, &properties));
   ASSERT_TRUE(window);
 
   NonClientFrameController* controller =

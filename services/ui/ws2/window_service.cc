@@ -121,10 +121,13 @@ void WindowService::OnWillDestroyWindowTree(WindowTree* tree) {
   window_trees_.erase(tree);
 }
 
-void WindowService::RequestClose(aura::Window* window) {
+bool WindowService::RequestClose(aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  DCHECK(window && server_window->IsTopLevel());
+  if (!server_window || !server_window->IsTopLevel())
+    return false;
+
   server_window->owning_window_tree()->RequestClose(server_window);
+  return true;
 }
 
 void WindowService::OnDisplayMetricsChanged(const display::Display& display,

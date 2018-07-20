@@ -34,8 +34,6 @@ namespace aura {
 class RootWindow;
 class UserActivityForwarder;
 class Window;
-class WindowManagerClient;
-class WindowTreeClient;
 }  // namespace aura
 
 namespace display {
@@ -273,23 +271,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Returns true if a system-modal dialog window is currently open.
   static bool IsSystemModalWindowOpen();
-
-  // TODO(sky): move this and WindowManagerClient into ShellMash that is owned
-  // by Shell. Doing the move is gated on having mash create Shell.
-  static void set_window_tree_client(aura::WindowTreeClient* client) {
-    window_tree_client_ = client;
-  }
-
-  static aura::WindowTreeClient* window_tree_client() {
-    return window_tree_client_;
-  }
-
-  static void set_window_manager_client(aura::WindowManagerClient* client) {
-    window_manager_client_ = client;
-  }
-  static aura::WindowManagerClient* window_manager_client() {
-    return window_manager_client_;
-  }
 
   static Config GetAshConfig();
   static bool ShouldUseIMEService();
@@ -716,10 +697,6 @@ class ASH_EXPORT Shell : public SessionObserver,
       std::unique_ptr<::PrefService> pref_service);
 
   static Shell* instance_;
-
-  // Only valid in mash, for classic ash this is null.
-  static aura::WindowTreeClient* window_tree_client_;
-  static aura::WindowManagerClient* window_manager_client_;
 
   std::unique_ptr<ShellPort> shell_port_;
 
