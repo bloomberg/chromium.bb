@@ -390,8 +390,10 @@ crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_t
 # These tests take 90 seconds on MSAN due to a large amount of JS execution.
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
+crbug.com/853977 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
+crbug.com/853977 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
+crbug.com/853977 [ Linux ] virtual/outofblink-cors-ns/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
+crbug.com/853977 [ Linux ] virtual/outofblink-cors-ns/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
 
 # This test checks multiple types of sensors and performs a lot of asynchronous
 # calls and waits for events in each of them. Even on a release Linux build it
