@@ -99,4 +99,12 @@ void AddTestAutofillData(Browser* browser,
   observer.Wait();
 }
 
+std::vector<AutofillProfile*> GetProfiles(Browser* browser) {
+  // Wait for asynchronous updates to PersonalDataManager to complete.
+  PdmChangeWaiter observer(browser);
+  observer.Wait();
+
+  return GetPersonalDataManager(browser->profile())->GetProfiles();
+}
+
 }  // namespace autofill
