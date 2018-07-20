@@ -165,13 +165,16 @@ TEST_F(RasterInProcessCommandBufferTest,
   ri_->TexStorage2D(texture_id, kBufferSize.width(), kBufferSize.height());
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 
+  gpu::Mailbox mailbox;
+  ri_->ProduceTextureDirect(texture_id, mailbox.name);
+
   // Call BeginRasterCHROMIUM.
   cc::RasterColorSpace color_space(gfx::ColorSpace::CreateSRGB(), 0);
-  ri_->BeginRasterCHROMIUM(texture_id, /*sk_color=*/0, /*msaa_sample_count=*/0,
+  ri_->BeginRasterCHROMIUM(/*sk_color=*/0, /*msaa_sample_count=*/0,
                            /*can_use_lcd_text=*/false,
                            viz::ResourceFormatToClosestSkColorType(
                                /*gpu_compositing=*/true, kResourceFormat),
-                           color_space);
+                           color_space, mailbox.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 
   // Should flag an error this command is not allowed between a Begin and

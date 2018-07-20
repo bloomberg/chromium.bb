@@ -26,7 +26,7 @@
   OP(InsertFenceSyncCHROMIUM)                  /* 267 */ \
   OP(WaitSyncTokenCHROMIUM)                    /* 268 */ \
   OP(UnpremultiplyAndDitherCopyCHROMIUM)       /* 269 */ \
-  OP(BeginRasterCHROMIUM)                      /* 270 */ \
+  OP(BeginRasterCHROMIUMImmediate)             /* 270 */ \
   OP(RasterCHROMIUM)                           /* 271 */ \
   OP(EndRasterCHROMIUM)                        /* 272 */ \
   OP(CreateTransferCacheEntryINTERNAL)         /* 273 */ \

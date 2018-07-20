@@ -1131,12 +1131,12 @@ GLuint RasterImplementation::CreateAndConsumeTexture(
 }
 
 void RasterImplementation::BeginRasterCHROMIUM(
-    GLuint texture_id,
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
     GLint color_type,
-    const cc::RasterColorSpace& raster_color_space) {
+    const cc::RasterColorSpace& raster_color_space,
+    const GLbyte* mailbox) {
   DCHECK(!raster_properties_);
 
   TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
@@ -1150,9 +1150,9 @@ void RasterImplementation::BeginRasterCHROMIUM(
       cc::TransferCacheEntryType::kColorSpace,
       raster_color_space.color_space_id);
 
-  helper_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                               can_use_lcd_text, color_type,
-                               raster_color_space.color_space_id);
+  helper_->BeginRasterCHROMIUMImmediate(
+      sk_color, msaa_sample_count, can_use_lcd_text, color_type,
+      raster_color_space.color_space_id, mailbox);
   transfer_cache_serialize_helper.FlushEntries();
 
   raster_properties_.emplace(sk_color, can_use_lcd_text,

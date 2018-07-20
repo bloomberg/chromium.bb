@@ -102,13 +102,12 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 #include "gpu/command_buffer/client/raster_implementation_autogen.h"
 
   // RasterInterface implementation.
-  void BeginRasterCHROMIUM(
-      GLuint texture_id,
-      GLuint sk_color,
-      GLuint msaa_sample_count,
-      GLboolean can_use_lcd_text,
-      GLint color_type,
-      const cc::RasterColorSpace& raster_color_space) override;
+  void BeginRasterCHROMIUM(GLuint sk_color,
+                           GLuint msaa_sample_count,
+                           GLboolean can_use_lcd_text,
+                           GLint color_type,
+                           const cc::RasterColorSpace& raster_color_space,
+                           const GLbyte* mailbox) override;
   void RasterCHROMIUM(const cc::DisplayItemList* list,
                       cc::ImageProvider* provider,
                       const gfx::Size& content_size,
