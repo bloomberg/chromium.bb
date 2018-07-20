@@ -16,7 +16,7 @@ UnifiedConsentServiceClientImpl::UnifiedConsentServiceClientImpl(
 void UnifiedConsentServiceClientImpl::SetAlternateErrorPagesEnabled(
     bool enabled) {
   // Feature not available on iOS.
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void UnifiedConsentServiceClientImpl::SetMetricsReportingEnabled(bool enabled) {
@@ -34,13 +34,13 @@ void UnifiedConsentServiceClientImpl::SetSearchSuggestEnabled(bool enabled) {
 
 void UnifiedConsentServiceClientImpl::SetSafeBrowsingEnabled(bool enabled) {
   // Feature not available on iOS.
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void UnifiedConsentServiceClientImpl::SetSafeBrowsingExtendedReportingEnabled(
     bool enabled) {
   // Feature not available on iOS.
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void UnifiedConsentServiceClientImpl::SetNetworkPredictionEnabled(
@@ -51,4 +51,9 @@ void UnifiedConsentServiceClientImpl::SetNetworkPredictionEnabled(
   BooleanPrefMember wifiPreference;
   wifiPreference.Init(prefs::kNetworkPredictionWifiOnly, pref_service_);
   wifiPreference.SetValue(enabled);
+}
+
+void UnifiedConsentServiceClientImpl::SetSpellCheckEnabled(bool enabled) {
+  // Feature not available on iOS.
+  NOTIMPLEMENTED();
 }

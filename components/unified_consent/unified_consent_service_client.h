@@ -23,6 +23,8 @@ class UnifiedConsentServiceClient {
   virtual void SetSafeBrowsingExtendedReportingEnabled(bool enabled) = 0;
   // Enables/disables prediction of network actions.
   virtual void SetNetworkPredictionEnabled(bool enabled) = 0;
+  // Enables/disables spell check.
+  virtual void SetSpellCheckEnabled(bool enabled) = 0;
 };
 
 }  // namespace unified_consent

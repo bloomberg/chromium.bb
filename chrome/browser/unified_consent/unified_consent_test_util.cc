@@ -27,6 +27,7 @@ class FakeUnifiedConsentServiceClient
   void SetSafeBrowsingEnabled(bool enabled) override {}
   void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override {}
   void SetNetworkPredictionEnabled(bool enabled) override {}
+  void SetSpellCheckEnabled(bool enabled) override {}
 };
 
 }  // namespace
