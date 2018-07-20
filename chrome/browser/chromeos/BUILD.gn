@@ -448,6 +448,8 @@ source_set("chromeos") {
     "arc/optin/arc_terms_of_service_negotiator.h",
     "arc/optin/arc_terms_of_service_oobe_negotiator.cc",
     "arc/optin/arc_terms_of_service_oobe_negotiator.h",
+    "arc/pip/arc_pip_bridge.cc",
+    "arc/pip/arc_pip_bridge.h",
     "arc/policy/arc_android_management_checker.cc",
     "arc/policy/arc_android_management_checker.h",
     "arc/policy/arc_policy_bridge.cc",

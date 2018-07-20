@@ -38,6 +38,7 @@ if (is_chromeos) {
       "obb_mounter.mojom",
       "oemcrypto.mojom",
       "oemcrypto_daemon.mojom",
+      "pip.mojom",
       "policy.mojom",
       "power.mojom",
       "print.mojom",
