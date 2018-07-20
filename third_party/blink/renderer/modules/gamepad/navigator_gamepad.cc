@@ -146,7 +146,7 @@ static void SampleGamepads(ListType* into,
       bool webxr_enabled =
           (context && OriginTrials::WebXRGamepadSupportEnabled(context) &&
            OriginTrials::WebXREnabled(context));
-      bool webvr_enabled = (context && OriginTrials::WebVREnabled(context));
+      bool webvr_enabled = (context && RuntimeEnabledFeatures::WebVREnabled());
 
       if (!webxr_enabled && !webvr_enabled) {
         // If neither WebXR nor WebVR are enabled, we should not expose XR-
