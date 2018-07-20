@@ -33,7 +33,7 @@ void BluetoothLowEnergyAdvertisementManagerMac::TryStartAdvertisement() {
     NSString* uuid_string =
         [NSString stringWithCString:service_uuid.c_str()
                            encoding:[NSString defaultCStringEncoding]];
-    [service_uuid_array addObject:[CBUUID UUIDWithString:uuid_string]];
+    [service_uuid_array addObject:uuid_string];
   }
 
   active_advertisement_->OnAdvertisementPending();
