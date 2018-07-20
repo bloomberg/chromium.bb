@@ -31,7 +31,6 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
-#include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
@@ -238,21 +237,6 @@ uint8_t GetConnectionIdLengthValue(QuicConnectionIdLength length) {
   return static_cast<uint8_t>(length - kConnectionIdLengthAdjustment);
 }
 
-class TrackedDataReader : public QuicDataReader {
- public:
-  TrackedDataReader(const char* data,
-                    const size_t len,
-                    Endianness endianness,
-                    QuicDataReader** preader)
-      : QuicDataReader(data, len, endianness), preader_(preader) {
-    *preader_ = this;
-  }
-  ~TrackedDataReader() { *preader_ = nullptr; }
-
- private:
-  QuicDataReader** preader_;
-};
-
 }  // namespace
 
 QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
@@ -272,8 +256,7 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       alternative_decrypter_latch_(false),
       perspective_(perspective),
       validate_flags_(true),
-      data_producer_(nullptr),
-      decrypted_payload_reader_(nullptr) {
+      data_producer_(nullptr) {
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
   decrypter_ = QuicMakeUnique<NullDecrypter>(perspective);
@@ -1213,8 +1196,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
     set_detailed_error("Unable to decrypt payload.");
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
-  TrackedDataReader reader(decrypted_buffer, decrypted_length, endianness(),
-                           &decrypted_payload_reader_);
+  QuicDataReader reader(decrypted_buffer, decrypted_length, endianness());
 
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
@@ -1276,8 +1258,7 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
 
-  TrackedDataReader reader(decrypted_buffer, decrypted_length, endianness(),
-                           &decrypted_payload_reader_);
+  QuicDataReader reader(decrypted_buffer, decrypted_length, endianness());
 
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
@@ -4459,19 +4440,6 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
     return false;
   }
   return true;
-}
-
-QuicString QuicFramer::VerboseDebugString() const {
-  QuicString str =
-      QuicStrCat("{ version:", ParsedQuicVersionToString(version_));
-
-  if (decrypted_payload_reader_ != nullptr) {
-    QuicStrAppend(&str, " decrypted_payload_reader:",
-                  decrypted_payload_reader_->VerboseDebugString());
-  }
-
-  QuicStrAppend(&str, "\n}");
-  return str;
 }
 
 #undef ENDPOINT  // undef for jumbo builds

@@ -5,7 +5,6 @@
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 
 #include <algorithm>
-#include <sstream>
 
 #include "net/third_party/quic/core/congestion_control/general_loss_algorithm.h"
 #include "net/third_party/quic/core/congestion_control/pacing_sender.h"
@@ -58,20 +57,6 @@ QuicSentPacketManager::QuicSentPacketManager(
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
     LossDetectionType loss_type)
-    : QuicSentPacketManager(perspective,
-                            clock,
-                            stats,
-                            congestion_control_type,
-                            loss_type,
-                            this) {}
-
-QuicSentPacketManager::QuicSentPacketManager(
-    Perspective perspective,
-    const QuicClock* clock,
-    QuicConnectionStats* stats,
-    CongestionControlType congestion_control_type,
-    LossDetectionType loss_type,
-    QuicDebugInfoProviderInterface* debug_info_provider)
     : unacked_packets_(),
       perspective_(perspective),
       clock_(clock),
@@ -106,24 +91,11 @@ QuicSentPacketManager::QuicSentPacketManager(
       delayed_ack_time_(
           QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
       rtt_updated_(false),
-      extra_checks_in_ack_processing_(
-          GetQuicReloadableFlag(quic_extra_checks_in_ack_processing)),
-      debug_info_provider_(debug_info_provider),
       acked_packets_iter_(last_ack_frame_.packets.rbegin()) {
   SetSendAlgorithm(congestion_control_type);
 }
 
 QuicSentPacketManager::~QuicSentPacketManager() {}
-
-QuicString QuicSentPacketManager::DebugStringForAckProcessing() const {
-  std::ostringstream s;
-  s << "{ last_ack_frame: " << last_ack_frame_
-    << ", largest_observed: " << GetLargestObserved()
-    << ", least_unacked: " << unacked_packets_.GetLeastUnacked()
-    << ", unacked_packets_size: " << unacked_packets_.Size()
-    << ", packets_acked: " << packets_acked_ << " }";
-  return s.str();
-}
 
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
@@ -507,16 +479,8 @@ QuicPendingRetransmission QuicSentPacketManager::NextPendingRetransmission() {
 QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
     QuicPacketNumber packet_number,
     const QuicTransmissionInfo& transmission_info) const {
-  const QuicPacketNumber original_packet_number = packet_number;
   QuicPacketNumber retransmission = transmission_info.retransmission;
   while (retransmission != 0) {
-    if (extra_checks_in_ack_processing_) {
-      CHECK(unacked_packets_.Contains(retransmission))
-          << "Retransmisstted pkn out of bound. original_pkn: "
-          << original_packet_number << ", last_retrans_pkn: " << packet_number
-          << ", oob_retrans_pkn: " << retransmission
-          << " Context:" << debug_info_provider_->DebugStringForAckProcessing();
-    }
     packet_number = retransmission;
     retransmission =
         unacked_packets_.GetTransmissionInfo(retransmission).retransmission;
@@ -1061,11 +1025,6 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
   // Reverse packets_acked_ so that it is in ascending order.
   reverse(packets_acked_.begin(), packets_acked_.end());
   for (AckedPacket& acked_packet : packets_acked_) {
-    if (extra_checks_in_ack_processing_) {
-      CHECK(unacked_packets_.Contains(acked_packet.packet_number))
-          << "Acked pkn out of bound. pkn: " << acked_packet.packet_number
-          << " Context:" << debug_info_provider_->DebugStringForAckProcessing();
-    }
     QuicTransmissionInfo* info =
         unacked_packets_.GetMutableTransmissionInfo(acked_packet.packet_number);
     if (!QuicUtils::IsAckable(info->state)) {

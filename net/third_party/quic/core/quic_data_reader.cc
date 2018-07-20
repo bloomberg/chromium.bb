@@ -9,7 +9,6 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
 
@@ -280,11 +279,6 @@ bool QuicDataReader::ReadVarIntStreamId(QuicStreamId* result) {
 
 QuicString QuicDataReader::DebugString() const {
   return QuicStrCat(" { length: ", len_, ", position: ", pos_, " }");
-}
-
-QuicString QuicDataReader::VerboseDebugString() const {
-  return QuicStrCat(" {length: ", len_, ", position: ", pos_, " data:\n",
-                    QuicTextUtils::HexDump(QuicStringPiece(data_, len_)), " }");
 }
 
 #undef ENDPOINT  // undef for jumbo builds

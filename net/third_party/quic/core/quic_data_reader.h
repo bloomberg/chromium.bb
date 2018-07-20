@@ -139,8 +139,6 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
 
   QuicString DebugString() const;
 
-  QuicString VerboseDebugString() const;
-
  private:
   // Returns true if the underlying buffer has enough room to read the given
   // amount of bytes.

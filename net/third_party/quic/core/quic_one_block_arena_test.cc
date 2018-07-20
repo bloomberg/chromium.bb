@@ -7,6 +7,7 @@
 #include <cstdint>
 
 #include "net/third_party/quic/platform/api/quic_containers.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 

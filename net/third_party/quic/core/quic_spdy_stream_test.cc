@@ -12,6 +12,7 @@
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"

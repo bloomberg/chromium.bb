@@ -39,15 +39,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
                      QuicTime sent_time,
                      bool set_in_flight);
 
-  // Returns true iff |packet_number| is in the map.
-  bool Contains(QuicPacketNumber packet_number) const {
-    return packet_number >= least_unacked_ &&
-           packet_number < least_unacked_ + unacked_packets_.size();
-  }
-
-  // Returns the number of packets in the map.
-  size_t Size() const { return unacked_packets_.size(); }
-
   // Returns true if the packet |packet_number| is unacked.
   bool IsUnacked(QuicPacketNumber packet_number) const;
 

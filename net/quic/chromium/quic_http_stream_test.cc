@@ -2218,19 +2218,10 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
         client_packet_number++, kIncludeVersion, promise_id_, 0,
         DEFAULT_PRIORITY, &header_stream_offset));
   }
-  if (FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler2) {
-    AddWrite(ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
-        client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
-        DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
-        &header_stream_offset));
-  } else {
-    AddWrite(
-        ConstructClientRstStreamVaryMismatchPacket(client_packet_number++));
-    AddWrite(InnerConstructRequestHeadersPacket(
-        client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
-        DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
-        &header_stream_offset));
-  }
+  AddWrite(ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
+      client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
+      DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
+      &header_stream_offset));
   AddWrite(ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
   AddWrite(ConstructClientRstStreamCancelledPacket(client_packet_number++));
 

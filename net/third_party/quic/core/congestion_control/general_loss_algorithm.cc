@@ -30,17 +30,8 @@ static const int kDefaultAdaptiveLossDelayShift = 4;
 GeneralLossAlgorithm::GeneralLossAlgorithm() : GeneralLossAlgorithm(kNack) {}
 
 GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
-    : loss_detection_timeout_(QuicTime::Zero()),
-      largest_sent_on_spurious_retransmit_(0),
-      loss_type_(loss_type),
-      reordering_shift_(loss_type == kAdaptiveTime
-                            ? kDefaultAdaptiveLossDelayShift
-                            : kDefaultLossDelayShift),
-      largest_previously_acked_(0),
-      largest_lost_(0) {}
-
-LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {
-  return loss_type_;
+    : loss_detection_timeout_(QuicTime::Zero()), largest_lost_(0) {
+  SetLossDetectionType(loss_type);
 }
 
 void GeneralLossAlgorithm::SetLossDetectionType(LossDetectionType loss_type) {
@@ -50,7 +41,16 @@ void GeneralLossAlgorithm::SetLossDetectionType(LossDetectionType loss_type) {
   reordering_shift_ = loss_type == kAdaptiveTime
                           ? kDefaultAdaptiveLossDelayShift
                           : kDefaultLossDelayShift;
+  if (GetQuicReloadableFlag(quic_eighth_rtt_loss_detection) &&
+      loss_type == kTime) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_eighth_rtt_loss_detection);
+    reordering_shift_ = 3;
+  }
   largest_previously_acked_ = 0;
+}
+
+LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {
+  return loss_type_;
 }
 
 // Uses nack counts to decide when packets are lost.

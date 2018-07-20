@@ -118,12 +118,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_rto, true)
 // incoming initial RTT values.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_irtt, true)
 
-// If true, put ScopedRetransmissionScheduler's functionality to
-// ScopedPacketFlusher.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler2,
-          true)
-
 // If it's been more than SRTT since receiving a packet, set the ack alarm for
 // 1ms instead of the standard delayed ack timer.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fast_ack_after_quiescence, true)
@@ -139,17 +133,6 @@ QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
-
-// If true, export packet write results in QuicConnection.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_export_connection_write_packet_results,
-    true)
-
-// If true, enable extra CHECKs in ack processing to debug b/110029150.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_extra_checks_in_ack_processing,
-          false)
 
 // If true, close connection if largest observed in ack frame is greater than
 // largest sent packet.
@@ -180,11 +163,11 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_42, true)
 
 // Stop checking QuicUnackedPacketMap::HasUnackedRetransmittableFrames and
 // instead rely on the existing check that bytes_in_flight > 0
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
 
 // When you\'re app-limited entering recovery, stay app-limited until you exit
 // recovery in QUIC BBR.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, true)
 
 // If true, mark QUIC as app-limited after sending queued packets or
 // retransmisssions and we then become congestion control blocked.
@@ -211,3 +194,14 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
 // Add 3 connection options to decrease the pacing and CWND gain in QUIC BBR
 // STARTUP.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup3, false)
+
+// When true, the LOSS connection option allows for 1/8 RTT of reording instead
+// of the current 1/8th threshold which has been found to be too large for fast
+// loss recovery.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_eighth_rtt_loss_detection,
+          false)
+
+// Enables the BBQ5 connection option, which forces saved aggregation values to
+// expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)

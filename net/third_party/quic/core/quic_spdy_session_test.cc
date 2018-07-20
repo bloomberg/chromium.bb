@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
