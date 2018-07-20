@@ -239,7 +239,6 @@ static const char* const kSwitchNames[] = {
     switches::kShowMacOverlayBorders,
 #endif
 #if defined(USE_OZONE)
-    switches::kEnableDrmMojo,
     switches::kOzonePlatform,
     switches::kOzoneDumpFile,
 #endif
@@ -830,9 +829,7 @@ void GpuProcessHost::InitOzone() {
   // possible to ensure the latter always has a valid device. crbug.com/608839
   // When running with mus, the OzonePlatform may not have been created yet. So
   // defer the callback until OzonePlatform instance is created.
-  base::CommandLine* browser_command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (browser_command_line->HasSwitch(switches::kEnableDrmMojo)) {
+  if (features::IsOzoneDrmMojo()) {
     // TODO(rjkroege): Remove the legacy IPC code paths when no longer
     // necessary. https://crbug.com/806092
     auto interface_binder = base::BindRepeating(&GpuProcessHost::BindInterface,

@@ -72,6 +72,13 @@ UI_BASE_EXPORT bool IsViewsBrowserCocoa();
 #endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
 #endif  //  defined(OS_MACOSX)
 
+// Use mojo communication in the drm platform instead of paramtraits. Remove
+// this switch (and associated code) when the drm platform always uses mojo
+// communication.
+// TODO(rjkroege): Remove in http://crbug.com/806092.
+UI_BASE_EXPORT extern const base::Feature kEnableOzoneDrmMojo;
+UI_BASE_EXPORT bool IsOzoneDrmMojo();
+
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_
