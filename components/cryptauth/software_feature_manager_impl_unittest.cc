@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
+#include "components/cryptauth/proto/enum_util.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -263,28 +264,30 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestOrderUponMultipleRequests) {
                           false /* enable */);
   FindEligibleDevices(SoftwareFeature::BETTER_TOGETHER_CLIENT);
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_toggle_request_.feature());
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeSetSoftwareFeatureCallback();
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_CLIENT,
-            last_toggle_request_.feature());
+  EXPECT_EQ(
+      SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_CLIENT),
+      last_toggle_request_.feature());
   EXPECT_EQ(false, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeSetSoftwareFeatureCallback();
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_CLIENT,
-            last_find_request_.feature());
+  EXPECT_EQ(
+      SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_CLIENT),
+      last_find_request_.feature());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
@@ -302,21 +305,22 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest,
                           test_eligible_external_devices_infos_[2],
                           true /* enable */);
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_toggle_request_.feature());
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeErrorCallback();
   EXPECT_EQ(Result::kErrorSettingFeature, GetResultAndReset());
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_CLIENT,
-            last_toggle_request_.feature());
+  EXPECT_EQ(
+      SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_CLIENT),
+      last_toggle_request_.feature());
   EXPECT_EQ(false, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeSetSoftwareFeatureCallback();
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_toggle_request_.feature());
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
@@ -330,18 +334,19 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest,
   FindEligibleDevices(SoftwareFeature::BETTER_TOGETHER_CLIENT);
   FindEligibleDevices(SoftwareFeature::BETTER_TOGETHER_HOST);
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_CLIENT,
-            last_find_request_.feature());
+  EXPECT_EQ(
+      SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_CLIENT),
+      last_find_request_.feature());
   InvokeErrorCallback();
   EXPECT_EQ(Result::kErrorFindingEligible, GetResultAndReset());
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
@@ -354,12 +359,12 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestOrderViaMultipleErrors) {
                           true /* enable */);
   FindEligibleDevices(SoftwareFeature::BETTER_TOGETHER_HOST);
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_toggle_request_.feature());
   InvokeErrorCallback();
   EXPECT_EQ(Result::kErrorSettingFeature, GetResultAndReset());
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
   InvokeErrorCallback();
   EXPECT_EQ(Result::kErrorFindingEligible, GetResultAndReset());
@@ -370,7 +375,7 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestIsExclusive) {
                           test_eligible_external_devices_infos_[0],
                           true /* enable */, true /* is_exclusive */);
 
-  EXPECT_EQ(SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_toggle_request_.feature());
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(true, last_toggle_request_.is_exclusive());
@@ -383,7 +388,8 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestEasyUnlockSpecialCase) {
                           test_eligible_external_devices_infos_[0],
                           false /* enable */);
 
-  EXPECT_EQ(SoftwareFeature::EASY_UNLOCK_HOST, last_toggle_request_.feature());
+  EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::EASY_UNLOCK_HOST),
+            last_toggle_request_.feature());
   EXPECT_EQ(false, last_toggle_request_.enable());
   // apply_to_all() should be false when disabling EasyUnlock host capabilities.
   EXPECT_EQ(true, last_toggle_request_.apply_to_all());

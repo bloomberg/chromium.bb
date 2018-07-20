@@ -23,7 +23,7 @@
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/proto/enum_string_util.h"
+#include "components/cryptauth/proto/enum_util.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
@@ -660,11 +660,13 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   dictionary->SetBoolean(
       kExternalDeviceUnlockKey,
       base::ContainsValue(device_info.enabled_software_features(),
-                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST));
+                          cryptauth::SoftwareFeatureEnumToString(
+                              cryptauth::SoftwareFeature::EASY_UNLOCK_HOST)));
   dictionary->SetBoolean(
       kExternalDeviceMobileHotspot,
       base::ContainsValue(device_info.supported_software_features(),
-                          cryptauth::SoftwareFeature::MAGIC_TETHER_HOST));
+                          cryptauth::SoftwareFeatureEnumToString(
+                              cryptauth::SoftwareFeature::MAGIC_TETHER_HOST)));
   dictionary->SetBoolean(kExternalDeviceIsArcPlusPlusEnrollment,
                          device_info.arc_plus_plus());
   dictionary->SetBoolean(kExternalDeviceIsPixelPhone,

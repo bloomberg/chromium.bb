@@ -15,7 +15,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/pref_names.h"
-#include "components/cryptauth/proto/enum_string_util.h"
+#include "components/cryptauth/proto/enum_util.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/cryptauth/sync_scheduler_impl.h"
 #include "components/prefs/pref_registry_simple.h"

@@ -13,8 +13,8 @@ proto_library("proto") {
 
 static_library("util") {
   sources = [
-    "enum_string_util.cc",
-    "enum_string_util.h",
+    "enum_util.cc",
+    "enum_util.h",
   ]
 
   public_deps = [

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
+#include "components/cryptauth/proto/enum_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -148,10 +149,14 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, SoftwareFeatures) {
       BETTER_TOGETHER_HOST};
 
   cryptauth::ExternalDeviceInfo first = CreateDeviceInfo("0");
-  for (const auto& software_feature : kSupportedSoftwareFeatures)
-    first.add_supported_software_features(software_feature);
-  for (const auto& software_feature : kEnabledSoftwareFeatures)
-    first.add_enabled_software_features(software_feature);
+  for (const auto& software_feature : kSupportedSoftwareFeatures) {
+    first.add_supported_software_features(
+        SoftwareFeatureEnumToString(software_feature));
+  }
+  for (const auto& software_feature : kEnabledSoftwareFeatures) {
+    first.add_enabled_software_features(
+        SoftwareFeatureEnumToString(software_feature));
+  }
 
   std::vector<cryptauth::ExternalDeviceInfo> device_infos{first};
 
