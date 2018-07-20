@@ -23,7 +23,7 @@ struct HSL {
 
 // The minimum contrast between text and background that is still readable.
 // This value is taken from w3c accessibility guidelines.
-const double kMinimumReadableContrastRatio = 4.5f;
+constexpr double kMinimumReadableContrastRatio = 4.5;
 
 // Determines the contrast ratio of two colors or two relative luminance values
 // (as computed by RelativeLuminance()), calculated according to
@@ -124,6 +124,15 @@ GFX_EXPORT SkColor GetReadableColor(SkColor foreground, SkColor background);
 GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,
                                         SkColor foreground2,
                                         SkColor background);
+
+// This function attempts to select a color based on |default_foreground| that
+// will meet the minimum contrast ratio when used as a text color on top of
+// |background|. If |default_foreground| already meets the minimum contrast
+// ratio, this function will simply return it. Otherwise it will blend the color
+// darker/lighter until either the contrast ratio is acceptable or the color
+// cannot become any more extreme. Only use with opaque colors.
+GFX_EXPORT SkColor GetColorWithMinimumContrast(SkColor default_foreground,
+                                               SkColor background);
 
 // Invert a color.
 GFX_EXPORT SkColor InvertColor(SkColor color);

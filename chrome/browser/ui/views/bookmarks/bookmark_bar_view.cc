@@ -1766,9 +1766,11 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->SetAccessibleName(node->GetTitle());
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
-  if (GetThemeProvider()) {
-    SkColor color =
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+  const ui::ThemeProvider* const tp = GetThemeProvider();
+  if (tp) {
+    SkColor color = color_utils::GetColorWithMinimumContrast(
+        tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
     button->SetEnabledTextColors(color);
     if (node->is_folder()) {
       button->SetImage(views::Button::STATE_NORMAL,
