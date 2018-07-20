@@ -33,8 +33,12 @@ struct ClientTelemetryLogger::HostInfo {
 
 ClientTelemetryLogger::ClientTelemetryLogger(
     ChromotingEventLogWriter* log_writer,
-    ChromotingEvent::Mode mode)
-    : mode_(mode), log_writer_(log_writer), weak_factory_(this) {
+    ChromotingEvent::Mode mode,
+    ChromotingEvent::SessionEntryPoint entry_point)
+    : mode_(mode),
+      entry_point_(entry_point),
+      log_writer_(log_writer),
+      weak_factory_(this) {
   thread_checker_.DetachFromThread();
 }
 
@@ -214,6 +218,7 @@ ChromotingEvent::ConnectionType ClientTelemetryLogger::TranslateConnectionType(
 void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
   event->SetEnum(ChromotingEvent::kModeKey, mode_);
   event->SetEnum(ChromotingEvent::kRoleKey, ChromotingEvent::Role::CLIENT);
+  event->SetEnum(ChromotingEvent::kSessionEntryPointKey, entry_point_);
   if (auth_method_ != ChromotingEvent::AuthMethod::NOT_SET) {
     event->SetEnum(ChromotingEvent::kAuthMethodKey, auth_method_);
   }

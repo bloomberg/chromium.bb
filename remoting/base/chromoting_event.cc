@@ -116,6 +116,7 @@ const char ChromotingEvent::kRenderLatencyKey[] = "render_latency";
 const char ChromotingEvent::kRoleKey[] = "role";
 const char ChromotingEvent::kRoundtripLatencyKey[] = "roundtrip_latency";
 const char ChromotingEvent::kSessionDurationKey[] = "session_duration";
+const char ChromotingEvent::kSessionEntryPointKey[] = "session_entry_point";
 const char ChromotingEvent::kSessionIdKey[] = "session_id";
 const char ChromotingEvent::kSessionStateKey[] = "session_state";
 const char ChromotingEvent::kTypeKey[] = "type";

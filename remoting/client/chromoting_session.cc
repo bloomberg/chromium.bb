@@ -593,7 +593,8 @@ ChromotingSession::ChromotingSession(
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   logger_ = std::make_unique<ClientTelemetryLogger>(
-      runtime_->log_writer(), ChromotingEvent::Mode::ME2ME);
+      runtime_->log_writer(), ChromotingEvent::Mode::ME2ME,
+      info.session_entry_point);
 
   // logger is set when connection is started.
   session_context_ = std::make_unique<SessionContext>();

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "remoting/base/chromoting_event.h"
+
 namespace remoting {
 
 struct ConnectToHostInfo {
@@ -29,6 +31,8 @@ struct ConnectToHostInfo {
   std::string host_version;
   std::string host_os;
   std::string host_os_version;
+  ChromotingEvent::SessionEntryPoint session_entry_point =
+      ChromotingEvent::SessionEntryPoint::CONNECT_BUTTON;
 };
 
 }  // namespace remoting

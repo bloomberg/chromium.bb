@@ -88,6 +88,13 @@ class ChromotingEvent {
     CREATING_PLUGIN = 17,
   };
 
+  enum SessionEntryPoint {
+    CONNECT_BUTTON = 1,
+    RECONNECT_BUTTON = 2,
+    AUTO_RECONNECT_ON_CONNECTION_DROPPED = 3,
+    AUTO_RECONNECT_ON_HOST_OFFLINE = 4,
+  };
+
   enum class Type {
     SESSION_STATE = 1,
     CONNECTION_STATISTICS = 2,
@@ -123,6 +130,7 @@ class ChromotingEvent {
   static const char kRoleKey[];
   static const char kRoundtripLatencyKey[];
   static const char kSessionDurationKey[];
+  static const char kSessionEntryPointKey[];
   static const char kSessionIdKey[];
   static const char kSessionStateKey[];
   static const char kTypeKey[];

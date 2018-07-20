@@ -28,7 +28,8 @@ class ClientTelemetryLogger {
  public:
   // |log_writer| must outlive ClientTelemetryLogger.
   ClientTelemetryLogger(ChromotingEventLogWriter* log_writer,
-                        ChromotingEvent::Mode mode);
+                        ChromotingEvent::Mode mode,
+                        ChromotingEvent::SessionEntryPoint entry_point);
   ~ClientTelemetryLogger();
 
   void SetAuthMethod(ChromotingEvent::AuthMethod auth_method);
@@ -104,6 +105,8 @@ class ClientTelemetryLogger {
       ChromotingEvent::AuthMethod::NOT_SET;
 
   ChromotingEvent::Mode mode_;
+
+  ChromotingEvent::SessionEntryPoint entry_point_;
 
   std::unique_ptr<HostInfo> host_info_;
   std::unique_ptr<protocol::TransportRoute> transport_route_;

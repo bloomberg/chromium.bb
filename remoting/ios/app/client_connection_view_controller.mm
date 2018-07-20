@@ -47,6 +47,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 static NSString* const kConnectionErrorFeedbackContext =
     @"ConnectionErrorFeedbackContext";
 
+using EntryPoint = remoting::ChromotingEvent::SessionEntryPoint;
+
 @interface ClientConnectionViewController ()<PinEntryDelegate,
                                              SessionReconnectViewDelegate> {
   UIImageView* _iconView;
@@ -178,7 +180,7 @@ static NSString* const kConnectionErrorFeedbackContext =
              name:kHostSessionStatusChanged
            object:nil];
 
-  [self attemptConnectionToHost];
+  [self attemptConnectionToHostWithEntryPoint:EntryPoint::CONNECT_BUTTON];
 
   // Although keyboard listeners are registered here, they won't work properly
   // if the keyboard shows/hides before the view appears.
@@ -382,7 +384,7 @@ static NSString* const kConnectionErrorFeedbackContext =
 #pragma mark - SessionReconnectViewDelegate
 
 - (void)didTapReconnect {
-  [self attemptConnectionToHost];
+  [self attemptConnectionToHostWithEntryPoint:EntryPoint::RECONNECT_BUTTON];
 }
 
 - (void)didTapReport {
@@ -396,7 +398,7 @@ static NSString* const kConnectionErrorFeedbackContext =
 
 #pragma mark - Private
 
-- (void)attemptConnectionToHost {
+- (void)attemptConnectionToHostWithEntryPoint:(EntryPoint)entryPoint {
   _client = [[RemotingClient alloc] init];
   __weak ClientConnectionViewController* weakSelf = self;
   __weak RemotingClient* weakClient = _client;
@@ -407,7 +409,8 @@ static NSString* const kConnectionErrorFeedbackContext =
         if (status == RemotingAuthenticationStatusSuccess) {
           [weakClient connectToHost:weakHostInfo
                            username:userEmail
-                        accessToken:accessToken];
+                        accessToken:accessToken
+                         entryPoint:entryPoint];
         } else {
           LOG(ERROR) << "Failed to fetch access token for connectToHost. ("
                      << status << ")";
