@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -28,7 +29,8 @@ class AssistantController;
 class AssistantScreenContextModelObserver;
 
 class ASH_EXPORT AssistantScreenContextController
-    : public AssistantControllerObserver,
+    : public chromeos::assistant::mojom::AssistantScreenContextSubscriber,
+      public AssistantControllerObserver,
       public AssistantUiModelObserver,
       public HighlighterController::Observer {
  public:
@@ -68,12 +70,18 @@ class ASH_EXPORT AssistantScreenContextController
   // Invoked on screen context request finished event.
   void OnScreenContextRequestFinished();
 
+  // chromeos::assistant::mojom::AssistantScreenContextSubscriber:
+  void OnContextualHtmlResponse(const std::string& html) override;
+
   std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
   void RequestScreenContext(const gfx::Rect& rect);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  mojo::Binding<chromeos::assistant::mojom::AssistantScreenContextSubscriber>
+      assistant_screen_context_subscriber_binding_;
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
