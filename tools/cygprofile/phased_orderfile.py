@@ -5,8 +5,7 @@
 
 """Utilities for creating a phased orderfile.
 
-This kind of orderfile is based on cygprofile lightweight instrumentation. The
-profile dump format is described in process_profiles.py. These tools assume
+The profile dump format is described in process_profiles.py. These tools assume
 profiling has been done with two phases.
 
 The first phase, labeled 0 in the filename, is called "startup" and the second,

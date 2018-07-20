@@ -42,8 +42,8 @@ class SymbolOffsetProcessor(object):
 
   In the function names below, "dump" is used to refer to arbitrary offsets in a
   binary (eg, from a profiling run), while "offset" refers to a symbol
-  offset. The dump offsets are relative to the start of text, as returned by
-  lightweight_cygprofile.cc.
+  offset. The dump offsets are relative to the start of text, as produced by
+  orderfile_instrumentation.cc.
 
   This class manages expensive operations like extracting symbols, so that
   higher-level operations can be done in different orders without the caller
@@ -205,9 +205,6 @@ class SymbolOffsetProcessor(object):
 
 class ProfileManager(object):
   """Manipulates sets of profiles.
-
-  The manager supports only lightweight-style profiles (see
-  lightweight_cygprofile.cc) and not the older cygprofile offset lists.
 
   A "profile set" refers to a set of data from an instrumented version of chrome
   that will be processed together, usually to produce a single orderfile. A
