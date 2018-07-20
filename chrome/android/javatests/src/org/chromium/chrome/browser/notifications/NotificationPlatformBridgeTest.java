@@ -54,6 +54,7 @@ import org.chromium.chrome.test.util.browser.notifications.MockNotificationManag
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -72,6 +73,9 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NotificationPlatformBridgeTest {
     @Rule
+    public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
+
+    @Rule
     public NotificationTestRule mNotificationTestRule = new NotificationTestRule();
 
     private static final String NOTIFICATION_TEST_PAGE =
@@ -82,7 +86,7 @@ public class NotificationPlatformBridgeTest {
     public void setUp() throws Exception {
         SiteEngagementService.setParamValuesForTesting();
         mNotificationTestRule.loadUrl(
-                mNotificationTestRule.getTestServer().getURL(NOTIFICATION_TEST_PAGE));
+                mEmbeddedTestServerRule.getServer().getURL(NOTIFICATION_TEST_PAGE));
     }
 
     @SuppressWarnings("MissingFail")
@@ -134,7 +138,7 @@ public class NotificationPlatformBridgeTest {
                 @Override
                 public Double call() throws Exception {
                     return SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
-                            .getScore(mNotificationTestRule.getOrigin());
+                            .getScore(mEmbeddedTestServerRule.getOrigin());
                 }
             });
         } catch (ExecutionException ex) {
@@ -191,7 +195,7 @@ public class NotificationPlatformBridgeTest {
 
         // Reload page to ensure the block is persisted.
         mNotificationTestRule.loadUrl(
-                mNotificationTestRule.getTestServer().getURL(NOTIFICATION_TEST_PAGE));
+                mEmbeddedTestServerRule.getServer().getURL(NOTIFICATION_TEST_PAGE));
 
         // Notification.requestPermission() should immediately pass denied to the callback without
         // showing an infobar.
@@ -233,7 +237,7 @@ public class NotificationPlatformBridgeTest {
 
         // Reload page to ensure the grant is persisted.
         mNotificationTestRule.loadUrl(
-                mNotificationTestRule.getTestServer().getURL(NOTIFICATION_TEST_PAGE));
+                mEmbeddedTestServerRule.getServer().getURL(NOTIFICATION_TEST_PAGE));
 
         // Notifications permission should now be granted, and showing should succeed.
         Assert.assertEquals("\"granted\"",
@@ -250,13 +254,14 @@ public class NotificationPlatformBridgeTest {
     @Feature({"Browser", "Notifications"})
     @RetryOnFailure
     public void testDefaultNotificationProperties() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         Context context = InstrumentationRegistry.getTargetContext();
 
         Notification notification =
                 mNotificationTestRule.showAndGetNotification("MyNotification", "{ body: 'Hello' }");
         String expectedOrigin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
-                mNotificationTestRule.getOrigin());
+                mEmbeddedTestServerRule.getOrigin());
 
         // Validate the contents of the notification.
         Assert.assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
@@ -313,7 +318,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testShowNotificationWithTextAction() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Notification notification = mNotificationTestRule.showAndGetNotification("MyNotification",
                 "{ "
@@ -343,7 +349,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testReplyToNotification() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         Context context = InstrumentationRegistry.getTargetContext();
 
         UserActionTester actionTester = new UserActionTester();
@@ -389,7 +396,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testReplyToNotificationWithEmptyReply() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         Context context = InstrumentationRegistry.getTargetContext();
 
         // +0.5 engagement from navigating to the test page.
@@ -447,7 +455,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testReplyToNotificationWithNoRemoteInput() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
@@ -472,7 +481,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationRenotifyProperty() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Notification notification = mNotificationTestRule.showAndGetNotification(
                 "MyNotification", "{ tag: 'myTag', renotify: true }");
@@ -488,7 +498,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationSilentProperty() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Notification notification =
                 mNotificationTestRule.showAndGetNotification("MyNotification", "{ silent: true }");
@@ -499,7 +510,8 @@ public class NotificationPlatformBridgeTest {
 
     private void verifyVibrationNotRequestedWhenDisabledInPrefs(String notificationOptions)
             throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         // Disable notification vibration in preferences.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -553,7 +565,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationVibrateCustomPattern() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         // By default, vibration is enabled in notifications.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -586,7 +599,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testShowNotificationWithBadge() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Notification notification = mNotificationTestRule.showAndGetNotification(
                 "MyNotification", "{badge: 'badge.png'}");
@@ -600,7 +614,7 @@ public class NotificationPlatformBridgeTest {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Custom badges are only supported on M+.
             // 1. Check the notification badge.
-            URL badgeUrl = new URL(mNotificationTestRule.getTestServer().getURL(
+            URL badgeUrl = new URL(mEmbeddedTestServerRule.getServer().getURL(
                     "/chrome/test/data/notifications/badge.png"));
             Bitmap bitmap = BitmapFactory.decodeStream(badgeUrl.openStream());
             Bitmap expected = bitmap.copy(bitmap.getConfig(), true);
@@ -639,7 +653,8 @@ public class NotificationPlatformBridgeTest {
     @Feature({"Browser", "Notifications"})
     @RetryOnFailure
     public void testShowNotificationWithIcon() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Notification notification =
                 mNotificationTestRule.showAndGetNotification("MyNotification", "{icon: 'red.png'}");
@@ -662,7 +677,8 @@ public class NotificationPlatformBridgeTest {
     @Feature({"Browser", "Notifications"})
     @RetryOnFailure
     public void testShowNotificationWithoutIcon() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Notification notification =
                 mNotificationTestRule.showAndGetNotification("NoIconNotification", "{}");
@@ -682,7 +698,7 @@ public class NotificationPlatformBridgeTest {
         RoundedIconGenerator generator =
                 NotificationBuilderBase.createIconGenerator(context.getResources());
 
-        Bitmap generatedIcon = generator.generateIconForUrl(mNotificationTestRule.getOrigin());
+        Bitmap generatedIcon = generator.generateIconForUrl(mEmbeddedTestServerRule.getOrigin());
         Assert.assertNotNull(generatedIcon);
         Assert.assertTrue(generatedIcon.sameAs(
                 NotificationTestUtil.getLargeIconFromNotification(context, notification)));
@@ -698,7 +714,8 @@ public class NotificationPlatformBridgeTest {
     @Feature({"Browser", "Notifications"})
     @RetryOnFailure
     public void testNotificationContentIntentClosesNotification() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
 
@@ -744,7 +761,8 @@ public class NotificationPlatformBridgeTest {
     @Feature({"Browser", "Notifications"})
     @RetryOnFailure
     public void testNotificationContentIntentCreatesTab() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
         Assert.assertEquals(
                 "Expected the notification test page to be the sole tab in the current model", 1,
@@ -784,7 +802,8 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationTagReplacement() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
 
@@ -824,7 +843,8 @@ public class NotificationPlatformBridgeTest {
     @LargeTest
     @Feature({"Browser", "Notifications"})
     public void testShowAndCloseMultipleNotifications() throws Exception {
-        mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        mNotificationTestRule.setNotificationContentSettingForOrigin(
+                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
 

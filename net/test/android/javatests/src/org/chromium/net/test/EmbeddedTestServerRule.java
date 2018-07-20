@@ -41,4 +41,8 @@ public class EmbeddedTestServerRule extends TestWatcher {
     public EmbeddedTestServer getServer() {
         return mServer;
     }
+
+    public String getOrigin() {
+        return mServer.getURL("/");
+    }
 }
