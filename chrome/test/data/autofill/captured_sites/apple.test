@@ -31,69 +31,77 @@
       "selectorType": "xpath",
       "selector": "//*[@id=\"shipping-user-firstName\"]",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selector": "//*[@id=\"shipping-user-firstName\"]",
-          "context": [],
-          "expectedAutofillType": "NAME_FIRST",
-          "expectedValue": "Milton"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-lastName\"]",
-          "context": [],
-          "expectedAutofillType": "NAME_LAST",
-          "expectedValue": "Waddams"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-companyName\"]",
-          "context": [],
-          "expectedAutofillType": "COMPANY_NAME",
-          "expectedValue": "Initech"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-street\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE1",
-          "expectedValue": "4120 Freidrich Lane"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-street2\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE2",
-          "expectedValue": "Apt 8"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-city\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_CITY",
-          "expectedValue": "Austin"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-state\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_STATE",
-          "expectedValue": "TX"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-emailAddress\"]",
-          "context": [],
-          "expectedAutofillType": "EMAIL_ADDRESS",
-          "expectedValue": "red.swingline@initech.com"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-daytimePhoneAreaCode\"]",
-          "context": [],
-          "expectedAutofillType": "PHONE_HOME_CITY_CODE",
-          "expectedValue": "512"
-        },
-        {
-          "selector": "//*[@id=\"shipping-user-daytimePhone\"]",
-          "context": [],
-          "expectedAutofillType": "PHONE_HOME_NUMBER",
-          "expectedValue": "5551234"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-firstName\"]",
+      "context": [],
+      "expectedAutofillType": "NAME_FIRST",
+      "expectedValue": "Milton",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-lastName\"]",
+      "context": [],
+      "expectedAutofillType": "NAME_LAST",
+      "expectedValue": "Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-companyName\"]",
+      "context": [],
+      "expectedAutofillType": "COMPANY_NAME",
+      "expectedValue": "Initech",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-street\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-street2\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-city\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_CITY",
+      "expectedValue": "Austin",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-state\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_STATE",
+      "expectedValue": "TX",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-emailAddress\"]",
+      "context": [],
+      "expectedAutofillType": "EMAIL_ADDRESS",
+      "expectedValue": "red.swingline@initech.com",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-daytimePhoneAreaCode\"]",
+      "context": [],
+      "expectedAutofillType": "PHONE_HOME_CITY_CODE",
+      "expectedValue": "512",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"shipping-user-daytimePhone\"]",
+      "context": [],
+      "expectedAutofillType": "PHONE_HOME_NUMBER",
+      "expectedValue": "5551234",
+      "type": "validateField"
     },
     {
       "selectorType": "xpath",
@@ -111,95 +119,104 @@
       "selectorType": "xpath",
       "selector": "//*[@id=\"payment-credit-user-address-firstName\"]",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-firstName\"]",
-          "context": [],
-          "expectedAutofillType": "NAME_FIRST",
-          "expectedValue": "Milton"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-lastName\"]",
-          "context": [],
-          "expectedAutofillType": "NAME_LAST",
-          "expectedValue": "Waddams"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-companyName\"]",
-          "context": [],
-          "expectedAutofillType": "COMPANY_NAME",
-          "expectedValue": "Initech"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-street\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE1",
-          "expectedValue": "4120 Freidrich Lane"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-street2\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE2",
-          "expectedValue": "Apt 8"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-postalCode\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_ZIP",
-          "expectedValue": "78744"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-country-selector-countryCode\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_COUNTRY",
-          "expectedValue": "US"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-emailAddress\"]",
-          "context": [],
-          "expectedAutofillType": "EMAIL_ADDRESS",
-          "expectedValue": "red.swingline@initech.com"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-daytimePhoneAreaCode\"]",
-          "context": [],
-          "expectedAutofillType": "PHONE_HOME_CITY_CODE",
-          "expectedValue": "512"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-user-address-daytimePhone\"]",
-          "context": [],
-          "expectedAutofillType": "PHONE_HOME_NUMBER",
-          "expectedValue": "5551234"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-firstName\"]",
+      "context": [],
+      "expectedAutofillType": "NAME_FIRST",
+      "expectedValue": "Milton",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-lastName\"]",
+      "context": [],
+      "expectedAutofillType": "NAME_LAST",
+      "expectedValue": "Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-companyName\"]",
+      "context": [],
+      "expectedAutofillType": "COMPANY_NAME",
+      "expectedValue": "Initech",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-street\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-street2\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-postalCode\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_ZIP",
+      "expectedValue": "78744",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-country-selector-countryCode\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_COUNTRY",
+      "expectedValue": "US",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-emailAddress\"]",
+      "context": [],
+      "expectedAutofillType": "EMAIL_ADDRESS",
+      "expectedValue": "red.swingline@initech.com",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-daytimePhoneAreaCode\"]",
+      "context": [],
+      "expectedAutofillType": "PHONE_HOME_CITY_CODE",
+      "expectedValue": "512",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-user-address-daytimePhone\"]",
+      "context": [],
+      "expectedAutofillType": "PHONE_HOME_NUMBER",
+      "expectedValue": "5551234",
+      "type": "validateField"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"payment-credit-method-cc0-cardNumber\"]",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selector": "//*[@id=\"payment-credit-method-cc0-cardNumber\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_NUMBER",
-          "expectedValue": "9621327911759602"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-method-cc0-expirationMonth\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
-          "expectedValue": "05"
-        },
-        {
-          "selector": "//*[@id=\"payment-credit-method-cc0-expirationYear\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
-          "expectedValue": "2027"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-method-cc0-cardNumber\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_NUMBER",
+      "expectedValue": "9621327911759602",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-method-cc0-expirationMonth\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
+      "expectedValue": "05",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"payment-credit-method-cc0-expirationYear\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
+      "expectedValue": "2027",
+      "type": "validateField"
     }
   ]
 }

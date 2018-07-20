@@ -18,51 +18,56 @@
       "selectorType": "xpath",
       "selector": "//*[@id=\"AddressForm_NAME\"]",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selector": "//*[@id=\"AddressForm_NAME\"]",
-          "context": [],
-          "expectedAutofillType": "NAME_FULL",
-          "expectedValue": "Milton C. Waddams"
-        },
-        {
-          "selector": "//*[@id=\"AddressForm_ADDRESS_LINE_1\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE1",
-          "expectedValue": "4120 Freidrich Lane"
-        },
-        {
-          "selector": "//*[@id=\"AddressForm_ADDRESS_LINE_2\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE2",
-          "expectedValue": "Apt 8"
-        },
-        {
-          "selector": "//*[@id=\"AddressForm_CITY\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_CITY",
-          "expectedValue": "Austin"
-        },
-        {
-          "selector": "//*[@id=\"AddressForm_STATE_OR_REGION\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_STATE",
-          "expectedValue": "Texas"
-        },
-        {
-          "selector": "//*[@id=\"AddressForm_ZIP_CODE\"]",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_ZIP",
-          "expectedValue": "78744"
-        },
-        {
-          "selector": "//*[@id=\"AddressForm_PHONE_NUMBER\"]",
-          "context": [],
-          "expectedAutofillType": "PHONE_HOME_CITY_AND_NUMBER",
-          "expectedValue": "5125551234"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_NAME\"]",
+      "context": [],
+      "expectedAutofillType": "NAME_FULL",
+      "expectedValue": "Milton C. Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_ADDRESS_LINE_1\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_ADDRESS_LINE_2\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_CITY\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_CITY",
+      "expectedValue": "Austin",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_STATE_OR_REGION\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_STATE",
+      "expectedValue": "Texas",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_ZIP_CODE\"]",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_ZIP",
+      "expectedValue": "78744",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_PHONE_NUMBER\"]",
+      "context": [],
+      "expectedAutofillType": "PHONE_HOME_CITY_AND_NUMBER",
+      "expectedValue": "5125551234",
+      "type": "validateField"
     },
     {
       "selectorType": "xpath",
@@ -74,33 +79,35 @@
       "selectorType": "xpath",
       "selector": "//*[@id=\"ccNumber\"]",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selector": "//*[@id=\"ccNumber\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_NUMBER",
-          "expectedValue": "9621327911759602"
-        },
-        {
-          "selector": "//*[@id=\"ccName\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_NAME_FULL",
-          "expectedValue": "Milton Waddams"
-        },
-        {
-          "selector": "//*[@id=\"ccMonth\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
-          "expectedValue": "5"
-        },
-        {
-          "selector": "//*[@id=\"ccYear\"]",
-          "context": [],
-          "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
-          "expectedValue": "2027"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"ccNumber\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_NUMBER",
+      "expectedValue": "9621327911759602",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccName\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_NAME_FULL",
+      "expectedValue": "Milton Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccMonth\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
+      "expectedValue": "5",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccYear\"]",
+      "context": [],
+      "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
+      "expectedValue": "2027",
+      "type": "validateField"
     }
   ]
 }
