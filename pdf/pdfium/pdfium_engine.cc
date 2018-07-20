@@ -2703,6 +2703,7 @@ void PDFiumEngine::LoadForm() {
   if (document_->form_status() != PDF_FORM_NOTAVAIL ||
       doc_loader_->IsDocumentComplete()) {
     document_->InitializeForm(&form_filler_);
+    form_filler_.RegisterSaveCalledHandler();
 #if defined(PDF_ENABLE_XFA)
     FPDF_LoadXFA(doc());
 #endif

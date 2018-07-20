@@ -82,6 +82,10 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
 
 PDFiumFormFiller::~PDFiumFormFiller() = default;
 
+void PDFiumFormFiller::RegisterSaveCalledHandler() {
+  FORM_SetSaveCallback(engine_->form(), PDFiumFormFiller::Form_SaveCalled);
+}
+
 // static
 void PDFiumFormFiller::Form_Invalidate(FPDF_FORMFILLINFO* param,
                                        FPDF_PAGE page,
@@ -265,6 +269,11 @@ void PDFiumFormFiller::Form_DoGoToAction(FPDF_FORMFILLINFO* param,
                                          int size_of_array) {
   PDFiumEngine* engine = GetEngine(param);
   engine->ScrollToPage(page_index);
+}
+
+// static
+void PDFiumFormFiller::Form_SaveCalled(FPDF_FORMFILLINFO* param) {
+  GetEngine(param)->client_->SaveCalled();
 }
 
 #if defined(PDF_ENABLE_XFA)
