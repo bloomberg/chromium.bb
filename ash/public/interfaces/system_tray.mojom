@@ -33,11 +33,21 @@ interface SystemTray {
   // tracing is running.
   SetPerformanceTracingIconVisible(bool visible);
 
-  // Shows an icon in the system tray indicating that a software update is
-  // available. Once shown the icon persists until reboot. |severity| and
-  // |factory_reset_required| are used to set the icon, color, and tooltip.
+  // Shows an icon in the system tray or a notification on the unified system
+  // menu indicating that a software update is available. Once shown, the icon
+  // or the notification persists until reboot.
+  // |severity| specifies how critical is the update.
+  // |factory_reset_required| is true if during the update the device will
+  //     be wiped.
+  // |rollback| specifies whether the update is actually an admin-initiated
+  //     rollback. This implies that a the device will be wiped.
+  // |update_type| specifies the component which has been updated.
+  //
+  // These values are used to control the icon, color and the text of the
+  // tooltip or the notification.
   ShowUpdateIcon(UpdateSeverity severity,
                  bool factory_reset_required,
+                 bool rollback,
                  UpdateType update_type);
 
   // If |visible| is true, shows an icon in the system tray which indicates that

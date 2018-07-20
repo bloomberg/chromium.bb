@@ -647,6 +647,7 @@ void AboutHandler::RequestUpdate() {
 
 void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
                                    int progress,
+                                   bool rollback,
                                    const std::string& version,
                                    int64_t size,
                                    const base::string16& message) {
@@ -657,6 +658,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
   event->SetString("status", UpdateStatusToString(status));
   event->SetString("message", message);
   event->SetInteger("progress", progress);
+  event->SetBoolean("rollback", rollback);
   event->SetString("version", version);
   // DictionaryValue does not support int64_t, so convert to string.
   event->SetString("size", base::Int64ToString(size));

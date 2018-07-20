@@ -146,7 +146,7 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
     set_upgrade_detected_time(tick_clock()->NowTicks());
 
     if (status.is_rollback) {
-      set_is_factory_reset_required(true);
+      set_is_rollback(true);
       NotifyOnUpgrade();
     } else {
       // Determine whether powerwash is required based on the channel.

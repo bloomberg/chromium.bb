@@ -93,6 +93,10 @@ class UpgradeDetector {
 
   bool is_factory_reset_required() const { return is_factory_reset_required_; }
 
+#if defined(OS_CHROMEOS)
+  bool is_rollback() const { return is_rollback_; }
+#endif  // defined(OS_CHROMEOS)
+
   // Retrieves the right icon based on the degree of severity (see
   // UpgradeNotificationAnnoyanceLevel, each level has an an accompanying icon
   // to go with it) to display within the app menu.
@@ -202,6 +206,10 @@ class UpgradeDetector {
     is_factory_reset_required_ = is_factory_reset_required;
   }
 
+#if defined(OS_CHROMEOS)
+  void set_is_rollback(bool is_rollback) { is_rollback_ = is_rollback; }
+#endif  // defined(OS_CHROMEOS)
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AppMenuModelTest, Basics);
   FRIEND_TEST_ALL_PREFIXES(SystemTrayClientTest, UpdateTrayIcon);
@@ -244,6 +252,13 @@ class UpgradeDetector {
 
   // Whether a factory reset is needed to complete an update.
   bool is_factory_reset_required_;
+
+#if defined(OS_CHROMEOS)
+  // Whether the update is actually an admin-initiated rollback of the device
+  // to an earlier version of Chrome OS, which results in the device being
+  // wiped when it's rebooted.
+  bool is_rollback_ = false;
+#endif  // defined(OS_CHROMEOS)
 
   // A timer to check to see if we've been idle for long enough to show the
   // critical warning. Should only be set if |upgrade_available_| is

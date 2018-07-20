@@ -127,6 +127,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // Callback method which forwards status updates to the page.
   void SetUpdateStatus(VersionUpdater::Status status,
                        int progress,
+                       bool rollback,
                        const std::string& version,
                        int64_t size,
                        const base::string16& fail_message);
