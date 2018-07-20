@@ -60,5 +60,12 @@
          =1 {Page 1}
          other {Page #}}
     </message>
+    <message name="IDS_PDF_SAVE_CALLED_TITLE" desc="Title of the dialog which shows a message warning the user that saving documents directly is not implemented.">
+      Warning
+    </message>
+    <message name="IDS_PDF_SAVE_CALLED_TEXT"
+             desc="Contents of the dialog shown when a save operation is attempted in the PDF viewer. Indicates to the user that the operation is not currently implemented and that they will need to print the PDF and use 'Save as PDF' to create a new PDF with their data.">
+      Saving content entered into PDF forms is currently not supported. Please print the PDF and use the 'Save as PDF' destination to create a new PDF with the entered data.
+    </message>
   </if>
 </grit-part>

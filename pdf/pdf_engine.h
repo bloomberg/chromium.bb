@@ -275,6 +275,9 @@ class PDFEngine {
     // Gets the height of the top toolbar in screen coordinates. This is
     // independent of whether it is hidden or not at the moment.
     virtual float GetToolbarHeightInScreenCoords() = 0;
+
+    // Notifies the client that there was an attempt to save the document
+    virtual void SaveCalled() {}
   };
 
   // Factory method to create an instance of the PDF Engine.
