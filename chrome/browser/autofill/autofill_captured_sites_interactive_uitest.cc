@@ -56,6 +56,57 @@
 namespace {
 
 const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
+const base::TimeDelta paint_event_check_interval =
+    base::TimeDelta::FromMilliseconds(500);
+const int autofill_action_num_retries = 5;
+
+// PageActivityObserver waits until Chrome finishes loading a page and stops
+// making visual updates to the page.
+class PageActivityObserver : public content::WebContentsObserver {
+ public:
+  explicit PageActivityObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~PageActivityObserver() override = default;
+
+  // Wait until Chrome finishes loading a page and updating the page's visuals.
+  // If Chrome finishes loading a page but continues to paint every half
+  // second, exit after |continuous_paint_timeout| expires since Chrome
+  // finished loading the page.
+  void WaitTillPageIsIdle(
+      base::TimeDelta continuous_paint_timeout = default_action_timeout) {
+    base::TimeTicks finished_load_time = base::TimeTicks::Now();
+    bool page_is_loading = false;
+    do {
+      paint_occurred_during_last_loop_ = false;
+      base::RunLoop heart_beat;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, heart_beat.QuitClosure(), paint_event_check_interval);
+      heart_beat.Run();
+      page_is_loading =
+          web_contents()->IsWaitingForResponse() || web_contents()->IsLoading();
+      if (page_is_loading) {
+        finished_load_time = base::TimeTicks::Now();
+      } else if (base::TimeTicks::Now() - finished_load_time >
+                 continuous_paint_timeout) {
+        // |continuous_paint_timeout| has expired since Chrome loaded the page.
+        // During this period of time, Chrome has been continuously painting
+        // the page. In this case, the page is probably idle, but a bug, a
+        // blinking caret or a persistent animation is making Chrome paint at
+        // regular intervals. Exit.
+        break;
+      }
+    } while (page_is_loading || paint_occurred_during_last_loop_);
+  }
+
+ private:
+  void DidCommitAndDrawCompositorFrame() override {
+    paint_occurred_during_last_loop_ = true;
+  }
+
+  bool paint_occurred_during_last_loop_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(PageActivityObserver);
+};
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str) {
 #if defined(OS_WIN)
@@ -87,9 +138,7 @@ std::vector<std::string> GetCapturedSites() {
     // has the '.test' extension.
     if (file.Extension().empty() &&
         base::PathExists(file.AddExtension(FILE_PATH_LITERAL(".test")))) {
-      std::string file_name(file.BaseName().value().begin(),
-                            file.BaseName().value().end());
-      sites.push_back(file_name);
+      sites.push_back(FilePathToUTF8(file.BaseName().value()));
     }
   }
   std::sort(sites.begin(), sites.end());
@@ -113,7 +162,7 @@ class AutofillCapturedSitesInteractiveTest
   void SetUpOnMainThread() override {
     AutofillUiTest::SetUpOnMainThread();
     SetupTestProfile();
-    ASSERT_TRUE(InstallWebPageReplayServerRootCert())
+    EXPECT_TRUE(InstallWebPageReplayServerRootCert())
         << "Cannot install the root certificate "
         << "for the local web page replay server.";
     CleanupSiteData();
@@ -197,7 +246,7 @@ class AutofillCapturedSitesInteractiveTest
     return true;
   }
 
-  bool ReplayRecordedActions(const char* recipe_file_name) {
+  bool ReplayTestRecipe(const char* recipe_file_name) {
     // Read the text of the recipe file.
     base::FilePath src_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
@@ -215,118 +264,42 @@ class AutofillCapturedSitesInteractiveTest
       return false;
     }
 
-    // Navigate to the starting url.
-    std::string starting_url;
-    CHECK(recipe->GetString("startingURL", &starting_url));
-    CHECK(content::ExecuteScript(
-        GetWebContents(), base::StringPrintf("window.location.href = '%s';",
-                                             starting_url.c_str())));
-    // Iterate through and execute all the actions contained in the recipe.
-    base::ListValue* action_list;
-    CHECK(recipe->GetList("actions", &action_list));
-    for (base::ListValue::iterator it_action = action_list->begin();
-         it_action != action_list->end(); ++it_action) {
+    InitializeBrowserToExecuteRecipe(recipe);
+
+    // Iterate through and execute each action in the recipe.
+    base::Value* action_list_container = recipe->FindKey("actions");
+    CHECK(action_list_container);
+    CHECK_EQ(base::Value::Type::LIST, action_list_container->type());
+    base::Value::ListStorage& action_list = action_list_container->GetList();
+
+    for (base::ListValue::iterator it_action = action_list.begin();
+         it_action != action_list.end(); ++it_action) {
       base::DictionaryValue* action;
       CHECK(it_action->GetAsDictionary(&action));
-      std::string type;
-      CHECK(action->GetString("type", &type));
+
+      base::Value* type_container = action->FindKey("type");
+      CHECK(type_container);
+      CHECK_EQ(base::Value::Type::STRING, type_container->type());
+      std::string type = type_container->GetString();
 
       if (base::CompareCaseInsensitiveASCII(type, "waitFor") == 0) {
-        std::vector<std::string> state_assertions;
-        base::ListValue* assertions_list;
-        CHECK(action->GetList("assertions", &assertions_list));
-        for (base::ListValue::iterator it_assertion = assertions_list->begin();
-             it_assertion != assertions_list->end(); ++it_assertion) {
-          std::string assertion;
-          CHECK(it_assertion->GetAsString(&assertion));
-          state_assertions.push_back(assertion);
-        }
-        CHECK(WaitForStateChange(state_assertions, default_action_timeout));
+        ExecuteWaitForStateAction(action);
+      } else if (base::CompareCaseInsensitiveASCII(type, "execute") == 0) {
+        ExecuteRunCommandAction(action);
+      } else if (base::CompareCaseInsensitiveASCII(type, "click") == 0) {
+        ExecuteClickAction(action);
+      } else if (base::CompareCaseInsensitiveASCII(type, "type") == 0) {
+        ExecuteTypeAction(action);
+      } else if (base::CompareCaseInsensitiveASCII(type, "select") == 0) {
+        ExecuteSelectDropdownAction(action);
+      } else if (base::CompareCaseInsensitiveASCII(type, "autofill") == 0) {
+        ExecuteAutofillAction(action);
+      } else if (base::CompareCaseInsensitiveASCII(type, "validateField") ==
+                 0) {
+        ExecuteValidateFieldValueAction(action);
       } else {
-        std::string xpath;
-        CHECK(action->GetString("selector", &xpath));
-        LOG(INFO) << "Executing recipe action";
-        LOG(INFO) << "type: " << type;
-        LOG(INFO) << "xpath: " << xpath;
-
-        // Wait for the target element to be visible and enabled on the page.
-        std::vector<std::string> state_assertions;
-        state_assertions.push_back(base::StringPrintf(
-            "return automation_helper.isElementWithXpathReady(`%s`);",
-            xpath.c_str()));
-        CHECK(WaitForStateChange(state_assertions, default_action_timeout));
-
-        if (base::CompareCaseInsensitiveASCII(type, "click") == 0) {
-          CHECK(ExecuteJavaScriptOnElementByXpath(xpath, "target.click();"));
-        } else if (base::CompareCaseInsensitiveASCII(type, "type") == 0) {
-          std::string value;
-          CHECK(action->GetString("value", &value));
-          CHECK(ExecuteJavaScriptOnElementByXpath(
-              xpath, base::StringPrintf(
-                         "automation_helper.setInputElementValue(target, `%s`)",
-                         value.c_str())));
-        } else if (base::CompareCaseInsensitiveASCII(type, "select") == 0) {
-          int selected_index;
-          CHECK(action->GetInteger("index", &selected_index));
-          CHECK(ExecuteJavaScriptOnElementByXpath(
-              xpath, base::StringPrintf(
-                         "automation_helper"
-                         ".selectOptionFromDropDownElementByIndex(target, %d)",
-                         selected_index)));
-        } else if (base::CompareCaseInsensitiveASCII(type, "autofill") == 0) {
-          std::vector<std::string> additional_state_assertions;
-          base::ListValue* fields_list;
-          CHECK(action->GetList("fields", &fields_list));
-
-          // Wait for all the autofilled elements to become visible on the
-          // page, and also wait for the `autofill-prediction` attribute on
-          // each element to be appended. Without the `autofill-prediction`
-          // attribute, Chrome will not be able to autofill the field.
-          for (base::ListValue::iterator it_field = fields_list->begin();
-               it_field != fields_list->end(); ++it_field) {
-            base::DictionaryValue* field;
-            CHECK(it_field->GetAsDictionary(&field));
-            std::string field_xpath;
-            CHECK(field->GetString("selector", &field_xpath));
-            additional_state_assertions.push_back(base::StringPrintf(
-                "return automation_helper.isElementWithXpathReady(`%s`);",
-                field_xpath.c_str()));
-            additional_state_assertions.push_back(base::StringPrintf(
-                "var attr = automation_helper.getElementByXpath(`%s`)"
-                ".getAttribute('autofill-prediction');"
-                "return (attr !== undefined && attr !== null);",
-                field_xpath.c_str()));
-          }
-          CHECK(WaitForStateChange(additional_state_assertions,
-                                   default_action_timeout));
-          CHECK(TryFillForm(xpath, 5));
-          // Go through each autofilled fields and verify that
-          // 1. The element has the expected autofill-prediction attribute.
-          //    This attribute is set either by chrome's local heuristic or
-          //    by Chrome Autofill team's prediction server.
-          // 2. The element has the expected value.
-          for (base::ListValue::iterator it_field = fields_list->begin();
-               it_field != fields_list->end(); ++it_field) {
-            base::DictionaryValue* field;
-            CHECK(it_field->GetAsDictionary(&field));
-            std::string field_xpath;
-            std::string autofill_prediction;
-            std::string expected_value;
-            CHECK(field->GetString("selector", &field_xpath));
-            CHECK(
-                field->GetString("expectedAutofillType", &autofill_prediction));
-            CHECK(field->GetString("expectedValue", &expected_value));
-            ExpectElementPropertyEquals(
-                field_xpath.c_str(),
-                "return target.getAttribute('autofill-prediction');",
-                autofill_prediction, true);
-            ExpectElementPropertyEquals(field_xpath.c_str(),
-                                        "return target.value;", expected_value);
-          }
-        } else {
-          ADD_FAILURE() << "Unrecognized action type: " << type;
-        }
-      }  // end if type != "waitFor"
+        ADD_FAILURE() << "Unrecognized action type: " << type;
+      }
     }    // end foreach action
     return true;
   }
@@ -524,6 +497,175 @@ class AutofillCapturedSitesInteractiveTest
     return false;
   }
 
+  // Functions for deserializing and executing actions from the test recipe
+  // JSON object.
+  void InitializeBrowserToExecuteRecipe(
+      std::unique_ptr<base::DictionaryValue>& recipe) {
+    // Extract the starting URL from the test recipe.
+    base::Value* starting_url_container = recipe->FindKey("startingURL");
+    CHECK(starting_url_container);
+    CHECK_EQ(base::Value::Type::STRING, starting_url_container->type());
+    LOG(INFO) << "Navigating to " << starting_url_container->GetString();
+
+    // Navigate to the starting URL, wait for the page to complete loading.
+    PageActivityObserver page_activity_observer(GetWebContents());
+    CHECK(content::ExecuteScript(
+        GetWebContents(),
+        base::StringPrintf("window.location.href = '%s';",
+                           starting_url_container->GetString().c_str())));
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  void ExecuteWaitForStateAction(base::DictionaryValue* action) {
+    // Extract the list of JavaScript assertions into a vector.
+    std::vector<std::string> state_assertions;
+    base::Value* assertions_list_container = action->FindKey("assertions");
+    CHECK(assertions_list_container);
+    CHECK_EQ(base::Value::Type::LIST, assertions_list_container->type());
+    base::Value::ListStorage& assertions_list =
+        assertions_list_container->GetList();
+    for (base::ListValue::iterator it_assertion = assertions_list.begin();
+         it_assertion != assertions_list.end(); ++it_assertion) {
+      CHECK_EQ(base::Value::Type::STRING, it_assertion->type());
+      state_assertions.push_back(it_assertion->GetString());
+    }
+    LOG(INFO) << "Waiting for page to reach a state.";
+
+    // Wait for all of the assertions to become true on the current page.
+    CHECK(WaitForStateChange(state_assertions, default_action_timeout));
+  }
+
+  void ExecuteRunCommandAction(base::DictionaryValue* action) {
+    // Extract the list of JavaScript commands into a vector.
+    std::vector<std::string> commands;
+    base::Value* commands_list_container = action->FindKey("commands");
+    CHECK(commands_list_container);
+    CHECK_EQ(base::Value::Type::LIST, commands_list_container->type());
+    base::Value::ListStorage& commands_list =
+        commands_list_container->GetList();
+
+    for (base::ListValue::iterator it_command = commands_list.begin();
+         it_command != commands_list.end(); ++it_command) {
+      CHECK_EQ(base::Value::Type::STRING, it_command->type());
+      commands.push_back(it_command->GetString());
+    }
+    LOG(INFO) << "Running JavaScript commands on the page.";
+
+    // Execute the commands.
+    PageActivityObserver page_activity_observer(GetWebContents());
+    for (const std::string& command : commands) {
+      CHECK(content::ExecuteScript(GetWebContents(), command));
+      // Wait in case the JavaScript command triggers page load or layout
+      // changes.
+      page_activity_observer.WaitTillPageIsIdle();
+    }
+  }
+
+  void ExecuteClickAction(base::DictionaryValue* action) {
+    std::string xpath = GetTargetHTMLElementXpathFromAction(action);
+    WaitForElemementToBeReady(xpath);
+
+    LOG(INFO) << "Left mouse clicking `" << xpath << "`.";
+    PageActivityObserver page_activity_observer(GetWebContents());
+    CHECK(ExecuteJavaScriptOnElementByXpath(xpath, "target.click();"));
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  void ExecuteTypeAction(base::DictionaryValue* action) {
+    base::Value* value_container = action->FindKey("value");
+    CHECK(value_container);
+    CHECK_EQ(base::Value::Type::STRING, value_container->type());
+    std::string value = value_container->GetString();
+
+    std::string xpath = GetTargetHTMLElementXpathFromAction(action);
+    WaitForElemementToBeReady(xpath);
+
+    LOG(INFO) << "Typing '" << value << "' inside `" << xpath << "`.";
+    PageActivityObserver page_activity_observer(GetWebContents());
+    CHECK(ExecuteJavaScriptOnElementByXpath(
+        xpath, base::StringPrintf(
+                   "automation_helper.setInputElementValue(target, `%s`);",
+                   value.c_str())));
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  void ExecuteSelectDropdownAction(base::DictionaryValue* action) {
+    base::Value* index_container = action->FindKey("index");
+    CHECK(index_container);
+    CHECK_EQ(base::Value::Type::INTEGER, index_container->type());
+    int index = index_container->GetInt();
+
+    std::string xpath = GetTargetHTMLElementXpathFromAction(action);
+    WaitForElemementToBeReady(xpath);
+
+    LOG(INFO) << "Select option '" << index << "' from `" << xpath << "`.";
+    PageActivityObserver page_activity_observer(GetWebContents());
+    CHECK(ExecuteJavaScriptOnElementByXpath(
+        xpath, base::StringPrintf(
+                   "automation_helper"
+                   "  .selectOptionFromDropDownElementByIndex(target, %d);",
+                   index_container->GetInt())));
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  void ExecuteAutofillAction(base::DictionaryValue* action) {
+    std::string xpath = GetTargetHTMLElementXpathFromAction(action);
+    WaitForElemementToBeReady(xpath);
+
+    LOG(INFO) << "Invoking Chrome Autofill on `" << xpath << "`.";
+    PageActivityObserver page_activity_observer(GetWebContents());
+    // Clear the input box first, in case a previous value is there.
+    // If the text input box is not clear, pressing the down key will not
+    // bring up the autofill suggestion box.
+    // This can happen on sites that requires the user to sign in. After
+    // signing in, the site fills the form with the user's profile
+    // information.
+    CHECK(ExecuteJavaScriptOnElementByXpath(
+        xpath, "automation_helper.setInputElementValue(target, ``);"));
+    CHECK(TryFillForm(xpath, autofill_action_num_retries));
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  void ExecuteValidateFieldValueAction(base::DictionaryValue* action) {
+    base::Value* autofill_prediction_container =
+        action->FindKey("expectedAutofillType");
+    CHECK(autofill_prediction_container);
+    CHECK_EQ(base::Value::Type::STRING, autofill_prediction_container->type());
+    std::string expected_autofill_prediction_type =
+        autofill_prediction_container->GetString();
+
+    base::Value* expected_value_container = action->FindKey("expectedValue");
+    CHECK(expected_value_container);
+    CHECK_EQ(base::Value::Type::STRING, expected_value_container->type());
+    std::string expected_value = expected_value_container->GetString();
+
+    std::string xpath = GetTargetHTMLElementXpathFromAction(action);
+    WaitForElemementToBeReady(xpath);
+
+    LOG(INFO) << "Checking the field `" << xpath << "`.";
+    ExpectElementPropertyEquals(
+        xpath.c_str(), "return target.getAttribute('autofill-prediction');",
+        expected_autofill_prediction_type, true);
+    ExpectElementPropertyEquals(xpath.c_str(), "return target.value;",
+                                expected_value);
+  }
+
+  std::string GetTargetHTMLElementXpathFromAction(
+      base::DictionaryValue* action) {
+    base::Value* xpath_container = action->FindKey("selector");
+    CHECK(xpath_container);
+    CHECK_EQ(base::Value::Type::STRING, xpath_container->type());
+    return xpath_container->GetString();
+  }
+
+  void WaitForElemementToBeReady(std::string xpath) {
+    std::vector<std::string> state_assertions;
+    state_assertions.push_back(base::StringPrintf(
+        "return automation_helper.isElementWithXpathReady(`%s`);",
+        xpath.c_str()));
+    CHECK(WaitForStateChange(state_assertions, default_action_timeout));
+  }
+
   // The Web Page Replay server that will be serving the captured sites
   base::Process web_page_replay_server_;
   const int host_http_port_ = 8080;
@@ -539,7 +681,7 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam();
   ASSERT_TRUE(StartWebPageReplayServer(GetParam()));
-  ASSERT_TRUE(ReplayRecordedActions(GetParam().c_str()));
+  ASSERT_TRUE(ReplayTestRecipe(GetParam().c_str()));
 }
 
 struct GetParamAsString {

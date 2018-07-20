@@ -28,85 +28,85 @@
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='firstName']",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='firstName']",
-          "context": [],
-          "expectedAutofillType": "NAME_FIRST",
-          "expectedValue": "Milton"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='lastName']",
-          "context": [],
-          "expectedAutofillType": "NAME_LAST",
-          "expectedValue": "Waddams"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='phone']",
-          "context": [],
-          "expectedAutofillType": "PHONE_HOME_CITY_AND_NUMBER",
-          "expectedValue": "5125551234"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='email']",
-          "context": [],
-          "expectedAutofillType": "EMAIL_ADDRESS",
-          "expectedValue": "red.swingline@initech.com"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='addressLineOne']",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE1",
-          "expectedValue": "4120 Freidrich Lane"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='addressLineTwo']",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_LINE2",
-          "expectedValue": "Apt 8"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='city']",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_CITY",
-          "expectedValue": "Austin"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//*[@name='state']",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_STATE",
-          "expectedValue": "TX"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//input[@type='text' and @name='postalCode']",
-          "context": [],
-          "expectedAutofillType": "ADDRESS_HOME_ZIP",
-          "expectedValue": "78744"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='firstName']",
+      "context": [],
+      "expectedAutofillType": "NAME_FIRST",
+      "expectedValue": "Milton",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='lastName']",
+      "context": [],
+      "expectedAutofillType": "NAME_LAST",
+      "expectedValue": "Waddams",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='phone']",
+      "context": [],
+      "expectedAutofillType": "PHONE_HOME_CITY_AND_NUMBER",
+      "expectedValue": "5125551234",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='email']",
+      "context": [],
+      "expectedAutofillType": "EMAIL_ADDRESS",
+      "expectedValue": "red.swingline@initech.com",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='addressLineOne']",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='addressLineTwo']",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='city']",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_CITY",
+      "expectedValue": "Austin",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@name='state']",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_STATE",
+      "expectedValue": "TX",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='postalCode']",
+      "context": [],
+      "expectedAutofillType": "ADDRESS_HOME_ZIP",
+      "expectedValue": "78744",
+      "type": "validateField"
     },
     {
       "selectorType": "xpath",
       "selector": "//button[contains(., 'Continue')]",
       "context": [],
       "type": "click"
-    },
-    {
-      "context": [],
-      "type": "waitFor",
-      "assertions": [
-        "return automation_helper.isElementWithXpathReady(`//div[@data-automation-id='address-validation-message-address']`);"
-      ]
     },
     {
       "selectorType": "xpath",
@@ -118,30 +118,31 @@
       "selectorType": "xpath",
       "selector": "//*[@id=\"creditCard\"]",
       "context": [],
-      "type": "autofill",
-      "fields" : [
-        {
-          "selectorType": "xpath",
-          "selector": "//*[@id=\"creditCard\"]",
-          "context": [],
-          "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_NUMBER",
-          "expectedValue": "9621327911759602"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//*[@id=\"month-chooser\"]",
-          "context": [],
-          "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_MONTH",
-          "expectedValue": "05"
-        },
-        {
-          "selectorType": "xpath",
-          "selector": "//*[@id=\"year-chooser\"]",
-          "context": [],
-          "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_YEAR",
-          "expectedValue": "2027"
-        }
-      ]
+      "type": "autofill"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"creditCard\"]",
+      "context": [],
+      "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_NUMBER",
+      "expectedValue": "9621327911759602",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"month-chooser\"]",
+      "context": [],
+      "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_MONTH",
+      "expectedValue": "05",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"year-chooser\"]",
+      "context": [],
+      "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_YEAR",
+      "expectedValue": "2027",
+      "type": "validateField"
     }
   ]
 }
