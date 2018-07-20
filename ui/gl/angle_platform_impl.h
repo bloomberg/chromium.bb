@@ -18,7 +18,7 @@ GL_EXPORT bool InitializePlatform(EGLDisplay display);
 GL_EXPORT void ResetPlatform(EGLDisplay display);
 
 using CacheProgramCallback =
-    base::RepeatingCallback<void(const std::string&, const std::string&)>;
+    ::base::RepeatingCallback<void(const std::string&, const std::string&)>;
 GL_EXPORT void SetCacheProgramCallback(CacheProgramCallback callback);
 GL_EXPORT void ResetCacheProgramCallback();
 
