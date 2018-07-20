@@ -25,6 +25,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 namespace service_worker_request_handler_unittest {
@@ -119,6 +120,11 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                                    const std::string& method,
                                    bool skip_service_worker,
                                    ResourceType resource_type) {
+    // Skip handler initialization tests when S13nServiceWorker is enabled
+    // because we don't use this path. See also comments in
+    // ServiceWorkerRequestHandler::InitializeHandler().
+    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+      return;
     InitializeProviderHostForWindow();
     std::unique_ptr<net::URLRequest> request = CreateRequest(url, method);
     InitializeHandler(request.get(), skip_service_worker, resource_type);
