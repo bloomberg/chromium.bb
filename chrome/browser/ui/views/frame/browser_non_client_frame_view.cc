@@ -138,8 +138,12 @@ SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
   if (MD::IsRefreshUi() && state == TAB_INACTIVE &&
       !GetThemeProvider()->HasCustomColor(
           ThemeProperties::COLOR_BACKGROUND_TAB_TEXT)) {
-    return color_utils::IsDark(GetFrameColor()) ? SK_ColorWHITE
-                                                : gfx::kGoogleGrey800;
+    const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE);
+    const SkColor default_color = color_utils::IsDark(background_color)
+                                      ? gfx::kGoogleGrey500
+                                      : gfx::kGoogleGrey700;
+    return color_utils::GetColorWithMinimumContrast(default_color,
+                                                    background_color);
   }
 
   const auto color_id = state == TAB_ACTIVE

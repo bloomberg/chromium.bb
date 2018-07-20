@@ -188,4 +188,37 @@ TEST(ColorUtils, IsDarkDarkestColorChange) {
   SetDarkestColor(old_black_color);
 }
 
+TEST(ColorUtils, GetColorWithMinimumContrast_ForegroundAlreadyMeetsMinimum) {
+  EXPECT_EQ(SK_ColorBLACK,
+            GetColorWithMinimumContrast(SK_ColorBLACK, SK_ColorWHITE));
+}
+
+TEST(ColorUtils, GetColorWithMinimumContrast_BlendDarker) {
+  const SkColor foreground = SkColorSetRGB(0xAA, 0xAA, 0xAA);
+  const SkColor result = GetColorWithMinimumContrast(foreground, SK_ColorWHITE);
+  EXPECT_NE(foreground, result);
+  EXPECT_GE(GetContrastRatio(result, SK_ColorWHITE),
+            kMinimumReadableContrastRatio);
+}
+
+TEST(ColorUtils, GetColorWithMinimumContrast_BlendLighter) {
+  const SkColor foreground = SkColorSetRGB(0x33, 0x33, 0x33);
+  const SkColor result = GetColorWithMinimumContrast(foreground, SK_ColorBLACK);
+  EXPECT_NE(foreground, result);
+  EXPECT_GE(GetContrastRatio(result, SK_ColorBLACK),
+            kMinimumReadableContrastRatio);
+}
+
+TEST(ColorUtils, GetColorWithMinimumContrast_StopsAtDarkestColor) {
+  SkColor old_black_color = GetDarkestColorForTesting();
+
+  const SkColor darkest_color = SkColorSetRGB(0x44, 0x44, 0x44);
+  SetDarkestColor(darkest_color);
+  EXPECT_EQ(darkest_color,
+            GetColorWithMinimumContrast(SkColorSetRGB(0x55, 0x55, 0x55),
+                                        SkColorSetRGB(0xAA, 0xAA, 0xAA)));
+
+  SetDarkestColor(old_black_color);
+}
+
 }  // namespace color_utils

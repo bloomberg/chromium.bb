@@ -314,6 +314,40 @@ SkColor PickContrastingColor(SkColor foreground1,
       foreground1 : foreground2;
 }
 
+SkColor GetColorWithMinimumContrast(SkColor default_foreground,
+                                    SkColor background) {
+  DCHECK_EQ(SkColorGetA(default_foreground), SK_AlphaOPAQUE);
+
+  const double background_luminance = GetRelativeLuminance(background);
+  if (GetContrastRatio(GetRelativeLuminance(default_foreground),
+                       background_luminance) >= kMinimumReadableContrastRatio) {
+    return default_foreground;
+  }
+
+  const SkColor blend_direction =
+      IsDark(background) ? SK_ColorWHITE : g_color_utils_darkest;
+  // Binary search to find the smallest blend that gives us acceptable contrast.
+  SkAlpha lower_bound_alpha = SK_AlphaTRANSPARENT;
+  SkAlpha upper_bound_alpha = SK_AlphaOPAQUE;
+  SkColor best_color = blend_direction;
+  constexpr int kCloseEnoughAlphaDelta = 0x04;
+  while (lower_bound_alpha + kCloseEnoughAlphaDelta < upper_bound_alpha) {
+    const SkAlpha next_alpha =
+        gfx::ToCeiledInt((lower_bound_alpha + upper_bound_alpha) / 2.f);
+    const SkColor next_foreground =
+        AlphaBlend(blend_direction, default_foreground, next_alpha);
+    if (GetContrastRatio(GetRelativeLuminance(next_foreground),
+                         background_luminance) <
+        kMinimumReadableContrastRatio) {
+      lower_bound_alpha = next_alpha;
+    } else {
+      upper_bound_alpha = next_alpha;
+      best_color = next_foreground;
+    }
+  }
+  return best_color;
+}
+
 SkColor InvertColor(SkColor color) {
   return SkColorSetARGB(SkColorGetA(color), 255 - SkColorGetR(color),
                         255 - SkColorGetG(color), 255 - SkColorGetB(color));
