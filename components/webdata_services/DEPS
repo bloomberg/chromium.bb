@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/autofill/core/browser/webdata",
+  "+components/autofill/core",
   "+components/keyed_service/core",
   "+components/password_manager/core/browser/webdata",
   "+components/payments/content",

@@ -76,7 +76,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
       .WillOnce(SignalEvent(&done_event));
 
   scoped_refptr<AutofillWebDataService> wds =
-      autofill_helper::GetWebDataService(profile);
+      autofill_helper::GetProfileWebDataService(profile);
 
   void (AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBSequence*) =
@@ -202,8 +202,13 @@ AutofillProfile CreateUniqueAutofillProfile() {
   return profile;
 }
 
-scoped_refptr<AutofillWebDataService> GetWebDataService(int index) {
+scoped_refptr<AutofillWebDataService> GetProfileWebDataService(int index) {
   return WebDataServiceFactory::GetAutofillWebDataForProfile(
+      test()->GetProfile(index), ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+scoped_refptr<AutofillWebDataService> GetAccountWebDataService(int index) {
+  return WebDataServiceFactory::GetAutofillWebDataForAccount(
       test()->GetProfile(index), ServiceAccessType::EXPLICIT_ACCESS);
 }
 
@@ -227,7 +232,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
       .WillOnce(SignalEvent(&done_event));
 
-  scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
 
   void (AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBSequence*) =
@@ -249,7 +254,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
 void RemoveKey(int profile, const AutofillKey& key) {
   RemoveKeyDontBlockForSync(profile, key);
   WaitForCurrentTasksToComplete(
-      autofill_helper::GetWebDataService(profile)->GetDBTaskRunner());
+      autofill_helper::GetProfileWebDataService(profile)->GetDBTaskRunner());
 }
 
 void RemoveKeys(int profile) {
@@ -258,11 +263,11 @@ void RemoveKeys(int profile) {
     RemoveKeyDontBlockForSync(profile, entry.key());
   }
   WaitForCurrentTasksToComplete(
-      autofill_helper::GetWebDataService(profile)->GetDBTaskRunner());
+      autofill_helper::GetProfileWebDataService(profile)->GetDBTaskRunner());
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
-  scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
   std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds.get());
   return std::set<AutofillEntry>(all_entries.begin(), all_entries.end());
 }
@@ -331,7 +336,7 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   // cancel outstanding queries, this is only instigated on the UI sequence,
   // which we are about to block, which means we are safe.
   WaitForCurrentTasksToComplete(
-      autofill_helper::GetWebDataService(profile)->GetDBTaskRunner());
+      autofill_helper::GetProfileWebDataService(profile)->GetDBTaskRunner());
 
   return pdm->GetProfiles();
 }
@@ -387,9 +392,9 @@ bool AutofillProfileChecker::Wait() {
   // before any locally instigated async writes. This is run exactly one time
   // before the first IsExitConditionSatisfied() is called.
   WaitForCurrentTasksToComplete(
-      autofill_helper::GetWebDataService(profile_a_)->GetDBTaskRunner());
+      autofill_helper::GetProfileWebDataService(profile_a_)->GetDBTaskRunner());
   WaitForCurrentTasksToComplete(
-      autofill_helper::GetWebDataService(profile_b_)->GetDBTaskRunner());
+      autofill_helper::GetProfileWebDataService(profile_b_)->GetDBTaskRunner());
   return StatusChangeChecker::Wait();
 }
 

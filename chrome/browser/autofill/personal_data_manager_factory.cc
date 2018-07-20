@@ -47,20 +47,15 @@ KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
       new PersonalDataManager(g_browser_process->GetApplicationLocale());
   auto local_storage = WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
-  auto account_storage =
-      base::FeatureList::IsEnabled(
-          features::kAutofillEnableAccountWalletStorage)
-          ? WebDataServiceFactory::GetAutofillWebDataForAccount(
-                profile, ServiceAccessType::EXPLICIT_ACCESS)
-          : nullptr;
+  auto account_storage = WebDataServiceFactory::GetAutofillWebDataForAccount(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   service->Init(local_storage, account_storage, profile->GetPrefs(),
                 IdentityManagerFactory::GetForProfile(profile),
                 profile->IsOffTheRecord());
   // For now, just tell the PersonalDataManager to use the account storage if
   // the feature flag is enabled.
   // TODO(feuunk): Set this based on whether we're in lightweight sync mode.
-  service->SetUseAccountStorageForServerCards(base::FeatureList::IsEnabled(
-      features::kAutofillEnableAccountWalletStorage));
+  service->SetUseAccountStorageForServerCards(account_storage != nullptr);
   return service;
 }
 

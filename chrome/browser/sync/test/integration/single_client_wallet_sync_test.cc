@@ -15,14 +15,18 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/notification_service.h"
 
 using autofill_helper::GetPersonalDataManager;
+using autofill_helper::GetProfileWebDataService;
+using autofill_helper::GetAccountWebDataService;
 
 namespace {
 
@@ -33,6 +37,40 @@ const char kDefaultCardLastFour[] = "1234";
 const char kDefaultCardName[] = "Patrick Valenzuela";
 const sync_pb::WalletMaskedCreditCard_WalletCardType kDefaultCardType =
     sync_pb::WalletMaskedCreditCard::AMEX;
+
+template <class T>
+class AutofillWebDataServiceConsumer : public WebDataServiceConsumer {
+ public:
+  AutofillWebDataServiceConsumer() {}
+
+  virtual ~AutofillWebDataServiceConsumer() {}
+
+  void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle handle,
+      std::unique_ptr<WDTypedResult> result) override {
+    result_ = std::move(static_cast<WDResult<T>*>(result.get())->GetValue());
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  T& result() { return result_; }
+
+ private:
+  base::RunLoop run_loop_;
+  T result_;
+  DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
+};
+
+std::vector<std::unique_ptr<autofill::CreditCard>> GetServerCards(
+    scoped_refptr<autofill::AutofillWebDataService> service) {
+  AutofillWebDataServiceConsumer<
+      std::vector<std::unique_ptr<autofill::CreditCard>>>
+      consumer;
+  service->GetServerCreditCards(&consumer);
+  consumer.Wait();
+  return std::move(consumer.result());
+}
 
 void AddDefaultCard(fake_server::FakeServer* server) {
   sync_pb::EntitySpecifics specifics;
@@ -113,9 +151,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, EnabledByDefault) {
       syncer::AUTOFILL_WALLET_METADATA));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {},
+      // Disabled.
+      {autofill::features::kAutofillEnableAccountWalletStorage});
   AddDefaultCard(GetFakeServer());
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
+
+  auto profile_data = GetProfileWebDataService(0);
+  ASSERT_NE(nullptr, profile_data);
+  auto account_data = GetAccountWebDataService(0);
+  ASSERT_EQ(nullptr, account_data);
 
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -123,14 +172,54 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   ASSERT_EQ(1uL, cards.size());
 
   autofill::CreditCard* card = cards[0];
-  ASSERT_EQ(autofill::CreditCard::MASKED_SERVER_CARD, card->record_type());
-  ASSERT_EQ(kDefaultCardID, card->server_id());
-  ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
-  ASSERT_EQ(autofill::kAmericanExpressCard, card->network());
-  ASSERT_EQ(kDefaultCardExpMonth, card->expiration_month());
-  ASSERT_EQ(kDefaultCardExpYear, card->expiration_year());
-  ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardName),
+  EXPECT_EQ(autofill::CreditCard::MASKED_SERVER_CARD, card->record_type());
+  EXPECT_EQ(kDefaultCardID, card->server_id());
+  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
+  EXPECT_EQ(autofill::kAmericanExpressCard, card->network());
+  EXPECT_EQ(kDefaultCardExpMonth, card->expiration_month());
+  EXPECT_EQ(kDefaultCardExpYear, card->expiration_year());
+  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardName),
             card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
+
+  // Check that the card is stored in the profile storage.
+  EXPECT_EQ(1U, GetServerCards(GetProfileWebDataService(0)).size());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadAccountStorage) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {autofill::features::kAutofillEnableAccountWalletStorage},
+      // Disabled.
+      {});
+  AddDefaultCard(GetFakeServer());
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
+
+  auto profile_data = GetProfileWebDataService(0);
+  ASSERT_NE(nullptr, profile_data);
+  auto account_data = GetAccountWebDataService(0);
+  ASSERT_NE(nullptr, account_data);
+
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+
+  autofill::CreditCard* card = cards[0];
+  EXPECT_EQ(autofill::CreditCard::MASKED_SERVER_CARD, card->record_type());
+  EXPECT_EQ(kDefaultCardID, card->server_id());
+  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
+  EXPECT_EQ(autofill::kAmericanExpressCard, card->network());
+  EXPECT_EQ(kDefaultCardExpMonth, card->expiration_month());
+  EXPECT_EQ(kDefaultCardExpYear, card->expiration_year());
+  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardName),
+            card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
+
+  // Check that the card is *not* stored in the profile storage.
+  EXPECT_EQ(0U, GetServerCards(GetProfileWebDataService(0)).size());
+
+  // Check that the card is stored in the account storage.
+  EXPECT_EQ(1U, GetServerCards(GetAccountWebDataService(0)).size());
 }
 
 // Wallet data should get cleared from the database when sync is disabled.

@@ -50,6 +50,7 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -223,10 +224,24 @@ ChromeSyncClient::~ChromeSyncClient() {
 void ChromeSyncClient::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_data_service_ = WebDataServiceFactory::GetAutofillWebDataForProfile(
-      profile_, ServiceAccessType::IMPLICIT_ACCESS);
-  db_thread_ =
-      web_data_service_ ? web_data_service_->GetDBTaskRunner() : nullptr;
+  profile_web_data_service_ =
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile_, ServiceAccessType::IMPLICIT_ACCESS);
+  account_web_data_service_ =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage)
+          ? WebDataServiceFactory::GetAutofillWebDataForAccount(
+                profile_, ServiceAccessType::IMPLICIT_ACCESS)
+          : nullptr;
+  web_data_service_thread_ = profile_web_data_service_
+                                 ? profile_web_data_service_->GetDBTaskRunner()
+                                 : nullptr;
+
+  // This class assumes that the database thread is the same across the profile
+  // and account storage. This DCHECK makes that assumption explicit.
+  DCHECK(!account_web_data_service_ ||
+         web_data_service_thread_ ==
+             account_web_data_service_->GetDBTaskRunner());
   password_store_ = PasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
@@ -238,7 +253,7 @@ void ChromeSyncClient::Initialize() {
         prefs::kSavingBrowserHistoryDisabled,
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
-        db_thread_, web_data_service_, password_store_);
+        web_data_service_thread_, profile_web_data_service_, password_store_);
   }
 }
 
@@ -451,19 +466,37 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
           ->AsWeakPtr();
     case syncer::AUTOFILL_PROFILE:
-    case syncer::AUTOFILL_WALLET_DATA:
-    case syncer::AUTOFILL_WALLET_METADATA: {
-      if (!web_data_service_)
-        return base::WeakPtr<syncer::SyncableService>();
-      if (type == syncer::AUTOFILL_PROFILE) {
+      if (profile_web_data_service_) {
         return autofill::AutofillProfileSyncableService::FromWebDataService(
-            web_data_service_.get())->AsWeakPtr();
-      } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(web_data_service_.get())->AsWeakPtr();
+                   profile_web_data_service_.get())
+            ->AsWeakPtr();
       }
-      return autofill::AutofillWalletSyncableService::FromWebDataService(
-          web_data_service_.get())->AsWeakPtr();
+      return base::WeakPtr<syncer::SyncableService>();
+    case syncer::AUTOFILL_WALLET_DATA: {
+      // TODO(feuunk): This doesn't allow switching which database to use at
+      // runtime. This should be fixed as part of the USS migration for
+      // payments.
+      auto service = account_web_data_service_ ? account_web_data_service_
+                                               : profile_web_data_service_;
+      if (service) {
+        return autofill::AutofillWalletSyncableService::FromWebDataService(
+                   service.get())
+            ->AsWeakPtr();
+      }
+      return base::WeakPtr<syncer::SyncableService>();
+    }
+    case syncer::AUTOFILL_WALLET_METADATA: {
+      // TODO(feuunk): This doesn't allow switching which database to use at
+      // runtime. This should be fixed as part of the USS migration for
+      // payments.
+      auto service = account_web_data_service_ ? account_web_data_service_
+                                               : profile_web_data_service_;
+      if (service) {
+        return autofill::AutofillWalletMetadataSyncableService::
+            FromWebDataService(service.get())
+                ->AsWeakPtr();
+      }
+      return base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::SEARCH_ENGINES:
       return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
@@ -564,12 +597,12 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
-                 web_data_service_.get())
+                 profile_web_data_service_.get())
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
     case syncer::AUTOFILL_PROFILE:
       return autofill::AutofillProfileSyncBridge::FromWebDataService(
-                 web_data_service_.get())
+                 profile_web_data_service_.get())
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
 #if defined(OS_CHROMEOS)
@@ -620,7 +653,8 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (group) {
     case syncer::GROUP_DB:
-      return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
+      return new syncer::SequencedModelWorker(web_data_service_thread_,
+                                              syncer::GROUP_DB);
     // TODO(stanisc): crbug.com/731903: Rename GROUP_FILE to reflect that it is
     // used only for app and extension settings.
     case syncer::GROUP_FILE:
