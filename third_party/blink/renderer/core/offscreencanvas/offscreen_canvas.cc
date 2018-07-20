@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
@@ -44,7 +43,7 @@ OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
 
 OffscreenCanvas::~OffscreenCanvas() = default;
 
-void OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
+void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
                              const SkIRect& damage_rect) {
   if (!HasPlaceholderCanvas())
     return;
@@ -52,7 +51,7 @@ void OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   current_frame_damage_rect_.join(damage_rect);
   GetOrCreateResourceDispatcher()->DispatchFrameSync(
-      std::move(bitmap_image), commit_start_time, current_frame_damage_rect_);
+      canvas_resource->Bitmap(), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
@@ -383,7 +382,7 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
          context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
-void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
+void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
                                 const SkIRect& damage_rect) {
   DCHECK(needs_push_frame_);
   needs_push_frame_ = false;
@@ -392,7 +391,7 @@ void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
     return;
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   GetOrCreateResourceDispatcher()->DispatchFrame(
-      std::move(image), commit_start_time, current_frame_damage_rect_);
+      canvas_resource->Bitmap(), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 

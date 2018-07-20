@@ -103,11 +103,11 @@ class CORE_EXPORT OffscreenCanvas final
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
   void PushFrameIfNeeded();
-  void PushFrame(scoped_refptr<StaticBitmapImage> image,
+  void PushFrame(scoped_refptr<CanvasResource> frame,
                  const SkIRect& damage_rect) override;
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
-  void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
+  void Commit(scoped_refptr<CanvasResource> bitmap_image,
               const SkIRect& damage_rect) override;
   bool ShouldAccelerate2dContext() const override;
   unsigned GetMSAASampleCountFor2dContext() const override { return 0; }

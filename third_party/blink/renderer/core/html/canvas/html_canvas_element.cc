@@ -954,7 +954,7 @@ CanvasResourceDispatcher* HTMLCanvasElement::GetOrCreateResourceDispatcher() {
   return frame_dispatcher_.get();
 }
 
-void HTMLCanvasElement::PushFrame(scoped_refptr<StaticBitmapImage> image,
+void HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
                                   const SkIRect& damage_rect) {
   NOTIMPLEMENTED();
 }

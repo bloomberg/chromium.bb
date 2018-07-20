@@ -38,7 +38,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void DidDraw() = 0;
 
   virtual void FinalizeFrame() = 0;
-  virtual void PushFrame(scoped_refptr<StaticBitmapImage> image,
+  virtual void PushFrame(scoped_refptr<CanvasResource> frame,
                          const SkIRect& damage_rect) = 0;
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
@@ -68,7 +68,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual bool IsOffscreenCanvas() const { return false; }
   virtual bool IsNeutered() const { return false; }
 
-  virtual void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
+  virtual void Commit(scoped_refptr<CanvasResource> canvas_resource,
                       const SkIRect& damage_rect);
 
   bool IsPaintable() const;
@@ -85,12 +85,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions&,
                               ExceptionState&) const;
-
-  // Temporary inefficient adapters
-  void PushFrame(scoped_refptr<CanvasResource> image,
-                 const SkIRect& damage_rect);
-
-  void Commit(scoped_refptr<CanvasResource> image, const SkIRect& damage_rect);
 
  protected:
   ~CanvasRenderingContextHost() override {}
