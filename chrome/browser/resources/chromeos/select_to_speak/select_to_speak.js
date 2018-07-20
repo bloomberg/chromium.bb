@@ -66,30 +66,6 @@ let SelectToSpeak = function() {
         true);
   }.bind(this));
 
-  /** @private {?string} */
-  this.voiceNameFromPrefs_ = null;
-
-  /** @private {?string} */
-  this.voiceNameFromLocale_ = null;
-
-  /** @private {Set<string>} */
-  this.validVoiceNames_ = new Set();
-
-  /** @private {number} */
-  this.speechRate_ = 1.0;
-
-  /** @private {number} */
-  this.speechPitch_ = 1.0;
-
-  /** @private {boolean} */
-  this.wordHighlight_ = true;
-
-  /** @const {string} */
-  this.color_ = '#f73a98';
-
-  /** @private {string} */
-  this.highlightColor_ = '#5e9bff';
-
   /** @private {boolean} */
   this.readAfterClose_ = true;
 
@@ -130,7 +106,9 @@ let SelectToSpeak = function() {
   /** @private {Audio} */
   this.null_selection_tone_ = new Audio('earcons/null_selection.ogg');
 
-  this.initPreferences_();
+  /** @private {PrefsManager} */
+  this.prefsManager_ = new PrefsManager();
+  this.prefsManager_.initPreferences();
 
   this.setUpEventListeners_();
 };
@@ -148,8 +126,6 @@ SelectToSpeak.READ_SELECTION_KEY_CODE = 83;
 SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS = 1000;
 
 SelectToSpeak.prototype = {
-
-
   /**
    * Called in response to our hit test after the mouse is released,
    * when the user is in a mode where select-to-speak is capturing
@@ -194,8 +170,7 @@ SelectToSpeak.prototype = {
       }
       this.startSpeechQueue_(nodes);
       MetricsUtils.recordStartEvent(
-          MetricsUtils.StartSpeechMethod.MOUSE, this.speechRate_,
-          this.speechPitch_, this.wordHighlight_);
+          MetricsUtils.StartSpeechMethod.MOUSE, this.prefsManager_);
     }.bind(this));
   },
 
@@ -350,8 +325,7 @@ SelectToSpeak.prototype = {
     }
     this.initializeScrollingToOffscreenNodes_(focusedNode.root);
     MetricsUtils.recordStartEvent(
-        MetricsUtils.StartSpeechMethod.KEYSTROKE, this.speechRate_,
-        this.speechPitch_, this.wordHighlight_);
+        MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
   },
 
   /**
@@ -421,7 +395,8 @@ SelectToSpeak.prototype = {
    */
   clearFocusRing_: function() {
     chrome.accessibilityPrivate.setFocusRing([]);
-    chrome.accessibilityPrivate.setHighlights([], this.highlightColor_);
+    chrome.accessibilityPrivate.setHighlights(
+        [], this.prefsManager_.highlightColor());
   },
 
   /**
@@ -453,7 +428,8 @@ SelectToSpeak.prototype = {
       },
       // onSelectionChanged: Mouse selection rect changed.
       onSelectionChanged: rect => {
-        chrome.accessibilityPrivate.setFocusRing([rect], this.color_);
+        chrome.accessibilityPrivate.setFocusRing(
+            [rect], this.prefsManager_.focusRingColor());
       },
       // onKeystrokeSelection: Keys pressed for reading highlighted text.
       onKeystrokeSelection: () => {
@@ -515,7 +491,7 @@ SelectToSpeak.prototype = {
    */
   startSpeech_: function(text) {
     this.prepareForSpeech_();
-    let options = this.speechOptions_();
+    let options = this.prefsManager_.speechOptions();
     options.onEvent = (event) => {
       if (event.type == 'start') {
         this.onStateChanged_(SelectToSpeakState.SPEAKING);
@@ -584,14 +560,14 @@ SelectToSpeak.prototype = {
         continue;
       }
 
-      let options = this.speechOptions_();
+      let options = this.prefsManager_.speechOptions();
       options.onEvent = (event) => {
         if (event.type == 'start' && nodeGroup.nodes.length > 0) {
           this.onStateChanged_(SelectToSpeakState.SPEAKING);
           this.currentBlockParent_ = nodeGroup.blockParent;
           this.currentNodeGroupIndex_ = 0;
           this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
-          if (this.wordHighlight_) {
+          if (this.prefsManager_.wordHighlightingEnabled()) {
             // At 'start', find the first word and highlight that.
             // Clear the previous word in the node.
             this.currentNodeWord_ = null;
@@ -629,7 +605,7 @@ SelectToSpeak.prototype = {
               nodeUpdated = true;
             }
             if (nodeUpdated) {
-              if (!this.wordHighlight_) {
+              if (!this.prefsManager_.wordHighlightingEnabled()) {
                 // If we are doing a per-word highlight, we will test the
                 // node after figuring out what the currently highlighted
                 // word is.
@@ -637,7 +613,7 @@ SelectToSpeak.prototype = {
               }
             }
           }
-          if (this.wordHighlight_) {
+          if (this.prefsManager_.wordHighlightingEnabled()) {
             this.updateNodeHighlight_(
                 nodeGroup.text, event.charIndex, undefined,
                 isLast ? opt_endIndex : undefined);
@@ -687,40 +663,6 @@ SelectToSpeak.prototype = {
   },
 
   /**
-   * Generates the basic speech options for Select-to-Speak based on user
-   * preferences. Call for each chrome.tts.speak.
-   * @return {Object} options The TTS options.
-   */
-  speechOptions_: function() {
-    let options = {
-      rate: this.speechRate_,
-      pitch: this.speechPitch_,
-      enqueue: true
-    };
-
-    // Pick the voice name from prefs first, or the one that matches
-    // the locale next, but don't pick a voice that isn't currently
-    // loaded. If no voices are found, leave the voiceName option
-    // unset to let the browser try to route the speech request
-    // anyway if possible.
-    var valid = '';
-    this.validVoiceNames_.forEach(function(voiceName) {
-      if (valid)
-        valid += ',';
-      valid += voiceName;
-    });
-    if (this.voiceNameFromPrefs_ &&
-        this.validVoiceNames_.has(this.voiceNameFromPrefs_)) {
-      options['voiceName'] = this.voiceNameFromPrefs_;
-    } else if (
-        this.voiceNameFromLocale_ &&
-        this.validVoiceNames_.has(this.voiceNameFromLocale_)) {
-      options['voiceName'] = this.voiceNameFromLocale_;
-    }
-    return options;
-  },
-
-  /**
    * Cancels the current speech queue after doing a callback to
    * record a cancel event if speech was in progress. We must cancel
    * before the callback (rather than in it) to avoid race conditions
@@ -736,105 +678,6 @@ SelectToSpeak.prototype = {
       // Just stop speech
       chrome.tts.stop();
     }
-  },
-
-  /**
-   * Loads preferences from chrome.storage, sets default values if
-   * necessary, and registers a listener to update prefs when they
-   * change.
-   */
-  initPreferences_: function() {
-    var updatePrefs =
-        (function() {
-          chrome.storage.sync.get(
-              ['voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor'],
-              (function(prefs) {
-                if (prefs['voice']) {
-                  this.voiceNameFromPrefs_ = prefs['voice'];
-                }
-                if (prefs['rate']) {
-                  this.speechRate_ = parseFloat(prefs['rate']);
-                } else {
-                  chrome.storage.sync.set({'rate': this.speechRate_});
-                }
-                if (prefs['pitch']) {
-                  this.speechPitch_ = parseFloat(prefs['pitch']);
-                } else {
-                  chrome.storage.sync.set({'pitch': this.speechPitch_});
-                }
-                if (prefs['wordHighlight'] !== undefined) {
-                  this.wordHighlight_ = prefs['wordHighlight'];
-                } else {
-                  chrome.storage.sync.set(
-                      {'wordHighlight': this.wordHighlight_});
-                }
-                if (prefs['highlightColor']) {
-                  this.highlightColor_ = prefs['highlightColor'];
-                } else {
-                  chrome.storage.sync.set(
-                      {'highlightColor': this.highlightColor_});
-                }
-              }).bind(this));
-        }).bind(this);
-
-    updatePrefs();
-    chrome.storage.onChanged.addListener(updatePrefs);
-
-    this.updateDefaultVoice_();
-    window.speechSynthesis.onvoiceschanged = (function() {
-                                               this.updateDefaultVoice_();
-                                             }).bind(this);
-  },
-
-  /**
-   * Get the list of TTS voices, and set the default voice if not already set.
-   */
-  updateDefaultVoice_: function() {
-    var uiLocale = chrome.i18n.getMessage('@@ui_locale');
-    uiLocale = uiLocale.replace('_', '-').toLowerCase();
-
-    chrome.tts.getVoices(
-        (function(voices) {
-          this.validVoiceNames_ = new Set();
-
-          if (voices.length == 0)
-            return;
-
-          voices.forEach((voice) => {
-            if (!voice.eventTypes.includes('start') ||
-                !voice.eventTypes.includes('end') ||
-                !voice.eventTypes.includes('word') ||
-                !voice.eventTypes.includes('cancelled')) {
-              return;
-            }
-            this.validVoiceNames_.add(voice.voiceName);
-          });
-
-          voices.sort(function(a, b) {
-            function score(voice) {
-              if (voice.lang === undefined)
-                return -1;
-              var lang = voice.lang.toLowerCase();
-              var s = 0;
-              if (lang == uiLocale)
-                s += 2;
-              if (lang.substr(0, 2) == uiLocale.substr(0, 2))
-                s += 1;
-              return s;
-            }
-            return score(b) - score(a);
-          });
-
-          this.voiceNameFromLocale_ = voices[0].voiceName;
-
-          chrome.storage.sync.get(
-              ['voice'],
-              (function(prefs) {
-                if (!prefs['voice']) {
-                  chrome.storage.sync.set({'voice': voices[0].voiceName});
-                }
-              }).bind(this));
-        }).bind(this));
   },
 
   /**
@@ -894,7 +737,8 @@ SelectToSpeak.prototype = {
     if (this.scrollToSpokenNode_ && node.state.offscreen) {
       node.makeVisible();
     }
-    if (this.wordHighlight_ && this.currentNodeWord_ != null) {
+    if (this.prefsManager_.wordHighlightingEnabled() &&
+        this.currentNodeWord_ != null) {
       // Only show the highlight if this is an inline text box.
       // Otherwise we'd be highlighting entire nodes, like images.
       // Highlight should be only for text.
@@ -905,9 +749,10 @@ SelectToSpeak.prototype = {
             [node.boundsForRange(
                 this.currentNodeWord_.start - charIndexInParent,
                 this.currentNodeWord_.end - charIndexInParent)],
-            this.highlightColor_);
+            this.prefsManager_.highlightColor());
       } else {
-        chrome.accessibilityPrivate.setHighlights([], this.highlightColor_);
+        chrome.accessibilityPrivate.setHighlights(
+            [], this.prefsManager_.highlightColor());
       }
     }
     // Show the parent element of the currently verbalized node with the
@@ -919,9 +764,11 @@ SelectToSpeak.prototype = {
     if (this.currentBlockParent_ != null &&
         node.role == RoleType.INLINE_TEXT_BOX) {
       chrome.accessibilityPrivate.setFocusRing(
-          [this.currentBlockParent_.location], this.color_);
+          [this.currentBlockParent_.location],
+          this.prefsManager_.focusRingColor());
     } else {
-      chrome.accessibilityPrivate.setFocusRing([node.location], this.color_);
+      chrome.accessibilityPrivate.setFocusRing(
+          [node.location], this.prefsManager_.focusRingColor());
     }
   },
 
