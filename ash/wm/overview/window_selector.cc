@@ -614,16 +614,16 @@ void WindowSelector::OnWindowDragStarted(aura::Window* dragged_window) {
   target_grid->OnWindowDragStarted(dragged_window);
 }
 
-void WindowSelector::OnWindowDragContinued(
-    aura::Window* dragged_window,
-    const gfx::Point& location_in_screen) {
+void WindowSelector::OnWindowDragContinued(aura::Window* dragged_window,
+                                           const gfx::Point& location_in_screen,
+                                           IndicatorState indicator_state) {
   WindowGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
-  target_grid->OnWindowDragContinued(dragged_window, location_in_screen);
+  target_grid->OnWindowDragContinued(dragged_window, location_in_screen,
+                                     indicator_state);
 }
-
 void WindowSelector::OnWindowDragEnded(aura::Window* dragged_window,
                                        const gfx::Point& location_in_screen) {
   WindowGrid* target_grid =

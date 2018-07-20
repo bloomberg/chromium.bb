@@ -242,6 +242,80 @@ TabDragController::TabDragData::~TabDragData() {
 
 TabDragController::TabDragData::TabDragData(TabDragData&&) = default;
 
+#if defined(OS_CHROMEOS)
+
+// The class to track the current deferred target tabstrip and also to observe
+// its native window's property ash::kIsDeferredTabDraggingTargetWindowKey.
+// The reason we need to observe the window property is the property might be
+// cleared outside of TabDragController (i.e. by ash), and we should update the
+// tracked deferred target tabstrip in this case.
+class TabDragController::DeferredTargetTabstripObserver
+    : public aura::WindowObserver {
+ public:
+  DeferredTargetTabstripObserver() = default;
+  ~DeferredTargetTabstripObserver() override {
+    if (deferred_target_tabstrip_) {
+      deferred_target_tabstrip_->GetWidget()->GetNativeWindow()->RemoveObserver(
+          this);
+      deferred_target_tabstrip_ = nullptr;
+    }
+  }
+
+  void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip) {
+    if (deferred_target_tabstrip_ == deferred_target_tabstrip)
+      return;
+
+    // Clear the window property on the previous |deferred_target_tabstrip_|.
+    if (deferred_target_tabstrip_) {
+      aura::Window* old_window =
+          deferred_target_tabstrip_->GetWidget()->GetNativeWindow();
+      old_window->RemoveObserver(this);
+      old_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+    }
+
+    deferred_target_tabstrip_ = deferred_target_tabstrip;
+
+    // Set the window property on the new |deferred_target_tabstrip_|.
+    if (deferred_target_tabstrip_) {
+      aura::Window* new_window =
+          deferred_target_tabstrip_->GetWidget()->GetNativeWindow();
+      new_window->SetProperty(ash::kIsDeferredTabDraggingTargetWindowKey, true);
+      new_window->AddObserver(this);
+    }
+  }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK_EQ(window,
+              deferred_target_tabstrip_->GetWidget()->GetNativeWindow());
+
+    if (key == ash::kIsDeferredTabDraggingTargetWindowKey &&
+        !window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+      SetDeferredTargetTabstrip(nullptr);
+    }
+
+    // else do nothing. currently it's only possible that ash clears the window
+    // property, but doesn't set the window property.
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window,
+              deferred_target_tabstrip_->GetWidget()->GetNativeWindow());
+    SetDeferredTargetTabstrip(nullptr);
+  }
+
+  TabStrip* deferred_target_tabstrip() { return deferred_target_tabstrip_; }
+
+ private:
+  TabStrip* deferred_target_tabstrip_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(DeferredTargetTabstripObserver);
+};
+
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabDragController, public:
 
@@ -468,11 +542,14 @@ void TabDragController::EndDrag(EndDragReason reason) {
   if (reason == END_DRAG_CAPTURE_LOST && is_dragging_window_)
     return;
 
+#if defined(OS_CHROMEOS)
   // It's possible that in Chrome OS we defer the windows that are showing in
   // overview to attach into during dragging. If so we need to attach the
   // dragged tabs to it first.
-  if (reason == END_DRAG_COMPLETE && deferred_target_tabstrip_)
+  if (reason == END_DRAG_COMPLETE && deferred_target_tabstrip_observer_)
     PerformDeferredAttach();
+#endif
+
   EndDragImpl(reason != END_DRAG_COMPLETE && source_tabstrip_ ?
               CANCELED : NORMAL);
 }
@@ -1473,8 +1550,13 @@ void TabDragController::EndDragImpl(EndDragType type) {
 }
 
 void TabDragController::PerformDeferredAttach() {
-  DCHECK(deferred_target_tabstrip_);
-  DCHECK_NE(deferred_target_tabstrip_, attached_tabstrip_);
+#if defined(OS_CHROMEOS)
+  TabStrip* deferred_target_tabstrip =
+      deferred_target_tabstrip_observer_->deferred_target_tabstrip();
+  if (!deferred_target_tabstrip)
+    return;
+
+  DCHECK_NE(deferred_target_tabstrip, attached_tabstrip_);
 
   // |is_dragging_new_browser_| needs to be reset here since after this function
   // is called, the browser window that was specially created for the dragged
@@ -1487,12 +1569,15 @@ void TabDragController::PerformDeferredAttach() {
   // after the drag ends.
   did_restore_window_ = false;
 
-  TabStrip* target_tabstrip = deferred_target_tabstrip_;
+  TabStrip* target_tabstrip = deferred_target_tabstrip;
   SetDeferredTargetTabstrip(nullptr);
+  deferred_target_tabstrip_observer_.reset();
+
   Detach(DONT_RELEASE_CAPTURE);
   // If we're attaching the dragged tabs to an overview window's tabstrip, the
   // tabstrip should not have focus.
   Attach(target_tabstrip, GetCursorScreenPoint(), /*set_capture=*/false);
+#endif
 }
 
 void TabDragController::RevertDrag() {
@@ -2016,19 +2101,11 @@ void TabDragController::ClearTabDraggingInfo() {
 void TabDragController::SetDeferredTargetTabstrip(
     TabStrip* deferred_target_tabstrip) {
 #if defined(OS_CHROMEOS)
-  if (deferred_target_tabstrip_ == deferred_target_tabstrip)
-    return;
-
-  // Clear the window property on the previous |deferred_target_tabstrip_|.
-  if (deferred_target_tabstrip_) {
-    deferred_target_tabstrip_->GetWidget()->GetNativeWindow()->ClearProperty(
-        ash::kIsDeferredTabDraggingTargetWindowKey);
+  if (!deferred_target_tabstrip_observer_) {
+    deferred_target_tabstrip_observer_ =
+        std::make_unique<DeferredTargetTabstripObserver>();
   }
-  deferred_target_tabstrip_ = deferred_target_tabstrip;
-  // Set the window property on the new |deferred_target_tabstrip_|.
-  if (deferred_target_tabstrip_) {
-    deferred_target_tabstrip_->GetWidget()->GetNativeWindow()->SetProperty(
-        ash::kIsDeferredTabDraggingTargetWindowKey, true);
-  }
+  deferred_target_tabstrip_observer_->SetDeferredTargetTabstrip(
+      deferred_target_tabstrip);
 #endif
 }

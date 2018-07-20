@@ -31,6 +31,7 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_state.h"
 #include "base/i18n/string_search.h"
 #include "base/numerics/ranges.h"
@@ -583,7 +584,8 @@ void WindowGrid::OnWindowDragStarted(aura::Window* dragged_window) {
 }
 
 void WindowGrid::OnWindowDragContinued(aura::Window* dragged_window,
-                                       const gfx::Point& location_in_screen) {
+                                       const gfx::Point& location_in_screen,
+                                       IndicatorState indicator_state) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   // Find the window selector item that contains |location_in_screen|.
   auto iter = std::find_if(
@@ -594,6 +596,25 @@ void WindowGrid::OnWindowDragContinued(aura::Window* dragged_window,
 
   aura::Window* target_window =
       (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
+
+  if (indicator_state == IndicatorState::kPreviewAreaLeft ||
+      indicator_state == IndicatorState::kPreviewAreaRight) {
+    // If the dragged window is currently dragged into preview window area,
+    // clear the selection widget.
+    if (SelectedWindow()) {
+      SelectedWindow()->set_selected(false);
+      selection_widget_.reset();
+    }
+
+    // Also clear ash::kIsDeferredTabDraggingTargetWindowKey key on the target
+    // window selector item so that it can't merge into this window selector
+    // item if the dragged window is currently in preview window area.
+    if (target_window && !IsNewSelectorItemWindow(target_window))
+      target_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+
+    return;
+  }
+
   // If |location_in_screen| is contained by one of the eligible window selector
   // item in overview, show the selection widget.
   if (target_window && (IsNewSelectorItemWindow(target_window) ||

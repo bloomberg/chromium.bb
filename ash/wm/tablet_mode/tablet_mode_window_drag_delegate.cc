@@ -34,26 +34,6 @@ WindowSelector* GetWindowSelector() {
              : nullptr;
 }
 
-// Returns the window selector item in overview that contains the specified
-// location. Returns nullptr if there is no such window selector item.
-WindowSelectorItem* GetWindowSelectorItemContains(
-    const gfx::Point& location_in_screen) {
-  if (!Shell::Get()->window_selector_controller()->IsSelecting())
-    return nullptr;
-
-  WindowGrid* current_grid = GetWindowSelector()->GetGridWithRootWindow(
-      wm::GetRootWindowAt(location_in_screen));
-  if (!current_grid)
-    return nullptr;
-
-  const auto& windows = current_grid->window_list();
-  for (const auto& window_selector_item : windows) {
-    if (window_selector_item->target_bounds().Contains(location_in_screen))
-      return window_selector_item.get();
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
@@ -92,11 +72,13 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
   UpdateForDraggedWindow(location_in_screen);
 
   // Update drag indicators and preview window if necessary.
-  split_view_drag_indicators_->SetIndicatorState(
-      GetIndicatorState(location_in_screen), location_in_screen);
+  IndicatorState indicator_state = GetIndicatorState(location_in_screen);
+  split_view_drag_indicators_->SetIndicatorState(indicator_state,
+                                                 location_in_screen);
+
   if (GetWindowSelector()) {
-    GetWindowSelector()->OnWindowDragContinued(dragged_window_,
-                                               location_in_screen);
+    GetWindowSelector()->OnWindowDragContinued(
+        dragged_window_, location_in_screen, indicator_state);
   }
 }
 
@@ -209,17 +191,9 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   const bool can_snap = split_view_controller_->CanSnap(dragged_window_);
   if (snap_position != SplitViewController::NONE &&
       !split_view_controller_->IsSplitViewModeActive() && can_snap) {
-    // Show the preview window if |location_in_screen| is not contained by an
-    // eligible target window item to merge the dragged window.
-    WindowSelectorItem* item =
-        GetWindowSelectorItemContains(location_in_screen);
-    if (!item || !item->GetWindow()->GetProperty(
-                     ash::kIsDeferredTabDraggingTargetWindowKey)) {
-      return snap_position == SplitViewController::LEFT
-                 ? IndicatorState::kPreviewAreaLeft
-                 : IndicatorState::kPreviewAreaRight;
-    }
-    return IndicatorState::kNone;
+    return snap_position == SplitViewController::LEFT
+               ? IndicatorState::kPreviewAreaLeft
+               : IndicatorState::kPreviewAreaRight;
   }
 
   // Do not show the drag indicators if split view mode is active.
@@ -239,7 +213,7 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   // active at the moment, do not show the drag indicators.
   if (location_in_screen.y() >=
           GetMaximizeVerticalThreshold(work_area_bounds) &&
-      GetSnapPosition(location_in_screen) == SplitViewController::NONE &&
+      snap_position == SplitViewController::NONE &&
       !Shell::Get()->window_selector_controller()->IsSelecting()) {
     return IndicatorState::kNone;
   }
