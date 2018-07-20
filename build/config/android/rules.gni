@@ -1851,21 +1851,14 @@ if (enable_java_templates) {
     }
   }
 
-  # Declare an Android apk target
-  #
-  # This target creates an Android APK containing java code, resources, assets,
-  # and (possibly) native libraries.
+  # Declare an Android app module target, which is used as the basis for an
+  # Android APK or an Android app bundle module.
   #
   # Supports all variables of android_library(), plus:
   #   android_manifest: Path to AndroidManifest.xml.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
   #   png_to_webp: If true, pngs (with the exception of 9-patch) are
   #     converted to webp during resource packaging.
-  #   dist_ijar_path: Path to create "${target_name}_dist_ijar" target
-  #     (used by instrumentation_test_apk).
-  #   apk_name: Name for final apk.
-  #   final_apk_path: Path to final built apk. Default is
-  #     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
   #   loadable_modules: List of paths to native libraries to include. Different
   #     from |shared_libraries| in that:
   #       * dependencies of this .so are not automatically included
@@ -1885,8 +1878,6 @@ if (enable_java_templates) {
   #     (optional).
   #   secondary_native_lib_placeholders: List of placeholder filenames to add to
   #     the apk for the secondary ABI (optional).
-  #   apk_under_test: For an instrumentation test apk, this is the target of the
-  #     tested apk.
   #   write_asset_list: Adds an extra file to the assets, which contains a list of
   #     all other asset files.
   #   generate_buildconfig_java: If defined and false, skip generating the
@@ -1899,9 +1890,6 @@ if (enable_java_templates) {
   #     linker does relocation unpacking, so we can enable it unconditionally.
   #   secondary_native_libs (deprecated): The path of native libraries for secondary
   #     app abi.
-  #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
-  #     the proguard used will be the checked in one in //third_party/proguard.
-  #   never_incremental: If true, |incremental_apk_by_default| will be ignored.
   #   aapt_locale_whitelist: If set, all locales not in this list will be
   #     stripped from resources.arsc.
   #   exclude_xxxhdpi: Causes all drawable-xxxhdpi images to be excluded
@@ -1918,29 +1906,10 @@ if (enable_java_templates) {
   #   shared_resources_whitelist_target: Optional name of a target specifying
   #     an input R.txt file that lists the resources that can be exported
   #     by the APK when shared_resources or app_as_shared_lib is defined.
-  #
-  # Example
-  #   android_apk("foo_apk") {
-  #     android_manifest = "AndroidManifest.xml"
-  #     java_files = [
-  #       "android/org/chromium/foo/FooApplication.java",
-  #       "android/org/chromium/foo/FooActivity.java",
-  #     ]
-  #     deps = [
-  #       ":foo_support_java"
-  #       ":foo_resources"
-  #     ]
-  #     srcjar_deps = [
-  #       ":foo_generated_enum"
-  #     ]
-  #     shared_libraries = [
-  #       ":my_shared_lib",
-  #     ]
-  #   }
-  template("android_apk") {
+  template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
-    assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
+    assert(defined(invoker.final_apk_path) || defined(invoker.name))
     assert(defined(invoker.android_manifest))
     _gen_dir = "$target_gen_dir/$target_name"
     _base_path = "$_gen_dir/$target_name"
@@ -1954,6 +1923,9 @@ if (enable_java_templates) {
     _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
     _template_name = target_name
 
+    _is_bundle_module =
+        defined(invoker.is_bundle_module) && invoker.is_bundle_module
+
     _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
     if (_enable_multidex) {
@@ -1965,8 +1937,10 @@ if (enable_java_templates) {
 
     if (defined(invoker.final_apk_path)) {
       _final_apk_path = invoker.final_apk_path
+    } else if (!_is_bundle_module) {
+      _final_apk_path = "$root_build_dir/apks/${invoker.name}.apk"
     } else {
-      _final_apk_path = "$root_build_dir/apks/${invoker.apk_name}.apk"
+      _final_apk_path = "$root_build_dir/bundle_modules/${invoker.name}"
     }
     _final_apk_path_no_ext_list =
         process_file_template([ _final_apk_path ],
@@ -1974,10 +1948,16 @@ if (enable_java_templates) {
     _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
     assert(_final_apk_path_no_ext != "")  # Mark as used.
 
-    # resource_sizes.py needs to be able to find the unpacked resources.arsc file based on apk name.
-    _packaged_resources_path =
-        "$root_gen_dir/arsc/" +
-        rebase_path(_final_apk_path_no_ext, root_build_dir) + ".ap_"
+    if (_is_bundle_module) {
+      # Path to the intermediate proto-format resources zip file.
+      _packaged_resources_path = "$target_gen_dir/$target_name.proto.ap_"
+    } else {
+      # resource_sizes.py needs to be able to find the unpacked resources.arsc
+      # file based on apk name.
+      _packaged_resources_path =
+          "$root_gen_dir/arsc/" +
+          rebase_path(_final_apk_path_no_ext, root_build_dir) + ".ap_"
+    }
 
     _incremental_install_json_path =
         "$target_gen_dir/$target_name.incremental.json"
@@ -1990,15 +1970,6 @@ if (enable_java_templates) {
     _version_name = android_default_version_name
     if (defined(invoker.version_name)) {
       _version_name = invoker.version_name
-    }
-    _keystore_path = android_keystore_path
-    _keystore_name = android_keystore_name
-    _keystore_password = android_keystore_password
-
-    if (defined(invoker.keystore_path)) {
-      _keystore_path = invoker.keystore_path
-      _keystore_name = invoker.keystore_name
-      _keystore_password = invoker.keystore_password
     }
 
     _deps = []
@@ -2134,7 +2105,9 @@ if (enable_java_templates) {
       _proguard_output_jar_path = "$_base_path.proguard.jar"
     }
 
+    # TODO(crbug.com/864142): Allow incremental installs of bundle modules.
     _incremental_allowed =
+        !_is_bundle_module &&
         !(defined(invoker.never_incremental) && invoker.never_incremental)
 
     _android_manifest =
@@ -2161,20 +2134,7 @@ if (enable_java_templates) {
     }
 
     _compile_resources_target = "${_template_name}__compile_resources"
-
-    # Path to the intermediate proto-format resources zip file.
-    _packaged_proto_resources_path =
-        "$root_gen_dir/proto_resources/" +
-        rebase_path(_final_apk_path_no_ext, root_build_dir) + ".proto.ap_"
-
-    # Define another target used to generate an archive containing the
-    # resources compiled in protocol buffer format. This is not used by
-    # the APK itself, but by android_bundle_module() targets that depend
-    # on it.
-    _compile_proto_resources_target =
-        "${_template_name}__compile_proto_resources"
-
-    compile_apk_resources(_compile_resources_target) {
+    compile_resources(_compile_resources_target) {
       forward_variables_from(invoker,
                              [
                                "app_as_shared_lib",
@@ -2206,6 +2166,9 @@ if (enable_java_templates) {
       if (_enable_multidex) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
       }
+      if (_is_bundle_module) {
+        proto_format = true
+      }
       output = _packaged_resources_path
 
       build_config = _build_config
@@ -2226,9 +2189,6 @@ if (enable_java_templates) {
           "${invoker.shared_resources_whitelist_target}__compile_resources",
         ]
       }
-
-      proto_output = _packaged_proto_resources_path
-      proto_resources_target = _compile_proto_resources_target
     }
     _srcjar_deps += [ ":$_compile_resources_target" ]
 
@@ -2368,7 +2328,9 @@ if (enable_java_templates) {
       final_dex_path = _final_dex_path
       apk_path = _final_apk_path
 
-      proto_resources_path = _packaged_proto_resources_path
+      if (_is_bundle_module) {
+        proto_resources_path = _packaged_resources_path
+      }
 
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
@@ -2509,8 +2471,12 @@ if (enable_java_templates) {
         "@FileArg($_rebased_build_config:native:secondary_abi_libraries)"
     assert(_secondary_abi_native_libs_file_arg != "" &&
            _secondary_abi_native_libs_file_arg_dep != "")  # Mark as used.
+    _all_native_libs_deps = _native_libs_deps + _extra_native_libs_deps +
+                            [ _native_libs_file_arg_dep ]
+    assert(_all_native_libs_deps == _all_native_libs_deps)  # Mark as used.
 
     _extra_native_libs_even_when_incremental = []
+    assert(_extra_native_libs_even_when_incremental == [])  # Mark as used.
     if (_native_libs_deps != []) {
       _create_stack_script_rule_name = "${_template_name}__stack_script"
       _final_deps += [ ":${_create_stack_script_rule_name}" ]
@@ -2525,10 +2491,10 @@ if (enable_java_templates) {
     }
 
     # Generate .apk.jar.info files if needed.
-    if (defined(invoker.apk_name)) {
+    if (defined(invoker.name)) {
       _apk_jar_info_target = "${target_name}__apk_jar_info"
       create_apk_jar_info(_apk_jar_info_target) {
-        output = "$root_build_dir/size-info/${invoker.apk_name}.apk.jar.info"
+        output = "$root_build_dir/size-info/${invoker.name}.apk.jar.info"
         apk_build_config = _build_config
         deps = [
           ":$_build_config_target",
@@ -2538,73 +2504,92 @@ if (enable_java_templates) {
       _deps += [ ":$_apk_jar_info_target" ]
     }
 
-    _final_deps += [ ":${_template_name}__create" ]
-    create_apk("${_template_name}__create") {
-      forward_variables_from(invoker,
-                             [
-                               "public_deps",
-                               "secondary_native_libs",
-                               "shared_resources",
-                               "uncompress_shared_libraries",
-                               "write_asset_list",
-                             ])
-      packaged_resources_path = _packaged_resources_path
-      apk_path = _final_apk_path
-      assets_build_config = _build_config
-      dex_path = _final_dex_path
-      load_library_from_apk = _load_library_from_apk
+    if (!_is_bundle_module) {
+      _keystore_path = android_keystore_path
+      _keystore_name = android_keystore_name
+      _keystore_password = android_keystore_password
 
-      # This is used to generate *.apk.pak.info files.
-      apk_name = invoker.apk_name
-
-      keystore_name = _keystore_name
-      keystore_path = _keystore_path
-      keystore_password = _keystore_password
-
-      incremental_allowed = _incremental_allowed
-      if (_incremental_allowed) {
-        android_manifest = _android_manifest
-        base_path = _base_path
+      if (defined(invoker.keystore_path)) {
+        _keystore_path = invoker.keystore_path
+        _keystore_name = invoker.keystore_name
+        _keystore_password = invoker.keystore_password
       }
 
-      # Incremental apk does not use native libs nor final dex.
-      incremental_deps = _deps + [
-                           ":$_merge_manifest_target",
-                           ":$_build_config_target",
-                           ":$_compile_resources_target",
-                         ]
+      _create_apk_target = "${_template_name}__create"
+      _final_deps += [ ":$_create_apk_target" ]
+      create_apk("$_create_apk_target") {
+        forward_variables_from(invoker,
+                               [
+                                 "public_deps",
+                                 "secondary_native_libs",
+                                 "shared_resources",
+                                 "uncompress_shared_libraries",
+                                 "write_asset_list",
+                               ])
+        packaged_resources_path = _packaged_resources_path
+        apk_path = _final_apk_path
+        assets_build_config = _build_config
+        dex_path = _final_dex_path
+        load_library_from_apk = _load_library_from_apk
 
-      # This target generates the input file _all_resources_zip_path.
-      deps = _deps + [
-               ":$_merge_manifest_target",
-               ":$_build_config_target",
-               ":$_final_dex_target_name",
-               ":$_compile_resources_target",
-             ]
+        # This is used to generate *.apk.pak.info files.
+        apk_name = invoker.name
 
-      if (_native_libs_deps != [] ||
-          _extra_native_libs_even_when_incremental != []) {
-        deps += _native_libs_deps + _extra_native_libs_deps +
-                [ _native_libs_file_arg_dep ]
-        native_libs_filearg = _native_libs_file_arg
-        native_libs = _extra_native_libs
-        native_libs_even_when_incremental =
-            _extra_native_libs_even_when_incremental
+        keystore_name = _keystore_name
+        keystore_path = _keystore_path
+        keystore_password = _keystore_password
+
+        incremental_allowed = _incremental_allowed
+        if (_incremental_allowed) {
+          android_manifest = _android_manifest
+          base_path = _base_path
+        }
+
+        # Incremental apk does not use native libs nor final dex.
+        incremental_deps = _deps + [
+                             ":$_merge_manifest_target",
+                             ":$_build_config_target",
+                             ":$_compile_resources_target",
+                           ]
+
+        # This target generates the input file _all_resources_zip_path.
+        deps = _deps + [
+                 ":$_merge_manifest_target",
+                 ":$_build_config_target",
+                 ":$_final_dex_target_name",
+                 ":$_compile_resources_target",
+               ]
+
+        if (_native_libs_deps != [] ||
+            _extra_native_libs_even_when_incremental != []) {
+          deps += _all_native_libs_deps
+          native_libs_filearg = _native_libs_file_arg
+          native_libs = _extra_native_libs
+          native_libs_even_when_incremental =
+              _extra_native_libs_even_when_incremental
+        }
+
+        if (_secondary_abi_native_libs_deps != []) {
+          deps += _secondary_abi_native_libs_deps +
+                  [ _secondary_abi_native_libs_file_arg_dep ]
+          secondary_abi_native_libs_filearg =
+              _secondary_abi_native_libs_file_arg
+        }
+
+        # Placeholders necessary for some older devices.
+        # http://crbug.com/395038
+        forward_variables_from(invoker,
+                               [
+                                 "native_lib_placeholders",
+                                 "secondary_native_lib_placeholders",
+                               ])
       }
-
-      if (_secondary_abi_native_libs_deps != []) {
-        deps += _secondary_abi_native_libs_deps +
-                [ _secondary_abi_native_libs_file_arg_dep ]
-        secondary_abi_native_libs_filearg = _secondary_abi_native_libs_file_arg
-      }
-
-      # Placeholders necessary for some older devices.
-      # http://crbug.com/395038
-      forward_variables_from(invoker,
-                             [
-                               "native_lib_placeholders",
-                               "secondary_native_lib_placeholders",
-                             ])
+    } else {
+      _final_deps += [
+                       ":$_merge_manifest_target",
+                       ":$_build_config_target",
+                       ":$_final_dex_target_name",
+                     ] + _all_native_libs_deps
     }
 
     _write_installer_json_rule_name = "${_template_name}__incremental_json"
@@ -2753,6 +2738,181 @@ if (enable_java_templates) {
       }
     } else {
       not_needed([ "_incremental_apk_operations" ])
+    }
+  }
+
+  # Declare an Android APK target
+  #
+  # This target creates an Android APK containing java code, resources, assets,
+  # and (possibly) native libraries.
+  #
+  # Supports all variables of android_apk_or_module(), plus:
+  #   apk_name: Name for final apk.
+  #
+  # Example
+  #   android_apk("foo_apk") {
+  #     android_manifest = "AndroidManifest.xml"
+  #     java_files = [
+  #       "android/org/chromium/foo/FooApplication.java",
+  #       "android/org/chromium/foo/FooActivity.java",
+  #     ]
+  #     deps = [
+  #       ":foo_support_java"
+  #       ":foo_resources"
+  #     ]
+  #     srcjar_deps = [
+  #       ":foo_generated_enum"
+  #     ]
+  #     shared_libraries = [
+  #       ":my_shared_lib",
+  #     ]
+  #   }
+  template("android_apk") {
+    android_apk_or_module(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "aapt_locale_whitelist",
+                               "additional_jar_files",
+                               "alternative_android_sdk_dep",
+                               "android_manifest",
+                               "android_manifest_dep",
+                               "apk_under_test",
+                               "app_as_shared_lib",
+                               "build_hooks_android_impl_deps",
+                               "chromium_code",
+                               "classpath_deps",
+                               "command_line_flags_file",
+                               "create_apk_script",
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "dist_ijar_path",
+                               "emma_never_instrument",
+                               "enable_chromium_linker_tests",
+                               "enable_multidex",
+                               "exclude_xxxhdpi",
+                               "final_apk_path",
+                               "firebase_app_id",
+                               "generate_buildconfig_java",
+                               "input_jars_paths",
+                               "java_files",
+                               "javac_args",
+                               "load_library_from_apk",
+                               "loadable_modules",
+                               "native_lib_placeholders",
+                               "native_lib_version_arg",
+                               "native_lib_version_rule",
+                               "negative_main_dex_globs",
+                               "never_incremental",
+                               "no_build_hooks",
+                               "no_xml_namespaces",
+                               "png_to_webp",
+                               "post_process_package_resources_script",
+                               "product_version_resources_dep",
+                               "proguard_configs",
+                               "proguard_enabled",
+                               "proguard_jar_path",
+                               "requires_sdk_api_level_23",
+                               "secondary_abi_shared_libraries",
+                               "secondary_native_lib_placeholders",
+                               "secondary_native_libs",
+                               "shared_libraries",
+                               "shared_resources",
+                               "shared_resources_whitelist_target",
+                               "srcjar_deps",
+                               "support_zh_hk",
+                               "testonly",
+                               "uncompress_shared_libraries",
+                               "use_chromium_linker",
+                               "version_code",
+                               "version_name",
+                               "write_asset_list",
+                               "xxxhdpi_whitelist",
+                             ])
+      is_bundle_module = false
+      if (defined(invoker.apk_name)) {
+        name = invoker.apk_name
+      }
+    }
+  }
+
+  # Declare an Android app bundle module target.
+  #
+  # The module can be used for an android_apk_or_module().
+  #
+  # Supports all variables of android_library(), plus:
+  #   module_name: Name of the module.
+  #   is_base_module: If defined and true, indicates that this is the bundle's
+  #     base module (optional).
+  template("android_app_bundle_module") {
+    _is_base_module = defined(invoker.is_base_module) && invoker.is_base_module
+
+    if (!_is_base_module) {
+      assert(!defined(write_asset_list))
+      assert(!defined(firebase_app_id))
+      assert(!defined(app_as_shared_lib))
+      assert(!defined(shared_resources))
+      assert(!defined(shared_resources_whitelist_target))
+      assert(!defined(build_hooks_android_impl_deps))
+      assert(!defined(shared_libraries))
+    }
+
+    android_apk_or_module(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "aapt_locale_whitelist",
+                               "additional_jar_files",
+                               "alternative_android_sdk_dep",
+                               "android_manifest",
+                               "android_manifest_dep",
+                               "app_as_shared_lib",
+                               "chromium_code",
+                               "classpath_deps",
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "emma_never_instrument",
+                               "enable_chromium_linker_tests",
+                               "enable_multidex",
+                               "exclude_xxxhdpi",
+                               "firebase_app_id",
+                               "input_jars_paths",
+                               "java_files",
+                               "javac_args",
+                               "load_library_from_apk",
+                               "loadable_modules",
+                               "native_lib_placeholders",
+                               "native_lib_version_arg",
+                               "native_lib_version_rule",
+                               "negative_main_dex_globs",
+                               "no_xml_namespaces",
+                               "png_to_webp",
+                               "product_version_resources_dep",
+                               "proguard_configs",
+                               "proguard_enabled",
+                               "requires_sdk_api_level_23",
+                               "secondary_abi_shared_libraries",
+                               "secondary_native_lib_placeholders",
+                               "secondary_native_libs",
+                               "shared_libraries",
+                               "shared_resources",
+                               "shared_resources_whitelist_target",
+                               "srcjar_deps",
+                               "support_zh_hk",
+                               "testonly",
+                               "uncompress_shared_libraries",
+                               "use_chromium_linker",
+                               "version_code",
+                               "version_name",
+                               "write_asset_list",
+                               "xxxhdpi_whitelist",
+                             ])
+      is_bundle_module = true
+      generate_buildconfig_java = _is_base_module
+      no_build_hooks = !_is_base_module
+      if (defined(invoker.module_name)) {
+        name = invoker.module_name
+      }
     }
   }
 
@@ -3424,10 +3584,10 @@ if (enable_java_templates) {
   # and zero or more associated android_apk.
   #
   # Variables:
-  #    base_apk_target: Name of the android_apk target corresponding to the
-  #      base module for this application bundle. The bundle file will include
-  #      the same content in its base module, though in a slightly different
-  #      format.
+  #    base_module_target: Name of the android_app_bundle_module target
+  #      corresponding to the base module for this application bundle. The
+  #      bundle file will include the same content in its base module, though in
+  #      a slightly different format.
   #
   #    bundle_base_path: Optional. If set, the bundle will be output to this
   #      directory. Defaults to "$root_build_dir/apks".
@@ -3467,11 +3627,11 @@ if (enable_java_templates) {
   #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
-  #      base_apk_target = "//chrome/android:chrome_public_apk"
+  #      base_module_target = "//chrome/android:chrome_public_apk"
   #      extra_modules = [
   #        {  # NOTE: Scopes require one field per line, and no comma separators.
   #          name = "my_module"
-  #          apk_target = ":my_module_apk"
+  #          module_target = ":my_module"
   #        },
   #      ]
   #   }
@@ -3480,7 +3640,7 @@ if (enable_java_templates) {
     _all_modules = [
       {
         name = "base"
-        apk_target = invoker.base_apk_target
+        module_target = invoker.base_module_target
       },
     ]
 
@@ -3492,46 +3652,52 @@ if (enable_java_templates) {
                "Missing 'name' field for extra module #${_module_count}.")
         assert(_module.name != "base",
                "Module name 'base' is reserved for the main bundle module")
-        assert(defined(_module.apk_target),
-               "Missing 'apk_target' field for extra module ${_module.name}.")
+        assert(
+            defined(_module.module_target),
+            "Missing 'module_target' field for extra module ${_module.name}.")
       }
       _all_modules += invoker.extra_modules
     }
 
     # Generate one module .zip file per APK.
-    _all_module_targets = []
-    _all_module_paths = []
+    _all_create_module_targets = []
+    _all_module_zip_paths = []
     _all_module_build_configs = []
     foreach(_module, _all_modules) {
       # Important: the bundle tool uses the module's zip filename as
       # the internal module name inside the final bundle, in other words,
       # this file *must* be named ${_module.name}.zip
-      _module_target = "${target_name}__module__${_module.name}"
-      _module_path = "$target_gen_dir/$target_name/${_module.name}.zip"
-      _apk_target = _module.apk_target
-      _apk_build_config_target = "${_apk_target}__build_config"
-
-      android_app_bundle_module(_module_target) {
-        apk_target = _apk_target
-        module_path = _module_path
-      }
+      _create_module_target = "${target_name}__${_module.name}__create"
+      _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
+      _module_target = _module.module_target
+      _module_build_config_target = "${_module_target}__build_config"
 
       # Determine the rebased path to the module's target .build_config
       # In order to pass its list of uncompressed assets later.
-      _apk_target_name = get_label_info(_apk_target, "name")
-      _apk_target_gen_dir = get_label_info(_apk_target, "target_gen_dir")
-      _apk_build_config =
-          "$_apk_target_gen_dir/${_apk_target_name}.build_config"
+      _module_target_name = get_label_info(_module_target, "name")
+      _module_target_gen_dir = get_label_info(_module_target, "target_gen_dir")
+      _module_build_config =
+          "$_module_target_gen_dir/${_module_target_name}.build_config"
 
-      _all_module_targets += [
-        ":$_module_target",
-        _apk_build_config_target,
+      create_android_app_bundle_module(_create_module_target) {
+        build_config = _module_build_config
+        module_zip_path = _module_zip_path
+        deps = [
+          "$_module_build_config_target",
+          "$_module_target",
+        ]
+      }
+
+      _all_create_module_targets += [
+        ":$_create_module_target",
+        _module_build_config_target,
       ]
-      _all_module_paths += [ _module_path ]
-      _all_module_build_configs += [ _apk_build_config ]
+      _all_module_zip_paths += [ _module_zip_path ]
+      _all_module_build_configs += [ _module_build_config ]
     }
 
-    _all_rebased_module_paths = rebase_path(_all_module_paths, root_build_dir)
+    _all_rebased_module_zip_paths =
+        rebase_path(_all_module_zip_paths, root_build_dir)
 
     _bundle_name = target_name
     if (defined(invoker.bundle_name)) {
@@ -3586,15 +3752,15 @@ if (enable_java_templates) {
     _bundle_target_name = target_name
     action(_bundle_target_name) {
       script = "//build/android/gyp/create_app_bundle.py"
-      inputs = _all_module_paths + _all_module_build_configs +
+      inputs = _all_module_zip_paths + _all_module_build_configs +
                _create_app_bundle_py_imports
       outputs = [
         _bundle_path,
       ]
-      deps = _all_module_targets
+      deps = _all_create_module_targets
       args = [
         "--out-bundle=$_rebased_bundle_path",
-        "--module-zips=$_all_rebased_module_paths",
+        "--module-zips=$_all_rebased_module_zip_paths",
       ]
       if (_sign_bundle) {
         args += [
