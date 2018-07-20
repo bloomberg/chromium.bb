@@ -1314,6 +1314,44 @@ TEST_P(WatchTimeReporterTest, SeekFinalizes) {
   wtr_->OnSeeking();
 }
 
+// Tests that seeking can't be undone by anything other than OnPlaying().
+TEST_P(WatchTimeReporterTest, SeekOnlyClearedByPlaying) {
+  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillRepeatedly(testing::Return(kWatchTime));
+  Initialize(true, true, kSizeJustRight);
+  wtr_->OnPlaying();
+  EXPECT_TRUE(IsMonitoring());
+
+  EXPECT_WATCH_TIME(Ac, kWatchTime);
+  EXPECT_WATCH_TIME(All, kWatchTime);
+  EXPECT_WATCH_TIME(Eme, kWatchTime);
+  EXPECT_WATCH_TIME(Mse, kWatchTime);
+  EXPECT_WATCH_TIME(NativeControlsOff, kWatchTime);
+  EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTime);
+  EXPECT_WATCH_TIME_FINALIZED();
+  wtr_->OnSeeking();
+  EXPECT_FALSE(IsMonitoring());
+
+  wtr_->OnHidden();
+  wtr_->OnShown();
+  wtr_->OnVolumeChange(0);
+  wtr_->OnVolumeChange(1);
+  EXPECT_FALSE(IsMonitoring());
+
+  wtr_->OnPlaying();
+  EXPECT_TRUE(IsMonitoring());
+
+  // Because the above calls may tickle the background and muted reporters,
+  // we'll receive 2-3 finalize calls upon destruction if they exist.
+  if (has_audio_ && has_video_)
+    EXPECT_WATCH_TIME_FINALIZED();
+  EXPECT_WATCH_TIME_FINALIZED();
+  EXPECT_WATCH_TIME_FINALIZED();
+  wtr_.reset();
+}
+
 // Tests that seeking causes an immediate finalization, but does not trample a
 // previously set finalize time.
 TEST_P(WatchTimeReporterTest, SeekFinalizeDoesNotTramplePreviousFinalize) {
