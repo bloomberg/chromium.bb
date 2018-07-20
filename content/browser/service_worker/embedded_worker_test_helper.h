@@ -95,10 +95,6 @@ class EmbeddedWorkerTestHelper {
   // If |user_data_directory| is empty, the context makes storage stuff in
   // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
-  // S13nServiceWorker
-  EmbeddedWorkerTestHelper(
-      const base::FilePath& user_data_directory,
-      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
   virtual ~EmbeddedWorkerTestHelper();
 
   // Registers a Mojo endpoint object derived from
