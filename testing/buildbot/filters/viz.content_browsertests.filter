@@ -1,11 +1,3 @@
-#### Hit Testing
-# Test failure: https://crbug.com/848325
--SitePerProcessHitTestBrowserTest.RootConsumesScrollDuringOverscrollGesture*
-
-# InputEventAckWaiter never receives the event: https://crbug.com/848348
--SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest*
--SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture*
-
 ### Mac
 # BrowserSideFlingBrowserTest timing out https://crbug.com/842325
 -BrowserSideFlingBrowserTest.AutoscrollFling
