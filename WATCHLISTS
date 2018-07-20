@@ -1622,6 +1622,16 @@
                   '|third_party/blink/public/platform/modules/webshare/'\
                   '|third_party/blink/renderer/modules/webshare/',
     },
+    'webauthn': {
+        'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webauth/'\
+                    '|chrome/android/javatests/src/org/chromium/chrome/browser/webauth/'\
+                    '|chrome/browser/webauthn/'\
+                    '|chrome/browser/ui/webauthn/'\
+                    '|chrome/browser/ui/views/webauthn/'\
+                    '|content/browser/webauth/'\
+                    '|device/fido/'\
+                    '|third_party/blink/public/platform/modules/webauth/',
+    },
     'webgpu': {
         'filepath': 'third_party/blink/renderer/modules/webgpu/',
     },
@@ -2342,6 +2352,7 @@
     'wake_lock': ['mattreynolds+watch@chromium.org'],
     'web_package': ['twifkak+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
+    'webauthn': ['webauthn-reviews@chromium.org'],
     'webgpu': ['cwallez+watch@chromium.org',
                'kainino+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
