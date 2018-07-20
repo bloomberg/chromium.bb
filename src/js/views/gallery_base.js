@@ -105,44 +105,33 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
   if (!selectedIndexes.length)
     return;
 
-  var onError = function(filename) {
+  var onError = (filename) => {
     // TODO(yuli): Show a non-intrusive toast message instead.
     this.context_.onError(
         'gallery-export-error',
         chrome.i18n.getMessage('errorMsgGalleryExportFailed', filename));
-    setTimeout(function() {
+    setTimeout(() => {
       this.context_.onErrorRecovered('gallery-export-error');
-    }.bind(this), 2000);
-  }.bind(this);
+    }, 2000);
+  };
 
-  var exportPicture = function(fileEntry, picture) {
-    this.model_.exportPicture(
-        picture,
-        fileEntry,
-        function() { onError(fileEntry.name); });
-  }.bind(this);
-
-  // TODO(yuli): Move this into file_system.js and handle filename conflicts.
-  chrome.fileSystem.chooseEntry({
-    type: 'openDirectory'
-  }, function(dirEntry) {
+  chrome.fileSystem.chooseEntry({type: 'openDirectory'}, dirEntry => {
     if (!dirEntry)
       return;
 
-    var savePictureAsFile = function(picture) {
+    this.selectedPictures().forEach(domPicture => {
+      var picture = domPicture.picture;
+      // TODO(yuli): Use FileSystem.getFile_ to handle name conflicts.
       dirEntry.getFile(
-          camera.models.FileSystem.regulatePictureName(picture.pictureEntry), {
-        create: true, exclusive: false
-      }, function(fileEntry) {
-          exportPicture(fileEntry, picture);
+          camera.models.FileSystem.regulatePictureName(picture.pictureEntry),
+          {create: true, exclusive: false}, entry => {
+        this.model_.exportPicture(picture, entry).catch(error => {
+          console.error(error);
+          onError(entry.name);
+        });
       });
-    };
-
-    var selectedPictures = this.selectedPictures();
-    for (var i = 0; i < selectedPictures.length; i++) {
-      savePictureAsFile(selectedPictures[i].picture);
-    }
-  }.bind(this));
+    });
+  });
 };
 
 /**
@@ -162,17 +151,17 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
     type: camera.views.Dialog.Type.CONFIRMATION,
     message: chrome.i18n.getMessage(multi ?
         'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param)
-  }, function(result) {
+  }, result => {
     if (!result.isPositive)
       return;
     var selectedPictures = this.selectedPictures();
-    var lastDeleteIndex = this.pictures.indexOf(selectedPictures[0]);
     for (var i = selectedPictures.length - 1; i >= 0; i--) {
-      this.model_.deletePicture(selectedPictures[i].picture, function() {
+      this.model_.deletePicture(selectedPictures[i].picture).catch(error => {
+        console.error(error);
         // TODO(yuli): Move Toast out of views/ and show a toast message here.
       });
     }
-  }.bind(this));
+  });
 };
 
 /**

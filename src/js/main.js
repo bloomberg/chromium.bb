@@ -198,20 +198,28 @@ camera.Camera.prototype = {
  * Starts the app by initializing views and showing the camera view.
  */
 camera.Camera.prototype.start = function() {
-  var onFailure = function(error) {
-    if (error) {
-      console.error(error);
-    }
-    this.onError_('filesystem-failure',
-        chrome.i18n.getMessage('errorMsgFileSystemFailed'));
-  }.bind(this);
-
   var model = new camera.models.Gallery();
   this.cameraView_ = new camera.views.Camera(this.context_, this.router_, model);
   this.browserView_ = new camera.views.Browser(this.context_, this.router_, model);
   this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
 
-  var prepare = function() {
+  var promptMigrate = () => {
+    return new Promise((resolve, reject) => {
+      this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
+        type: camera.views.Dialog.Type.ALERT,
+        message: chrome.i18n.getMessage('migratePicturesMsg')
+      }, result => {
+        if (!result.isPositive) {
+          var error = new Error('Did not acknowledge migrate-prompt.');
+          error.exitApp = true;
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  };
+  camera.models.FileSystem.initialize(promptMigrate).then(() => {
     // Prepare the views and model, and then make the app ready.
     this.cameraView_.prepare();
     this.browserView_.prepare();
@@ -221,31 +229,15 @@ camera.Camera.prototype.start = function() {
     camera.util.makeElementsUnfocusableByMouse();
     camera.util.setAriaAttributes();
     this.router_.navigate(camera.Router.ViewIdentifier.CAMERA);
-  }.bind(this);
-
-  camera.models.FileSystem.initialize(function() {
-    var promptMigrate = function() {
-      this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
-        type: camera.views.Dialog.Type.ALERT,
-        message: chrome.i18n.getMessage('migratePicturesMsg')
-      }, function(result) {
-        if (!result.isPositive) {
-          chrome.app.window.current().close();
-          return;
-        }
-        camera.models.FileSystem.migratePictures(prepare, onFailure);
-      });
-    }.bind(this);
-
-    camera.models.FileSystem.needMigration(function() {
-      // Show the prompt dialog for pictures migration.
-      if (!camera.models.FileSystem.ackMigratePictures) {
-        promptMigrate();
-      } else {
-        camera.models.FileSystem.migratePictures(prepare, onFailure);
-      }
-    }, prepare, onFailure);
-  }.bind(this), onFailure);
+  }).catch(error => {
+    console.error(error);
+    if (error && error.exitApp) {
+      chrome.app.window.current().close();
+      return;
+    }
+    this.onError_('filesystem-failure',
+        chrome.i18n.getMessage('errorMsgFileSystemFailed'));
+  });
 };
 
 /**
@@ -305,15 +297,15 @@ camera.Camera.prototype.onWindowResize_ = function() {
     clearTimeout(this.resizeCompleteTimer_);
     this.resizeCompleteTimer_ = null;
   }
-  this.resizeCompleteTimer_ = setTimeout(function() {
+  this.resizeCompleteTimer_ = setTimeout(() => {
     this.resizeCompleteTimer_ = null;
     this.updateWindowSize_();
-  }.bind(this), 500);
+  }, 500);
 
   // Resize all stacked views rather than just the current-view to avoid
   // camera-preview not being resized if a dialog or settings' menu is shown on
   // top of the camera-view.
-  this.viewsStack_.all.forEach(function(view) {
+  this.viewsStack_.all.forEach(view => {
     view.onResize();
   });
 };
@@ -325,7 +317,7 @@ camera.Camera.prototype.onWindowResize_ = function() {
 camera.Camera.prototype.onErrorIconClicked_ = function() {
   var icon = document.querySelector('#error .icon');
   icon.classList.remove('animate');
-  setTimeout(function() {
+  setTimeout(() => {
     icon.classList.add('animate');
   }, 0);
 };
