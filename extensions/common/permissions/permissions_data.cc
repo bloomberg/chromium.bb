@@ -363,7 +363,8 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // Check the real origin, in order to account for filesystem:, blob:, etc.
   // (url::Origin grabs the inner origin of these, whereas GURL::GetOrigin()
   // does not.)
-  const GURL origin = url::Origin::Create(document_url).GetURL();
+  url::Origin origin = url::Origin::Create(document_url);
+  const GURL origin_url = origin.GetURL();
   {
     base::AutoLock auto_lock(runtime_lock_);
     // Disallow capturing policy-blocked hosts. No exceptions.
@@ -371,7 +372,8 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
     // blocked host in a different page and then capture that, but it's better
     // than nothing (and policy hosts can set their x-frame options
     // accordingly).
-    if (location_ != Manifest::COMPONENT && IsPolicyBlockedHostUnsafe(origin)) {
+    if (location_ != Manifest::COMPONENT &&
+        IsPolicyBlockedHostUnsafe(origin_url)) {
       if (error)
         *error = extension_misc::kPolicyBlockedScripting;
       return false;
@@ -404,7 +406,7 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // If the extension has page access (and has activeTab or <all_urls>, as
   // checked above), allow the capture.
   std::string access_error;
-  if (GetPageAccess(origin, tab_id, &access_error) == PageAccess::kAllowed)
+  if (GetPageAccess(origin_url, tab_id, &access_error) == PageAccess::kAllowed)
     return true;
 
   // The extension doesn't have explicit page access. However, there are a
@@ -420,7 +422,7 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // web content.
   // TODO(devlin): Should activeTab/<all_urls> account for the extension's own
   // domain?
-  if (origin.host() == extension_id_)
+  if (origin_url.host() == extension_id_)
     return true;
 
   // The following are special cases that require activeTab explicitly. Normal
@@ -435,10 +437,12 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // - data: URLs (which don't have a defined underlying origin).
   // TODO(devlin): Include the Webstore in this list?
   bool allowed_with_active_tab =
-      origin.SchemeIs(content::kChromeUIScheme) ||
-      origin.SchemeIs(kExtensionScheme) ||
+      origin_url.SchemeIs(content::kChromeUIScheme) ||
+      origin_url.SchemeIs(kExtensionScheme) ||
       // Note: The origin of a data: url is empty, so check the url itself.
-      document_url.SchemeIs(url::kDataScheme);
+      document_url.SchemeIs(url::kDataScheme) ||
+      origin.IsSameOriginWith(
+          url::Origin::Create(ExtensionsClient::Get()->GetWebstoreBaseURL()));
 
   if (!allowed_with_active_tab) {
     if (error)
