@@ -20,7 +20,8 @@
   transition: 0.3s ease transform, 0.3s ease opacity, 0.3s ease visibility;
 }
 .tree-container:hover ~ .infocards,
-.tree-container.focused ~ .infocards {
+.tree-container.focused ~ .infocards,
+.infocards:hover {
   visibility: visible;
   opacity: 1;
   transform: none;

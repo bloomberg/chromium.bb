@@ -94,6 +94,7 @@
         }
         .subhead,
         .subhead-2 {
+            margin-bottom: 0.5em;
             font-family: "Google Sans", Arial, sans-serif;
             font-weight: 500;
             font-size: 16px;
@@ -199,7 +200,7 @@
         }
 
         .diff .size-header::after {
-            content: ' diff';
+            content: " diff";
         }
     </style>
     <link rel="stylesheet" href="options.css">
@@ -224,9 +225,9 @@
                     -->
                     <path d="M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm6 7l-4 4h3v4h2v-4h3l-4-4z" />
                 </svg>
-                Upload data
+                <span class="label-text">Upload data</span>
             </label>
-            <a href="https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/html_report_faq.md" class="icon-button" title="FAQ">
+            <a href="https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/html_report_faq.md" class="icon-button" title="FAQ" id="faq">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
                     <path d="M11,18h2v-2h-2V18z M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8
                             s3.59-8,8-8s8,3.59,8,8S16.41,20,12,20z M12,6c-2.21,0-4,1.79-4,4h2c0-1.1,0.9-2,2-2s2,0.9,2,2c0,2-3,1.75-3,5h2c0-2.25,3-2.5,3-5
@@ -266,20 +267,28 @@
             </button>
         </header>
 
-        <h2 class="subhead">Size options</h2>
-        <p class="select-wrapper">
-            <select id="byteunit" name="byteunit">
-                <option value="B">B - bytes</option>
-                <option value="KiB">KiB - kilibytes</option>
-                <option value="MiB" selected>MiB - megabytes</option>
-                <option value="GiB">GiB - gigabytes</option>
-            </select>
-            <label class="select-label" for="byteunit">Byte unit</label>
-        </p>
-        <p class="checkbox-wrapper">
-            <input type="checkbox" id="methodcount" name="method_count" value="on">
-            <label class="checkbox-label" for="methodcount">Show dex method count rather than size</label>
-        </p>
+        <fieldset>
+            <legend class="subhead">Size options</legend>
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="methodcount" name="method_count" value="on">
+                <label class="checkbox-label" for="methodcount">Show dex method count rather than size</label>
+            </div>
+            <p class="select-wrapper">
+                <select id="byteunit" name="byteunit">
+                    <option value="B">B - bytes</option>
+                    <option value="KiB">KiB - kilibytes</option>
+                    <option value="MiB" selected>MiB - megabytes</option>
+                    <option value="GiB">GiB - gigabytes</option>
+                </select>
+                <label class="select-label" for="byteunit">Byte unit</label>
+            </p>
+            <p class="input-wrapper">
+                <input type="number" id="minsize" name="min_size" value="0" min="0">
+                <label class="input-label" for="minsize">
+                    Minimum size (bytes)
+                </label>
+            </p>
+        </fieldset>
 
         <fieldset>
             <legend class="subhead">Group symbols by</legend>
@@ -290,6 +299,24 @@
             <div class="radio-wrapper">
                 <input type="radio" id="component" name="group_by" value="component">
                 <label class="radio-label" for="component">Component</label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend class="subhead">Search by regex</legend>
+            <div class="input-wrapper">
+                <input class="input-regex" type="text" id="includeregex" name="include" placeholder=".+@.+" aria-describedby="include-error">
+                <label class="input-label" for="includeregex">
+                    Symbols must contain
+                </label>
+                <p class="input-error" id="include-error"></p>
+            </div>
+            <div class="input-wrapper">
+                <input class="input-regex" type="text" id="excluderegex" name="exclude" placeholder="\(.+\)"  aria-describedby="exclude-error">
+                <label class="input-label" for="excluderegex">
+                        Symbols must exclude
+                </label>
+                <p class="input-error" id="exclude-error"></p>
             </div>
         </fieldset>
 
@@ -364,31 +391,6 @@
             <button type="button" class="text-button" id="type-all">Select all</button>
             <button type="button" class="text-button" id="type-none">Select none</button>
         </fieldset>
-
-        <fieldset>
-            <legend class="subhead">Advanced filters</legend>
-            <p class="input-wrapper">
-                <input type="number" id="minsize" name="min_size" value="0" min="0">
-                <label class="input-label" for="minsize">
-                    Minimum size (bytes)
-                </label>
-            </p>
-            <fieldset>
-                <legend class="subhead-2">Regular expressions</legend>
-                <div class="input-wrapper">
-                    <input class="input-regex" type="text" id="includeregex" name="include" placeholder=".+@.+">
-                    <label class="input-label" for="includeregex">
-                        Symbols must contain
-                    </label>
-                </div>
-                <div class="input-wrapper">
-                    <input class="input-regex" type="text" id="excluderegex" name="exclude" placeholder="\(.+\)">
-                    <label class="input-label" for="excluderegex">
-                            Symbols must exclude
-                    </label>
-                </div>
-            </fieldset>
-        </fieldset>
     </form>
     <div class="symbols">
         <div hidden id="icons">
@@ -397,7 +399,7 @@
                 <path d="M9.17,6l2,2H20v10L4,18V6H9.17 M10,4H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8c0-1.1-0.9-2-2-2
                             h-8L10,4L10,4z" />
             </svg>
-            <svg class='icon componenticon' height='24' width='24' fill='#5f6368'>
+            <svg class="icon componenticon" height="24" width="24" fill="#5f6368">
                 <title>Component</title>
                 <path d="M9,13.75c-2.34,0-7,1.17-7,3.5V19h14v-1.75C16,14.92,11.34,13.75,9,13.75z M4.34,17c0.84-0.58,2.87-1.25,4.66-1.25
                          s3.82,0.67,4.66,1.25H4.34z" />

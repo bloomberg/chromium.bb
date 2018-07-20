@@ -43,7 +43,7 @@
 fieldset {
   border: 0;
   padding: 0;
-  margin: 2em 0 1em;
+  margin: 1em 0;
 }
 .options fieldset:first-of-type {
   margin-top: 1em;
@@ -83,7 +83,7 @@ legend {
 
 .text-button {
   padding: 0 8px;
-  line-height: 36px;
+  height: 36px;
   border-radius: 4px;
   color: #1a73e8;
   font-family: 'Google Sans', Arial, sans-serif;
@@ -136,8 +136,6 @@ input:focus + label.filled-button:active {
   position: relative;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
-  background: rgba(0, 0, 0, 0.04);
-  margin-bottom: 1em;
 }
 input[type='text'],
 input[type='number'],
@@ -158,14 +156,15 @@ select {
   position: absolute;
   z-index: -1;
   top: 0;
-  bottom: -1px;
   left: 0;
   right: 0;
-  font-size: 12px;
+  height: 52px;
   line-height: 20px;
   padding: 0 12px;
+  font-size: 12px;
   color: #5f6368;
   border-bottom: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.04);
 }
 .select-label::after {
   content: '';
@@ -187,6 +186,26 @@ select:focus + .select-label {
 }
 select:focus + .select-label::after {
   transform: rotate(180deg);
+}
+
+.input-error {
+  margin: 4px 0;
+  min-height: 2.5em;
+  opacity: 0;
+  color: #d93025;
+  font-size: 12px;
+}
+.input-regex:invalid,
+.input-regex[aria-invalid='true'] {
+  caret-color: #d93025;
+}
+.input-regex:invalid + .input-label,
+.input-regex[aria-invalid='true'] + .input-label {
+  color: #d93025;
+}
+.input-regex:invalid ~ .input-error,
+.input-regex[aria-invalid='true'] ~ .input-error {
+  opacity: 1;
 }
 
 /** <input type='checkbox' or 'radio'> elements */
@@ -269,6 +288,8 @@ input[type='radio']:focus + .radio-label {
 }
 
 input[type='file'] {
+  position: absolute;
+  top: -100%;
   opacity: 0;
 }
 
@@ -280,12 +301,20 @@ input[type='file'] {
   .show-options .scrim {
     display: block;
   }
-  .appbar,
+
+  .appbar-inner,
   .symbols {
     padding: 0 16px;
   }
   .appbar-progress {
     margin: 0 -16px;
     width: calc(100% + 32px);
+  }
+
+  .filled-button {
+    padding-right: 6px;
+  }
+  .filled-button .label-text {
+    display: none;
   }
 }

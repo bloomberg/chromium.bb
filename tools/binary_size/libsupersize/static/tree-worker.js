@@ -583,12 +583,20 @@ function parseOptions(options) {
   }
 
   if (includeRegex) {
-    const regex = new RegExp(includeRegex);
-    filters.push(s => regex.test(s.idPath));
+    try {
+      const regex = new RegExp(includeRegex);
+      filters.push(s => regex.test(s.idPath));
+    } catch (err) {
+      if (err.name !== 'SyntaxError') throw err;
+    }
   }
   if (excludeRegex) {
-    const regex = new RegExp(excludeRegex);
-    filters.push(s => !regex.test(s.idPath));
+    try {
+      const regex = new RegExp(excludeRegex);
+      filters.push(s => !regex.test(s.idPath));
+    } catch (err) {
+      if (err.name !== 'SyntaxError') throw err;
+    }
   }
 
   /**
