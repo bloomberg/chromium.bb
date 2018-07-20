@@ -893,6 +893,10 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         pbi->frame_header_size = frame_header_size;
 
         if (cm->show_existing_frame) {
+          if (obu_header.type == OBU_FRAME) {
+            cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+            return -1;
+          }
           frame_decoding_finished = 1;
           pbi->seen_frame_header = 0;
           break;
