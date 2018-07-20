@@ -258,7 +258,6 @@ void NGLineBreaker::BreakLine() {
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       HandleOpenTag(item);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      DCHECK_EQ(item.Length(), 0u);
       AddItem(item);
       MoveToNextOf(item);
     } else if (item.Length()) {

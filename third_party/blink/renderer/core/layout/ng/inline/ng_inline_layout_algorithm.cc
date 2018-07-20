@@ -467,9 +467,18 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
           static_offset.block_offset = line_box_metrics.LineHeight();
       }
 
+      // Our child offset is line-relative, but the static offset is
+      // flow-relative, using the direction we give to
+      // |AddInlineOutOfFlowChildCandidate|.
+      TextDirection line_direction = line_info.BaseDirection();
+      if (IsRtl(line_direction)) {
+        static_offset.inline_offset =
+            line_info.Width() - static_offset.inline_offset;
+      }
+
       container_builder_.AddInlineOutOfFlowChildCandidate(
-          NGBlockNode(ToLayoutBox(box)), static_offset,
-          line_info.BaseDirection(), child.out_of_flow_containing_box);
+          NGBlockNode(ToLayoutBox(box)), static_offset, line_direction,
+          child.out_of_flow_containing_box);
 
       child.out_of_flow_positioned_box = child.out_of_flow_containing_box =
           nullptr;
