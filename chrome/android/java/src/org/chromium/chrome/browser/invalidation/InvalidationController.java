@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.invalidation;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
@@ -16,6 +15,7 @@ import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.AsyncTask;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -132,8 +132,6 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     @SuppressLint("StaticFieldLeak")
     private static InvalidationController sInstance;
 
-    private final Context mContext;
-
     /**
      * Whether session sync invalidations can be disabled.
      */
@@ -191,8 +189,8 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
 
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
                 ChromeSigninController.get().getSignedInUser(), typesToRegister);
-        registerIntent.setClass(
-                mContext, InvalidationClientService.getRegisteredClass());
+        registerIntent.setClass(ContextUtils.getApplicationContext(),
+                InvalidationClientService.getRegisteredClass());
         startServiceIfPossible(registerIntent);
     }
 
@@ -206,7 +204,8 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
             @Override
             protected Void doInBackground(Void... arg0) {
                 boolean useGcmUpstream = true;
-                AndroidGcmController.get(mContext).initializeGcm(useGcmUpstream);
+                AndroidGcmController.get(ContextUtils.getApplicationContext())
+                        .initializeGcm(useGcmUpstream);
                 return null;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -223,8 +222,8 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     private void start() {
         mStarted = true;
         mEnableSessionInvalidationsTimer.resume();
-        Intent intent = new Intent(
-                mContext, InvalidationClientService.getRegisteredClass());
+        Intent intent = new Intent(ContextUtils.getApplicationContext(),
+                InvalidationClientService.getRegisteredClass());
         startServiceIfPossible(intent);
     }
 
@@ -234,8 +233,8 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     public void stop() {
         mStarted = false;
         mEnableSessionInvalidationsTimer.pause();
-        Intent intent = new Intent(
-                mContext, InvalidationClientService.getRegisteredClass());
+        Intent intent = new Intent(ContextUtils.getApplicationContext(),
+                InvalidationClientService.getRegisteredClass());
         intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
         startServiceIfPossible(intent);
     }
@@ -245,12 +244,12 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         // for O. See crbug.com/680812.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                mContext.startService(intent);
+                ContextUtils.getApplicationContext().startService(intent);
             } catch (IllegalStateException exception) {
                 Log.e(TAG, "Failed to start service from exception: ", exception);
             }
         } else {
-            mContext.startService(intent);
+            ContextUtils.getApplicationContext().startService(intent);
         }
     }
 
@@ -291,15 +290,14 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      *
      * Calling this method will create the instance if it does not yet exist.
      */
-    public static InvalidationController get(Context context) {
+    public static InvalidationController get() {
         synchronized (LOCK) {
             if (sInstance == null) {
                 // If the NTP is trying to suggest foreign tabs, then recieving invalidations is
                 // vital, otherwise data is stale and less useful.
                 boolean requireInvalidationsForSuggestions = ChromeFeatureList.isEnabled(
                         ChromeFeatureList.NTP_FOREIGN_SESSIONS_SUGGESTIONS);
-                sInstance =
-                        new InvalidationController(context, !requireInvalidationsForSuggestions);
+                sInstance = new InvalidationController(!requireInvalidationsForSuggestions);
             }
             return sInstance;
         }
@@ -331,10 +329,9 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Creates an instance using {@code context} to send intents.
      */
     @VisibleForTesting
-    InvalidationController(Context context, boolean canDisableSessionInvalidations) {
-        Context appContext = context.getApplicationContext();
-        if (appContext == null) throw new NullPointerException("Unable to get application context");
-        mContext = appContext;
+    InvalidationController(boolean canDisableSessionInvalidations) {
+        if (ContextUtils.getApplicationContext() == null)
+            throw new NullPointerException("Unable to get application context");
         mCanDisableSessionInvalidations = canDisableSessionInvalidations;
         mSessionInvalidationsEnabled = !mCanDisableSessionInvalidations;
         mEnableSessionInvalidationsTimer = new Timer();

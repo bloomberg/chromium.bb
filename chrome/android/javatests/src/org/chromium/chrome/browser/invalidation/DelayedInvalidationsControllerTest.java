@@ -7,9 +7,7 @@ package org.chromium.chrome.browser.invalidation;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
@@ -46,7 +44,6 @@ public class DelayedInvalidationsControllerTest {
     private static final String PAYLOAD_2 = "payload_2";
 
     private MockDelayedInvalidationsController mController;
-    private Context mContext;
     private Activity mPlaceholderActivity;
 
     @Rule
@@ -63,8 +60,7 @@ public class DelayedInvalidationsControllerTest {
         private MockDelayedInvalidationsController() {}
 
         @Override
-        void notifyInvalidationsOnBackgroundThread(
-                Context context, Account account, List<Bundle> bundles) {
+        void notifyInvalidationsOnBackgroundThread(Account account, List<Bundle> bundles) {
             mInvalidated = true;
             mBundles = bundles;
         }
@@ -73,7 +69,6 @@ public class DelayedInvalidationsControllerTest {
     @Before
     public void setUp() throws Exception {
         mController = new MockDelayedInvalidationsController();
-        mContext = InstrumentationRegistry.getTargetContext();
 
         mPlaceholderActivity = new Activity();
         setApplicationState(ActivityState.CREATED);
@@ -124,8 +119,8 @@ public class DelayedInvalidationsControllerTest {
     @UiThreadTest
     public void testOnlySpecificInvalidationsTriggeredOnResume() throws InterruptedException {
         // First make sure there are no pending invalidations.
-        mController.clearPendingInvalidations(mContext);
-        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        mController.clearPendingInvalidations();
+        Assert.assertFalse(mController.notifyPendingInvalidations());
         Assert.assertFalse(mController.mInvalidated);
 
         // Create some invalidations.
@@ -139,11 +134,11 @@ public class DelayedInvalidationsControllerTest {
         Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, firstInv);
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, secondInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, firstInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, secondInv);
 
         // Make sure there are pending invalidations.
-        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.notifyPendingInvalidations());
         Assert.assertTrue(mController.mInvalidated);
 
         // Ensure only specific invalidations are being notified.
@@ -160,8 +155,8 @@ public class DelayedInvalidationsControllerTest {
     @UiThreadTest
     public void testAllInvalidationsTriggeredOnResume() throws InterruptedException {
         // First make sure there are no pending invalidations.
-        mController.clearPendingInvalidations(mContext);
-        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        mController.clearPendingInvalidations();
+        Assert.assertFalse(mController.notifyPendingInvalidations());
         Assert.assertFalse(mController.mInvalidated);
 
         // Create some invalidations.
@@ -177,12 +172,12 @@ public class DelayedInvalidationsControllerTest {
         Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, firstInv);
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, allInvalidations);
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, secondInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, firstInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, allInvalidations);
+        mController.addPendingInvalidation(TEST_ACCOUNT, secondInv);
 
         // Make sure there are pending invalidations.
-        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.notifyPendingInvalidations());
         Assert.assertTrue(mController.mInvalidated);
 
         // As Invalidation for all ids has been received, it will supersede all other invalidations.
@@ -196,8 +191,8 @@ public class DelayedInvalidationsControllerTest {
     @UiThreadTest
     public void testSameObjectInvalidationsGetCombined() throws InterruptedException {
         // First make sure there are no pending invalidations.
-        mController.clearPendingInvalidations(mContext);
-        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        mController.clearPendingInvalidations();
+        Assert.assertFalse(mController.notifyPendingInvalidations());
         Assert.assertFalse(mController.mInvalidated);
 
         // Create invalidations with the same id/src, but different versions and payloads.
@@ -211,11 +206,11 @@ public class DelayedInvalidationsControllerTest {
         Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, lowerVersionInv);
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, higherVersionInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, lowerVersionInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, higherVersionInv);
 
         // Make sure there are pending invalidations.
-        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.notifyPendingInvalidations());
         Assert.assertTrue(mController.mInvalidated);
 
         // As Invalidation for all ids has been received, it will supersede all other invalidations.
@@ -229,8 +224,8 @@ public class DelayedInvalidationsControllerTest {
     @UiThreadTest
     public void testSameObjectLowerVersionInvalidationGetsDiscarded() throws InterruptedException {
         // First make sure there are no pending invalidations.
-        mController.clearPendingInvalidations(mContext);
-        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        mController.clearPendingInvalidations();
+        Assert.assertFalse(mController.notifyPendingInvalidations());
         Assert.assertFalse(mController.mInvalidated);
 
         // Create invalidations with the same id/src, but different versions and payloads.
@@ -244,11 +239,11 @@ public class DelayedInvalidationsControllerTest {
         Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, higherVersionInv);
-        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, lowerVersionInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, higherVersionInv);
+        mController.addPendingInvalidation(TEST_ACCOUNT, lowerVersionInv);
 
         // Make sure there are pending invalidations.
-        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.notifyPendingInvalidations());
         Assert.assertTrue(mController.mInvalidated);
 
         // As Invalidation for all ids has been received, it will supersede all other invalidations.

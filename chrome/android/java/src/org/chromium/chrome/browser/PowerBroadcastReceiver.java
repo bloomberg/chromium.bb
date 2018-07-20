@@ -106,7 +106,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
         public void runActions() {
             Context context = ContextUtils.getApplicationContext();
             OmahaBase.onForegroundSessionStart(context);
-            DelayedInvalidationsController.getInstance().notifyPendingInvalidations(context);
+            DelayedInvalidationsController.getInstance().notifyPendingInvalidations();
         }
 
         public long getDelayToRun() {

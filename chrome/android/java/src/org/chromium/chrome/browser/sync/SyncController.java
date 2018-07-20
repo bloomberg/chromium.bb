@@ -174,7 +174,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
-        InvalidationController invalidationController = InvalidationController.get(mContext);
+        InvalidationController invalidationController = InvalidationController.get();
         if (mProfileSyncService.isSyncRequested()) {
             if (!invalidationController.isStarted()) {
                 invalidationController.ensureStartedAndUpdateRegisteredTypes();

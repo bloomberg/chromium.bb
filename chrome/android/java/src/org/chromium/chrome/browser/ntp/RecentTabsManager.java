@@ -117,7 +117,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mForeignSessionHelper.triggerSessionSync();
         registerObservers();
 
-        InvalidationController.get(mContext).onRecentTabsPageOpened();
+        InvalidationController.get().onRecentTabsPageOpened();
     }
 
     /**
@@ -147,7 +147,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mPrefs.destroy();
         mPrefs = null;
 
-        InvalidationController.get(mContext).onRecentTabsPageClosed();
+        InvalidationController.get().onRecentTabsPageClosed();
     }
 
     private void registerForForeignSessionUpdates() {
