@@ -105,6 +105,7 @@
 #include <errno.h>
 #include <process.h>
 #include <windows.h>
+#include "base/threading/scoped_blocking_call.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -248,6 +249,7 @@ ThreadCondition::~ThreadCondition() {}
 
 void ThreadCondition::Wait(Mutex& mutex) {
   PlatformMutex& platform_mutex = mutex.Impl();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   BOOL result = SleepConditionVariableCS(
       &condition_, &platform_mutex.internal_mutex_, INFINITE);
   DCHECK_NE(result, 0);
@@ -271,6 +273,7 @@ bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
           ? INFINITE
           : ((absolute_time - current_time) * 1000.0);
 
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   PlatformMutex& platform_mutex = mutex.Impl();
   BOOL result = SleepConditionVariableCS(
       &condition_, &platform_mutex.internal_mutex_, interval);

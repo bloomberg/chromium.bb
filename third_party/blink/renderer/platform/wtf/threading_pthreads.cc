@@ -38,6 +38,7 @@
 #include <limits.h>
 #include <sched.h>
 #include <sys/time.h>
+#include "base/threading/scoped_blocking_call.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -206,6 +207,7 @@ ThreadCondition::~ThreadCondition() {
 }
 
 void ThreadCondition::Wait(Mutex& mutex) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   PlatformMutex& platform_mutex = mutex.Impl();
   int result = pthread_cond_wait(&condition_, &platform_mutex.internal_mutex_);
   DCHECK_EQ(result, 0);
@@ -230,6 +232,7 @@ bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
   target_time.tv_sec = time_seconds;
   target_time.tv_nsec = time_nanoseconds;
 
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   PlatformMutex& platform_mutex = mutex.Impl();
   int result = pthread_cond_timedwait(
       &condition_, &platform_mutex.internal_mutex_, &target_time);
