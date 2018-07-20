@@ -60,6 +60,8 @@ source_set("exo") {
     "surface_observer.h",
     "surface_tree_host.cc",
     "surface_tree_host.h",
+    "text_input.cc",
+    "text_input.h",
     "touch.cc",
     "touch.h",
     "touch_delegate.h",
@@ -81,6 +83,7 @@ source_set("exo") {
     "//services/ui/public/interfaces",
     "//skia",
     "//ui/aura",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/compositor_extra",
     "//ui/display/manager",
@@ -89,6 +92,7 @@ source_set("exo") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/keyboard",
     "//ui/ozone",
     "//ui/views",
     "//ui/views/mus",
@@ -148,6 +152,7 @@ source_set("unit_tests") {
     "shell_surface_unittest.cc",
     "sub_surface_unittest.cc",
     "surface_unittest.cc",
+    "text_input_unittest.cc",
     "touch_unittest.cc",
   ]
 
