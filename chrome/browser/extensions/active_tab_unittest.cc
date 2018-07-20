@@ -36,6 +36,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -337,6 +338,7 @@ TEST_F(ActiveTabTest, CapturingPagesWithActiveTab) {
       GURL("chrome://version"),
       GURL("chrome://newtab"),
       GURL("http://[2607:f8b0:4005:805::200e]"),
+      ExtensionsClient::Get()->GetWebstoreBaseURL(),
       extension->GetResourceURL("test.html"),
       another_extension->GetResourceURL("test.html"),
   };
