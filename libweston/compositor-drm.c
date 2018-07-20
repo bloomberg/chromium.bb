@@ -65,24 +65,8 @@
 #include "linux-dmabuf.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 
-#ifndef DRM_CAP_TIMESTAMP_MONOTONIC
-#define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
-#endif
-
-#ifndef DRM_CLIENT_CAP_UNIVERSAL_PLANES
-#define DRM_CLIENT_CAP_UNIVERSAL_PLANES 2
-#endif
-
 #ifndef DRM_CLIENT_CAP_ASPECT_RATIO
 #define DRM_CLIENT_CAP_ASPECT_RATIO	4
-#endif
-
-#ifndef DRM_CAP_CURSOR_WIDTH
-#define DRM_CAP_CURSOR_WIDTH 0x8
-#endif
-
-#ifndef DRM_CAP_CURSOR_HEIGHT
-#define DRM_CAP_CURSOR_HEIGHT 0x9
 #endif
 
 #ifndef GBM_BO_USE_CURSOR
