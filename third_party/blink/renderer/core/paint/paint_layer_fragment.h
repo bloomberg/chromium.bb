@@ -49,14 +49,6 @@ struct PaintLayerFragment {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  void SetRects(const LayoutRect& bounds,
-                const ClipRect& background,
-                const ClipRect& foreground) {
-    layer_bounds = bounds;
-    background_rect = background;
-    foreground_rect = foreground;
-  }
-
   void MoveBy(const LayoutPoint& offset) {
     layer_bounds.MoveBy(offset);
     background_rect.MoveBy(offset);
