@@ -234,6 +234,8 @@ void BrowserAppMenuButton::UpdateIcon(bool should_animate) {
 }
 
 void BrowserAppMenuButton::SetTrailingMargin(int margin) {
+  if (margin == margin_trailing_)
+    return;
   margin_trailing_ = margin;
   UpdateThemedBorder();
   InvalidateLayout();
