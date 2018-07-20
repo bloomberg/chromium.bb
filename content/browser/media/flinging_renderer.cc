@@ -15,7 +15,7 @@
 namespace content {
 
 FlingingRenderer::FlingingRenderer(
-    std::unique_ptr<media::MediaController> controller)
+    std::unique_ptr<media::FlingingController> controller)
     : controller_(std::move(controller)) {}
 
 FlingingRenderer::~FlingingRenderer() = default;
@@ -43,15 +43,15 @@ std::unique_ptr<FlingingRenderer> FlingingRenderer::Create(
   if (!presentation_delegate)
     return nullptr;
 
-  auto media_controller = presentation_delegate->GetMediaController(
+  auto flinging_controller = presentation_delegate->GetFlingingController(
       render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID(), presentation_id);
 
-  if (!media_controller)
+  if (!flinging_controller)
     return nullptr;
 
   return base::WrapUnique<FlingingRenderer>(
-      new FlingingRenderer(std::move(media_controller)));
+      new FlingingRenderer(std::move(flinging_controller)));
 }
 
 // media::Renderer implementation
@@ -76,21 +76,21 @@ void FlingingRenderer::Flush(const base::Closure& flush_cb) {
 
 void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {
   DVLOG(2) << __func__;
-  controller_->Seek(time);
-  controller_->Play();
+  controller_->GetMediaController()->Seek(time);
+  controller_->GetMediaController()->Play();
 }
 
 void FlingingRenderer::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __func__;
   if (playback_rate == 0)
-    controller_->Pause();
+    controller_->GetMediaController()->Pause();
   else
-    controller_->Play();
+    controller_->GetMediaController()->Play();
 }
 
 void FlingingRenderer::SetVolume(float volume) {
   DVLOG(2) << __func__;
-  controller_->SetVolume(volume);
+  controller_->GetMediaController()->SetVolume(volume);
 }
 
 base::TimeDelta FlingingRenderer::GetMediaTime() {

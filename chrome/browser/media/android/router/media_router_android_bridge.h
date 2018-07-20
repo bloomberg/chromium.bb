@@ -10,7 +10,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
-#include "media/base/media_controller.h"
+#include "media/base/flinging_controller.h"
 #include "url/origin.h"
 
 namespace media_router {
@@ -44,7 +44,7 @@ class MediaRouterAndroidBridge {
   virtual void DetachRoute(const MediaRoute::Id& route_id);
   virtual bool StartObservingMediaSinks(const MediaSource::Id& source_id);
   virtual void StopObservingMediaSinks(const MediaSource::Id& source_id);
-  virtual std::unique_ptr<media::MediaController> GetMediaController(
+  virtual std::unique_ptr<media::FlingingController> GetFlingingController(
       const MediaRoute::Id& route_id);
 
   // Methods called by the Java counterpart.

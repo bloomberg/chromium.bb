@@ -23,7 +23,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
-#include "media/base/media_controller.h"
+#include "media/base/flinging_controller.h"
 
 namespace content {
 class WebContents;
@@ -190,9 +190,10 @@ class MediaRouter : public KeyedService {
   // there is a change to the media routes, subclass MediaRoutesObserver.
   virtual std::vector<MediaRoute> GetCurrentRoutes() const = 0;
 
-  // Returns a controller that directly sends commands to media within a route.
+  // Returns a controller that sends commands to media within a route, and
+  // propagates MediaStatus changes.
   // Returns a nullptr if no controller can be be found from |route_id|.
-  virtual std::unique_ptr<media::MediaController> GetMediaController(
+  virtual std::unique_ptr<media::FlingingController> GetFlingingController(
       const MediaRoute::Id& route_id) = 0;
 
 #if !defined(OS_ANDROID)

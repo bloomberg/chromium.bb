@@ -673,8 +673,8 @@ void PresentationServiceDelegateImpl::ClearDefaultPresentationRequest() {
     observer.OnDefaultPresentationRemoved();
 }
 
-std::unique_ptr<media::MediaController>
-PresentationServiceDelegateImpl::GetMediaController(
+std::unique_ptr<media::FlingingController>
+PresentationServiceDelegateImpl::GetFlingingController(
     int render_process_id,
     int render_frame_id,
     const std::string& presentation_id) {
@@ -684,7 +684,7 @@ PresentationServiceDelegateImpl::GetMediaController(
   if (route_id.empty())
     return nullptr;
 
-  return router_->GetMediaController(route_id);
+  return router_->GetFlingingController(route_id);
 }
 
 MediaRoute::Id PresentationServiceDelegateImpl::GetRouteId(

@@ -4,6 +4,7 @@
 
 #include "content/browser/media/flinging_renderer.h"
 
+#include "base/time/time.h"
 #include "base/version.h"
 #include "media/base/media_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,14 +24,33 @@ class MockMediaController : public media::MediaController {
   MOCK_METHOD1(Seek, void(base::TimeDelta));
 };
 
+class MockFlingingController : public media::FlingingController {
+ public:
+  explicit MockFlingingController(media::MediaController* media_controller)
+      : media_controller_(media_controller) {}
+
+  media::MediaController* GetMediaController() { return media_controller_; }
+
+  MOCK_METHOD1(AddMediaStatusObserver, void(media::MediaStatusObserver*));
+  MOCK_METHOD1(RemoveMediaStatusObserver, void(media::MediaStatusObserver*));
+  MOCK_METHOD0(GetApproximateCurrentTime, base::TimeDelta());
+
+ private:
+  media::MediaController* media_controller_;
+};
+
 class FlingingRendererTest : public testing::Test {
  public:
   FlingingRendererTest()
       : media_controller_(new StrictMock<MockMediaController>()),
-        renderer_(std::unique_ptr<media::MediaController>(media_controller_)) {}
+        flinging_controller_(
+            new StrictMock<MockFlingingController>(media_controller_.get())),
+        renderer_(
+            std::unique_ptr<media::FlingingController>(flinging_controller_)) {}
 
  protected:
-  StrictMock<MockMediaController>* media_controller_;
+  std::unique_ptr<MockMediaController> media_controller_;
+  StrictMock<MockFlingingController>* flinging_controller_;
   FlingingRenderer renderer_;
 };
 
