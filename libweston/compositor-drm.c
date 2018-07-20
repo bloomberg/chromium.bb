@@ -2497,11 +2497,23 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 	struct drm_output_state *output_state, *tmp;
 	struct drm_plane *plane;
 	drmModeAtomicReq *req = drmModeAtomicAlloc();
-	uint32_t flags = 0;
+	uint32_t flags;
 	int ret = 0;
 
 	if (!req)
 		return -1;
+
+	switch (mode) {
+	case DRM_STATE_APPLY_SYNC:
+		flags = 0;
+		break;
+	case DRM_STATE_APPLY_ASYNC:
+		flags = DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_NONBLOCK;
+		break;
+	case DRM_STATE_TEST_ONLY:
+		flags = DRM_MODE_ATOMIC_TEST_ONLY;
+		break;
+	}
 
 	if (b->state_invalid) {
 		struct weston_head *head_base;
@@ -2593,17 +2605,6 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 	if (ret != 0) {
 		weston_log("atomic: couldn't compile atomic state\n");
 		goto out;
-	}
-
-	switch (mode) {
-	case DRM_STATE_APPLY_SYNC:
-		break;
-	case DRM_STATE_APPLY_ASYNC:
-		flags |= DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_NONBLOCK;
-		break;
-	case DRM_STATE_TEST_ONLY:
-		flags |= DRM_MODE_ATOMIC_TEST_ONLY;
-		break;
 	}
 
 	ret = drmModeAtomicCommit(b->drm.fd, req, flags, b);
