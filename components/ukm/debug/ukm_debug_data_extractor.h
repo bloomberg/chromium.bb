@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/values.h"
+#include "components/ukm/ukm_service.h"
 
 namespace ukm {
 
@@ -21,8 +23,12 @@ class UkmDebugDataExtractor {
   UkmDebugDataExtractor();
   ~UkmDebugDataExtractor();
 
+  // Returns UKM data structured in a DictionaryValue.
+  static base::Value GetStructuredData(const UkmService* ukm_service);
+
   // Returns UKM data as an HTML page.
-  static std::string GetHTMLData(UkmService* ukm_service);
+  // TODO(etiennep): Use GetStructuredData() instead.
+  static std::string GetHTMLData(const UkmService* ukm_service);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UkmDebugDataExtractor);
