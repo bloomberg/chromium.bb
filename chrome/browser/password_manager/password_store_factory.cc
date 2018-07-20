@@ -39,7 +39,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#include "chrome/browser/password_manager/password_store_win.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/password_manager/password_store_mac.h"
@@ -166,9 +165,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
-  ps = new PasswordStoreWin(std::move(login_db),
-                            WebDataServiceFactory::GetPasswordWebDataForProfile(
-                                profile, ServiceAccessType::EXPLICIT_ACCESS));
+  ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #elif defined(OS_MACOSX)
   ps = new PasswordStoreMac(std::move(login_db), profile->GetPrefs());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
