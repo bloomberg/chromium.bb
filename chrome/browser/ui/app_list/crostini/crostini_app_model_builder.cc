@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -53,8 +52,6 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
       *registry_service->GetRegistration(app_id);
   if (registration.NoDisplay())
     return;
-
-  MaybeCreateRootFolder();
   InsertApp(std::make_unique<CrostiniAppItem>(profile(), model_updater(),
                                               GetSyncItem(app_id), app_id,
                                               registration.Name()));
@@ -98,24 +95,4 @@ void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
     const bool unsynced_change = false;
     RemoveApp(kCrostiniTerminalId, unsynced_change);
   }
-}
-
-void CrostiniAppModelBuilder::MaybeCreateRootFolder() {
-  if (root_folder_created_)
-    return;
-
-  root_folder_created_ = true;
-  const app_list::AppListSyncableService::SyncItem* sync_item =
-      GetSyncItem(kCrostiniFolderId);
-  if (sync_item)
-    return;
-
-  std::unique_ptr<ChromeAppListItem> crositini_folder =
-      std::make_unique<ChromeAppListItem>(profile(), kCrostiniFolderId,
-                                          model_updater());
-  crositini_folder->SetChromeIsFolder(true);
-  crositini_folder->SetName(
-      l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
-  crositini_folder->SetDefaultPositionIfApplicable();
-  InsertApp(std::move(crositini_folder));
 }
