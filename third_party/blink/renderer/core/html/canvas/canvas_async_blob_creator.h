@@ -110,6 +110,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
  protected:
   IdleTaskStatus idle_task_status_;
   bool fail_encoder_initialization_for_test_;
+  bool enforce_idle_encoding_for_test_;
 
  private:
   friend class CanvasAsyncBlobCreatorTest;

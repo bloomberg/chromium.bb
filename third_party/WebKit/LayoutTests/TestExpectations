@@ -4644,23 +4644,6 @@ crbug.com/863067 [ Win10 ] virtual/user-activation-v2/fast/dom/Window/window-foc
 # Sheriff 2018-7-13
 crbug.com/863599 [ Linux Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
-#crbug.com/860706
-crbug.com/860706 fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout Failure ]
-crbug.com/860706 virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout Failure ]
-crbug.com/860706 [ Linux Mac ] css3/filters/effect-blur-hw.html [ Timeout Pass ]
-crbug.com/860706 [ Linux Mac ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]
-crbug.com/860706 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Timeout Pass ]
-crbug.com/860706 [ Linux Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Timeout Pass ]
-crbug.com/860706 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
-crbug.com/860706 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-pattern.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-image.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pattern.html [ Timeout Pass ]
-crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Timeout Pass ]
-
 crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
 crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
 crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Timeout Pass ]
