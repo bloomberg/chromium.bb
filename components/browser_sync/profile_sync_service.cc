@@ -36,6 +36,7 @@
 #include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/backend_migrator.h"
+#include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory.h"
