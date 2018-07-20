@@ -28,14 +28,18 @@ constexpr char kTestAppId[] = "test-app-id";
 
 class MockNotificationMenuController
     : public message_center::SlideOutController::Delegate,
-      public NotificationItemView::Delegate {
+      public NotificationMenuView::Delegate {
  public:
   MockNotificationMenuController() = default;
-  virtual ~MockNotificationMenuController() = default;
+  ~MockNotificationMenuController() override = default;
 
   void ActivateNotificationAndClose(
       const std::string& notification_id) override {
     activation_count_++;
+  }
+
+  void OnOverflowAddedOrRemoved() override {
+    overflow_added_or_removed_count_++;
   }
 
   ui::Layer* GetSlideOutLayer() override {
@@ -53,6 +57,7 @@ class MockNotificationMenuController
 
   int slide_out_count_ = 0;
   int activation_count_ = 0;
+  int overflow_added_or_removed_count_ = 0;
 
   // Owned by NotificationMenuViewTest.
   NotificationMenuView* notification_menu_view_ = nullptr;
@@ -229,10 +234,65 @@ TEST_F(NotificationMenuViewTest, Basic) {
   CheckDisplayedNotification(notification_1);
 
   // Remove |notification_1|, |notification_0| should be shown.
-  notification_menu_view()->RemoveNotificationItemView(notification_1.id());
+  notification_menu_view()->OnNotificationRemoved(notification_1.id());
   EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
   EXPECT_EQ(1, test_api()->GetItemViewCount());
   CheckDisplayedNotification(notification_0);
+}
+
+TEST_F(NotificationMenuViewTest, MultipleNotificationsBasic) {
+  // Add multiple notifications to the view.
+  const message_center::Notification notification_0 =
+      AddNotification("notification_id_0", base::ASCIIToUTF16("title_0"),
+                      base::ASCIIToUTF16("message_0"));
+
+  // Overflow should not be created until there are two notifications.
+  EXPECT_FALSE(test_api()->GetOverflowView());
+  EXPECT_EQ(
+      0, mock_notification_menu_controller()->overflow_added_or_removed_count_);
+
+  // Add a second notification, this will push |notification_0| into overflow.
+  const message_center::Notification notification_1 =
+      AddNotification("notification_id_1", base::ASCIIToUTF16("title_1"),
+                      base::ASCIIToUTF16("message_1"));
+
+  CheckDisplayedNotification(notification_1);
+  EXPECT_TRUE(test_api()->GetOverflowView());
+  EXPECT_EQ(
+      1, mock_notification_menu_controller()->overflow_added_or_removed_count_);
+
+  // Remove the notification that is in overflow.
+  notification_menu_view()->OnNotificationRemoved(notification_0.id());
+
+  // The displayed notification should not have changed, and the overflow view
+  // should be deleted.
+  CheckDisplayedNotification(notification_1);
+  EXPECT_FALSE(test_api()->GetOverflowView());
+}
+
+// Tests that when the displayed NotificationItemView is removed, the
+// notification from the overflow view becomes the displayed view.
+TEST_F(NotificationMenuViewTest, ShowNotificationFromOverflow) {
+  // Add multiple notifications to the view.
+  const message_center::Notification notification_0 =
+      AddNotification("notification_id_0", base::ASCIIToUTF16("title_0"),
+                      base::ASCIIToUTF16("message_0"));
+
+  EXPECT_FALSE(test_api()->GetOverflowView());
+  const message_center::Notification notification_1 =
+      AddNotification("notification_id_1", base::ASCIIToUTF16("title_1"),
+                      base::ASCIIToUTF16("message_1"));
+
+  // |notification_1| should be the displayed NotificationItemView.
+  CheckDisplayedNotification(notification_1);
+  EXPECT_TRUE(test_api()->GetOverflowView());
+
+  // Remove the displayed NotificationItemView, the overflow notification should
+  // take its place and overflow should be removed.
+  notification_menu_view()->OnNotificationRemoved(notification_1.id());
+
+  CheckDisplayedNotification(notification_0);
+  EXPECT_FALSE(test_api()->GetOverflowView());
 }
 
 // Tests that removing a notification that is not being shown only updates the
@@ -252,7 +312,7 @@ TEST_F(NotificationMenuViewTest, RemoveOlderNotification) {
   CheckDisplayedNotification(notification_1);
 
   // Remove the older notification, |notification_0|.
-  notification_menu_view()->RemoveNotificationItemView(notification_0.id());
+  notification_menu_view()->OnNotificationRemoved(notification_0.id());
 
   // The latest notification, |notification_1|, should be shown.
   EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());

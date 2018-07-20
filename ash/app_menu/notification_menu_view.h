@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/app_menu/app_menu_export.h"
-#include "ash/app_menu/notification_item_view.h"
 #include "ui/message_center/views/slide_out_controller.h"
 #include "ui/views/view.h"
 
@@ -24,16 +23,30 @@ class MenuSeparator;
 namespace ash {
 
 class NotificationMenuHeaderView;
+class NotificationOverflowView;
+class NotificationItemView;
 
 // A view inserted into a container MenuItemView which shows a
 // NotificationItemView and a NotificationMenuHeaderView.
 class APP_MENU_EXPORT NotificationMenuView : public views::View {
  public:
-  explicit NotificationMenuView(
-      NotificationItemView::Delegate* notification_item_view_delegate,
-      message_center::SlideOutController::Delegate*
-          slide_out_controller_delegate,
-      const std::string& app_id);
+  // API for child views to interact with the NotificationMenuController.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    // Activates the notification corresponding with |notification_id| and
+    // closes the menu.
+    virtual void ActivateNotificationAndClose(
+        const std::string& notification_id) = 0;
+
+    // Called when an overflow view is added or remove.
+    virtual void OnOverflowAddedOrRemoved() = 0;
+  };
+
+  NotificationMenuView(Delegate* notification_item_view_delegate,
+                       message_center::SlideOutController::Delegate*
+                           slide_out_controller_delegate,
+                       const std::string& app_id);
   ~NotificationMenuView() override;
 
   // Whether |notifications_for_this_app_| is empty.
@@ -50,9 +63,10 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
       const message_center::Notification& notification);
 
   // Removes the NotificationItemView associated with |notification_id| and
-  // if it is the currently displayed NotificationItemView, replaces it with the
-  // next one if available.
-  void RemoveNotificationItemView(const std::string& notification_id);
+  // if it is the currently displayed NotificationItemView, replaces it with
+  // the next one if available. Also removes the notification from
+  // |overflow_view_| if it exists there.
+  void OnNotificationRemoved(const std::string& notification_id);
 
   // Gets the slide out layer, used to move the displayed NotificationItemView.
   ui::Layer* GetSlideOutLayer();
@@ -62,6 +76,7 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
 
   // views::View overrides:
   gfx::Size CalculatePreferredSize() const override;
+  void Layout() override;
 
  private:
   friend class NotificationMenuViewTestAPI;
@@ -70,7 +85,7 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
   const std::string app_id_;
 
   // Owned by AppMenuModelAdapter.
-  NotificationItemView::Delegate* const notification_item_view_delegate_;
+  NotificationMenuView::Delegate* const notification_item_view_delegate_;
 
   // Owned by AppMenuModelAdapter.
   message_center::SlideOutController::Delegate* const
@@ -80,12 +95,16 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
   // which is shown.
   std::deque<std::unique_ptr<NotificationItemView>> notification_item_views_;
 
-  // Holds the header and counter texts. Owned by views hierarchy.
-  NotificationMenuHeaderView* header_view_ = nullptr;
-
   // A double separator used to distinguish notifications from context menu
   // options. Owned by views hierarchy.
   views::MenuSeparator* double_separator_;
+
+  // Holds the header and counter texts. Owned by views hierarchy.
+  NotificationMenuHeaderView* const header_view_;
+
+  // A view that shows icons of notifications for this app that are not being
+  // shown.
+  std::unique_ptr<NotificationOverflowView> overflow_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuView);
 };

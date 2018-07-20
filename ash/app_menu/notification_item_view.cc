@@ -26,6 +26,10 @@ constexpr int kNotificationItemTextLineHeight = 16;
 constexpr int kIconVerticalPadding = 4;
 constexpr int kIconHorizontalPadding = 12;
 
+// Stroke width of MenuItemView border in dips, used to prevent
+// NotificationItemView from exceeding the width of MenuItemView.
+constexpr int kBorderStrokeWidth = 1;
+
 // The size of the icon in NotificationItemView in dips.
 constexpr gfx::Size kProportionalIconViewSize(24, 24);
 
@@ -40,7 +44,7 @@ constexpr SkColor kNotificationTitleTextColor =
 }  // namespace
 
 NotificationItemView::NotificationItemView(
-    NotificationItemView::Delegate* delegate,
+    NotificationMenuView::Delegate* delegate,
     message_center::SlideOutController::Delegate* slide_out_controller_delegate,
     const base::string16& title,
     const base::string16& message,
@@ -107,8 +111,9 @@ void NotificationItemView::UpdateContents(const base::string16& title,
 }
 
 gfx::Size NotificationItemView::CalculatePreferredSize() const {
-  return gfx::Size(views::MenuConfig::instance().touchable_menu_width,
-                   kNotificationItemViewHeight);
+  return gfx::Size(
+      views::MenuConfig::instance().touchable_menu_width - kBorderStrokeWidth,
+      kNotificationItemViewHeight);
 }
 
 void NotificationItemView::Layout() {

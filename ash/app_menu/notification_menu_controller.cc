@@ -69,7 +69,7 @@ void NotificationMenuController::OnNotificationRemoved(
     return;
 
   // Remove the view from the container.
-  notification_menu_view_->RemoveNotificationItemView(notification_id);
+  notification_menu_view_->OnNotificationRemoved(notification_id);
 
   if (!notification_menu_view_->IsEmpty())
     return;
@@ -108,6 +108,11 @@ void NotificationMenuController::ActivateNotificationAndClose(
 
   // Results in |this| being deleted.
   app_menu_model_adapter_->Cancel();
+}
+
+void NotificationMenuController::OnOverflowAddedOrRemoved() {
+  // Make the root MenuItemView recalculate the menu bounds.
+  root_menu_->ChildrenChanged();
 }
 
 void NotificationMenuController::InitializeNotificationMenuView() {

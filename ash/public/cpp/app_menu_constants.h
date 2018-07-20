@@ -61,6 +61,16 @@ constexpr int kNotificationVerticalPadding = 8;
 // Height of the NotificationItemView in dips.
 constexpr int kNotificationItemViewHeight = 48;
 
+// The maximum number of overflow icons which can be shown without the
+// showing |overflow_icon_|.
+constexpr int kMaxOverflowIcons = 9;
+
+// The identifier used for notifications in the NotificationOverflowView.
+constexpr int kNotificationOverflowIconId = 43;
+
+// The identifier used for the overflow icon in NotificationOverflowView.
+constexpr int kOverflowIconId = 44;
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_MENU_CONSTANTS_H_

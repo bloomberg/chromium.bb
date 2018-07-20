@@ -6,7 +6,7 @@
 #define ASH_APP_MENU_NOTIFICATION_MENU_CONTROLLER_H_
 
 #include "ash/app_menu/app_menu_export.h"
-#include "ash/app_menu/notification_item_view.h"
+#include "ash/app_menu/notification_menu_view.h"
 #include "base/scoped_observer.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -19,7 +19,6 @@ class MenuItemView;
 namespace ash {
 
 class AppMenuModelAdapter;
-class NotificationMenuView;
 
 // Handles adding/removing NotificationMenuView from the root MenuItemView,
 // adding the container model entry, and updating the NotificationMenuView
@@ -27,7 +26,7 @@ class NotificationMenuView;
 class APP_MENU_EXPORT NotificationMenuController
     : public message_center::MessageCenterObserver,
       public message_center::SlideOutController::Delegate,
-      public NotificationItemView::Delegate {
+      public NotificationMenuView::Delegate {
  public:
   NotificationMenuController(const std::string& app_id,
                              views::MenuItemView* root_menu,
@@ -46,7 +45,8 @@ class APP_MENU_EXPORT NotificationMenuController
   void OnSlideChanged() override;
   void OnSlideOut() override;
 
-  // NotificationItemView::Delegate overrides:
+  // NotificationMenuView::Delegate overrides:
+  void OnOverflowAddedOrRemoved() override;
   void ActivateNotificationAndClose(
       const std::string& notification_id) override;
 

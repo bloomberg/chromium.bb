@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/app_menu/app_menu_export.h"
+#include "ash/app_menu/notification_menu_view.h"
 #include "base/strings/string16.h"
 #include "ui/message_center/views/slide_out_controller.h"
 #include "ui/views/view.h"
@@ -31,16 +32,7 @@ namespace ash {
 // The view which contains the details of a notification.
 class APP_MENU_EXPORT NotificationItemView : public views::View {
  public:
-  // Used to activate NotificationItemView.
-  class Delegate {
-   public:
-    // Activates the notification corresponding with |notification_id| and
-    // closes the menu.
-    virtual void ActivateNotificationAndClose(
-        const std::string& notification_id) = 0;
-  };
-
-  NotificationItemView(NotificationItemView::Delegate* delegate,
+  NotificationItemView(NotificationMenuView::Delegate* delegate,
                        message_center::SlideOutController::Delegate*
                            slide_out_controller_delegate,
                        const base::string16& title,
@@ -66,6 +58,9 @@ class APP_MENU_EXPORT NotificationItemView : public views::View {
   const std::string& notification_id() const { return notification_id_; }
   const base::string16& title() const { return title_; }
   const base::string16& message() const { return message_; }
+  const message_center::ProportionalImageView& proportional_image_view() const {
+    return *proportional_icon_view_;
+  }
 
  private:
   // Holds the title and message labels. Owned by the views hierarchy.
@@ -81,7 +76,7 @@ class APP_MENU_EXPORT NotificationItemView : public views::View {
   views::Label* message_label_ = nullptr;
 
   // Owned by AppMenuModelAdapter. Used to activate notifications.
-  Delegate* const delegate_;
+  NotificationMenuView::Delegate* const delegate_;
 
   // Controls the sideways gesture drag behavior.
   std::unique_ptr<message_center::SlideOutController> slide_out_controller_;

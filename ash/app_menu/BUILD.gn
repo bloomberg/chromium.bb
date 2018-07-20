@@ -18,6 +18,8 @@ component("app_menu") {
     "notification_menu_header_view.h",
     "notification_menu_view.cc",
     "notification_menu_view.h",
+    "notification_overflow_view.cc",
+    "notification_overflow_view.h",
   ]
 
   defines = [ "APP_MENU_IMPLEMENTATION" ]
