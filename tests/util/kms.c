@@ -144,6 +144,7 @@ static const char * const modules[] = {
 	"mediatek",
 	"meson",
 	"pl111",
+	"stm",
 };
 
 int util_open(const char *device, const char *module)
