@@ -58,7 +58,7 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
 
   bool fits_on_gpu() const { return fits_on_gpu_; }
-  const sk_sp<SkImage>& image() { return image_; }
+  const sk_sp<SkImage>& image() const { return image_; }
 
   // Ensures the cached image has mips.
   void EnsureMips();

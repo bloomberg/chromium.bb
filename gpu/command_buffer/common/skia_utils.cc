@@ -43,11 +43,6 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
   void setMemoryBacking(const char* dump_name,
                         const char* backing_type,
                         const char* backing_object_id) override {
-    // If we don't have a unique tracing guid, these resources are not
-    // referenced across processes and don't need ownership edges.
-    if (!share_group_tracing_guid_)
-      return;
-
     // For uniformity, skia provides this value as a string. Convert back to a
     // uint32_t.
     uint32_t gl_id =
@@ -62,13 +57,26 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     // Populated in if statements below.
     base::trace_event::MemoryAllocatorDumpGuid guid;
 
-    if (strcmp(backing_type, kGLTextureBackingType) == 0) {
-      guid = gl::GetGLTextureClientGUIDForTracing(*share_group_tracing_guid_,
-                                                  gl_id);
-    } else if (strcmp(backing_type, kGLBufferBackingType) == 0) {
-      guid = gl::GetGLBufferGUIDForTracing(tracing_process_id_, gl_id);
-    } else if (strcmp(backing_type, kGLRenderbufferBackingType) == 0) {
-      guid = gl::GetGLRenderbufferGUIDForTracing(tracing_process_id_, gl_id);
+    if (share_group_tracing_guid_) {
+      // If we have a |share_group_tracing_guid_|, we are in a render process
+      // and need to create client texture GUIDs for aliasing with the GPU
+      // process.
+      if (strcmp(backing_type, kGLTextureBackingType) == 0) {
+        guid = gl::GetGLTextureClientGUIDForTracing(*share_group_tracing_guid_,
+                                                    gl_id);
+      } else if (strcmp(backing_type, kGLBufferBackingType) == 0) {
+        guid = gl::GetGLBufferGUIDForTracing(tracing_process_id_, gl_id);
+      } else if (strcmp(backing_type, kGLRenderbufferBackingType) == 0) {
+        guid = gl::GetGLRenderbufferGUIDForTracing(tracing_process_id_, gl_id);
+      }
+    } else {
+      // If we do not have a |share_group_tracing_guid_|, we are in the GPU
+      // process, being used for OOP-R. We need to create Raster dumps for
+      // aliasing with the transfer cache. Note that this is currently only
+      // needed for textures (not buffers or renderbuffers).
+      if (strcmp(backing_type, kGLTextureBackingType) == 0) {
+        guid = gl::GetGLTextureRasterGUIDForTracing(gl_id);
+      }
     }
 
     if (!guid.empty()) {

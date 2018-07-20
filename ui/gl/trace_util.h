@@ -28,6 +28,9 @@ GL_EXPORT base::trace_event::MemoryAllocatorDumpGuid GetGLBufferGUIDForTracing(
     uint64_t share_group_guid,
     uint32_t buffer_id);
 
+GL_EXPORT base::trace_event::MemoryAllocatorDumpGuid
+GetGLTextureRasterGUIDForTracing(uint32_t texture_id);
+
 }  // namespace gl
 
 #endif  // UI_GL_TRACE_UTIL_H_
