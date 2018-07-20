@@ -198,6 +198,10 @@ Polymer({
    * @private
    */
   onNativeDialogClose_: function(e) {
+    // Ignore any 'close' events not fired directly by the <dialog> element.
+    if (e.target !== this.getNative())
+      return;
+
     // TODO(dpapad): This is necessary to make the code work both for Polymer 1
     // and Polymer 2. Remove once migration to Polymer 2 is completed.
     e.stopPropagation();
