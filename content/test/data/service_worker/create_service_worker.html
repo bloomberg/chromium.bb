@@ -2,7 +2,9 @@
 const params = new URLSearchParams(location.search);
 async function run() {
   const reg = await navigator.serviceWorker.register(
-     params.get('worker_url'));
+      params.get('worker_url'));
+  await navigator.serviceWorker.ready;
+  document.title = 'DONE';
 }
 self.onload = run;
 </script>
