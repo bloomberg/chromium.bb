@@ -70,4 +70,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < src/unstable/input-timestamps/input-timestamps-unstable-v1.xml > protocol/input-timestamps-v1-protocol.c
     wayland-scanner server-header < src/unstable/input-timestamps/input-timestamps-unstable-v1.xml > include/protocol/input-timestamps-unstable-v1-server-protocol.h
     wayland-scanner client-header < src/unstable/input-timestamps/input-timestamps-unstable-v1.xml > include/protocol/input-timestamps-unstable-v1-client-protocol.h
+    wayland-scanner code < src/unstable/text-input/text-input-unstable-v1.xml > protocol/text-input-v1-protocol.c
+    wayland-scanner server-header < src/unstable/text-input/text-input-unstable-v1.xml > include/protocol/text-input-unstable-v1-server-protocol.h
+    wayland-scanner client-header < src/unstable/text-input/text-input-unstable-v1.xml > include/protocol/text-input-unstable-v1-client-protocol.h
 - Update this README to reflect the new version number.

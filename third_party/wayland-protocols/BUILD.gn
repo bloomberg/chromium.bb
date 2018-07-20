@@ -343,3 +343,24 @@ source_set("cursor_shapes_protocol") {
 
   public_configs = [ ":cursor_shapes_protocol_config" ]
 }
+
+config("text_input_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("text_input_protocol") {
+  sources = [
+    "include/protocol/text-input-unstable-v1-client-protocol.h",
+    "include/protocol/text-input-unstable-v1-server-protocol.h",
+    "protocol/text-input-v1-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":text_input_protocol_config" ]
+}
