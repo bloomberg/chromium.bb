@@ -51,8 +51,13 @@ ModuleDatabase::ModuleDatabase(
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
-      // ModuleDatabase owns |module_inspector_|, so it is safe to use
-      // base::Unretained().
+// ModuleDatabase owns both |module_load_attempt_log_listener_| and
+// |module_inspector_|, so it is safe to use base::Unretained().
+#if defined(GOOGLE_CHROME_BUILD)
+      module_load_attempt_log_listener_(
+          base::BindRepeating(&ModuleDatabase::OnModuleBlocked,
+                              base::Unretained(this))),
+#endif  // defined(GOOGLE_CHROME_BUILD)
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))) {
   AddObserver(&third_party_metrics_);
@@ -174,6 +179,16 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
       observer.OnKnownModuleLoaded(module_info->first, module_info->second);
     }
   }
+}
+
+void ModuleDatabase::OnModuleBlocked(const base::FilePath& module_path,
+                                     uint32_t module_size,
+                                     uint32_t module_time_date_stamp) {
+  ModuleInfo* module_info = nullptr;
+  FindOrCreateModuleInfo(module_path, module_size, module_time_date_stamp,
+                         &module_info);
+
+  module_info->second.module_properties |= ModuleInfoData::kPropertyBlocked;
 }
 
 void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,

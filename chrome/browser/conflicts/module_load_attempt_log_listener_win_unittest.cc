@@ -5,6 +5,7 @@
 #include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -23,15 +24,17 @@ class ModuleLoadAttemptLogListenerTest : public testing::Test {
 
   std::unique_ptr<ModuleLoadAttemptLogListener>
   CreateModuleLoadAttemptLogListener() {
-    return std::make_unique<ModuleLoadAttemptLogListener>(base::BindRepeating(
-        &ModuleLoadAttemptLogListenerTest::OnNewModulesBlocked,
-        base::Unretained(this)));
+    return std::make_unique<ModuleLoadAttemptLogListener>(
+        base::BindRepeating(&ModuleLoadAttemptLogListenerTest::OnModuleBlocked,
+                            base::Unretained(this)));
   }
 
   // ModuleLoadAttemptLogListener::Delegate:
-  void OnNewModulesBlocked(
-      std::vector<third_party_dlls::PackedListModule>&& blocked_modules) {
-    blocked_modules_ = std::move(blocked_modules);
+  void OnModuleBlocked(const base::FilePath& module_path,
+                       uint32_t module_size,
+                       uint32_t module_time_date_stamp) {
+    blocked_modules_.emplace_back(module_path, module_size,
+                                  module_time_date_stamp);
 
     notified_ = true;
 
@@ -48,7 +51,8 @@ class ModuleLoadAttemptLogListenerTest : public testing::Test {
     run_loop.Run();
   }
 
-  const std::vector<third_party_dlls::PackedListModule>& blocked_modules() {
+  const std::vector<std::tuple<base::FilePath, uint32_t, uint32_t>>&
+  blocked_modules() {
     return blocked_modules_;
   }
 
@@ -59,7 +63,7 @@ class ModuleLoadAttemptLogListenerTest : public testing::Test {
 
   base::Closure quit_closure_;
 
-  std::vector<third_party_dlls::PackedListModule> blocked_modules_;
+  std::vector<std::tuple<base::FilePath, uint32_t, uint32_t>> blocked_modules_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleLoadAttemptLogListenerTest);
 };

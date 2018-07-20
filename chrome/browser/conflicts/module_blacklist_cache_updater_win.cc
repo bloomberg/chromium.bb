@@ -123,6 +123,30 @@ ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
   return result;
 }
 
+// Inserts a module into |modules|. Also does the type conversion.
+void InsertPackedListModule(
+    ModuleInfoKey module_key,
+    std::vector<third_party_dlls::PackedListModule>* modules) {
+  DCHECK(modules);
+
+  // Do the insertion.
+  modules->emplace_back();
+  third_party_dlls::PackedListModule& module = modules->back();
+
+  // Hash the basename.
+  const std::string module_basename = base::UTF16ToUTF8(
+      base::i18n::ToLower(module_key.module_path.BaseName().value()));
+  base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(module_basename.data()),
+                      module_basename.length(), module.basename_hash);
+
+  // Hash the code id.
+  const std::string module_code_id = GenerateCodeId(module_key);
+  base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(module_code_id.data()),
+                      module_code_id.length(), module.code_id_hash);
+
+  module.time_date_stamp = CalculateTimeDateStamp(base::Time::Now());
+}
+
 }  // namespace
 
 // static
@@ -140,11 +164,6 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      // The use of base::Unretained() is safe here because the callback can
-      // only be invoked while |module_load_attempt_log_listener_| is alive.
-      module_load_attempt_log_listener_(
-          base::BindRepeating(&ModuleBlacklistCacheUpdater::OnNewModulesBlocked,
-                              base::Unretained(this))),
       weak_ptr_factory_(this) {
   DCHECK(module_list_filter_);
   module_database_event_source_->AddObserver(this);
@@ -188,6 +207,14 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
   // The module id is always positive.
   if (module_key.module_id + 1 > module_blocking_decisions_.size())
     module_blocking_decisions_.resize(module_key.module_id + 1);
+
+  if (module_data.module_properties & ModuleInfoData::kPropertyBlocked) {
+    InsertPackedListModule(module_key, &blocked_modules_);
+
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kBlocked;
+    return;
+  }
 
   // Only consider loaded modules.
   if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
@@ -261,22 +288,7 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
       ModuleBlockingDecision::kBlacklisted;
 
   // Insert the blacklisted module.
-  newly_blacklisted_modules_.emplace_back();
-  third_party_dlls::PackedListModule& module =
-      newly_blacklisted_modules_.back();
-
-  // Hash the basename.
-  const std::string module_basename = base::UTF16ToUTF8(
-      base::i18n::ToLower(module_key.module_path.BaseName().value()));
-  base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(module_basename.data()),
-                      module_basename.length(), module.basename_hash);
-
-  // Hash the code id.
-  const std::string module_code_id = GenerateCodeId(module_key);
-  base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(module_code_id.data()),
-                      module_code_id.length(), module.code_id_hash);
-
-  module.time_date_stamp = CalculateTimeDateStamp(base::Time::Now());
+  InsertPackedListModule(module_key, &newly_blacklisted_modules_);
 
   // Signal the module database that this module will be added to the cache.
   // Note that observers that care about this information should register to
@@ -304,21 +316,6 @@ void ModuleBlacklistCacheUpdater::OnModuleDatabaseIdle() {
   StartModuleBlacklistCacheUpdate();
 }
 
-void ModuleBlacklistCacheUpdater::OnNewModulesBlocked(
-    std::vector<third_party_dlls::PackedListModule>&& blocked_modules) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  blocked_modules_.insert(blocked_modules_.begin(),
-                          std::make_move_iterator(blocked_modules.begin()),
-                          std::make_move_iterator(blocked_modules.end()));
-
-  // Start the timer.
-  timer_.Start(FROM_HERE,
-               kUpdateTimerDuration,
-               base::Bind(&ModuleBlacklistCacheUpdater::OnTimerExpired,
-                          base::Unretained(this)));
-}
-
 ModuleBlacklistCacheUpdater::ModuleBlockingDecision
 ModuleBlacklistCacheUpdater::GetModuleBlockingDecision(
     ModuleInfoKey module_key) const {
@@ -336,8 +333,6 @@ void ModuleBlacklistCacheUpdater::OnTimerExpired() {
 
 void ModuleBlacklistCacheUpdater::StartModuleBlacklistCacheUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  timer_.Stop();
 
   base::FilePath cache_file_path = GetModuleBlacklistCachePath();
   if (cache_file_path.empty())
