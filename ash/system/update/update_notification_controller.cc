@@ -45,6 +45,10 @@ void UpdateNotificationController::OnUpdateAvailable() {
     return;
   }
 
+  message_center::SystemNotificationWarningLevel warning_level =
+      model_->rollback()
+          ? message_center::SystemNotificationWarningLevel::WARNING
+          : message_center::SystemNotificationWarningLevel::NORMAL;
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
@@ -57,15 +61,18 @@ void UpdateNotificationController::OnUpdateAvailable() {
               base::BindRepeating(
                   &UpdateNotificationController::HandleNotificationClick,
                   weak_ptr_factory_.GetWeakPtr())),
-          kSystemMenuUpdateIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+          kSystemMenuUpdateIcon, warning_level);
   notification->set_pinned(true);
 
   if (model_->update_required()) {
     std::vector<message_center::ButtonInfo> notification_actions;
-    message_center::ButtonInfo button_info = message_center::ButtonInfo(
-        l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_RESTART_BUTTON));
-    notification_actions.push_back(button_info);
+    if (model_->rollback()) {
+      notification_actions.push_back(message_center::ButtonInfo(
+          l10n_util::GetStringUTF16(IDS_ROLLBACK_NOTIFICATION_RESTART_BUTTON)));
+    } else {
+      notification_actions.push_back(message_center::ButtonInfo(
+          l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_RESTART_BUTTON)));
+    }
     notification->set_buttons(notification_actions);
   }
 
@@ -79,6 +86,9 @@ bool UpdateNotificationController::ShouldShowUpdate() const {
 base::string16 UpdateNotificationController::GetNotificationMessage() const {
   base::string16 system_app_name =
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME);
+  if (model_->rollback()) {
+    return l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_MESSAGE_ROLLBACK);
+  }
   if (model_->factory_reset_required()) {
     return l10n_util::GetStringFUTF16(IDS_UPDATE_NOTIFICATION_MESSAGE_POWERWASH,
                                       system_app_name);
@@ -94,8 +104,9 @@ base::string16 UpdateNotificationController::GetNotificationTitle() const {
         IDS_UPDATE_NOTIFICATION_TITLE_FLASH_PLAYER);
   }
 #endif
-
-  return l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_TITLE);
+  return model_->rollback()
+             ? l10n_util::GetStringUTF16(IDS_ROLLBACK_NOTIFICATION_TITLE)
+             : l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_TITLE);
 }
 
 void UpdateNotificationController::HandleNotificationClick(

@@ -52,15 +52,22 @@ class VersionUpdater {
       EolStatusCallback;
 #endif
 
-  // Used to update the client of status changes. int parameter is the progress
-  // and should only be non-zero for the UPDATING state.
-  // std::string parameter is the version of the available update and should be
-  // empty string when update is not available.
-  // int64_t parameter is the size in bytes of the available update and should
-  // be 0 when update is not available.
-  // base::string16 parameter is a message explaining a failure.
-  typedef base::Callback<
-      void(Status, int, const std::string&, int64_t, const base::string16&)>
+  // Used to update the client of status changes.
+  // |status| is the current state of the update.
+  // |progress| should only be non-zero for the UPDATING state.
+  // |rollback| indicates whether the update is actually a rollback, which
+  //     requires wiping the device upon reboot.
+  // |version| is the version of the available update and should be empty string
+  //     when update is not available.
+  // |update_size| is the size of the available update in bytes and should be 0
+  //     when update is not available.
+  // |message| is a message explaining a failure.
+  typedef base::Callback<void(Status status,
+                              int progress,
+                              bool rollback,
+                              const std::string& version,
+                              int64_t update_size,
+                              const base::string16& message)>
       StatusCallback;
 
   // Used to show or hide the promote UI elements. Mac-only.

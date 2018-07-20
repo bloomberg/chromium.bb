@@ -34,7 +34,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
 
   // Simulate an update.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, mojom::UpdateType::SYSTEM);
+      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::SYSTEM);
 
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());
@@ -58,7 +58,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
 
   // Simulate an update.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, mojom::UpdateType::FLASH);
+      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::FLASH);
 
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());

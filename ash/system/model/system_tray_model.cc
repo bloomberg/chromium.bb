@@ -78,8 +78,9 @@ void SystemTrayModel::SetPerformanceTracingIconVisible(bool visible) {
 
 void SystemTrayModel::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                      bool factory_reset_required,
+                                     bool rollback,
                                      mojom::UpdateType update_type) {
-  update_model()->SetUpdateAvailable(severity, factory_reset_required,
+  update_model()->SetUpdateAvailable(severity, factory_reset_required, rollback,
                                      update_type);
 }
 

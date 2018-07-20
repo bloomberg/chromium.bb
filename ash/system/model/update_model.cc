@@ -19,10 +19,12 @@ void UpdateModel::RemoveObserver(UpdateObserver* observer) {
 
 void UpdateModel::SetUpdateAvailable(mojom::UpdateSeverity severity,
                                      bool factory_reset_required,
+                                     bool rollback,
                                      mojom::UpdateType update_type) {
   update_required_ = true;
   severity_ = severity;
   factory_reset_required_ = factory_reset_required;
+  rollback_ = rollback;
   update_type_ = update_type;
   NotifyUpdateAvailable();
 }

@@ -28,11 +28,12 @@ class UpdateModel {
   void RemoveObserver(UpdateObserver* observer);
 
   // Store the state that a software update is available. The state persists
-  // until reboot. Based on |severity| and |factory_reset_required|, the
-  // observer views can indicate the severity of the update to users by changing
-  // the icon, color, and tooltip.
+  // until reboot. Based on |severity|, |factory_reset_required| and |rollback|,
+  // the observer views can indicate the severity of the update to users by
+  // changing the icon, color, and tooltip.
   void SetUpdateAvailable(mojom::UpdateSeverity severity,
                           bool factory_reset_required,
+                          bool rollback,
                           mojom::UpdateType update_type);
 
   // If |available| is true, a software update is available but user's agreement
@@ -45,6 +46,7 @@ class UpdateModel {
 
   bool update_required() const { return update_required_; }
   bool factory_reset_required() const { return factory_reset_required_; }
+  bool rollback() const { return rollback_; }
   mojom::UpdateType update_type() const { return update_type_; }
   bool update_over_cellular_available() const {
     return update_over_cellular_available_;
@@ -56,6 +58,7 @@ class UpdateModel {
   bool update_required_ = false;
   mojom::UpdateSeverity severity_ = mojom::UpdateSeverity::NONE;
   bool factory_reset_required_ = false;
+  bool rollback_ = false;
   mojom::UpdateType update_type_ = mojom::UpdateType::SYSTEM;
   bool update_over_cellular_available_ = false;
 

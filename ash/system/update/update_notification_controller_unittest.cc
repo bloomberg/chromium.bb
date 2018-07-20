@@ -85,7 +85,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
 
   // Simulate an update.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, mojom::UpdateType::SYSTEM);
+      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::SYSTEM);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -103,7 +103,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
 
   // Simulate an update.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, mojom::UpdateType::FLASH);
+      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::FLASH);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -150,7 +150,7 @@ TEST_F(UpdateNotificationControllerTest,
 
   // Simulate an update that requires factory reset.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, true, mojom::UpdateType::SYSTEM);
+      mojom::UpdateSeverity::LOW, true, false, mojom::UpdateType::SYSTEM);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -160,6 +160,25 @@ TEST_F(UpdateNotificationControllerTest,
       " Learn more about the latest " SYSTEM_APP_NAME " update.",
       GetNotificationMessage());
   EXPECT_EQ("Restart to update", GetNotificationButton(0));
+}
+
+TEST_F(UpdateNotificationControllerTest, VisibilityAfterRollback) {
+  // The system starts with no update pending, so the notification isn't
+  // visible.
+  EXPECT_FALSE(HasNotification());
+
+  // Simulate a rollback.
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
+      mojom::UpdateSeverity::LOW, false, true, mojom::UpdateType::SYSTEM);
+
+  // The notification is now visible.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ("Device will be rolled back", GetNotificationTitle());
+  EXPECT_EQ(
+      "Your administrator is rolling back your device. All data will"
+      " be deleted when the device is restarted.",
+      GetNotificationMessage());
+  EXPECT_EQ("Restart and reset", GetNotificationButton(0));
 }
 
 }  // namespace ash

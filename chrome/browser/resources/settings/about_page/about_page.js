@@ -16,7 +16,12 @@ Polymer({
     /** @private {?UpdateStatusChangedEvent} */
     currentUpdateStatusEvent_: {
       type: Object,
-      value: {message: '', progress: 0, status: UpdateStatus.DISABLED},
+      value: {
+        message: '',
+        progress: 0,
+        rollback: false,
+        status: UpdateStatus.DISABLED
+      },
     },
 
     // <if expr="chromeos">
@@ -298,8 +303,8 @@ Polymer({
     this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
     // </if>
     // <if expr="chromeos">
-    this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
-        !this.isTargetChannelMoreStable_();
+    this.showRelaunch_ =
+        this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && !this.isRollback_();
     // </if>
   },
 
@@ -324,6 +329,8 @@ Polymer({
         // <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_)
           return this.i18nAdvanced('aboutUpgradeSuccessChannelSwitch');
+        if (this.currentUpdateStatusEvent_.rollback)
+          return this.i18nAdvanced('aboutRollbackSuccess');
         // </if>
         return this.i18nAdvanced('aboutUpgradeRelaunch');
       case UpdateStatus.UPDATED:
@@ -340,6 +347,11 @@ Polymer({
                   settings.browserChannelToI18nId(this.targetChannel_)),
               progressPercent
             ]
+          });
+        }
+        if (this.currentUpdateStatusEvent_.rollback) {
+          return this.i18nAdvanced('aboutRollbackInProgress', {
+            substitutions: [progressPercent],
           });
         }
         // </if>
@@ -442,9 +454,13 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isTargetChannelMoreStable_: function() {
+  isRollback_: function() {
     assert(this.currentChannel_.length > 0);
     assert(this.targetChannel_.length > 0);
+    if (this.currentUpdateStatusEvent_.rollback) {
+      return true;
+    }
+    // Channel switch to a more stable channel is also a rollback
     return settings.isTargetChannelMoreStable(
         this.currentChannel_, this.targetChannel_);
   },
@@ -464,8 +480,7 @@ Polymer({
    * @private
    */
   computeShowRelaunchAndPowerwash_: function() {
-    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
-        this.isTargetChannelMoreStable_();
+    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && this.isRollback_();
   },
 
   /** @private */

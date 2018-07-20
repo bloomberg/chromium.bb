@@ -453,7 +453,7 @@ void SystemTrayClient::HandleUpdateAvailable() {
                                            : ash::mojom::UpdateType::FLASH;
 
   system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required(),
-                               update_type);
+                               detector->is_rollback(), update_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

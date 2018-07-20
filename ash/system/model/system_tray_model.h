@@ -38,6 +38,7 @@ class SystemTrayModel : public mojom::SystemTray {
   void SetPerformanceTracingIconVisible(bool visible) override;
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
                       bool factory_reset_required,
+                      bool rollback,
                       mojom::UpdateType update_type) override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
   void ShowVolumeSliderBubble() override;
