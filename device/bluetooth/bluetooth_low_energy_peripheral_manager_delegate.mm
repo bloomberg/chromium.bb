@@ -12,17 +12,17 @@ namespace device {
 // CBPeripheralManagerDelegate class and our BluetoothAdapterMac classes.
 class BluetoothLowEnergyPeripheralManagerBridge {
  public:
-  BluetoothLowEnergyPeripheralManagerBridge(
-      BluetoothLowEnergyAdvertisementManagerMac* advertisement_manager,
-      BluetoothAdapterMac* adapter)
-      : advertisement_manager_(advertisement_manager), adapter_(adapter) {}
+  BluetoothLowEnergyPeripheralManagerBridge(BluetoothAdapterMac* adapter)
+      : adapter_(adapter) {}
 
   ~BluetoothLowEnergyPeripheralManagerBridge() {}
 
-  void UpdatedState() { advertisement_manager_->TryStartAdvertisement(); }
+  void UpdatedState() {
+    // TODO(tengs): Hook this up to BluetoothAdapterMac.
+  }
 
   void DidStartAdvertising(NSError* error) {
-    advertisement_manager_->DidStartAdvertising(error);
+    // TODO(tengs): Hook this up to BluetoothAdapterMac.
   }
 
   CBPeripheralManager* GetPeripheralManager() {
@@ -30,7 +30,6 @@ class BluetoothLowEnergyPeripheralManagerBridge {
   }
 
  private:
-  BluetoothLowEnergyAdvertisementManagerMac* advertisement_manager_;
   BluetoothAdapterMac* adapter_;
 };
 
@@ -38,13 +37,10 @@ class BluetoothLowEnergyPeripheralManagerBridge {
 
 @implementation BluetoothLowEnergyPeripheralManagerDelegate
 
-- (id)initWithAdvertisementManager:
-          (device::BluetoothLowEnergyAdvertisementManagerMac*)
-              advertisement_manager
-                        andAdapter:(device::BluetoothAdapterMac*)adapter {
+- (id)initWithAdapter:(device::BluetoothAdapterMac*)adapter {
   if ((self = [super init])) {
-    bridge_.reset(new device::BluetoothLowEnergyPeripheralManagerBridge(
-        advertisement_manager, adapter));
+    bridge_.reset(
+        new device::BluetoothLowEnergyPeripheralManagerBridge(adapter));
   }
   return self;
 }
