@@ -2609,7 +2609,6 @@ crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 
 crbug.com/808834 [ Linux Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
 
-crbug.com/655458 crbug.com/721814 external/wpt/mediacapture-image/idlharness.html [ Skip ]
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Pass Timeout ]
 
@@ -4625,7 +4624,6 @@ crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-rec2020.ht
 # Sheriff 2018-07-11
 # Test timeouts following wpt-import@89ccb892...
 crbug.com/862588 [ Linux ] external/wpt/cookie-store/idlharness.tentative.https.html [ Timeout Pass ]
-crbug.com/862588 [ Linux ] external/wpt/gamepad/idlharness.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.sharedworker.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.worker.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/resource-timing/idlharness.any.html [ Timeout Pass ]
