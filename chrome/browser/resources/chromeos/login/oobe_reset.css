@@ -6,15 +6,6 @@
   -webkit-margin-end: 5px;
 }
 
-oobe-text-button {
-  -webkit-margin-end: 16px;
-  color: #5a5a5a;
-}
-
-#cancelButton {
-  -webkit-margin-end: 4px;
-}
-
 a {
   color: var(--google-blue-500);
   font-family: 'Roboto';

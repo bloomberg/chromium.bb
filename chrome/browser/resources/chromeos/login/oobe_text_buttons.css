@@ -2,6 +2,10 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
+:host {
+  margin: 0 4px; /* So that two adjacent buttons are 8px separated. */
+}
+
 :host ::slotted(*) {
   font-size: 12px;
 }

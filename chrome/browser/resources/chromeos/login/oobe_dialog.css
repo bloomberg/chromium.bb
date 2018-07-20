@@ -2,6 +2,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:host {
+  --title-font-size: 28px;
+  --title-font-distance-to-baseline: 7px;
+  --subtitle-font-size: 13px;
+  --subtitle-font-distance-to-baseline: 3px;
+  --subtitle-line-height: 18px;
+  --offline-gaia-dialog-width: 768px;
+}
+
 #header-container {
   padding: 60px 64px 0 64px;
 }
@@ -11,28 +20,30 @@
 }
 
 #oobe-title {
-  min-height: 71px; /* 64 title + 7 (distance to baseline for 28px font) */
+  min-height: calc(64px + var(--title-font-distance-to-baseline));
 }
 
 #oobe-title ::slotted(h1) {
-  color: color: var(--google-grey-900);
-  font-size: 28px;
+  color: var(--google-grey-900);
+  font-size: var(--title-font-size);
   font-weight: normal;
   margin: 0;
 }
 
 #oobe-subtitle {
-  min-height: 57px; /* 64 - 7 (distance to baseline for title font) */
+  min-height: calc(64px - var(--title-font-distance-to-baseline));
 }
 
 #oobe-subtitle ::slotted(*) {
-  color: color: var(--google-grey-900);
-  font-size: 13px;
-  line-height: 18px;
-  /*margin = 32 - line-height
-             - 5 (lihe height - font size)
-             + 3 (distance to baseline 13px) */
-  margin: 12px 0 0 0;
+  color: var(--google-grey-900);
+  font-size: var(--subtitle-font-size);
+  line-height: var(--subtitle-line-height);
+  /* margin 12px = 32 - line-height
+                   - 5 (line height - font size)
+                   + 3 (distance to baseline 13px) */
+  margin: calc(32px - var(--subtitle-line-height)
+               - (var(--subtitle-line-height) - var(--subtitle-font-size))
+               + var(--subtitle-font-distance-to-baseline)) 0 0 0;
 }
 
 #footer-container {
@@ -45,12 +56,12 @@
 
 #oobe-bottom {
   height: 80px;
-  padding: 0 62px; /* 64 - 2px button border */
+  padding: 0 calc(64px - 4px); /* real width - button margin */
   z-index: 1;
 }
 
 :host(:not([full-screen-dialog])) #oobe-bottom {
-  padding: 0 30px; /* 32 - 2px button border */
+  padding: 0 calc(32px - 4px); /* real width - button margin */
 }
 
 #oobe-bottom[android] {
