@@ -456,9 +456,10 @@ void WebSocket::AddChannel(
         net::HttpUtil::IsValidHeaderValue(header->value) &&
         (net::HttpUtil::IsSafeHeader(header->name) ||
          base::EqualsCaseInsensitiveASCII(
-             header->name, net::HttpRequestHeaders::kUserAgent))) {
-      // TODO(yhirano): Revisit the last condition. See
-      // https://chromium-review.googlesource.com/c/chromium/src/+/1059092.
+             header->name, net::HttpRequestHeaders::kUserAgent) ||
+         base::EqualsCaseInsensitiveASCII(header->name,
+                                          net::HttpRequestHeaders::kCookie) ||
+         base::EqualsCaseInsensitiveASCII(header->name, "cookie2"))) {
       headers_to_pass.SetHeader(header->name, header->value);
     }
   }
