@@ -480,6 +480,18 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     if (!MapDOMOffsetToTextContentOffset(*mapping, &start, &end))
       return;
 
+    // We don't want to add collapsed (i.e., start == end) quads from text
+    // fragments that intersect [start, end] only at the boundary, unless they
+    // are the only quads found. For example, when we have
+    // - text fragments: ABC  DEF  GHI
+    // - text offsets:   012  345  678
+    // and input range [3, 6], since fragment "DEF" gives non-collapsed quad,
+    // we no longer add quads from "ABC" and "GHI" since they are collapsed.
+    // TODO(layout-dev): This heuristic doesn't cover all cases, as we return
+    // 2 collapsed quads (instead of 1) for range [3, 3] in the above example.
+    bool found_non_collapsed_quad = false;
+    Vector<FloatQuad, 1> collapsed_quads_candidates;
+
     // Find fragments that have text for the specified range.
     DCHECK_LE(start, end);
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
@@ -489,12 +501,22 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       if (start > text_fragment.EndOffset() ||
           end < text_fragment.StartOffset())
         continue;
+      const unsigned clamped_start =
+          std::max(start, text_fragment.StartOffset());
+      const unsigned clamped_end = std::min(end, text_fragment.EndOffset());
       NGPhysicalOffsetRect rect =
-          text_fragment.LocalRect(std::max(start, text_fragment.StartOffset()),
-                                  std::min(end, text_fragment.EndOffset()));
+          text_fragment.LocalRect(clamped_start, clamped_end);
       rect.offset += fragment->InlineOffsetToContainerBox();
-      quads.push_back(LocalToAbsoluteQuad(rect.ToFloatRect()));
+      const FloatQuad quad = LocalToAbsoluteQuad(rect.ToFloatRect());
+      if (clamped_start < clamped_end) {
+        quads.push_back(quad);
+        found_non_collapsed_quad = true;
+      } else {
+        collapsed_quads_candidates.push_back(quad);
+      }
     }
+    if (!found_non_collapsed_quad)
+      quads.AppendVector(collapsed_quads_candidates);
     return;
   }
 
