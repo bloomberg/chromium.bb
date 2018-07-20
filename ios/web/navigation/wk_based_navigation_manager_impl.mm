@@ -108,9 +108,18 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
 
   // Transient item is only supposed to be added for pending non-app-specific
   // navigations.
-  NavigationItem* pending_item = GetPendingItem();
-  DCHECK(pending_item->GetUserAgentType() != UserAgentType::NONE);
-  transient_item_->SetUserAgentType(pending_item->GetUserAgentType());
+  // TODO(crbug.com/865727): captive portal detection seems to call this code
+  // without there being a pending item. This may be an improper use of
+  // navigation manager.
+  NavigationItem* item = GetPendingItem();
+  if (!item)
+    item = GetLastCommittedNonAppSpecificItem();
+  // Item may still be null in captive portal case if chrome://newtab is the
+  // only entry in back/forward history.
+  if (item) {
+    DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
+    transient_item_->SetUserAgentType(item->GetUserAgentType());
+  }
 }
 
 void WKBasedNavigationManagerImpl::AddPendingItem(
