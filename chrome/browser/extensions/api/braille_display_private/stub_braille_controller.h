@@ -17,7 +17,7 @@ class StubBrailleController : public BrailleController {
  public:
   StubBrailleController();
   std::unique_ptr<DisplayState> GetDisplayState() override;
-  void WriteDots(const std::vector<char>& cells,
+  void WriteDots(const std::vector<uint8_t>& cells,
                  unsigned int cols,
                  unsigned int rows) override;
   void AddObserver(BrailleObserver* observer) override;

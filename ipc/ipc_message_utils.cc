@@ -122,7 +122,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       break;
     }
     case base::Value::Type::BINARY: {
-      m->WriteData(value->GetBlob().data(),
+      m->WriteData(reinterpret_cast<const char*>(value->GetBlob().data()),
                    base::checked_cast<int>(value->GetBlob().size()));
       break;
     }

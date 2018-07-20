@@ -62,7 +62,7 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
   static void StartReceive(const ReceiveParams& params);
 
   static void ReceiveCallback(const ReceiveParams& params,
-                              std::vector<char> data,
+                              std::vector<uint8_t> data,
                               serial::ReceiveError error);
 
   static void PostEvent(const ReceiveParams& params,

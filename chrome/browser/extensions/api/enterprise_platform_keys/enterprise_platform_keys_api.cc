@@ -32,11 +32,11 @@ const char kEnterprisePlatformErrorInternal[] = "Internal Error.";
 const char kEnterprisePlatformErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
 
-std::vector<char> VectorFromString(const std::string& s) {
-  return std::vector<char>(s.begin(), s.end());
+std::vector<uint8_t> VectorFromString(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
 }
 
-std::string StringFromVector(const std::vector<char>& v) {
+std::string StringFromVector(const std::vector<uint8_t>& v) {
   return std::string(v.begin(), v.end());
 }
 
@@ -77,7 +77,7 @@ void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (error_message.empty()) {
     Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
-        std::vector<char>(public_key_der.begin(), public_key_der.end()))));
+        std::vector<uint8_t>(public_key_der.begin(), public_key_der.end()))));
   } else {
     Respond(Error(error_message));
   }
@@ -142,14 +142,15 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
-  const std::vector<char>& cert_der = params->certificate;
+  const std::vector<uint8_t>& cert_der = params->certificate;
   // Allow UTF-8 inside PrintableStrings in client certificates. See
   // crbug.com/770323 and crbug.com/788655.
   net::X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   scoped_refptr<net::X509Certificate> cert_x509 =
       net::X509Certificate::CreateFromBytesUnsafeOptions(
-          cert_der.data(), cert_der.size(), options);
+          reinterpret_cast<const char*>(cert_der.data()), cert_der.size(),
+          options);
   if (!cert_x509.get())
     return RespondNow(Error(kEnterprisePlatformErrorInvalidX509Cert));
 
@@ -185,14 +186,15 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
   if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
-  const std::vector<char>& cert_der = params->certificate;
+  const std::vector<uint8_t>& cert_der = params->certificate;
   // Allow UTF-8 inside PrintableStrings in client certificates. See
   // crbug.com/770323 and crbug.com/788655.
   net::X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   scoped_refptr<net::X509Certificate> cert_x509 =
       net::X509Certificate::CreateFromBytesUnsafeOptions(
-          cert_der.data(), cert_der.size(), options);
+          reinterpret_cast<const char*>(cert_der.data()), cert_der.size(),
+          options);
   if (!cert_x509.get())
     return RespondNow(Error(kEnterprisePlatformErrorInvalidX509Cert));
 

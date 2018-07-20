@@ -135,8 +135,8 @@ void LockScreenDataGetContentFunction::OnDone(
       lock_screen_data::OperationResult::kCount);
 
   if (result == lock_screen_data::OperationResult::kSuccess) {
-    Respond(ArgumentList(
-        api::lock_screen_data::GetContent::Results::Create(*data)));
+    Respond(ArgumentList(api::lock_screen_data::GetContent::Results::Create(
+        std::vector<uint8_t>(data->begin(), data->end()))));
     return;
   }
   Respond(Error(GetErrorString(result)));
@@ -157,7 +157,8 @@ ExtensionFunction::ResponseAction LockScreenDataSetContentFunction::Run() {
     return RespondNow(Error("Not available"));
 
   storage->SetItemContent(
-      extension_id(), params->id, params->data,
+      extension_id(), params->id,
+      std::vector<char>(params->data.begin(), params->data.end()),
       base::Bind(&LockScreenDataSetContentFunction::OnDone, this));
   return RespondLater();
 }

@@ -92,7 +92,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute) {
   EXPECT_EQ(kFileHandle, options.open_request_id);
   EXPECT_EQ(kOffset, static_cast<double>(options.offset));
   std::string write_data(kWriteData);
-  EXPECT_EQ(std::vector<char>(write_data.begin(), write_data.end()),
+  EXPECT_EQ(std::vector<uint8_t>(write_data.begin(), write_data.end()),
             options.data);
 }
 

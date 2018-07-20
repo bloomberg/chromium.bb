@@ -136,7 +136,7 @@ void EasyUnlockPrivateConnectionManager::OnMessageReceived(
   std::string event_name = api::easy_unlock_private::OnDataReceived::kEventName;
   events::HistogramValue histogram_value =
       events::EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED;
-  std::vector<char> data(message.body().begin(), message.body().end());
+  std::vector<uint8_t> data(message.body().begin(), message.body().end());
   std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnDataReceived::Create(0, data);
   DispatchConnectionEvent(event_name, histogram_value, &connection,
@@ -156,7 +156,7 @@ void EasyUnlockPrivateConnectionManager::OnSendCompleted(
       api::easy_unlock_private::OnSendCompleted::kEventName;
   events::HistogramValue histogram_value =
       events::EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED;
-  std::vector<char> data(message.payload().begin(), message.payload().end());
+  std::vector<uint8_t> data(message.payload().begin(), message.payload().end());
   std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnSendCompleted::Create(0, data, success);
   DispatchConnectionEvent(event_name, histogram_value, &connection,

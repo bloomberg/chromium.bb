@@ -32,7 +32,7 @@ constexpr const char* kGoogleGstaticAppIds[] = {
 // ContainsAppIdByHash returns true iff the SHA-256 hash of one of the
 // elements of |list| equals |hash|.
 bool ContainsAppIdByHash(const base::ListValue& list,
-                         const std::vector<char>& hash) {
+                         const std::vector<uint8_t>& hash) {
   if (hash.size() != crypto::kSHA256Length) {
     return false;
   }
@@ -44,9 +44,10 @@ bool ContainsAppIdByHash(const base::ListValue& list,
       continue;
     }
 
-    if (crypto::SHA256HashString(s).compare(0, crypto::kSHA256Length,
-                                            hash.data(),
-                                            crypto::kSHA256Length) == 0) {
+    if (crypto::SHA256HashString(s).compare(
+            0, crypto::kSHA256Length,
+            reinterpret_cast<const char*>(hash.data()),
+            crypto::kSHA256Length) == 0) {
       return true;
     }
   }

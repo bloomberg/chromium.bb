@@ -98,7 +98,7 @@ void SerialEventDispatcher::StartReceive(const ReceiveParams& params) {
 
 // static
 void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
-                                            std::vector<char> data,
+                                            std::vector<uint8_t> data,
                                             serial::ReceiveError error) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 

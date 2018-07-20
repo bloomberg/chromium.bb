@@ -24,7 +24,7 @@ class BrailleController {
   static BrailleController* GetInstance();
 
   virtual std::unique_ptr<DisplayState> GetDisplayState() = 0;
-  virtual void WriteDots(const std::vector<char>& cells,
+  virtual void WriteDots(const std::vector<uint8_t>& cells,
                          unsigned int cols,
                          unsigned int rows) = 0;
   virtual void AddObserver(BrailleObserver* observer) = 0;

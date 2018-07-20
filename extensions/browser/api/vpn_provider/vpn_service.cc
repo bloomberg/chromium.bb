@@ -115,7 +115,8 @@ void VpnService::VpnConfiguration::OnPacketReceived(
     pepper_vpn_provider_proxy_->SendOnPacketReceived(data);
   } else {
     std::unique_ptr<base::ListValue> event_args =
-        api_vpn::OnPacketReceived::Create(data);
+        api_vpn::OnPacketReceived::Create(
+            std::vector<uint8_t>(data.begin(), data.end()));
     vpn_service_->SendSignalToExtension(
         extension_id_, extensions::events::VPN_PROVIDER_ON_PACKET_RECEIVED,
         api_vpn::OnPacketReceived::kEventName, std::move(event_args));

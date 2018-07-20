@@ -60,7 +60,7 @@ class WallpaperFunctionBase : public UIThreadExtensionFunction {
   static UnsafeWallpaperDecoder* unsafe_wallpaper_decoder_;
 
   // Starts to decode |data|. Must run on UI thread.
-  void StartDecode(const std::vector<char>& data);
+  void StartDecode(const std::vector<uint8_t>& data);
 
   // Handles cancel case. No error message should be set.
   void OnCancel();

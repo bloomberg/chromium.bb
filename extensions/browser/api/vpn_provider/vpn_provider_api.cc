@@ -293,7 +293,8 @@ ExtensionFunction::ResponseAction VpnProviderSendPacketFunction::Run() {
   }
 
   service->SendPacket(
-      extension_id(), params->data,
+      extension_id(),
+      std::vector<char>(params->data.begin(), params->data.end()),
       base::Bind(&VpnProviderSendPacketFunction::SignalCallCompletionSuccess,
                  this),
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::

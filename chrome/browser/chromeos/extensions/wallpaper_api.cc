@@ -246,7 +246,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperFetched(
     const std::string& response) {
   if (success) {
     params_->details.data.reset(
-        new std::vector<char>(response.begin(), response.end()));
+        new std::vector<uint8_t>(response.begin(), response.end()));
     StartDecode(*params_->details.data);
     // StartDecode() will Respond later through OnWallpaperDecoded()
   } else {
