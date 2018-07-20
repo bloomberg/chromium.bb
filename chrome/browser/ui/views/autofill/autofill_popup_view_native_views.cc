@@ -388,7 +388,9 @@ int AutofillPopupFooterView::GetPrimaryTextStyle() {
 AutofillPopupFooterView::AutofillPopupFooterView(
     AutofillPopupViewNativeViews* popup_view,
     int line_number)
-    : AutofillPopupItemView(popup_view, line_number) {
+    : AutofillPopupItemView(popup_view,
+                            line_number,
+                            AutofillPopupBaseView::GetCornerRadius()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
