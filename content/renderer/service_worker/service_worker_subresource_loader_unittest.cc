@@ -381,6 +381,7 @@ class FakeServiceWorkerContainerHost
     bindings_.AddBinding(this, std::move(request));
   }
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
+  void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
 
  private:
   int get_controller_service_worker_count_ = 0;

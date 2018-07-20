@@ -113,6 +113,9 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // worker. Can be called only for providers for service worker clients.
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker() const;
 
+  // Called when blink::IdlenessDetector emits its network idle signal.
+  void DispatchNetworkQuiet();
+
  private:
   // Creates an invalid instance (provider_id() returns
   // kInvalidServiceWorkerProviderId).

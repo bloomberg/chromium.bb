@@ -328,6 +328,24 @@ void ServiceWorkerProviderContext::PingContainerHost(
   container_host_->Ping(std::move(callback));
 }
 
+void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  ProviderStateForClient* state = state_for_client_.get();
+  DCHECK(state);
+
+  // In non-S13nSW, this hint isn't needed because the browser process
+  // sees all requests and schedules update at a convenient time.
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
+    return;
+
+  if (state->controller_mode ==
+      blink::mojom::ControllerServiceWorkerMode::kNoController) {
+    return;
+  }
+
+  container_host_->HintToUpdateServiceWorker();
+}
+
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
     mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());

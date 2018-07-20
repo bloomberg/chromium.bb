@@ -167,7 +167,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void RemovePreload(Resource*);
 
   void LoosenLoadThrottlingPolicy() { scheduler_->LoosenThrottlingPolicy(); }
-  void OnNetworkQuiet() { scheduler_->OnNetworkQuiet(); }
+  void OnNetworkQuiet();
 
   // Workaround for https://crbug.com/666214.
   // TODO(hiroshige): Remove this hack.

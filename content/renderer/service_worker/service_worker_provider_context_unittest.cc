@@ -306,6 +306,7 @@ class FakeServiceWorkerContainerHost
     bindings_.AddBinding(this, std::move(request));
   }
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
+  void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
 
  private:
   mojo::BindingSet<mojom::ServiceWorkerContainerHost> bindings_;

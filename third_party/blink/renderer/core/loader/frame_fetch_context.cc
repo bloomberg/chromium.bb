@@ -1494,6 +1494,13 @@ ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
   return ResourceLoadPriority::kLowest;
 }
 
+void FrameFetchContext::DispatchNetworkQuiet() {
+  if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
+          MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
+    service_worker_network_provider->DispatchNetworkQuiet();
+  }
+}
+
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     Resource::Type type,
     const ResourceRequest& resource_request,

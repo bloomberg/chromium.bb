@@ -96,6 +96,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
                                   provider_host,
                                   blob_storage_context,
                                   resource_type),
+      resource_type_(resource_type),
       is_main_resource_load_(
           ServiceWorkerUtils::IsMainResourceType(resource_type)),
       is_main_frame_load_(resource_type == RESOURCE_TYPE_MAIN_FRAME),
@@ -113,17 +114,40 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
 
 ServiceWorkerControlleeRequestHandler::
     ~ServiceWorkerControlleeRequestHandler() {
-  // Navigation triggers an update to occur shortly after the page and
-  // its initial subresources load.
-  if (provider_host_ && provider_host_->active_version()) {
-    if (is_main_resource_load_ && !force_update_started_)
-      provider_host_->active_version()->ScheduleUpdate();
-    else
-      provider_host_->active_version()->DeferScheduledUpdate();
-  }
+  MaybeScheduleUpdate();
 
   if (is_main_resource_load_ && provider_host_)
     provider_host_->SetAllowAssociation(true);
+}
+
+void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
+  if (!provider_host_ || !provider_host_->active_version())
+    return;
+
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // For subresources: S13nServiceWorker doesn't come here.
+    DCHECK(is_main_resource_load_);
+
+    // For navigations, the update logic is taken care of
+    // during navigation and waits for the HintToUpdateServiceWorker message.
+    if (IsResourceTypeFrame(resource_type_))
+      return;
+
+    // Continue to the common non-S13nServiceWorker code for triggering update
+    // for shared workers. The renderer doesn't yet send a
+    // HintToUpdateServiceWorker message.
+    // TODO(falken): Make the renderer send the message for shared worker,
+    // to simplify the code.
+  }
+
+  // If DevTools forced an update, there is no need to update again.
+  if (force_update_started_)
+    return;
+
+  if (is_main_resource_load_)
+    provider_host_->active_version()->ScheduleUpdate();
+  else
+    provider_host_->active_version()->DeferScheduledUpdate();
 }
 
 net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
@@ -394,9 +418,9 @@ void ServiceWorkerControlleeRequestHandler::
   if (active_version.get() &&
       active_version->status() == ServiceWorkerVersion::ACTIVATING) {
     provider_host_->SetAllowAssociation(false);
-    registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(
-        &self::OnVersionStatusChanged, weak_factory_.GetWeakPtr(),
-        base::RetainedRef(registration), base::RetainedRef(active_version)));
+    active_version->RegisterStatusChangeCallback(base::BindOnce(
+        &self::OnVersionStatusChanged, weak_factory_.GetWeakPtr(), registration,
+        active_version));
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
@@ -404,6 +428,9 @@ void ServiceWorkerControlleeRequestHandler::
         "Info", "Wait until finished SW activation");
     return;
   }
+
+  // TODO(falken): Factor out the rest of this function and
+  // OnVersionStatusChanged into the same function.
 
   // A registration exists, so associate it. Note that the controller is only
   // set if there's an active version. If there's no active version, we should
@@ -428,6 +455,10 @@ void ServiceWorkerControlleeRequestHandler::
   ServiceWorkerMetrics::CountControlledPageLoad(
       active_version->site_for_uma(), stripped_url_, is_main_frame_load_);
 
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+      IsResourceTypeFrame(resource_type_)) {
+    provider_host_->SetServiceWorkerToUpdate(active_version);
+  }
   bool is_forwarded =
       MaybeForwardToServiceWorker(url_job_.get(), active_version.get());
 
@@ -441,8 +472,8 @@ void ServiceWorkerControlleeRequestHandler::
 }
 
 void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
-    ServiceWorkerRegistration* registration,
-    ServiceWorkerVersion* version) {
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    scoped_refptr<ServiceWorkerVersion> version) {
   // The job may have been canceled before this was invoked.
   if (JobWasCanceled())
     return;
@@ -461,10 +492,14 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
   ServiceWorkerMetrics::CountControlledPageLoad(
       version->site_for_uma(), stripped_url_, is_main_frame_load_);
 
-  provider_host_->AssociateRegistration(registration,
+  provider_host_->AssociateRegistration(registration.get(),
                                         false /* notify_controllerchange */);
 
-  MaybeForwardToServiceWorker(url_job_.get(), version);
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+      IsResourceTypeFrame(resource_type_)) {
+    provider_host_->SetServiceWorkerToUpdate(version);
+  }
+  MaybeForwardToServiceWorker(url_job_.get(), version.get());
 }
 
 void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
