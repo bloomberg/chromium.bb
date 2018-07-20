@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/common/chrome_features.h"
@@ -301,6 +302,9 @@ std::string ConflictsHandler::GetThirdPartyFeaturesStatusString(
     case ThirdPartyFeaturesStatus::kPolicyDisabled:
       return "The ThirdPartyBlockingEnabled group policy is disabled.";
     case ThirdPartyFeaturesStatus::kFeatureDisabled:
+      if (base::win::GetVersion() < base::win::VERSION_WIN10)
+        return "The ThirdPartyModulesBlocking feature is disabled.";
+
       return "Both the IncompatibleApplicationsWarning and "
              "ThirdPartyModulesBlocking features are disabled.";
     case ThirdPartyFeaturesStatus::kModuleListInvalid:
@@ -308,12 +312,17 @@ std::string ConflictsHandler::GetThirdPartyFeaturesStatusString(
     case ThirdPartyFeaturesStatus::kNoModuleListAvailable:
       return "Disabled - There is no Module List version available.";
     case ThirdPartyFeaturesStatus::kWarningInitialized:
+      DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN10);
       return "The IncompatibleApplicationsWarning feature is enabled, while "
              "the ThirdPartyModulesBlocking feature is disabled.";
     case ThirdPartyFeaturesStatus::kBlockingInitialized:
+      if (base::win::GetVersion() < base::win::VERSION_WIN10)
+        return "The ThirdPartyModulesBlocking feature is enabled.";
+
       return "The ThirdPartyModulesBlocking feature is enabled, while the "
              "IncompatibleApplicationsWarning feature is disabled.";
     case ThirdPartyFeaturesStatus::kWarningAndBlockingInitialized:
+      DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN10);
       return "Both the IncompatibleApplicationsWarning and "
              "ThirdPartyModulesBlocking features are enabled";
   }
