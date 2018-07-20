@@ -1446,7 +1446,7 @@ void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
   DCHECK(!previews_resource_loading_hints_receiver_);
   previews_resource_loading_hints_receiver_ =
       std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
-          std::move(request));
+          std::move(request), GetDocument());
 }
 
 }  // namespace blink

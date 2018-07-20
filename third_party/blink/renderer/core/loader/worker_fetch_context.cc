@@ -120,6 +120,11 @@ SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
   return subresource_filter_.Get();
 }
 
+PreviewsResourceLoadingHints*
+WorkerFetchContext::GetPreviewsResourceLoadingHints() const {
+  return nullptr;
+}
+
 bool WorkerFetchContext::AllowScriptFromSource(const KURL& url) const {
   WorkerContentSettingsClient* settings_client =
       WorkerContentSettingsClient::From(*global_scope_);

@@ -1,14 +1,19 @@
 <html>
   <head>
-    <meta name="viewport" content="width=device-width" />
-    <noscript>
-      <title>Page with Script Disabled</title>
-      <link rel="stylesheet" href="noscript_test.css">
-    </noscript>
-    <script>document.title='Page with Script Enabled and Executed';</script>
   </head>
   <body>
-    <p>Test page for NoScript Previews.</p>
-    <script src="noscript_test.js"></script>
-  </body>
+    <p>Test page for Resource Loading Hints.</p>
+   <iframe src="non_existent_file.js"></iframe>
+   <script>
+    window.addEventListener("load", function () {
+      var xhr_foo = new XMLHttpRequest();
+      xhr_foo.open('GET', 'foo.jpg', true /* async */);
+      xhr_foo.send();
+
+      var xhr_bar = new XMLHttpRequest();
+      xhr_bar.open('GET', 'bar.jpg', true /* async */);
+      xhr_bar.send();
+    });
+    </script>
+   </body>
 </html>

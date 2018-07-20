@@ -1992,6 +1992,7 @@ jumbo_source_set("unit_tests") {
     "loader/modulescript/module_tree_linker_test.cc",
     "loader/navigation_policy_test.cc",
     "loader/ping_loader_test.cc",
+    "loader/previews_resource_loading_hints_test.cc",
     "loader/programmatic_scroll_test.cc",
     "loader/progress_tracker_test.cc",
     "loader/resource/css_style_sheet_resource_test.cc",
