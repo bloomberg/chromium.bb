@@ -12,6 +12,7 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/common/previews_state.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -56,7 +57,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& global_request_id,
       bool is_download,
-      bool is_stream);
+      bool is_stream,
+      PreviewsState previews_state);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          scoped_refptr<network::ResourceResponse> response);
   void OnComplete(const network::URLLoaderCompletionStatus& status);

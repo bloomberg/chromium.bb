@@ -301,7 +301,7 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   GetMainRenderFrame()->DidCommitProvisionalLoad(
       item, blink::kWebStandardCommit,
       blink::WebGlobalObjectReusePolicy::kCreateNew);
-  EXPECT_EQ(PREVIEWS_OFF, GetMainRenderFrame()->GetPreviewsState());
+  EXPECT_EQ(PREVIEWS_UNSPECIFIED, GetMainRenderFrame()->GetPreviewsState());
   // The subframe would be deleted here after a cross-document navigation. It
   // happens to be left around in this test because this does not simulate the
   // frame detach.

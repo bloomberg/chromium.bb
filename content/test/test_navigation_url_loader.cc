@@ -91,7 +91,7 @@ void TestNavigationURLLoader::CallOnResponseStarted(
 
   delegate_->OnResponseStarted(response, std::move(url_loader_client_endpoints),
                                std::move(navigation_data), global_id, false,
-                               false, base::nullopt);
+                               false, PREVIEWS_OFF, base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

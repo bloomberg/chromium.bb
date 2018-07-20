@@ -50,7 +50,6 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.service_worker_ready_time = head.service_worker_ready_time;
   new_response->head.is_in_cache_storage = head.is_in_cache_storage;
   new_response->head.cache_storage_cache_name = head.cache_storage_cache_name;
-  new_response->head.previews_state = head.previews_state;
   new_response->head.effective_connection_type = head.effective_connection_type;
   new_response->head.cert_status = head.cert_status;
   new_response->head.ssl_info = head.ssl_info;
