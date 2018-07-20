@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.page_info;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -67,7 +66,6 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogView.Con
 
         mContainer = new LinearLayout(mContext);
         mContainer.setOrientation(LinearLayout.VERTICAL);
-        mContainer.setBackgroundColor(Color.WHITE);
         mPaddingWide = (int) context.getResources().getDimension(
                 R.dimen.connection_info_padding_wide);
         mPaddingThin = (int) context.getResources().getDimension(
