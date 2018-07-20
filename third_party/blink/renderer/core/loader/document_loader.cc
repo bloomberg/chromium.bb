@@ -31,6 +31,7 @@
 
 #include <memory>
 #include "base/auto_reset.h"
+#include "third_party/blink/public/common/origin_policy/origin_policy.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -97,6 +98,7 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -608,6 +610,23 @@ void DocumentLoader::ResponseReceived(
   if (!frame_->GetSettings()->BypassCSP()) {
     content_security_policy_->DidReceiveHeaders(
         ContentSecurityPolicyResponseHeaders(response));
+
+    // Handle OriginPolicy. We can skip the entire block if the OP policies have
+    // already been passed down.
+    if (!content_security_policy_->HasPolicyFromSource(
+            kContentSecurityPolicyHeaderSourceOriginPolicy)) {
+      std::unique_ptr<OriginPolicy> origin_policy = OriginPolicy::From(
+          StringUTF8Adaptor(request_.GetOriginPolicy()).AsStringPiece());
+      if (origin_policy) {
+        for (auto csp : origin_policy->GetContentSecurityPolicies()) {
+          content_security_policy_->DidReceiveHeader(
+              WTF::String::FromUTF8(csp.policy.data(), csp.policy.length()),
+              csp.report_only ? kContentSecurityPolicyHeaderTypeReport
+                              : kContentSecurityPolicyHeaderTypeEnforce,
+              kContentSecurityPolicyHeaderSourceOriginPolicy);
+        }
+      }
+    }
   }
   if (!content_security_policy_->AllowAncestors(frame_, response.Url())) {
     CancelLoadAfterCSPDenied(response);

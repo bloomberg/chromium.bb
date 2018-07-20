@@ -461,6 +461,8 @@ class CORE_EXPORT ContentSecurityPolicy
   // there is no execution context to enforce the sandbox flags.
   SandboxFlags GetSandboxMask() const { return sandbox_mask_; }
 
+  bool HasPolicyFromSource(ContentSecurityPolicyHeaderSource) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);

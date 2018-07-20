@@ -29,13 +29,24 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   String header = String::FromUTF8(data, size);
   unsigned hash = header.IsNull() ? 0 : header.Impl()->GetHash();
 
+  // Use the 'hash' value to pick header_type and header_source input.
+  // 1st bit: header type.
+  // 2nd bit: header source: HTTP (or other)
+  // 3rd bit: header source: Meta or OriginPolicy (if not HTTP)
+  ContentSecurityPolicyHeaderType header_type =
+      hash & 0x01 ? kContentSecurityPolicyHeaderTypeEnforce
+                  : kContentSecurityPolicyHeaderTypeReport;
+  ContentSecurityPolicyHeaderSource header_source =
+      kContentSecurityPolicyHeaderSourceHTTP;
+  if (hash & 0x02) {
+    header_source = (hash & 0x04)
+                        ? kContentSecurityPolicyHeaderSourceMeta
+                        : kContentSecurityPolicyHeaderSourceOriginPolicy;
+  }
+
   // Construct and initialize a policy from the string.
   ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
-  csp->DidReceiveHeader(header,
-                        hash & 0x01 ? kContentSecurityPolicyHeaderTypeEnforce
-                                    : kContentSecurityPolicyHeaderTypeReport,
-                        hash & 0x02 ? kContentSecurityPolicyHeaderSourceHTTP
-                                    : kContentSecurityPolicyHeaderSourceMeta);
+  csp->DidReceiveHeader(header, header_type, header_source);
   g_page_holder->GetDocument().InitContentSecurityPolicy(csp);
 
   // Force a garbage collection.
