@@ -271,8 +271,8 @@ void GpuServiceImpl::InitializeWithHost(
     shutdown_event_ = owned_shutdown_event_.get();
   }
 
-  scheduler_ = std::make_unique<gpu::Scheduler>(
-      base::ThreadTaskRunnerHandle::Get(), sync_point_manager_);
+  scheduler_ =
+      std::make_unique<gpu::Scheduler>(main_runner_, sync_point_manager_);
 
   skia_output_surface_sequence_id_ =
       scheduler_->CreateSequence(gpu::SchedulingPriority::kHigh);
