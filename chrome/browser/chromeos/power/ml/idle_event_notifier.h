@@ -37,15 +37,16 @@ class RecentEventsCounter;
 // forward when DST starts or stops.
 using TimeOfDay = base::TimeDelta;
 
-// IdleEventNotifier listens to signals and notifies its observers when an idle
-// event is generated. An idle event is generated when the idle period reaches
-// kIdleDelay. No further idle events will be generated until user becomes
-// active again, followed by an idle period of kIdleDelay.
+// IdleEventNotifier listens to signals and notifies its observers when
+// ScreenDimImminent is received from PowerManagerClient. This generates an idle
+// event.
 class IdleEventNotifier : public PowerManagerClient::Observer,
                           public ui::UserActivityObserver,
                           public viz::mojom::VideoDetectorObserver {
  public:
-  // An idle event is generated after this idle period.
+  // If suspend duration is greater than this, we reset timestamps used to calc
+  // |ActivityData::recent_time_active|. We also merge video-playing sessions
+  // that have a pause shorter than this.
   static constexpr base::TimeDelta kIdleDelay =
       base::TimeDelta::FromSeconds(30);
 
@@ -65,7 +66,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     UserActivityEvent_Features_DayOfWeek last_activity_day =
         UserActivityEvent_Features_DayOfWeek_SUN;
 
-    // Last activity time. This is the activity that triggers idle event.
+    // The local time of the last activity before an idle event occurs.
     TimeOfDay last_activity_time_of_day;
 
     // Last user activity time of the sequence of activities ending in the last
@@ -121,7 +122,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         const base::TimeTicks& timestamp) override;
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
-  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void ScreenDimImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ui::UserActivityObserver overrides:
@@ -148,27 +149,21 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   ActivityData ConvertActivityData(
       const ActivityDataInternal& internal_data) const;
 
-  // Resets |idle_delay_timer_|, it's called when a new activity is observed.
-  void ResetIdleDelayTimer();
-
-  // Called when |idle_delay_timer_| expires.
-  void OnIdleDelayTimeout();
-
   // Updates all activity-related timestamps.
   void UpdateActivityData(ActivityType type);
 
   // Clears timestamps used to calculate |ActivityData::recent_time_active| so
-  // that its duration is recalculated after user is inactive for more than
-  // kIdleDelay or when suspend duration is longer than kIdleDelay.
-  void ResetTimestampsPerIdleEvent();
+  // that its duration is recalculated after ScreenDimImminent is received or
+  // when suspend duration is longer than kIdleDelay.
+  // Also clears timestamps for video playing so that duration of video playing
+  // will be recalculated.
+  void ResetTimestampsForRecentActivity();
 
   // It is base::DefaultClock, but will be set to a mock clock for tests.
   base::Clock* clock_;
 
   // It is RealBootClock, but will be set to FakeBootClock for tests.
   std::unique_ptr<BootClock> boot_clock_;
-
-  base::OneShotTimer idle_delay_timer_;
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>

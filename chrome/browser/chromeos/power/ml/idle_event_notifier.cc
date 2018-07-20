@@ -88,7 +88,6 @@ void IdleEventNotifier::SetClockForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::Clock* test_clock,
     std::unique_ptr<BootClock> test_boot_clock) {
-  idle_delay_timer_.SetTaskRunner(task_runner);
   clock_ = test_clock;
   boot_clock_ = std::move(test_boot_clock);
 }
@@ -109,7 +108,6 @@ void IdleEventNotifier::LidEventReceived(
   // Ignore lid-close event, as we will observe suspend signal.
   if (state == chromeos::PowerManagerClient::LidState::OPEN) {
     UpdateActivityData(ActivityType::USER_OTHER);
-    ResetIdleDelayTimer();
   }
 }
 
@@ -118,30 +116,32 @@ void IdleEventNotifier::PowerChanged(
   if (external_power_ != proto.external_power()) {
     external_power_ = proto.external_power();
     UpdateActivityData(ActivityType::USER_OTHER);
-    ResetIdleDelayTimer();
   }
 }
 
-void IdleEventNotifier::SuspendImminent(
-    power_manager::SuspendImminent::Reason reason) {
-  if (idle_delay_timer_.IsRunning()) {
-    // This means the user hasn't been idle for more than idle_delay. Regardless
-    // of the reason of suspend, we won't be emitting any idle event now or
-    // following SuspendDone. We stop the timer to prevent it from resuming in
-    // SuspendDone.
-    idle_delay_timer_.AbandonAndStop();
-  }
+void IdleEventNotifier::ScreenDimImminent() {
+  // powerd should not dim the screen if video is playing.
+  DCHECK(!video_playing_);
+  const ActivityData data = ConvertActivityData(*internal_data_);
+
+  for (auto& observer : observers_)
+    observer.OnIdleEventObserved(data);
+  ResetTimestampsForRecentActivity();
 }
 
 void IdleEventNotifier::SuspendDone(const base::TimeDelta& sleep_duration) {
-  if (idle_delay_timer_.IsRunning()) {
-    idle_delay_timer_.AbandonAndStop();
-  }
-
   // SuspendDone is triggered by user opening the lid (or other user
   // activities).
+  // A suspend and subsequent SuspendDone signal could occur with or without a
+  // preceding screen dim. If ScreenDimImminent is received before suspend,
+  // ResetTimestampsForRecentActivity would have been called so it wouldn't
+  // matter whether to reset the timestamps again. If there is no preceding
+  // ScreenDimImminent, then we need to call ResetTimestampsForRecentActivity
+  // if the |sleep_duration| is long enough, so that we can reset recent
+  // activity duration. We consider a |sleep_duration| is long if it is at least
+  // kIdleDelay.
   if (sleep_duration >= kIdleDelay) {
-    ResetTimestampsPerIdleEvent();
+    ResetTimestampsForRecentActivity();
     if (video_playing_) {
       // This could happen when user closes the lid while video is playing.
       // If OnVideoActivityEnded is not received before system is suspended, we
@@ -153,7 +153,6 @@ void IdleEventNotifier::SuspendDone(const base::TimeDelta& sleep_duration) {
   }
 
   UpdateActivityData(ActivityType::USER_OTHER);
-  ResetIdleDelayTimer();
 }
 
 void IdleEventNotifier::OnUserActivity(const ui::Event* event) {
@@ -169,7 +168,6 @@ void IdleEventNotifier::OnUserActivity(const ui::Event* event) {
     type = ActivityType::TOUCH;
   }
   UpdateActivityData(type);
-  ResetIdleDelayTimer();
 }
 
 void IdleEventNotifier::OnVideoActivityStarted() {
@@ -188,7 +186,6 @@ void IdleEventNotifier::OnVideoActivityEnded() {
   }
   video_playing_ = false;
   UpdateActivityData(ActivityType::VIDEO);
-  ResetIdleDelayTimer();
 }
 
 IdleEventNotifier::ActivityData IdleEventNotifier::ConvertActivityData(
@@ -249,30 +246,6 @@ IdleEventNotifier::ActivityData IdleEventNotifier::ConvertActivityData(
   return data;
 }
 
-void IdleEventNotifier::ResetIdleDelayTimer() {
-  // According to the policy, if there's video playing we should never dim or
-  // turn off the screen (or transition to any other lower energy state).
-  if (video_playing_)
-    return;
-
-  if (idle_delay_timer_.IsRunning()) {
-    idle_delay_timer_.AbandonAndStop();
-  }
-  idle_delay_timer_.Start(FROM_HERE, kIdleDelay, this,
-                          &IdleEventNotifier::OnIdleDelayTimeout);
-}
-
-void IdleEventNotifier::OnIdleDelayTimeout() {
-  if (video_playing_)
-    return;
-
-  const ActivityData data = ConvertActivityData(*internal_data_);
-
-  for (auto& observer : observers_)
-    observer.OnIdleEventObserved(data);
-  ResetTimestampsPerIdleEvent();
-}
-
 void IdleEventNotifier::UpdateActivityData(ActivityType type) {
   base::Time now = clock_->Now();
   DCHECK(internal_data_);
@@ -324,9 +297,11 @@ void IdleEventNotifier::UpdateActivityData(ActivityType type) {
 // Only clears out |last_activity_since_boot| and
 // |earliest_activity_since_boot| because they are used to calculate recent
 // time active, which should be reset between idle events.
-void IdleEventNotifier::ResetTimestampsPerIdleEvent() {
+void IdleEventNotifier::ResetTimestampsForRecentActivity() {
   internal_data_->last_activity_since_boot = base::TimeDelta();
   internal_data_->earliest_activity_since_boot = base::nullopt;
+  internal_data_->video_start_time = base::nullopt;
+  internal_data_->video_end_time = base::nullopt;
 }
 
 }  // namespace ml
