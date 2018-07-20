@@ -1302,7 +1302,6 @@ TEST_F(IdentityManagerTest,
                                                                    kTestGaiaId);
   gaia_cookie_manager_service()->TriggerListAccounts(
       "identity_manager_unittest");
-
   run_loop.Run();
 
   EXPECT_EQ(1u, identity_manager_observer()
@@ -1345,6 +1344,101 @@ TEST_F(IdentityManagerTest,
 
   AccountInfo account_info2 =
       identity_manager_observer()->accounts_from_cookie_change_callback()[1];
+  EXPECT_EQ(
+      account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
+      account_info2.account_id);
+  EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
+  EXPECT_EQ(kTestEmail2, account_info2.email);
+}
+
+TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+      run_loop.QuitClosure());
+
+  gaia_cookie_manager_service()->SetListAccountsResponseNoAccounts();
+
+  // Do an initial call to GetAccountsInCookieJar(). This call should return no
+  // accounts but should also trigger an internal update and eventual
+  // notification that the accounts in the cookie jar have been updated.
+  std::vector<AccountInfo> accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  EXPECT_TRUE(accounts_in_cookie_jar.empty());
+
+  run_loop.Run();
+
+  // The state of the accounts in IdentityManager should now reflect the
+  // internal update.
+  accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+
+  EXPECT_TRUE(accounts_in_cookie_jar.empty());
+}
+
+TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+      run_loop.QuitClosure());
+
+  gaia_cookie_manager_service()->SetListAccountsResponseOneAccount(kTestEmail,
+                                                                   kTestGaiaId);
+
+  // Do an initial call to GetAccountsInCookieJar(). This call should return no
+  // accounts but should also trigger an internal update and eventual
+  // notification that the accounts in the cookie jar have been updated.
+  std::vector<AccountInfo> accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  EXPECT_TRUE(accounts_in_cookie_jar.empty());
+
+  run_loop.Run();
+
+  // The state of the accounts in IdentityManager should now reflect the
+  // internal update.
+  accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+
+  EXPECT_EQ(1u, accounts_in_cookie_jar.size());
+
+  AccountInfo account_info = accounts_in_cookie_jar[0];
+  EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+            account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info.gaia);
+  EXPECT_EQ(kTestEmail, account_info.email);
+}
+
+TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+      run_loop.QuitClosure());
+
+  gaia_cookie_manager_service()->SetListAccountsResponseTwoAccounts(
+      kTestEmail, kTestGaiaId, kTestEmail2, kTestGaiaId2);
+
+  // Do an initial call to GetAccountsInCookieJar(). This call should return no
+  // accounts but should also trigger an internal update and eventual
+  // notification that the accounts in the cookie jar have been updated.
+  std::vector<AccountInfo> accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  EXPECT_TRUE(accounts_in_cookie_jar.empty());
+
+  run_loop.Run();
+
+  // The state of the accounts in IdentityManager should now reflect the
+  // internal update.
+  accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+
+  EXPECT_EQ(2u, accounts_in_cookie_jar.size());
+
+  // Verify not only that both accounts are present but that they are listed in
+  // the expected order as well.
+  AccountInfo account_info1 = accounts_in_cookie_jar[0];
+  EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+            account_info1.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info1.gaia);
+  EXPECT_EQ(kTestEmail, account_info1.email);
+
+  AccountInfo account_info2 = accounts_in_cookie_jar[1];
   EXPECT_EQ(
       account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
       account_info2.account_id);
