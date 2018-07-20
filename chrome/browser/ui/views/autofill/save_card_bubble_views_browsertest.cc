@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -74,6 +75,10 @@ IN_PROC_BROWSER_TEST_F(
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ClickingSaveClosesBubble) {
+  // Disable the sign-in promo.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -96,6 +101,71 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+  // The sign-in promo should not be shown because the experiment is disabled.
+  // TODO(crbug/855186): Add test that checks that sign-in promo is not showing.
+}
+
+// Tests the sign in promo bubble. Ensures that clicking the [Save] button
+// on the local save bubble successfully causes the sign in promo to show.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_ClickingSaveShowsSigninPromo) {
+  // Enable the sign-in promo.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  // TODO(crbug/855186): Add test that checks that sign-in promo shows after
+  // clicking save.
+}
+
+// Tests the sign in promo bubble. Ensures that the sign-in promo
+// is not shown when the user is signed-in and syncing, even if
+// the local save bubble is shown.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_NoSigninPromoShowsWhenUserIsSyncing) {
+  // Enable the sign-in promo.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Click [Save] should close the offer-to-save bubble
+  // but no sign-in promo should show because user is signed in.
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  // TODO(crbug/855186): Add test that checks that sign-in promo
+  // is not showing.
 }
 
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
@@ -108,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(
     return;
 
   // Disable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+  scoped_feature_list_.InitAndDisableFeature(::features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
@@ -139,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ShouldNotHaveNoThanksButtonIfSecondaryUiMdExpOn) {
   // Enable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+  scoped_feature_list_.InitAndEnableFeature(::features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
@@ -239,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(
     return;
 
   // Disable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+  scoped_feature_list_.InitAndDisableFeature(::features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -269,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotHaveNoThanksButtonIfSecondaryUiMdExpOn) {
   // Enable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+  scoped_feature_list_.InitAndEnableFeature(::features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -294,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
   // Enable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+  scoped_feature_list_.InitAndEnableFeature(::features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -812,7 +882,7 @@ IN_PROC_BROWSER_TEST_F(
     Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA) {
   // Enable the SecondaryUiMd experiment (required for clicking the Close
   // button).
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+  scoped_feature_list_.InitAndEnableFeature(::features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();

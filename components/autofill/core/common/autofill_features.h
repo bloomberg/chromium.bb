@@ -24,6 +24,7 @@ extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillPrefilledFields;
 extern const base::Feature kAutofillResetFullServerCardsOnAuthError;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
+extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
 extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;

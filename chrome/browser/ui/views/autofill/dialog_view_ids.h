@@ -19,10 +19,14 @@ enum DialogViewId : int {
   MAIN_CONTENT_VIEW_LOCAL,   // The main content view, for a local save bubble
   MAIN_CONTENT_VIEW_UPLOAD,  // The main content view, for an upload save bubble
   FOOTNOTE_VIEW,             // Contains the legal messages for upload save
+  SIGN_IN_PROMO_VIEW,        // Contains the sign-in promo view
+  MANAGE_CARDS_VIEW,         // The manage cards view
 
   // The following are views::LabelButton objects (clickable).
-  OK_BUTTON,      // Can say [Save], [Next], and [Confirm] depend on context
-  CANCEL_BUTTON,  // Typically says [No thanks]
+  OK_BUTTON,            // Can say [Save], [Next], [Confirm],
+                        // or [Done] depending on context
+  CANCEL_BUTTON,        // Typically says [No thanks]
+  MANAGE_CARDS_BUTTON,  // Typicall says [Manage cards]
 
   // The following are views::Link objects (clickable).
   LEARN_MORE_LINK,
