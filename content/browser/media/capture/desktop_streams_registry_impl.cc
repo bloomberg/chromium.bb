@@ -1,12 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/webrtc/desktop_streams_registry.h"
+#include "content/browser/media/capture/desktop_streams_registry_impl.h"
 
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/random.h"
@@ -19,25 +21,37 @@ const int kApprovedStreamTimeToLiveSeconds = 10;
 
 std::string GenerateRandomStreamId() {
   char buffer[kStreamIdLengthBytes];
-  crypto::RandBytes(buffer, arraysize(buffer));
+  crypto::RandBytes(buffer, base::size(buffer));
   std::string result;
-  base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
-                     &result);
+  base::Base64Encode(base::StringPiece(buffer, base::size(buffer)), &result);
   return result;
 }
 
 }  // namespace
 
-DesktopStreamsRegistry::DesktopStreamsRegistry() {}
-DesktopStreamsRegistry::~DesktopStreamsRegistry() {}
+namespace content {
 
-std::string DesktopStreamsRegistry::RegisterStream(
+// static
+DesktopStreamsRegistry* DesktopStreamsRegistry::GetInstance() {
+  return DesktopStreamsRegistryImpl::GetInstance();
+}
+
+// static
+DesktopStreamsRegistryImpl* DesktopStreamsRegistryImpl::GetInstance() {
+  static base::NoDestructor<DesktopStreamsRegistryImpl> instance;
+  return instance.get();
+}
+
+DesktopStreamsRegistryImpl::DesktopStreamsRegistryImpl() {}
+DesktopStreamsRegistryImpl::~DesktopStreamsRegistryImpl() {}
+
+std::string DesktopStreamsRegistryImpl::RegisterStream(
     int render_process_id,
     int render_frame_id,
     const GURL& origin,
-    const content::DesktopMediaID& source,
+    const DesktopMediaID& source,
     const std::string& extension_name) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string id = GenerateRandomStreamId();
   DCHECK(approved_streams_.find(id) == approved_streams_.end());
@@ -48,22 +62,22 @@ std::string DesktopStreamsRegistry::RegisterStream(
   stream.source = source;
   stream.extension_name = extension_name;
 
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&DesktopStreamsRegistry::CleanupStream,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DesktopStreamsRegistryImpl::CleanupStream,
                      base::Unretained(this), id),
       base::TimeDelta::FromSeconds(kApprovedStreamTimeToLiveSeconds));
 
   return id;
 }
 
-content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
+DesktopMediaID DesktopStreamsRegistryImpl::RequestMediaForStreamId(
     const std::string& id,
     int render_process_id,
     int render_frame_id,
     const GURL& origin,
     std::string* extension_name) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StreamsMap::iterator it = approved_streams_.find(id);
 
@@ -73,19 +87,24 @@ content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
       render_process_id != it->second.render_process_id ||
       render_frame_id != it->second.render_frame_id ||
       origin != it->second.origin) {
-    return content::DesktopMediaID();
+    return DesktopMediaID();
   }
 
-  content::DesktopMediaID result = it->second.source;
-  *extension_name = it->second.extension_name;
+  DesktopMediaID result = it->second.source;
+  if (extension_name) {
+    *extension_name = it->second.extension_name;
+  }
   approved_streams_.erase(it);
   return result;
 }
 
-void DesktopStreamsRegistry::CleanupStream(const std::string& id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+void DesktopStreamsRegistryImpl::CleanupStream(const std::string& id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   approved_streams_.erase(id);
 }
 
-DesktopStreamsRegistry::ApprovedDesktopMediaStream::ApprovedDesktopMediaStream()
+DesktopStreamsRegistryImpl::ApprovedDesktopMediaStream::
+    ApprovedDesktopMediaStream()
     : render_process_id(-1), render_frame_id(-1) {}
+
+}  // namespace content

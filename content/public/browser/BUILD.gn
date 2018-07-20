@@ -101,6 +101,7 @@ jumbo_source_set("browser_sources") {
     "desktop_capture.h",
     "desktop_media_id.cc",
     "desktop_media_id.h",
+    "desktop_streams_registry.h",
     "devtools_agent_host.h",
     "devtools_agent_host_client.cc",
     "devtools_agent_host_client.h",

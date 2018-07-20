@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/media_access_handler.h"
-#include "chrome/browser/media/webrtc/desktop_streams_registry.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -303,13 +302,6 @@ void MediaCaptureDevicesDispatcher::DisableDeviceEnumerationForTesting() {
 scoped_refptr<MediaStreamCaptureIndicator>
 MediaCaptureDevicesDispatcher::GetMediaStreamCaptureIndicator() {
   return media_stream_capture_indicator_;
-}
-
-DesktopStreamsRegistry*
-MediaCaptureDevicesDispatcher::GetDesktopStreamsRegistry() {
-  if (!desktop_streams_registry_)
-    desktop_streams_registry_.reset(new DesktopStreamsRegistry());
-  return desktop_streams_registry_.get();
 }
 
 void MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged() {

@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/webrtc/desktop_streams_registry.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -416,13 +416,11 @@ void DesktopCaptureAccessHandler::HandleRequest(
   content::RenderFrameHost* const main_frame =
       web_contents_for_stream ? web_contents_for_stream->GetMainFrame() : NULL;
   if (main_frame) {
-    media_id = MediaCaptureDevicesDispatcher::GetInstance()
-                   ->GetDesktopStreamsRegistry()
-                   ->RequestMediaForStreamId(request.requested_video_device_id,
-                                             main_frame->GetProcess()->GetID(),
-                                             main_frame->GetRoutingID(),
-                                             request.security_origin,
-                                             &original_extension_name);
+    media_id =
+        content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
+            request.requested_video_device_id,
+            main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
+            request.security_origin, &original_extension_name);
   }
 
   // Received invalid device id.

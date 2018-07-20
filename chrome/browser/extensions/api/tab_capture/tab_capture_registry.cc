@@ -13,7 +13,9 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/event_router.h"
@@ -138,8 +140,9 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
 #if defined(USE_AURA)
         window_agent_(target_contents->GetNativeView()),
 #endif
-        render_process_id_(-1),
-        render_frame_id_(-1) {
+        render_process_id_(
+            target_contents->GetMainFrame()->GetProcess()->GetID()),
+        render_frame_id_(target_contents->GetMainFrame()->GetRoutingID()) {
     DCHECK(web_contents());
     DCHECK(registry_);
   }
@@ -165,17 +168,8 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
     is_verified_ = true;
   }
 
-  // TODO(miu): See TODO(miu) in VerifyRequest() below.
-  void SetOriginallyTargettedRenderFrameID(int render_process_id,
-                                           int render_frame_id) {
-    DCHECK_GT(render_frame_id, 0);
-    DCHECK_EQ(render_frame_id_, -1);  // Setting ID only once.
-    render_process_id_ = render_process_id;
-    render_frame_id_ = render_frame_id;
-  }
-
-  bool WasOriginallyTargettingRenderFrameID(int render_process_id,
-                                            int render_frame_id) const {
+  bool WasTargettingRenderFrameID(int render_process_id,
+                                  int render_frame_id) const {
     return render_process_id_ == render_process_id &&
         render_frame_id_ == render_frame_id;
   }
@@ -298,16 +292,22 @@ void TabCaptureRegistry::OnExtensionUnloaded(
   }
 }
 
-bool TabCaptureRegistry::AddRequest(content::WebContents* target_contents,
-                                    const std::string& extension_id,
-                                    bool is_anonymous) {
+std::string TabCaptureRegistry::AddRequest(
+    content::WebContents* target_contents,
+    const std::string& extension_id,
+    bool is_anonymous,
+    const GURL& origin,
+    content::DesktopMediaID source,
+    const std::string& extension_name,
+    content::WebContents* caller_contents) {
+  std::string device_id;
   LiveRequest* const request = FindRequest(target_contents);
 
   // Currently, we do not allow multiple active captures for same tab.
   if (request != NULL) {
     if (request->capture_state() == tab_capture::TAB_CAPTURE_STATE_PENDING ||
         request->capture_state() == tab_capture::TAB_CAPTURE_STATE_ACTIVE) {
-      return false;
+      return device_id;
     } else {
       // Delete the request before creating its replacement (below).
       KillRequest(request);
@@ -316,7 +316,15 @@ bool TabCaptureRegistry::AddRequest(content::WebContents* target_contents,
 
   requests_.push_back(std::make_unique<LiveRequest>(
       target_contents, extension_id, is_anonymous, this));
-  return true;
+
+  content::RenderFrameHost* const main_frame = caller_contents->GetMainFrame();
+  if (main_frame) {
+    device_id = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
+        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin,
+        source, extension_name);
+  }
+
+  return device_id;
 }
 
 bool TabCaptureRegistry::VerifyRequest(
@@ -325,36 +333,24 @@ bool TabCaptureRegistry::VerifyRequest(
     const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  LiveRequest* const request = FindRequest(
-      content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(
-              render_process_id, render_frame_id)));
-  if (!request)
+  LiveRequest* const request = FindRequest(render_process_id, render_frame_id);
+  if (!request) {
     return false;  // Unknown RenderFrameHost ID, or frame has gone away.
+  }
 
-  // TODO(miu): We should probably also verify the origin URL, like the desktop
-  // capture API.  http://crbug.com/163100
   if (request->is_verified() ||
       request->extension_id() != extension_id ||
       (request->capture_state() != tab_capture::TAB_CAPTURE_STATE_NONE &&
        request->capture_state() != tab_capture::TAB_CAPTURE_STATE_PENDING))
     return false;
 
-  // TODO(miu): The RenderFrameHost IDs should be set when LiveRequest is
-  // constructed, but ExtensionFunction does not yet support use of
-  // render_frame_host() to determine the exact RenderFrameHost for the call to
-  // AddRequest() above.  Fix tab_capture_api.cc, and then fix this ugly hack.
-  // http://crbug.com/304341
-  request->SetOriginallyTargettedRenderFrameID(
-      render_process_id, render_frame_id);
-
   request->SetIsVerified();
   return true;
 }
 
 void TabCaptureRegistry::OnRequestUpdate(
-    int original_target_render_process_id,
-    int original_target_render_frame_id,
+    int target_render_process_id,
+    int target_render_frame_id,
     content::MediaStreamType stream_type,
     const content::MediaRequestState new_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -363,18 +359,9 @@ void TabCaptureRegistry::OnRequestUpdate(
     return;
   }
 
-  LiveRequest* request = FindRequest(original_target_render_process_id,
-                                     original_target_render_frame_id);
+  LiveRequest* request =
+      FindRequest(target_render_process_id, target_render_frame_id);
   if (!request) {
-    // Fall-back: Search again using WebContents since this method may have been
-    // called before VerifyRequest() set the RenderFrameHost ID.  If the
-    // RenderFrameHost has gone away, that's okay since the upcoming call to
-    // VerifyRequest() will fail, and that means the tracking of request updates
-    // doesn't matter anymore.
-    request = FindRequest(content::WebContents::FromRenderFrameHost(
-        content::RenderFrameHost::FromID(original_target_render_process_id,
-                                         original_target_render_frame_id)));
-    if (!request)
       return;  // Stale or invalid request update.
   }
 
@@ -444,12 +431,11 @@ TabCaptureRegistry::LiveRequest* TabCaptureRegistry::FindRequest(
 }
 
 TabCaptureRegistry::LiveRequest* TabCaptureRegistry::FindRequest(
-    int original_target_render_process_id,
-    int original_target_render_frame_id) const {
+    int target_render_process_id,
+    int target_render_frame_id) const {
   for (const std::unique_ptr<LiveRequest>& request : requests_) {
-    if (request->WasOriginallyTargettingRenderFrameID(
-            original_target_render_process_id,
-            original_target_render_frame_id)) {
+    if (request->WasTargettingRenderFrameID(target_render_process_id,
+                                            target_render_frame_id)) {
       return request.get();
     }
   }
