@@ -45,11 +45,12 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
     return false;
 
   auto result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
+  pointer_state_.CleanupRemovedTouchPoints(*event);
+
   if (!result.succeeded)
     return false;
 
   event->set_may_cause_scrolling(result.moved_beyond_slop_region);
-  pointer_state_.CleanupRemovedTouchPoints(*event);
   return true;
 }
 
