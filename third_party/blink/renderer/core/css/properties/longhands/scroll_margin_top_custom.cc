@@ -17,7 +17,7 @@ const CSSValue* ScrollMarginTop::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return ConsumeLength(range, context.Mode(), kValueRangeAll,
-                       CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+                       CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* ScrollMarginTop::CSSValueFromComputedStyleInternal(

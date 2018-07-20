@@ -17,7 +17,7 @@ const CSSValue* ScrollMarginBlockStart::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return ConsumeLength(range, context.Mode(), kValueRangeAll,
-                       CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+                       CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
 
 }  // namespace CSSLonghand
