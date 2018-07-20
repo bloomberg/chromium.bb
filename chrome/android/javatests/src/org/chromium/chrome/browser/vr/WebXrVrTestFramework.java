@@ -17,7 +17,7 @@ import org.chromium.content_public.browser.WebContents;
 public class WebXrVrTestFramework extends WebXrTestFramework {
     public WebXrVrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
-        Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
+        Assert.assertFalse("Test started in VR", VrShellDelegate.isInVr());
     }
 
     /**
@@ -48,10 +48,10 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
         runJavaScriptOrFail(
                 "sessionTypeToRequest = sessionTypes.IMMERSIVE", POLL_TIMEOUT_LONG_MS, webContents);
         enterSessionWithUserGesture(webContents);
-        Assert.assertTrue(
-                pollJavaScriptBoolean("sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
-                        POLL_TIMEOUT_LONG_MS, webContents));
-        Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+        pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
+                POLL_TIMEOUT_LONG_MS, webContents);
+        Assert.assertTrue("Immersive session started, but VR Shell not in presentation mode",
+                TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 
     /**

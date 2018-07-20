@@ -13,7 +13,6 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.nio.ByteBuffer;
@@ -79,14 +78,11 @@ public class NfcSimUtils {
     public static void simNfcScanUntilVrEntry(final Context context) {
         final TestVrShellDelegate delegate = VrShellDelegateUtils.getDelegateInstance();
         delegate.setExpectingBroadcast();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (!delegate.isExpectingBroadcast()) return true;
-                simNfcScan(context);
-                return false;
-            }
-        }, NFC_SCAN_TIMEOUT_MS, NFC_SCAN_INTERVAL_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            if (!delegate.isExpectingBroadcast()) return true;
+            simNfcScan(context);
+            return false;
+        }, "NFC failed to cause VR entry", NFC_SCAN_TIMEOUT_MS, NFC_SCAN_INTERVAL_MS);
     }
 
     private static byte[] intToByteArray(int i) {

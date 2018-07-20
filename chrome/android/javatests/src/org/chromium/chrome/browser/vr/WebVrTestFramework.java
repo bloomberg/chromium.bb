@@ -36,9 +36,9 @@ public class WebVrTestFramework extends WebXrVrTestFramework {
     @Override
     public void enterSessionWithUserGestureOrFail(WebContents webContents) {
         enterSessionWithUserGesture(webContents);
-        Assert.assertTrue(
-                pollJavaScriptBoolean("vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, webContents));
-        Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+        pollJavaScriptBooleanOrFail("vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, webContents);
+        Assert.assertTrue("VRDisplay presenting, but VR Shell not in WebVR mode",
+                TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 
     /**

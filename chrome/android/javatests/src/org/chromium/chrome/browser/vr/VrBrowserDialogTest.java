@@ -69,7 +69,7 @@ public class VrBrowserDialogTest {
 
         // Create UiCapture image directory.
         if (!sBaseDirectory.exists() && !sBaseDirectory.isDirectory()) {
-            Assert.assertTrue(sBaseDirectory.mkdirs());
+            Assert.assertTrue("Failed to make image capture directory", sBaseDirectory.mkdirs());
         }
     }
 
@@ -80,18 +80,18 @@ public class VrBrowserDialogTest {
         }
     }
 
-    private boolean captureScreen(String filename) throws InterruptedException {
+    private void captureScreen(String filename) throws InterruptedException {
         // Ensure that any UI changes that have been rendered and submitted have actually propogated
         // to the screen.
         NativeUiUtils.waitNumFrames(2);
         // TODO(bsheedy): Make this work on Android P by drawing the view hierarchy to a bitmap.
         File screenshotFile = new File(sBaseDirectory, filename + ".png");
-        if (screenshotFile.exists() && !screenshotFile.delete()) return false;
+        Assert.assertFalse("Failed to delete existing screenshot",
+                screenshotFile.exists() && !screenshotFile.delete());
 
         final UiDevice uiDevice =
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-
-        return uiDevice.takeScreenshot(screenshotFile);
+        Assert.assertTrue("Failed to take screenshot", uiDevice.takeScreenshot(screenshotFile));
     }
 
     private void displayPermissionPrompt(String initialPage, String navigationCommand)
@@ -160,9 +160,9 @@ public class VrBrowserDialogTest {
                 "test_navigation_2d_page", "navigator.getUserMedia({audio: true}, ()=>{}, ()=>{})");
 
         // Capture image
-        Assert.assertTrue(captureScreen("MicrophonePermissionPrompt_Visible"));
+        captureScreen("MicrophonePermissionPrompt_Visible");
         NativeUiUtils.clickFallbackUiPositiveButton();
-        Assert.assertTrue(captureScreen("MicrophonePermissionPrompt_Granted"));
+        captureScreen("MicrophonePermissionPrompt_Granted");
     }
 
     /**
@@ -177,7 +177,7 @@ public class VrBrowserDialogTest {
                 "test_navigation_2d_page", "navigator.getUserMedia({video: true}, ()=>{}, ()=>{})");
 
         // Capture image
-        Assert.assertTrue(captureScreen("CameraPermissionPrompt_Visible"));
+        captureScreen("CameraPermissionPrompt_Visible");
     }
 
     /**
@@ -192,7 +192,7 @@ public class VrBrowserDialogTest {
                 "navigator.geolocation.getCurrentPosition(()=>{}, ()=>{})");
 
         // Capture image
-        Assert.assertTrue(captureScreen("LocationPermissionPrompt_Visible"));
+        captureScreen("LocationPermissionPrompt_Visible");
     }
 
     /**
@@ -207,7 +207,7 @@ public class VrBrowserDialogTest {
                 "test_navigation_2d_page", "Notification.requestPermission(()=>{})");
 
         // Capture image
-        Assert.assertTrue(captureScreen("NotificationPermissionPrompt_Visible"));
+        captureScreen("NotificationPermissionPrompt_Visible");
     }
 
     /**
@@ -222,7 +222,7 @@ public class VrBrowserDialogTest {
                 "test_navigation_2d_page", "navigator.requestMIDIAccess({sysex: true})");
 
         // Capture image
-        Assert.assertTrue(captureScreen("MidiPermissionPrompt_Visible"));
+        captureScreen("MidiPermissionPrompt_Visible");
     }
 
     /**
@@ -237,7 +237,7 @@ public class VrBrowserDialogTest {
                 "test_navigation_2d_page", "alert('538 perf regressions detected')");
 
         // Capture image
-        Assert.assertTrue(captureScreen("JavaScriptAlert_Visible"));
+        captureScreen("JavaScriptAlert_Visible");
     }
 
     /**
@@ -252,15 +252,15 @@ public class VrBrowserDialogTest {
                 "test_navigation_2d_page", "var c = confirm('This is a confirmation dialog')");
 
         // Capture image
-        Assert.assertTrue(captureScreen("JavaScriptConfirm_Visible"));
+        captureScreen("JavaScriptConfirm_Visible");
 
         NativeUiUtils.clickFallbackUiNegativeButton();
         NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // Ensure the cancel button was clicked.
-        Assert.assertTrue("Negative button clicked",
+        Assert.assertTrue("JavaScript Confirm's cancel button was not clicked",
                 mVrBrowserTestFramework.runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS)
                         .equals("false"));
-        Assert.assertTrue(captureScreen("JavaScriptConfirm_Dismissed"));
+        captureScreen("JavaScriptConfirm_Dismissed");
     }
 
     /**
@@ -277,17 +277,17 @@ public class VrBrowserDialogTest {
                 "var p = prompt('Are the Chrome controls broken?', '" + expectedString + "')");
 
         // Capture image
-        Assert.assertTrue(captureScreen("JavaScriptPrompt_Visible"));
+        captureScreen("JavaScriptPrompt_Visible");
         NativeUiUtils.clickFallbackUiPositiveButton();
         NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // This JavaScript will only run once the prompt has been dismissed, and the return value
         // will only be what we expect if the positive button was actually clicked (as opposed to
         // canceled).
-        Assert.assertTrue("Positive button clicked",
+        Assert.assertTrue("JavaScript Prompt's OK button was not clicked",
                 mVrBrowserTestFramework
                         .runJavaScriptOrFail("p == '" + expectedString + "'", POLL_TIMEOUT_SHORT_MS)
                         .equals("true"));
-        Assert.assertTrue(captureScreen("JavaScriptPrompt_Dismissed"));
+        captureScreen("JavaScriptPrompt_Dismissed");
     }
 
     @Test
@@ -295,7 +295,7 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.URL);
-        Assert.assertTrue(captureScreen("KeyboardAppearsOnUrlBarClick_Visible"));
+        captureScreen("KeyboardAppearsOnUrlBarClick_Visible");
     }
 
     @Test
@@ -303,7 +303,7 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testOverflowMenuAppears() throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.OVERFLOW_MENU);
-        Assert.assertTrue(captureScreen("OverflowMenuAppears_Visible"));
+        captureScreen("OverflowMenuAppears_Visible");
     }
 
     @Test
@@ -312,6 +312,6 @@ public class VrBrowserDialogTest {
     public void testPageInfoAppearsOnSecurityTokenClick()
             throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.PAGE_INFO_BUTTON);
-        Assert.assertTrue(captureScreen("PageInfoAppearsOnSecurityTokenClick_Visible"));
+        captureScreen("PageInfoAppearsOnSecurityTokenClick_Visible");
     }
 }

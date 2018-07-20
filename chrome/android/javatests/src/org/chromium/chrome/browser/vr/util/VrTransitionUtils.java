@@ -10,7 +10,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
@@ -38,23 +37,19 @@ public class VrTransitionUtils {
      */
     public static void waitForVrEntry(final int timeout) {
         // Relatively long timeout because sometimes GVR takes a while to enter VR
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete();
-            }
-        }, timeout, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollUiThread(() -> {
+            return VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete();
+        }, "VR not entered in allotted time", timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 
     /**
      * Waits for the black overlay that shows during VR Browser entry to be gone.
      */
     public static void waitForOverlayGone() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !TestVrShellDelegate.getInstance().isBlackOverlayVisible();
-            }
-        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> { return !TestVrShellDelegate.getInstance().isBlackOverlayVisible(); },
+                "Black overlay did not disappear in allotted time", POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

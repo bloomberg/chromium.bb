@@ -15,14 +15,12 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -114,34 +112,44 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Polls the provided JavaScript boolean until the timeout is reached or
+     * Polls the provided JavaScript boolean expression until the timeout is reached or
      * the boolean is true.
-     * @param boolName The name of the JavaScript boolean or expression to poll.
+     * @param boolExpression The JavaScript boolean expression to poll.
      * @param timeoutMs The polling timeout in milliseconds.
      * @param webContents The WebContents to run the JavaScript through.
      * @return True if the boolean evaluated to true, false if timed out.
      */
     public static boolean pollJavaScriptBoolean(
-            final String boolName, int timeoutMs, final WebContents webContents) {
+            final String boolExpression, int timeoutMs, final WebContents webContents) {
         try {
-            CriteriaHelper.pollInstrumentationThread(Criteria.equals(true, new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    String result = "false";
-                    try {
-                        result = JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
-                                boolName, POLL_CHECK_INTERVAL_SHORT_MS, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException | TimeoutException e) {
-                        // Expected to happen regularly, do nothing
-                    }
-                    return Boolean.parseBoolean(result);
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                String result = "false";
+                try {
+                    result = JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                            boolExpression, POLL_CHECK_INTERVAL_SHORT_MS, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException | TimeoutException e) {
+                    // Expected to happen regularly, do nothing
                 }
-            }), timeoutMs, POLL_CHECK_INTERVAL_LONG_MS);
+                return Boolean.parseBoolean(result);
+            }, "Polling timed out", timeoutMs, POLL_CHECK_INTERVAL_LONG_MS);
         } catch (AssertionError e) {
             Log.d(TAG, "pollJavaScriptBoolean() timed out");
             return false;
         }
         return true;
+    }
+
+    /**
+     * Polls the provided JavaScript boolean expression, failing the test if it does not evaluate
+     * to true within the provided timeout.
+     * @param boolExpression The JavaScript boolean expression to poll.
+     * @param timeoutMs The polling timeout in milliseconds.
+     * @param webContents The Webcontents to run the JavaScript through.
+     */
+    public static void pollJavaScriptBooleanOrFail(
+            String boolExpression, int timeoutMs, WebContents webContents) {
+        Assert.assertTrue("Timed out polling boolean expression: " + boolExpression,
+                pollJavaScriptBoolean(boolExpression, timeoutMs, webContents));
     }
 
     /**
@@ -291,12 +299,21 @@ public abstract class XrTestFramework {
 
     /**
      * Helper function to run pollJavaScriptBoolean with the first tab's WebContents.
-     * @param boolName The name of the JavaScript boolean or expression to poll.
+     * @param boolExpression The JavaScript boolean expression to poll.
      * @param timeoutMs The polling timeout in milliseconds.
      * @return True if the boolean evaluated to true, false if timed out.
      */
-    public boolean pollJavaScriptBoolean(String boolName, int timeoutMs) {
-        return pollJavaScriptBoolean(boolName, timeoutMs, mFirstTabWebContents);
+    public boolean pollJavaScriptBoolean(String boolExpression, int timeoutMs) {
+        return pollJavaScriptBoolean(boolExpression, timeoutMs, mFirstTabWebContents);
+    }
+
+    /**
+     * Helper function to run pollJavaScriptBooleanOrFail with the first tab's WebContents.
+     * @param boolExpression The JavaScript boolean expression to poll.
+     * @param timeoutMs The polling timeout in milliseconds.
+     */
+    public void pollJavaScriptBooleanOrFail(String boolExpression, int timeoutMs) {
+        pollJavaScriptBooleanOrFail(boolExpression, timeoutMs, mFirstTabWebContents);
     }
 
     /**
@@ -353,11 +370,7 @@ public abstract class XrTestFramework {
         final Tab tab = getRule().getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return tab.isShowingSadTab();
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> { return tab.isShowingSadTab(); }, "Renderer killed, but sad tab not shown");
     }
 }

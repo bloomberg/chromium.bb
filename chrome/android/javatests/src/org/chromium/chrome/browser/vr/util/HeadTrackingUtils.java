@@ -134,7 +134,8 @@ public class HeadTrackingUtils {
         Intent poseIntent = new Intent(ACTION_SET_FAKE_TRACKER_POSE);
         poseIntent.putExtra(EXTRA_FAKE_TRACKER_POSE, pose.getDataForExtra());
         poseIntent.setComponent(HEAD_TRACKING_COMPONENT);
-        Assert.assertTrue(InstrumentationRegistry.getContext().startService(poseIntent) != null);
+        Assert.assertTrue("Could not set head pose",
+                InstrumentationRegistry.getContext().startService(poseIntent) != null);
         rule.setTrackerDirty();
         // TODO(bsheedy): Remove this sleep. Could either expose poses up to Java and wait until
         // we receive a pose that's the same as the one we set or see if the head tracking service
@@ -181,7 +182,8 @@ public class HeadTrackingUtils {
         Intent modeIntent = new Intent(ACTION_SET_FAKE_TRACKER_MODE);
         modeIntent.putExtra(EXTRA_FAKE_TRACKER_MODE, supportedModeToString(mode));
         modeIntent.setComponent(HEAD_TRACKING_COMPONENT);
-        Assert.assertTrue(InstrumentationRegistry.getContext().startService(modeIntent) != null);
+        Assert.assertTrue("Could not set head tracking mode",
+                InstrumentationRegistry.getContext().startService(modeIntent) != null);
         rule.setTrackerDirty();
     }
 
@@ -203,7 +205,8 @@ public class HeadTrackingUtils {
         Intent typeIntent = new Intent(ACTION_SET_TRACKER_TYPE);
         typeIntent.putExtra(EXTRA_TRACKER_TYPE, "fake");
         typeIntent.setComponent(HEAD_TRACKING_COMPONENT);
-        Assert.assertTrue(InstrumentationRegistry.getContext().startService(typeIntent) != null);
+        Assert.assertTrue("Could not restart head tracking service",
+                InstrumentationRegistry.getContext().startService(typeIntent) != null);
         rule.setTrackerDirty();
     }
 }
