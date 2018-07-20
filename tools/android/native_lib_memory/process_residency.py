@@ -27,7 +27,7 @@ def CreateArgumentParser():
 
 
 def ParseDump(filename):
-  """Parses a residency dump, as generated from lightweight_cygprofile.cc.
+  """Parses a residency dump, as generated from orderfile_instrumentation.cc.
 
   Args:
     filename: (str) dump filename.
