@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -33,23 +34,6 @@ const char* g_fragment_shader_source = {
     }
   ),
 };
-
-void CompileShader(GLuint shader, const char* shader_source) {
-  glShaderSource(shader, 1, &shader_source, 0);
-  glCompileShader(shader);
-#if DCHECK_IS_ON()
-  GLint compile_status = GL_FALSE;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
-  if (GL_TRUE != compile_status) {
-    char buffer[1024];
-    GLsizei length = 0;
-    glGetShaderInfoLog(shader, sizeof(buffer), &length, buffer);
-    std::string log(buffer, length);
-    DLOG(ERROR) << "Error compiling shader: " << log;
-    DLOG(ERROR) << "Shader compilation failure.";
-  }
-#endif
-}
 
 }  // namespace
 
@@ -113,10 +97,10 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
   if (!program_) {
     program_ = glCreateProgram();
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    CompileShader(vertex_shader, g_vertex_shader_source);
+    CompileShaderWithLog(vertex_shader, g_vertex_shader_source);
     glAttachShader(program_, vertex_shader);
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    CompileShader(fragment_shader, g_fragment_shader_source);
+    CompileShaderWithLog(fragment_shader, g_fragment_shader_source);
     glAttachShader(program_, fragment_shader);
     glBindAttribLocation(program_, kVertexPositionAttrib, "a_position");
     glLinkProgram(program_);
