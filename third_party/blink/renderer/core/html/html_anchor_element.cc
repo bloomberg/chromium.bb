@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -366,8 +367,10 @@ void HTMLAnchorElement::HandleClick(Event* event) {
               : WebFeature::
                     kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
     }
-    if (GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
-      // TODO(jochen): Handle cross origin server redirects.
+    // Ignore the download attribute if we either can't read the content, or
+    // the event is an alt-click or similar.
+    if (NavigationPolicyFromEvent(event) != kNavigationPolicyDownload &&
+        GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
       request.SetSuggestedFilename(
           static_cast<String>(FastGetAttribute(downloadAttr)));
       request.SetRequestContext(WebURLRequest::kRequestContextDownload);

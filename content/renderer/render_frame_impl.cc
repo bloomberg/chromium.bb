@@ -6168,7 +6168,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     blink::mojom::BlobURLTokenPtrInfo blob_url_token =
         CloneBlobURLToken(info.blob_url_token.get());
     DownloadURL(info.url_request,
-                blink::WebLocalFrameClient::CrossOriginRedirects::kNavigate,
+                blink::WebLocalFrameClient::CrossOriginRedirects::kFollow,
                 blob_url_token.PassHandle());
   } else {
     OpenURL(info, /*send_referrer=*/true,

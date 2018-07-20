@@ -69,6 +69,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2993,6 +2994,81 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
+
+// A download initiated by the user via alt-click on a link should download,
+// even when redirected cross origin.
+//
+// Alt-click doesn't make sense on Android, and download a HTML file results
+// in an intent, so just skip.
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeSameOriginRedirectAltClick) {
+  net::EmbeddedTestServer origin_one;
+  net::EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
+
+  // The download-attribute.html page contains an anchor element whose href is
+  // set to the value of the query parameter (specified as |target| in the URL
+  // below). The suggested filename for the anchor is 'suggested-filename'. We
+  // will later send a "real" click to the anchor, triggering a download of the
+  // target URL.
+  //
+  // We construct two test servers; origin_one and origin_two. Once started, the
+  // server URLs will differ by the port number. Therefore they will be in
+  // different origins.
+  GURL download_url = origin_one.GetURL("/ping");
+  GURL referrer_url = origin_one.GetURL(
+      std::string("/download-attribute.html?noclick=") + download_url.spec());
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  // <origin_one>/download-attribute.html initiates a download of
+  // <origin_one>/ping, which redirects to <origin_two>/download. The latter
+  // serves an HTML document.
+  origin_one.RegisterRequestHandler(
+      CreateRedirectHandler("/ping", origin_two.GetURL("/download")));
+  origin_two.RegisterRequestHandler(
+      CreateBasicResponseHandler("/download", net::HTTP_OK, base::StringPairs(),
+                                 "text/html", "<title>hello</title>"));
+
+  origin_one.StartAcceptingConnections();
+  origin_two.StartAcceptingConnections();
+
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  NavigateToURL(shell(), referrer_url);
+
+  // Alt-click the link.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kAltKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(15, 15);
+  mouse_event.click_count = 1;
+  shell()->web_contents()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  shell()->web_contents()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
+
+  observer->WaitForFinished();
+  EXPECT_EQ(
+      1u, observer->NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
+
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+#if defined(OS_WIN)
+  EXPECT_EQ(FILE_PATH_LITERAL("download.htm"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+#else
+  EXPECT_EQ(FILE_PATH_LITERAL("download.html"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+#endif
+
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
+}
+#endif  // !defined(OS_ANDROID)
 
 // Test that the suggested filename for data: URLs works.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeDataUrl) {
