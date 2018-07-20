@@ -612,10 +612,8 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
 camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
   this.doTakePictureTimer_ = setTimeout(function() {
     var savePicture = function(blob, isMotionPicture) {
-      this.model_.savePicture(blob, isMotionPicture, error => {
-        if (error) {
-          console.error(error);
-        }
+      this.model_.savePicture(blob, isMotionPicture).catch(error => {
+        console.error(error);
         this.showToastMessage_('errorMsgSaveFileFailed', true);
       });
     }.bind(this);

@@ -95,6 +95,8 @@ camera.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
 };
 
 camera.models.Gallery.Picture.prototype = {
+  // Assume pictures always have different names as URL API may still point to
+  // the deleted file for new files created with the same name.
   get thumbnailURL() {
     return this.thumbnailEntry_ && this.thumbnailEntry_.toURL();
   },
@@ -208,63 +210,65 @@ camera.models.Gallery.prototype.lastPicture = function() {
  * @return {!Promise<camera.models.Gallery.Picture>} Promise for the result.
  */
 camera.models.Gallery.prototype.checkLastPicture = function() {
-  var last = null;
   return this.lastPicture().then(picture => {
-    last = picture;
-    if (camera.models.FileSystem.externalFs) {
-      // Check if the external picture has not been deleted since loaded.
-      return camera.models.FileSystem.hasExternalPicture(
-          last.pictureEntry.name);
+    // Assume only external pictures were removed without updating the model.
+    if (camera.models.FileSystem.externalFs && picture) {
+      var name = picture.pictureEntry.name;
+      return camera.models.FileSystem.getFile_(
+          camera.models.FileSystem.externalFs, name, false).then(entry => {
+        return [picture, (entry != null)];
+      });
     } else {
-      // Assume the model tracks every internal picture's deletion since loaded.
-      return true;
+      return [picture, (picture != null)];
     }
-  }).then(exist => {
-    if (exist) {
-      return last;
+  }).then(([picture, pictureEntryExist]) => {
+    if (pictureEntryExist || !picture) {
+      return picture;
     }
-    last.pictureEntry = null;
-    this.deletePicture(last);
-    return this.checkLastPicture();
+    return this.deletePicture(picture, true).then(
+        this.checkLastPicture.bind(this));
   });
 };
 
 /**
  * Deletes the picture in the pictures' model.
  * @param {camera.models.Gallery.Picture} picture Picture to be deleted.
- * @param {function(*=)} onFailure Failure callback.
+ * @param {boolean=} pictureEntryDeleted Whether the picture-entry was deleted.
+ * @return {!Promise<>} Promise for the operation.
  */
-camera.models.Gallery.prototype.deletePicture = function(picture, onFailure) {
+camera.models.Gallery.prototype.deletePicture = function(
+    picture, pictureEntryDeleted) {
   var removed = new Promise((resolve, reject) => {
-    if (picture.pictureEntry) {
-      picture.pictureEntry.remove(resolve, reject);
-    } else {
+    if (pictureEntryDeleted) {
       resolve();
+    } else {
+      picture.pictureEntry.remove(resolve, reject);
     }
   });
-  Promise.all([this.loaded_, removed]).then(([pictures, _]) => {
-    var index = pictures.indexOf(picture);
-    pictures.splice(index, 1);
+  return Promise.all([this.loaded_, removed]).then(([pictures, _]) => {
+    var removal = pictures.indexOf(picture);
+    if (removal != -1) {
+      pictures.splice(removal, 1);
+    }
     this.notifyObservers_('onPictureDeleted', picture);
     if (picture.thumbnailEntry_) {
       picture.thumbnailEntry_.remove(() => {});
     }
-  }).catch(onFailure);
+  });
 };
 
 /**
  * Exports the picture to the external storage.
  * @param {camera.models.Gallery.Picture} picture Picture to be exported.
- * @param {FileEntry} fileEntry Target file entry.
- * @param {function(*=)} onFailure Failure callback,
+ * @param {FileEntry} entry Target file entry.
+ * @return {!Promise<>} Promise for the operation.
  */
-camera.models.Gallery.prototype.exportPicture = function(
-    picture, fileEntry, onFailure) {
-  // TODO(yuli): Handle insufficient storage.
-  fileEntry.getParent(function(directory) {
-    picture.pictureEntry.copyTo(
-        directory, fileEntry.name, function() {}, onFailure);
-  }, onFailure);
+camera.models.Gallery.prototype.exportPicture = function(picture, entry) {
+  return new Promise((resolve, reject) => {
+    entry.getParent(directory => {
+      picture.pictureEntry.copyTo(directory, entry.name, resolve, reject);
+    }, reject);
+  });
 };
 
 /**
@@ -304,10 +308,9 @@ camera.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
  * Saves a picture that will also be added to the pictures' model.
  * @param {Blob} blob Data of the picture to be added.
  * @param {boolean} isMotionPicture Picture to be added is a video.
- * @param {function(*=)} onFailure Failure callback.
+ * @return {!Promise<>} Promise for the operation.
  */
-camera.models.Gallery.prototype.savePicture = function(
-    blob, isMotionPicture, onFailure) {
+camera.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
   // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event
   // and then add a new picture into the model.
   var saved = new Promise(resolve => {
@@ -325,7 +328,7 @@ camera.models.Gallery.prototype.savePicture = function(
   }).then(pictureEntry => {
     return this.wrapPicture_(pictureEntry);
   });
-  Promise.all([this.loaded_, saved]).then(([pictures, picture]) => {
+  return Promise.all([this.loaded_, saved]).then(([pictures, picture]) => {
     // Insert the picture into the sorted pictures' model.
     for (var index = pictures.length - 1; index >= 0; index--) {
       if (picture.timestamp >= pictures[index].timestamp) {
@@ -334,5 +337,5 @@ camera.models.Gallery.prototype.savePicture = function(
     }
     pictures.splice(index + 1, 0, picture);
     this.notifyObservers_('onPictureAdded', picture);
-  }).catch(onFailure);
+  });
 };

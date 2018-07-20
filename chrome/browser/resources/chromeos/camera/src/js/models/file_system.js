@@ -45,13 +45,6 @@ camera.models.FileSystem.VIDEO_PREFIX = 'VID_';
 camera.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
 
 /**
- * The image width of thumbnail files.
- * @type {number}
- * @const
- */
-camera.models.FileSystem.THUMBNAIL_WIDTH = 480;
-
-/**
  * Internal file system.
  * @type {FileSystem}
  */
@@ -64,88 +57,111 @@ camera.models.FileSystem.internalFs = null;
 camera.models.FileSystem.externalFs = null;
 
 /**
- * @type {boolean}
+ * Initializes the internal file system.
+ * @return {!Promise<FileSystem>} Promise for the internal file system.
+ * @private
  */
-camera.models.FileSystem.ackMigratePictures = false;
-
-/**
- * @type {boolean}
- */
-camera.models.FileSystem.doneMigratePictures = false;
-
-/**
- * Initializes the file system. This function should be called only once
- * to initialize the file system in the beginning.
- * @param {function()} onSuccess Success callback.
- * @param {function(*=)} onFailure Failure callback.
- */
-camera.models.FileSystem.initialize = function(onSuccess, onFailure) {
-  var initExternalFs = function() {
-    return new Promise(resolve => {
-      if (!camera.util.isChromeOS()) {
-        resolve();
-        return;
-      }
-      chrome.fileSystem.getVolumeList(volumes => {
-        if (volumes) {
-          for (var i = 0; i < volumes.length; i++) {
-            if (volumes[i].volumeId.indexOf('downloads:Downloads') !== -1) {
-              chrome.fileSystem.requestFileSystem(volumes[i], fs => {
-                camera.models.FileSystem.externalFs = fs;
-                resolve();
-              });
-              return;
-            }
-          }
-        }
-        resolve();
-      });
-    });
-  };
-
-  var initInternalFs = function() {
-    return new Promise((resolve, reject) => {
-      webkitRequestFileSystem(
-          window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */, fs => {
-        camera.models.FileSystem.internalFs = fs;
-        resolve();
-      }, reject);
-    });
-  };
-
-  var readLocalStorage = function() {
-    return new Promise(resolve => {
-      chrome.storage.local.get({
-        ackMigratePictures: 0,
-        doneMigratePictures: 0,
-      }, values => {
-        // 1: User acknowledge to migrate pictures to Downloads.
-        camera.models.FileSystem.ackMigratePictures =
-            values.ackMigratePictures >= 1;
-        // 1: All pictures have been migrated to Downloads.
-        camera.models.FileSystem.doneMigratePictures =
-            values.doneMigratePictures >= 1;
-        resolve();
-      });
-    });
-  };
-
-  Promise.all([
-    initInternalFs(), initExternalFs(), readLocalStorage()
-  ]).then(onSuccess).catch(onFailure);
+camera.models.FileSystem.initInternalFs_ = function() {
+  return new Promise((resolve, reject) => {
+    webkitRequestFileSystem(
+        window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */, resolve, reject);
+  });
 };
 
 /**
- * Reloads the file entries from internal and external file system.
- * @return {!Promise<!Array.<!Array.<FileEntry>>} Promise for the internal and
-       external entries.
+ * Initializes the external file system.
+ * @return {!Promise<?FileSystem>} Promise for the external file system.
  * @private
  */
-camera.models.FileSystem.reloadEntries_ = function() {
+camera.models.FileSystem.initExternalFs_ = function() {
+  return new Promise(resolve => {
+    if (!camera.util.isChromeOS()) {
+      resolve(null);
+      return;
+    }
+    chrome.fileSystem.getVolumeList(volumes => {
+      if (volumes) {
+        for (var i = 0; i < volumes.length; i++) {
+          if (volumes[i].volumeId.indexOf('downloads:Downloads') !== -1) {
+            chrome.fileSystem.requestFileSystem(volumes[i], resolve);
+            return;
+          }
+        }
+      }
+      resolve(null);
+    });
+  });
+};
+
+/**
+ * Initializes file systems, migrating pictures if needed. This function
+ * should be called only once in the beginning of the app.
+ * @param {function()} promptMigrate Callback to instantiate a promise that
+       prompts users to migrate pictures if no acknowledgement yet.
+ * @return {!Promise<>} Promise for the operation.
+ */
+camera.models.FileSystem.initialize = function(promptMigrate) {
+  var checkAcked = new Promise(resolve => {
+    // ackMigratePictures 1: User acknowledges to migrate pictures to Downloads.
+    chrome.storage.local.get({ackMigratePictures: 0}, values => {
+      resolve(values.ackMigratePictures >= 1);
+    });
+  });
+  var checkMigrated = new Promise(resolve => {
+    // TODO(shenghao): Replace doneMigratePictures with cameraMediaConsolidated.
+    chrome.storage.local.get({doneMigratePictures: false}, values => {
+      resolve(values.doneMigratePictures);
+    });
+  });
+  var ackMigrate = () => {
+    chrome.storage.local.set({ackMigratePictures: 1});
+  };
+  var doneMigrate = () => {
+    chrome.storage.local.set({doneMigratePictures: true});
+  };
+
   return Promise.all([
-    camera.models.FileSystem.readFs_(camera.models.FileSystem.internalFs),
-    camera.models.FileSystem.readFs_(camera.models.FileSystem.externalFs)
-  ]);
+    camera.models.FileSystem.initInternalFs_(),
+    camera.models.FileSystem.initExternalFs_(),
+    checkAcked,
+    checkMigrated
+  ]).then(([internalFs, externalFs, acked, migrated]) => {
+    camera.models.FileSystem.internalFs = internalFs;
+    camera.models.FileSystem.externalFs = externalFs;
+    if (migrated && !camera.models.FileSystem.externalFs) {
+      throw 'External file system should be available.';
+    }
+
+    // Check if acknowledge-prompt and migrate-pictures are needed.
+    if (migrated || !camera.models.FileSystem.externalFs) {
+      return [false, false];
+    } else {
+      return camera.models.FileSystem.hasInternalPictures_().then(result => {
+        if (result) {
+          return [!acked, true];
+        } else {
+          // If the external file system is supported and there is already no
+          // picture in the internal file system, it implies done migration and
+          // then doesn't need acknowledge-prompt.
+          ackMigrate();
+          doneMigrate();
+          return [false, false];
+        }
+      });
+    }
+  }).then(([promptNeeded, migrateNeeded]) => {
+    if (promptNeeded) {
+      return promptMigrate().then(() => {
+        ackMigrate();
+        return migrateNeeded;
+      });
+    }
+    return migrateNeeded;
+  }).then(migrateNeeded => {
+    if (migrateNeeded) {
+      return camera.models.FileSystem.migratePictures().then(doneMigrate);
+    }
+  });
 };
 
 /**
@@ -177,26 +193,6 @@ camera.models.FileSystem.readFs_ = function(fs) {
 };
 
 /**
- * Checks if there is a picture by the given name in the external file system.
- * @param {string} name Name of the picture.
- * @return {!Promise<boolean>} Promise for the result.
- */
-camera.models.FileSystem.hasExternalPicture = function(name) {
-  return new Promise(resolve => {
-    var fs = camera.models.FileSystem.externalFs;
-    fs.root.getFile(name, {create: false}, entry => {
-      resolve(true);
-    }, error => {
-      if (error.name == 'NotFoundError') {
-        resolve(false);
-      } else {
-        reject();
-      }
-    });
-  });
-};
-
-/**
  * Checks if there is an image or video in the internal file system.
  * @return {!Promise<boolean>} Promise for the result.
  * @private
@@ -216,90 +212,36 @@ camera.models.FileSystem.hasInternalPictures_ = function() {
 };
 
 /**
- * Sets migration acknowledgement to true.
- * @privvate
+ * Migrates all picture-files from internal storage to external storage.
+ * @return {!Promise<>} Promise for the operation.
  */
-camera.models.FileSystem.ackMigrate_ = function() {
-  camera.models.FileSystem.ackMigratePictures = true;
-  chrome.storage.local.set({ackMigratePictures: 1});
-};
+camera.models.FileSystem.migratePictures = function() {
+  var internalFs = camera.models.FileSystem.internalFs;
+  var externalFs = camera.models.FileSystem.externalFs;
 
-/**
- * Sets migration status is done.
- * @private
- */
-camera.models.FileSystem.doneMigrate_ = function() {
-  camera.models.FileSystem.doneMigratePictures = true;
-  chrome.storage.local.set({doneMigratePictures: 1});
-};
-
-/**
- * Checks migration is needed or not.
- * @param {function()} onYes Callback function to do migration.
- * @param {function()} onNo Callback function without migration.
- * @param {function(*=)} onFailure Failure callback.
- */
-camera.models.FileSystem.needMigration = function(onYes, onNo, onFailure) {
-  if (camera.models.FileSystem.doneMigratePictures ||
-      !camera.models.FileSystem.externalFs) {
-    onNo();
-  } else {
-    camera.models.FileSystem.hasInternalPictures_().then(result => {
-      if (result) {
-        onYes();
-      } else {
-        // If the external FS is supported and there is no picture in
-        // the internal storage, it implies users acknowledge to use
-        // the external FS from now without showing a prompt dialog.
-        camera.models.FileSystem.ackMigrate_();
-        camera.models.FileSystem.doneMigrate_();
-        onNo();
-      }
-    }).catch(onFailure);
-  }
-};
-
-/**
- * Migrates all files from internal storage to external storage.
- * @param {function()} onSuccess Success callback.
- * @param {function(*=)} onFailure Failure callback.
- */
-camera.models.FileSystem.migratePictures = function(onSuccess, onFailure) {
-  var existByName = {};
-
-  var migratePicture = function(pictureEntry, thumbnailEntry) {
-    return new Promise(function(resolve, reject) {
-      // TODO(yuli): Check existing files that were added after loading entries.
-      var fileName = camera.models.FileSystem.regulatePictureName(pictureEntry);
-      while (existByName[fileName]) {
-        fileName = camera.models.FileSystem.incrementFileName_(fileName);
-      }
-      pictureEntry.copyTo(
-          camera.models.FileSystem.externalFs.root, fileName, newPicEntry => {
-        if (newPicEntry.name != pictureEntry.name && thumbnailEntry) {
-          thumbnailEntry.moveTo(
-              camera.models.FileSystem.internalFs.root,
-              camera.models.FileSystem.getThumbnailName(newPicEntry));
-        }
-        // Remove the internal picture even failing to rename thumbnail.
-        pictureEntry.remove(function() {});
-        resolve();
-      }, reject);
+  var migratePicture = (pictureEntry, thumbnailEntry) => {
+    var name = camera.models.FileSystem.regulatePictureName(pictureEntry);
+    return camera.models.FileSystem.getFile_(
+        externalFs, name, true).then(entry => {
+      return new Promise((resolve, reject) => {
+        pictureEntry.copyTo(externalFs.root, entry.name, result => {
+          if (result.name != pictureEntry.name && thumbnailEntry) {
+            // Thumbnails can be recreated later if failing to rename them here.
+            thumbnailEntry.moveTo(internalFs.root,
+                camera.models.FileSystem.getThumbnailName(result));
+          }
+          pictureEntry.remove(() => {});
+          resolve();
+        }, reject);
+      });
     });
   };
 
-  camera.models.FileSystem.ackMigrate_();
-  camera.models.FileSystem.reloadEntries_().then(
-      ([internalEntries, externalEntries]) => {
+  return camera.models.FileSystem.readFs_(internalFs).then(internalEntries => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
     camera.models.FileSystem.parseInternalEntries_(
         internalEntries, thumbnailEntriesByName, pictureEntries);
-
-    // Uses to check whether file name conflict or not.
-    for (var index = 0; index < externalEntries.length; index++) {
-      existByName[externalEntries[index].name] = true;
-    }
 
     var migrated = [];
     for (var index = 0; index < pictureEntries.length; index++) {
@@ -309,10 +251,7 @@ camera.models.FileSystem.migratePictures = function(onSuccess, onFailure) {
       migrated.push(migratePicture(entry, thumbnailEntry));
     }
     return Promise.all(migrated);
-  }).then(() => {
-    camera.models.FileSystem.doneMigrate_();
-    onSuccess();
-  }).catch(onFailure);
+  });
 };
 
 /**
@@ -331,10 +270,10 @@ camera.models.FileSystem.generatePictureName_ = function(isVideo, time) {
   var prefix = isVideo ?
       camera.models.FileSystem.VIDEO_PREFIX :
       camera.models.FileSystem.IMAGE_PREFIX;
-  var now = new Date(time);
-  var result = prefix + now.getFullYear() + pad(now.getMonth() + 1) +
-      pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
-      pad(now.getSeconds());
+  var date = new Date(time);
+  var result = prefix + date.getFullYear() + pad(date.getMonth() + 1) +
+      pad(date.getDate()) + '_' + pad(date.getHours()) +
+      pad(date.getMinutes()) + pad(date.getSeconds());
 
   return result + (isVideo ? '.mkv' : '.jpg');
 };
@@ -368,33 +307,22 @@ camera.models.FileSystem.regulatePictureName = function(entry) {
  * Saves the blob to the given file name. Name of the actually saved file
  * might be different from the given file name if the file already exists.
  * @param {FileSystem} fs File system to be written.
- * @param {string} fileName Name of the file.
+ * @param {string} name Name of the file.
  * @param {Blob} blob Data of the file to be saved.
- * @param {function(FileEntry)} onSuccess Success callback with the entry of
- *     the saved file.
- * @param {function(*=)} onFailure Failure callback.
+ * @return {!Promise<FileEntry>} Promise for the result.
  * @private
  */
-camera.models.FileSystem.saveToFile_ = function(
-    fs, fileName, blob, onSuccess, onFailure) {
-  fs.root.getFile(
-      fileName, {create: true, exclusive: true}, function(fileEntry) {
-    fileEntry.createWriter(function(fileWriter) {
-      fileWriter.onwriteend = function() {
-        onSuccess(fileEntry);
-      };
-      fileWriter.onerror = onFailure;
-      fileWriter.write(blob);
-    },
-    onFailure);
-  }, function(error) {
-    if (error.name == 'InvalidModificationError') {
-      fileName = camera.models.FileSystem.incrementFileName_(fileName);
-      camera.models.FileSystem.saveToFile_(
-          fs, fileName, blob, onSuccess, onFailure);
-    } else {
-      onFailure(error);
-    }
+camera.models.FileSystem.saveToFile_ = function(fs, name, blob) {
+  return camera.models.FileSystem.getFile_(fs, name, true).then(entry => {
+    return new Promise((resolve, reject) => {
+      entry.createWriter(fileWriter => {
+        fileWriter.onwriteend = () => {
+          resolve(entry);
+        };
+        fileWriter.onerror = reject;
+        fileWriter.write(blob);
+      }, reject);
+    });
   });
 };
 
@@ -405,12 +333,10 @@ camera.models.FileSystem.saveToFile_ = function(
  * @return {!Promise<FileEntry>} Promise for the result.
  */
 camera.models.FileSystem.savePicture = function(isVideo, blob) {
-  var fs = camera.models.FileSystem.externalFs ?
-      camera.models.FileSystem.externalFs : camera.models.FileSystem.internalFs;
+  var fs = camera.models.FileSystem.externalFs ||
+      camera.models.FileSystem.internalFs;
   var name = camera.models.FileSystem.generatePictureName_(isVideo, Date.now());
-  return new Promise((resolve, reject) => {
-    camera.models.FileSystem.saveToFile_(fs, name, blob, resolve, reject);
-  });
+  return camera.models.FileSystem.saveToFile_(fs, name, blob);
 };
 
 /**
@@ -421,6 +347,7 @@ camera.models.FileSystem.savePicture = function(isVideo, blob) {
  * @private
  */
 camera.models.FileSystem.createThumbnail_ = function(isVideo, url) {
+  const thumbnailWidth = 480;
   var element = document.createElement(isVideo ? 'video' : 'img');
   return new Promise((resolve, reject) => {
     if (isVideo) {
@@ -433,7 +360,6 @@ camera.models.FileSystem.createThumbnail_ = function(isVideo, url) {
   }).then(() => {
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
-    var thumbnailWidth = camera.models.FileSystem.THUMBNAIL_WIDTH;
     var ratio = isVideo ?
         element.videoHeight / element.videoWidth :
         element.height / element.width;
@@ -474,11 +400,9 @@ camera.models.FileSystem.saveThumbnail = function(isVideo, entry) {
   return camera.models.FileSystem.pictureURL(entry).then(url => {
     return camera.models.FileSystem.createThumbnail_(isVideo, url);
   }).then(blob => {
-    return new Promise((resolve, reject) => {
-      var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
-      camera.models.FileSystem.saveToFile_(camera.models.FileSystem.internalFs,
-          thumbnailName, blob, resolve, reject);
-    });
+    var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
+    return camera.models.FileSystem.saveToFile_(
+        camera.models.FileSystem.internalFs, thumbnailName, blob);
   });
 };
 
@@ -549,8 +473,10 @@ camera.models.FileSystem.parseInternalEntries_ = function(
  *     thumbnail names.
  */
 camera.models.FileSystem.getEntries = function() {
-  return camera.models.FileSystem.reloadEntries_().then(
-      ([internalEntries, externalEntries]) => {
+  return Promise.all([
+    camera.models.FileSystem.readFs_(camera.models.FileSystem.internalFs),
+    camera.models.FileSystem.readFs_(camera.models.FileSystem.externalFs)
+  ]).then(([internalEntries, externalEntries]) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
 
@@ -590,28 +516,47 @@ camera.models.FileSystem.pictureURL = function(entry) {
 };
 
 /**
+ * Gets the file by the given name, avoiding name conflicts if necessary.
+ * @param {FileSystem} fs File system to get the file.
+ * @param {string} name File name. Result file may have a different name.
+ * @param {boolean} create True to create file, false otherwise.
+ * @return {!Promise<?FileEntry>} Promise for the result.
+ * @private
+ */
+camera.models.FileSystem.getFile_ = function(fs, name, create) {
+  return new Promise((resolve, reject) => {
+    var options = create ? {create: true, exclusive: true} : {create: false};
+    fs.root.getFile(name, options, resolve, reject);
+  }).catch(error => {
+    if (create && error.name == 'InvalidModificationError') {
+      // Avoid name conflicts for creating files.
+      return camera.models.FileSystem.getFile_(fs,
+          camera.models.FileSystem.incrementFileName_(name), create);
+    } else if (!create && error.name == 'NotFoundError') {
+      return null;
+    }
+    throw error;
+  });
+};
+
+/**
  * Increments the file index of a given file name to avoid name conflicts.
- * @param {string} fileName File name.
+ * @param {string} name File name.
  * @return {string} File name with incremented index.
  * @private
  */
-camera.models.FileSystem.incrementFileName_ = function(fileName) {
-  var parseFileName = function(fileName) {
-    var base = '', ext = '', index = 0;
-    var match = fileName.match(/^([^.]+)(\..+)?$/);
+camera.models.FileSystem.incrementFileName_ = function(name) {
+  var base = '', ext = '', idx = 0;
+  var match = name.match(/^([^.]+)(\..+)?$/);
+  if (match) {
+    base = match[1];
+    ext = match[2];
+    match = base.match(/ \((\d+)\)$/);
     if (match) {
-      base = match[1];
-      ext = match[2];
-      match = base.match(/ \((\d+)\)$/);
-      if (match) {
-        base = base.substring(0, match.index);
-        index = parseInt(match[1], 10);
-      }
+      base = base.substring(0, match.index);
+      idx = parseInt(match[1], 10);
     }
-    return [base, ext, index];
-  };
-
-  var fileNameParts = parseFileName(fileName);
-  var fileIndex = fileNameParts[2] + 1;
-  return fileNameParts[0] + ' (' + fileIndex + ')' + fileNameParts[1];
+  }
+  var parts = [base, ext, idx];
+  return parts[0] + ' (' + (parts[2] + 1) + ')' + parts[1];
 };
