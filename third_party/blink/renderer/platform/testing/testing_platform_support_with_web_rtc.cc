@@ -141,6 +141,24 @@ void MockWebRTCPeerConnectionHandler::GetStats(
     std::unique_ptr<WebRTCStatsReportCallback>) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+MockWebRTCPeerConnectionHandler::AddTransceiverWithTrack(
+    const WebMediaStreamTrack& track,
+    const webrtc::RtpTransceiverInit&) {
+  std::unique_ptr<WebRTCRtpTransceiver> transceiver =
+      std::make_unique<DummyRTCRtpTransceiver>(track);
+  return transceiver;
+}
+
+webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+MockWebRTCPeerConnectionHandler::AddTransceiverWithKind(
+    std::string kind,
+    const webrtc::RtpTransceiverInit&) {
+  std::unique_ptr<WebRTCRtpTransceiver> transceiver =
+      std::make_unique<DummyRTCRtpTransceiver>(WebMediaStreamTrack());
+  return transceiver;
+}
+
+webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
 MockWebRTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
                                           const WebVector<WebMediaStream>&) {
   std::unique_ptr<WebRTCRtpTransceiver> transceiver =

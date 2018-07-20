@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -20,6 +21,8 @@ namespace blink {
 class RTCPeerConnection;
 class RTCRtpReceiver;
 class RTCRtpSender;
+
+webrtc::RtpTransceiverInit ToRtpTransceiverInit(const RTCRtpTransceiverInit&);
 
 class RTCRtpTransceiver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

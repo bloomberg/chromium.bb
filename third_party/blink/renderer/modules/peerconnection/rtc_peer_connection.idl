@@ -138,6 +138,9 @@ enum RTCIceConnectionState {
     [Measure] sequence<RTCRtpSender> getSenders();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getreceivers
     [Measure] sequence<RTCRtpReceiver> getReceivers();
+    // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtransceiver
+    [RaisesException] RTCRtpTransceiver addTransceiver((MediaStreamTrack or DOMString) track_or_kind,
+                                                       optional RTCRtpTransceiverInit init);
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtrack
     [Measure, RaisesException] RTCRtpSender addTrack(MediaStreamTrack track, MediaStream... streams);
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-removetrack

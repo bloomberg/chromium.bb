@@ -146,6 +146,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
+  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+  AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
+                          const webrtc::RtpTransceiverInit& init) override;
+  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+  AddTransceiverWithKind(std::string kind,
+                         const webrtc::RtpTransceiverInit& init) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> AddTrack(
       const blink::WebMediaStreamTrack& web_track,
       const blink::WebVector<blink::WebMediaStream>& web_streams) override;
@@ -242,6 +248,18 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void ReportFirstSessionDescriptions(const FirstSessionDescription& local,
                                       const FirstSessionDescription& remote);
 
+  void AddTransceiverWithTrackOnSignalingThread(
+      rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
+      webrtc::RtpTransceiverInit init,
+      TransceiverStateSurfacer* transceiver_state_surfacer,
+      webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
+          error_or_transceiver);
+  void AddTransceiverWithMediaTypeOnSignalingThread(
+      cricket::MediaType media_type,
+      webrtc::RtpTransceiverInit init,
+      TransceiverStateSurfacer* transceiver_state_surfacer,
+      webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
+          error_or_transceiver);
   void AddTrackOnSignalingThread(
       rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
       std::vector<std::string> stream_ids,

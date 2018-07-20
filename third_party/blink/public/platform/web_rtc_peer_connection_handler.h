@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/webrtc/api/rtcerror.h"
+#include "third_party/webrtc/api/rtptransceiverinterface.h"
 
 namespace webrtc {
 enum class RTCErrorType;
@@ -100,6 +101,14 @@ class WebRTCPeerConnectionHandler {
   virtual WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
+  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+  AddTransceiverWithTrack(const WebMediaStreamTrack&,
+                          const webrtc::RtpTransceiverInit&) = 0;
+  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+  AddTransceiverWithKind(
+      // webrtc::MediaStreamTrackInterface::kAudioKind or kVideoKind
+      std::string kind,
+      const webrtc::RtpTransceiverInit&) = 0;
   // Adds the track to the peer connection, returning the resulting transceiver
   // or error.
   virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> AddTrack(

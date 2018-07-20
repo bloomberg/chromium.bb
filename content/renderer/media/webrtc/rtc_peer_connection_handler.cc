@@ -1548,6 +1548,106 @@ void RTCPeerConnectionHandler::GetStats(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+RTCPeerConnectionHandler::AddTransceiverWithTrack(
+    const blink::WebMediaStreamTrack& web_track,
+    const webrtc::RtpTransceiverInit& init) {
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
+      track_adapter_map_->GetOrCreateLocalTrackAdapter(web_track);
+  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
+                                                      signaling_thread());
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+      error_or_transceiver;
+  RunSynchronousClosureOnSignalingThread(
+      base::BindRepeating(
+          &RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread,
+          base::Unretained(this), base::RetainedRef(track_ref->webrtc_track()),
+          base::ConstRef(init), base::Unretained(&transceiver_state_surfacer),
+          base::Unretained(&error_or_transceiver)),
+      "AddTransceiverWithTrackOnSignalingThread");
+  if (!error_or_transceiver.ok()) {
+    // Don't leave the surfacer in a pending state.
+    transceiver_state_surfacer.ObtainStates();
+    return error_or_transceiver.MoveError();
+  }
+
+  auto transceiver_states = transceiver_state_surfacer.ObtainStates();
+  auto transceiver =
+      CreateOrUpdateTransceiver(std::move(transceiver_states[0]));
+  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
+      std::move(transceiver);
+  return std::move(web_transceiver);
+}
+
+void RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread(
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
+    webrtc::RtpTransceiverInit init,
+    TransceiverStateSurfacer* transceiver_state_surfacer,
+    webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
+        error_or_transceiver) {
+  *error_or_transceiver =
+      native_peer_connection_->AddTransceiver(webrtc_track, init);
+  std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
+  if (error_or_transceiver->ok())
+    transceivers.push_back(error_or_transceiver->value());
+  transceiver_state_surfacer->Initialize(track_adapter_map_, transceivers);
+}
+
+webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+RTCPeerConnectionHandler::AddTransceiverWithKind(
+    std::string kind,
+    const webrtc::RtpTransceiverInit& init) {
+  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  cricket::MediaType media_type;
+  if (kind == webrtc::MediaStreamTrackInterface::kAudioKind) {
+    media_type = cricket::MEDIA_TYPE_AUDIO;
+  } else {
+    DCHECK_EQ(kind, webrtc::MediaStreamTrackInterface::kVideoKind);
+    media_type = cricket::MEDIA_TYPE_VIDEO;
+  }
+  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
+                                                      signaling_thread());
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+      error_or_transceiver;
+  RunSynchronousClosureOnSignalingThread(
+      base::BindRepeating(&RTCPeerConnectionHandler::
+                              AddTransceiverWithMediaTypeOnSignalingThread,
+                          base::Unretained(this), base::ConstRef(media_type),
+                          base::ConstRef(init),
+                          base::Unretained(&transceiver_state_surfacer),
+                          base::Unretained(&error_or_transceiver)),
+      "AddTransceiverWithMediaTypeOnSignalingThread");
+  if (!error_or_transceiver.ok()) {
+    // Don't leave the surfacer in a pending state.
+    transceiver_state_surfacer.ObtainStates();
+    return error_or_transceiver.MoveError();
+  }
+
+  auto transceiver_states = transceiver_state_surfacer.ObtainStates();
+  auto transceiver =
+      CreateOrUpdateTransceiver(std::move(transceiver_states[0]));
+  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
+      std::move(transceiver);
+  return std::move(web_transceiver);
+}
+
+void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
+    cricket::MediaType media_type,
+    webrtc::RtpTransceiverInit init,
+    TransceiverStateSurfacer* transceiver_state_surfacer,
+    webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
+        error_or_transceiver) {
+  *error_or_transceiver =
+      native_peer_connection_->AddTransceiver(media_type, init);
+  std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
+  if (error_or_transceiver->ok())
+    transceivers.push_back(error_or_transceiver->value());
+  transceiver_state_surfacer->Initialize(track_adapter_map_, transceivers);
+}
+
+webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::AddTrack(
     const blink::WebMediaStreamTrack& track,
     const blink::WebVector<blink::WebMediaStream>& streams) {

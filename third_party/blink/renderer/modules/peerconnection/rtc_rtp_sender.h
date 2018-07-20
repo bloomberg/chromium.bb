@@ -8,12 +8,14 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_encoding_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_send_parameters.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/webrtc/api/rtptransceiverinterface.h"
 
 namespace blink {
 
@@ -21,6 +23,9 @@ class MediaStreamTrack;
 class RTCDTMFSender;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
+
+webrtc::RtpEncodingParameters ToRtpEncodingParameters(
+    const RTCRtpEncodingParameters&);
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
 class RTCRtpSender final : public ScriptWrappable {

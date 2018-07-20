@@ -53,6 +53,7 @@ namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class MediaStreamTrackOrString;
 class RTCAnswerOptions;
 class RTCConfiguration;
 class RTCDTMFSender;
@@ -63,6 +64,7 @@ class RTCOfferOptions;
 class RTCPeerConnectionTest;
 class RTCRtpReceiver;
 class RTCRtpSender;
+class RTCRtpTransceiverInit;
 class RTCSessionDescription;
 class RTCSessionDescriptionInit;
 class ScriptState;
@@ -178,6 +180,9 @@ class MODULES_EXPORT RTCPeerConnection final
   const HeapVector<Member<RTCRtpTransceiver>>& getTransceivers() const;
   const HeapVector<Member<RTCRtpSender>>& getSenders() const;
   const HeapVector<Member<RTCRtpReceiver>>& getReceivers() const;
+  RTCRtpTransceiver* addTransceiver(const MediaStreamTrackOrString&,
+                                    const RTCRtpTransceiverInit&,
+                                    ExceptionState&);
   RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
   void removeTrack(RTCRtpSender*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(track);

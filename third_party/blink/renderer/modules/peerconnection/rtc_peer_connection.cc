@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
+#include "third_party/blink/renderer/bindings/modules/v8/media_stream_track_or_string.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rtc_ice_candidate_init_or_rtc_ice_candidate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
@@ -91,6 +92,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_request_impl.h"
@@ -120,6 +122,11 @@ const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
 const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
+const char kOnlySupportedInUnifiedPlanMessage[] =
+    "This operation is only supported in 'unified-plan'. 'unified-plan' will "
+    "become the default behavior in the future, but it is currently "
+    "experimental. To try it out, construct the RTCPeerConnection with "
+    "sdpSemantics:'unified-plan' present in the RTCConfiguration argument.";
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const long kMaxPeerConnections = 500;
@@ -1492,6 +1499,50 @@ const HeapVector<Member<RTCRtpSender>>& RTCPeerConnection::getSenders() const {
 const HeapVector<Member<RTCRtpReceiver>>& RTCPeerConnection::getReceivers()
     const {
   return rtp_receivers_;
+}
+
+RTCRtpTransceiver* RTCPeerConnection::addTransceiver(
+    const MediaStreamTrackOrString& track_or_kind,
+    const RTCRtpTransceiverInit& init,
+    ExceptionState& exception_state) {
+  if (sdp_semantics_ != WebRTCSdpSemantics::kUnifiedPlan) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kOnlySupportedInUnifiedPlanMessage);
+    return nullptr;
+  }
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+    return nullptr;
+  auto webrtc_init = ToRtpTransceiverInit(init);
+  webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> result =
+      webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION);
+  if (track_or_kind.IsMediaStreamTrack()) {
+    MediaStreamTrack* track = track_or_kind.GetAsMediaStreamTrack();
+    RegisterTrack(track);
+    result = peer_handler_->AddTransceiverWithTrack(track->Component(),
+                                                    std::move(webrtc_init));
+  } else {
+    const String& kind_string = track_or_kind.GetAsString();
+    // TODO(hbos): Make cricket::MediaType an allowed identifier in
+    // rtc_peer_connection.cc and use that instead of a boolean.
+    std::string kind;
+    if (kind_string == "audio") {
+      kind = webrtc::MediaStreamTrackInterface::kAudioKind;
+    } else if (kind_string == "video") {
+      kind = webrtc::MediaStreamTrackInterface::kVideoKind;
+    } else {
+      exception_state.ThrowTypeError(
+          "The argument provided as parameter 1 is not a valid "
+          "MediaStreamTrack kind ('audio' or 'video').");
+      return nullptr;
+    }
+    result = peer_handler_->AddTransceiverWithKind(std::move(kind),
+                                                   std::move(webrtc_init));
+  }
+  if (!result.ok()) {
+    ThrowExceptionFromRTCError(result.error(), exception_state);
+    return nullptr;
+  }
+  return CreateOrUpdateTransceiver(result.MoveValue());
 }
 
 RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,

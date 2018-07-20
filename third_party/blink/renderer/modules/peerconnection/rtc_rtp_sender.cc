@@ -223,14 +223,7 @@ ToRtpParameters(const RTCRtpSendParameters& parameters) {
     encodings.reserve(parameters.encodings().size());
 
     for (const auto& encoding : parameters.encodings()) {
-      // TODO(orphis): Forward missing fields from the WebRTC library:
-      // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy,
-      // rid
-      encodings.push_back({});
-      encodings.back().active = encoding.active();
-      encodings.back().bitrate_priority = PriorityToDouble(encoding.priority());
-      if (encoding.hasMaxBitrate())
-        encodings.back().max_bitrate_bps = clampTo<int>(encoding.maxBitrate());
+      encodings.push_back(ToRtpEncodingParameters(encoding));
     }
   }
 
@@ -240,6 +233,19 @@ ToRtpParameters(const RTCRtpSendParameters& parameters) {
 }
 
 }  // namespace
+
+webrtc::RtpEncodingParameters ToRtpEncodingParameters(
+    const RTCRtpEncodingParameters& encoding) {
+  // TODO(orphis): Forward missing fields from the WebRTC library:
+  // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy,
+  // rid
+  webrtc::RtpEncodingParameters webrtc_encoding;
+  webrtc_encoding.active = encoding.active();
+  webrtc_encoding.bitrate_priority = PriorityToDouble(encoding.priority());
+  if (encoding.hasMaxBitrate())
+    webrtc_encoding.max_bitrate_bps = clampTo<int>(encoding.maxBitrate());
+  return webrtc_encoding;
+}
 
 RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
                            std::unique_ptr<WebRTCRtpSender> sender,

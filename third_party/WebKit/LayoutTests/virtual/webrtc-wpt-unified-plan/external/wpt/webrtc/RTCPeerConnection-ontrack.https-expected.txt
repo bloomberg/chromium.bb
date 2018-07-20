@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS setRemoteDescription should trigger ontrack event when the MSID of the stream is is parsed.
 PASS setRemoteDescription() with m= line of recvonly direction should not trigger track event
 PASS addTrack() should cause remote connection to fire ontrack when setRemoteDescription()
-FAIL addTransceiver('video') should cause remote connection to fire ontrack when setRemoteDescription() pc1.addTransceiver is not a function
-FAIL addTransceiver() with inactive direction should not cause remote connection to fire ontrack when setRemoteDescription() pc1.addTransceiver is not a function
+PASS addTransceiver('video') should cause remote connection to fire ontrack when setRemoteDescription()
+PASS addTransceiver() with inactive direction should not cause remote connection to fire ontrack when setRemoteDescription()
 Harness: the test ran to completion.
 

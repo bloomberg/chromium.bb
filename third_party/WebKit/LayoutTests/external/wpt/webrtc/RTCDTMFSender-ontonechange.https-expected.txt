@@ -9,7 +9,7 @@ FAIL insertDTMF() with transceiver stopped in the middle should stop future tone
 PASS Calling insertDTMF() in the middle of tonechange events should cause future tonechanges to be updated to new tones
 PASS Calling insertDTMF() multiple times in the middle of tonechange events should cause future tonechanges to be updated the last provided tones
 PASS Calling insertDTMF('') in the middle of tonechange events should stop future tonechange events from firing
-FAIL Setting transceiver.currentDirection to recvonly in the middle of tonechange events should stop future tonechange events from firing pc.addTransceiver is not a function
+FAIL Setting transceiver.currentDirection to recvonly in the middle of tonechange events should stop future tonechange events from firing Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument.
 PASS Tone change event constructor works
 PASS Tone change event with unexpected name should not crash
 Harness: the test ran to completion.

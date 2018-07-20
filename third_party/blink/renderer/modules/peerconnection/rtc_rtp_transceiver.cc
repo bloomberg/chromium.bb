@@ -65,6 +65,26 @@ bool TransceiverDirectionFromString(
 
 }  // namespace
 
+webrtc::RtpTransceiverInit ToRtpTransceiverInit(
+    const RTCRtpTransceiverInit& init) {
+  webrtc::RtpTransceiverInit webrtc_init;
+  base::Optional<webrtc::RtpTransceiverDirection> direction;
+  if (init.hasDirection() &&
+      TransceiverDirectionFromString(init.direction(), &direction) &&
+      direction) {
+    webrtc_init.direction = *direction;
+  }
+  DCHECK(init.hasStreams());
+  for (const auto& stream : init.streams()) {
+    webrtc_init.stream_ids.push_back(stream->id().Utf8().data());
+  }
+  DCHECK(init.hasSendEncodings());
+  // TODO(orphis,hbos): Pass the encodings down to the lower layer using
+  // ToRtpEncodingParameters() once implemented in third_party/webrtc.
+  // https://crbug.com/803494
+  return webrtc_init;
+}
+
 RTCRtpTransceiver::RTCRtpTransceiver(
     RTCPeerConnection* pc,
     std::unique_ptr<WebRTCRtpTransceiver> web_transceiver,
@@ -140,6 +160,7 @@ void RTCRtpTransceiver::OnPeerConnectionClosed() {
   receiver_->track()->Component()->Source()->SetReadyState(
       MediaStreamSource::kReadyStateMuted);
   stopped_ = true;
+  current_direction_ = String();  // null
 }
 
 WebRTCRtpTransceiver* RTCRtpTransceiver::web_transceiver() const {
