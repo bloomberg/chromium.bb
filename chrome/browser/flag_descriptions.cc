@@ -620,6 +620,11 @@ const char kEnableNightLightDescription[] =
     "Enable the Night Light feature which controls the color temperature of "
     "the screen.";
 
+const char kEnableNotificationScrollBarName[] =
+    "Enable notification list scroll bar";
+const char kEnableNotificationScrollBarDescription[] =
+    "Enable the scroll bar of the notification list in Unified System Tray.";
+
 const char kEnableNupPrintingName[] = "Enable N-up printing";
 const char kEnableNupPrintingDescription[] =
     "Enable N-up printing in the print preview panel.";

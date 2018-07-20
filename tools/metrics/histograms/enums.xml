@@ -27430,6 +27430,7 @@ from previous Chrome versions.
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
   <int value="-2098610409" label="disable-lcd-text"/>
   <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
+  <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
@@ -28192,6 +28193,7 @@ from previous Chrome versions.
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-617452890" label="media-router"/>
+  <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
   <int value="-606898702" label="MaterialDesignSettings:disabled"/>

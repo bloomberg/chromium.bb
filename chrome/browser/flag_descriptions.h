@@ -402,6 +402,9 @@ extern const char kEnableNewPrintPreviewDescription[];
 extern const char kEnableNightLightName[];
 extern const char kEnableNightLightDescription[];
 
+extern const char kEnableNotificationScrollBarName[];
+extern const char kEnableNotificationScrollBarDescription[];
+
 extern const char kEnableNupPrintingName[];
 extern const char kEnableNupPrintingDescription[];
 
