@@ -88,13 +88,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
-    # Need to forbid mipmap generation with this extension.
-    # Uncomment suppressions below when re-enabling. (Or remove them?
-    # Were the failures caused by this gray area in the spec, now
-    # forbidden?)
-    self.Fail('conformance/extensions/ext-sRGB.html',
-        ['linux', 'mac', 'win', 'android'], bug=769989)
-
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance/extensions/oes-vertex-array-object.html', bug=739604)
 
