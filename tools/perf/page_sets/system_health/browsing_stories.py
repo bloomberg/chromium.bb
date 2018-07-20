@@ -463,6 +463,7 @@ class TumblrDesktopStory(_MediaBrowsingStory):
 
   def _ViewMediaItem(self, action_runner, index):
     super(TumblrDesktopStory, self)._ViewMediaItem(action_runner, index)
+    action_runner.Wait(5)  # Give the lightbox time to appear
     action_runner.MouseClick(selector='#tumblr_lightbox_center_image')
     action_runner.Wait(1)  # To make browsing more realistic.
 
