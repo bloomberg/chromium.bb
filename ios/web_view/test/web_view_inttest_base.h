@@ -50,6 +50,12 @@ class WebViewInttestBase : public PlatformTest {
   GURL GetUrlForPageWithTitleAndBody(const std::string& title,
                                      const std::string& body);
 
+  // Returns URL to an html page with |html|. |html| contains entire html of the
+  // page.
+  //
+  // Call ASSERT_TRUE(test_server_->Start()) before accessing the returned URL.
+  GURL GetUrlForPageWithHtml(const std::string& html);
+
   // CWVWebView created with default configuration and frame equal to screen
   // bounds.
   CWVWebView* web_view_;

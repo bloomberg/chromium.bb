@@ -25,22 +25,20 @@ namespace {
 
 // Test server path which renders a basic html page.
 const char kPageHtmlPath[] = "/PageHtml?";
+// URL parameter for entire html. Value must be base64 encoded.
+// kPageHtmlBodyParamName and kPageHtmlTitleParamName are ignored when this is
+// given.
+const char kPageHtmlParamName[] = "html";
 // URL parameter for html body. Value must be base64 encoded.
 const char kPageHtmlBodyParamName[] = "body";
 // URL parameter for page title. Value must be base64 encoded.
 const char kPageHtmlTitleParamName[] = "title";
 
-// Generates an html response.
-std::unique_ptr<net::test_server::HttpResponse> CreatePageHTMLResponse(
-    const std::string& title,
-    const std::string& body) {
-  std::string html = base::StringPrintf(
+// Generates html from title and body.
+std::string CreatePageHTML(const std::string& title, const std::string& body) {
+  return base::StringPrintf(
       "<html><head><title>%s</title></head><body>%s</body></html>",
       title.c_str(), body.c_str());
-
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_content(html);
-  return std::move(http_response);
 }
 
 // Returns true if |string| starts with |prefix|. String comparison is case
@@ -70,24 +68,37 @@ std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
   if (StartsWith(request.relative_url, kPageHtmlPath)) {
     std::string title;
     std::string body;
+    std::string html;
 
     GURL request_url = request.GetURL();
 
-    std::string encoded_title;
-    bool title_found = net::GetValueForKeyInQuery(
-        request_url, kPageHtmlTitleParamName, &encoded_title);
-    if (title_found) {
-      title = DecodeQueryParamValue(encoded_title);
+    std::string encoded_html;
+    bool html_found = net::GetValueForKeyInQuery(
+        request_url, kPageHtmlParamName, &encoded_html);
+    if (html_found) {
+      html = DecodeQueryParamValue(encoded_html);
+    } else {
+      std::string encoded_title;
+      bool title_found = net::GetValueForKeyInQuery(
+          request_url, kPageHtmlTitleParamName, &encoded_title);
+      if (title_found) {
+        title = DecodeQueryParamValue(encoded_title);
+      }
+
+      std::string encoded_body;
+      bool body_found = net::GetValueForKeyInQuery(
+          request_url, kPageHtmlBodyParamName, &encoded_body);
+      if (body_found) {
+        body = DecodeQueryParamValue(encoded_body);
+      }
+
+      html = CreatePageHTML(title, body);
     }
 
-    std::string encoded_body;
-    bool body_found = net::GetValueForKeyInQuery(
-        request_url, kPageHtmlBodyParamName, &encoded_body);
-    if (body_found) {
-      body = DecodeQueryParamValue(encoded_body);
-    }
-
-    return CreatePageHTMLResponse(title, body);
+    auto http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_content(html);
+    return std::move(http_response);
   }
   return nullptr;
 }
@@ -126,6 +137,17 @@ GURL WebViewInttestBase::GetUrlForPageWithTitleAndBody(
   url = net::AppendQueryParameter(url, kPageHtmlTitleParamName, encoded_title);
   std::string encoded_body = EncodeQueryParamValue(body);
   url = net::AppendQueryParameter(url, kPageHtmlBodyParamName, encoded_body);
+
+  return url;
+}
+
+GURL WebViewInttestBase::GetUrlForPageWithHtml(const std::string& html) {
+  GURL url = test_server_->GetURL(kPageHtmlPath);
+
+  // Encode |html| in url query in order to build the server
+  // response later in TestRequestHandler.
+  std::string encoded_html = EncodeQueryParamValue(html);
+  url = net::AppendQueryParameter(url, kPageHtmlParamName, encoded_html);
 
   return url;
 }
