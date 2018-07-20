@@ -183,7 +183,6 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
  public:
   MockRegistrationManager()
       : PerUserTopicRegistrationManager(
-            "fake_instance_id_token",
             "fake_access_token",
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
