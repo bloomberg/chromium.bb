@@ -38,8 +38,6 @@
 #include "components/startup_metric_utils/browser/pref_names.h"
 #include "components/suggestions/suggestions_pref_names.h"
 #include "components/sync/base/pref_names.h"
-#include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/variations/pref_names.h"
@@ -1322,26 +1320,6 @@ const char* incognito_whitelist[] = {
     syncer::prefs::kSyncPassphraseEncryptionTransitionInProgress,
     syncer::prefs::kSyncNigoriStateForPassphraseTransition,
     syncer::prefs::kEnableLocalSyncBackend, syncer::prefs::kLocalSyncBackendDir,
-
-    // components/translate/core/browser/translate_pref_names.h
-    prefs::kOfferTranslateEnabled,
-
-    // components/translate/core/browser/translate_prefs.h
-    // translate::TranslatePrefs::kPrefLanguageProfile,
-    // translate::TranslatePrefs::kPrefForceTriggerTranslateCount,
-    // translate::TranslatePrefs::kPrefTranslateSiteBlacklist,
-    // translate::TranslatePrefs::kPrefTranslateWhitelists,
-    translate::TranslatePrefs::kPrefTranslateDeniedCount,
-    translate::TranslatePrefs::kPrefTranslateIgnoredCount,
-    translate::TranslatePrefs::kPrefTranslateAcceptedCount,
-    // translate::TranslatePrefs::kPrefTranslateBlockedLanguages,
-    translate::TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage,
-    translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage,
-    translate::TranslatePrefs::kPrefTranslateRecentTarget,
-#if defined(OS_ANDROID)
-    translate::TranslatePrefs::kPrefTranslateAutoAlwaysCount,
-    translate::TranslatePrefs::kPrefTranslateAutoNeverCount,
-#endif
 
     // components/ukm/ukm_pref_names.h
     ukm::prefs::kUkmClientId, ukm::prefs::kUkmPersistedLogs,
