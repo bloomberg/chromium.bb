@@ -1443,6 +1443,9 @@ void LockContentsView::RegisterAccelerators() {
       AcceleratorAction::kFocusNextUser;
   accel_map_[ui::Accelerator(ui::VKEY_LEFT, 0)] =
       AcceleratorAction::kFocusPreviousUser;
+  accel_map_[ui::Accelerator(
+      ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
+      AcceleratorAction::kShowResetScreen;
 
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
   for (const auto& item : accel_map_)
@@ -1459,6 +1462,9 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
       return;
     case AcceleratorAction::kFocusPreviousUser:
       FocusPreviousUser();
+      return;
+    case AcceleratorAction::kShowResetScreen:
+      Shell::Get()->login_screen_controller()->ShowResetScreen();
       return;
     default:
       NOTREACHED();
