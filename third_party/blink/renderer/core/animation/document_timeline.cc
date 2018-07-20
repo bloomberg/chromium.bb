@@ -95,7 +95,7 @@ DocumentTimeline::DocumentTimeline(Document* document,
 }
 
 bool DocumentTimeline::IsActive() {
-  return document_ && document_->GetPage();
+  return document_->GetPage();
 }
 
 void DocumentTimeline::AnimationAttached(Animation& animation) {
@@ -105,9 +105,6 @@ void DocumentTimeline::AnimationAttached(Animation& animation) {
 }
 
 Animation* DocumentTimeline::Play(AnimationEffect* child) {
-  if (!document_)
-    return nullptr;
-
   Animation* animation = Animation::Create(child, this);
   DCHECK(animations_.Contains(animation));
 
@@ -197,7 +194,7 @@ void DocumentTimeline::DocumentTimelineTiming::WakeAfter(double duration) {
 }
 
 void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {
-  if (timeline_->document_ && timeline_->document_->View())
+  if (timeline_->document_->View())
     timeline_->document_->View()->ScheduleAnimation();
 }
 
@@ -207,7 +204,7 @@ void DocumentTimeline::DocumentTimelineTiming::Trace(blink::Visitor* visitor) {
 }
 
 TimeTicks DocumentTimeline::ZeroTime() {
-  if (!zero_time_initialized_ && document_ && document_->Loader()) {
+  if (!zero_time_initialized_ && document_->Loader()) {
     zero_time_ = document_->Loader()->GetTiming().ReferenceMonotonicTime() +
                  origin_time_;
     zero_time_initialized_ = true;

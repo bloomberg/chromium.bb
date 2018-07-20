@@ -150,6 +150,27 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime) {
   EXPECT_FALSE(is_null);
 }
 
+// EffectiveTime is identical to CurrentTimeInternal except that it returns 0
+// when the timeline is inactive.
+TEST_F(AnimationDocumentTimelineTest, EffectiveTime) {
+  GetAnimationClock().UpdateTime(base::TimeTicks() +
+                                 base::TimeDelta::FromSecondsD(200));
+  EXPECT_EQ(200, timeline->EffectiveTime());
+  EXPECT_EQ(200, timeline->CurrentTimeInternal());
+  bool is_null;
+  EXPECT_EQ(200, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+
+  Document* document_without_frame = Document::CreateForTest();
+  DocumentTimeline* inactive_timeline = DocumentTimeline::Create(
+      document_without_frame, TimeDelta(), platform_timing);
+
+  EXPECT_EQ(0, inactive_timeline->EffectiveTime());
+  is_null = false;
+  inactive_timeline->CurrentTimeInternal(is_null);
+  EXPECT_TRUE(is_null);
+}
+
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
   TimeTicks zero_time = timeline->ZeroTime();
   bool is_null;
