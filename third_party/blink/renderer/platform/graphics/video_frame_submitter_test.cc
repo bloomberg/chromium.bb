@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::Return;
 using testing::StrictMock;
 
@@ -468,7 +469,9 @@ TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
   MakeSubmitter();
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).Times(0);
+  // We don't care if UpdateCurrentFrame is called or not; it doesn't matter
+  // if we're not rendering.
+  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).Times(AnyNumber());
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
@@ -522,6 +525,10 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
   // DidNotProduceFrame should be called because no frame will be submitted
   // given that the ACK is still pending.
   EXPECT_CALL(*sink_, DidNotProduceFrame(_)).Times(1);
+
+  // UpdateCurrentFrame should still be called, however, so that the compositor
+  // knows that we missed a frame.
+  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).Times(1);
 
   std::unique_ptr<base::SimpleTestTickClock> new_time =
       std::make_unique<base::SimpleTestTickClock>();

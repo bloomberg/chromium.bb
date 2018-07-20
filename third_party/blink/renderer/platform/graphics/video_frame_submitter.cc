@@ -263,16 +263,20 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
     return;
   }
 
-  // This block is separate from the one below to avoid updating the frame by
-  // mistake.
-  if (!is_rendering_ || waiting_for_compositor_ack_) {
+  // Update the current frame, even if we haven't gotten an ack for a previous
+  // frame yet.  That probably signals a dropped frame, and this will let the
+  // provider know that it happened, since we won't PutCurrentFrame this one.
+  // Note that we should DidNotProduceFrame with or without the ack.
+  if (!provider_ ||
+      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
+                                     args.frame_time + 2 * args.interval)) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
 
-  if (!provider_ ||
-      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
-                                     args.frame_time + 2 * args.interval)) {
+  // We do have a new frame that we could display.  See if we're supposed to
+  // actually submit a frame or not.
+  if (!is_rendering_ || waiting_for_compositor_ack_) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
@@ -283,6 +287,10 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
 
   SubmitFrame(current_begin_frame_ack, video_frame);
 
+  // We still signal PutCurrentFrame here, rather than on the ack, so that it
+  // lines up with the correct frame.  Otherwise, any intervening calls to
+  // OnBeginFrame => UpdateCurrentFrame will cause the put to signal that the
+  // later frame was displayed.
   provider_->PutCurrentFrame();
 }
 
