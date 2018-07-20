@@ -15,6 +15,13 @@
 
 namespace device {
 
+BluetoothTestBase::LowEnergyDeviceData::LowEnergyDeviceData() = default;
+
+BluetoothTestBase::LowEnergyDeviceData::LowEnergyDeviceData(
+    LowEnergyDeviceData&& data) = default;
+
+BluetoothTestBase::LowEnergyDeviceData::~LowEnergyDeviceData() = default;
+
 const char BluetoothTestBase::kTestAdapterName[] = "FakeBluetoothAdapter";
 const char BluetoothTestBase::kTestAdapterAddress[] = "A1:B2:C3:D4:E5:F6";
 
@@ -60,12 +67,11 @@ const char BluetoothTestBase::kTestUUIDServerCharacteristicConfiguration[] =
 const char BluetoothTestBase::kTestUUIDCharacteristicPresentationFormat[] =
     "00002904-0000-1000-8000-00805f9b34fb";
 // Manufacturer kTestAdapterAddress
-const unsigned short BluetoothTestBase::kTestManufacturerId = 0x00E0;
+const uint16_t BluetoothTestBase::kTestManufacturerId = 0x00E0;
 
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 
 BluetoothTestBase::~BluetoothTestBase() = default;
-
 void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
@@ -434,13 +440,6 @@ void BluetoothTestBase::RemoveTimedOutDevices() {
   adapter_->RemoveTimedOutDevices();
 }
 
-BluetoothTestBase::LowEnergyDeviceData::LowEnergyDeviceData() = default;
-
-BluetoothTestBase::LowEnergyDeviceData::LowEnergyDeviceData(
-    LowEnergyDeviceData&& data) = default;
-
-BluetoothTestBase::LowEnergyDeviceData::~LowEnergyDeviceData() = default;
-
 BluetoothTestBase::LowEnergyDeviceData
 BluetoothTestBase::GetLowEnergyDeviceData(int device_ordinal) const {
   LowEnergyDeviceData device_data;
@@ -448,6 +447,7 @@ BluetoothTestBase::GetLowEnergyDeviceData(int device_ordinal) const {
     case 1:
       device_data.name = kTestDeviceName;
       device_data.address = kTestDeviceAddress1;
+      device_data.flags = 0x04;
       device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
       device_data.advertised_uuids = {BluetoothUUID(kTestUUIDGenericAccess),
                                       BluetoothUUID(kTestUUIDGenericAttribute)};
@@ -458,6 +458,7 @@ BluetoothTestBase::GetLowEnergyDeviceData(int device_ordinal) const {
     case 2:
       device_data.name = kTestDeviceName;
       device_data.address = kTestDeviceAddress1;
+      device_data.flags = 0x05;
       device_data.rssi = static_cast<int>(TestRSSI::LOWER);
       device_data.advertised_uuids = {BluetoothUUID(kTestUUIDImmediateAlert),
                                       BluetoothUUID(kTestUUIDLinkLoss)};
@@ -479,17 +480,20 @@ BluetoothTestBase::GetLowEnergyDeviceData(int device_ordinal) const {
       break;
     case 5:
       device_data.address = kTestDeviceAddress1;
+      device_data.flags = 0x06;
       device_data.rssi = static_cast<int>(TestRSSI::HIGH);
       break;
     case 6:
       device_data.name = kTestDeviceName;
       device_data.address = kTestDeviceAddress2;
+      device_data.flags = 0x18;
       device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
       device_data.transport = BLUETOOTH_TRANSPORT_DUAL;
       break;
     case 7:
       device_data.name = kTestDeviceNameU2f;
       device_data.address = kTestDeviceAddress1;
+      device_data.flags = 0x07;
       device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
       device_data.advertised_uuids = {BluetoothUUID(kTestUUIDU2f)};
       device_data.service_data = {

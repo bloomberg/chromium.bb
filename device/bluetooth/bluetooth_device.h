@@ -356,8 +356,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Returns Advertising Data Flags.
   // Returns cached value if the adapter is not discovering.
   //
-  // TODO(crbug.com/661814) Support this on platforms that don't use BlueZ.
-  // Only Chrome OS supports this now. Upstream BlueZ has this feature
+  // Only Chrome OS and WinRT support this now. Upstream BlueZ has this feature
   // as experimental. This method returns base::nullopt on platforms that don't
   // support this feature.
   base::Optional<uint8_t> GetAdvertisingDataFlags() const;

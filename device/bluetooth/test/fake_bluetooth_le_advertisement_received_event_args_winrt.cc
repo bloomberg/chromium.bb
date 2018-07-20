@@ -25,9 +25,11 @@ using Microsoft::WRL::ComPtr;
 
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::
     FakeBluetoothLEAdvertisementReceivedEventArgsWinrt(
+        int16_t rssi,
         base::StringPiece address,
         ComPtr<IBluetoothLEAdvertisement> advertisement)
-    : raw_address_(FakeBluetoothAdapterWinrt::ToRawBluetoothAddress(address)),
+    : rssi_(rssi),
+      raw_address_(FakeBluetoothAdapterWinrt::ToRawBluetoothAddress(address)),
       advertisement_(std::move(advertisement)) {}
 
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::
@@ -36,7 +38,7 @@ FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::
 HRESULT
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::get_RawSignalStrengthInDBm(
     int16_t* value) {
-  *value = 0;
+  *value = rssi_;
   return S_OK;
 }
 

@@ -6,10 +6,12 @@
 
 #include <windows.foundation.collections.h>
 #include <windows.foundation.h>
+#include <windows.storage.streams.h>
 #include <wrl/event.h>
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -18,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,18 +41,28 @@ namespace uwp {
 using ABI::Windows::Devices::Bluetooth::BluetoothAdapter;
 }  // namespace uwp
 using ABI::Windows::Devices::Bluetooth::Advertisement::
+    BluetoothLEAdvertisementDataSection;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    BluetoothLEAdvertisementFlags;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEAdvertisementWatcherStatus;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEAdvertisementWatcherStatus_Aborted;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    BluetoothLEManufacturerData;
 using ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEScanningMode;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEScanningMode_Active;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisement;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisementDataSection;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementReceivedEventArgs;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementWatcher;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEManufacturerData;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
 using ABI::Windows::Devices::Enumeration::DeviceInformation;
@@ -67,7 +80,13 @@ using ABI::Windows::Devices::Radios::RadioState;
 using ABI::Windows::Devices::Radios::RadioState_Off;
 using ABI::Windows::Devices::Radios::RadioState_On;
 using ABI::Windows::Foundation::Collections::IVector;
+using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
+using ABI::Windows::Foundation::IReference;
+using ABI::Windows::Storage::Streams::IBuffer;
+using ABI::Windows::Storage::Streams::IDataReader;
+using ABI::Windows::Storage::Streams::IDataReaderStatics;
+using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
 
 bool ResolveCoreWinRT() {
@@ -92,37 +111,285 @@ constexpr const char* ToCString(RadioAccessStatus access_status) {
   return "";
 }
 
-base::Optional<BluetoothDevice::UUIDList> ExtractAdvertisedUUIDs(
+template <typename VectorView, typename T>
+bool ToStdVector(VectorView* view, std::vector<T>* vector) {
+  unsigned size;
+  HRESULT hr = view->get_Size(&size);
+  if (FAILED(hr)) {
+    VLOG(2) << "get_Size() failed: " << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  vector->resize(size);
+  for (size_t i = 0; i < size; ++i) {
+    hr = view->GetAt(i, &(*vector)[i]);
+    DCHECK(SUCCEEDED(hr)) << "GetAt(" << i << ") failed: "
+                          << logging::SystemErrorCodeToString(hr);
+  }
+
+  return true;
+}
+
+base::Optional<std::vector<uint8_t>> ExtractVector(IBuffer* buffer) {
+  ComPtr<IDataReaderStatics> data_reader_statics;
+  HRESULT hr = base::win::GetActivationFactory<
+      IDataReaderStatics, RuntimeClass_Windows_Storage_Streams_DataReader>(
+      &data_reader_statics);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting DataReaderStatics Activation Factory failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  ComPtr<IDataReader> data_reader;
+  hr = data_reader_statics->FromBuffer(buffer, &data_reader);
+  if (FAILED(hr)) {
+    VLOG(2) << "FromBuffer() failed: " << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  uint32_t buffer_length;
+  hr = buffer->get_Length(&buffer_length);
+  if (FAILED(hr)) {
+    VLOG(2) << "get_Length() failed: " << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  std::vector<uint8_t> bytes(buffer_length);
+  hr = data_reader->ReadBytes(buffer_length, bytes.data());
+  if (FAILED(hr)) {
+    VLOG(2) << "ReadBytes() failed: " << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  return bytes;
+}
+
+base::Optional<uint8_t> ExtractFlags(IBluetoothLEAdvertisement* advertisement) {
+  if (!advertisement)
+    return base::nullopt;
+
+  ComPtr<IReference<BluetoothLEAdvertisementFlags>> flags_ref;
+  HRESULT hr = advertisement->get_Flags(&flags_ref);
+  if (FAILED(hr)) {
+    VLOG(2) << "get_Flags() failed: " << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  if (!flags_ref) {
+    VLOG(2) << "No advertisement flags found.";
+    return base::nullopt;
+  }
+
+  BluetoothLEAdvertisementFlags flags;
+  hr = flags_ref->get_Value(&flags);
+  if (FAILED(hr)) {
+    VLOG(2) << "get_Value() failed: " << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  return flags;
+}
+
+BluetoothDevice::UUIDList ExtractAdvertisedUUIDs(
     IBluetoothLEAdvertisement* advertisement) {
+  if (!advertisement)
+    return {};
+
   ComPtr<IVector<GUID>> service_uuids;
   HRESULT hr = advertisement->get_ServiceUuids(&service_uuids);
   if (FAILED(hr)) {
     VLOG(2) << "get_ServiceUuids() failed: "
             << logging::SystemErrorCodeToString(hr);
-    return base::nullopt;
+    return {};
   }
 
-  unsigned num_service_uuids;
-  hr = service_uuids->get_Size(&num_service_uuids);
-  if (FAILED(hr)) {
-    VLOG(2) << "get_Size() failed: " << logging::SystemErrorCodeToString(hr);
-    return base::nullopt;
-  }
+  std::vector<GUID> guids;
+  if (!ToStdVector(service_uuids.Get(), &guids))
+    return {};
 
   BluetoothDevice::UUIDList advertised_uuids;
-  for (size_t i = 0; i < num_service_uuids; ++i) {
-    GUID service_uuid;
-    hr = service_uuids->GetAt(i, &service_uuid);
-    if (FAILED(hr)) {
-      VLOG(2) << "GetAt(" << i
-              << ") failed: " << logging::SystemErrorCodeToString(hr);
-      return base::nullopt;
-    }
-
-    advertised_uuids.emplace_back(service_uuid);
-  }
+  advertised_uuids.reserve(guids.size());
+  for (const auto& guid : guids)
+    advertised_uuids.emplace_back(guid);
 
   return advertised_uuids;
+}
+
+// This method populates service data for a particular sized UUID. Given the
+// lack of tailored platform APIs, we need to parse the raw advertisement data
+// sections ourselves. These data sections are effectively a list of blobs,
+// where each blob starts with the corresponding UUID in little endian order,
+// followed by the corresponding service data.
+void PopulateServiceData(
+    BluetoothDevice::ServiceDataMap* service_data,
+    const std::vector<ComPtr<IBluetoothLEAdvertisementDataSection>>&
+        data_sections,
+    size_t num_bytes_uuid) {
+  for (const auto& data_section : data_sections) {
+    ComPtr<IBuffer> buffer;
+    HRESULT hr = data_section->get_Data(&buffer);
+    if (FAILED(hr)) {
+      VLOG(2) << "get_Data() failed: " << logging::SystemErrorCodeToString(hr);
+      continue;
+    }
+
+    auto bytes = ExtractVector(buffer.Get());
+    if (!bytes)
+      continue;
+
+    auto bytes_span = base::make_span(*bytes);
+    if (bytes_span.size() < num_bytes_uuid) {
+      VLOG(2) << "Buffer Length is too small: " << bytes_span.size() << " vs. "
+              << num_bytes_uuid;
+      continue;
+    }
+
+    auto uuid_span = bytes_span.first(num_bytes_uuid);
+    // The UUID is specified in little endian format, thus we reverse the bytes
+    // here.
+    std::vector<uint8_t> uuid_bytes(uuid_span.rbegin(), uuid_span.rend());
+
+    // HexEncode the bytes and add dashes as required.
+    std::string uuid_str;
+    for (char c : base::HexEncode(uuid_bytes.data(), uuid_bytes.size())) {
+      const size_t size = uuid_str.size();
+      if (size == 8 || size == 13 || size == 18 || size == 23)
+        uuid_str.push_back('-');
+      uuid_str.push_back(c);
+    }
+
+    auto service_data_span = bytes_span.subspan(num_bytes_uuid);
+    auto result = service_data->emplace(
+        BluetoothUUID(uuid_str), std::vector<uint8_t>(service_data_span.begin(),
+                                                      service_data_span.end()));
+    // Check that an insertion happened.
+    DCHECK(result.second);
+    // Check that the inserted UUID is valid.
+    DCHECK(result.first->first.IsValid());
+  }
+}
+
+BluetoothDevice::ServiceDataMap ExtractServiceData(
+    IBluetoothLEAdvertisement* advertisement) {
+  BluetoothDevice::ServiceDataMap service_data;
+  if (!advertisement)
+    return service_data;
+
+  static constexpr std::pair<uint8_t, size_t> kServiceDataTypesAndNumBits[] = {
+      {BluetoothDeviceWinrt::k16BitServiceDataSection, 16},
+      {BluetoothDeviceWinrt::k32BitServiceDataSection, 32},
+      {BluetoothDeviceWinrt::k128BitServiceDataSection, 128},
+  };
+
+  for (const auto& data_type_and_num_bits : kServiceDataTypesAndNumBits) {
+    ComPtr<IVectorView<BluetoothLEAdvertisementDataSection*>> data_sections;
+    HRESULT hr = advertisement->GetSectionsByType(data_type_and_num_bits.first,
+                                                  &data_sections);
+    if (FAILED(hr)) {
+      VLOG(2) << "GetSectionsByType() failed: "
+              << logging::SystemErrorCodeToString(hr);
+      continue;
+    }
+
+    std::vector<ComPtr<IBluetoothLEAdvertisementDataSection>> vector;
+    if (!ToStdVector(data_sections.Get(), &vector))
+      continue;
+
+    PopulateServiceData(&service_data, vector,
+                        data_type_and_num_bits.second / 8);
+  }
+
+  return service_data;
+}
+
+BluetoothDevice::ManufacturerDataMap ExtractManufacturerData(
+    IBluetoothLEAdvertisement* advertisement) {
+  if (!advertisement)
+    return {};
+
+  ComPtr<IVector<BluetoothLEManufacturerData*>> manufacturer_data_ptr;
+  HRESULT hr = advertisement->get_ManufacturerData(&manufacturer_data_ptr);
+  if (FAILED(hr)) {
+    VLOG(2) << "GetManufacturerData() failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return {};
+  }
+
+  std::vector<ComPtr<IBluetoothLEManufacturerData>> manufacturer_data;
+  if (!ToStdVector(manufacturer_data_ptr.Get(), &manufacturer_data))
+    return {};
+
+  BluetoothDevice::ManufacturerDataMap manufacturer_data_map;
+  for (const auto& manufacturer_datum : manufacturer_data) {
+    uint16_t company_id;
+    hr = manufacturer_datum->get_CompanyId(&company_id);
+    if (FAILED(hr)) {
+      VLOG(2) << "get_CompanyId() failed: "
+              << logging::SystemErrorCodeToString(hr);
+      continue;
+    }
+
+    ComPtr<IBuffer> buffer;
+    hr = manufacturer_datum->get_Data(&buffer);
+    if (FAILED(hr)) {
+      VLOG(2) << "get_Data() failed: " << logging::SystemErrorCodeToString(hr);
+      continue;
+    }
+
+    auto bytes = ExtractVector(buffer.Get());
+    if (!bytes)
+      continue;
+
+    manufacturer_data_map.emplace(company_id, std::move(*bytes));
+  }
+
+  return manufacturer_data_map;
+}
+
+// Similarly to extracting the service data Windows does not provide a specific
+// API to extract the tx power. Thus we also parse the raw data sections here.
+// If present, we expect a single entry for tx power with a blob of size 1 byte.
+base::Optional<int8_t> ExtractTxPower(
+    IBluetoothLEAdvertisement* advertisement) {
+  if (!advertisement)
+    return base::nullopt;
+
+  ComPtr<IVectorView<BluetoothLEAdvertisementDataSection*>> data_sections;
+  HRESULT hr = advertisement->GetSectionsByType(
+      BluetoothDeviceWinrt::kTxPowerLevelDataSection, &data_sections);
+  if (FAILED(hr)) {
+    VLOG(2) << "GetSectionsByType() failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  std::vector<ComPtr<IBluetoothLEAdvertisementDataSection>> vector;
+  if (!ToStdVector(data_sections.Get(), &vector) || vector.empty())
+    return base::nullopt;
+
+  if (vector.size() != 1u) {
+    VLOG(2) << "Unexpected number of data sections: " << vector.size();
+    return base::nullopt;
+  }
+
+  ComPtr<IBuffer> buffer;
+  hr = vector.front()->get_Data(&buffer);
+  if (FAILED(hr)) {
+    VLOG(2) << "get_Data() failed: " << logging::SystemErrorCodeToString(hr);
+    return base::nullopt;
+  }
+
+  auto bytes = ExtractVector(buffer.Get());
+  if (!bytes)
+    return base::nullopt;
+
+  if (bytes->size() != 1) {
+    VLOG(2) << "Unexpected number of bytes: " << bytes->size();
+    return base::nullopt;
+  }
+
+  return bytes->front();
 }
 
 ComPtr<IBluetoothLEAdvertisement> GetAdvertisement(
@@ -157,28 +424,19 @@ base::Optional<std::string> GetDeviceName(
 void ExtractAndUpdateAdvertisementData(
     IBluetoothLEAdvertisementReceivedEventArgs* received,
     BluetoothDevice* device) {
-  int16_t rssi;
+  int16_t rssi = 0;
   HRESULT hr = received->get_RawSignalStrengthInDBm(&rssi);
   if (FAILED(hr)) {
     VLOG(2) << "get_RawSignalStrengthInDBm() failed: "
             << logging::SystemErrorCodeToString(hr);
-    return;
   }
 
   ComPtr<IBluetoothLEAdvertisement> advertisement = GetAdvertisement(received);
-  if (!advertisement)
-    return;
-
-  auto advertised_uuids = ExtractAdvertisedUUIDs(advertisement.Get());
-  if (!advertised_uuids)
-    return;
-
-  // TODO(https://crbug.com/821766): Implement extraction of flags, tx power,
-  // service data and manufacturer data.
-  device->UpdateAdvertisementData(
-      rssi, base::nullopt /* flags */, std::move(*advertised_uuids),
-      base::nullopt /* tx_power */, BluetoothDevice::ServiceDataMap(),
-      BluetoothDevice::ManufacturerDataMap());
+  device->UpdateAdvertisementData(rssi, ExtractFlags(advertisement.Get()),
+                                  ExtractAdvertisedUUIDs(advertisement.Get()),
+                                  ExtractTxPower(advertisement.Get()),
+                                  ExtractServiceData(advertisement.Get()),
+                                  ExtractManufacturerData(advertisement.Get()));
 }
 
 }  // namespace
@@ -237,8 +495,7 @@ void BluetoothAdapterWinrt::SetDiscoverable(
 }
 
 bool BluetoothAdapterWinrt::IsDiscovering() const {
-  NOTIMPLEMENTED();
-  return false;
+  return num_discovery_sessions_ != 0;
 }
 
 BluetoothAdapter::UUIDList BluetoothAdapterWinrt::GetUUIDs() const {

@@ -35,9 +35,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
-#include "device/bluetooth/test/fake_bluetooth_le_advertisement_received_event_args_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
-#include "device/bluetooth/test/fake_bluetooth_le_advertisement_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
 #include "device/bluetooth/test/fake_device_information_winrt.h"
 
@@ -665,19 +663,9 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
     return BluetoothTestWin::SimulateLowEnergyDevice(device_ordinal);
 
   LowEnergyDeviceData data = GetLowEnergyDeviceData(device_ordinal);
-  std::vector<GUID> guids;
-  for (const auto& uuid : data.advertised_uuids)
-    guids.push_back(
-        BluetoothUUID::GetCanonicalValueAsGUID(uuid.canonical_value()));
-
-  auto service_uuids = Make<base::win::Vector<GUID>>(std::move(guids));
-  auto advertisement = Make<FakeBluetoothLEAdvertisementWinrt>(
-      std::move(data.name), std::move(service_uuids));
-  auto event_args = Make<FakeBluetoothLEAdvertisementReceivedEventArgsWinrt>(
-      data.address, std::move(advertisement));
   static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
       ->watcher()
-      ->SimulateAdvertisement(std::move(event_args));
+      ->SimulateLowEnergyDevice(data);
 
   return adapter_->GetDevice(data.address);
 }

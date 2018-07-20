@@ -28,6 +28,14 @@ class BluetoothGattDiscovererWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
  public:
+  // Constants required to extract the tx power level and service data from the
+  // raw advertisementment data. Reference:
+  // https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile
+  static constexpr uint8_t kTxPowerLevelDataSection = 0x0A;
+  static constexpr uint8_t k16BitServiceDataSection = 0x16;
+  static constexpr uint8_t k32BitServiceDataSection = 0x20;
+  static constexpr uint8_t k128BitServiceDataSection = 0x21;
+
   BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
                        uint64_t raw_address,
                        base::Optional<std::string> local_name);
