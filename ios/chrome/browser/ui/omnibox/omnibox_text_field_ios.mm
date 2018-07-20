@@ -330,8 +330,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                 completionAnimator:(UIViewPropertyAnimator*)completionAnimator {
   DCHECK(!IsRefreshLocationBarEnabled());
 
-  // Hide the rightView button so its not visibile on its initial layout
-  // while the expan animation is happening.
+  // Hide the rightView button so it's not visible on its initial layout
+  // while the expand animation is happening.
   self.clearButtonView.hidden = YES;
   self.clearButtonView.alpha = 0;
   self.clearButtonView.frame =
@@ -577,7 +577,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }
 
   // iOS9 added updated RTL support, but only half implemented it for
-  // UITextField. leftView and rightView were not renamed, but are are correctly
+  // UITextField. leftView and rightView were not renamed, but are correctly
   // swapped and treated as leadingView / trailingView.  However,
   // -leftViewRectForBounds and -rightViewRectForBounds are *not* treated as
   // leading and trailing.  Hence the swapping below.
@@ -689,26 +689,34 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // Disable the "Define" menu item.  iOS7 implements this with a private
-  // selector.  Avoid using private APIs by instead doing a string comparison.
-  if ([NSStringFromSelector(action) hasSuffix:@"define:"]) {
-    return NO;
+  // If there is selected text, show copy and cut.
+  if ([self textInRange:self.selectedTextRange].length > 0 &&
+      (action == @selector(cut:) || action == @selector(copy:))) {
+    return YES;
   }
 
-  // Disable the RTL arrow menu item. The omnibox sets alignment based on the
-  // text in the field, and should not be overridden.
-  if ([NSStringFromSelector(action) hasPrefix:@"makeTextWritingDirection"]) {
-    return NO;
+  // If there is no selected text, show select and selectAll.
+  if ([self textInRange:self.selectedTextRange].length == 0 &&
+      (action == @selector(select:) || action == @selector(selectAll:))) {
+    return YES;
   }
 
-  if ([self isPreEditing]) {
-    // Allow cut/copy/paste in preedit.
-    if ((action == @selector(copy:)) || (action == @selector(cut:))) {
-      return YES;
-    }
+  // If there is pasteboard content, show paste.
+  if (UIPasteboard.generalPasteboard.string.length > 0 && action == @selector
+                                                              (paste:)) {
+    return YES;
   }
 
-  return [super canPerformAction:action withSender:sender];
+  // Note that this NO does not keep other elements in the responder chain from
+  // adding actions they handle to the menu.
+  // No special handling is necessary for pre-edit and autocomplete states.
+  // In pre-edit, the text in the textfield is selected even though it is not
+  // shown. so the behavior is correct. As an aside, the only way to access the
+  // editing menu without exiting the pre-edit state is via accessibility
+  // features. For inline autocomplete, any action on the textfield first
+  // accepts the autocompletion and unselects the text. It is therefore not
+  // possible to open the editing menu in this state.
+  return NO;
 }
 
 #pragma mark Copy/Paste
