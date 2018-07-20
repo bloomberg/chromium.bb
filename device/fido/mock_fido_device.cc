@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/device_response_converter.h"
@@ -38,6 +39,29 @@ std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtap(
                                           std::move(*device_info));
 }
 
+// static
+std::unique_ptr<MockFidoDevice>
+MockFidoDevice::MakeU2fWithGetInfoExpectation() {
+  auto device = std::make_unique<MockFidoDevice>();
+  device->StubGetId();
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+  return device;
+}
+
+// static
+std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtapWithGetInfoExpectation(
+    base::Optional<base::span<const uint8_t>> get_info_response) {
+  auto device = std::make_unique<MockFidoDevice>();
+  device->StubGetId();
+  if (!get_info_response) {
+    get_info_response = test_data::kTestAuthenticatorGetInfoResponse;
+  }
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, std::move(get_info_response));
+  return device;
+}
+
 // Matcher to compare the fist byte of the incoming requests.
 MATCHER_P(IsCtap2Command, expected_command, "") {
   return !arg.empty() && arg[0] == base::strict_cast<uint8_t>(expected_command);
@@ -66,6 +90,14 @@ void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
 
 void MockFidoDevice::ExpectWinkedAtLeastOnce() {
   EXPECT_CALL(*this, TryWinkRef(::testing::_)).Times(::testing::AtLeast(1));
+}
+
+void MockFidoDevice::StubGetId() {
+  // Use a counter to keep the device ID unique.
+  static size_t i = 0;
+  EXPECT_CALL(*this, GetId())
+      .WillRepeatedly(
+          testing::Return(base::StrCat({"mockdevice", std::to_string(i)})));
 }
 
 void MockFidoDevice::ExpectCtap2CommandAndRespondWith(

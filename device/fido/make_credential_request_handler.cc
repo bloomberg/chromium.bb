@@ -99,8 +99,26 @@ void MakeCredentialRequestHandler::DispatchRequest(
 
   authenticator->MakeCredential(
       std::move(request_copy),
-      base::BindOnce(&MakeCredentialRequestHandler::OnAuthenticatorResponse,
+      base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator));
+}
+
+void MakeCredentialRequestHandler::HandleResponse(
+    FidoAuthenticator* authenticator,
+    CtapDeviceResponseCode response_code,
+    base::Optional<AuthenticatorMakeCredentialResponse> response) {
+  if (response_code != CtapDeviceResponseCode::kSuccess) {
+    OnAuthenticatorResponse(authenticator, response_code, base::nullopt);
+    return;
+  }
+
+  if (!response || !response->CheckRpIdHash(request_parameter_.rp().rp_id())) {
+    OnAuthenticatorResponse(
+        authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    return;
+  }
+
+  OnAuthenticatorResponse(authenticator, response_code, std::move(response));
 }
 
 }  // namespace device

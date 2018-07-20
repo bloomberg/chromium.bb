@@ -18,13 +18,9 @@
 namespace device {
 
 // Encapsulates per-device request logic shared between MakeCredential and
-// GetAssertion. Handles issuing the AuthenticatorGetInfo command to tokens,
-// caching device info, and distinguishing U2F tokens from CTAP tokens.
+// GetAssertion.
 //
-// FidoTask is owned by FidoRequestHandler and manages all interaction with
-// |device_|. It is created when a new device is discovered by FidoDiscovery and
-// destroyed when the device is removed or when a successful response has been
-// issued to the relying party from another authenticator.
+// TODO(martinkr): FidoTask should be subsumed by FidoDeviceAuthenticator.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoTask {
  public:
   // The |device| must outlive the FidoTask instance.

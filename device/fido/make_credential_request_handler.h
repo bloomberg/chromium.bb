@@ -52,6 +52,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   // FidoRequestHandlerBase:
   void DispatchRequest(FidoAuthenticator* authenticator) final;
 
+  void HandleResponse(
+      FidoAuthenticator* authenticator,
+      CtapDeviceResponseCode response_code,
+      base::Optional<AuthenticatorMakeCredentialResponse> response);
+
   CtapMakeCredentialRequest request_parameter_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
   base::WeakPtrFactory<MakeCredentialRequestHandler> weak_factory_;

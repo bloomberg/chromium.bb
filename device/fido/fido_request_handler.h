@@ -100,6 +100,9 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       case CtapDeviceResponseCode::kCtap2ErrCredentialNotValid:
       case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
         return FidoReturnCode::kUserConsentButCredentialNotRecognized;
+
+      // For all other errors, the authenticator will be dropped, and other
+      // authenticators may continue.
       default:
         return base::nullopt;
     }

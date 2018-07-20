@@ -177,64 +177,6 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignWithoutFlag) {
   EXPECT_TRUE(get_assertion_callback_receiver().value());
 }
 
-// Tests a scenario where the authenticator responds with credential ID that
-// is not included in the allowed list.
-TEST_F(FidoGetAssertionTaskTest, TestGetAssertionInvalidCredential) {
-  auto device = MockFidoDevice::MakeCtap();
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetAssertion,
-      test_data::kTestGetAssertionResponse);
-
-  auto task = std::make_unique<GetAssertionTask>(
-      device.get(),
-      CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                              test_data::kClientDataHash),
-      get_assertion_callback_receiver().callback());
-
-  get_assertion_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
-            get_assertion_callback_receiver().status());
-  EXPECT_FALSE(get_assertion_callback_receiver().value());
-}
-
-// Tests a scenario where authenticator responds without user entity in its
-// response but client is expecting a resident key credential.
-TEST_F(FidoGetAssertionTaskTest, TestGetAsserionIncorrectUserEntity) {
-  auto device = MockFidoDevice::MakeCtap();
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetAssertion,
-      test_data::kTestGetAssertionResponse);
-
-  auto task = std::make_unique<GetAssertionTask>(
-      device.get(),
-      CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                              test_data::kClientDataHash),
-      get_assertion_callback_receiver().callback());
-
-  get_assertion_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
-            get_assertion_callback_receiver().status());
-  EXPECT_FALSE(get_assertion_callback_receiver().value());
-}
-
-TEST_F(FidoGetAssertionTaskTest, TestGetAsserionIncorrectRpIdHash) {
-  auto device = MockFidoDevice::MakeCtap();
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetAssertion,
-      test_data::kTestGetAssertionResponseWithIncorrectRpIdHash);
-
-  auto task = std::make_unique<GetAssertionTask>(
-      device.get(),
-      CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                              test_data::kClientDataHash),
-      get_assertion_callback_receiver().callback());
-
-  get_assertion_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
-            get_assertion_callback_receiver().status());
-  EXPECT_FALSE(get_assertion_callback_receiver().value());
-}
-
 TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
   auto device = MockFidoDevice::MakeCtap();
   device->ExpectCtap2CommandAndRespondWith(

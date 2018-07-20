@@ -46,31 +46,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   void GetAssertion();
   void U2fSign();
 
-  // PublicKeyUserEntity field in GetAssertion response is optional with the
-  // following constraints:
-  // - If assertion has been made without user verification, user identifiable
-  //   information must not be included.
-  // - For resident key credentials, user id of the user entity is mandatory.
-  // - When multiple accounts exist for specified RP ID, user entity is
-  //   mandatory.
-  // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
-  // published.
-  bool CheckRequirementsOnReturnedUserEntities(
-      const AuthenticatorGetAssertionResponse& response);
-
-  // Checks whether credential ID returned from the authenticator was included
-  // in the allowed list for authenticators. If the device has resident key
-  // support, returned credential ID may be resident credential. Thus, returned
-  // credential ID need not be in allowed list.
-  // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
-  // published.
-  bool CheckRequirementsOnReturnedCredentialId(
-      const AuthenticatorGetAssertionResponse& response);
-
-  void OnCtapGetAssertionResponseReceived(
-      CtapDeviceResponseCode response_code,
-      base::Optional<AuthenticatorGetAssertionResponse> device_response);
-
   CtapGetAssertionRequest request_;
   std::unique_ptr<SignOperation> sign_operation_;
   GetAssertionTaskCallback callback_;
