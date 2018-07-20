@@ -157,17 +157,17 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
       viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(2));
   ASSERT_TRUE(surface_draw_quad3);
 
-  EXPECT_EQ(surface_id1, surface_draw_quad1->primary_surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad1->surface_range.end());
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
-  EXPECT_EQ(surface_id2, surface_draw_quad1->fallback_surface_id);
+  EXPECT_EQ(surface_id2, surface_draw_quad1->surface_range.start());
 
-  EXPECT_EQ(surface_id1, surface_draw_quad2->primary_surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad2->surface_range.end());
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad2->default_background_color);
-  EXPECT_EQ(base::nullopt, surface_draw_quad2->fallback_surface_id);
+  EXPECT_EQ(base::nullopt, surface_draw_quad2->surface_range.start());
 
-  EXPECT_EQ(surface_id1, surface_draw_quad3->primary_surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad3->surface_range.end());
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad3->default_background_color);
-  EXPECT_EQ(surface_id2, surface_draw_quad3->fallback_surface_id);
+  EXPECT_EQ(surface_id2, surface_draw_quad3->surface_range.start());
 }
 
 // This test verifies that if one SurfaceLayerImpl has a deadline
@@ -256,8 +256,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
       viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
 
-  EXPECT_EQ(surface_id1, surface_draw_quad1->primary_surface_id);
-  EXPECT_EQ(surface_id1, surface_draw_quad1->fallback_surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad1->surface_range.end());
+  EXPECT_EQ(surface_id1, surface_draw_quad1->surface_range.start());
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
 }
 

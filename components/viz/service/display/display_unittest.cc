@@ -3277,9 +3277,8 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     auto* quad2 = pass->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
     quad2->SetNew(shared_quad_state2, rect2 /* rect */,
                   rect2 /* visible_rect */,
-                  sub_surface_id /* primary_surface_id */,
-                  base::Optional<SurfaceId>() /* fallback_surface_id */,
-                  SK_ColorBLACK, false /* stretch_content_to_fill_bounds */);
+                  SurfaceRange(base::nullopt, sub_surface_id), SK_ColorBLACK,
+                  false /* stretch_content_to_fill_bounds */);
 
     pass_list.push_back(std::move(pass));
     SubmitCompositorFrame(&pass_list, local_surface_id);

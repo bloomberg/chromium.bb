@@ -19,7 +19,7 @@
 #include "services/viz/public/cpp/compositing/filter_operation_struct_traits.h"
 #include "services/viz/public/cpp/compositing/filter_operations_struct_traits.h"
 #include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
-#include "services/viz/public/cpp/compositing/surface_id_struct_traits.h"
+#include "services/viz/public/cpp/compositing/surface_range_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/quads.mojom-shared.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
@@ -238,17 +238,10 @@ struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad> {
 
 template <>
 struct StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad> {
-  static const viz::SurfaceId& primary_surface_id(const viz::DrawQuad& input) {
+  static const viz::SurfaceRange& surface_range(const viz::DrawQuad& input) {
     const viz::SurfaceDrawQuad* quad =
         viz::SurfaceDrawQuad::MaterialCast(&input);
-    return quad->primary_surface_id;
-  }
-
-  static const base::Optional<viz::SurfaceId>& fallback_surface_id(
-      const viz::DrawQuad& input) {
-    const viz::SurfaceDrawQuad* quad =
-        viz::SurfaceDrawQuad::MaterialCast(&input);
-    return quad->fallback_surface_id;
+    return quad->surface_range;
   }
 
   static uint32_t default_background_color(const viz::DrawQuad& input) {

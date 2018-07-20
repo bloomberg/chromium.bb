@@ -776,9 +776,11 @@ TEST_F(StructTraitsTest, RenderPass) {
   const gfx::Rect surface_quad_rect(1337, 2448, 1234, 5678);
   surface_quad->SetNew(
       shared_state_2, surface_quad_rect, surface_quad_rect,
-      SurfaceId(FrameSinkId(1337, 1234),
-                LocalSurfaceId(1234, base::UnguessableToken::Create())),
-      base::nullopt, SK_ColorYELLOW, false);
+      SurfaceRange(
+          base::nullopt,
+          SurfaceId(FrameSinkId(1337, 1234),
+                    LocalSurfaceId(1234, base::UnguessableToken::Create()))),
+      SK_ColorYELLOW, false);
 
   std::unique_ptr<RenderPass> output;
   SerializeAndDeserialize<mojom::RenderPass>(input, &output);
@@ -847,10 +849,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(out_surface_quad->shared_quad_state, out_sqs2);
   EXPECT_EQ(surface_quad->rect, out_surface_quad->rect);
   EXPECT_EQ(surface_quad->visible_rect, out_surface_quad->visible_rect);
-  EXPECT_EQ(surface_quad->primary_surface_id,
-            out_surface_quad->primary_surface_id);
-  EXPECT_EQ(surface_quad->fallback_surface_id,
-            out_surface_quad->fallback_surface_id);
+  EXPECT_EQ(surface_quad->surface_range, out_surface_quad->surface_range);
   EXPECT_EQ(surface_quad->default_background_color,
             out_surface_quad->default_background_color);
   EXPECT_EQ(surface_quad->stretch_content_to_fill_bounds,
@@ -921,9 +920,9 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       LocalSurfaceId(1234, base::UnguessableToken::Create()));
   SurfaceDrawQuad* primary_surface_quad =
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  primary_surface_quad->SetNew(sqs, rect3, rect3, primary_surface_id,
-                               base::Optional<SurfaceId>(fallback_surface_id),
-                               SK_ColorBLUE, false);
+  primary_surface_quad->SetNew(
+      sqs, rect3, rect3, SurfaceRange(fallback_surface_id, primary_surface_id),
+      SK_ColorBLUE, false);
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);
@@ -1000,11 +999,11 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(rect3, out_primary_surface_draw_quad->visible_rect);
   EXPECT_TRUE(out_primary_surface_draw_quad->needs_blending);
   EXPECT_EQ(primary_surface_id,
-            out_primary_surface_draw_quad->primary_surface_id);
+            out_primary_surface_draw_quad->surface_range.end());
   EXPECT_EQ(SK_ColorBLUE,
             out_primary_surface_draw_quad->default_background_color);
   EXPECT_EQ(fallback_surface_id,
-            out_primary_surface_draw_quad->fallback_surface_id);
+            out_primary_surface_draw_quad->surface_range.start());
 
   const RenderPassDrawQuad* out_render_pass_draw_quad =
       RenderPassDrawQuad::MaterialCast(output->quad_list.ElementAt(3));

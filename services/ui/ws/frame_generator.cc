@@ -233,8 +233,7 @@ void FrameGenerator::DrawWindow(viz::RenderPass* pass) {
   auto* quad = pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   quad->SetAll(sqs, bounds_at_origin /* rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-               window_manager_surface_info_.id(),
-               window_manager_surface_info_.id(),
+               viz::SurfaceRange(window_manager_surface_info_.id()),
                SK_ColorWHITE /* default_background_color */,
                false /* stretch_content_to_fill_bounds */);
 }

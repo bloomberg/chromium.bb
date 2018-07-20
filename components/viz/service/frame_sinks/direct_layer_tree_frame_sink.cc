@@ -110,9 +110,9 @@ static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
         // Skip the quad if the FrameSinkId between fallback and primary is not
         // the same, because we don't know which FrameSinkId would be used to
         // draw this quad.
-        if (surface_quad->fallback_surface_id.has_value() &&
-            surface_quad->fallback_surface_id->frame_sink_id() !=
-                surface_quad->primary_surface_id.frame_sink_id()) {
+        if (surface_quad->surface_range.start() &&
+            surface_quad->surface_range.start()->frame_sink_id() !=
+                surface_quad->surface_range.end().frame_sink_id()) {
           continue;
         }
 
@@ -127,7 +127,7 @@ static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
         hit_test_region_list.regions.emplace_back();
         HitTestRegion* hit_test_region = &hit_test_region_list.regions.back();
         hit_test_region->frame_sink_id =
-            surface_quad->primary_surface_id.frame_sink_id();
+            surface_quad->surface_range.end().frame_sink_id();
         hit_test_region->flags = HitTestRegionFlags::kHitTestMouse |
                                  HitTestRegionFlags::kHitTestTouch |
                                  HitTestRegionFlags::kHitTestChildSurface;

@@ -210,9 +210,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
       0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
   auto* quad2 = pass2->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
   quad2->SetNew(shared_quad_state2, rect2 /* rect */, rect2 /* visible_rect */,
-                child_surface_id /* primary_surface_id */,
-                base::Optional<SurfaceId>() /* fallback_surface_id */,
-                SK_ColorBLACK, false /* stretch_content_to_fill_bounds */);
+                SurfaceRange(base::nullopt, child_surface_id), SK_ColorBLACK,
+                false /* stretch_content_to_fill_bounds */);
   pass_list.push_back(std::move(pass2));
 
   auto pass3 = RenderPass::Create();
@@ -252,9 +251,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
       0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
   auto* quad4 = pass4->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
   quad4->SetNew(shared_quad_state4, rect4 /* rect */, rect4 /* visible_rect */,
-                child_surface_id4 /* primary_surface_id */,
-                base::Optional<SurfaceId>() /* fallback_surface_id */,
-                SK_ColorBLACK, false /* stretch_content_to_fill_bounds */);
+                SurfaceRange(base::nullopt, child_surface_id4), SK_ColorBLACK,
+                false /* stretch_content_to_fill_bounds */);
   pass_list.push_back(std::move(pass4));
 
   const auto* hit_test_region_list1 =
