@@ -312,7 +312,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
         updateImage(wrapper, thumbnailURL);
       }
     });
-  }.bind(this), this.lastSelectedIndex() ? 75 : 0);
+  }.bind(this), (this.lastSelectedIndex() !== null) ? 75 : 0);
 };
 
 /**
