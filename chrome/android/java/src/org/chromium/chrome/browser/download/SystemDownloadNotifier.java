@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -52,8 +53,6 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
         int REMOVE_NOTIFICATION = 7;
     }
 
-    private final Context mApplicationContext;
-
     @Nullable
     private DownloadNotificationService mBoundService;
     private Set<String> mActiveDownloads = new HashSet<String>();
@@ -80,14 +79,6 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
             this.type = type;
             this.downloadInfo = downloadInfo;
         }
-    }
-
-    /**
-     * Constructor.
-     * @param context Application context.
-     */
-    public SystemDownloadNotifier(Context context) {
-        mApplicationContext = context.getApplicationContext();
     }
 
     /**
@@ -161,15 +152,16 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
 
     @VisibleForTesting
     void startAndBindService() {
-        DownloadNotificationService.startDownloadNotificationService(mApplicationContext, null);
-        mApplicationContext.bindService(
-                new Intent(mApplicationContext, DownloadNotificationService.class), mConnection,
+        Context applicationContext = ContextUtils.getApplicationContext();
+        DownloadNotificationService.startDownloadNotificationService(applicationContext, null);
+        applicationContext.bindService(
+                new Intent(applicationContext, DownloadNotificationService.class), mConnection,
                 Context.BIND_AUTO_CREATE);
     }
 
     @VisibleForTesting
     void unbindService() {
-        mApplicationContext.unbindService(mConnection);
+        ContextUtils.getApplicationContext().unbindService(mConnection);
     }
 
     @Override
@@ -238,9 +230,11 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
 
     @Override
     public void resumePendingDownloads() {
-        if (!DownloadNotificationService.isTrackingResumableDownloads(mApplicationContext)) return;
-        updateDownloadNotification(
-                new PendingNotificationInfo(DownloadNotificationType.RESUME_ALL, null), true);
+        if (DownloadNotificationService.isTrackingResumableDownloads(
+                    ContextUtils.getApplicationContext())) {
+            updateDownloadNotification(
+                    new PendingNotificationInfo(DownloadNotificationType.RESUME_ALL, null), true);
+        }
     }
 
     /**
