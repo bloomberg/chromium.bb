@@ -762,6 +762,7 @@ class InputApi(object):
     # will run all tests once all PRESUBMIT files are processed.
     tests = []
     msgs = []
+    parallel = parallel and self.parallel
     for t in tests_mix:
       if isinstance(t, OutputApi.PresubmitResult) and t:
         msgs.append(t)
@@ -773,7 +774,7 @@ class InputApi(object):
         if not t.kwargs.get('cwd'):
           t.kwargs['cwd'] = self.PresubmitLocalPath()
     self.thread_pool.AddTests(tests, parallel)
-    if not self.parallel:
+    if not parallel:
       msgs.extend(self.thread_pool.RunAsync())
     return msgs
 
@@ -1530,8 +1531,8 @@ def DoPresubmitChecks(change,
       output.write("Warning, no PRESUBMIT.py found.\n")
     results = []
     thread_pool = ThreadPool()
-    executer = PresubmitExecuter(change, committing, verbose,
-                                 gerrit_obj, dry_run, thread_pool)
+    executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
+                                 dry_run, thread_pool, parallel)
     if default_presubmit:
       if verbose:
         output.write("Running default presubmit script.\n")
