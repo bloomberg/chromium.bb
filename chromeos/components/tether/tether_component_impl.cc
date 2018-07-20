@@ -55,6 +55,9 @@ GetSessionCompletionReasonFromShutdownReason(
     case TetherComponent::ShutdownReason::CELLULAR_DISABLED:
       return TetherSessionCompletionLogger::SessionCompletionReason::
           CELLULAR_DISABLED;
+    case TetherComponent::ShutdownReason::MULTIDEVICE_HOST_UNVERIFIED:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          MULTIDEVICE_HOST_UNVERIFIED;
     default:
       break;
   }
