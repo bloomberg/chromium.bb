@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGroup;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -313,6 +314,19 @@ public class NewTabPageView extends FrameLayout {
         int scrollPosition = getSuggestionsScrollPosition();
         // Nothing to scroll to; return early.
         if (scrollPosition == RecyclerView.NO_POSITION) return;
+
+        // Scrolling doesn't occur if it's called too soon i.e. the ntp hasn't finished loading.
+        if (mTab.isLoading()) {
+            mTab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onPageLoadFinished(Tab tab) {
+                    mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
+                            scrollPosition, getScrollToSuggestionsOffset());
+                    mTab.removeObserver(this);
+                }
+            });
+            return;
+        }
 
         mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
                 scrollPosition, getScrollToSuggestionsOffset());
