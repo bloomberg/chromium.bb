@@ -293,6 +293,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->glStencilThenCoverStrokePathInstancedNVFn;
   functions->fProgramPathFragmentInputGen =
       gl->glProgramPathFragmentInputGenNVFn;
+  functions->fBindFragmentInputLocation =
+      gl->glBindFragmentInputLocationCHROMIUMFn;
 
   functions->fCoverageModulation = gl->glCoverageModulationNVFn;
 

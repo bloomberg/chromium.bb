@@ -1411,6 +1411,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x84F7, "GL_COMMANDS_COMPLETED_CHROMIUM",
     },
     {
+        0x84F8, "GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM",
+    },
+    {
         0x84F9, "GL_DEPTH_STENCIL_OES",
     },
     {

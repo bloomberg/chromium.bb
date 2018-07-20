@@ -53,6 +53,10 @@ Mock_glBindFragDataLocationIndexedEXT(GLuint program,
                                       GLuint colorNumber,
                                       GLuint index,
                                       const char* name);
+static void GL_BINDING_CALL
+Mock_glBindFragmentInputLocationCHROMIUM(GLuint program,
+                                         GLint location,
+                                         const char* name);
 static void GL_BINDING_CALL Mock_glBindFramebuffer(GLenum target,
                                                    GLuint framebuffer);
 static void GL_BINDING_CALL Mock_glBindFramebufferEXT(GLenum target,
@@ -309,6 +313,16 @@ Mock_glCopyTextureCHROMIUM(GLuint sourceId,
                            GLboolean unpackFlipY,
                            GLboolean unpackPremultiplyAlpha,
                            GLboolean unpackUnmultiplyAlpha);
+static void GL_BINDING_CALL Mock_glCoverFillPathCHROMIUM(GLuint path,
+                                                         GLenum coverMode);
+static void GL_BINDING_CALL
+Mock_glCoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      const void* paths,
+                                      GLuint pathBase,
+                                      GLenum coverMode,
+                                      GLenum transformType,
+                                      const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glCoverFillPathInstancedNV(GLsizei numPaths,
                                 GLenum pathNameType,
@@ -319,6 +333,16 @@ Mock_glCoverFillPathInstancedNV(GLsizei numPaths,
                                 const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glCoverFillPathNV(GLuint path,
                                                    GLenum coverMode);
+static void GL_BINDING_CALL Mock_glCoverStrokePathCHROMIUM(GLuint name,
+                                                           GLenum coverMode);
+static void GL_BINDING_CALL
+Mock_glCoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                        GLenum pathNameType,
+                                        const void* paths,
+                                        GLuint pathBase,
+                                        GLenum coverMode,
+                                        GLenum transformType,
+                                        const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glCoverStrokePathInstancedNV(GLsizei numPaths,
                                   GLenum pathNameType,
@@ -329,6 +353,8 @@ Mock_glCoverStrokePathInstancedNV(GLsizei numPaths,
                                   const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glCoverStrokePathNV(GLuint name,
                                                      GLenum coverMode);
+static void GL_BINDING_CALL
+Mock_glCoverageModulationCHROMIUM(GLenum components);
 static void GL_BINDING_CALL Mock_glCoverageModulationNV(GLenum components);
 static GLuint GL_BINDING_CALL Mock_glCreateProgram(void);
 static GLuint GL_BINDING_CALL Mock_glCreateShader(GLenum type);
@@ -371,6 +397,8 @@ static void GL_BINDING_CALL
 Mock_glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers);
 static void GL_BINDING_CALL
 Mock_glDeleteFramebuffersEXT(GLsizei n, const GLuint* framebuffers);
+static void GL_BINDING_CALL Mock_glDeletePathsCHROMIUM(GLuint path,
+                                                       GLsizei range);
 static void GL_BINDING_CALL Mock_glDeletePathsNV(GLuint path, GLsizei range);
 static void GL_BINDING_CALL Mock_glDeleteProgram(GLuint program);
 static void GL_BINDING_CALL Mock_glDeleteQueries(GLsizei n, const GLuint* ids);
@@ -524,6 +552,7 @@ static void GL_BINDING_CALL Mock_glGenFramebuffers(GLsizei n,
                                                    GLuint* framebuffers);
 static void GL_BINDING_CALL Mock_glGenFramebuffersEXT(GLsizei n,
                                                       GLuint* framebuffers);
+static GLuint GL_BINDING_CALL Mock_glGenPathsCHROMIUM(GLsizei range);
 static GLuint GL_BINDING_CALL Mock_glGenPathsNV(GLsizei range);
 static void GL_BINDING_CALL Mock_glGenQueries(GLsizei n, GLuint* ids);
 static void GL_BINDING_CALL Mock_glGenQueriesARB(GLsizei n, GLuint* ids);
@@ -1114,6 +1143,7 @@ static GLboolean GL_BINDING_CALL Mock_glIsFenceAPPLE(GLuint fence);
 static GLboolean GL_BINDING_CALL Mock_glIsFenceNV(GLuint fence);
 static GLboolean GL_BINDING_CALL Mock_glIsFramebuffer(GLuint framebuffer);
 static GLboolean GL_BINDING_CALL Mock_glIsFramebufferEXT(GLuint framebuffer);
+static GLboolean GL_BINDING_CALL Mock_glIsPathCHROMIUM(GLuint path);
 static GLboolean GL_BINDING_CALL Mock_glIsPathNV(GLuint path);
 static GLboolean GL_BINDING_CALL Mock_glIsProgram(GLuint program);
 static GLboolean GL_BINDING_CALL Mock_glIsQuery(GLuint query);
@@ -1141,7 +1171,11 @@ static void* GL_BINDING_CALL Mock_glMapBufferRangeEXT(GLenum target,
                                                       GLintptr offset,
                                                       GLsizeiptr length,
                                                       GLbitfield access);
+static void GL_BINDING_CALL
+Mock_glMatrixLoadIdentityCHROMIUM(GLenum matrixMode);
 static void GL_BINDING_CALL Mock_glMatrixLoadIdentityEXT(GLenum matrixMode);
+static void GL_BINDING_CALL Mock_glMatrixLoadfCHROMIUM(GLenum matrixMode,
+                                                       const GLfloat* m);
 static void GL_BINDING_CALL Mock_glMatrixLoadfEXT(GLenum matrixMode,
                                                   const GLfloat* m);
 static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
@@ -1160,18 +1194,33 @@ static void GL_BINDING_CALL Mock_glObjectPtrLabel(void* ptr,
 static void GL_BINDING_CALL Mock_glObjectPtrLabelKHR(void* ptr,
                                                      GLsizei length,
                                                      const char* label);
+static void GL_BINDING_CALL Mock_glPathCommandsCHROMIUM(GLuint path,
+                                                        GLsizei numCommands,
+                                                        const GLubyte* commands,
+                                                        GLsizei numCoords,
+                                                        GLenum coordType,
+                                                        const GLvoid* coords);
 static void GL_BINDING_CALL Mock_glPathCommandsNV(GLuint path,
                                                   GLsizei numCommands,
                                                   const GLubyte* commands,
                                                   GLsizei numCoords,
                                                   GLenum coordType,
                                                   const GLvoid* coords);
+static void GL_BINDING_CALL Mock_glPathParameterfCHROMIUM(GLuint path,
+                                                          GLenum pname,
+                                                          GLfloat value);
 static void GL_BINDING_CALL Mock_glPathParameterfNV(GLuint path,
                                                     GLenum pname,
                                                     GLfloat value);
+static void GL_BINDING_CALL Mock_glPathParameteriCHROMIUM(GLuint path,
+                                                          GLenum pname,
+                                                          GLint value);
 static void GL_BINDING_CALL Mock_glPathParameteriNV(GLuint path,
                                                     GLenum pname,
                                                     GLint value);
+static void GL_BINDING_CALL Mock_glPathStencilFuncCHROMIUM(GLenum func,
+                                                           GLint ref,
+                                                           GLuint mask);
 static void GL_BINDING_CALL Mock_glPathStencilFuncNV(GLenum func,
                                                      GLint ref,
                                                      GLuint mask);
@@ -1195,6 +1244,12 @@ static void GL_BINDING_CALL Mock_glProgramBinaryOES(GLuint program,
 static void GL_BINDING_CALL Mock_glProgramParameteri(GLuint program,
                                                      GLenum pname,
                                                      GLint value);
+static void GL_BINDING_CALL
+Mock_glProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                           GLint location,
+                                           GLenum genMode,
+                                           GLint components,
+                                           const GLfloat* coeffs);
 static void GL_BINDING_CALL
 Mock_glProgramPathFragmentInputGenNV(GLuint program,
                                      GLint location,
@@ -1327,6 +1382,18 @@ static void GL_BINDING_CALL Mock_glShaderSource(GLuint shader,
                                                 GLsizei count,
                                                 const char* const* str,
                                                 const GLint* length);
+static void GL_BINDING_CALL Mock_glStencilFillPathCHROMIUM(GLuint path,
+                                                           GLenum fillMode,
+                                                           GLuint mask);
+static void GL_BINDING_CALL
+Mock_glStencilFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                        GLenum pathNameType,
+                                        const void* paths,
+                                        GLuint pathBase,
+                                        GLenum fillMode,
+                                        GLuint mask,
+                                        GLenum transformType,
+                                        const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glStencilFillPathInstancedNV(GLsizei numPaths,
                                   GLenum pathNameType,
@@ -1356,6 +1423,18 @@ static void GL_BINDING_CALL Mock_glStencilOpSeparate(GLenum face,
                                                      GLenum fail,
                                                      GLenum zfail,
                                                      GLenum zpass);
+static void GL_BINDING_CALL Mock_glStencilStrokePathCHROMIUM(GLuint path,
+                                                             GLint reference,
+                                                             GLuint mask);
+static void GL_BINDING_CALL
+Mock_glStencilStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                          GLenum pathNameType,
+                                          const void* paths,
+                                          GLuint pathBase,
+                                          GLint ref,
+                                          GLuint mask,
+                                          GLenum transformType,
+                                          const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glStencilStrokePathInstancedNV(GLsizei numPaths,
                                     GLenum pathNameType,
@@ -1368,6 +1447,21 @@ Mock_glStencilStrokePathInstancedNV(GLsizei numPaths,
 static void GL_BINDING_CALL Mock_glStencilStrokePathNV(GLuint path,
                                                        GLint reference,
                                                        GLuint mask);
+static void GL_BINDING_CALL
+Mock_glStencilThenCoverFillPathCHROMIUM(GLuint path,
+                                        GLenum fillMode,
+                                        GLuint mask,
+                                        GLenum coverMode);
+static void GL_BINDING_CALL Mock_glStencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glStencilThenCoverFillPathInstancedNV(GLsizei numPaths,
                                            GLenum pathNameType,
@@ -1382,6 +1476,21 @@ static void GL_BINDING_CALL Mock_glStencilThenCoverFillPathNV(GLuint path,
                                                               GLenum fillMode,
                                                               GLuint mask,
                                                               GLenum coverMode);
+static void GL_BINDING_CALL
+Mock_glStencilThenCoverStrokePathCHROMIUM(GLuint path,
+                                          GLint reference,
+                                          GLuint mask,
+                                          GLenum coverMode);
+static void GL_BINDING_CALL Mock_glStencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glStencilThenCoverStrokePathInstancedNV(GLsizei numPaths,
                                              GLenum pathNameType,
