@@ -10,7 +10,13 @@ namespace multidevice_setup {
 
 FakeMultiDeviceSetupClient::FakeMultiDeviceSetupClient() = default;
 
-FakeMultiDeviceSetupClient::~FakeMultiDeviceSetupClient() = default;
+FakeMultiDeviceSetupClient::~FakeMultiDeviceSetupClient() {
+  DCHECK(get_eligible_host_devices_callback_queue_.empty());
+  DCHECK(set_host_device_public_key_and_callback_queue_.empty());
+  DCHECK(get_host_status_callback_queue_.empty());
+  DCHECK(retry_set_host_now_callback_queue_.empty());
+  DCHECK(trigger_event_for_debugging_type_and_callback_queue_.empty());
+}
 
 void FakeMultiDeviceSetupClient::InvokePendingGetEligibleHostDevicesCallback(
     const cryptauth::RemoteDeviceRefList& eligible_devices) {

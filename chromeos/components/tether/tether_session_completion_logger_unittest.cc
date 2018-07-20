@@ -89,6 +89,12 @@ TEST_F(TetherSessionCompletionLoggerTest, TestBluetoothControllerDisappeared) {
           BLUETOOTH_CONTROLLER_DISAPPEARED);
 }
 
+TEST_F(TetherSessionCompletionLoggerTest, TestMultiDeviceHostUnverified) {
+  TestSessionCompletionReasonRecorded(
+      TetherSessionCompletionLogger::SessionCompletionReason::
+          MULTIDEVICE_HOST_UNVERIFIED);
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

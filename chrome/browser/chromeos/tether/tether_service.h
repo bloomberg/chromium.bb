@@ -17,6 +17,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -55,13 +56,15 @@ class PrefRegistrySyncable;
 //
 // This service starts up when the user logs in (or recovers from a crash) and
 // is shut down when the user logs out.
-class TetherService : public KeyedService,
-                      public chromeos::PowerManagerClient::Observer,
-                      public chromeos::tether::TetherHostFetcher::Observer,
-                      public device::BluetoothAdapter::Observer,
-                      public chromeos::NetworkStateHandlerObserver,
-                      public chromeos::tether::TetherComponent::Observer,
-                      public chromeos::device_sync::DeviceSyncClient::Observer {
+class TetherService
+    : public KeyedService,
+      public chromeos::PowerManagerClient::Observer,
+      public chromeos::tether::TetherHostFetcher::Observer,
+      public device::BluetoothAdapter::Observer,
+      public chromeos::NetworkStateHandlerObserver,
+      public chromeos::tether::TetherComponent::Observer,
+      public chromeos::device_sync::DeviceSyncClient::Observer,
+      public chromeos::multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   TetherService(
       Profile* profile,
@@ -69,6 +72,8 @@ class TetherService : public KeyedService,
       cryptauth::CryptAuthService* cryptauth_service,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
+      chromeos::multidevice_setup::MultiDeviceSetupClient*
+          multidevice_setup_client,
       chromeos::NetworkStateHandler* network_state_handler,
       session_manager::SessionManager* session_manager);
   ~TetherService() override;
@@ -118,6 +123,11 @@ class TetherService : public KeyedService,
   // chromeos::device_sync::DeviceSyncClient::Observer:
   void OnReady() override;
 
+  // chromeos::multidevice_setup::MultiDeviceSetupClient::Observer:
+  void OnHostStatusChanged(
+      chromeos::multidevice_setup::mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
+
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
 
@@ -139,6 +149,11 @@ class TetherService : public KeyedService,
   friend class TetherServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestSuspend);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestDeviceSyncClientNotReady);
+  FRIEND_TEST_ALL_PREFIXES(
+      TetherServiceTest,
+      TestMultiDeviceSetupClientInitiallyHasNoVerifiedHost);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
+                           TestMultiDeviceSetupClientLosesVerifiedHost);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBleAdvertisingNotSupported);
   FRIEND_TEST_ALL_PREFIXES(
       TetherServiceTest,
@@ -153,6 +168,9 @@ class TetherService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(
       TetherServiceTest,
       TestGet_PrimaryUser_FeatureFlagEnabled_MultiDeviceApiFlagEnabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      TetherServiceTest,
+      TestGet_PrimaryUser_FeatureFlagEnabled_MultiDeviceApiAndMultiDeviceSetupFlagsEnabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestNoTetherHosts);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestProhibitedByPolicy);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestIsBluetoothPowered);
@@ -183,6 +201,7 @@ class TetherService : public KeyedService,
     BLE_NOT_PRESENT = 9,
     WIFI_NOT_PRESENT = 10,
     SUSPENDED = 11,
+    MULTIDEVICE_HOST_UNVERIFIED = 12,
     TETHER_FEATURE_STATE_MAX
   };
 
@@ -190,6 +209,11 @@ class TetherService : public KeyedService,
   static std::string TetherFeatureStateToString(
       const TetherFeatureState& state);
 
+  void OnHostStatusReceived(
+      chromeos::multidevice_setup::mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+
+  void GetBluetoothAdapter();
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
   void OnBluetoothAdapterAdvertisingIntervalSet();
@@ -247,6 +271,9 @@ class TetherService : public KeyedService,
   // was closed).
   bool suspended_ = false;
 
+  chromeos::multidevice_setup::mojom::HostStatus host_status_ =
+      chromeos::multidevice_setup::mojom::HostStatus::kNoEligibleHosts;
+
   // Whether the BLE advertising interval has attempted to be set during this
   // session.
   bool has_attempted_to_set_ble_advertising_interval_ = false;
@@ -271,6 +298,8 @@ class TetherService : public KeyedService,
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
+  chromeos::multidevice_setup::MultiDeviceSetupClient*
+      multidevice_setup_client_;
   chromeos::NetworkStateHandler* network_state_handler_;
   session_manager::SessionManager* session_manager_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>
