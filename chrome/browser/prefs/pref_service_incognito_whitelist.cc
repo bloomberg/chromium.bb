@@ -35,7 +35,6 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/startup_metric_utils/browser/pref_names.h"
 #include "components/suggestions/suggestions_pref_names.h"
-#include "components/sync/base/pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/variations/pref_names.h"
@@ -1216,53 +1215,6 @@ const char* incognito_whitelist[] = {
     // components/suggestions/suggestions_pref_names.h
     suggestions::prefs::kSuggestionsBlacklist,
     suggestions::prefs::kSuggestionsData,
-
-    // components/sync/base/pref_names.h
-    syncer::prefs::kSyncLastSyncedTime, syncer::prefs::kSyncLastPollTime,
-    syncer::prefs::kSyncShortPollIntervalSeconds,
-    syncer::prefs::kSyncLongPollIntervalSeconds,
-    syncer::prefs::kSyncHasAuthError, syncer::prefs::kSyncFirstSetupComplete,
-    syncer::prefs::kSyncKeepEverythingSynced, syncer::prefs::kSyncAppList,
-    syncer::prefs::kSyncAppNotifications, syncer::prefs::kSyncAppSettings,
-    syncer::prefs::kSyncApps, syncer::prefs::kSyncArcPackage,
-    syncer::prefs::kSyncArticles, syncer::prefs::kSyncAutofillProfile,
-    syncer::prefs::kSyncAutofillWallet,
-    syncer::prefs::kSyncAutofillWalletMetadata, syncer::prefs::kSyncAutofill,
-    syncer::prefs::kSyncBookmarks, syncer::prefs::kSyncDeviceInfo,
-    syncer::prefs::kSyncDictionary, syncer::prefs::kSyncExtensionSettings,
-    syncer::prefs::kSyncExtensions, syncer::prefs::kSyncFaviconImages,
-    syncer::prefs::kSyncFaviconTracking,
-    syncer::prefs::kSyncHistoryDeleteDirectives,
-    syncer::prefs::kSyncMountainShares, syncer::prefs::kSyncPasswords,
-    syncer::prefs::kSyncPreferences, syncer::prefs::kSyncPriorityPreferences,
-    syncer::prefs::kSyncPrinters, syncer::prefs::kSyncReadingList,
-    syncer::prefs::kSyncSearchEngines, syncer::prefs::kSyncSessions,
-    syncer::prefs::kSyncSupervisedUserSettings,
-    syncer::prefs::kSyncSupervisedUserSharedSettings,
-    syncer::prefs::kSyncSupervisedUserWhitelists,
-    syncer::prefs::kSyncSupervisedUsers,
-    syncer::prefs::kSyncSyncedNotificationAppInfo,
-    syncer::prefs::kSyncSyncedNotifications, syncer::prefs::kSyncTabs,
-    syncer::prefs::kSyncThemes, syncer::prefs::kSyncTypedUrls,
-    syncer::prefs::kSyncUserConsents, syncer::prefs::kSyncUserEvents,
-    syncer::prefs::kSyncWifiCredentials, syncer::prefs::kSyncManaged,
-    syncer::prefs::kSyncSuppressStart,
-    syncer::prefs::kSyncEncryptionBootstrapToken,
-    syncer::prefs::kSyncKeystoreEncryptionBootstrapToken,
-    syncer::prefs::kSyncSessionsGUID,
-
-#if defined(OS_CHROMEOS)
-    syncer::prefs::kSyncSpareBootstrapToken,
-#endif  // defined(OS_CHROMEOS)
-
-    syncer::prefs::kSyncFirstSyncTime, syncer::prefs::kSyncPassphrasePrompted,
-    syncer::prefs::kSyncMemoryPressureWarningCount,
-    syncer::prefs::kSyncShutdownCleanly,
-    syncer::prefs::kSyncInvalidationVersions,
-    syncer::prefs::kSyncLastRunVersion,
-    syncer::prefs::kSyncPassphraseEncryptionTransitionInProgress,
-    syncer::prefs::kSyncNigoriStateForPassphraseTransition,
-    syncer::prefs::kEnableLocalSyncBackend, syncer::prefs::kLocalSyncBackendDir,
 
     // components/ukm/ukm_pref_names.h
     ukm::prefs::kUkmClientId, ukm::prefs::kUkmPersistedLogs,
