@@ -5,17 +5,22 @@
 #ifndef UI_AURA_MUS_SYSTEM_INPUT_INJECTOR_MUS_H_
 #define UI_AURA_MUS_SYSTEM_INPUT_INJECTOR_MUS_H_
 
+#include "services/ui/public/interfaces/remoting_event_injector.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_modifiers.h"
 #include "ui/events/system_input_injector.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace aura {
 
-class WindowManagerClient;
-
+// Implementation of ui::SystemInputInjector that forwards all calls over a
+// mojo pipe.
 class AURA_EXPORT SystemInputInjectorMus : public ui::SystemInputInjector {
  public:
-  explicit SystemInputInjectorMus(WindowManagerClient* client);
+  explicit SystemInputInjectorMus(service_manager::Connector* connector);
   ~SystemInputInjectorMus() override;
 
   // Overridden from SystemInputInjector:
@@ -33,10 +38,7 @@ class AURA_EXPORT SystemInputInjectorMus : public ui::SystemInputInjector {
   // Updates |modifiers_| based on an incoming event.
   void UpdateModifier(unsigned int modifier, bool down);
 
-  WindowManagerClient* client_;
-
-  // Shared modifier state.
-  ui::EventModifiers modifiers_;
+  ui::mojom::RemotingEventInjectorPtr remoting_event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInputInjectorMus);
 };

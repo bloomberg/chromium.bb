@@ -40,6 +40,8 @@ component("lib") {
     "focus_handler.h",
     "pointer_watcher.cc",
     "pointer_watcher.h",
+    "remoting_event_injector.cc",
+    "remoting_event_injector.h",
     "screen_provider.cc",
     "screen_provider.h",
     "server_window.cc",

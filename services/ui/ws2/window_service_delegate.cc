@@ -29,5 +29,9 @@ void WindowServiceDelegate::RunDragLoop(
   std::move(callback).Run(ui::DragDropTypes::DRAG_NONE);
 }
 
+SystemInputInjector* WindowServiceDelegate::GetSystemInputInjector() {
+  return nullptr;
+}
+
 }  // namespace ws2
 }  // namespace ui

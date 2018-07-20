@@ -11,6 +11,7 @@ mojom("interfaces") {
     "event_injector.mojom",
     "event_matcher.mojom",
     "gpu.mojom",
+    "remoting_event_injector.mojom",
     "screen_provider.mojom",
     "user_activity_monitor.mojom",
     "video_detector.mojom",

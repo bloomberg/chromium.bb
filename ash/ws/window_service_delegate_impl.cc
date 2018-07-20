@@ -24,6 +24,8 @@
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/system_input_injector.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/compound_event_filter.h"
 
@@ -195,6 +197,14 @@ void WindowServiceDelegateImpl::SetModalType(aura::Window* window,
   // Reparent the window if it will become, or will no longer be, system modal.
   if (type == ui::MODAL_TYPE_SYSTEM || old_type == ui::MODAL_TYPE_SYSTEM)
     wm::GetDefaultParent(window, window->GetBoundsInScreen())->AddChild(window);
+}
+
+ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
+  if (!system_input_injector_) {
+    system_input_injector_ =
+        ui::OzonePlatform::GetInstance()->CreateSystemInputInjector();
+  }
+  return system_input_injector_.get();
 }
 
 }  // namespace ash
