@@ -665,7 +665,6 @@ crbug.com/591099 idle-callback/test-runner-run-idle-tasks.html [ Crash Pass Time
 crbug.com/714962 images/color-profile-background-clip-text.html [ Failure ]
 crbug.com/591099 images/color-profile-image-filter-all.html [ Failure ]
 crbug.com/714962 inspector-protocol/css/css-get-platform-fonts.js [ Failure ]
-crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot-pseudo-element.js [ Failure ]
 crbug.com/714962 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot-viewport.js [ Failure ]
 crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ Failure ]
 crbug.com/591099 inspector-protocol/layers/get-layers.js [ Failure ]
