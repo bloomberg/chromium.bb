@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
@@ -86,7 +87,10 @@ class DialRegistryTest : public testing::Test {
         list_with_second_device_({second_device_}),
         list_with_first_second_devices_({first_device_, second_device_}) {
     registry_->RegisterObserver(&mock_observer_);
+    base::RunLoop().RunUntilIdle();
   }
+
+  void TearDown() override { registry_->DoShutdown(); }
 
  protected:
   void SetListenerExpectations() {
@@ -338,7 +342,9 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionLost) {
   registry_->OnDeviceDiscovered(nullptr, first_device_);
   registry_->OnDiscoveryFinished(nullptr);
 
-  registry_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  registry_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  base::RunLoop().RunUntilIdle();
 
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDiscoveryFinished(nullptr);
@@ -377,18 +383,24 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
   registry_->OnDeviceDiscovered(nullptr, first_device_);
   registry_->OnDiscoveryFinished(nullptr);
 
-  registry_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  registry_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  base::RunLoop().RunUntilIdle();
 
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDiscoveryFinished(nullptr);
 
-  registry_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  registry_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  base::RunLoop().RunUntilIdle();
 
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDeviceDiscovered(nullptr, second_device_);
   registry_->OnDiscoveryFinished(nullptr);
 
-  registry_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  registry_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  base::RunLoop().RunUntilIdle();
 
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDeviceDiscovered(nullptr, third_device_);
