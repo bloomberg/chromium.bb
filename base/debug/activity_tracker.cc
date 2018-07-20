@@ -1358,6 +1358,10 @@ GlobalActivityTracker::ReleaseForTesting() {
 }
 
 ThreadActivityTracker* GlobalActivityTracker::CreateTrackerForCurrentThread() {
+  // It is not safe to use TLS once TLS has been destroyed.
+  if (base::ThreadLocalStorage::HasBeenDestroyed())
+    return nullptr;
+
   DCHECK(!this_thread_tracker_.Get());
 
   PersistentMemoryAllocator::Reference mem_reference;
