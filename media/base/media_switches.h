@@ -105,6 +105,7 @@ namespace media {
 // alongside the definition of their values in the .cc file.
 
 MEDIA_EXPORT extern const base::Feature kAutoplayIgnoreWebAudio;
+MEDIA_EXPORT extern const base::Feature kAutoplaySoundSettings;
 MEDIA_EXPORT extern const base::Feature kAv1Decoder;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoTrackOptimization;

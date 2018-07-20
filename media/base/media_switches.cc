@@ -357,6 +357,10 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
 const base::Feature kAutoplayIgnoreWebAudio{"AutoplayIgnoreWebAudio",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether we should show the new unified sound and autoplay settings UI.
+const base::Feature kAutoplaySoundSettings{"AutoplaySoundSettings",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.
 const base::Feature kMediaControlsExpandGesture{
