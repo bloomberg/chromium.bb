@@ -402,8 +402,16 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  // Replaces the SurfaceLayer with a SolidColorLayer.
-  client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
+  // Reset fallback and primary surfaces.
+  if (HasFallbackSurface()) {
+    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+        viz::SurfaceId());
+  }
+  if (HasPrimarySurface()) {
+    client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
+        viz::SurfaceId(), current_frame_size_in_dip_, GetGutterColor(),
+        cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  }
 
   if (!HasSavedFrame())
     return;
