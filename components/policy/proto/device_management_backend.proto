@@ -1414,6 +1414,9 @@ message RemoteCommand {
 
     // Wipe all the users off of the device.
     DEVICE_WIPE_USERS = 5;
+
+    // Start Chrome Remote Desktop session (limited to Kiosk sessions only).
+    DEVICE_START_CRD_SESSION = 6;
   }
 
   // The command type.
