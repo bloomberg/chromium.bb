@@ -490,7 +490,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         boolean syncEverything = mUseSyncAndAllServices.isChecked();
         mProfileSyncService.setPreferredDataTypes(syncEverything, getSelectedModelTypes());
         // Update the invalidation listener with the set of types we are enabling.
-        InvalidationController invController = InvalidationController.get(getActivity());
+        InvalidationController invController = InvalidationController.get();
         invController.ensureStartedAndUpdateRegisteredTypes();
     }
 
