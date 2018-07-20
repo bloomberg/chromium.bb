@@ -190,7 +190,6 @@ void AssistantManagerServiceImpl::RequestScreenContext(
       base::BindOnce(&AssistantManagerServiceImpl::OnAssistantStructureReceived,
                      weak_factory_.GetWeakPtr(), on_done));
 
-  // TODO(muyuanli): handle metalayer and grab only part of the screen.
   service_->assistant_controller()->RequestScreenshot(
       region, base::BindOnce(
                   &AssistantManagerServiceImpl::OnAssistantScreenshotReceived,
