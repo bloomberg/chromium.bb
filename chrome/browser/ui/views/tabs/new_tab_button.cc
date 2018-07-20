@@ -571,8 +571,9 @@ SkPath NewTabButton::GetNewerMaterialUiButtonPath(float button_y,
   const float radius = GetCornerRadius() * scale;
   const float rect_width =
       2 * radius +
-      (is_incognito_ ? scale * (incognito_icon_.width() + kDistanceBetweenIcons)
-                     : 0);
+      (ShouldDrawIncognitoIcon()
+           ? scale * (incognito_icon_.width() + kDistanceBetweenIcons)
+           : 0);
 
   const SkRect button_rect =
       SkRect::MakeXYWH(0, button_y, rect_width, 2 * radius);
