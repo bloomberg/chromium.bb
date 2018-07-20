@@ -135,22 +135,22 @@ MetricsUtils.speechPitchToSparceHistogramInt_ = function(speechPitch) {
  * Records an event that Select-to-Speak has begun speaking.
  * @param {number} method The CrosSelectToSpeakStartSpeechMethod enum
  *    that reflects how this event was triggered by the user.
- * @param {number} speechRate The current speech rate.
- * @param {number} speechPitch The current speech pitch.
- * @param {boolean} wordHighlightingEnabled If word highlighting is enabled.
+ * @param {PrefsManager} prefsManager A PrefsManager with the users's current
+ *    preferences.
  * @public
  */
-MetricsUtils.recordStartEvent = function(
-    method, speechRate, speechPitch, wordHighlightingEnabled) {
+MetricsUtils.recordStartEvent = function(method, prefsManager) {
   chrome.metricsPrivate.recordUserAction(MetricsUtils.START_SPEECH_METRIC);
   chrome.metricsPrivate.recordSparseValue(
       MetricsUtils.SPEECH_RATE_METRIC,
-      MetricsUtils.speechRateToSparceHistogramInt_(speechRate));
+      MetricsUtils.speechRateToSparceHistogramInt_(prefsManager.speechRate()));
   chrome.metricsPrivate.recordSparseValue(
       MetricsUtils.SPEECH_PITCH_METRIC,
-      MetricsUtils.speechPitchToSparceHistogramInt_(speechPitch));
+      MetricsUtils.speechPitchToSparceHistogramInt_(
+          prefsManager.speechPitch()));
   chrome.metricsPrivate.recordBoolean(
-      MetricsUtils.WORD_HIGHLIGHTING_METRIC, wordHighlightingEnabled);
+      MetricsUtils.WORD_HIGHLIGHTING_METRIC,
+      prefsManager.wordHighlightingEnabled());
   chrome.metricsPrivate.recordEnumerationValue(
       MetricsUtils.START_SPEECH_METHOD_METRIC.METRIC_NAME, method,
       MetricsUtils.START_SPEECH_METHOD_METRIC.EVENT_COUNT);

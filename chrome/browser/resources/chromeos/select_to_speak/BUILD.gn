@@ -40,6 +40,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "options.css",
     "options.html",
     "paragraph_utils.js",
+    "prefs_manager.js",
     "rect_utils.js",
     "select_to_speak.js",
     "select_to_speak_gdocs_script.js",
@@ -175,6 +176,7 @@ js_type_check("closure_compile") {
     ":metrics_utils",
     ":node_utils",
     ":paragraph_utils",
+    ":prefs_manager",
     ":rect_utils",
     ":select_to_speak",
     ":select_to_speak_options",
@@ -190,6 +192,7 @@ js_library("select_to_speak") {
     ":metrics_utils",
     ":node_utils",
     ":paragraph_utils",
+    ":prefs_manager",
     ":rect_utils",
     ":word_utils",
   ]
@@ -252,7 +255,13 @@ js_library("input_handler") {
 js_library("rect_utils") {
 }
 
+js_library("prefs_manager") {
+}
+
 js_library("metrics_utils") {
+  deps = [
+    ":prefs_manager",
+  ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
