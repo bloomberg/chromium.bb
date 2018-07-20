@@ -16,7 +16,7 @@ TestImageFactory::TestImageFactory() = default;
 TestImageFactory::~TestImageFactory() = default;
 
 scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,

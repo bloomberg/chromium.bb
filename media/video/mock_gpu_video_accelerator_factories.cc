@@ -61,13 +61,21 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
         size_.width(), format_, static_cast<int>(plane)));
   }
   gfx::GpuMemoryBufferId GetId() const override { return id_; }
-  gfx::GpuMemoryBufferHandle GetHandle() const override {
+  gfx::GpuMemoryBufferType GetType() const override {
+    return gfx::NATIVE_PIXMAP;
+  }
+  gfx::GpuMemoryBufferHandle CloneHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {}
 
  private:
   static const size_t kMaxPlanes = 3;

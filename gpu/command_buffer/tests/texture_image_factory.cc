@@ -52,7 +52,7 @@ class TextureImage : public gl::GLImage {
 };
 
 scoped_refptr<gl::GLImage> TextureImageFactory::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,

@@ -131,10 +131,15 @@ void GpuMemoryBufferImplIOSurface::SetColorSpace(
   IOSurfaceSetColorSpace(io_surface_, color_space);
 }
 
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
+gfx::GpuMemoryBufferType GpuMemoryBufferImplIOSurface::GetType() const {
+  return gfx::IO_SURFACE_BUFFER;
+}
+
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::CloneHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
   handle.id = id_;
+  handle.mach_port.reset(IOSurfaceCreateMachPort(io_surface_));
   return handle;
 }
 

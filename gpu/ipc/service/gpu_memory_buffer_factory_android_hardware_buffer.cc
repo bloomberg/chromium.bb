@@ -40,7 +40,7 @@ ImageFactory* GpuMemoryBufferFactoryAndroidHardwareBuffer::AsImageFactory() {
 
 scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,
@@ -50,12 +50,14 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
   // AHardwareBuffer.
   DCHECK_EQ(handle.type, gfx::ANDROID_HARDWARE_BUFFER);
 
-  AHardwareBuffer* buffer = handle.android_hardware_buffer;
-  DCHECK(buffer);
+  base::android::ScopedHardwareBufferHandle& buffer =
+      handle.android_hardware_buffer;
+  DCHECK(buffer.is_valid());
 
   scoped_refptr<gl::GLImageAHardwareBuffer> image(
       new gl::GLImageAHardwareBuffer(size));
-  if (!image->Initialize(buffer, /* preserved */ false)) {
+  if (!image->Initialize(buffer.get(),
+                         /* preserved */ false)) {
     DLOG(ERROR) << "Failed to create GLImage " << size.ToString();
     image = nullptr;
   }
@@ -67,7 +69,7 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
   // release here to avoid an excess reference. We want to pass ownership to
   // the image. Also release in the failure case to ensure we consistently
   // consume the GpuMemoryBufferHandle.
-  base::AndroidHardwareBufferCompat::GetInstance().Release(buffer);
+  buffer.reset();
 
   return image;
 }

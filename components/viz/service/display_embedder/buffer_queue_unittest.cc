@@ -43,18 +43,26 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return gfx::BufferFormat::BGRX_8888;
   }
   int stride(size_t plane) const override { return 0; }
+  gfx::GpuMemoryBufferType GetType() const override {
+    return gfx::EMPTY_BUFFER;
+  }
   gfx::GpuMemoryBufferId GetId() const override {
     return gfx::GpuMemoryBufferId(0);
   }
   void SetColorSpace(const gfx::ColorSpace& color_space) override {
     *set_color_space_count_ += 1;
   }
-  gfx::GpuMemoryBufferHandle GetHandle() const override {
+  gfx::GpuMemoryBufferHandle CloneHandle() const override {
     return gfx::GpuMemoryBufferHandle();
   }
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {}
 
   size_t* set_color_space_count_;
 };

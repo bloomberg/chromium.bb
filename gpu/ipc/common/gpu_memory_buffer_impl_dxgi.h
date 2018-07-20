@@ -41,7 +41,8 @@ class GPU_EXPORT GpuMemoryBufferImplDXGI : public GpuMemoryBufferImpl {
   void* memory(size_t plane) override;
   void Unmap() override;
   int stride(size_t plane) const override;
-  gfx::GpuMemoryBufferHandle GetHandle() const override;
+  gfx::GpuMemoryBufferType GetType() const override;
+  gfx::GpuMemoryBufferHandle CloneHandle() const override;
 
  private:
   GpuMemoryBufferImplDXGI(gfx::GpuMemoryBufferId id,

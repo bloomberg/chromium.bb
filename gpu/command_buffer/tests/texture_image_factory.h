@@ -14,7 +14,7 @@ namespace gpu {
 class TextureImageFactory : public gpu::ImageFactory {
  public:
   scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       unsigned internalformat,

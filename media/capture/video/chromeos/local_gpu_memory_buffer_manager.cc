@@ -8,6 +8,9 @@
 #include <xf86drm.h>
 #include <memory>
 
+#include "base/trace_event/memory_allocator_dump_guid.h"
+#include "base/trace_event/process_memory_dump.h"
+
 namespace media {
 
 namespace {
@@ -150,12 +153,33 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
 
   gfx::GpuMemoryBufferId GetId() const override { return handle_.id; }
 
-  gfx::GpuMemoryBufferHandle GetHandle() const override {
-    return gfx::CloneHandleForIPC(handle_);
+  gfx::GpuMemoryBufferType GetType() const override {
+    return gfx::NATIVE_PIXMAP;
+  }
+
+  gfx::GpuMemoryBufferHandle CloneHandle() const override {
+    DCHECK_EQ(handle_.type, gfx::NATIVE_PIXMAP);
+    gfx::GpuMemoryBufferHandle handle;
+    handle.type = gfx::NATIVE_PIXMAP;
+    handle.id = handle_.id;
+    handle.native_pixmap_handle =
+        gfx::CloneHandleForIPC(handle_.native_pixmap_handle);
+    return handle;
   }
 
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
+  }
+
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {
+    auto shared_buffer_guid = gfx::GetGenericSharedGpuMemoryGUIDForTracing(
+        tracing_process_id, GetId());
+    pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+    pmd->AddOwnershipEdge(buffer_dump_guid, shared_buffer_guid, importance);
   }
 
  private:

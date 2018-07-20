@@ -14,6 +14,8 @@
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -218,21 +220,33 @@ int GpuMemoryBufferImplSharedMemory::stride(size_t plane) const {
   return gfx::RowSizeForBufferFormat(size_.width(), format_, plane);
 }
 
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
+gfx::GpuMemoryBufferType GpuMemoryBufferImplSharedMemory::GetType() const {
+  return gfx::SHARED_MEMORY_BUFFER;
+}
+
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::CloneHandle()
+    const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.id = id_;
   handle.offset = offset_;
   handle.stride = stride_;
-  handle.handle = shared_memory_->handle();
+  handle.handle = base::SharedMemory::DuplicateHandle(shared_memory_->handle());
   return handle;
 }
 
-base::trace_event::MemoryAllocatorDumpGuid
-GpuMemoryBufferImplSharedMemory::GetGUIDForTracing(
-    uint64_t tracing_process_id) const {
-  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
-      "shared_memory_gpu/%" PRIx64 "/%d", tracing_process_id, id_.id));
+void GpuMemoryBufferImplSharedMemory::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+    uint64_t tracing_process_id,
+    int importance) const {
+  pmd->CreateSharedMemoryOwnershipEdge(buffer_dump_guid, GetSharedMemoryGUID(),
+                                       importance);
+}
+
+base::UnguessableToken GpuMemoryBufferImplSharedMemory::GetSharedMemoryGUID()
+    const {
+  return shared_memory_->mapped_id();
 }
 
 }  // namespace gpu

@@ -108,13 +108,9 @@ mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 gfx::mojom::AHardwareBufferHandlePtr
 StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
              gfx::GpuMemoryBufferHandle>::
-    android_hardware_buffer_handle(const gfx::GpuMemoryBufferHandle& handle) {
+    android_hardware_buffer_handle(gfx::GpuMemoryBufferHandle& handle) {
   if (handle.type != gfx::ANDROID_HARDWARE_BUFFER)
     return nullptr;
-
-  // Assume ownership of the input AHardwareBuffer.
-  auto scoped_handle = base::android::ScopedHardwareBufferHandle::Adopt(
-      handle.android_hardware_buffer);
 
   // We must keep a ref to the AHardwareBuffer alive until the receiver has
   // acquired its own reference. We do this by sending a message pipe handle
@@ -124,12 +120,12 @@ StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   mojo::MessagePipe tracking_pipe;
   auto wrapped_handle = gfx::mojom::AHardwareBufferHandle::New(
       mojo::WrapPlatformFile(
-          scoped_handle.SerializeAsFileDescriptor().release()),
+          handle.android_hardware_buffer.SerializeAsFileDescriptor().release()),
       std::move(tracking_pipe.handle0));
 
   // Pass ownership of the input handle to our tracking pipe to keep the AHB
   // alive until it's deserialized.
-  mojo::ScopeToMessagePipe(std::move(scoped_handle),
+  mojo::ScopeToMessagePipe(std::move(handle.android_hardware_buffer),
                            std::move(tracking_pipe.handle1));
   return wrapped_handle;
 }
@@ -193,10 +189,8 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     base::ScopedFD scoped_fd(fd);
     if (unwrap_result != MOJO_RESULT_OK || !scoped_fd.is_valid())
       return false;
-    out->android_hardware_buffer =
-        base::android::ScopedHardwareBufferHandle ::
-            DeserializeFromFileDescriptor(std::move(scoped_fd))
-                .Take();
+    out->android_hardware_buffer = base::android::ScopedHardwareBufferHandle::
+        DeserializeFromFileDescriptor(std::move(scoped_fd));
     out->offset = data.offset();
     out->stride = data.stride();
   }

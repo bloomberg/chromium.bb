@@ -5,6 +5,7 @@
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/containers/queue.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
@@ -122,9 +123,9 @@ void ARImageTransport::ResizeSharedBuffer(const gfx::Size& size,
 
   auto img = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(size);
 
-  AHardwareBuffer* ahb =
-      buffer->shared_gpu_memory_buffer->GetHandle().android_hardware_buffer;
-  bool ret = img->Initialize(ahb, false /* preserved */);
+  base::android::ScopedHardwareBufferHandle ahb =
+      buffer->shared_gpu_memory_buffer->CloneHandle().android_hardware_buffer;
+  bool ret = img->Initialize(ahb.get(), false /* preserved */);
   if (!ret) {
     DLOG(WARNING) << __FUNCTION__ << ": ERROR: failed to initialize image!";
     return;

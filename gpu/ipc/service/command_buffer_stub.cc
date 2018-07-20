@@ -797,10 +797,9 @@ void CommandBufferStub::OnWaitSyncTokenCompleted(const SyncToken& sync_token) {
 }
 
 void CommandBufferStub::OnCreateImage(
-    const GpuCommandBufferMsg_CreateImage_Params& params) {
+    GpuCommandBufferMsg_CreateImage_Params params) {
   TRACE_EVENT0("gpu", "CommandBufferStub::OnCreateImage");
   const int32_t id = params.id;
-  const gfx::GpuMemoryBufferHandle& handle = params.gpu_memory_buffer;
   const gfx::Size& size = params.size;
   const gfx::BufferFormat& format = params.format;
   const uint32_t internalformat = params.internal_format;
@@ -831,7 +830,8 @@ void CommandBufferStub::OnCreateImage(
   }
 
   scoped_refptr<gl::GLImage> image = channel()->CreateImageForGpuMemoryBuffer(
-      handle, size, format, internalformat, surface_handle_);
+      std::move(params.gpu_memory_buffer), size, format, internalformat,
+      surface_handle_);
   if (!image.get())
     return;
 

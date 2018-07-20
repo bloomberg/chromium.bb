@@ -566,8 +566,9 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle> {
 
 #if defined(OS_ANDROID)
 template <>
-struct COMPONENT_EXPORT(IPC) ParamTraits<AHardwareBuffer*> {
-  typedef AHardwareBuffer* param_type;
+struct COMPONENT_EXPORT(IPC)
+    ParamTraits<base::android::ScopedHardwareBufferHandle> {
+  typedef base::android::ScopedHardwareBufferHandle param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

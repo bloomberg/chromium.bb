@@ -99,7 +99,7 @@ ImageFactory* GpuMemoryBufferFactoryDXGI::AsImageFactory() {
 
 scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryDXGI::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,

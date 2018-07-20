@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/raster/raster_source.h"
@@ -27,8 +28,13 @@ class BitmapSoftwareBacking : public ResourcePool::SoftwareBacking {
     frame_sink->DidDeleteSharedBitmap(shared_bitmap_id);
   }
 
-  base::UnguessableToken SharedMemoryGuid() override {
-    return shared_memory->mapped_id();
+  void OnMemoryDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+      uint64_t tracing_process_id,
+      int importance) const override {
+    pmd->CreateSharedMemoryOwnershipEdge(
+        buffer_dump_guid, shared_memory->mapped_id(), importance);
   }
 
   LayerTreeFrameSink* frame_sink;
