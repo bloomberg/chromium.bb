@@ -497,6 +497,8 @@ jumbo_source_set("test_support") {
     "browsertest_util.h",
     "preload_check_test_util.cc",
     "preload_check_test_util.h",
+    "test_event_router_observer.cc",
+    "test_event_router_observer.h",
     "value_store/test_value_store_factory.cc",
     "value_store/test_value_store_factory.h",
     "value_store/testing_value_store.cc",

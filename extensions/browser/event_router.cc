@@ -243,6 +243,14 @@ void EventRouter::UnregisterObserver(Observer* observer) {
   }
 }
 
+void EventRouter::AddObserverForTesting(TestObserver* observer) {
+  test_observers_.AddObserver(observer);
+}
+
+void EventRouter::RemoveObserverForTesting(TestObserver* observer) {
+  test_observers_.RemoveObserver(observer);
+}
+
 void EventRouter::OnListenerAdded(const EventListener* listener) {
   const EventListenerInfo details(listener->event_name(),
                                   listener->extension_id(),
@@ -510,6 +518,10 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
   DCHECK(!event->restrict_to_browser_context ||
          ExtensionsBrowserClient::Get()->IsSameContext(
              browser_context_, event->restrict_to_browser_context));
+
+  for (TestObserver& observer : test_observers_)
+    observer.OnWillDispatchEvent(*event);
+
   std::set<const EventListener*> listeners(
       listeners_.GetEventListeners(*event));
 
@@ -913,7 +925,7 @@ Event::Event(events::HistogramValue histogram_value,
 
 Event::~Event() {}
 
-Event* Event::DeepCopy() {
+Event* Event::DeepCopy() const {
   Event* copy = new Event(
       histogram_value, event_name,
       std::unique_ptr<base::ListValue>(event_args->DeepCopy()),

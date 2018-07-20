@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/chrome_zipfile_installer.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/devtools_util.h"
+#include "chrome/browser/extensions/error_console/error_console_factory.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -52,7 +53,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -66,15 +69,20 @@
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/error_map.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/file_highlighter.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/path_util.h"
+#include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/warning_service.h"
+#include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/zipfile_installer.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -302,6 +310,20 @@ DeveloperPrivateAPI::GetFactoryInstance() {
   return g_developer_private_api_factory.Pointer();
 }
 
+template <>
+void BrowserContextKeyedAPIFactory<
+    DeveloperPrivateAPI>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionRegistryFactory::GetInstance());
+  DependsOn(ErrorConsoleFactory::GetInstance());
+  DependsOn(ProcessManagerFactory::GetInstance());
+  DependsOn(AppWindowRegistry::Factory::GetInstance());
+  DependsOn(WarningServiceFactory::GetInstance());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
+  DependsOn(ExtensionManagementFactory::GetInstance());
+  DependsOn(CommandService::GetFactoryInstance());
+  DependsOn(EventRouterFactory::GetInstance());
+}
+
 // static
 DeveloperPrivateAPI* DeveloperPrivateAPI::Get(
     content::BrowserContext* context) {
@@ -341,6 +363,9 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       prefs::kExtensionsUIDeveloperMode,
       base::Bind(&DeveloperPrivateEventRouter::OnProfilePrefChanged,
                  base::Unretained(this)));
+  notification_registrar_.Add(
+      this, extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
+      content::Source<Profile>(profile_));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
@@ -461,6 +486,18 @@ void DeveloperPrivateEventRouter::ExtensionWarningsChanged(
     const ExtensionIdSet& affected_extensions) {
   for (const ExtensionId& id : affected_extensions)
     BroadcastItemStateChanged(developer::EVENT_TYPE_WARNINGS_CHANGED, id);
+}
+
+void DeveloperPrivateEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED, type);
+
+  UpdatedExtensionPermissionsInfo* info =
+      content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PERMISSIONS_CHANGED,
+                            info->extension->id());
 }
 
 void DeveloperPrivateEventRouter::OnProfilePrefChanged() {
