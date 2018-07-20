@@ -602,7 +602,7 @@ class MockXRInputSource {
     this.primary_input_clicked_ = false;
     this.grip_ = null;
 
-    this.target_ray_mode_ = "gazing";
+    this.target_ray_mode_ = "gaze";
     this.pointer_offset_ = null;
     this.emulated_position_ = false;
     this.handedness_ = "";
@@ -702,10 +702,10 @@ class MockXRInputSource {
       input_desc.emulatedPosition = this.emulated_position_;
 
       switch (this.target_ray_mode_) {
-        case "gazing":
+        case "gaze":
           input_desc.targetRayMode = device.mojom.XRTargetRayMode.GAZING;
           break;
-        case "pointing":
+        case "tracked-pointer":
           input_desc.targetRayMode = device.mojom.XRTargetRayMode.POINTING;
           break;
       }

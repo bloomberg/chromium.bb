@@ -19,7 +19,7 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
     setPose(VALID_POSE);
 
     let input_source = new MockXRInputSource();
-    input_source.targetRayMode = "pointing";
+    input_source.targetRayMode = "tracked-pointer";
     input_source.handedness = "right";
 
     // Don't set a grip matrix yet
@@ -37,7 +37,7 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
 
         t.step( () => {
           // The input pose should be null when no grip matrix is provided.
-          assert_equals(source.targetRayMode, "pointing");
+          assert_equals(source.targetRayMode, "tracked-pointer");
           assert_equals(input_pose, null);
         });
 

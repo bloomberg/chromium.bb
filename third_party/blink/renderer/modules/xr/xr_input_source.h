@@ -20,7 +20,7 @@ class XRInputSource : public ScriptWrappable {
 
  public:
   enum Handedness { kHandNone = 0, kHandLeft = 1, kHandRight = 2 };
-  enum TargetRayMode { kGazing = 1, kPointing = 2, kTapping = 3 };
+  enum TargetRayMode { kGaze = 1, kTrackedPointer = 2, kScreen = 3 };
 
   XRInputSource(XRSession*, uint32_t source_id);
   ~XRInputSource() override = default;

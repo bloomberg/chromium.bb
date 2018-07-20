@@ -58,7 +58,7 @@ XRInputPose* XRFrame::getInputPose(
   }
 
   switch (input_source->target_ray_mode_) {
-    case XRInputSource::kTapping: {
+    case XRInputSource::kScreen: {
       // If the pointer origin is the screen we need the head's base pose and
       // the pointer transform matrix to continue. The pointer transform will
       // represent the point the canvas was clicked as an offset from the view.
@@ -73,7 +73,7 @@ XRInputPose* XRFrame::getInputPose(
 
       return new XRInputPose(std::move(pointer_pose), nullptr);
     }
-    case XRInputSource::kGazing: {
+    case XRInputSource::kGaze: {
       // If the pointer origin is the users head, this is a gaze cursor and the
       // returned pointer is based on the device pose. If we don't have a valid
       // base pose (most common when tracking is lost) return null.
@@ -88,7 +88,7 @@ XRInputPose* XRFrame::getInputPose(
       return new XRInputPose(std::move(pointer_pose), nullptr,
                              input_source->emulatedPosition());
     }
-    case XRInputSource::kPointing: {
+    case XRInputSource::kTrackedPointer: {
       // If the input source doesn't have a base pose return null;
       if (!input_source->base_pose_matrix_) {
         return nullptr;
