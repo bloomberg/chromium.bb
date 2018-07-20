@@ -1188,6 +1188,22 @@ class CBuildBotTest(ChromeosConfigTestBase):
                      "Tryjob not on legoland: %s" %
                      ', '.join(not_legoland))
 
+  def testUncheduledLegoland(self):
+    """LUCI Scheduler entries only work for swarming builds."""
+    all_slaves = self.findAllSlaveBuilds()
+
+    not_scheduled_legoland = []
+    for config in self.site_config.itervalues():
+      if (config.active_waterfall == waterfall.WATERFALL_SWARMING and
+          not (config_lib.isTryjobConfig(config) or
+               config.schedule or
+               config.name in all_slaves)):
+        not_scheduled_legoland.append(config.name)
+
+    self.assertFalse(not_scheduled_legoland,
+                     "Unscheduled config on waterfall: %s" %
+                     ', '.join(not_scheduled_legoland))
+
 
 class TemplateTest(ChromeosConfigTestBase):
   """Tests for templates."""

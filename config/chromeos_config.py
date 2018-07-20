@@ -1127,7 +1127,6 @@ def GeneralTemplates(site_config, ge_build_config):
       # Add betty smoke VMTest crbug.com/710629.
       vm_tests=[config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   # TODO(davidjames): Convert this to an external config once the unified master
@@ -3204,6 +3203,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           external_board_configs,
           site_config.templates.chromium_pfq,
           site_config.templates.build_external_chrome,
+          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
   site_config.AddForBoards(
@@ -3253,6 +3253,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           _chrome_pfq_important_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
+          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
   master_config.AddSlaves(
@@ -3262,6 +3263,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           important=False,
+          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
   # Define the result of the build configs for tryjob purposes.
@@ -3334,7 +3336,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=6*60 * 60,
       description='TOT builder to build a firmware branch.',
       doc='https://goto.google.com/tot-for-firmware-branches',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
 
@@ -3912,7 +3913,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=None,
       builder_class_name='release_builders.CreateBranchBuilder',
       description='Used for creating/deleting branches (TPMs only)',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # This very weird tryjob is only run locally. It should never upload
       # build artifacts.
       archive=False,
