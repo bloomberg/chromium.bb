@@ -44,7 +44,9 @@ enum WebContentSecurityPolicyType {
 enum WebContentSecurityPolicySource {
   kWebContentSecurityPolicySourceHTTP,
   kWebContentSecurityPolicySourceMeta,
-  kWebContentSecurityPolicySourceLast = kWebContentSecurityPolicySourceMeta
+  kWebContentSecurityPolicySourceOriginPolicy,
+  kWebContentSecurityPolicySourceLast =
+      kWebContentSecurityPolicySourceOriginPolicy
 };
 
 enum WebContentSecurityPolicyDisposition {

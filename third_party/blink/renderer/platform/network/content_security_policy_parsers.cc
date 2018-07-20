@@ -66,4 +66,7 @@ STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceHTTP,
                    kContentSecurityPolicyHeaderSourceHTTP);
 STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceMeta,
                    kContentSecurityPolicyHeaderSourceMeta);
+STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceOriginPolicy,
+                   kContentSecurityPolicyHeaderSourceOriginPolicy);
+
 }  // namespace blink

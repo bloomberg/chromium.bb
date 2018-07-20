@@ -20,7 +20,8 @@ enum ContentSecurityPolicyHeaderType {
 
 enum ContentSecurityPolicyHeaderSource {
   kContentSecurityPolicyHeaderSourceHTTP,
-  kContentSecurityPolicyHeaderSourceMeta
+  kContentSecurityPolicyHeaderSourceMeta,
+  kContentSecurityPolicyHeaderSourceOriginPolicy
 };
 
 enum ContentSecurityPolicyHashAlgorithm {
