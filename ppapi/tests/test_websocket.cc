@@ -40,12 +40,10 @@ const char kCloseServerURL[] = "close";
 const char kCloseWithCodeAndReasonServerURL[] = "close-code-and-reason";
 const char kProtocolTestServerURL[] = "protocol-test?protocol=";
 
-const char* const kInvalidURLs[] = {
-  "http://www.google.com/invalid_scheme",
-  "ws://www.google.com/invalid#fragment",
-  "ws://www.google.com:65535/invalid_port",
-  NULL
-};
+const char* const kInvalidURLs[] = {"http://www.google.com/invalid_scheme",
+                                    "ws://www.google.com/invalid#fragment",
+                                    "ws://www.google.com:7/invalid_port",
+                                    NULL};
 
 // Internal packet sizes.
 const uint64_t kMessageFrameOverhead = 6;
