@@ -128,6 +128,11 @@ Member<DocumentMarkerList>& DocumentMarkerController::ListForType(
   return (*marker_lists)[marker_list_index];
 }
 
+bool DocumentMarkerController::PossiblyHasMarkers(
+    DocumentMarker::MarkerType type) {
+  return PossiblyHasMarkers(DocumentMarker::MarkerTypes(type));
+}
+
 inline bool DocumentMarkerController::PossiblyHasMarkers(
     DocumentMarker::MarkerTypes types) {
   if (markers_.IsEmpty()) {
@@ -140,7 +145,7 @@ inline bool DocumentMarkerController::PossiblyHasMarkers(
     // Alternatively, we could handle this case at the time the Node is GC'ed,
     // but that operation is more performance-sensitive than anywhere
     // PossiblyHasMarkers() is used.
-    possibly_existing_marker_types_ = 0;
+    possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
     SetContext(nullptr);
     return false;
   }
@@ -149,12 +154,11 @@ inline bool DocumentMarkerController::PossiblyHasMarkers(
 }
 
 DocumentMarkerController::DocumentMarkerController(Document& document)
-    : possibly_existing_marker_types_(0), document_(&document) {
-}
+    : document_(&document) {}
 
 void DocumentMarkerController::Clear() {
   markers_.clear();
-  possibly_existing_marker_types_ = 0;
+  possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
   SetContext(nullptr);
 }
 
@@ -280,7 +284,8 @@ void DocumentMarkerController::AddMarkerInternal(
 
 void DocumentMarkerController::AddMarkerToNode(const Node& node,
                                                DocumentMarker* new_marker) {
-  possibly_existing_marker_types_.Add(new_marker->GetType());
+  possibly_existing_marker_types_ = possibly_existing_marker_types_.Add(
+      DocumentMarker::MarkerTypes(new_marker->GetType()));
   SetContext(document_);
 
   Member<MarkerLists>& markers =
@@ -308,7 +313,7 @@ void DocumentMarkerController::MoveMarkers(const Node* src_node,
   if (length <= 0)
     return;
 
-  if (!PossiblyHasMarkers(DocumentMarker::AllMarkers()))
+  if (!PossiblyHasMarkers(DocumentMarker::MarkerTypes::All()))
     return;
   DCHECK(!markers_.IsEmpty());
 
@@ -323,7 +328,7 @@ void DocumentMarkerController::MoveMarkers(const Node* src_node,
   MarkerLists* dst_markers = markers_.at(dst_node);
 
   bool doc_dirty = false;
-  for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+  for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
     DocumentMarkerList* const src_list = ListForType(src_markers, type);
     if (!src_list)
       continue;
@@ -360,7 +365,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
 
   bool doc_dirty = false;
   size_t empty_lists_count = 0;
-  for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+  for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
     DocumentMarkerList* const list = ListForType(markers, type);
     if (!list || list->IsEmpty()) {
       if (list && list->IsEmpty())
@@ -383,7 +388,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
   if (empty_lists_count == DocumentMarker::kMarkerTypeIndexesCount) {
     markers_.erase(&node);
     if (markers_.IsEmpty()) {
-      possibly_existing_marker_types_ = 0;
+      possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
       SetContext(nullptr);
     }
   }
@@ -509,7 +514,7 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
   DocumentMarkerVector result;
   for (MarkerMap::iterator i = markers_.begin(); i != markers_.end(); ++i) {
     MarkerLists* markers = i->value.Get();
-    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list)
         continue;
@@ -531,18 +536,19 @@ DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
   // Note: DocumentMarkerController::MarkersFor() returns markers sorted by
   // start offset.
   const DocumentMarkerVector& suggestion_markers =
-      MarkersFor(&node, DocumentMarker::kSuggestion);
+      MarkersFor(&node, DocumentMarker::MarkerTypes::Suggestion());
   if (suggestion_markers.IsEmpty()) {
     // If there are no suggestion markers, we can return early as a minor
     // performance optimization.
-    DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
-    remaining_types.Remove(DocumentMarker::kSuggestion);
-    return MarkersFor(&node, remaining_types);
+    return MarkersFor(
+        &node, DocumentMarker::MarkerTypes::AllBut(
+                   DocumentMarker::MarkerTypes(DocumentMarker::kSuggestion)));
   }
 
   const DocumentMarkerVector& markers_overridden_by_suggestion_markers =
       MarkersFor(&node,
-                 DocumentMarker::kComposition | DocumentMarker::kSpelling);
+                 DocumentMarker::MarkerTypes(DocumentMarker::kComposition |
+                                             DocumentMarker::kSpelling));
 
   Vector<unsigned> suggestion_starts;
   Vector<unsigned> suggestion_ends;
@@ -590,12 +596,10 @@ DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
 
   markers_to_paint.AppendVector(suggestion_markers);
 
-  DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
-  remaining_types.Remove(DocumentMarker::kComposition |
-                         DocumentMarker::kSpelling |
-                         DocumentMarker::kSuggestion);
-
-  markers_to_paint.AppendVector(MarkersFor(&node, remaining_types));
+  markers_to_paint.AppendVector(MarkersFor(
+      &node, DocumentMarker::MarkerTypes::AllBut(DocumentMarker::MarkerTypes(
+                 DocumentMarker::kComposition | DocumentMarker::kSpelling |
+                 DocumentMarker::kSuggestion))));
 
   return markers_to_paint;
 }
@@ -684,7 +688,7 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
       continue;
     MarkerLists* markers = node_markers.value;
     for (DocumentMarker::MarkerType type :
-         DocumentMarker::MisspellingMarkers()) {
+         DocumentMarker::MarkerTypes::Misspelling()) {
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list)
         continue;
@@ -721,8 +725,7 @@ void DocumentMarkerController::RemoveMarkersOfTypes(
       RemoveMarkersFromList(iterator, marker_types);
   }
 
-  possibly_existing_marker_types_.Remove(marker_types);
-  if (PossiblyHasMarkers(DocumentMarker::AllMarkers()))
+  if (PossiblyHasMarkers(DocumentMarker::MarkerTypes::AllBut(marker_types)))
     return;
   SetContext(nullptr);
 }
@@ -734,13 +737,13 @@ void DocumentMarkerController::RemoveMarkersFromList(
   bool node_can_be_removed;
 
   size_t empty_lists_count = 0;
-  if (marker_types == DocumentMarker::AllMarkers()) {
+  if (marker_types == DocumentMarker::MarkerTypes::All()) {
     needs_repainting = true;
     node_can_be_removed = true;
   } else {
     MarkerLists* markers = iterator->value.Get();
 
-    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list || list->IsEmpty()) {
         if (list && list->IsEmpty())
@@ -769,7 +772,7 @@ void DocumentMarkerController::RemoveMarkersFromList(
   if (node_can_be_removed) {
     markers_.erase(iterator);
     if (markers_.IsEmpty()) {
-      possibly_existing_marker_types_ = 0;
+      possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
       SetContext(nullptr);
     }
   }
@@ -788,7 +791,7 @@ void DocumentMarkerController::RepaintMarkers(
 
     // inner loop: process each marker in the current node
     MarkerLists* markers = i->value.Get();
-    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list || list->IsEmpty() || !marker_types.Contains(type))
         continue;
@@ -858,7 +861,7 @@ void DocumentMarkerController::ShowMarkers() const {
     const Node* node = node_iterator->key;
     builder.Append(String::Format("%p", node));
     MarkerLists* markers = markers_.at(node);
-    for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+    for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list)
         continue;
@@ -891,7 +894,7 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
                                                       unsigned offset,
                                                       unsigned old_length,
                                                       unsigned new_length) {
-  if (!PossiblyHasMarkers(DocumentMarker::AllMarkers()))
+  if (!PossiblyHasMarkers(DocumentMarker::MarkerTypes::All()))
     return;
   DCHECK(!markers_.IsEmpty());
 

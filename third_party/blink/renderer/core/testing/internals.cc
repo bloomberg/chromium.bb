@@ -225,7 +225,7 @@ static base::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
 static base::Optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
     const String& marker_type) {
   if (marker_type.IsEmpty() || DeprecatedEqualIgnoringCase(marker_type, "all"))
-    return DocumentMarker::AllMarkers();
+    return DocumentMarker::MarkerTypes::All();
   base::Optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type)
     return base::nullopt;
@@ -950,9 +950,8 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
   DCHECK(node);
 
   // Only TextMatch markers can be active.
-  DocumentMarker::MarkerType marker_type = DocumentMarker::kTextMatch;
-  DocumentMarkerVector markers =
-      node->GetDocument().Markers().MarkersFor(node, marker_type);
+  DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
+      node, DocumentMarker::MarkerTypes::TextMatch());
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {

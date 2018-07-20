@@ -135,7 +135,8 @@ DocumentMarker* SpellCheckMarkerAtPosition(
 
   const unsigned offset = position.ComputeOffsetInContainerNode();
   return document_marker_controller.FirstMarkerIntersectingOffsetRange(
-      *ToText(node), offset, offset, DocumentMarker::MisspellingMarkers());
+      *ToText(node), offset, offset,
+      DocumentMarker::MarkerTypes::Misspelling());
 }
 
 }  // namespace

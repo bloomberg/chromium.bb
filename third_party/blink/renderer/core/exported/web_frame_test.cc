@@ -7012,7 +7012,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange) {
 
   EXPECT_EQ(1, textcheck.NumberOfTimesChecked());
   EXPECT_EQ(1, NumMarkersInRange(document, selection_range,
-                                 DocumentMarker::kSpelling));
+                                 DocumentMarker::MarkerTypes::Spelling()));
 
   frame->ReplaceMisspelledRange("welcome");
   EXPECT_EQ("_welcome_.", WebFrameContentDumper::DumpWebViewAsText(
@@ -7059,7 +7059,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers) {
                                        .ToNormalizedEphemeralRange();
 
   EXPECT_EQ(0, NumMarkersInRange(document, selection_range,
-                                 DocumentMarker::kSpelling));
+                                 DocumentMarker::MarkerTypes::Spelling()));
 }
 
 static void GetSpellingMarkerOffsets(WebVector<unsigned>* offsets,

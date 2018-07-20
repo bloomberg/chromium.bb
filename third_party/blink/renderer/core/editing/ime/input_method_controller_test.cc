@@ -2410,13 +2410,15 @@ TEST_F(InputMethodControllerTest, CompositionUnderlineSpansMultipleNodes) {
   Node* text2 = b->nextSibling();
 
   const DocumentMarkerVector& text1_markers =
-      GetDocument().Markers().MarkersFor(text1, DocumentMarker::kComposition);
+      GetDocument().Markers().MarkersFor(
+          text1, DocumentMarker::MarkerTypes::Composition());
   EXPECT_EQ(1u, text1_markers.size());
   EXPECT_EQ(0u, text1_markers[0]->StartOffset());
   EXPECT_EQ(1u, text1_markers[0]->EndOffset());
 
   const DocumentMarkerVector& text2_markers =
-      GetDocument().Markers().MarkersFor(text2, DocumentMarker::kComposition);
+      GetDocument().Markers().MarkersFor(
+          text2, DocumentMarker::MarkerTypes::Composition());
   EXPECT_EQ(1u, text2_markers.size());
   EXPECT_EQ(0u, text2_markers[0]->StartOffset());
   EXPECT_EQ(3u, text2_markers[0]->EndOffset());

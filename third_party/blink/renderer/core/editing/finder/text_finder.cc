@@ -343,7 +343,7 @@ void TextFinder::StopFindingAndClearSelection() {
 
   // Remove all markers for matches found and turn off the highlighting.
   OwnerFrame().GetFrame()->GetDocument()->Markers().RemoveMarkersOfTypes(
-      DocumentMarker::kTextMatch);
+      DocumentMarker::MarkerTypes::TextMatch());
   OwnerFrame().GetFrame()->GetEditor().SetMarkedTextMatchesAreHighlighted(
       false);
   ClearFindMatchesCache();
@@ -828,7 +828,7 @@ void TextFinder::UnmarkAllTextMatches() {
   if (frame && frame->GetPage() &&
       frame->GetEditor().MarkedTextMatchesAreHighlighted()) {
     frame->GetDocument()->Markers().RemoveMarkersOfTypes(
-        DocumentMarker::kTextMatch);
+        DocumentMarker::MarkerTypes::TextMatch());
   }
 }
 

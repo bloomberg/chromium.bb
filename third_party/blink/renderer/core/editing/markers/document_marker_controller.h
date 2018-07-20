@@ -80,11 +80,11 @@ class CORE_EXPORT DocumentMarkerController final
   void RemoveMarkersOfTypes(DocumentMarker::MarkerTypes);
   void RemoveMarkersForNode(
       const Node*,
-      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+      DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
   void RemoveSuggestionMarkerByTag(const Node*, int32_t marker_tag);
   void RepaintMarkers(
-      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+      DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
   // Returns true if markers within a range are found.
   bool SetTextMatchMarkersActive(const EphemeralRange&, bool);
   // Returns true if markers within a range defined by a node, |startOffset| and
@@ -118,7 +118,7 @@ class CORE_EXPORT DocumentMarkerController final
                            DocumentMarker::MarkerTypes);
   DocumentMarkerVector MarkersFor(
       const Node*,
-      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+      DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
   DocumentMarkerVector Markers();
   // TODO(yoichio): Make const by making PossiblyHasMarkers const.
   DocumentMarkerVector ComputeMarkersToPaint(const Node&);
@@ -153,6 +153,7 @@ class CORE_EXPORT DocumentMarkerController final
   static Member<DocumentMarkerList>& ListForType(MarkerLists*,
                                                  DocumentMarker::MarkerType);
   bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
+  bool PossiblyHasMarkers(DocumentMarker::MarkerType);
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
   void RemoveMarkersInternal(const Node&,
