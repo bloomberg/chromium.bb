@@ -92,10 +92,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 // The UI displays relative time for up to this number of hours and then
 // switches to absolute values.
 const int kRelativeTimeMaxHours = 4;
-// Height for single line headers.
-const CGFloat kSingleLineSectionHeaderHeight = 44;
-// Height for double line headers.
-const CGFloat kDoubleLineSectionHeaderHeight = 56;
 // Section index for recently closed tabs.
 const int kRecentlyClosedTabsSectionIndex = 0;
 
@@ -637,24 +633,17 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   }
 }
 
-// TODO(crbug.com/850814): Use estimatedSectionHeaderHeight once we stop
-// supporting iOS10.
+// TODO(crbug.com/850814): Use only dynamic sizing once we stop supporting
+// iOS10.
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   DCHECK_EQ(tableView, self.tableView);
   if (@available(iOS 11, *)) {
     return UITableViewAutomaticDimension;
   } else {
-    NSInteger sectionIdentifier =
-        [self.tableViewModel sectionIdentifierForSection:section];
-    switch (sectionIdentifier) {
-      case SectionIdentifierRecentlyClosedTabs:
-      case SectionIdentifierOtherDevices:
-        return kSingleLineSectionHeaderHeight;
-      default:
-        // All remote session sections.
-        return kDoubleLineSectionHeaderHeight;
-    }
+    TableViewHeaderFooterItem* header =
+        [self.tableViewModel headerForSection:section];
+    return [header headerHeightForWidth:self.view.bounds.size.width];
   }
 }
 

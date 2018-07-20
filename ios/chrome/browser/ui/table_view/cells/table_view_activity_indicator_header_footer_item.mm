@@ -41,6 +41,22 @@
     header.titleLabel.textColor = styler.headerFooterTitleColor;
 }
 
+- (CGFloat)headerHeightForWidth:(CGFloat)width {
+  static TableViewActivityIndicatorHeaderFooterView* header;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    header = [[TableViewActivityIndicatorHeaderFooterView alloc] init];
+  });
+
+  [self configureHeaderFooterView:header
+                       withStyler:[[ChromeTableViewStyler alloc] init]];
+  header.frame = CGRectMake(0, 0, width, 0);
+  [header setNeedsLayout];
+  [header layoutIfNeeded];
+  return
+      [header systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+}
+
 @end
 
 #pragma mark - TableViewActivityIndicatorHeaderFooterView
