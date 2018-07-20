@@ -1,0 +1,36 @@
+import("//third_party/protobuf/proto_library.gni")
+
+template("fuzzable_proto_library") {
+  forward_variables_from(invoker, "*")
+  if (use_libfuzzer) {
+    proto_library("proto_library_" + target_name) {
+      assert(current_toolchain == host_toolchain)
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps +=
+          [ "//third_party/libprotobuf-mutator:override_lite_runtime_plugin" ]
+      generator_plugin_label =
+          "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
+      generator_plugin_suffix = ".pb"
+
+      # The plugin will generate cc, so don't ask for it to be done by protoc.
+      generate_cc = false
+      generate_python = false
+    }
+
+    # Use a component for the build target with target_name. That way we can
+    # also force dependencies to build using protobuf_full.
+    component(target_name) {
+      public_deps = [
+        ":proto_library_" + target_name,
+        "//third_party/libprotobuf-mutator:protobuf_full",
+      ]
+    }
+  } else {
+    # fuzzable_proto_library should behave like a proto_library when
+    # !use_libfuzzer.
+    proto_library(target_name) {
+    }
+  }
+}
