@@ -52,9 +52,8 @@ QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
     QuicStringPiece /*alpn*/) {
   // The QuicServerSessionBase takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
-      connection_id, client_address, helper(), alarm_factory(),
-      CreatePerConnectionWriter(),
-      /* owns_writer= */ true, Perspective::IS_SERVER, GetSupportedVersions());
+      connection_id, client_address, helper(), alarm_factory(), writer(),
+      /* owns_writer= */ false, Perspective::IS_SERVER, GetSupportedVersions());
 
   QuicServerSessionBase* session = new QuicSimpleServerSession(
       config(), connection, this, session_helper(), crypto_config(),

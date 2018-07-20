@@ -10,7 +10,6 @@
 #include "net/third_party/quic/core/chlo_extractor.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
-#include "net/third_party/quic/core/quic_per_connection_packet_writer.h"
 #include "net/third_party/quic/core/quic_time_wait_list_manager.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/stateless_rejector.h"
@@ -948,10 +947,6 @@ const QuicSocketAddress QuicDispatcher::GetClientAddress() const {
 
 bool QuicDispatcher::ShouldDestroySessionAsynchronously() {
   return true;
-}
-
-QuicPacketWriter* QuicDispatcher::CreatePerConnectionWriter() {
-  return new QuicPerConnectionPacketWriter(writer_.get());
 }
 
 void QuicDispatcher::SetLastError(QuicErrorCode error) {

@@ -94,10 +94,10 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
         crypto_stream_factory_ == nullptr) {
       return QuicSimpleDispatcher::CreateQuicSession(id, client, alpn);
     }
-    QuicConnection* connection = new QuicConnection(
-        id, client, helper(), alarm_factory(), CreatePerConnectionWriter(),
-        /* owns_writer= */ true, Perspective::IS_SERVER,
-        GetSupportedVersions());
+    QuicConnection* connection =
+        new QuicConnection(id, client, helper(), alarm_factory(), writer(),
+                           /* owns_writer= */ false, Perspective::IS_SERVER,
+                           GetSupportedVersions());
 
     QuicServerSessionBase* session = nullptr;
     if (stream_factory_ != nullptr || crypto_stream_factory_ != nullptr) {

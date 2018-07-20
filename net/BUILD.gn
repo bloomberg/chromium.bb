@@ -3215,8 +3215,6 @@ source_set("simple_quic_tools") {
     "third_party/quic/core/quic_dispatcher.h",
     "third_party/quic/core/quic_packet_writer_wrapper.cc",
     "third_party/quic/core/quic_packet_writer_wrapper.h",
-    "third_party/quic/core/quic_per_connection_packet_writer.cc",
-    "third_party/quic/core/quic_per_connection_packet_writer.h",
     "third_party/quic/core/quic_process_packet_interface.h",
     "third_party/quic/core/quic_spdy_client_session.cc",
     "third_party/quic/core/quic_spdy_client_session.h",
