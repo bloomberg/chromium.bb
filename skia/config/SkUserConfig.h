@@ -214,6 +214,9 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_ATTR_DEPRECATED          SK_NOTHING_ARG1
 #define GR_GL_CUSTOM_SETUP_HEADER   "GrGLConfig_chrome.h"
 
+// enable interfaces unique to Chrome
+#define SK_BUILD_FOR_CHROME
+
 // ===== End Chrome-specific definitions =====
 
 #endif
