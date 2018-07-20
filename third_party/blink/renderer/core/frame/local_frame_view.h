@@ -167,8 +167,22 @@ class CORE_EXPORT LocalFrameView final
 
   // Marks this frame, and ancestor frames, as needing one intersection
   // observervation. This overrides throttling for one frame, up to
-  // kLayoutClean.
-  void SetNeedsIntersectionObservation();
+  // kLayoutClean. The order of these enums is important - they must proceed
+  // from "least required to most required".
+  enum IntersectionObservationState {
+    // The next painting frame does not need an intersection observation.
+    kNotNeeded = 0,
+    // The next painting frame needs an intersection observation.
+    kDesired = 1,
+    // The next painting frame must be generated up to intersection observation
+    // (even if frame is throttled).
+    kRequired = 2
+  };
+
+  // Sets the internal IntersectionObservationState to the max of the
+  // current value and the provided one.
+  void SetNeedsIntersectionObservation(IntersectionObservationState);
+
   // Marks this frame, and ancestor frames, as needing a mandatory compositing
   // update. This overrides throttling for one frame, up to kCompositingClean.
   void SetNeedsForcedCompositingUpdate();
@@ -853,7 +867,8 @@ class CORE_EXPORT LocalFrameView final
 
   bool suppress_adjust_view_size_;
   bool allows_layout_invalidation_after_layout_clean_;
-  bool needs_intersection_observation_;
+
+  IntersectionObservationState intersection_observation_state_;
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
