@@ -1195,19 +1195,40 @@ static_library("browser_test_support") {
 _add_unwind_tables_in_chrome_public_apk =
     can_unwind_with_cfi_table && is_official_build
 
-chrome_public_apk_tmpl_shared("chrome_public_apk") {
-  android_manifest = chrome_public_android_manifest
-  android_manifest_dep = ":chrome_public_android_manifest"
-  apk_name = "ChromePublic"
-  shared_libraries = [ ":libchrome" ]
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk) {
-    shared_library_for_unwind_asset = "chrome"
+template("chrome_public_apk_or_module_tmpl") {
+  chrome_public_apk_tmpl_shared(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "apk_name",
+                             "is_base_module",
+                             "module_name",
+                             "target_type",
+                           ])
+
+    android_manifest = chrome_public_android_manifest
+    android_manifest_dep = ":chrome_public_android_manifest"
+    shared_libraries = [ ":libchrome" ]
+    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
+    if (_add_unwind_tables_in_chrome_public_apk) {
+      shared_library_for_unwind_asset = "chrome"
+    }
   }
+}
+
+chrome_public_apk_or_module_tmpl("chrome_public_apk") {
+  apk_name = "ChromePublic"
+  target_type = "android_apk"
+}
+
+chrome_public_apk_or_module_tmpl("chrome_public_base_module") {
+  module_name = "ChromePublicBase"
+  target_type = "android_app_bundle_module"
+  is_base_module = true
 }
 
 chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   testonly = true
+  target_type = "android_apk"
   android_manifest = chrome_public_android_manifest
   android_manifest_dep = ":chrome_public_android_manifest"
   apk_name = "ChromePublicForTest"
@@ -1228,22 +1249,42 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   }
 }
 
-chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
-  android_manifest = chrome_modern_public_android_manifest
-  android_manifest_dep = ":chrome_modern_public_android_manifest"
+template("chrome_modern_public_apk_or_module_tmpl") {
+  chrome_public_apk_tmpl_shared(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "apk_name",
+                             "is_base_module",
+                             "module_name",
+                             "target_type",
+                           ])
+
+    android_manifest = chrome_modern_public_android_manifest
+    android_manifest_dep = ":chrome_modern_public_android_manifest"
+    shared_libraries = [ ":libchrome" ]
+    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
+    if (_add_unwind_tables_in_chrome_public_apk) {
+      shared_library_for_unwind_asset = "chrome"
+    }
+
+    if (!is_java_debug) {
+      png_to_webp = true
+    }
+
+    # Always enable load_library_from_apk.
+    load_library_from_apk = chromium_linker_supported
+  }
+}
+
+chrome_modern_public_apk_or_module_tmpl("chrome_modern_public_apk") {
   apk_name = "ChromeModernPublic"
-  shared_libraries = [ ":libchrome" ]
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk) {
-    shared_library_for_unwind_asset = "chrome"
-  }
+  target_type = "android_apk"
+}
 
-  if (!is_java_debug) {
-    png_to_webp = true
-  }
-
-  # Always enable load_library_from_apk.
-  load_library_from_apk = chromium_linker_supported
+chrome_modern_public_apk_or_module_tmpl("chrome_modern_public_base_module") {
+  module_name = "ChromeModernPublicBase"
+  target_type = "android_app_bundle_module"
+  is_base_module = true
 }
 
 android_library("monochrome_java") {
@@ -1258,33 +1299,54 @@ android_library("monochrome_java") {
       [ "java/src/org/chromium/chrome/browser/MonochromeApplication.java" ]
 }
 
-monochrome_public_apk_tmpl("monochrome_public_apk") {
-  android_manifest = monochrome_public_android_manifest
-  android_manifest_dep = ":monochrome_public_android_manifest"
+template("monochrome_public_apk_or_module_tmpl") {
+  monochrome_public_apk_tmpl(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "apk_name",
+                             "is_base_module",
+                             "module_name",
+                             "target_type",
+                           ])
+
+    android_manifest = monochrome_public_android_manifest
+    android_manifest_dep = ":monochrome_public_android_manifest"
+
+    if (public_android_sdk) {
+      # Resource whitelist used when generating R.java files and causes
+      # only the webview subset of resources to be marked as non-final.
+      shared_resources_whitelist_target = "//android_webview:system_webview_apk"
+    }
+
+    deps = [
+      ":monochrome_java",
+      "//android_webview:platform_service_bridge_upstream_implementation_java",
+      "//base:base_java",
+      "//chrome/android:app_hooks_java",
+      "//chrome/android:chrome_java",
+    ]
+
+    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
+    if (_add_unwind_tables_in_chrome_public_apk && can_unwind_with_cfi_table) {
+      shared_library_for_unwind_asset = "monochrome"
+    }
+  }
+}
+
+monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
   apk_name = "MonochromePublic"
+  target_type = "android_apk"
+}
 
-  if (public_android_sdk) {
-    # Resource whitelist used when generating R.java files and causes
-    # only the webview subset of resources to be marked as non-final.
-    shared_resources_whitelist_target = "//android_webview:system_webview_apk"
-  }
-
-  deps = [
-    ":monochrome_java",
-    "//android_webview:platform_service_bridge_upstream_implementation_java",
-    "//base:base_java",
-    "//chrome/android:app_hooks_java",
-    "//chrome/android:chrome_java",
-  ]
-
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk && can_unwind_with_cfi_table) {
-    shared_library_for_unwind_asset = "monochrome"
-  }
+monochrome_public_apk_or_module_tmpl("monochrome_public_base_module") {
+  module_name = "MonochromePublicBase"
+  target_type = "android_app_bundle_module"
+  is_base_module = true
 }
 
 chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
   testonly = true
+  target_type = "android_apk"
   android_manifest = chrome_sync_shell_android_manifest
   android_manifest_dep = ":chrome_sync_shell_android_manifest"
   apk_name = "ChromeSyncShell"
@@ -1530,7 +1592,7 @@ if (defined(expected_static_initializer_count)) {
 
 # Generate application bundles if possible.
 android_app_bundle("chrome_public_bundle") {
-  base_apk_target = ":chrome_public_apk"
+  base_module_target = ":chrome_public_base_module"
 
   # Signing is very slow, only do that for official builds.
   sign_bundle = is_official_build
@@ -1543,9 +1605,9 @@ android_app_bundle("chrome_public_bundle") {
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
-  base_apk_target = ":chrome_modern_public_apk"
+  base_module_target = ":chrome_modern_public_base_module"
 }
 
 android_app_bundle("monochrome_public_bundle") {
-  base_apk_target = ":monochrome_public_apk"
+  base_module_target = ":monochrome_public_base_module"
 }
