@@ -182,7 +182,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
     stderr = StringIO.StringIO()
 
     with tempfile.NamedTemporaryFile(mode='w+', prefix='ignore') as ignore_file:
-      ignore_file.write('# Line comments are allowed.\n'.format(self.repo['B']))
+      ignore_file.write('# Line comments are allowed.\n')
       ignore_file.write('\n')
       ignore_file.write('{}\n'.format(self.repo['B']))
       # A revision that is not in the repo (should be ignored).
