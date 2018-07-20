@@ -19,26 +19,24 @@ main pylint class
 from __future__ import print_function
 
 import collections
+import itertools
 import os
+from os.path import dirname, basename, splitext, exists, isdir, join, normpath
 import re
 import sys
 import tokenize
 import warnings
-from os.path import dirname, basename, splitext, exists, isdir, join, normpath
+import textwrap
 
 import six
 from six.moves import zip  # pylint: disable=redefined-builtin
-
-from logilab.common.interface import implements
-from logilab.common.textutils import normalize_text
-from logilab.common.configuration import rest_format_section
-from logilab.common.ureports import Section
 
 from astroid import nodes, Module
 from astroid.modutils import modpath_from_file, get_module_files, \
     file_from_modpath, load_module_from_file
 
-from pylint.interfaces import IRawChecker, ITokenChecker, UNDEFINED
+from pylint.interfaces import IRawChecker, ITokenChecker, UNDEFINED, implements
+from pylint.reporters.ureports.nodes import Section
 
 
 class UnknownMessage(Exception):
@@ -67,12 +65,29 @@ MSG_TYPES_STATUS = {
     'F' : 1
     }
 
+DEPRECATED_ALIASES = {
+    # New name, deprecated name.
+    'repr': 'backquote',
+    'expr': 'discard',
+    'assignname': 'assname',
+    'assignattr': 'assattr',
+    'attribute': 'getattr',
+    'call': 'callfunc',
+    'importfrom': 'from',
+    'classdef': 'class',
+    'functiondef': 'function',
+    'generatorexp': 'genexpr',
+}
+
 _MSG_ORDER = 'EWRCIF'
 MSG_STATE_SCOPE_CONFIG = 0
 MSG_STATE_SCOPE_MODULE = 1
 MSG_STATE_CONFIDENCE = 2
 
-OPTION_RGX = re.compile(r'\s*#.*\bpylint:(.*)')
+# Allow stopping after the first semicolon encountered,
+# so that an option can be continued with the reasons
+# why it is active or disabled.
+OPTION_RGX = re.compile(r'\s*#.*\bpylint:\s*([^;]+);{0,1}')
 
 # The line/node distinction does not apply to fatal errors and reports.
 _SCOPE_EXEMPT = 'FR'
@@ -128,9 +143,8 @@ def category_id(cid):
     return MSG_TYPES_LONG.get(cid)
 
 
-def _decoding_readline(stream, module):
-    return lambda: stream.readline().decode(module.file_encoding,
-                                           'replace')
+def _decoding_readline(stream, encoding):
+    return lambda: stream.readline().decode(encoding, 'replace')
 
 
 def tokenize_module(module):
@@ -138,7 +152,8 @@ def tokenize_module(module):
         readline = stream.readline
         if sys.version_info < (3, 0):
             if module.file_encoding is not None:
-                readline = _decoding_readline(stream, module)
+                readline = _decoding_readline(stream, module.file_encoding)
+
             return list(tokenize.generate_tokens(readline))
         return list(tokenize.tokenize(readline))
 
@@ -209,7 +224,7 @@ class MessageDefinition(object):
                 desc += " It can't be emitted when using Python %s." % restr
             else:
                 desc += " This message can't be emitted when using Python %s." % restr
-        desc = normalize_text(' '.join(desc.split()), indent='  ')
+        desc = _normalize_text(' '.join(desc.split()), indent='  ')
         if title != '%s':
             title = title.splitlines()[0]
             return ':%s: *%s*\n%s' % (msgid, title, desc)
@@ -275,12 +290,32 @@ class MessagesHandlerMixIn(object):
             msgs = self._msgs_state
             msgs[msg.msgid] = False
             # sync configuration object
-            self.config.disable = [mid for mid, val in six.iteritems(msgs)
+            self.config.disable = [self._message_symbol(mid)
+                                   for mid, val in six.iteritems(msgs)
                                    if not val]
+
+    def _message_symbol(self, msgid):
+        """Get the message symbol of the given message id
+
+        Return the original message id if the message does not
+        exist.
+        """
+        try:
+            return self.msgs_store.check_message_id(msgid).symbol
+        except UnknownMessage:
+            return msgid
 
     def enable(self, msgid, scope='package', line=None, ignore_unknown=False):
         """reenable message of the given id"""
         assert scope in ('package', 'module')
+        if msgid == 'all':
+            for msgid_ in MSG_TYPES:
+                self.enable(msgid_, scope=scope, line=line)
+            if not self._python3_porting_mode:
+                # Don't activate the python 3 porting checker if it
+                # wasn't activated explicitly.
+                self.disable('python3')
+            return
         catid = category_id(msgid)
         # msgid is a category?
         if catid is not None:
@@ -428,7 +463,7 @@ class MessagesHandlerMixIn(object):
                             title = '%s options' % section.capitalize()
                         print(title)
                         print('~' * len(title))
-                        rest_format_section(sys.stdout, None, options)
+                        _rest_format_section(sys.stdout, None, options)
                         print("")
             else:
                 try:
@@ -463,7 +498,7 @@ class MessagesHandlerMixIn(object):
                 title = 'Options'
                 print(title)
                 print('^' * len(title))
-                rest_format_section(sys.stdout, None, options)
+                _rest_format_section(sys.stdout, None, options)
                 print("")
             if msgs:
                 title = 'Messages'
@@ -526,36 +561,39 @@ class FileState(object):
         #
         # this is necessary to disable locally messages applying to class /
         # function using their fromlineno
-        if isinstance(node, (nodes.Module, nodes.Class, nodes.Function)) and node.body:
+        if (isinstance(node, (nodes.Module, nodes.ClassDef, nodes.FunctionDef))
+                and node.body):
             firstchildlineno = node.body[0].fromlineno
         else:
             firstchildlineno = last
         for msgid, lines in six.iteritems(msg_state):
             for lineno, state in list(lines.items()):
                 original_lineno = lineno
-                if first <= lineno <= last:
-                    # Set state for all lines for this block, if the
-                    # warning is applied to nodes.
-                    if  msgs_store.check_message_id(msgid).scope == WarningScope.NODE:
-                        if lineno > firstchildlineno:
-                            state = True
-                        first_, last_ = node.block_range(lineno)
-                    else:
-                        first_ = lineno
-                        last_ = last
-                    for line in range(first_, last_+1):
-                        # do not override existing entries
-                        if not line in self._module_msgs_state.get(msgid, ()):
-                            if line in lines: # state change in the same block
-                                state = lines[line]
-                                original_lineno = line
-                            if not state:
-                                self._suppression_mapping[(msgid, line)] = original_lineno
-                            try:
-                                self._module_msgs_state[msgid][line] = state
-                            except KeyError:
-                                self._module_msgs_state[msgid] = {line: state}
-                    del lines[lineno]
+                if first > lineno or last < lineno:
+                    continue
+                # Set state for all lines for this block, if the
+                # warning is applied to nodes.
+                if  msgs_store.check_message_id(msgid).scope == WarningScope.NODE:
+                    if lineno > firstchildlineno:
+                        state = True
+                    first_, last_ = node.block_range(lineno)
+                else:
+                    first_ = lineno
+                    last_ = last
+                for line in range(first_, last_+1):
+                    # do not override existing entries
+                    if line in self._module_msgs_state.get(msgid, ()):
+                        continue
+                    if line in lines: # state change in the same block
+                        state = lines[line]
+                        original_lineno = line
+                    if not state:
+                        self._suppression_mapping[(msgid, line)] = original_lineno
+                    try:
+                        self._module_msgs_state[msgid][line] = state
+                    except KeyError:
+                        self._module_msgs_state[msgid] = {line: state}
+                del lines[lineno]
 
     def set_msg_status(self, msg, line, status):
         """Set status (enabled/disable) for a given message at a given line"""
@@ -789,7 +827,6 @@ def expand_modules(files_or_modules, black_list):
             try:
                 filepath = file_from_modpath(modname.split('.'))
                 if filepath is None:
-                    errors.append({'key' : 'ignored-builtin-module', 'mod': modname})
                     continue
             except (ImportError, SyntaxError) as ex:
                 # FIXME p3k : the SyntaxError is a Python bug and should be
@@ -815,7 +852,7 @@ class PyLintASTWalker(object):
 
     def __init__(self, linter):
         # callbacks per node types
-        self.nbstatements = 1
+        self.nbstatements = 0
         self.visit_events = collections.defaultdict(list)
         self.leave_events = collections.defaultdict(list)
         self.linter = linter
@@ -864,15 +901,42 @@ class PyLintASTWalker(object):
         its children, then leave events.
         """
         cid = astroid.__class__.__name__.lower()
+
+        # Detect if the node is a new name for a deprecated alias.
+        # In this case, favour the methods for the deprecated
+        # alias if any,  in order to maintain backwards
+        # compatibility.
+        old_cid = DEPRECATED_ALIASES.get(cid)
+        visit_events = ()
+        leave_events = ()
+
+        if old_cid:
+            visit_events = self.visit_events.get(old_cid, ())
+            leave_events = self.leave_events.get(old_cid, ())
+            if visit_events or leave_events:
+                msg = ("Implemented method {meth}_{old} instead of {meth}_{new}. "
+                       "This will be supported until Pylint 2.0.")
+                if visit_events:
+                    warnings.warn(msg.format(meth="visit", old=old_cid, new=cid),
+                                  PendingDeprecationWarning)
+                if leave_events:
+                    warnings.warn(msg.format(meth="leave", old=old_cid, new=cid),
+                                  PendingDeprecationWarning)
+
+        visit_events = itertools.chain(visit_events,
+                                       self.visit_events.get(cid, ()))
+        leave_events = itertools.chain(leave_events,
+                                       self.leave_events.get(cid, ()))
+
         if astroid.is_statement:
             self.nbstatements += 1
         # generate events for this node on each checker
-        for cb in self.visit_events.get(cid, ()):
+        for cb in visit_events or ():
             cb(astroid)
         # recurse on children
         for child in astroid.get_children():
             self.walk(child)
-        for cb in self.leave_events.get(cid, ()):
+        for cb in leave_events or ():
             cb(astroid)
 
 
@@ -922,3 +986,163 @@ def get_global_option(checker, option, default=None):
             if options[0] == option:
                 return getattr(provider.config, option.replace("-", "_"))
     return default
+
+
+def deprecated_option(shortname=None, opt_type=None, help_msg=None):
+    def _warn_deprecated(option, optname, *args): # pylint: disable=unused-argument
+        msg = ("Warning: option %s is obsolete and "
+               "it is slated for removal in Pylint 1.6.\n")
+        sys.stderr.write(msg % (optname,))
+
+    option = {
+        'help': help_msg,
+        'hide': True,
+        'type': opt_type,
+        'action': 'callback',
+        'callback': _warn_deprecated,
+        'deprecated': True
+    }
+    if shortname:
+        option['shortname'] = shortname
+    return option
+
+
+def _splitstrip(string, sep=','):
+    """return a list of stripped string by splitting the string given as
+    argument on `sep` (',' by default). Empty string are discarded.
+
+    >>> _splitstrip('a, b, c   ,  4,,')
+    ['a', 'b', 'c', '4']
+    >>> _splitstrip('a')
+    ['a']
+    >>>
+
+    :type string: str or unicode
+    :param string: a csv line
+
+    :type sep: str or unicode
+    :param sep: field separator, default to the comma (',')
+
+    :rtype: str or unicode
+    :return: the unquoted string (or the input string if it wasn't quoted)
+    """
+    return [word.strip() for word in string.split(sep) if word.strip()]
+
+
+def _unquote(string):
+    """remove optional quotes (simple or double) from the string
+
+    :type string: str or unicode
+    :param string: an optionally quoted string
+
+    :rtype: str or unicode
+    :return: the unquoted string (or the input string if it wasn't quoted)
+    """
+    if not string:
+        return string
+    if string[0] in '"\'':
+        string = string[1:]
+    if string[-1] in '"\'':
+        string = string[:-1]
+    return string
+
+
+def _normalize_text(text, line_len=80, indent=''):
+    """Wrap the text on the given line length."""
+    return '\n'.join(textwrap.wrap(text, width=line_len, initial_indent=indent,
+                                   subsequent_indent=indent))
+
+
+def _check_csv(value):
+    if isinstance(value, (list, tuple)):
+        return value
+    return _splitstrip(value)
+
+
+if six.PY2:
+    def _encode(string, encoding):
+        # pylint: disable=undefined-variable
+        if isinstance(string, unicode):
+            return string.encode(encoding)
+        return str(string)
+else:
+    def _encode(string, _):
+        return str(string)
+
+def _get_encoding(encoding, stream):
+    encoding = encoding or getattr(stream, 'encoding', None)
+    if not encoding:
+        import locale
+        encoding = locale.getpreferredencoding()
+    return encoding
+
+
+def _comment(string):
+    """return string as a comment"""
+    lines = [line.strip() for line in string.splitlines()]
+    return '# ' + ('%s# ' % os.linesep).join(lines)
+
+
+def _format_option_value(optdict, value):
+    """return the user input's value from a 'compiled' value"""
+    if isinstance(value, (list, tuple)):
+        value = ','.join(value)
+    elif isinstance(value, dict):
+        value = ','.join('%s:%s' % (k, v) for k, v in value.items())
+    elif hasattr(value, 'match'): # optdict.get('type') == 'regexp'
+        # compiled regexp
+        value = value.pattern
+    elif optdict.get('type') == 'yn':
+        value = value and 'yes' or 'no'
+    elif isinstance(value, six.string_types) and value.isspace():
+        value = "'%s'" % value
+    return value
+
+
+def _ini_format_section(stream, section, options, encoding=None, doc=None):
+    """format an options section using the INI format"""
+    encoding = _get_encoding(encoding, stream)
+    if doc:
+        print(_encode(_comment(doc), encoding), file=stream)
+    print('[%s]' % section, file=stream)
+    _ini_format(stream, options, encoding)
+
+
+def _ini_format(stream, options, encoding):
+    """format options using the INI format"""
+    for optname, optdict, value in options:
+        value = _format_option_value(optdict, value)
+        help = optdict.get('help')
+        if help:
+            help = _normalize_text(help, line_len=79, indent='# ')
+            print(file=stream)
+            print(_encode(help, encoding), file=stream)
+        else:
+            print(file=stream)
+        if value is None:
+            print('#%s=' % optname, file=stream)
+        else:
+            value = _encode(value, encoding).strip()
+            print('%s=%s' % (optname, value), file=stream)
+
+format_section = _ini_format_section
+
+
+def _rest_format_section(stream, section, options, encoding=None, doc=None):
+    """format an options section using as ReST formatted output"""
+    encoding = _get_encoding(encoding, stream)
+    if section:
+        print('%s\n%s' % (section, "'"*len(section)), file=stream)
+    if doc:
+        print(_encode(_normalize_text(doc, line_len=79, indent=''), encoding), file=stream)
+        print(file=stream)
+    for optname, optdict, value in options:
+        help = optdict.get('help')
+        print(':%s:' % optname, file=stream)
+        if help:
+            help = _normalize_text(help, line_len=79, indent='  ')
+            print(_encode(help, encoding), file=stream)
+        if value:
+            value = _encode(_format_option_value(optdict, value), encoding)
+            print(file=stream)
+            print('  Default: ``%s``' % value.replace("`` ", "```` ``"), file=stream)

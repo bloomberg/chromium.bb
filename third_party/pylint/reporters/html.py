@@ -17,10 +17,12 @@ import itertools
 import string
 import sys
 
-from logilab.common.ureports import HTMLWriter, Section, Table
+import six
 
 from pylint.interfaces import IReporter
 from pylint.reporters import BaseReporter
+from pylint.reporters.ureports.html_writer import HTMLWriter
+from pylint.reporters.ureports.nodes import Section, Table
 
 
 class HTMLReporter(BaseReporter):
@@ -67,7 +69,9 @@ class HTMLReporter(BaseReporter):
             self._parse_template()
 
         # We want to add the lines given by the template
-        self.msgs += [str(getattr(msg, field)) for field in self.msgargs]
+        values = [getattr(msg, field) for field in self.msgargs]
+        self.msgs += [value if isinstance(value, six.text_type) else str(value)
+                      for value in values]
 
     def set_output(self, output=None):
         """set output stream
@@ -84,6 +88,9 @@ class HTMLReporter(BaseReporter):
         (in add_message, message is not displayed, just collected so it
         can be displayed in an html table)
         """
+        HTMLWriter().format(layout, self.out)
+
+    def display_messages(self, layout):
         if self.msgs:
             # add stored messages to the layout
             msgs = self.header
@@ -93,7 +100,7 @@ class HTMLReporter(BaseReporter):
             layout.append(sect)
             sect.append(Table(cols=cols, children=msgs, rheaders=1))
             self.msgs = []
-        HTMLWriter().format(layout, self.out)
+            self._display(layout)
 
 
 def register(linter):

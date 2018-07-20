@@ -16,12 +16,12 @@
 """handle diagram generation options for class diagram or default diagrams
 """
 
-from logilab.common.compat import builtins
+from six.moves import builtins
 
 import astroid
-from astroid.utils import LocalsVisitor
 
 from pylint.pyreverse.diagrams import PackageDiagram, ClassDiagram
+from pylint.pyreverse.utils import LocalsVisitor
 
 BUILTINS_NAME = builtins.__name__
 
@@ -49,10 +49,7 @@ class DiaDefGenerator(object):
         # if we have a class diagram, we want more information by default;
         # so if the option is None, we return True
         if option is None:
-            if self.config.classes:
-                return True
-            else:
-                return False
+            return bool(self.config.classes)
         return option
 
     def _set_default_options(self):
@@ -104,7 +101,7 @@ class DiaDefGenerator(object):
             for ass_node in ass_nodes:
                 if isinstance(ass_node, astroid.Instance):
                     ass_node = ass_node._proxied
-                if not (isinstance(ass_node, astroid.Class)
+                if not (isinstance(ass_node, astroid.ClassDef)
                         and self.show_node(ass_node)):
                     continue
                 yield ass_node
@@ -134,7 +131,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         LocalsVisitor.__init__(self)
 
     def visit_project(self, node):
-        """visit an astroid.Project node
+        """visit an pyreverse.utils.Project node
 
         create a diagram definition for packages
         """
@@ -146,7 +143,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         self.classdiagram = ClassDiagram('classes %s' % node.name, mode)
 
     def leave_project(self, node): # pylint: disable=unused-argument
-        """leave the astroid.Project node
+        """leave the pyreverse.utils.Project node
 
         return the generated diagram definition
         """
@@ -163,7 +160,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
             self.linker.visit(node)
             self.pkgdiagram.add_object(node.name, node)
 
-    def visit_class(self, node):
+    def visit_classdef(self, node):
         """visit an astroid.Class node
 
         add this class to the class diagram definition
@@ -171,7 +168,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         anc_level, ass_level = self._get_levels()
         self.extract_classes(node, anc_level, ass_level)
 
-    def visit_from(self, node):
+    def visit_importfrom(self, node):
         """visit astroid.From  and catch modules for package diagram
         """
         if self.pkgdiagram:
@@ -217,8 +214,8 @@ class DiadefsHandler(object):
 
     def get_diadefs(self, project, linker):
         """get the diagrams configuration data
-        :param linker: astroid.inspector.Linker(IdGeneratorMixIn, LocalsVisitor)
-        :param project: astroid.manager.Project
+        :param linker: pyreverse.inspector.Linker(IdGeneratorMixIn, LocalsVisitor)
+        :param project: pyreverse.utils.Project
         """
 
         #  read and interpret diagram definitions (Diadefs)

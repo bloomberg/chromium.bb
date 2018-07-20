@@ -60,7 +60,9 @@ _IGNORE = 2
 # Whitespace checking config constants
 _DICT_SEPARATOR = 'dict-separator'
 _TRAILING_COMMA = 'trailing-comma'
-_NO_SPACE_CHECK_CHOICES = [_TRAILING_COMMA, _DICT_SEPARATOR]
+_EMPTY_LINE = 'empty-line'
+_NO_SPACE_CHECK_CHOICES = [_TRAILING_COMMA, _DICT_SEPARATOR, _EMPTY_LINE]
+_DEFAULT_NO_SPACE_CHECK_CHOICES = [_TRAILING_COMMA, _DICT_SEPARATOR]
 
 MSGS = {
     'C0301': ('Line too long (%s/%s)',
@@ -81,7 +83,7 @@ MSGS = {
               'bad-indentation',
               'Used when an unexpected number of indentation\'s tabulations or '
               'spaces has been found.'),
-    'C0330': ('Wrong %s indentation%s.\n%s%s',
+    'C0330': ('Wrong %s indentation%s%s.\n%s%s',
               'bad-continuation',
               'TODO'),
     'W0312': ('Found indentation with %ss instead of %ss',
@@ -124,8 +126,11 @@ MSGS = {
 def _underline_token(token):
     length = token[3][1] - token[2][1]
     offset = token[2][1]
-    return token[4] + (' ' * offset) + ('^' * length)
-
+    referenced_line = token[4]
+    # If the referenced line does not end with a newline char, fix it
+    if referenced_line[-1] != '\n':
+        referenced_line += '\n'
+    return referenced_line + (' ' * offset) + ('^' * length)
 
 def _column_distance(token1, token2):
     if token1 == token2:
@@ -165,14 +170,22 @@ def _get_indent_length(line):
 def _get_indent_hint_line(bar_positions, bad_position):
     """Return a line with |s for each of the positions in the given lists."""
     if not bar_positions:
-        return ''
+        return ('', '')
+    delta_message = ''
     markers = [(pos, '|') for pos in bar_positions]
+    if len(markers) == 1:
+        # if we have only one marker we'll provide an extra hint on how to fix
+        expected_position = markers[0][0]
+        delta = abs(expected_position - bad_position)
+        direction = 'add' if expected_position > bad_position else 'remove'
+        delta_message = _CONTINUATION_HINT_MESSAGE % (
+            direction, delta, 's' if delta > 1 else '')
     markers.append((bad_position, '^'))
     markers.sort()
     line = [' '] * (markers[-1][0] + 1)
     for position, marker in markers:
         line[position] = marker
-    return ''.join(line)
+    return (''.join(line), delta_message)
 
 
 class _ContinuedIndent(object):
@@ -218,6 +231,7 @@ _CONTINUATION_MSG_PARTS = {
     CONTINUED_BLOCK: ('continued', ' before block'),
 }
 
+_CONTINUATION_HINT_MESSAGE = ' (%s %d space%s)'  # Ex: (remove 2 spaces)
 
 def _Offsets(*args):
     """Valid indentation offsets for a continued line."""
@@ -423,11 +437,17 @@ class FormatChecker(BaseTokenChecker):
                  'help' : ('Allow the body of an if to be on the same '
                            'line as the test if there is no else.')}),
                ('no-space-check',
-                {'default': ','.join(_NO_SPACE_CHECK_CHOICES),
+                {'default': ','.join(_DEFAULT_NO_SPACE_CHECK_CHOICES),
+                 'metavar': ','.join(_NO_SPACE_CHECK_CHOICES),
                  'type': 'multiple_choice',
                  'choices': _NO_SPACE_CHECK_CHOICES,
                  'help': ('List of optional constructs for which whitespace '
-                          'checking is disabled')}),
+                          'checking is disabled. '
+                          '`'+ _DICT_SEPARATOR + '` is used to allow tabulation '
+                          'in dicts, etc.: {1  : 1,\\n222: 2}. '
+                          '`'+ _TRAILING_COMMA + '` allows a space between comma '
+                          'and closing bracket: (a, ). '
+                          '`'+ _EMPTY_LINE + '` allows space-only lines.')}),
                ('max-module-lines',
                 {'default' : 1000, 'type' : 'int', 'metavar' : '<int>',
                  'help': 'Maximum number of lines in a module'}
@@ -510,27 +530,28 @@ class FormatChecker(BaseTokenChecker):
                 depth += 1
             elif token[1] == ')':
                 depth -= 1
-                if not depth:
-                    # ')' can't happen after if (foo), since it would be a syntax error.
-                    if (tokens[i+1][1] in (':', ')', ']', '}', 'in') or
-                            tokens[i+1][0] in (tokenize.NEWLINE,
-                                               tokenize.ENDMARKER,
-                                               tokenize.COMMENT)):
-                        # The empty tuple () is always accepted.
-                        if i == start + 2:
-                            return
-                        if keyword_token == 'not':
-                            if not found_and_or:
-                                self.add_message('superfluous-parens', line=line_num,
-                                                 args=keyword_token)
-                        elif keyword_token in ('return', 'yield'):
+                if depth:
+                    continue
+                # ')' can't happen after if (foo), since it would be a syntax error.
+                if (tokens[i+1][1] in (':', ')', ']', '}', 'in') or
+                        tokens[i+1][0] in (tokenize.NEWLINE,
+                                           tokenize.ENDMARKER,
+                                           tokenize.COMMENT)):
+                    # The empty tuple () is always accepted.
+                    if i == start + 2:
+                        return
+                    if keyword_token == 'not':
+                        if not found_and_or:
                             self.add_message('superfluous-parens', line=line_num,
                                              args=keyword_token)
-                        elif keyword_token not in self._keywords_with_parens:
-                            if not (tokens[i+1][1] == 'in' and found_and_or):
-                                self.add_message('superfluous-parens', line=line_num,
-                                                 args=keyword_token)
-                    return
+                    elif keyword_token in ('return', 'yield'):
+                        self.add_message('superfluous-parens', line=line_num,
+                                         args=keyword_token)
+                    elif keyword_token not in self._keywords_with_parens:
+                        if not (tokens[i+1][1] == 'in' and found_and_or):
+                            self.add_message('superfluous-parens', line=line_num,
+                                             args=keyword_token)
+                return
             elif depth == 1:
                 # This is a tuple, which is always acceptable.
                 if token[1] == ',':
@@ -846,11 +867,12 @@ class FormatChecker(BaseTokenChecker):
 
     def _add_continuation_message(self, state, offsets, tokens, position):
         readable_type, readable_position = _CONTINUATION_MSG_PARTS[state.context_type]
-        hint_line = _get_indent_hint_line(offsets, tokens.start_col(position))
+        hint_line, delta_message = _get_indent_hint_line(offsets, tokens.start_col(position))
         self.add_message(
             'bad-continuation',
             line=tokens.start_line(position),
-            args=(readable_type, readable_position, tokens.line(position), hint_line))
+            args=(readable_type, readable_position, delta_message,
+                  tokens.line(position), hint_line))
 
     @check_messages('multiple-statements')
     def visit_default(self, node):
@@ -920,7 +942,10 @@ class FormatChecker(BaseTokenChecker):
                 self.add_message('missing-final-newline', line=i)
             else:
                 stripped_line = line.rstrip()
-                if line[len(stripped_line):] not in ('\n', '\r\n'):
+                if not stripped_line and _EMPTY_LINE in self.config.no_space_check:
+                    # allow empty lines
+                    pass
+                elif line[len(stripped_line):] not in ('\n', '\r\n'):
                     self.add_message('trailing-whitespace', line=i)
                 # Don't count excess whitespace in the line length.
                 line = stripped_line

@@ -14,9 +14,9 @@
 """JSON reporter"""
 from __future__ import absolute_import, print_function
 
+import cgi
 import json
 import sys
-from cgi import escape
 
 from pylint.interfaces import IReporter
 from pylint.reporters import BaseReporter
@@ -35,7 +35,6 @@ class JSONReporter(BaseReporter):
 
     def handle_message(self, message):
         """Manage message of different type and in the context of path."""
-
         self.messages.append({
             'type': message.category,
             'module': message.module,
@@ -44,13 +43,20 @@ class JSONReporter(BaseReporter):
             'column': message.column,
             'path': message.path,
             'symbol': message.symbol,
-            'message': escape(message.msg or ''),
+            # pylint: disable=deprecated-method; deprecated since 3.2.
+            'message': cgi.escape(message.msg or ''),
         })
 
-    def _display(self, layout):
+    def display_messages(self, layout):
         """Launch layouts display"""
         if self.messages:
             print(json.dumps(self.messages, indent=4), file=self.out)
+
+    def display_reports(self, _):
+        """Don't do nothing in this reporter."""
+
+    def _display(self, layout):
+        """Don't do nothing."""
 
 
 def register(linter):

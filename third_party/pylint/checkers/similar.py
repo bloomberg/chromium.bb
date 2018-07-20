@@ -20,13 +20,12 @@ from __future__ import print_function
 import sys
 from collections import defaultdict
 
-from logilab.common.ureports import Table
+import six
+from six.moves import zip
 
 from pylint.interfaces import IRawChecker
 from pylint.checkers import BaseChecker, table_lines_from_stats
-
-import six
-from six.moves import zip
+from pylint.reporters.ureports.nodes import Table
 
 
 class Similar(object):
@@ -306,7 +305,7 @@ class SimilarChecker(BaseChecker, Similar):
 
     def close(self):
         """compute and display similarities on closing (i.e. end of parsing)"""
-        total = sum([len(lineset) for lineset in self.linesets])
+        total = sum(len(lineset) for lineset in self.linesets)
         duplicated = 0
         stats = self.stats
         for num, couples in self._compute_sims():

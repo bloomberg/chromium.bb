@@ -25,12 +25,12 @@ import tokenize
 #if not hasattr(tokenize, 'NL'):
 #    raise ValueError("tokenize.NL doesn't exist -- tokenize module too old")
 
-from logilab.common.ureports import Table
-
 from pylint.interfaces import ITokenChecker
 from pylint.utils import EmptyReport
 from pylint.checkers import BaseTokenChecker
 from pylint.reporters import diff_string
+from pylint.reporters.ureports.nodes import Table
+
 
 def report_raw_stats(sect, stats, old_stats):
     """calculate percentage of code / doc / comment / empty
@@ -118,7 +118,7 @@ def get_type(tokens, start_index):
         i += 1
     if line_type is None:
         line_type = 'empty_lines'
-    elif i < len(tokens) and tok_type == tokenize.NEWLINE:
+    elif i < len(tokens) and tokens[i][0] == tokenize.NEWLINE:
         i += 1
     return i, pos[0] - start[0] + 1, line_type
 
