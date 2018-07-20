@@ -111,8 +111,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_SETUP_IN_PROGRESS: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
-      EXPECT_CALL(*service, IsFirstSetupInProgress())
-          .WillRepeatedly(Return(true));
+      EXPECT_CALL(*service, IsSetupInProgress()).WillRepeatedly(Return(true));
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
@@ -121,8 +120,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_SETUP_ERROR: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
-      EXPECT_CALL(*service, IsFirstSetupInProgress())
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*service, IsSetupInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(*service, GetDisableReasons())
           .WillRepeatedly(
               Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));

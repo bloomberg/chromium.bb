@@ -832,7 +832,7 @@ void ProfileSyncService::SetFirstSetupComplete() {
 
 bool ProfileSyncService::IsSyncConfirmationNeeded() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return (!IsLocalSyncEnabled() && IsSignedIn()) && !IsFirstSetupInProgress() &&
+  return (!IsLocalSyncEnabled() && IsSignedIn()) && !IsSetupInProgress() &&
          !IsFirstSetupComplete() &&
          !HasDisableReason(DISABLE_REASON_USER_CHOICE);
 }
@@ -1285,11 +1285,6 @@ const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
 
 bool ProfileSyncService::CanConfigureDataTypes() const {
   return IsFirstSetupComplete() && !IsSetupInProgress();
-}
-
-bool ProfileSyncService::IsFirstSetupInProgress() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return !IsFirstSetupComplete() && IsSetupInProgress();
 }
 
 std::unique_ptr<syncer::SyncSetupInProgressHandle>

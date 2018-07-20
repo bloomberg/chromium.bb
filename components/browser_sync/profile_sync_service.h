@@ -248,7 +248,6 @@ class ProfileSyncService : public syncer::SyncService,
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
   void SetFirstSetupComplete() override;
-  bool IsFirstSetupInProgress() const override;
   std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
