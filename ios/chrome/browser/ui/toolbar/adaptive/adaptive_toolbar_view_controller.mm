@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/force_touch_long_press_gesture_recognizer.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -368,15 +369,16 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 
 // Adds a LongPressGesture to the |view|, with target on -|handleLongPress:|.
 - (void)addLongPressGestureToView:(UIView*)view {
-  UILongPressGestureRecognizer* longPressGestureRecognizer =
-      [[UILongPressGestureRecognizer alloc]
+  ForceTouchLongPressGestureRecognizer* gestureRecognizer =
+      [[ForceTouchLongPressGestureRecognizer alloc]
           initWithTarget:self
-                  action:@selector(handleLongPress:)];
-  [view addGestureRecognizer:longPressGestureRecognizer];
+                  action:@selector(handleGestureRecognizer:)];
+  gestureRecognizer.forceThreshold = 0.8;
+  [view addGestureRecognizer:gestureRecognizer];
 }
 
-// Handles the long press on the views.
-- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
+// Handles the gseture recognizer on the views.
+- (void)handleGestureRecognizer:(UILongPressGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
     if (gesture.view == self.view.backButton) {
       [self.dispatcher showNavigationHistoryBackPopupMenu];
@@ -390,7 +392,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
       base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
       [self.dispatcher showToolsMenuPopup];
     }
-    TriggerHapticFeedbackForAction();
+    TriggerHapticFeedbackForImpact(UIImpactFeedbackStyleHeavy);
   } else if (gesture.state == UIGestureRecognizerStateEnded) {
     [self.longPressDelegate
         longPressEndedAtPoint:[gesture locationOfTouch:0 inView:nil]];

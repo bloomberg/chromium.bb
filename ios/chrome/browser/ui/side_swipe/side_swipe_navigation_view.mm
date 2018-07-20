@@ -337,7 +337,7 @@ const CGFloat kSelectionAnimationDuration = 0.5;
     // and that the distance including expected velocity is over |threshold|.
     if (distance > kArrowThreshold && finalDistance > threshold &&
         canNavigate_ && gesture.state == UIGestureRecognizerStateEnded) {
-      TriggerHapticFeedbackForAction();
+      TriggerHapticFeedbackForImpact(UIImpactFeedbackStyleMedium);
 
       // Speed up the animation for higher velocity swipes.
       CGFloat animationTime = MapValueToRange(

@@ -607,7 +607,7 @@ UIResponder* GetFirstResponder() {
 
 // Trigger a haptic vibration for the user selecting an action. This is a no-op
 // for devices that do not support it.
-void TriggerHapticFeedbackForAction() {
+void TriggerHapticFeedbackForImpact(UIImpactFeedbackStyle impactStyle) {
   // Although Apple documentation claims that UIFeedbackGenerator and its
   // concrete subclasses are available on iOS 10+, they are not really
   // available on an app whose deployment target is iOS 10.0 (iOS 10.1+ are
@@ -616,7 +616,8 @@ void TriggerHapticFeedbackForAction() {
   // using it.
   Class generatorClass = NSClassFromString(@"UIImpactFeedbackGenerator");
   if (generatorClass) {
-    UIImpactFeedbackGenerator* generator = [[generatorClass alloc] init];
+    UIImpactFeedbackGenerator* generator =
+        [[generatorClass alloc] initWithStyle:impactStyle];
     [generator impactOccurred];
   }
 }
