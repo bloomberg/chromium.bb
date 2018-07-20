@@ -5,46 +5,75 @@
 #include "chrome/browser/vr/gesture_detector.h"
 
 #include "chrome/browser/vr/input_event.h"
+#include "chrome/browser/vr/platform_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 constexpr float kDelta = 0.001f;
-}
+
+class MockPlatformController : public vr::PlatformController {
+ public:
+  MockPlatformController() = default;
+  MockPlatformController(bool touching_trackpad,
+                         base::TimeTicks touch_timestamp)
+      : is_touching_trackpad(touching_trackpad),
+        last_touch_timestamp(touch_timestamp) {}
+
+  bool IsButtonDown(vr::PlatformController::ButtonType type) const override {
+    return type == vr::PlatformController::kButtonSelect ? is_button_down
+                                                         : false;
+  }
+
+  bool IsTouchingTrackpad() const override { return is_touching_trackpad; }
+
+  gfx::PointF GetPositionInTrackpad() const override {
+    return position_in_trackpad;
+  }
+
+  base::TimeTicks GetLastOrientationTimestamp() const override {
+    return base::TimeTicks();
+  }
+
+  base::TimeTicks GetLastTouchTimestamp() const override {
+    return last_touch_timestamp;
+  }
+
+  base::TimeTicks GetLastButtonTimestamp() const override {
+    return base::TimeTicks();
+  }
+
+  vr::PlatformController::Handedness GetHandedness() const override {
+    return vr::PlatformController::kRightHanded;
+  }
+
+  bool GetRecentered() const override { return false; }
+
+  int GetBatteryLevel() const override { return 100; }
+
+  bool is_button_down = false;
+  bool is_touching_trackpad = false;
+  gfx::PointF position_in_trackpad;
+  base::TimeTicks last_touch_timestamp;
+};
+
+}  // namespace
 
 namespace vr {
-
-TEST(GestureDetector, NotTouching) {
-  GestureDetector detector;
-
-  TouchInfo touch_info{
-      .touch_up = false, .touch_down = false, .is_touching = false};
-  auto gestures = detector.DetectGestures(touch_info, base::TimeTicks(), false);
-  EXPECT_TRUE(gestures->empty());
-}
 
 TEST(GestureDetector, StartTouchWithoutMoving) {
   GestureDetector detector;
 
   base::TimeTicks timestamp;
 
-  TouchInfo touch_info{
-      .touch_point = {.position = {0, 0}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = true,
-      .is_touching = true,
-  };
-  auto gestures = detector.DetectGestures(touch_info, timestamp, false);
+  MockPlatformController controller(true, timestamp);
+  auto gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kFlingCancel);
 
   // A small move doesn't trigger scrolling yet.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info = TouchInfo{
-      .touch_point = {.position = {kDelta, kDelta}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = true,
-      .is_touching = true,
-  };
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.last_touch_timestamp = timestamp;
+  controller.position_in_trackpad = {kDelta, kDelta};
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_TRUE(gestures->empty());
 }
 
@@ -52,23 +81,14 @@ TEST(GestureDetector, StartTouchMoveAndRelease) {
   GestureDetector detector;
   base::TimeTicks timestamp;
 
-  TouchInfo touch_info{
-      .touch_point = {.position = {0.0f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = true,
-      .is_touching = true,
-  };
-  detector.DetectGestures(touch_info, timestamp, false);
+  MockPlatformController controller(true, timestamp);
+  detector.DetectGestures(controller, timestamp);
 
   // Move to the right.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info = TouchInfo{
-      .touch_point = {.position = {0.3f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = false,
-      .is_touching = true,
-  };
-  auto gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.last_touch_timestamp = timestamp;
+  controller.position_in_trackpad = {0.3f, 0.0f};
+  auto gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollBegin);
   auto* gesture = static_cast<InputEvent*>(gestures->front().get());
   EXPECT_GT(gesture->scroll_data.delta_x, 0.0f);
@@ -76,33 +96,27 @@ TEST(GestureDetector, StartTouchMoveAndRelease) {
 
   // Move slightly up.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info = TouchInfo{
-      .touch_point = {.position = {0.3f, 0.01f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = false,
-      .is_touching = true,
-  };
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.last_touch_timestamp = timestamp;
+  controller.position_in_trackpad = {0.3f, 0.01f};
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollUpdate);
   gesture = static_cast<InputEvent*>(gestures->front().get());
   EXPECT_EQ(gesture->scroll_data.delta_x, 0.0f);
   EXPECT_GT(gesture->scroll_data.delta_y, 0.0f);
 
   // Release touch. Scroll is extrapolated for 2 frames.
-  touch_info.touch_up = true;
-  touch_info.is_touching = false;
+  controller.is_touching_trackpad = false;
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollUpdate);
   gesture = static_cast<InputEvent*>(gestures->front().get());
   EXPECT_GT(gesture->scroll_data.delta_x, 0.0f);
   EXPECT_GT(gesture->scroll_data.delta_y, 0.0f);
-  touch_info.touch_up = false;
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollUpdate);
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollEnd);
 }
 
@@ -110,27 +124,21 @@ TEST(GestureDetector, CancelDuringScrolling) {
   GestureDetector detector;
   base::TimeTicks timestamp;
 
-  TouchInfo touch_info{
-      .touch_point = {.position = {0.0f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = true,
-      .is_touching = true,
-  };
-  detector.DetectGestures(touch_info, timestamp, false);
+  MockPlatformController controller(true, timestamp);
+  detector.DetectGestures(controller, timestamp);
 
   // Move to the right.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info = TouchInfo{
-      .touch_point = {.position = {0.3f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = false,
-      .is_touching = true,
-  };
-  auto gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.last_touch_timestamp = timestamp;
+  controller.position_in_trackpad = {0.3f, 0.0f};
+  auto gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollBegin);
 
-  // Cancel.
-  gestures = detector.DetectGestures(touch_info, timestamp, true);
+  // Button down.
+  timestamp += base::TimeDelta::FromMilliseconds(1);
+  controller.last_touch_timestamp = timestamp;
+  controller.is_button_down = true;
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollEnd);
 }
 
@@ -138,34 +146,26 @@ TEST(GestureDetector, CancelDuringPostScrolling) {
   GestureDetector detector;
   base::TimeTicks timestamp;
 
-  TouchInfo touch_info{
-      .touch_point = {.position = {0.0f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = true,
-      .is_touching = true,
-  };
-  detector.DetectGestures(touch_info, timestamp, false);
+  MockPlatformController controller(true, timestamp);
+  detector.DetectGestures(controller, timestamp);
 
   // Move to the right.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info = TouchInfo{
-      .touch_point = {.position = {0.3f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = false,
-      .is_touching = true,
-  };
-  auto gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.last_touch_timestamp = timestamp;
+  controller.position_in_trackpad = {0.3f, 0.0f};
+  auto gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollBegin);
 
   // Release touch. We should see extrapolated scrolling.
-  touch_info.touch_up = true;
-  touch_info.is_touching = false;
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  timestamp += base::TimeDelta::FromMilliseconds(1);
+  controller.is_touching_trackpad = false;
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollUpdate);
 
-  // Cancel.
-  touch_info.touch_up = false;
-  gestures = detector.DetectGestures(touch_info, timestamp, true);
+  // Button down.
+  timestamp += base::TimeDelta::FromMilliseconds(1);
+  controller.is_button_down = true;
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollEnd);
 }
 
@@ -173,38 +173,27 @@ TEST(GestureDetector, CancelAndTouchDuringPostScrolling) {
   GestureDetector detector;
   base::TimeTicks timestamp;
 
-  TouchInfo touch_info{
-      .touch_point = {.position = {0.0f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = true,
-      .is_touching = true,
-  };
-  detector.DetectGestures(touch_info, timestamp, false);
+  MockPlatformController controller(true, timestamp);
+  detector.DetectGestures(controller, timestamp);
 
   // Move to the right.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info = TouchInfo{
-      .touch_point = {.position = {0.3f, 0.0f}, .timestamp = timestamp},
-      .touch_up = false,
-      .touch_down = false,
-      .is_touching = true,
-  };
-  auto gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.last_touch_timestamp = timestamp;
+  controller.position_in_trackpad = {0.3f, 0.0f};
+  auto gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollBegin);
 
   // Release touch. We should see extrapolated scrolling.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info.touch_up = true;
-  touch_info.is_touching = false;
-  gestures = detector.DetectGestures(touch_info, timestamp, false);
+  controller.is_touching_trackpad = false;
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollUpdate);
 
-  // Cancel and touch.
+  // Touch and button down.
   timestamp += base::TimeDelta::FromMilliseconds(1);
-  touch_info.touch_up = false;
-  touch_info.touch_down = true;
-  touch_info.is_touching = true;
-  gestures = detector.DetectGestures(touch_info, timestamp, true);
+  controller.is_button_down = true;
+  controller.is_touching_trackpad = true;
+  gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures->front()->type(), InputEvent::kScrollEnd);
 }
 

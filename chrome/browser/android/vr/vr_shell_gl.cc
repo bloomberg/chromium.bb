@@ -1299,9 +1299,9 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.laser_origin = laser_origin;
   controller_model.handedness = controller_->GetHandedness();
   controller_model.recentered = controller_->GetRecentered();
-  controller_model.touching_touchpad = controller_->IsTouching();
+  controller_model.touching_touchpad = controller_->IsTouchingTrackpad();
   controller_model.touchpad_touch_position =
-      gfx::PointF(controller_->TouchPosX(), controller_->TouchPosY());
+      controller_->GetPositionInTrackpad();
   controller_model.app_button_long_pressed = app_button_long_pressed_;
   controller_model.last_orientation_timestamp =
       controller_->GetLastOrientationTimestamp();
