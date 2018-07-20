@@ -771,9 +771,15 @@ public class OmniboxTest {
                     securityButton.getId());
 
             if (mActivityTestRule.getActivity().isTablet()) {
-                Assert.assertTrue(locationBarLayout.shouldEmphasizeHttpsScheme());
+                Assert.assertTrue(mActivityTestRule.getActivity()
+                                          .getToolbarManager()
+                                          .getToolbarModelForTesting()
+                                          .shouldEmphasizeHttpsScheme());
             } else {
-                Assert.assertFalse(locationBarLayout.shouldEmphasizeHttpsScheme());
+                Assert.assertFalse(mActivityTestRule.getActivity()
+                                           .getToolbarManager()
+                                           .getToolbarModelForTesting()
+                                           .shouldEmphasizeHttpsScheme());
             }
         } finally {
             testServer.stopAndDestroyServer();

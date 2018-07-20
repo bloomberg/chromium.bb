@@ -276,20 +276,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public boolean shouldEmphasizeUrl() {
-        // If the toolbar shows the publisher URL, it applies its own formatting for emphasis.
-        Tab currentTab = getCurrentTab();
-        if (currentTab == null) return true;
-
-        return currentTab.getTrustedCdnPublisherUrl() == null;
-    }
-
-    @Override
-    public boolean shouldEmphasizeHttpsScheme() {
-        return !mToolbarDataProvider.isUsingBrandColor();
-    }
-
-    @Override
     public boolean shouldCutCopyVerbatim() {
         return false;
     }
@@ -440,9 +426,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             originEnd = displayText.length();
         }
 
-        if (mUrlBar.setUrl(UrlBarData.create(url, displayText, originStart, originEnd, url))) {
-            mUrlBar.emphasizeUrl();
-        }
+        mUrlBar.setUrl(UrlBarData.create(url, displayText, originStart, originEnd, url));
     }
 
     @Override
@@ -466,7 +450,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         Resources resources = getResources();
         updateSecurityIcon();
         updateButtonsTint();
-        mUrlBar.setUseDarkTextColors(mUseDarkColors);
+        if (mUrlBar.setUseDarkTextColors(mUseDarkColors)) {
+            setUrlToPageUrl();
+        }
 
         int titleTextColor = mUseDarkColors
                 ? ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text)
@@ -537,7 +523,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             mAnimDelegate.showSecurityButton();
         }
 
-        mUrlBar.emphasizeUrl();
+        setUrlToPageUrl();
         mUrlBar.invalidate();
     }
 

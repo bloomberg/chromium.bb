@@ -893,7 +893,10 @@ public class CustomTabActivityTest {
                 "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
         CustomTabToolbar toolbar = (CustomTabToolbar) toolbarView;
         Assert.assertEquals(expectedColor, toolbar.getBackground().getColor());
-        Assert.assertFalse(toolbar.shouldEmphasizeHttpsScheme());
+        Assert.assertFalse(mCustomTabActivityTestRule.getActivity()
+                                   .getToolbarManager()
+                                   .getToolbarModelForTesting()
+                                   .shouldEmphasizeHttpsScheme());
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             Assert.assertEquals(ColorUtils.getDarkenedColorForStatusBar(expectedColor),
                     mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
