@@ -126,6 +126,8 @@ void NGInlineItem::ComputeBoxProperties() {
           style_->CanContainFixedPositionObjects(false) ||
           ToLayoutBoxModelObject(layout_object_)
               ->ShouldApplyPaintContainment() ||
+          ToLayoutBoxModelObject(layout_object_)
+              ->ShouldApplyLayoutContainment() ||
           CanBeHitTestTargetPseudoNodeStyle(*style_);
     }
     return;
