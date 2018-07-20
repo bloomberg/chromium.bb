@@ -20,8 +20,6 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_pref_names.h"
-#include "components/ntp_snippets/pref_names.h"
-#include "components/ntp_tiles/pref_names.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -524,16 +522,12 @@ const char* incognito_whitelist[] = {
 
     prefs::kDisableExtensions,
 
-    prefs::kNtpAppPageNames, prefs::kNtpCollapsedForeignSessions,
 #if defined(OS_ANDROID)
-    prefs::kNtpCollapsedRecentlyClosedTabs,
-    prefs::kNtpCollapsedSnapshotDocument, prefs::kNtpCollapsedSyncPromo,
     prefs::kContentSuggestionsNotificationsEnabled,
     prefs::kContentSuggestionsConsecutiveIgnoredPrefName,
     prefs::kContentSuggestionsNotificationsSentDay,
     prefs::kContentSuggestionsNotificationsSentCount,
 #endif  // defined(OS_ANDROID)
-    prefs::kNtpShownPage,
 
     prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
     prefs::kDevToolsDiscoverUsbDevicesEnabled, prefs::kDevToolsEditedFiles,
@@ -551,7 +545,6 @@ const char* incognito_whitelist[] = {
 #if !defined(OS_ANDROID)
     prefs::kDiceSigninUserMenuPromoCount, prefs::kSignInPromoStartupCount,
     prefs::kSignInPromoUserSkipped, prefs::kSignInPromoShowOnFirstRunAllowed,
-    prefs::kSignInPromoShowNTPBubble,
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -834,7 +827,6 @@ const char* incognito_whitelist[] = {
 
 #if !defined(OS_ANDROID)
     prefs::kAutoplayAllowed, prefs::kAutoplayWhitelist,
-    prefs::kNtpCustomBackgroundDict,
 #endif
 
 // chromeos/chromeos_pref_names.h
@@ -1113,55 +1105,6 @@ const char* incognito_whitelist[] = {
     // components/network_time/network_time_pref_names.h
     network_time::prefs::kNetworkTimeMapping,
     network_time::prefs::kNetworkTimeQueriesEnabled,
-
-    // components/ntp_snippets/pref_names.h
-    ntp_snippets::prefs::kEnableSnippets,
-    ntp_snippets::prefs::kArticlesListVisible,
-    ntp_snippets::prefs::kRemoteSuggestionCategories,
-    ntp_snippets::prefs::kSnippetLastFetchAttemptTime,
-    ntp_snippets::prefs::kSnippetLastSuccessfulFetchTime,
-    ntp_snippets::prefs::kSnippetPersistentFetchingIntervalWifi,
-    ntp_snippets::prefs::kSnippetPersistentFetchingIntervalFallback,
-    ntp_snippets::prefs::kSnippetStartupFetchingIntervalWifi,
-    ntp_snippets::prefs::kSnippetStartupFetchingIntervalFallback,
-    ntp_snippets::prefs::kSnippetShownFetchingIntervalWifi,
-    ntp_snippets::prefs::kSnippetShownFetchingIntervalFallback,
-    ntp_snippets::prefs::kSnippetFetcherRequestCount,
-    ntp_snippets::prefs::kSnippetFetcherInteractiveRequestCount,
-    ntp_snippets::prefs::kSnippetFetcherRequestsDay,
-    ntp_snippets::prefs::kSnippetThumbnailsRequestCount,
-    ntp_snippets::prefs::kSnippetThumbnailsInteractiveRequestCount,
-    ntp_snippets::prefs::kSnippetThumbnailsRequestsDay,
-    ntp_snippets::prefs::kDismissedAssetDownloadSuggestions,
-    ntp_snippets::prefs::kDismissedForeignSessionsSuggestions,
-    ntp_snippets::prefs::kDismissedOfflinePageDownloadSuggestions,
-    ntp_snippets::prefs::kDismissedCategories,
-    ntp_snippets::prefs::kUserClassifierAverageNTPOpenedPerHour,
-    ntp_snippets::prefs::kUserClassifierAverageSuggestionsShownPerHour,
-    ntp_snippets::prefs::kUserClassifierAverageSuggestionsUsedPerHour,
-    ntp_snippets::prefs::kUserClassifierLastTimeToOpenNTP,
-    ntp_snippets::prefs::kUserClassifierLastTimeToShowSuggestions,
-    ntp_snippets::prefs::kUserClassifierLastTimeToUseSuggestions,
-    ntp_snippets::prefs::kClickBasedCategoryRankerOrderWithClicks,
-    ntp_snippets::prefs::kClickBasedCategoryRankerLastDecayTime,
-    ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken,
-    ntp_snippets::prefs::kBreakingNewsSubscriptionDataIsAuthenticated,
-    ntp_snippets::prefs::kBreakingNewsGCMSubscriptionTokenCache,
-    ntp_snippets::prefs::kBreakingNewsGCMLastTokenValidationTime,
-    ntp_snippets::prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
-
-    // components/ntp_tiles/pref_names.h
-    ntp_tiles::prefs::kNumPersonalTiles,
-
-    ntp_tiles::prefs::kPopularSitesOverrideURL,
-    ntp_tiles::prefs::kPopularSitesOverrideDirectory,
-    ntp_tiles::prefs::kPopularSitesOverrideCountry,
-    ntp_tiles::prefs::kPopularSitesOverrideVersion,
-
-    ntp_tiles::prefs::kPopularSitesLastDownloadPref,
-    ntp_tiles::prefs::kPopularSitesURLPref,
-    ntp_tiles::prefs::kPopularSitesJsonPref,
-    ntp_tiles::prefs::kPopularSitesVersionPref,
 
     // components/omnibox/browser/omnibox_pref_names.h
     omnibox::kZeroSuggestCachedResults,
