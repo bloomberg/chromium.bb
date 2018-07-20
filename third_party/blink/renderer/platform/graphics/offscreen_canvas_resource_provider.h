@@ -9,10 +9,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace viz {
 class SingleReleaseCallback;
 namespace mojom {
@@ -38,11 +34,8 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
 
   ~OffscreenCanvasResourceProvider();
 
-  void SetTransferableResourceToSharedBitmap(viz::TransferableResource&,
-                                             scoped_refptr<StaticBitmapImage>);
-  void SetTransferableResourceToStaticBitmapImage(
-      viz::TransferableResource* out_resource,
-      scoped_refptr<CanvasResource>);
+  void SetTransferableResource(viz::TransferableResource* out_resource,
+                               scoped_refptr<CanvasResource>);
 
   void ReclaimResource(unsigned resource_id);
   void ReclaimResources(const WTF::Vector<viz::ReturnedResource>& resources);
@@ -62,12 +55,6 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
 
     // TODO(junov):  What does this do?
     bool spare_lock = true;
-
-    // Holds the backing for a software-backed resource.
-    std::unique_ptr<base::SharedMemory> shared_memory;
-    // The id given to  the display compositor to display a software-backed
-    // resource.
-    viz::SharedBitmapId shared_bitmap_id;
 
     // Back-pointer to the OffscreenCanvasResourceProvider. FrameResource does
     // not outlive the provider.
