@@ -25,7 +25,7 @@
 
     var initiatorInfo = BrowserSDK.networkLog.initiatorInfoForRequest(event.data);
     var element = new Components.Linkifier().linkifyScriptLocation(
-        TestRunner.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1,
+        TestRunner.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber,
         initiatorInfo.columnNumber - 1);
     TestRunner.addResult(element.textContent);
     TestRunner.completeTest();
