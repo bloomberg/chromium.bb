@@ -132,8 +132,10 @@ class FormStructure {
   // server.
   bool ShouldBeUploaded() const;
 
-  // Sets the field types to be those set for |cached_form|.
+  // Sets the field types to be those set for |cached_form|. if |apply_value| is
+  // true, value is copied over from |cached_form| for non-select elements only.
   void RetrieveFromCache(const FormStructure& cached_form,
+                         const bool apply_value,
                          const bool apply_is_autofilled,
                          const bool only_server_and_autofill_state);
 
