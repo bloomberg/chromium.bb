@@ -987,7 +987,7 @@ inline void LayoutObject::InvalidateContainerPreferredLogicalWidths() {
 LayoutObject* LayoutObject::ContainerForAbsolutePosition(
     AncestorSkipInfo* skip_info) const {
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
-    if (!candidate->CanContainAbsolutePositionObjects() &&
+    if (!candidate->StyleRef().CanContainAbsolutePositionObjects() &&
         candidate->ShouldApplyLayoutContainment()) {
       UseCounter::Count(candidate->GetDocument(),
                         WebFeature::kCSSContainLayoutPositionedDescendants);
@@ -1000,7 +1000,8 @@ LayoutObject* LayoutObject::ContainerForFixedPosition(
     AncestorSkipInfo* skip_info) const {
   DCHECK(!IsText());
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
-    if (!candidate->CanContainFixedPositionObjects() &&
+    if (!candidate->StyleRef().CanContainFixedPositionObjects(
+            candidate->IsDocumentElement()) &&
         candidate->ShouldApplyLayoutContainment()) {
       UseCounter::Count(candidate->GetDocument(),
                         WebFeature::kCSSContainLayoutPositionedDescendants);
