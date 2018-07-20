@@ -9,6 +9,7 @@ import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
+import org.chromium.chrome.browser.download.home.filter.FilterCoordinatorWithNoTabs;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -68,7 +69,9 @@ public class DateOrderedListCoordinator {
                 offTheRecord, provider, deleteController, selectionDelegate, model);
 
         // Hook up the FilterCoordinator with our mediator.
-        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
+        mFilterCoordinator = shouldShowPrefetchTab()
+                ? new FilterCoordinator(context, mMediator.getFilterSource())
+                : new FilterCoordinatorWithNoTabs(context, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
         decoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
@@ -97,5 +100,10 @@ public class DateOrderedListCoordinator {
     /** Called to delete a list of items specified by {@code items}. */
     public void onDeletionRequested(List<ListItem> items) {
         mMediator.onDeletionRequested(items);
+    }
+
+    private boolean shouldShowPrefetchTab() {
+        // TODO(shaktisahu): Check if prefetch UI is enabled.
+        return true;
     }
 }
