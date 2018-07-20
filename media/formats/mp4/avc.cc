@@ -172,11 +172,6 @@ bool AVC::ConvertConfigToAnnexB(const AVCDecoderConfigurationRecord& avc_config,
 }
 
 // Verifies AnnexB NALU order according to ISO/IEC 14496-10 Section 7.4.1.2.3
-bool AVC::IsValidAnnexB(const std::vector<uint8_t>& buffer,
-                        const std::vector<SubsampleEntry>& subsamples) {
-  return IsValidAnnexB(&buffer[0], buffer.size(), subsamples);
-}
-
 bool AVC::IsValidAnnexB(const uint8_t* buffer,
                         size_t size,
                         const std::vector<SubsampleEntry>& subsamples) {
@@ -350,7 +345,7 @@ bool AVCBitstreamConverter::IsValid(
   if (disable_validation_)
     return true;
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-  return AVC::IsValidAnnexB(*frame_buf, *subsamples);
+  return AVC::IsValidAnnexB(frame_buf->data(), frame_buf->size(), *subsamples);
 }
 
 }  // namespace mp4

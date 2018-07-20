@@ -230,7 +230,7 @@ TEST_P(AVCConversionTest, ParseCorrectly) {
   std::vector<SubsampleEntry> subsamples;
   MakeInputForLength(GetParam(), &buf);
   EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, &subsamples));
-  EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples));
+  EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples));
   EXPECT_EQ(buf.size(), sizeof(kExpected));
   EXPECT_EQ(0, memcmp(kExpected, &buf[0], sizeof(kExpected)));
   EXPECT_EQ("P,SDC", AnnexBToString(buf, subsamples));
@@ -350,7 +350,7 @@ TEST_F(AVCConversionTest, StringConversionFunctions) {
   std::vector<uint8_t> buf;
   std::vector<SubsampleEntry> subsamples;
   StringToAnnexB(str, &buf, &subsamples);
-  EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples));
+  EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples));
 
   EXPECT_EQ(str, AnnexBToString(buf, subsamples));
 }
@@ -380,8 +380,8 @@ TEST_F(AVCConversionTest, ValidAnnexBConstructs) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
     StringToAnnexB(test_cases[i], &buf, NULL);
-    EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples)) << "'" << test_cases[i]
-                                                     << "' failed";
+    EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples))
+        << "'" << test_cases[i] << "' failed";
   }
 }
 
@@ -405,8 +405,8 @@ TEST_F(AVCConversionTest, InvalidAnnexBConstructs) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
     StringToAnnexB(test_cases[i], &buf, NULL);
-    EXPECT_FALSE(AVC::IsValidAnnexB(buf, subsamples)) << "'" << test_cases[i]
-                                                      << "' failed";
+    EXPECT_FALSE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples))
+        << "'" << test_cases[i] << "' failed";
   }
 }
 
@@ -450,7 +450,7 @@ TEST_F(AVCConversionTest, InsertParamSetsAnnexB) {
 
     EXPECT_TRUE(AVC::InsertParamSetsAnnexB(avc_config, &buf, &subsamples))
         << "'" << test_cases[i].input << "' insert failed.";
-    EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples))
+    EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples))
         << "'" << test_cases[i].input << "' created invalid AnnexB.";
     EXPECT_EQ(test_cases[i].expected, AnnexBToString(buf, subsamples))
         << "'" << test_cases[i].input << "' generated unexpected output.";
