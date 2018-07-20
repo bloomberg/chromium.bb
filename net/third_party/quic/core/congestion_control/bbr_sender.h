@@ -364,6 +364,9 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   RecoveryState initial_conservation_in_startup_;
   // When true, add the most recent ack aggregation measurement during STARTUP.
   bool enable_ack_aggregation_during_startup_;
+  // When true, expire the windowed ack aggregation values in STARTUP when
+  // bandwidth increases more than 25%.
+  bool expire_ack_aggregation_in_startup_;
 
   // If true, will not exit low gain mode until bytes_in_flight drops below BDP
   // or it's time for high gain mode.

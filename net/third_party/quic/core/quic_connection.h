@@ -31,7 +31,6 @@
 #include "net/third_party/quic/core/quic_alarm_factory.h"
 #include "net/third_party/quic/core/quic_blocked_writer_interface.h"
 #include "net/third_party/quic/core/quic_connection_stats.h"
-#include "net/third_party/quic/core/quic_debug_info_provider_interface.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_one_block_arena.h"
 #include "net/third_party/quic/core/quic_packet_creator.h"
@@ -308,8 +307,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionHelperInterface {
 };
 
 class QUIC_EXPORT_PRIVATE QuicConnection
-    : public QuicDebugInfoProviderInterface,
-      public QuicFramerVisitorInterface,
+    : public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
       public QuicPacketGenerator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor {
@@ -452,9 +450,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   const ParsedQuicVersionVector& supported_versions() const {
     return framer_.supported_versions();
   }
-
-  // From QuicConnectionDebugInfoProviderInterface
-  QuicString DebugStringForAckProcessing() const override;
 
   // From QuicFramerVisitorInterface
   void OnError(QuicFramer* framer) override;
@@ -664,9 +659,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool CanWrite(HasRetransmittableData retransmittable);
 
   // When the flusher is out of scope, only the outermost flusher will cause a
-  // flush of the connection.  In addition, this flusher can be configured to
-  // ensure that an ACK frame is included in the first packet created, if
-  // there's new ack information to be sent.
+  // flush of the connection and set the retransmission alarm if there is one
+  // pending.  In addition, this flusher can be configured to ensure that an ACK
+  // frame is included in the first packet created, if there's new ack
+  // information to be sent.
   class QUIC_EXPORT_PRIVATE ScopedPacketFlusher {
    public:
     // Setting |include_ack| to true ensures that an ACK frame is
@@ -678,29 +674,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     bool ShouldSendAck(AckBundling ack_mode) const;
 
     QuicConnection* connection_;
-    // If true, flush connection when this flusher goes out of scope.
-    bool flush_on_delete_;
-    // If true, set retransmission alarm if there is one pending when this
-    // flusher goes out of scope.
-    // TODO(fayang): Consider to combine flush_on_delete_ and
-    // set_retransmission_alarm_on_delete_if_pending_ when deprecating
-    // quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
-    bool set_retransmission_alarm_on_delete_if_pending_;
-  };
-
-  // Delays setting the retransmission alarm until the scope is exited.
-  // When nested, only the outermost scheduler will set the alarm, and inner
-  // ones have no effect.
-  class QUIC_EXPORT_PRIVATE ScopedRetransmissionScheduler {
-   public:
-    explicit ScopedRetransmissionScheduler(QuicConnection* connection);
-    ~ScopedRetransmissionScheduler();
-
-   private:
-    QuicConnection* connection_;
-    // Set to the connection's delay_setting_retransmission_alarm_ value in the
-    // constructor and when true, causes this class to do nothing.
-    const bool already_delayed_;
+    // If true, when this flusher goes out of scope, flush connection and set
+    // retransmission alarm if there is one pending.
+    bool flush_and_set_pending_retransmission_alarm_on_delete_;
   };
 
   QuicPacketWriter* writer() { return writer_; }
@@ -791,8 +767,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   bool IsPathDegrading() const { return is_path_degrading_; }
-
-  bool deprecate_scheduler() const { return deprecate_scheduler_; }
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -1142,9 +1116,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // was received.
   bool fast_ack_after_quiescence_;
 
-  // Indicates the retransmit alarm is going to be set by the
-  // ScopedRetransmitAlarmDelayer
-  bool delay_setting_retransmission_alarm_;
   // Indicates the retransmission alarm needs to be set.
   bool pending_retransmission_alarm_;
 
@@ -1314,11 +1285,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;
-
-  // Latched value of quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
-  // TODO(fayang): Remove ScopedRetransmissionScheduler when deprecating
-  // quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
-  const bool deprecate_scheduler_;
 
   // Latched value of
   // gfe2_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked.

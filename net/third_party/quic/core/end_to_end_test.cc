@@ -32,6 +32,7 @@
 #include "net/third_party/quic/core/quic_spdy_client_session_base.h"
 #include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -3063,40 +3064,46 @@ TEST_P(EndToEndTest, PreSharedKey) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-TEST_P(EndToEndTest, PreSharedKeyMismatch) {
+// TODO: reenable once we have a way to make this run faster.
+TEST_P(EndToEndTest, DISABLED_PreSharedKeyMismatch) {
   client_config_.set_max_time_before_crypto_handshake(
-      QuicTime::Delta::FromMilliseconds(100));
+      QuicTime::Delta::FromSeconds(1));
   client_config_.set_max_idle_time_before_crypto_handshake(
-      QuicTime::Delta::FromMilliseconds(100));
+      QuicTime::Delta::FromSeconds(1));
   pre_shared_key_client_ = "foo";
   pre_shared_key_server_ = "bar";
-  ASSERT_TRUE(Initialize());
-
-  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  // One of two things happens when Initialize() returns:
+  // 1. Crypto handshake has completed, and it is unsuccessful. Initialize()
+  //    returns false.
+  // 2. Crypto handshake has not completed, Initialize() returns true. The call
+  //    to WaitForCryptoHandshakeConfirmed() will wait for the handshake and
+  //    return whether it is successful.
+  ASSERT_FALSE(Initialize() &&
+               client_->client()->WaitForCryptoHandshakeConfirmed());
   EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
 }
 
-TEST_P(EndToEndTest, PreSharedKeyNoClient) {
+// TODO: reenable once we have a way to make this run faster.
+TEST_P(EndToEndTest, DISABLED_PreSharedKeyNoClient) {
   client_config_.set_max_time_before_crypto_handshake(
-      QuicTime::Delta::FromMilliseconds(100));
+      QuicTime::Delta::FromSeconds(1));
   client_config_.set_max_idle_time_before_crypto_handshake(
-      QuicTime::Delta::FromMilliseconds(100));
+      QuicTime::Delta::FromSeconds(1));
   pre_shared_key_server_ = "foobar";
-  ASSERT_TRUE(Initialize());
-
-  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  ASSERT_FALSE(Initialize() &&
+               client_->client()->WaitForCryptoHandshakeConfirmed());
   EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
 }
 
-TEST_P(EndToEndTest, PreSharedKeyNoServer) {
+// TODO: reenable once we have a way to make this run faster.
+TEST_P(EndToEndTest, DISABLED_PreSharedKeyNoServer) {
   client_config_.set_max_time_before_crypto_handshake(
-      QuicTime::Delta::FromMilliseconds(100));
+      QuicTime::Delta::FromSeconds(1));
   client_config_.set_max_idle_time_before_crypto_handshake(
-      QuicTime::Delta::FromMilliseconds(100));
+      QuicTime::Delta::FromSeconds(1));
   pre_shared_key_client_ = "foobar";
-  ASSERT_TRUE(Initialize());
-
-  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  ASSERT_FALSE(Initialize() &&
+               client_->client()->WaitForCryptoHandshakeConfirmed());
   EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
 }
 

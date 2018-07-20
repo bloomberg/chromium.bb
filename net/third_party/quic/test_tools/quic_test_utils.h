@@ -33,13 +33,6 @@
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-// EXPECT_QUIC_BUG is like EXPECT_DFATAL, except it ensures that no DFATAL
-// logging is skipped due to exponential backoff.
-//
-// For external QUIC, EXPECT_QUIC_BUG should be #defined to EXPECT_DFATAL.
-// TODO(danzh): Move to third_party/quic/platform/api/quic_expect_bug.h.
-#define EXPECT_QUIC_BUG EXPECT_DFATAL
-
 namespace quic {
 
 namespace test {
