@@ -117,10 +117,14 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   NSCandidateListTouchBarItem* candidateListItem =
       [[NSCandidateListTouchBarItem alloc]
           initWithIdentifier:kSuggestedTextItemsTouchId];
-  candidateListItem.delegate = self;
   [candidateListItem setCandidates:suggestions_
                   forSelectedRange:selectionRange_
                           inString:text_];
+
+  candidateListItem.delegate = self;
+  if (selectionRange_.length)
+    candidateListItem.collapsed = YES;
+
   return candidateListItem;
 }
 

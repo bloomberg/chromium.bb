@@ -31,11 +31,22 @@ class SuggestedTextTouchBarControllerUnitTest : public CocoaTest {
     return gfx::Range(range);
   }
 
-  SuggestedTextTouchBarController* controller() { return controller_; }
-
- private:
   base::scoped_nsobject<SuggestedTextTouchBarController> controller_;
 };
+
+TEST_F(SuggestedTextTouchBarControllerUnitTest, CollapsedCandidateListTest) {
+  if (@available(macOS 10.12.2, *)) {
+    base::scoped_nsobject<NSCandidateListTouchBarItem> item;
+
+    [controller_ setSelectionRange:NSMakeRange(0, 0)];
+    item.reset([controller_ createCandidateListItem]);
+    EXPECT_FALSE([item isCollapsed]);
+
+    [controller_ setSelectionRange:NSMakeRange(0, 1)];
+    item.reset([controller_ createCandidateListItem]);
+    EXPECT_TRUE([item isCollapsed]);
+  }
+}
 
 // Tests that the proper range representing the location of the editing word is
 // calculated for a given text and cursor position.
@@ -106,7 +117,7 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest, EditingWordRangeTest) {
 TEST_F(SuggestedTextTouchBarControllerUnitTest, TouchBarMetricTest) {
   if (@available(macOS 10.12.2, *)) {
     base::HistogramTester histogram_tester;
-    [controller() candidateListTouchBarItem:nil endSelectingCandidateAtIndex:1];
+    [controller_ candidateListTouchBarItem:nil endSelectingCandidateAtIndex:1];
     histogram_tester.ExpectBucketCount("TouchBar.Default.Metrics",
                                        ui::TouchBarAction::TEXT_SUGGESTION, 1);
   }
