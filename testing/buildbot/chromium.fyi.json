@@ -2849,6 +2849,24 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--ozone-platform=headless"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
+        },
+        "test": "aura_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

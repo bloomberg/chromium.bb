@@ -352,6 +352,11 @@
   },
 
   'chromeos_gtests_experimental': {
+    'aura_unittests': {
+      'args': [
+        '--ozone-platform=headless',
+      ],
+    },
     'base_unittests': {},
     'chromeos_unittests': {
       'args': [
