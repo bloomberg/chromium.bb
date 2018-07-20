@@ -28,7 +28,6 @@ group("all") {
     deps += [
       "//ash/components/autoclick:autoclick_app",
       "//ash/components/quick_launch:quick_launch_app",
-      "//mash:mash_unittests",
     ]
   }
 }
@@ -79,60 +78,4 @@ copy("mash_catalog") {
   deps = [
     ":catalog",
   ]
-}
-
-if (is_chromeos) {
-  # TODO(jamescook): Move these tests into //ash.
-  test("mash_unittests") {
-    sources = [
-      "test/mash_test_suite.cc",
-      "test/mash_test_suite.h",
-      "test/mash_unittests.cc",
-    ]
-    deps = [
-      "//ash:ash_service_resources",
-      "//ash:mash_unittests",
-      "//ash:test_support_without_content",
-      "//ash/public/cpp",
-      "//base",
-      "//base/test:test_support",
-      "//cc",
-      "//cc:test_support",
-      "//components/viz/service",
-      "//mojo/core/embedder",
-      "//services/catalog:lib",
-      "//ui/aura",
-      "//ui/base",
-      "//ui/compositor:test_support",
-      "//ui/gl:test_support",
-    ]
-    data_deps = [
-      ":mash_unittests_catalog_copy",
-      "//ash:ash_service_resources",
-    ]
-  }
-
-  service_manifest("unittests_manifest") {
-    name = "mash_unittests"
-    source = "unittests_manifest.json"
-  }
-
-  catalog("mash_unittests_catalog") {
-    testonly = true
-
-    embedded_services = [ ":unittests_manifest" ]
-
-    catalog_deps = [ ":catalog" ]
-  }
-
-  copy("mash_unittests_catalog_copy") {
-    testonly = true
-    sources = get_target_outputs(":mash_unittests_catalog")
-    outputs = [
-      "${root_out_dir}/mash_unittests_catalog.json",
-    ]
-    deps = [
-      ":mash_unittests_catalog",
-    ]
-  }
 }

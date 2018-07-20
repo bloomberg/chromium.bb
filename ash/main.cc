@@ -46,8 +46,9 @@ MojoResult ServiceMain(MojoHandle service_request_handle) {
   // This code path is really only for testing (production code uses the utility
   // process to launch AshService), so it's ok to use a for-testing function.
   base::FeatureList::ClearInstanceForTesting();
-  DCHECK(base::FeatureList::InitializeInstance(enabled_features,
-                                               disabled_features));
+  CHECK(base::FeatureList::InitializeInstance(enabled_features,
+                                              disabled_features));
+  CHECK(base::FeatureList::IsEnabled(features::kMash));
 
   ui::MaterialDesignController::Initialize();
 

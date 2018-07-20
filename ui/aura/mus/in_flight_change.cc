@@ -100,8 +100,7 @@ void CrashInFlightChange::SetRevertValueFrom(const InFlightChange& change) {
 }
 
 void CrashInFlightChange::ChangeFailed() {
-  DLOG(ERROR) << "change failed, type=" << static_cast<int>(change_type());
-  CHECK(false);
+  CHECK(false) << "change failed, type=" << static_cast<int>(change_type());
 }
 
 void CrashInFlightChange::Revert() {

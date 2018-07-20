@@ -133,7 +133,8 @@ class AURA_EXPORT WindowTreeClient
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
       ui::mojom::WindowTreeClientRequest request,
-      bool create_discardable_memory = true);
+      bool create_discardable_memory = true,
+      Config config = Config::kMashDeprecated);
 
   // Creates a WindowTreeClient useful for creating top-level windows.
   static std::unique_ptr<WindowTreeClient> CreateForWindowTreeFactory(

@@ -1632,7 +1632,6 @@
         'shards': 10,
       },
     },
-    'mash_unittests': {},
   },
 
   'memory_infra_isolated_scripts': {
