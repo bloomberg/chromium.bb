@@ -105,6 +105,7 @@ import gclient_scm
 import gclient_utils
 import git_cache
 import metrics
+import metrics_utils
 from third_party.repo.progress import Progress
 import subcommand
 import subprocess2
@@ -1399,6 +1400,15 @@ it or fix the checkout.
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
+    metrics.collector.add(
+        'project_urls',
+        [
+            dep.url if not dep.url.endswith('.git') else dep.url[:-len('.git')]
+            for dep in deps_to_add
+            if dep.FuzzyMatchUrl(metrics_utils.KNOWN_PROJECT_URLS)
+        ]
+    )
+
     self.add_dependencies_and_close(deps_to_add, config_dict.get('hooks', []))
     logging.info('SetConfig() done')
 

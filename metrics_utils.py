@@ -26,6 +26,27 @@ NOTICE_FOOTER = (
   '*****************************************************\n'
 )
 
+KNOWN_PROJECT_URLS = {
+  'https://chrome-internal.googlesource.com/chrome/ios_internal',
+  'https://chrome-internal.googlesource.com/infra/infra_internal',
+  'https://chromium.googlesource.com/breakpad/breakpad',
+  'https://chromium.googlesource.com/chromium/src',
+  'https://chromium.googlesource.com/chromium/tools/depot_tools',
+  'https://chromium.googlesource.com/crashpad/crashpad',
+  'https://chromium.googlesource.com/external/gyp',
+  'https://chromium.googlesource.com/external/naclports',
+  'https://chromium.googlesource.com/infra/goma/client',
+  'https://chromium.googlesource.com/infra/infra',
+  'https://chromium.googlesource.com/native_client/',
+  'https://chromium.googlesource.com/syzygy',
+  'https://chromium.googlesource.com/v8/v8',
+  'https://dart.googlesource.com/sdk',
+  'https://pdfium.googlesource.com/pdfium',
+  'https://skia.googlesource.com/buildbot',
+  'https://skia.googlesource.com/skia',
+  'https://webrtc.googlesource.com/src',
+}
+
 
 def get_python_version():
   """Return the python version in the major.minor.micro format."""
