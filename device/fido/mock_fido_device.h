@@ -23,9 +23,27 @@ namespace device {
 
 class MockFidoDevice : public FidoDevice {
  public:
+  // MakeU2f returns a fully initialized U2F device. This represents the state
+  // after |DiscoverSupportedProtocolAndDeviceInfo| has been called by the
+  // FidoDiscovery.
   static std::unique_ptr<MockFidoDevice> MakeU2f();
+  // MakeCtap returns a fully initialized CTAP device. This represents the
+  // state after |DiscoverSupportedProtocolAndDeviceInfo| has been called by
+  // the FidoDiscovery.
   static std::unique_ptr<MockFidoDevice> MakeCtap(
       base::Optional<AuthenticatorGetInfoResponse> device_info = base::nullopt);
+  // MakeU2fWithDeviceInfoExpectation returns a uninitialized U2F device
+  // suitable for injecting into a FidoDiscovery, which will determine its
+  // protocol version by invoking |DiscoverSupportedProtocolAndDeviceInfo|.
+  static std::unique_ptr<MockFidoDevice> MakeU2fWithGetInfoExpectation();
+  // MakeCtapWithDeviceInfoExpectation returns a uninitialized CTAP device
+  // suitable for injecting into a FidoDiscovery, which will determine its
+  // protocol version by invoking |DiscoverSupportedProtocolAndDeviceInfo|. If a
+  // response is supplied, the mock will use that to reply; otherwise it will
+  // use |test_data::kTestAuthenticatorGetInfoResponse|.
+  static std::unique_ptr<MockFidoDevice> MakeCtapWithGetInfoExpectation(
+      base::Optional<base::span<const uint8_t>> get_info_response =
+          base::nullopt);
 
   MockFidoDevice();
   MockFidoDevice(ProtocolVersion protocol_version,
@@ -57,6 +75,7 @@ class MockFidoDevice : public FidoDevice {
       base::TimeDelta delay = base::TimeDelta());
   void ExpectCtap2CommandAndDoNotRespond(CtapRequestCommand command);
   void ExpectRequestAndDoNotRespond(base::span<const uint8_t> request);
+  void StubGetId();
 
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 

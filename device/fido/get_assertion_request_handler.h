@@ -49,6 +49,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   // FidoRequestHandlerBase:
   void DispatchRequest(FidoAuthenticator* authenticator) override;
 
+  void HandleResponse(
+      FidoAuthenticator* authenticator,
+      CtapDeviceResponseCode response_code,
+      base::Optional<AuthenticatorGetAssertionResponse> response);
+
   CtapGetAssertionRequest request_;
   base::WeakPtrFactory<GetAssertionRequestHandler> weak_factory_;
 
