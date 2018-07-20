@@ -14,9 +14,9 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
-class ModelTypeControllerDelegate;
 class UserEventService;
 }  // namespace syncer
 
@@ -49,27 +49,32 @@ class ConsentAuditorImpl : public ConsentAuditor {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Consent auditor implementation.
-
-  // Records a consent for |feature| for the signed-in GAIA account with
-  // the ID |account_id| (as defined in AccountInfo).
-  // Consent text consisted of strings with |consent_grd_ids|, and the UI
-  // element the user clicked had the ID |confirmation_grd_id|.
-  // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
   void RecordGaiaConsent(const std::string& account_id,
                          Feature feature,
                          const std::vector<int>& description_grd_ids,
                          int confirmation_grd_id,
                          ConsentStatus status) override;
-
-  // Records that the user consented to a |feature|. The user was presented with
-  // |description_text| and accepted it by interacting |confirmation_text|
-  // (e.g. clicking on a button; empty if not applicable).
-  // Returns true if successful.
+  void RecordArcPlayConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent& consent)
+      override;
+  void RecordArcGoogleLocationServiceConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent& consent)
+      override;
+  void RecordArcBackupAndRestoreConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent& consent)
+      override;
+  void RecordSyncConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::SyncConsent& consent) override;
+  void RecordUnifiedConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::UnifiedConsent& consent) override;
   void RecordLocalConsent(const std::string& feature,
                           const std::string& description_text,
                           const std::string& confirmation_text) override;
-
-  // Returns the underlying Sync integration point.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetControllerDelegateOnUIThread() override;
 

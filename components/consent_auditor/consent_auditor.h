@@ -12,10 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-
-namespace syncer {
-class ModelTypeControllerDelegate;
-}
+#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace consent_auditor {
 
@@ -55,11 +52,47 @@ class ConsentAuditor : public KeyedService {
   // Consent text consisted of strings with |consent_grd_ids|, and the UI
   // element the user clicked had the ID |confirmation_grd_id|.
   // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
+  //
+  // DEPRECATED
+  // TODO(markusheintz): Make this method private once all clients have been
+  // migrated to the new API.
   virtual void RecordGaiaConsent(const std::string& account_id,
                                  Feature feature,
                                  const std::vector<int>& description_grd_ids,
                                  int confirmation_grd_id,
                                  ConsentStatus status) = 0;
+
+  // Records the ARC Play |consent| for the signed-in GAIA account with the ID
+  // |account_id| (as defined in AccountInfo).
+  virtual void RecordArcPlayConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent&
+          consent) = 0;
+
+  // Records the ARC Google Location Service |consent| for the signed-in GAIA
+  // account with the ID |account_id| (as defined in AccountInfo).
+  virtual void RecordArcGoogleLocationServiceConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent&
+          consent) = 0;
+
+  // Records the ARC Backup and Restore |consent| for the signed-in GAIA
+  // account with the ID |account_id| (as defined in AccountInfo).
+  virtual void RecordArcBackupAndRestoreConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent& consent) = 0;
+
+  // Records the Sync |consent| for the signed-in GAIA account with the ID
+  // |account_id| (as defined in AccountInfo).
+  virtual void RecordSyncConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::SyncConsent& consent) = 0;
+
+  // Records the Chrome Unified |consent| for the signed-in GAIA account with
+  // the ID |accounts_id| (as defined in Account Info).
+  virtual void RecordUnifiedConsent(
+      const std::string& account_id,
+      const sync_pb::UserConsentTypes::UnifiedConsent& consent) = 0;
 
   // Records that the user consented to a |feature|. The user was presented with
   // |description_text| and accepted it by interacting |confirmation_text|

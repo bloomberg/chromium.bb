@@ -25,13 +25,22 @@ static void JNI_ConsentAuditorBridge_RecordConsent(
     jint j_feature,
     const JavaParamRef<jintArray>& j_consent_description,
     jint j_consent_confirmation) {
+  // TODO(markusheintz): Update the ConsentAuditorBridgeInterface.
+  DCHECK_EQ(static_cast<consent_auditor::Feature>(j_feature),
+            consent_auditor::Feature::CHROME_SYNC);
+
   std::vector<int> consent_description;
   base::android::JavaIntArrayToIntVector(env, j_consent_description,
                                          &consent_description);
+
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+  sync_consent.set_confirmation_grd_id(j_consent_confirmation);
+  for (int id : consent_description) {
+    sync_consent.add_description_grd_ids(id);
+  }
   ConsentAuditorFactory::GetForProfile(
       ProfileAndroid::FromProfileAndroid(j_profile))
-      ->RecordGaiaConsent(ConvertJavaStringToUTF8(j_account_id),
-                          static_cast<consent_auditor::Feature>(j_feature),
-                          consent_description, j_consent_confirmation,
-                          consent_auditor::ConsentStatus::GIVEN);
+      ->RecordSyncConsent(ConvertJavaStringToUTF8(j_account_id), sync_consent);
 }
