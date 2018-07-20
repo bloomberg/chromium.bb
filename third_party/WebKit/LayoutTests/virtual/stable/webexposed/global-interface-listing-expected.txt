@@ -3588,6 +3588,7 @@ interface IntersectionObserverEntry
 interface Keyboard
     attribute @@toStringTag
     method constructor
+    method getLayoutMap
     method lock
     method unlock
 interface KeyboardEvent : UIEvent
@@ -3610,6 +3611,17 @@ interface KeyboardEvent : UIEvent
     method constructor
     method getModifierState
     method initKeyboardEvent
+interface KeyboardLayoutMap
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor

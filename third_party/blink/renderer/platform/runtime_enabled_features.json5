@@ -636,7 +636,7 @@
     },
     {
       name: "KeyboardMap",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LangAttributeAwareFormControlUI",
