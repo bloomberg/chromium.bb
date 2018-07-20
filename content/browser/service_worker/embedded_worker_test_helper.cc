@@ -491,7 +491,11 @@ void EmbeddedWorkerTestHelper::SetNetworkFactory(
   if (!factory)
     factory = default_network_loader_factory_.get();
 
+  // Reset factory in URLLoaderFactoryGetter so that we don't hit DCHECK()
+  // there.
+  url_loader_factory_getter_->SetNetworkFactoryForTesting(nullptr);
   url_loader_factory_getter_->SetNetworkFactoryForTesting(factory);
+
   render_process_host_->OverrideURLLoaderFactory(factory);
   new_render_process_host_->OverrideURLLoaderFactory(factory);
 }
