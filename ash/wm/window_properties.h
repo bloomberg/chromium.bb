@@ -20,6 +20,10 @@ class WindowState;
 }  // namespace wm
 
 // Used with kWidgetCreationType to indicate source of the widget creation.
+//
+// TODO: investigate removing this. If it's still needed, we can likely ask
+// the window service if it has a remote client for the window rather than using
+// a property. https://crbug.com/865616
 enum class WidgetCreationType {
   // The widget was created internally, and not at the request of a client.
   // For example, overview mode creates a number of widgets. These widgets are

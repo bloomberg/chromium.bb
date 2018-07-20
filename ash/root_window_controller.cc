@@ -72,8 +72,6 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/aura/mus/window_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -255,10 +253,6 @@ aura::Window* CreateContainer(int window_id,
   aura::Window* window =
       new aura::Window(nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   window->Init(ui::LAYER_NOT_DRAWN);
-  if (Shell::GetAshConfig() != Config::CLASSIC) {
-    window->SetEventTargetingPolicy(
-        ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
-  }
   window->set_id(window_id);
   window->SetName(name);
   parent->AddChild(window);
@@ -268,15 +262,7 @@ aura::Window* CreateContainer(int window_id,
 }
 
 bool ShouldDestroyWindowInCloseChildWindows(aura::Window* window) {
-  if (!window->owned_by_parent())
-    return false;
-
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
-    return true;
-
-  aura::WindowMus* window_mus = aura::WindowMus::Get(window);
-  return Shell::window_tree_client()->WasCreatedByThisClient(window_mus) ||
-         Shell::window_tree_client()->IsRoot(window_mus);
+  return window->owned_by_parent();
 }
 
 }  // namespace

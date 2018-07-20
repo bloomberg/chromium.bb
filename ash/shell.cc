@@ -180,9 +180,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
@@ -264,10 +262,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
 
 // static
 Shell* Shell::instance_ = nullptr;
-// static
-aura::WindowTreeClient* Shell::window_tree_client_ = nullptr;
-// static
-aura::WindowManagerClient* Shell::window_manager_client_ = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
@@ -724,8 +718,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
-  const Config config = shell_port_->GetAshConfig();
-
   // Wayland depends upon some ash specific objects. Destroy it early on.
   wayland_server_controller_.reset();
 
@@ -910,11 +902,6 @@ Shell::~Shell() {
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
   focus_controller_->RemoveObserver(this);
-  if (config != Config::CLASSIC &&
-      window_tree_client_->focus_synchronizer()->active_focus_client() ==
-          focus_controller_.get()) {
-    window_tree_client_->focus_synchronizer()->SetSingletonFocusClient(nullptr);
-  }
   focus_controller_.reset();
   screen_position_controller_.reset();
 
@@ -1085,10 +1072,6 @@ void Shell::Init(
   focus_controller_ =
       std::make_unique<::wm::FocusController>(new wm::AshFocusRules());
   focus_controller_->AddObserver(this);
-  if (config != Config::CLASSIC) {
-    window_tree_client_->focus_synchronizer()->SetSingletonFocusClient(
-        focus_controller_.get());
-  }
 
   screen_position_controller_.reset(new ScreenPositionController);
 

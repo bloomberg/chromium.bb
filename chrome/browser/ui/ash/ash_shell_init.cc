@@ -11,10 +11,10 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_port_classic.h"
-#include "ash/window_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "content/public/browser/context_factory.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace {
 

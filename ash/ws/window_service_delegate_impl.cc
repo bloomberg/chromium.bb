@@ -83,9 +83,8 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
   ui::mojom::WindowType window_type =
       aura::GetWindowTypeFromProperties(property_map);
 
-  auto* window =
-      CreateAndParentTopLevelWindow(nullptr /* window_manager */, window_type,
-                                    property_converter, &property_map);
+  auto* window = CreateAndParentTopLevelWindow(window_type, property_converter,
+                                               &property_map);
   return base::WrapUnique<aura::Window>(window);
 }
 

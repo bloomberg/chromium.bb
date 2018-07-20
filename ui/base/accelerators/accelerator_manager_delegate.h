@@ -11,6 +11,7 @@ namespace ui {
 
 class Accelerator;
 
+// TODO: this should no longer be necessary, remove. https://crbug.com/842365
 class UI_BASE_EXPORT AcceleratorManagerDelegate {
  public:
   // Called when new accelerators are registered. This is only called with

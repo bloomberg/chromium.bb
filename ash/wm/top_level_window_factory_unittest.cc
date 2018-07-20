@@ -13,8 +13,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/window_manager.h"
-#include "ash/window_manager_service.h"
 #include "ash/wm/window_properties.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/cpp/property_type_converters.h"

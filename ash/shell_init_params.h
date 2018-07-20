@@ -35,6 +35,7 @@ struct ASH_EXPORT ShellInitParams {
   ShellInitParams(ShellInitParams&& other);
   ~ShellInitParams();
 
+  // TODO(sky): remove this, no longer needed. https://crbug.com/842365
   std::unique_ptr<ShellPort> shell_port;
   std::unique_ptr<ShellDelegate> delegate;
   ui::ContextFactory* context_factory = nullptr;                 // Non-owning.

@@ -16,6 +16,7 @@
 namespace ash {
 
 // Used by WindowManager for handling accelerators. This is only used in mash.
+// TODO: this should no longer be necessary, remove. https://crbug.com/842365
 class AcceleratorHandler {
  public:
   // See WindowManagerDelegate for details on |properties|.

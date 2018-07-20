@@ -17,8 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/aura/env_observer.h"
-#include "ui/aura/window_tree_host_observer.h"
 #include "ui/display/display.h"
 
 namespace aura {
@@ -40,9 +38,6 @@ class Rect;
 }
 
 namespace ui {
-namespace mojom {
-enum class WindowType;
-}
 namespace test {
 class EventGenerator;
 }
@@ -69,9 +64,7 @@ class TestScreenshotDelegate;
 class TestSessionControllerClient;
 class UnifiedSystemTray;
 
-class AshTestBase : public testing::Test,
-                    public aura::EnvObserver,
-                    public aura::WindowTreeHostObserver {
+class AshTestBase : public testing::Test {
  public:
   AshTestBase();
   ~AshTestBase() override;
@@ -246,19 +239,7 @@ class AshTestBase : public testing::Test,
   ui::ws2::WindowTree* GetWindowTree();
 
  private:
-  std::unique_ptr<aura::Window> CreateTestWindowMash(
-      ui::mojom::WindowType window_type,
-      int shell_window_id,
-      std::map<std::string, std::vector<uint8_t>>* properties);
-
   void CreateWindowTreeIfNecessary();
-
-  // aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override;
-  void OnHostInitialized(aura::WindowTreeHost* host) override;
-
-  // aura::WindowTreeHostObserver:
-  void OnHostResized(aura::WindowTreeHost* host) override;
 
   bool setup_called_;
   bool teardown_called_;
