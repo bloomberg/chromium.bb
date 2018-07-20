@@ -112,9 +112,9 @@ void AssistantUiController::OnInteractionStateChanged(
     return;
 
   // If there is an active interaction, we need to show Assistant UI if it is
-  // not already showing. An interaction can only be started when the Assistant
-  // UI is hidden if the entry point is hotword.
-  ShowUi(AssistantSource::kHotword);
+  // not already showing. We don't have enough information here to know what
+  // the interaction source is, but at the moment we have no need to know.
+  ShowUi(AssistantSource::kUnspecified);
 }
 
 void AssistantUiController::OnMicStateChanged(MicState mic_state) {
