@@ -117,24 +117,19 @@ void TCPServerSocketEventDispatcher::StartAccept(const AcceptParams& params) {
     return;
 
   socket->Accept(
-      base::BindOnce(&TCPServerSocketEventDispatcher::AcceptCallback, params));
+      base::Bind(&TCPServerSocketEventDispatcher::AcceptCallback, params));
 }
 
 // static
 void TCPServerSocketEventDispatcher::AcceptCallback(
     const AcceptParams& params,
     int result_code,
-    network::mojom::TCPConnectedSocketPtr socket,
-    const base::Optional<net::IPEndPoint>& remote_addr,
-    mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-    mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+    std::unique_ptr<net::TCPClientSocket> socket) {
   DCHECK_CURRENTLY_ON(params.thread_id);
-  DCHECK_GE(net::OK, result_code);
 
-  if (result_code == net::OK) {
-    ResumableTCPSocket* client_socket = new ResumableTCPSocket(
-        std::move(socket), std::move(receive_pipe_handle),
-        std::move(send_pipe_handle), remote_addr, params.extension_id);
+  if (result_code >= 0) {
+    ResumableTCPSocket* client_socket =
+        new ResumableTCPSocket(std::move(socket), params.extension_id, true);
     client_socket->set_paused(true);
     int client_socket_id = params.client_sockets->Add(client_socket);
 

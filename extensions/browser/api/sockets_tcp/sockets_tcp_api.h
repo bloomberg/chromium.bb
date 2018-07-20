@@ -7,16 +7,14 @@
 
 #include <stddef.h>
 
-#include <memory>
-
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "extensions/browser/api/socket/socket_api.h"
 #include "extensions/common/api/sockets_tcp.h"
-#include "services/network/public/mojom/tcp_socket.mojom.h"
 
 namespace extensions {
 class ResumableTCPSocket;
+class TLSSocket;
 }
 
 namespace extensions {
@@ -110,11 +108,9 @@ class SocketsTcpSetKeepAliveFunction : public TCPSocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void AsyncWorkStart() override;
+  void Work() override;
 
  private:
-  void OnCompleted(bool success);
-
   std::unique_ptr<sockets_tcp::SetKeepAlive::Params> params_;
 };
 
@@ -129,11 +125,9 @@ class SocketsTcpSetNoDelayFunction : public TCPSocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void AsyncWorkStart() override;
+  void Work() override;
 
  private:
-  void OnCompleted(bool success);
-
   std::unique_ptr<sockets_tcp::SetNoDelay::Params> params_;
 };
 
@@ -261,16 +255,13 @@ class SocketsTcpSecureFunction : public TCPSocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
-  void TlsConnectDone(int result,
-                      network::mojom::TLSClientSocketPtr tls_socket,
-                      const net::IPEndPoint& local_addr,
-                      const net::IPEndPoint& peer_addr,
-                      mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-                      mojo::ScopedDataPipeProducerHandle send_pipe_handle);
+  virtual void TlsConnectDone(std::unique_ptr<extensions::TLSSocket> sock,
+                              int result);
 
   bool paused_;
   bool persistent_;
   std::unique_ptr<sockets_tcp::Secure::Params> params_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketsTcpSecureFunction);
 };

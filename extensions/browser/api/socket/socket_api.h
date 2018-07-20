@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -42,6 +41,7 @@ class URLRequestContextGetter;
 
 namespace extensions {
 class Socket;
+class TLSSocket;
 
 // A simple interface to ApiResourceManager<Socket> or derived class. The goal
 // of this interface is to allow Socket API functions to use distinct instances
@@ -184,10 +184,8 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
   FRIEND_TEST_ALL_PREFIXES(SocketUnitTest, Create);
   enum SocketType { kSocketTypeInvalid = -1, kSocketTypeTCP, kSocketTypeUDP };
 
-  // These two fields are only applicable if |socket_type_| is UDP.
   network::mojom::UDPSocketPtrInfo socket_;
   network::mojom::UDPSocketReceiverRequest socket_receiver_request_;
-
   std::unique_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;
 };
@@ -280,7 +278,6 @@ class SocketListenFunction : public SocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
-  void OnCompleted(int result, const std::string& error_msg);
   std::unique_ptr<api::socket::Listen::Params> params_;
 };
 
@@ -298,11 +295,7 @@ class SocketAcceptFunction : public SocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
-  void OnAccept(int result_code,
-                network::mojom::TCPConnectedSocketPtr socket,
-                const base::Optional<net::IPEndPoint>& remote_addr,
-                mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-                mojo::ScopedDataPipeProducerHandle send_pipe_handle);
+  void OnAccept(int result_code, std::unique_ptr<net::TCPClientSocket> socket);
 
   std::unique_ptr<api::socket::Accept::Params> params_;
 };
@@ -407,11 +400,9 @@ class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void AsyncWorkStart() override;
+  void Work() override;
 
  private:
-  void OnCompleted(bool success);
-
   std::unique_ptr<api::socket::SetKeepAlive::Params> params_;
 };
 
@@ -426,11 +417,9 @@ class SocketSetNoDelayFunction : public SocketAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void AsyncWorkStart() override;
+  void Work() override;
 
  private:
-  void OnCompleted(bool success);
-
   std::unique_ptr<api::socket::SetNoDelay::Params> params_;
 };
 
@@ -572,14 +561,11 @@ class SocketSecureFunction : public SocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
-  void TlsConnectDone(int result,
-                      network::mojom::TLSClientSocketPtr tls_socket,
-                      const net::IPEndPoint& local_addr,
-                      const net::IPEndPoint& peer_addr,
-                      mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-                      mojo::ScopedDataPipeProducerHandle send_pipe_handle);
+  // Callback from TLSSocket::UpgradeSocketToTLS().
+  void TlsConnectDone(std::unique_ptr<TLSSocket> socket, int result);
 
   std::unique_ptr<api::socket::Secure::Params> params_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketSecureFunction);
 };

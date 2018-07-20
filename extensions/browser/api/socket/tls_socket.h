@@ -7,19 +7,24 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 
-#include "extensions/browser/api/socket/mojo_data_pump.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/socket_api.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
-#include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/mojom/tls_socket.mojom.h"
+#include "net/ssl/ssl_config_service.h"
+
+namespace net {
+class Socket;
+class CertVerifier;
+class CTPolicyEnforcer;
+class CTVerifier;
+class TransportSecurityState;
+}
 
 namespace extensions {
 
-class MojoDataPump;
+class TLSSocket;
 
 // TLS Sockets from the chrome.socket and chrome.sockets.tcp APIs. A regular
 // TCPSocket is converted to a TLSSocket via chrome.socket.secure() or
@@ -33,55 +38,84 @@ class MojoDataPump;
 // touch any socket state.
 class TLSSocket : public ResumableTCPSocket {
  public:
-  TLSSocket(network::mojom::TLSClientSocketPtr tls_socket,
-            const net::IPEndPoint& local_addr,
-            const net::IPEndPoint& peer_addr,
-            mojo::ScopedDataPipeConsumerHandle receive_stream,
-            mojo::ScopedDataPipeProducerHandle send_stream,
+  typedef base::Callback<void(std::unique_ptr<TLSSocket>, int)> SecureCallback;
+
+  TLSSocket(std::unique_ptr<net::StreamSocket> tls_socket,
             const std::string& owner_extension_id);
 
   ~TLSSocket() override;
 
+  // Most of these methods either fail or forward the method call on to the
+  // inner net::StreamSocket. The remaining few do actual TLS work.
+
   // Fails.
   void Connect(const net::AddressList& address,
-               net::CompletionOnceCallback callback) override;
+               const CompletionCallback& callback) override;
   // Forwards.
   void Disconnect(bool socket_destroying) override;
 
   // Attempts to read |count| bytes of decrypted data from the TLS socket,
   // invoking |callback| with the actual number of bytes read, or a network
   // error code if an error occurred.
-  void Read(int count, ReadCompletionCallback callback) override;
+  void Read(int count, const ReadCompletionCallback& callback) override;
+
+  // Fails. This should have been called on the TCP socket before secure() was
+  // invoked.
+  bool SetKeepAlive(bool enable, int delay) override;
+
+  // Fails. This should have been called on the TCP socket before secure() was
+  // invoked.
+  bool SetNoDelay(bool no_delay) override;
 
   // Fails. TLSSocket is only a client.
-  void Listen(const std::string& address,
-              uint16_t port,
-              int backlog,
-              ListenCallback callback) override;
+  int Listen(const std::string& address,
+             uint16_t port,
+             int backlog,
+             std::string* error_msg) override;
+
+  // Fails. TLSSocket is only a client.
+  void Accept(const AcceptCompletionCallback& callback) override;
 
   // Forwards.
   bool IsConnected() override;
 
+  // Forwards.
   bool GetPeerAddress(net::IPEndPoint* address) override;
+  // Forwards.
   bool GetLocalAddress(net::IPEndPoint* address) override;
 
   // Returns TYPE_TLS.
   SocketType GetSocketType() const override;
 
+  // Convert |socket| to a TLS socket. |socket| must be an open TCP client
+  // socket. |socket| must not have a pending read. UpgradeSocketToTLS() must
+  // be invoked in the IO thread. |callback| will always be invoked. |options|
+  // may be NULL.
+  // Note: |callback| may be synchronously invoked before
+  // UpgradeSocketToTLS() returns. Currently using the older chrome.socket
+  // version of SecureOptions, to avoid having the older API implementation
+  // depend on the newer one.
+  static void UpgradeSocketToTLS(
+      Socket* socket,
+      net::SSLConfigService* config_service,
+      net::CertVerifier* cert_verifier,
+      net::TransportSecurityState* transport_security_state,
+      net::CTVerifier* ct_verifier,
+      net::CTPolicyEnforcer* ct_policy_enforcer,
+      const std::string& extension_id,
+      api::socket::SecureOptions* options,
+      const SecureCallback& callback);
+
  private:
   int WriteImpl(net::IOBuffer* io_buffer,
                 int io_buffer_size,
                 const net::CompletionCallback& callback) override;
-  void OnWriteComplete(const net::CompletionCallback& callback, int result);
-  void OnReadComplete(int result, scoped_refptr<net::IOBuffer> io_buffer);
 
-  network::mojom::TLSClientSocketPtr tls_socket_;
-  base::Optional<net::IPEndPoint> local_addr_;
-  base::Optional<net::IPEndPoint> peer_addr_;
-  std::unique_ptr<MojoDataPump> mojo_data_pump_;
+  void OnReadComplete(const scoped_refptr<net::IOBuffer>& io_buffer,
+                      int result);
+
+  std::unique_ptr<net::StreamSocket> tls_socket_;
   ReadCompletionCallback read_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TLSSocket);
 };
 
 }  // namespace extensions

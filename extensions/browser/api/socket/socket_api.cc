@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/socket/socket_api.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -253,7 +254,7 @@ bool SocketCreateFunction::Prepare() {
 void SocketCreateFunction::Work() {
   Socket* socket = NULL;
   if (socket_type_ == kSocketTypeTCP) {
-    socket = new TCPSocket(browser_context(), extension_->id());
+    socket = new TCPSocket(extension_->id());
   } else if (socket_type_ == kSocketTypeUDP) {
     socket =
         new UDPSocket(std::move(socket_), std::move(socket_receiver_request_),
@@ -462,27 +463,15 @@ void SocketListenFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Listen(params_->address, params_->port,
-                 params_->backlog.get() ? *params_->backlog : 5,
-                 base::BindOnce(&SocketListenFunction::OnCompleted, this));
-}
-
-void SocketListenFunction::OnCompleted(int result,
-                                       const std::string& error_msg) {
-  DCHECK_NE(net::ERR_IO_PENDING, result);
-  Socket* socket = GetSocket(params_->socket_id);
-  if (!socket) {
-    error_ = kSocketNotFoundError;
-    SetResult(std::make_unique<base::Value>(-1));
-    AsyncWorkCompleted();
-    return;
-  }
+  int result =
+      socket->Listen(params_->address, params_->port,
+                     params_->backlog.get() ? *params_->backlog : 5, &error_);
   SetResult(std::make_unique<base::Value>(result));
   if (result != net::OK) {
-    error_ = error_msg;
     AsyncWorkCompleted();
     return;
   }
+
   OpenFirewallHole(params_->address, params_->socket_id, socket);
 }
 
@@ -499,27 +488,21 @@ bool SocketAcceptFunction::Prepare() {
 void SocketAcceptFunction::AsyncWorkStart() {
   Socket* socket = GetSocket(params_->socket_id);
   if (socket) {
-    socket->Accept(base::BindOnce(&SocketAcceptFunction::OnAccept, this));
+    socket->Accept(base::Bind(&SocketAcceptFunction::OnAccept, this));
   } else {
     error_ = kSocketNotFoundError;
-    OnAccept(net::ERR_FAILED, nullptr, base::nullopt,
-             mojo::ScopedDataPipeConsumerHandle(),
-             mojo::ScopedDataPipeProducerHandle());
+    OnAccept(-1, NULL);
   }
 }
 
 void SocketAcceptFunction::OnAccept(
     int result_code,
-    network::mojom::TCPConnectedSocketPtr socket,
-    const base::Optional<net::IPEndPoint>& remote_addr,
-    mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-    mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+    std::unique_ptr<net::TCPClientSocket> socket) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetInteger(kResultCodeKey, result_code);
-  if (result_code == net::OK) {
+  if (socket) {
     Socket* client_socket =
-        new TCPSocket(std::move(socket), std::move(receive_pipe_handle),
-                      std::move(send_pipe_handle), remote_addr, extension_id());
+        new TCPSocket(std::move(socket), extension_id(), true);
     result->SetInteger(kSocketIdKey, AddSocket(client_socket));
   }
   SetResult(std::move(result));
@@ -546,7 +529,7 @@ void SocketReadFunction::AsyncWorkStart() {
   }
 
   socket->Read(params_->buffer_size.get() ? *params_->buffer_size : 4096,
-               base::BindOnce(&SocketReadFunction::OnCompleted, this));
+               base::BindRepeating(&SocketReadFunction::OnCompleted, this));
 }
 
 void SocketReadFunction::OnCompleted(int bytes_read,
@@ -748,25 +731,18 @@ bool SocketSetKeepAliveFunction::Prepare() {
   return true;
 }
 
-void SocketSetKeepAliveFunction::AsyncWorkStart() {
+void SocketSetKeepAliveFunction::Work() {
+  bool result = false;
   Socket* socket = GetSocket(params_->socket_id);
-  if (!socket) {
-    SetResult(std::make_unique<base::Value>(false));
+  if (socket) {
+    int delay = 0;
+    if (params_->delay.get())
+      delay = *params_->delay;
+    result = socket->SetKeepAlive(params_->enable, delay);
+  } else {
     error_ = kSocketNotFoundError;
-    AsyncWorkCompleted();
-    return;
   }
-  int delay = 0;
-  if (params_->delay.get())
-    delay = *params_->delay;
-  socket->SetKeepAlive(
-      params_->enable, delay,
-      base::BindOnce(&SocketSetKeepAliveFunction::OnCompleted, this));
-}
-
-void SocketSetKeepAliveFunction::OnCompleted(bool success) {
-  SetResult(std::make_unique<base::Value>(success));
-  AsyncWorkCompleted();
+  SetResult(std::make_unique<base::Value>(result));
 }
 
 SocketSetNoDelayFunction::SocketSetNoDelayFunction() {}
@@ -779,22 +755,14 @@ bool SocketSetNoDelayFunction::Prepare() {
   return true;
 }
 
-void SocketSetNoDelayFunction::AsyncWorkStart() {
+void SocketSetNoDelayFunction::Work() {
+  bool result = false;
   Socket* socket = GetSocket(params_->socket_id);
-  if (!socket) {
+  if (socket)
+    result = socket->SetNoDelay(params_->no_delay);
+  else
     error_ = kSocketNotFoundError;
-    SetResult(std::make_unique<base::Value>(false));
-    AsyncWorkCompleted();
-    return;
-  }
-  socket->SetNoDelay(
-      params_->no_delay,
-      base::BindOnce(&SocketSetNoDelayFunction::OnCompleted, this));
-}
-
-void SocketSetNoDelayFunction::OnCompleted(bool success) {
-  SetResult(std::make_unique<base::Value>(success));
-  AsyncWorkCompleted();
+  SetResult(std::make_unique<base::Value>(result));
 }
 
 SocketGetInfoFunction::SocketGetInfoFunction() {}
@@ -1116,6 +1084,8 @@ bool SocketSecureFunction::Prepare() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = api::socket::Secure::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+  url_request_getter_ = content::BrowserContext::GetDefaultStoragePartition(
+      browser_context())->GetURLRequestContext();
   return true;
 }
 
@@ -1133,7 +1103,8 @@ void SocketSecureFunction::AsyncWorkStart() {
   }
 
   // Make sure that the socket is a TCP client socket.
-  if (socket->GetSocketType() != Socket::TYPE_TCP) {
+  if (socket->GetSocketType() != Socket::TYPE_TCP ||
+      static_cast<TCPSocket*>(socket)->ClientStream() == NULL) {
     SetResult(std::make_unique<base::Value>(net::ERR_INVALID_ARGUMENT));
     error_ = kSecureSocketTypeError;
     AsyncWorkCompleted();
@@ -1147,32 +1118,31 @@ void SocketSecureFunction::AsyncWorkStart() {
     return;
   }
 
-  TCPSocket* tcp_socket = static_cast<TCPSocket*>(socket);
-  tcp_socket->UpgradeToTLS(
+  net::URLRequestContext* url_request_context =
+      url_request_getter_->GetURLRequestContext();
+
+  TLSSocket::UpgradeSocketToTLS(
+      socket, url_request_context->ssl_config_service(),
+      url_request_context->cert_verifier(),
+      url_request_context->transport_security_state(),
+      url_request_context->cert_transparency_verifier(),
+      url_request_context->ct_policy_enforcer(), extension_id(),
       params_->options.get(),
-      base::BindOnce(&SocketSecureFunction::TlsConnectDone, this));
+      base::Bind(&SocketSecureFunction::TlsConnectDone, this));
 }
 
-void SocketSecureFunction::TlsConnectDone(
-    int result,
-    network::mojom::TLSClientSocketPtr tls_socket,
-    const net::IPEndPoint& local_addr,
-    const net::IPEndPoint& peer_addr,
-    mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-    mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
-  if (result != net::OK) {
+void SocketSecureFunction::TlsConnectDone(std::unique_ptr<TLSSocket> socket,
+                                          int result) {
+  // if an error occurred, socket MUST be NULL.
+  DCHECK(result == net::OK || socket == NULL);
+
+  if (socket && result == net::OK) {
+    ReplaceSocket(params_->socket_id, socket.release());
+  } else {
     RemoveSocket(params_->socket_id);
     error_ = net::ErrorToString(result);
-    results_ = api::socket::Secure::Results::Create(result);
-    AsyncWorkCompleted();
-    return;
   }
 
-  auto socket =
-      std::make_unique<TLSSocket>(std::move(tls_socket), local_addr, peer_addr,
-                                  std::move(receive_pipe_handle),
-                                  std::move(send_pipe_handle), extension_id());
-  ReplaceSocket(params_->socket_id, socket.release());
   results_ = api::socket::Secure::Results::Create(result);
   AsyncWorkCompleted();
 }
