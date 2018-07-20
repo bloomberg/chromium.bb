@@ -1489,12 +1489,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mash_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "wayland_client_perftests"
       },
       {

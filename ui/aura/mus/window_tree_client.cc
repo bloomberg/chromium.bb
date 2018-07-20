@@ -247,10 +247,11 @@ std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForEmbedding(
     service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     ui::mojom::WindowTreeClientRequest request,
-    bool create_discardable_memory) {
+    bool create_discardable_memory,
+    Config config) {
   std::unique_ptr<WindowTreeClient> wtc(
       new WindowTreeClient(connector, delegate, nullptr, std::move(request),
-                           nullptr, create_discardable_memory));
+                           nullptr, create_discardable_memory, config));
   return wtc;
 }
 

@@ -883,10 +883,6 @@
       "../../tools/metrics/metrics_python_tests.py"
     ]
   },
-  "mash_unittests": {
-    "label": "//mash:mash_unittests",
-    "type": "windowed_test_launcher",
-  },
   "nacl_helper_nonsfi_unittests": {
     "label": "//components/nacl/loader:nacl_helper_nonsfi_unittests",
     "type": "raw",

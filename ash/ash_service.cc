@@ -99,6 +99,10 @@ AshService::~AshService() {
   chromeos::PowerPolicyController::Shutdown();
   if (dbus_thread_manager_initialized_)
     chromeos::DBusThreadManager::Shutdown();
+
+  // |gpu_host_| must be completely destroyed before Env as GpuHost depends on
+  // Ozone, which Env owns.
+  gpu_host_.reset();
 }
 
 // static
