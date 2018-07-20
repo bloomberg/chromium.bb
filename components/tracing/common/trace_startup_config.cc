@@ -50,17 +50,18 @@ TraceStartupConfig::TraceStartupConfig()
     : is_enabled_(false),
       trace_config_(base::trace_event::TraceConfig()),
       startup_duration_(0) {
+  const int kDefaultStartupDuration = 5;
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {
     std::string startup_duration_str =
         command_line->GetSwitchValueASCII(switches::kTraceStartupDuration);
-    startup_duration_ = 5;
+    startup_duration_ = kDefaultStartupDuration;
     if (!startup_duration_str.empty() &&
         !base::StringToInt(startup_duration_str, &startup_duration_)) {
       DLOG(WARNING) << "Could not parse --" << switches::kTraceStartupDuration
                     << "=" << startup_duration_str << " defaulting to 5 (secs)";
-      startup_duration_ = 5;
+      startup_duration_ = kDefaultStartupDuration;
     }
 
     trace_config_ = base::trace_event::TraceConfig(
@@ -86,7 +87,7 @@ TraceStartupConfig::TraceStartupConfig()
   if (trace_config_file.empty()) {
     // If the trace config file path is not specified, trace Chrome with the
     // default configuration for 5 sec.
-    startup_duration_ = 5;
+    startup_duration_ = kDefaultStartupDuration;
     is_enabled_ = true;
     DLOG(WARNING) << "Use default trace config.";
     return;
