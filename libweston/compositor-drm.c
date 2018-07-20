@@ -51,6 +51,7 @@
 
 #include "compositor.h"
 #include "compositor-drm.h"
+#include "weston-debug.h"
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 #include "gl-renderer.h"
@@ -72,6 +73,42 @@
 #ifndef GBM_BO_USE_CURSOR
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
 #endif
+
+/**
+ * A small wrapper to print information into the 'drm-backend' debug scope.
+ *
+ * The following conventions are used to print variables:
+ *
+ *  - fixed uint32_t values, including Weston object IDs such as weston_output
+ *    IDs, DRM object IDs such as CRTCs or properties, and GBM/DRM formats:
+ *      "%lu (0x%lx)" (unsigned long) value, (unsigned long) value
+ *
+ *  - fixed uint64_t values, such as DRM property values (including object IDs
+ *    when used as a value):
+ *      "%llu (0x%llx)" (unsigned long long) value, (unsigned long long) value
+ *
+ *  - non-fixed-width signed int:
+ *      "%d" value
+ *
+ *  - non-fixed-width unsigned int:
+ *      "%u (0x%x)" value, value
+ *
+ *  - non-fixed-width unsigned long:
+ *      "%lu (0x%lx)" value, value
+ *
+ * Either the integer or hexadecimal forms may be omitted if it is known that
+ * one representation is not useful (e.g. width/height in hex are rarely what
+ * you want).
+ *
+ * This is to avoid implicit widening or narrowing when we use fixed-size
+ * types: uint32_t can be resolved by either unsigned int or unsigned long
+ * on a 32-bit system but only unsigned int on a 64-bit system, with uint64_t
+ * being unsigned long long on a 32-bit system and unsigned long on a 64-bit
+ * system. To avoid confusing side effects, we explicitly cast to the widest
+ * possible type and use a matching format specifier.
+ */
+#define drm_debug(b, ...) \
+	weston_debug_scope_printf((b)->debug, __VA_ARGS__)
 
 #define MAX_CLONED_CONNECTORS 4
 
@@ -302,6 +339,8 @@ struct drm_backend {
 	bool shutting_down;
 
 	bool aspect_ratio_supported;
+
+	struct weston_debug_scope *debug;
 };
 
 struct drm_mode {
@@ -2357,6 +2396,10 @@ crtc_add_prop(drmModeAtomicReq *req, struct drm_output *output,
 
 	ret = drmModeAtomicAddProperty(req, output->crtc_id, info->prop_id,
 				       val);
+	drm_debug(output->backend, "\t\t\t[CRTC:%lu] %lu (%s) -> %llu (0x%llx)\n",
+		  (unsigned long) output->crtc_id,
+		  (unsigned long) info->prop_id, info->name,
+		  (unsigned long long) val, (unsigned long long) val);
 	return (ret <= 0) ? -1 : 0;
 }
 
@@ -2372,6 +2415,10 @@ connector_add_prop(drmModeAtomicReq *req, struct drm_head *head,
 
 	ret = drmModeAtomicAddProperty(req, head->connector_id,
 				       info->prop_id, val);
+	drm_debug(head->backend, "\t\t\t[CONN:%lu] %lu (%s) -> %llu (0x%llx)\n",
+		  (unsigned long) head->connector_id,
+		  (unsigned long) info->prop_id, info->name,
+		  (unsigned long long) val, (unsigned long long) val);
 	return (ret <= 0) ? -1 : 0;
 }
 
@@ -2387,6 +2434,10 @@ plane_add_prop(drmModeAtomicReq *req, struct drm_plane *plane,
 
 	ret = drmModeAtomicAddProperty(req, plane->plane_id, info->prop_id,
 				       val);
+	drm_debug(plane->backend, "\t\t\t[PLANE:%lu] %lu (%s) -> %llu (0x%llx)\n",
+		  (unsigned long) plane->plane_id,
+		  (unsigned long) info->prop_id, info->name,
+		  (unsigned long long) val, (unsigned long long) val);
 	return (ret <= 0) ? -1 : 0;
 }
 
@@ -2405,6 +2456,9 @@ drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode)
 	if (ret != 0)
 		weston_log("failed to create mode property blob: %m\n");
 
+	drm_debug(backend, "\t\t\t[atomic] created new mode blob %lu for %s",
+		  (unsigned long) mode->blob_id, mode->mode_info.name);
+
 	return ret;
 }
 
@@ -2414,17 +2468,23 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 			      uint32_t *flags)
 {
 	struct drm_output *output = state->output;
-	struct drm_backend *backend = to_drm_backend(output->base.compositor);
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_plane_state *plane_state;
 	struct drm_mode *current_mode = to_drm_mode(output->base.current_mode);
 	struct drm_head *head;
 	int ret = 0;
 
-	if (state->dpms != output->state_cur->dpms)
+	drm_debug(b, "\t\t[atomic] %s output %lu (%s) state\n",
+		  (*flags & DRM_MODE_ATOMIC_TEST_ONLY) ? "testing" : "applying",
+		  (unsigned long) output->base.id, output->base.name);
+
+	if (state->dpms != output->state_cur->dpms) {
+		drm_debug(b, "\t\t\t[atomic] DPMS state differs, modeset OK\n");
 		*flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+	}
 
 	if (state->dpms == WESTON_DPMS_ON) {
-		ret = drm_mode_ensure_blob(backend, current_mode);
+		ret = drm_mode_ensure_blob(b, current_mode);
 		if (ret != 0)
 			return ret;
 
@@ -2522,6 +2582,9 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 		uint32_t *unused;
 		int err;
 
+		drm_debug(b, "\t\t[atomic] previous state invalid; "
+			     "starting with fresh state\n");
+
 		/* If we need to reset all our state (e.g. because we've
 		 * just started, or just been VT-switched in), explicitly
 		 * disable all the CRTCs and connectors we aren't using. */
@@ -2534,9 +2597,16 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 
 			head = to_drm_head(head_base);
 
+			drm_debug(b, "\t\t[atomic] disabling inactive head %s\n",
+				  head_base->name);
+
 			info = &head->props_conn[WDRM_CONNECTOR_CRTC_ID];
 			err = drmModeAtomicAddProperty(req, head->connector_id,
 						       info->prop_id, 0);
+			drm_debug(b, "\t\t\t[CONN:%lu] %lu (%s) -> 0\n",
+				  (unsigned long) head->connector_id,
+				  (unsigned long) info->prop_id,
+				  info->name);
 			if (err <= 0)
 				ret = -1;
 		}
@@ -2573,12 +2643,21 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 				continue;
 			}
 
+			drm_debug(b, "\t\t[atomic] disabling unused CRTC %lu\n",
+				  (unsigned long) *unused);
+
+			drm_debug(b, "\t\t\t[CRTC:%lu] %lu (%s) -> 0\n",
+				  (unsigned long) *unused,
+				  (unsigned long) info->prop_id, info->name);
 			err = drmModeAtomicAddProperty(req, *unused,
 						       info->prop_id, 0);
 			if (err <= 0)
 				ret = -1;
 
 			info = &infos[WDRM_CRTC_MODE_ID];
+			drm_debug(b, "\t\t\t[CRTC:%lu] %lu (%s) -> 0\n",
+				  (unsigned long) *unused,
+				  (unsigned long) info->prop_id, info->name);
 			err = drmModeAtomicAddProperty(req, *unused,
 						       info->prop_id, 0);
 			if (err <= 0)
@@ -2590,6 +2669,8 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 		/* Disable all the planes; planes which are being used will
 		 * override this state in the output-state application. */
 		wl_list_for_each(plane, &b->plane_list, link) {
+			drm_debug(b, "\t\t[atomic] starting with plane %lu disabled\n",
+				  (unsigned long) plane->plane_id);
 			plane_add_prop(req, plane, WDRM_PLANE_CRTC_ID, 0);
 			plane_add_prop(req, plane, WDRM_PLANE_FB_ID, 0);
 		}
@@ -2972,6 +3053,14 @@ drm_repaint_begin(struct weston_compositor *compositor)
 	ret = drm_pending_state_alloc(b);
 	b->repaint_data = ret;
 
+	if (weston_debug_scope_is_enabled(b->debug)) {
+		char *dbg = weston_compositor_print_scene_graph(compositor);
+		drm_debug(b, "[repaint] Beginning repaint; pending_state %p\n",
+			  ret);
+		drm_debug(b, "%s", dbg);
+		free(dbg);
+	}
+
 	return ret;
 }
 
@@ -2991,6 +3080,7 @@ drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
 	struct drm_pending_state *pending_state = repaint_data;
 
 	drm_pending_state_apply(pending_state);
+	drm_debug(b, "[repaint] flushed pending_state %p\n", pending_state);
 	b->repaint_data = NULL;
 }
 
@@ -3007,6 +3097,7 @@ drm_repaint_cancel(struct weston_compositor *compositor, void *repaint_data)
 	struct drm_pending_state *pending_state = repaint_data;
 
 	drm_pending_state_free(pending_state);
+	drm_debug(b, "[repaint] cancel pending_state %p\n", pending_state);
 	b->repaint_data = NULL;
 }
 
@@ -3050,12 +3141,21 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	struct drm_fb *fb;
 	unsigned int i;
 	int ret;
+	enum {
+		NO_PLANES,
+		NO_PLANES_WITH_FORMAT,
+		NO_PLANES_ACCEPTED,
+		PLACED_ON_PLANE,
+	} availability = NO_PLANES;
 
 	assert(!b->sprites_are_broken);
 
 	fb = drm_fb_get_from_view(output_state, ev);
-	if (!fb)
+	if (!fb) {
+		drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
+			     " couldn't get fb\n", ev);
 		return NULL;
+	}
 
 	wl_list_for_each(p, &b->plane_list, link) {
 		if (p->type != WDRM_PLANE_TYPE_OVERLAY)
@@ -3063,6 +3163,15 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 
 		if (!drm_plane_is_available(p, output))
 			continue;
+
+		state = drm_output_state_get_plane(output_state, p);
+		if (state->fb) {
+			state = NULL;
+			continue;
+		}
+
+		if (availability == NO_PLANES)
+			availability = NO_PLANES_WITH_FORMAT;
 
 		/* Check whether the format is supported */
 		for (i = 0; i < p->count_formats; i++) {
@@ -3084,15 +3193,14 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		if (i == p->count_formats)
 			continue;
 
-		state = drm_output_state_get_plane(output_state, p);
-		if (state->fb) {
-			state = NULL;
-			continue;
-		}
+		if (availability == NO_PLANES_WITH_FORMAT)
+			availability = NO_PLANES_ACCEPTED;
 
 		state->ev = ev;
 		state->output = output;
 		if (!drm_plane_state_coords_for_view(state, ev)) {
+			drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
+				     "unsuitable transform\n", ev);
 			drm_plane_state_put_back(state);
 			state = NULL;
 			continue;
@@ -3100,6 +3208,8 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		if (!b->atomic_modeset &&
 		    (state->src_w != state->dest_w << 16 ||
 		     state->src_h != state->dest_h << 16)) {
+			drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
+				     "no scaling without atomic\n", ev);
 			drm_plane_state_put_back(state);
 			state = NULL;
 			continue;
@@ -3113,15 +3223,46 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 
 		/* In planes-only mode, we don't have an incremental state to
 		 * test against, so we just hope it'll work. */
-		if (mode == DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY)
+		if (mode == DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY) {
+			drm_debug(b, "\t\t\t\t[overlay] provisionally placing "
+				     "view %p on overlay %lu in planes-only mode\n",
+				  ev, (unsigned long) p->plane_id);
+			availability = PLACED_ON_PLANE;
 			goto out;
+		}
 
 		ret = drm_pending_state_test(output_state->pending_state);
-		if (ret == 0)
+		if (ret == 0) {
+			drm_debug(b, "\t\t\t\t[overlay] provisionally placing "
+				     "view %p on overlay %d in mixed mode\n",
+				  ev, p->plane_id);
+			availability = PLACED_ON_PLANE;
 			goto out;
+		}
+
+		drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay %lu "
+			     "in mixed mode: kernel test failed\n",
+			  ev, (unsigned long) p->plane_id);
 
 		drm_plane_state_put_back(state);
 		state = NULL;
+	}
+
+	switch (availability) {
+	case NO_PLANES:
+		drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
+			     "no free overlay planes\n", ev);
+		break;
+	case NO_PLANES_WITH_FORMAT:
+		drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
+			     "no free overlay planes matching format 0x%lx, "
+			     "modifier 0x%llx\n",
+			  ev, (unsigned long) fb->format,
+			  (unsigned long long) fb->modifier);
+		break;
+	case NO_PLANES_ACCEPTED:
+	case PLACED_ON_PLANE:
+		break;
 	}
 
 out:
@@ -3192,13 +3333,23 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	if (b->gbm == NULL)
 		return NULL;
 
-	if (ev->surface->buffer_ref.buffer == NULL)
+	if (ev->surface->buffer_ref.buffer == NULL) {
+		drm_debug(b, "\t\t\t\t[cursor] not assigning view %p to cursor plane "
+			     "(no buffer available)\n", ev);
 		return NULL;
+	}
 	shmbuf = wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource);
-	if (!shmbuf)
+	if (!shmbuf) {
+		drm_debug(b, "\t\t\t\t[cursor] not assigning view %p to cursor plane "
+			     "(buffer isn't SHM)\n", ev);
 		return NULL;
-	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888)
+	}
+	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888) {
+		drm_debug(b, "\t\t\t\t[cursor] not assigning view %p to cursor plane "
+			     "(format 0x%lx unsuitable)\n",
+			  ev, (unsigned long) wl_shm_buffer_get_format(shmbuf));
 		return NULL;
+	}
 
 	plane_state =
 		drm_output_state_get_plane(output_state, output->cursor_plane);
@@ -3216,8 +3367,11 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	    plane_state->src_w > (unsigned) b->cursor_width << 16 ||
 	    plane_state->src_h > (unsigned) b->cursor_height << 16 ||
 	    plane_state->src_w != plane_state->dest_w << 16 ||
-	    plane_state->src_h != plane_state->dest_h << 16)
+	    plane_state->src_h != plane_state->dest_h << 16) {
+		drm_debug(b, "\t\t\t\t[cursor] not assigning view %p to cursor plane "
+			     "(positioning requires cropping or scaling)\n", ev);
 		goto err;
+	}
 
 	/* Since we're setting plane state up front, we need to work out
 	 * whether or not we need to upload a new cursor. We can't use the
@@ -3240,8 +3394,10 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	plane_state->fb =
 		drm_fb_ref(output->gbm_cursor_fb[output->current_cursor]);
 
-	if (needs_update)
+	if (needs_update) {
+		drm_debug(b, "\t\t\t\t[cursor] copying new content to cursor BO\n");
 		cursor_bo_update(plane_state, ev);
+	}
 
 	/* The cursor API is somewhat special: in cursor_bo_update(), we upload
 	 * a buffer which is always cursor_width x cursor_height, even if the
@@ -3251,6 +3407,9 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	plane_state->src_h = b->cursor_height << 16;
 	plane_state->dest_w = b->cursor_width;
 	plane_state->dest_h = b->cursor_height;
+
+	drm_debug(b, "\t\t\t\t[cursor] provisionally assigned view %p to cursor\n",
+		  ev);
 
 	return plane_state;
 
@@ -3347,18 +3506,32 @@ drm_output_propose_state(struct weston_output *output_base,
 		if (!scanout_fb ||
 		    (scanout_fb->type != BUFFER_GBM_SURFACE &&
 		     scanout_fb->type != BUFFER_PIXMAN_DUMB)) {
+			drm_debug(b, "\t\t[state] cannot propose mixed mode: "
+			             "for output %s (%lu): no previous renderer "
+			             "fb\n",
+				  output->base.name,
+				  (unsigned long) output->base.id);
 			drm_output_state_free(state);
 			return NULL;
 		}
 
 		if (scanout_fb->width != output_base->current_mode->width ||
 		    scanout_fb->height != output_base->current_mode->height) {
+			drm_debug(b, "\t\t[state] cannot propose mixed mode "
+			             "for output %s (%lu): previous fb has "
+				     "different size\n",
+				  output->base.name,
+				  (unsigned long) output->base.id);
 			drm_output_state_free(state);
 			return NULL;
 		}
 
 		scanout_state = drm_plane_state_duplicate(state,
 							  plane->state_cur);
+		drm_debug(b, "\t\t[state] using renderer FB ID %lu for mixed "
+			     "mode for output %s (%lu)\n",
+			  (unsigned long) scanout_fb->fb_id, output->base.name,
+			  (unsigned long) output->base.id);
 	}
 
 	/*
@@ -3384,18 +3557,32 @@ drm_output_propose_state(struct weston_output *output_base,
 		bool totally_occluded = false;
 		bool overlay_occluded = false;
 
+		drm_debug(b, "\t\t\t[view] evaluating view %p for "
+		             "output %s (%lu)\n",
+		          ev, output->base.name,
+			  (unsigned long) output->base.id);
+
 		/* If this view doesn't touch our output at all, there's no
 		 * reason to do anything with it. */
-		if (!(ev->output_mask & (1u << output->base.id)))
+		if (!(ev->output_mask & (1u << output->base.id))) {
+			drm_debug(b, "\t\t\t\t[view] ignoring view %p "
+			             "(not on our output)\n", ev);
 			continue;
+		}
 
 		/* We only assign planes to views which are exclusively present
 		 * on our output. */
-		if (ev->output_mask != (1u << output->base.id))
+		if (ev->output_mask != (1u << output->base.id)) {
+			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+			             "(on multiple outputs)\n", ev);
 			force_renderer = true;
+		}
 
-		if (!ev->surface->buffer_ref.buffer)
+		if (!ev->surface->buffer_ref.buffer) {
+			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+			             "(no buffer available)\n", ev);
 			force_renderer = true;
+		}
 
 		/* Ignore views we know to be totally occluded. */
 		pixman_region32_init(&clipped_view);
@@ -3408,6 +3595,8 @@ drm_output_propose_state(struct weston_output *output_base,
 					 &occluded_region);
 		totally_occluded = !pixman_region32_not_empty(&surface_overlap);
 		if (totally_occluded) {
+			drm_debug(b, "\t\t\t\t[view] ignoring view %p "
+			             "(occluded on our output)\n", ev);
 			pixman_region32_fini(&surface_overlap);
 			pixman_region32_fini(&clipped_view);
 			continue;
@@ -3418,8 +3607,11 @@ drm_output_propose_state(struct weston_output *output_base,
 		 * be part of, or occluded by, it, and cannot go on a plane. */
 		pixman_region32_intersect(&surface_overlap, &renderer_region,
 					  &clipped_view);
-		if (pixman_region32_not_empty(&surface_overlap))
+		if (pixman_region32_not_empty(&surface_overlap)) {
+			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+			             "(occluded by renderer views)\n", ev);
 			force_renderer = true;
+		}
 
 		/* We do not control the stacking order of overlay planes;
 		 * the scanout plane is strictly stacked bottom and the cursor
@@ -3428,8 +3620,11 @@ drm_output_propose_state(struct weston_output *output_base,
 		 * planes overlapping each other. */
 		pixman_region32_intersect(&surface_overlap, &occluded_region,
 					  &clipped_view);
-		if (pixman_region32_not_empty(&surface_overlap))
+		if (pixman_region32_not_empty(&surface_overlap)) {
+			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+			             "(occluded by other overlay planes)\n", ev);
 			overlay_occluded = true;
+		}
 		pixman_region32_fini(&surface_overlap);
 
 		/* The cursor plane is 'special' in the sense that we can still
@@ -3441,10 +3636,16 @@ drm_output_propose_state(struct weston_output *output_base,
 		/* If sprites are disabled or the view is not fully opaque, we
 		 * must put the view into the renderer - unless it has already
 		 * been placed in the cursor plane, which can handle alpha. */
-		if (!ps && !planes_ok)
+		if (!ps && !planes_ok) {
+			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+			             "(precluded by mode)\n", ev);
 			force_renderer = true;
-		if (!ps && !drm_view_is_opaque(ev))
+		}
+		if (!ps && !drm_view_is_opaque(ev)) {
+			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+			             "(view not fully opaque)\n", ev);
 			force_renderer = true;
+		}
 
 		/* Only try to place scanout surfaces in planes-only mode; in
 		 * mixed mode, we have already failed to place a view on the
@@ -3477,6 +3678,9 @@ drm_output_propose_state(struct weston_output *output_base,
 		 * check if this is OK, and add ourselves to the renderer
 		 * region if so. */
 		if (!renderer_ok) {
+			drm_debug(b, "\t\t[view] failing state generation: "
+				      "placing view %p to renderer not allowed\n",
+				  ev);
 			pixman_region32_fini(&clipped_view);
 			goto err_region;
 		}
@@ -3496,8 +3700,11 @@ drm_output_propose_state(struct weston_output *output_base,
 
 	/* Check to see if this state will actually work. */
 	ret = drm_pending_state_test(state->pending_state);
-	if (ret != 0)
+	if (ret != 0) {
+		drm_debug(b, "\t\t[view] failing state generation: "
+			     "atomic test not OK\n");
 		goto err;
+	}
 
 	/* Counterpart to duplicating scanout state at the top of this
 	 * function: if we have taken a renderer framebuffer and placed it in
@@ -3530,12 +3737,24 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct weston_view *ev;
 	struct weston_plane *primary = &output_base->compositor->primary_plane;
 
+	drm_debug(b, "\t[repaint] preparing state for output %s (%lu)\n",
+		  output_base->name, (unsigned long) output_base->id);
+
 	if (!b->sprites_are_broken) {
 		state = drm_output_propose_state(output_base, pending_state,
 						 DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
-		if (!state)
+		if (!state) {
+			drm_debug(b, "\t[repaint] could not build planes-only "
+				     "state, trying mixed\n");
 			state = drm_output_propose_state(output_base, pending_state,
 							 DRM_OUTPUT_PROPOSE_STATE_MIXED);
+		}
+		if (!state) {
+			drm_debug(b, "\t[repaint] could not build mixed-mode "
+				     "state, trying renderer-only\n");
+		}
+	} else {
+		drm_debug(b, "\t[state] no overlay plane support\n");
 	}
 
 	if (!state)
@@ -3582,10 +3801,16 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 			}
 		}
 
-		if (target_plane)
+		if (target_plane) {
+			drm_debug(b, "\t[repaint] view %p on %s plane %lu\n",
+				  ev, plane_type_enums[target_plane->type].name,
+				  (unsigned long) target_plane->plane_id);
 			weston_view_move_to_plane(ev, &target_plane->base);
-		else
+		} else {
+			drm_debug(b, "\t[repaint] view %p using renderer "
+				     "composition\n", ev);
 			weston_view_move_to_plane(ev, primary);
+		}
 
 		if (!target_plane ||
 		    target_plane->type == WDRM_PLANE_TYPE_CURSOR) {
@@ -6264,6 +6489,8 @@ drm_destroy(struct weston_compositor *ec)
 
 	destroy_sprites(b);
 
+	weston_debug_scope_destroy(b->debug);
+	b->debug = NULL;
 	weston_compositor_shutdown(ec);
 
 	wl_list_for_each_safe(base, next, &ec->head_list, compositor_link)
@@ -6724,6 +6951,10 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->use_pixman = config->use_pixman;
 	b->pageflip_timeout = config->pageflip_timeout;
 	b->use_pixman_shadow = config->use_pixman_shadow;
+
+	b->debug = weston_compositor_add_debug_scope(compositor, "drm-backend",
+						     "Debug messages from DRM/KMS backend\n",
+					     	     NULL, NULL);
 
 	compositor->backend = &b->base;
 
