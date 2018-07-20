@@ -843,6 +843,14 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
                                   margins, node,
                                   /* break_token */ nullptr);
 
+  // If we are currently computing our min/max-content size simply append
+  // to the unpositioned floats list and abort.
+  if (mode_ != NGLineBreakerMode::kContent) {
+    AddUnpositionedFloat(unpositioned_floats_, container_builder_,
+                         std::move(unpositioned_float));
+    return;
+  }
+
   LayoutUnit inline_margin_size =
       (ComputeInlineSizeForUnpositionedFloat(constraint_space_,
                                              unpositioned_float.get()) +
@@ -870,15 +878,10 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   //    also is strictly within the non-shape area).
   //  - It will be moved down due to block-start edge alignment.
   //  - It will be moved down due to clearance.
-  //  - We are currently computing our min/max-content size. (We use the
-  //    unpositioned_floats to manually adjust the min/max-content size after
-  //    the line breaker has run).
   bool float_after_line =
       !can_fit_float ||
       exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
-      exclusion_space_->ClearanceOffset(float_style.Clear()) >
-          bfc_block_offset ||
-      mode_ != NGLineBreakerMode::kContent;
+      exclusion_space_->ClearanceOffset(float_style.Clear()) > bfc_block_offset;
 
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
