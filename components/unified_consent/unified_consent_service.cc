@@ -90,12 +90,14 @@ void UnifiedConsentService::Shutdown() {
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
     const AccountInfo& account_info) {
-  // By design, signing out of Chrome automatically disables the user consent
-  // for making search and browsing better.
-  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            false);
   // When signing out, the unfied consent is revoked.
   pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, false);
+
+  // By design, signing out of Chrome automatically disables off-by-default
+  // services.
+  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+                            false);
+  service_client_->SetSpellCheckEnabled(false);
 
   switch (GetMigrationState()) {
     case MigrationState::NOT_INITIALIZED:
@@ -152,11 +154,11 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   // Inform client to enable non-personalized services.
   service_client_->SetAlternateErrorPagesEnabled(true);
   service_client_->SetMetricsReportingEnabled(true);
-  service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetSearchSuggestEnabled(true);
   service_client_->SetSafeBrowsingEnabled(true);
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetNetworkPredictionEnabled(true);
+  service_client_->SetSpellCheckEnabled(true);
 }
 
 void UnifiedConsentService::SetSyncEverythingIfPossible(bool sync_everything) {

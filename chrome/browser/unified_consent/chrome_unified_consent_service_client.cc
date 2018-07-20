@@ -9,6 +9,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/spellcheck/browser/pref_names.h"
 
 ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
     PrefService* pref_service)
@@ -43,4 +44,9 @@ void ChromeUnifiedConsentServiceClient::SetNetworkPredictionEnabled(
                             enabled
                                 ? chrome_browser_net::NETWORK_PREDICTION_DEFAULT
                                 : chrome_browser_net::NETWORK_PREDICTION_NEVER);
+}
+
+void ChromeUnifiedConsentServiceClient::SetSpellCheckEnabled(bool enabled) {
+  pref_service_->SetBoolean(spellcheck::prefs::kSpellCheckUseSpellingService,
+                            enabled);
 }

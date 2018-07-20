@@ -75,6 +75,9 @@ class UnifiedConsentServiceTest : public testing::Test {
     void SetSearchSuggestEnabled(bool enabled) override {
       test_->search_suggest_enabled_ = enabled;
     }
+    void SetSpellCheckEnabled(bool enabled) override {
+      test_->spell_check_enabled_ = enabled;
+    }
 
    private:
     UnifiedConsentServiceTest* test_;
@@ -108,6 +111,7 @@ class UnifiedConsentServiceTest : public testing::Test {
   bool safe_browsing_enabled_ = false;
   bool safe_browsing_extended_reporting_enabled_ = false;
   bool search_suggest_enabled_ = false;
+  bool spell_check_enabled_ = false;
 };
 
 TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
@@ -135,6 +139,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
   EXPECT_TRUE(safe_browsing_enabled_);
   EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
   EXPECT_TRUE(search_suggest_enabled_);
+  EXPECT_TRUE(spell_check_enabled_);
 
   // Disable unified consent does not disable any of the non-personalized
   // features.
@@ -148,6 +153,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
   EXPECT_TRUE(safe_browsing_enabled_);
   EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
   EXPECT_TRUE(search_suggest_enabled_);
+  EXPECT_TRUE(spell_check_enabled_);
 }
 
 TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
@@ -238,6 +244,7 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   EXPECT_TRUE(safe_browsing_enabled_);
   EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
   EXPECT_TRUE(search_suggest_enabled_);
+  EXPECT_TRUE(spell_check_enabled_);
 
   // Clearing primary account revokes unfied consent and a couple of other
   // non-personalized services.
@@ -245,6 +252,7 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+  EXPECT_FALSE(spell_check_enabled_);
 
   // Consent is not revoked for the following services.
   EXPECT_TRUE(alternate_error_pages_enabled_);
