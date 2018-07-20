@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
-#include "chrome/browser/media/webrtc/desktop_streams_registry.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/desktop_capture.h"
+#include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -234,20 +234,15 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
     DesktopMediaID source) {
   std::string result;
   if (source.type != DesktopMediaID::TYPE_NONE && web_contents()) {
-    DesktopStreamsRegistry* registry =
-        MediaCaptureDevicesDispatcher::GetInstance()->
-        GetDesktopStreamsRegistry();
     // TODO(miu): Once render_frame_host() is being set, we should register the
     // exact RenderFrame requesting the stream, not the main RenderFrame.  With
     // that change, also update
     // MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest().
     // http://crbug.com/304341
     content::RenderFrameHost* const main_frame = web_contents()->GetMainFrame();
-    result = registry->RegisterStream(main_frame->GetProcess()->GetID(),
-                                      main_frame->GetRoutingID(),
-                                      origin_,
-                                      source,
-                                      extension()->name());
+    result = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
+        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin_,
+        source, extension()->name());
   }
 
   Options options;

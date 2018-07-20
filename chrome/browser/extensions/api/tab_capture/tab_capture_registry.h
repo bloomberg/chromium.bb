@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/common/extensions/api/tab_capture.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_request_state.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -47,18 +48,23 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
                        base::ListValue* list_of_capture_info) const;
 
   // Add a tab capture request to the registry when a stream is requested
-  // through the API.  |target_contents| refers to the WebContents associated
-  // with the tab to be captured.  |extension_id| refers to the Extension
-  // initiating the request.  |is_anonymous| is true if GetCapturedTabs() should
-  // not list the captured tab, and no status change events should be dispatched
-  // for it.
-  //
-  // TODO(miu): This is broken in that it's possible for a later WebContents
-  // instance to have the same pointer value as a previously-destroyed one.  To
-  // be fixed while working on http://crbug.com/163100.
-  bool AddRequest(content::WebContents* target_contents,
-                  const std::string& extension_id,
-                  bool is_anonymous);
+  // through the API and create a randomly generated device id after user
+  // initiated access to |source| for the |origin|. If capture is already
+  // taking place for the same tab, this operation fails and returns an
+  // empty string.
+  // |target_contents|: the WebContents associated with the tab to be captured.
+  // |extension_id|: the Extension initiating the request.
+  // |is_anonymous| is true if GetCapturedTabs() should not list the captured
+  // tab, and no status change events should be dispatched for it.
+  // |caller_contents|: the WebContents associated with the tab/extension that
+  // starts the capture.
+  std::string AddRequest(content::WebContents* target_contents,
+                         const std::string& extension_id,
+                         bool is_anonymous,
+                         const GURL& origin,
+                         content::DesktopMediaID source,
+                         const std::string& extension_name,
+                         content::WebContents* caller_contents);
 
   // Called by MediaStreamDevicesController to verify the request before
   // creating the stream.  |render_process_id| and |render_frame_id| are used to
@@ -91,8 +97,8 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
                            UnloadedExtensionReason reason) override;
 
   // MediaCaptureDevicesDispatcher::Observer implementation.
-  void OnRequestUpdate(int original_target_render_process_id,
-                       int original_target_render_frame_id,
+  void OnRequestUpdate(int target_render_process_id,
+                       int target_render_frame_id,
                        content::MediaStreamType stream_type,
                        const content::MediaRequestState state) override;
 
@@ -102,8 +108,8 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   // Look-up a LiveRequest associated with the given |target_contents| (or
   // the originally targetted RenderFrameHost), if any.
   LiveRequest* FindRequest(const content::WebContents* target_contents) const;
-  LiveRequest* FindRequest(int original_target_render_process_id,
-                           int original_target_render_frame_id) const;
+  LiveRequest* FindRequest(int target_render_process_id,
+                           int target_render_frame_id) const;
 
   // Removes the |request| from |requests_|, thus causing its destruction.
   void KillRequest(LiveRequest* request);

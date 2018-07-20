@@ -49,6 +49,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
 #include "content/common/media/media_stream_controls.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/video_facing.h"
@@ -351,20 +352,30 @@ class CONTENT_EXPORT MediaStreamManager
   void DeleteRequest(const std::string& label);
   // Prepare the request with label |label| by starting device enumeration if
   // needed.
-  void SetupRequest(const std::string& label);
+  void SetUpRequest(const std::string& label);
   // Prepare |request| of type MEDIA_DEVICE_AUDIO_CAPTURE and/or
   // MEDIA_DEVICE_VIDEO_CAPTURE for being posted to the UI by parsing
   // StreamControls for requested device IDs.
-  bool SetupDeviceCaptureRequest(DeviceRequest* request,
+  bool SetUpDeviceCaptureRequest(DeviceRequest* request,
                                  const MediaDeviceEnumeration& enumeration);
-  // Prepare |request| of type MEDIA_TAB_AUDIO_CAPTURE and/or
-  // MEDIA_TAB_VIDEO_CAPTURE for being posted to the UI by parsing
-  // StreamControls for requested tab capture IDs.
-  bool SetupTabCaptureRequest(DeviceRequest* request);
   // Prepare |request| of type MEDIA_DESKTOP_AUDIO_CAPTURE and/or
   // MEDIA_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
   // StreamControls for the requested desktop ID.
-  bool SetupScreenCaptureRequest(DeviceRequest* request);
+  bool SetUpScreenCaptureRequest(DeviceRequest* request);
+  // Resolve the random device ID of tab capture on UI thread before proceeding
+  // with the tab capture UI request.
+  bool SetUpTabCaptureRequest(DeviceRequest* request, const std::string& label);
+  DesktopMediaID ResolveTabCaptureDeviceIdOnUIThread(
+      const std::string& capture_device_id,
+      int requesting_process_id,
+      int requesting_frame_id,
+      const GURL& origin);
+  // Prepare |request| of type MEDIA_TAB_AUDIO_CAPTURE and/or
+  // MEDIA_TAB_VIDEO_CAPTURE for being posted to the UI after the requested
+  // tab capture IDs are resolved from registry.
+  void FinishTabCaptureRequestSetupWithDeviceId(
+      const std::string& label,
+      const DesktopMediaID& device_id);
   // Called when a request has been setup and devices have been enumerated if
   // needed.
   void ReadOutputParamsAndPostRequestToUI(

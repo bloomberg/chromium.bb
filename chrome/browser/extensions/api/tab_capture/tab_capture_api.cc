@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -35,6 +36,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 
+using content::DesktopMediaID;
+using content::WebContentsMediaCaptureId;
 using extensions::api::tab_capture::MediaStreamConstraint;
 
 namespace TabCapture = extensions::api::tab_capture;
@@ -116,21 +119,7 @@ void FilterDeprecatedGoogConstraints(TabCapture::CaptureOptions* options) {
   }
 }
 
-// Add Chrome-specific source identifiers to the MediaStreamConstraints objects
-// in |options| to provide references to the |target_contents| to be captured.
-void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
-                                     TabCapture::CaptureOptions* options) {
-  DCHECK(options);
-  DCHECK(target_contents);
-
-  MediaStreamConstraint* constraints_to_modify[2] = { nullptr, nullptr };
-
-  if (options->audio && *options->audio) {
-    if (!options->audio_constraints)
-      options->audio_constraints.reset(new MediaStreamConstraint);
-    constraints_to_modify[0] = options->audio_constraints.get();
-  }
-
+bool GetAutoThrottlingFromOptions(TabCapture::CaptureOptions* options) {
   bool enable_auto_throttling = false;
   if (options->video && *options->video) {
     if (options->video_constraints) {
@@ -146,21 +135,45 @@ void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
       // Remove the key from the properties to avoid an "unrecognized
       // constraint" error in the renderer.
       props.RemoveWithoutPathExpansion(kEnableAutoThrottlingKey, nullptr);
-    } else {
-      options->video_constraints.reset(new MediaStreamConstraint);
     }
-    constraints_to_modify[1] = options->video_constraints.get();
   }
 
-  // Format the device ID that references the target tab.
-  content::RenderFrameHost* const main_frame = target_contents->GetMainFrame();
-  // TODO(miu): We should instead use a "randomly generated device ID" scheme,
-  // like that employed by the desktop capture API.  http://crbug.com/163100
-  const std::string device_id = base::StringPrintf(
-      "web-contents-media-stream://%i:%i%s",
-      main_frame->GetProcess()->GetID(),
-      main_frame->GetRoutingID(),
-      enable_auto_throttling ? "?throttling=auto" : "");
+  return enable_auto_throttling;
+}
+
+DesktopMediaID BuildDesktopMediaID(content::WebContents* target_contents,
+                                   TabCapture::CaptureOptions* options) {
+  content::RenderFrameHost* const target_frame =
+      target_contents->GetMainFrame();
+  DesktopMediaID source(
+      DesktopMediaID::TYPE_WEB_CONTENTS, DesktopMediaID::kNullId,
+      WebContentsMediaCaptureId(target_frame->GetProcess()->GetID(),
+                                target_frame->GetRoutingID(),
+                                GetAutoThrottlingFromOptions(options), false));
+  return source;
+}
+
+// Add Chrome-specific source identifiers to the MediaStreamConstraints objects
+// in |options| to provide references to the |target_contents| to be captured.
+void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
+                                     TabCapture::CaptureOptions* options,
+                                     const std::string& device_id) {
+  DCHECK(options);
+  DCHECK(target_contents);
+
+  MediaStreamConstraint* constraints_to_modify[2] = {nullptr, nullptr};
+
+  if (options->audio && *options->audio) {
+    if (!options->audio_constraints)
+      options->audio_constraints.reset(new MediaStreamConstraint);
+    constraints_to_modify[0] = options->audio_constraints.get();
+  }
+
+  if (options->video && *options->video) {
+    if (!options->video_constraints)
+      options->video_constraints.reset(new MediaStreamConstraint);
+    constraints_to_modify[1] = options->video_constraints.get();
+  }
 
   // Append chrome specific tab constraints.
   for (MediaStreamConstraint* msc : constraints_to_modify) {
@@ -217,14 +230,21 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   if (!OptionsSpecifyAudioOrVideo(params->options))
     return RespondNow(Error(kNoAudioOrVideo));
 
+  DesktopMediaID source =
+      BuildDesktopMediaID(target_contents, &params->options);
+  content::WebContents* const extension_web_contents = GetSenderWebContents();
+  EXTENSION_FUNCTION_VALIDATE(extension_web_contents);
   TabCaptureRegistry* registry = TabCaptureRegistry::Get(browser_context());
-  if (!registry->AddRequest(target_contents, extension_id, false)) {
+  std::string device_id = registry->AddRequest(
+      target_contents, extension_id, false, extension()->url(), source,
+      extension()->name(), extension_web_contents);
+  if (device_id.empty()) {
     // TODO(miu): Allow multiple consumers of single tab capture.
     // http://crbug.com/535336
     return RespondNow(Error(kCapturingSameTab));
   }
   FilterDeprecatedGoogConstraints(&params->options);
-  AddMediaStreamSourceConstraints(target_contents, &params->options);
+  AddMediaStreamSourceConstraints(target_contents, &params->options, device_id);
 
   // At this point, everything is set up in the browser process.  It's now up to
   // the custom JS bindings in the extension's render process to request a
@@ -283,15 +303,21 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
   if (!offscreen_tab)
     return RespondNow(Error(kTooManyOffscreenTabs));
 
-  if (!TabCaptureRegistry::Get(browser_context())->AddRequest(
-          offscreen_tab->web_contents(), extension()->id(), true)) {
+  content::WebContents* target_contents = offscreen_tab->web_contents();
+  const std::string& extension_id = extension()->id();
+  DesktopMediaID source =
+      BuildDesktopMediaID(target_contents, &params->options);
+  TabCaptureRegistry* registry = TabCaptureRegistry::Get(browser_context());
+  std::string device_id = registry->AddRequest(
+      target_contents, extension_id, true, extension()->url(), source,
+      extension()->name(), extension_web_contents);
+  if (device_id.empty()) {
     // TODO(miu): Allow multiple consumers of single tab capture.
     // http://crbug.com/535336
     return RespondNow(Error(kCapturingSameOffscreenTab));
   }
   FilterDeprecatedGoogConstraints(&params->options);
-  AddMediaStreamSourceConstraints(offscreen_tab->web_contents(),
-                                  &params->options);
+  AddMediaStreamSourceConstraints(target_contents, &params->options, device_id);
 
   // At this point, everything is set up in the browser process.  It's now up to
   // the custom JS bindings in the extension's render process to complete the
