@@ -141,10 +141,10 @@ bool HEVC::InsertParamSetsAnnexB(
     const HEVCDecoderConfigurationRecord& hevc_config,
     std::vector<uint8_t>* buffer,
     std::vector<SubsampleEntry>* subsamples) {
-  DCHECK(HEVC::IsValidAnnexB(*buffer, *subsamples));
+  DCHECK(HEVC::IsValidAnnexB(buffer->data(), buffer->size(), *subsamples));
 
   std::unique_ptr<H265Parser> parser(new H265Parser());
-  const uint8_t* start = &(*buffer)[0];
+  const uint8_t* start = buffer->data();
   parser->SetEncryptedStream(start, buffer->size(), *subsamples);
 
   H265NALU nalu;
@@ -179,7 +179,7 @@ bool HEVC::InsertParamSetsAnnexB(
   buffer->insert(config_insert_point,
                  param_sets.begin(), param_sets.end());
 
-  DCHECK(HEVC::IsValidAnnexB(*buffer, *subsamples));
+  DCHECK(HEVC::IsValidAnnexB(buffer->data(), buffer->size(), *subsamples));
   return true;
 }
 
@@ -205,11 +205,6 @@ bool HEVC::ConvertConfigToAnnexB(
 }
 
 // Verifies AnnexB NALU order according to section 7.4.2.4.4 of ISO/IEC 23008-2.
-bool HEVC::IsValidAnnexB(const std::vector<uint8_t>& buffer,
-                         const std::vector<SubsampleEntry>& subsamples) {
-  return IsValidAnnexB(&buffer[0], buffer.size(), subsamples);
-}
-
 bool HEVC::IsValidAnnexB(const uint8_t* buffer,
                          size_t size,
                          const std::vector<SubsampleEntry>& subsamples) {
@@ -251,7 +246,7 @@ bool HEVCBitstreamConverter::ConvertFrame(
 bool HEVCBitstreamConverter::IsValid(
     std::vector<uint8_t>* frame_buf,
     std::vector<SubsampleEntry>* subsamples) const {
-  return HEVC::IsValidAnnexB(*frame_buf, *subsamples);
+  return HEVC::IsValidAnnexB(frame_buf->data(), frame_buf->size(), *subsamples);
 }
 
 }  // namespace mp4

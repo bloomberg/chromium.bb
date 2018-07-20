@@ -83,10 +83,6 @@ class MEDIA_EXPORT HEVC {
   // |subsamples| contains the information about what parts of the buffer are
   // encrypted and which parts are clear.
   // Returns true if |buffer| contains conformant Annex B data
-  // TODO(servolk): Remove the std::vector version when we can use,
-  // C++11's std::vector<T>::data() method.
-  static bool IsValidAnnexB(const std::vector<uint8_t>& buffer,
-                            const std::vector<SubsampleEntry>& subsamples);
   static bool IsValidAnnexB(const uint8_t* buffer,
                             size_t size,
                             const std::vector<SubsampleEntry>& subsamples);
