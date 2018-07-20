@@ -362,6 +362,14 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   [view setFrameOrigin:NSZeroPoint];
   [[containerView superview] setFrameOrigin:NSZeroPoint];
   [containerView setFrameOrigin:NSMakePoint(kLeftPadding, 0)];
+
+  if (containerView.isHidden)
+    return;
+
+  // Remove and re-add menu item so menu gets the correct size.
+  NSInteger index = [[self menu] indexOfItem:browserActionsMenuItem_];
+  [[self menu] removeItemAtIndex:index];
+  [[self menu] insertItem:browserActionsMenuItem_ atIndex:index];
 }
 
 - (void)menuWillOpen:(NSMenu*)menu {
