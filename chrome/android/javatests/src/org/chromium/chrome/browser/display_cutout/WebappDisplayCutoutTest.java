@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -31,6 +32,7 @@ public class WebappDisplayCutoutTest {
      */
     @Test
     @LargeTest
+    @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.UNDEFINED)
     public void testViewportFitWebapp() throws InterruptedException, TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
@@ -45,6 +47,7 @@ public class WebappDisplayCutoutTest {
      */
     @Test
     @LargeTest
+    @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.FULLSCREEN)
     public void testViewportFitWebapp_Fullscreen() throws InterruptedException, TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
@@ -60,6 +63,7 @@ public class WebappDisplayCutoutTest {
      */
     @Test
     @LargeTest
+    @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.MINIMAL_UI)
     public void testViewportFitWebapp_MinimalUi() throws InterruptedException, TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
@@ -75,6 +79,7 @@ public class WebappDisplayCutoutTest {
      */
     @Test
     @LargeTest
+    @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.STANDALONE)
     public void testViewportFitWebapp_Standalone() throws InterruptedException, TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
