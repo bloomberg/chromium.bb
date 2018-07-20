@@ -195,7 +195,7 @@ const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether the UsageTimeLimit policy should be applied to the user.
 const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN)
