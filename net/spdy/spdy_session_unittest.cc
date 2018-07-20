@@ -1723,7 +1723,8 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
             session_recv_window_size());
   EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
-  // Cancel the push before it is claimed.
+  // Cancel the push before it is claimed.  This normally happens because
+  // resource is found in cache.
   EXPECT_TRUE(test_push_delegate_->CancelPush(pushed_url));
   EXPECT_EQ(0u, num_unclaimed_pushed_streams());
   EXPECT_FALSE(has_unclaimed_pushed_stream_for_url(pushed_url));
@@ -1743,6 +1744,11 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
   histogram_tester.ExpectBucketCount("Net.SpdySession.PushedBytes", 6, 1);
   histogram_tester.ExpectBucketCount("Net.SpdySession.PushedAndUnclaimedBytes",
                                      6, 1);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kAlreadyInCache), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 TEST_F(SpdySessionTestWithMockTime, FailedPing) {
