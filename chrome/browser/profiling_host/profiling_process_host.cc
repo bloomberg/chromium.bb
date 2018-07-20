@@ -31,14 +31,16 @@
 #include <io.h>
 #endif
 
-namespace {
-
-
-}  // namespace
-
 namespace heap_profiling {
 
 namespace {
+// Slow-report trigger configuration.
+// see: content/browser/tracing/background_tracing_config_impl.cc
+const char kConfigsKey[] = "configs";
+const char kConfigModeKey[] = "mode";
+const char kConfigScenarioName[] = "scenario_name";
+const char kConfigCategoryKey[] = "category";
+const char kConfigCategoryMemlog[] = "MEMLOG";
 
 void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
                            bool success,
@@ -69,19 +71,19 @@ void UploadTraceToCrashServer(std::string file_contents,
   base::Value rule(base::Value::Type::DICTIONARY);
   rule.SetKey("rule", base::Value("MEMLOG"));
   rule.SetKey("trigger_name", base::Value(std::move(trigger_name)));
-  rule.SetKey("category", base::Value("BENCHMARK_MEMORY_HEAVY"));
   rules_list.GetList().push_back(std::move(rule));
 
   std::string sampling_mode = base::StringPrintf("SAMPLING_%u", sampling_rate);
 
   base::Value configs(base::Value::Type::DICTIONARY);
-  configs.SetKey("mode", base::Value(sampling_mode));
-  configs.SetKey("category", base::Value("MEMLOG"));
-  configs.SetKey("configs", std::move(rules_list));
+  configs.SetKey(kConfigModeKey, base::Value(sampling_mode));
+  configs.SetKey(kConfigCategoryKey, base::Value(kConfigCategoryMemlog));
+  configs.SetKey(kConfigsKey, std::move(rules_list));
 
   std::unique_ptr<base::DictionaryValue> metadata =
       std::make_unique<base::DictionaryValue>();
   metadata->SetKey("config", std::move(configs));
+  metadata->SetKey(kConfigScenarioName, base::Value("MEMLOG"));
 
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
