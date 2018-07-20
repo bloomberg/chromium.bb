@@ -56,7 +56,8 @@
         ],
         "privileged": [
           // Injecting events is security-sensitive.
-          "ui.mojom.EventInjector"
+          "ui.mojom.EventInjector",
+          "ui.mojom.RemotingEventInjector"
         ],
         "window_manager": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",

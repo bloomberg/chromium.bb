@@ -19,6 +19,7 @@
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ui/public/interfaces/remoting_event_injector.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -52,6 +53,7 @@ class WindowTreeClient;
 namespace ws2 {
 
 class GpuInterfaceProvider;
+class RemotingEventInjector;
 class ScreenProvider;
 class ServerWindow;
 class UserActivityMonitor;
@@ -141,6 +143,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
   void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
+  void BindRemotingEventInjectorRequest(
+      mojom::RemotingEventInjectorRequest request);
   void BindUserActivityMonitorRequest(
       mojom::UserActivityMonitorRequest request);
   void BindWindowServerTestRequest(mojom::WindowServerTestRequest request);
@@ -172,6 +176,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Provides info to InputDeviceClient users, via InputDeviceManager.
   ui::InputDeviceServer input_device_server_;
+
+  std::unique_ptr<RemotingEventInjector> remoting_event_injector_;
 
   std::unique_ptr<ClipboardHost> clipboard_host_;
 

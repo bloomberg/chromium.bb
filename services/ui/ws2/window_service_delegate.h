@@ -33,6 +33,7 @@ namespace ui {
 
 class KeyEvent;
 class OSExchangeData;
+class SystemInputInjector;
 
 namespace ws2 {
 
@@ -103,6 +104,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
 
   // Called to set the window's modal type; may reparent the window.
   virtual void SetModalType(aura::Window* window, ui::ModalType type) {}
+
+  // Returns the SystemInputInjector to use when processing events from a
+  // remote client. A return value of null (the default) results in disallowing
+  // injection.
+  virtual SystemInputInjector* GetSystemInputInjector();
 
  protected:
   virtual ~WindowServiceDelegate() = default;

@@ -10,6 +10,7 @@ import "ui/events/mojo/event.mojom";
 // events which are dispatched as if they came from the system. Used for things
 // like remoting, where the window manager is receiving input from a remote
 // process, along with testing.
+// TODO(sky): rename and repurpose this solely for tests.
 interface EventInjector {
   // Takes an event and dispatches it as if it came from the native platform.
   // Returns false on bad |display_id| or bad |event|; returns true once the

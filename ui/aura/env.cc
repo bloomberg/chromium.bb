@@ -303,7 +303,8 @@ std::unique_ptr<ui::OSExchangeData::Provider> Env::BuildProvider() {
 }
 
 std::unique_ptr<ui::SystemInputInjector> Env::CreateSystemInputInjector() {
-  return std::make_unique<SystemInputInjectorMus>(window_tree_client_);
+  return std::make_unique<SystemInputInjectorMus>(
+      window_tree_client_ ? window_tree_client_->connector() : nullptr);
 }
 
 }  // namespace aura

@@ -12,6 +12,7 @@
 #include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
+#include "services/ui/ws2/remoting_event_injector.h"
 #include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/user_activity_monitor.h"
@@ -152,6 +153,9 @@ void WindowService::OnStart() {
       &WindowService::BindImeDriverRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindInputDeviceServerRequest, base::Unretained(this)));
+  registry_.AddInterface(
+      base::BindRepeating(&WindowService::BindRemotingEventInjectorRequest,
+                          base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindUserActivityMonitorRequest, base::Unretained(this)));
 
@@ -214,6 +218,16 @@ void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
 void WindowService::BindInputDeviceServerRequest(
     mojom::InputDeviceServerRequest request) {
   input_device_server_.AddBinding(std::move(request));
+}
+
+void WindowService::BindRemotingEventInjectorRequest(
+    mojom::RemotingEventInjectorRequest request) {
+  if (!remoting_event_injector_ && delegate_->GetSystemInputInjector()) {
+    remoting_event_injector_ = std::make_unique<RemotingEventInjector>(
+        delegate_->GetSystemInputInjector());
+  }
+  if (remoting_event_injector_)
+    remoting_event_injector_->AddBinding(std::move(request));
 }
 
 void WindowService::BindUserActivityMonitorRequest(
