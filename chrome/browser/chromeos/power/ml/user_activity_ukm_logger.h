@@ -13,7 +13,6 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
-struct TabProperty;
 class UserActivityEvent;
 
 // Interface to log UserActivityEvent to UKM.
@@ -21,10 +20,8 @@ class UserActivityUkmLogger {
  public:
   virtual ~UserActivityUkmLogger() = default;
 
-  // Log user activity event using URL data.
-  virtual void LogActivity(
-      const UserActivityEvent& event,
-      const std::map<ukm::SourceId, TabProperty>& open_tabs) = 0;
+  // Log user activity event.
+  virtual void LogActivity(const UserActivityEvent& event) = 0;
 };
 
 }  // namespace ml

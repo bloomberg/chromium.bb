@@ -40,9 +40,7 @@ class UserActivityUkmLoggerImpl : public UserActivityUkmLogger {
   ~UserActivityUkmLoggerImpl() override;
 
   // chromeos::power::ml::UserActivityUkmLogger overrides:
-  void LogActivity(
-      const UserActivityEvent& event,
-      const std::map<ukm::SourceId, TabProperty>& open_tabs) override;
+  void LogActivity(const UserActivityEvent& event) override;
 
  private:
   friend class UserActivityUkmLoggerTest;

@@ -6,12 +6,16 @@
 
 #include <cmath>
 
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/system/devicetype.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -21,6 +25,17 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
+struct UserActivityManager::PreviousIdleEventData {
+  // Gap between two ScreenDimImminent signals.
+  base::TimeDelta dim_imminent_signal_interval;
+  // Features recorded for the ScreenDimImminent signal at the beginning of
+  // |dim_imminent_signal_interval|.
+  UserActivityEvent::Features features;
+  // Model prediction recorded for the ScreenDimImminent signal at the beginning
+  // of |dim_imminent_signal_interval|.
+  UserActivityEvent::ModelPrediction model_prediction;
+};
+
 UserActivityManager::UserActivityManager(
     UserActivityUkmLogger* ukm_logger,
     IdleEventNotifier* idle_event_notifier,
@@ -28,9 +43,11 @@ UserActivityManager::UserActivityManager(
     chromeos::PowerManagerClient* power_manager_client,
     session_manager::SessionManager* session_manager,
     viz::mojom::VideoDetectorObserverRequest request,
-    const chromeos::ChromeUserManager* user_manager)
+    const chromeos::ChromeUserManager* user_manager,
+    SmartDimModel* smart_dim_model)
     : boot_clock_(std::make_unique<RealBootClock>()),
       ukm_logger_(ukm_logger),
+      smart_dim_model_(smart_dim_model),
       idle_event_observer_(this),
       user_activity_observer_(this),
       power_manager_client_observer_(this),
@@ -38,6 +55,7 @@ UserActivityManager::UserActivityManager(
       session_manager_(session_manager),
       binding_(this, std::move(request)),
       user_manager_(user_manager),
+      power_manager_client_(power_manager_client),
       weak_ptr_factory_(this) {
   DCHECK(ukm_logger_);
   DCHECK(idle_event_notifier);
@@ -153,11 +171,47 @@ void UserActivityManager::OnVideoActivityStarted() {
 
 void UserActivityManager::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
-  idle_event_start_since_boot_ = boot_clock_->GetTimeSinceBoot();
+  base::TimeDelta now = boot_clock_->GetTimeSinceBoot();
+  if (waiting_for_final_action_) {
+    // ScreenDimImminent is received again after an earlier ScreenDimImminent
+    // event without any user action/suspend in between.
+    PopulatePreviousEventData(now);
+  }
+
+  idle_event_start_since_boot_ = now;
+
   screen_dim_occurred_ = false;
   screen_off_occurred_ = false;
   screen_lock_occurred_ = false;
   ExtractFeatures(activity_data);
+  if (base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
+      smart_dim_model_) {
+    float inactivity_probability = -1;
+    float threshold = -1;
+    const bool should_dim = smart_dim_model_->ShouldDim(
+        features_, &inactivity_probability, &threshold);
+    DCHECK(inactivity_probability >= 0 && inactivity_probability <= 1.0)
+        << inactivity_probability;
+    DCHECK(threshold >= 0 && threshold <= 1.0) << threshold;
+
+    UserActivityEvent::ModelPrediction model_prediction;
+    // If previous dim was deferred, then model decision will not be applied
+    // to this event.
+    model_prediction.set_model_applied(!dim_deferred_);
+    model_prediction.set_decision_threshold(round(threshold * 100));
+    model_prediction.set_inactivity_score(round(inactivity_probability * 100));
+    model_prediction_ = model_prediction;
+
+    // Only defer the dim if the model predicts so and also if the dim was not
+    // previously deferred.
+    if (should_dim || dim_deferred_) {
+      dim_deferred_ = false;
+    } else {
+      power_manager_client_->DeferScreenDim();
+      dim_deferred_ = true;
+    }
+  }
+  waiting_for_final_action_ = true;
 }
 
 void UserActivityManager::OnSessionStateChanged() {
@@ -189,8 +243,6 @@ void UserActivityManager::OnReceiveInactivityDelays(
 
 void UserActivityManager::ExtractFeatures(
     const IdleEventNotifier::ActivityData& activity_data) {
-  features_.Clear();
-
   // Set transition times for dim and screen-off.
   if (!screen_dim_delay_.is_zero()) {
     features_.set_on_to_dim_sec(std::ceil(screen_dim_delay_.InSecondsF()));
@@ -279,67 +331,76 @@ void UserActivityManager::ExtractFeatures(
   features_.set_screen_off_initially(screen_off_);
   features_.set_screen_locked_initially(screen_is_locked_);
 
-  UpdateOpenTabsURLs();
+  features_.set_previous_negative_actions_count(
+      previous_negative_actions_count_);
+  features_.set_previous_positive_actions_count(
+      previous_positive_actions_count_);
+
+  const TabProperty tab_property = UpdateOpenTabURL();
+
+  if (tab_property.source_id == -1)
+    return;
+
+  features_.set_source_id(tab_property.source_id);
+
+  if (!tab_property.domain.empty()) {
+    features_.set_tab_domain(tab_property.domain);
+  }
+  if (tab_property.engagement_score != -1) {
+    features_.set_engagement_score(tab_property.engagement_score);
+  }
+  features_.set_has_form_entry(tab_property.has_form_entry);
 }
 
-void UserActivityManager::UpdateOpenTabsURLs() {
-  open_tabs_.clear();
-  bool topmost_browser_found = false;
+TabProperty UserActivityManager::UpdateOpenTabURL() {
   BrowserList* browser_list = BrowserList::GetInstance();
   DCHECK(browser_list);
 
-  // Go through all browsers starting from last active ones.
+  TabProperty property;
+
+  // Find the active tab in the visible focused or topmost browser.
   for (auto browser_iterator = browser_list->begin_last_active();
        browser_iterator != browser_list->end_last_active();
        ++browser_iterator) {
     Browser* browser = *browser_iterator;
 
-    const bool is_browser_focused = browser->window()->IsActive();
-    const bool is_browser_visible =
-        browser->window()->GetNativeWindow()->IsVisible();
-
-    bool is_topmost_browser = false;
-    if (is_browser_visible && !topmost_browser_found) {
-      is_topmost_browser = true;
-      topmost_browser_found = true;
-    }
-
-    if (browser->profile()->IsOffTheRecord())
+    if (!browser->window()->GetNativeWindow()->IsVisible())
       continue;
+
+    // We only need the visible focused or topmost browser.
+    if (browser->profile()->IsOffTheRecord())
+      return property;
 
     const TabStripModel* const tab_strip_model = browser->tab_strip_model();
     DCHECK(tab_strip_model);
 
-    const int active_tab_index = tab_strip_model->active_index();
+    content::WebContents* contents = tab_strip_model->GetActiveWebContents();
 
-    for (int i = 0; i < tab_strip_model->count(); ++i) {
-      content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
-      DCHECK(contents);
+    if (contents) {
       ukm::SourceId source_id =
           ukm::GetSourceIdForWebContentsDocument(contents);
       if (source_id == ukm::kInvalidSourceId)
-        continue;
+        return property;
 
-      const TabProperty tab_property = {
-          i == active_tab_index,
-          is_browser_focused,
-          is_browser_visible,
-          is_topmost_browser,
-          TabMetricsLogger::GetSiteEngagementScore(contents),
-          TabMetricsLogger::GetContentTypeFromMimeType(
-              contents->GetContentsMimeType()),
-          contents->GetPageImportanceSignals().had_form_interaction};
+      property.source_id = source_id;
 
-      open_tabs_.insert(
-          std::pair<ukm::SourceId, TabProperty>(source_id, tab_property));
+      // Domain could be empty.
+      property.domain = contents->GetLastCommittedURL().host();
+      // Engagement score could be -1 if engagement service is disabled.
+      property.engagement_score =
+          TabMetricsLogger::GetSiteEngagementScore(contents);
+      property.has_form_entry =
+          contents->GetPageImportanceSignals().had_form_interaction;
     }
+    return property;
   }
+  return property;
 }
 
 void UserActivityManager::MaybeLogEvent(
     UserActivityEvent::Event::Type type,
     UserActivityEvent::Event::Reason reason) {
-  if (!idle_event_start_since_boot_)
+  if (!waiting_for_final_action_)
     return;
   UserActivityEvent activity_event;
 
@@ -355,15 +416,62 @@ void UserActivityManager::MaybeLogEvent(
 
   *activity_event.mutable_features() = features_;
 
+  if (model_prediction_) {
+    *activity_event.mutable_model_prediction() = model_prediction_.value();
+  }
+
   // Log to metrics.
-  ukm_logger_->LogActivity(activity_event, open_tabs_);
-  idle_event_start_since_boot_ = base::nullopt;
+  ukm_logger_->LogActivity(activity_event);
+
+  // If there's an earlier idle event that has not received its own event, log
+  // it here too.
+  if (previous_idle_event_data_) {
+    event->set_log_duration_sec(
+        event->log_duration_sec() +
+        previous_idle_event_data_->dim_imminent_signal_interval.InSeconds());
+    *activity_event.mutable_features() = previous_idle_event_data_->features;
+    *activity_event.mutable_model_prediction() =
+        previous_idle_event_data_->model_prediction;
+    ukm_logger_->LogActivity(activity_event);
+  }
+
+  // Update the counters for next event logging.
+  if (type == UserActivityEvent::Event::REACTIVATE) {
+    previous_negative_actions_count_++;
+  } else {
+    previous_positive_actions_count_++;
+  }
+  ResetAfterLogging();
 }
 
 void UserActivityManager::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<BootClock> test_boot_clock) {
   boot_clock_ = std::move(test_boot_clock);
+}
+
+void UserActivityManager::PopulatePreviousEventData(
+    const base::TimeDelta& now) {
+  // Should not have been set.
+  DCHECK(!previous_idle_event_data_);
+  DCHECK(idle_event_start_since_boot_);
+  DCHECK(model_prediction_);
+
+  previous_idle_event_data_ = std::make_unique<PreviousIdleEventData>();
+  previous_idle_event_data_->dim_imminent_signal_interval =
+      now - idle_event_start_since_boot_.value();
+
+  previous_idle_event_data_->features = features_;
+  previous_idle_event_data_->model_prediction = model_prediction_.value();
+}
+
+void UserActivityManager::ResetAfterLogging() {
+  features_.Clear();
+  idle_event_start_since_boot_ = base::nullopt;
+  waiting_for_final_action_ = false;
+  model_prediction_ = base::nullopt;
+
+  previous_idle_event_data_.reset();
 }
 
 }  // namespace ml
