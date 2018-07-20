@@ -684,14 +684,6 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
   }
 }
 
-static INLINE int mi_cols_aligned_to_sb(const AV1_COMMON *cm) {
-  return ALIGN_POWER_OF_TWO(cm->mi_cols, cm->seq_params.mib_size_log2);
-}
-
-static INLINE int mi_rows_aligned_to_sb(const AV1_COMMON *cm) {
-  return ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
-}
-
 void cfl_init(CFL_CTX *cfl, const SequenceHeader *seq_params);
 
 static INLINE int av1_num_planes(const AV1_COMMON *cm) {
