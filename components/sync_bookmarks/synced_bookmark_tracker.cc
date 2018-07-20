@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
+#include <set>
 #include <utility>
 
 #include "base/base64.h"
@@ -213,10 +214,10 @@ bool SyncedBookmarkTracker::HasLocalChanges() const {
 
 std::vector<const SyncedBookmarkTracker::Entity*>
 SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
-  // TODO(crbug.com/516866): Reorder local changes to e.g. parent creation
-  // before child creation and the otherway around for deletions.
-  // TODO(crbug.com/516866): Return no more than |max_entries|.
+  // TODO(crbug.com/516866): Return no more than |max_entries| after sorting.
   std::vector<const SyncedBookmarkTracker::Entity*> entities_with_local_changes;
+  // Entities with local non deletions should be sorted such that parent
+  // creation/update comes before child creation/update.
   for (const std::pair<const std::string, std::unique_ptr<Entity>>& pair :
        sync_id_to_entities_map_) {
     Entity* entity = pair.second.get();
@@ -229,10 +230,78 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
       entities_with_local_changes.push_back(entity);
     }
   }
+  std::vector<const SyncedBookmarkTracker::Entity*> ordered_local_changes =
+      ReorderUnsyncedEntitiesExceptDeletions(entities_with_local_changes);
   for (const Entity* tombstone_entity : ordered_local_tombstones_) {
-    entities_with_local_changes.push_back(tombstone_entity);
+    ordered_local_changes.push_back(tombstone_entity);
   }
-  return entities_with_local_changes;
+  return ordered_local_changes;
+}
+
+std::vector<const SyncedBookmarkTracker::Entity*>
+SyncedBookmarkTracker::ReorderUnsyncedEntitiesExceptDeletions(
+    const std::vector<const SyncedBookmarkTracker::Entity*>& entities) const {
+  // This method sorts the entities with local non deletions such that parent
+  // creation/update comes before child creation/update.
+
+  // The algorithm works by constructing a forest of all non-deletion updates
+  // and then traverses each tree in the forest recursively:
+  // 1. Iterate over all entities and collect all nodes in |nodes|.
+  // 2. Iterate over all entities again and node that is a child of another
+  //    node. What's left in |nodes| are the roots of the forest.
+  // 3. Start at each root in |nodes|, emit the update and recurse over its
+  //    children.
+  std::set<const bookmarks::BookmarkNode*> nodes;
+  // Collect nodes with updates
+  for (const SyncedBookmarkTracker::Entity* entity : entities) {
+    DCHECK(entity->IsUnsynced());
+    DCHECK(!entity->metadata()->is_deleted());
+    DCHECK(entity->bookmark_node());
+    nodes.insert(entity->bookmark_node());
+  }
+  // Remove those who are direct children of another node.
+  for (const SyncedBookmarkTracker::Entity* entity : entities) {
+    const bookmarks::BookmarkNode* node = entity->bookmark_node();
+    for (int i = 0; i < node->child_count(); ++i) {
+      nodes.erase(node->GetChild(i));
+    }
+  }
+  // |nodes| contains only roots of all trees in the forest all of which are
+  // ready to be processed because their parents have no pending updates.
+  std::vector<const SyncedBookmarkTracker::Entity*> ordered_entities;
+  for (const bookmarks::BookmarkNode* node : nodes) {
+    TraverseAndAppend(node, &ordered_entities);
+  }
+  return ordered_entities;
+}
+
+void SyncedBookmarkTracker::TraverseAndAppend(
+    const bookmarks::BookmarkNode* node,
+    std::vector<const SyncedBookmarkTracker::Entity*>* ordered_entities) const {
+  const SyncedBookmarkTracker::Entity* entity = GetEntityForBookmarkNode(node);
+  DCHECK(entity->IsUnsynced());
+  DCHECK(!entity->metadata()->is_deleted());
+  ordered_entities->push_back(entity);
+  // Recurse for all children.
+  for (int i = 0; i < node->child_count(); ++i) {
+    const bookmarks::BookmarkNode* child = node->GetChild(i);
+    const SyncedBookmarkTracker::Entity* child_entity =
+        GetEntityForBookmarkNode(child);
+    if (!child_entity->IsUnsynced()) {
+      // If the entity has no local change, no need to check it's children. If
+      // any of the children would have a pending commit, it would be a root for
+      // a separate tree in the forest built in
+      // ReorderEntitiesWithLocalNonDeletions() and will be handled by another
+      // call to TraverseAndAppend().
+      continue;
+    }
+    if (child_entity->metadata()->is_deleted()) {
+      // Deletion are stored sorted in |ordered_local_tombstones_| and will be
+      // added later.
+      continue;
+    }
+    TraverseAndAppend(child, ordered_entities);
+  }
 }
 
 void SyncedBookmarkTracker::UpdateUponCommitResponse(

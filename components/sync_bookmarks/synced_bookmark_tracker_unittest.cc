@@ -6,7 +6,10 @@
 
 #include "base/base64.h"
 #include "base/sha1.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
@@ -27,6 +30,15 @@ sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
   specifics.mutable_bookmark()->set_title(title);
   specifics.mutable_bookmark()->set_url(url);
   return specifics;
+}
+
+std::unique_ptr<sync_pb::EntityMetadata> CreateEntityMetadata(
+    const std::string& server_id,
+    bool is_deleted) {
+  auto metadata = std::make_unique<sync_pb::EntityMetadata>();
+  metadata->set_server_id(server_id);
+  metadata->set_is_deleted(is_deleted);
+  return metadata;
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
@@ -155,30 +167,17 @@ TEST(SyncedBookmarkTrackerTest,
   bookmarks::BookmarkNode node0(/*id=*/0, kUrl);
   bookmarks::BookmarkNode node1(/*id=*/1, kUrl);
 
-  auto metadata0 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata0->set_server_id(kId0);
-
-  auto metadata1 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata1->set_server_id(kId1);
-
-  auto metadata2 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata2->set_server_id(kId2);
-  metadata2->set_is_deleted(true);
-
-  auto metadata3 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata3->set_server_id(kId3);
-  metadata3->set_is_deleted(true);
-
-  auto metadata4 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata4->set_server_id(kId4);
-  metadata4->set_is_deleted(true);
-
   std::vector<NodeMetadataPair> node_metadata_pairs;
-  node_metadata_pairs.emplace_back(&node0, std::move(metadata0));
-  node_metadata_pairs.emplace_back(&node1, std::move(metadata1));
-  node_metadata_pairs.emplace_back(nullptr, std::move(metadata2));
-  node_metadata_pairs.emplace_back(nullptr, std::move(metadata3));
-  node_metadata_pairs.emplace_back(nullptr, std::move(metadata4));
+  node_metadata_pairs.emplace_back(
+      &node0, CreateEntityMetadata(/*server_id=*/kId0, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      &node1, CreateEntityMetadata(/*server_id=*/kId1, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      nullptr, CreateEntityMetadata(/*server_id=*/kId2, /*is_deleted=*/true));
+  node_metadata_pairs.emplace_back(
+      nullptr, CreateEntityMetadata(/*server_id=*/kId3, /*is_deleted=*/true));
+  node_metadata_pairs.emplace_back(
+      nullptr, CreateEntityMetadata(/*server_id=*/kId4, /*is_deleted=*/true));
 
   SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
                                 std::make_unique<sync_pb::ModelTypeState>());
@@ -216,27 +215,17 @@ TEST(SyncedBookmarkTrackerTest,
   bookmarks::BookmarkNode node3(/*id=*/3, kUrl);
   bookmarks::BookmarkNode node4(/*id=*/4, kUrl);
 
-  auto metadata0 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata0->set_server_id(kId0);
-
-  auto metadata1 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata1->set_server_id(kId1);
-
-  auto metadata2 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata2->set_server_id(kId2);
-
-  auto metadata3 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata3->set_server_id(kId3);
-
-  auto metadata4 = std::make_unique<sync_pb::EntityMetadata>();
-  metadata4->set_server_id(kId4);
-
   std::vector<NodeMetadataPair> node_metadata_pairs;
-  node_metadata_pairs.emplace_back(&node0, std::move(metadata0));
-  node_metadata_pairs.emplace_back(&node1, std::move(metadata1));
-  node_metadata_pairs.emplace_back(&node2, std::move(metadata2));
-  node_metadata_pairs.emplace_back(&node3, std::move(metadata3));
-  node_metadata_pairs.emplace_back(&node4, std::move(metadata4));
+  node_metadata_pairs.emplace_back(
+      &node0, CreateEntityMetadata(/*server_id=*/kId0, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      &node1, CreateEntityMetadata(/*server_id=*/kId1, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      &node2, CreateEntityMetadata(/*server_id=*/kId2, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      &node3, CreateEntityMetadata(/*server_id=*/kId3, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      &node4, CreateEntityMetadata(/*server_id=*/kId4, /*is_deleted=*/false));
 
   SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
                                 std::make_unique<sync_pb::ModelTypeState>());
@@ -261,6 +250,68 @@ TEST(SyncedBookmarkTrackerTest,
   EXPECT_THAT(
       bookmark_model_metadata.bookmarks_metadata(4).metadata().server_id(),
       Eq(kId1));
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldOrderParentUpdatesBeforeChildUpdatesAndDeletionsComeLast) {
+  const size_t kMaxEntries = 1000;
+
+  // Construct this structure:
+  // bookmark_bar
+  //  |- node0
+  //    |- node1
+  //      |- node2
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+  const bookmarks::BookmarkNode* node1 = bookmark_model->AddFolder(
+      /*parent=*/node0, /*index=*/0, base::UTF8ToUTF16("node1"));
+  const bookmarks::BookmarkNode* node2 = bookmark_model->AddFolder(
+      /*parent=*/node1, /*index=*/0, base::UTF8ToUTF16("node2"));
+
+  // Server ids.
+  const std::string kId0 = "id0";
+  const std::string kId1 = "id1";
+  const std::string kId2 = "id2";
+  const std::string kId3 = "id3";
+
+  // Prepare the metadata with shuffled order.
+  std::vector<NodeMetadataPair> node_metadata_pairs;
+  node_metadata_pairs.emplace_back(
+      node1, CreateEntityMetadata(/*server_id=*/kId1, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      nullptr, CreateEntityMetadata(/*server_id=*/kId3, /*is_deleted=*/true));
+  node_metadata_pairs.emplace_back(
+      node2, CreateEntityMetadata(/*server_id=*/kId2, /*is_deleted=*/false));
+  node_metadata_pairs.emplace_back(
+      node0, CreateEntityMetadata(/*server_id=*/kId0, /*is_deleted=*/false));
+
+  SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
+                                std::make_unique<sync_pb::ModelTypeState>());
+
+  // Mark the entities that they have local changes. (in shuffled order just to
+  // verify the tracker doesn't simply maintain the order of updates similar to
+  // with deletions).
+  tracker.IncrementSequenceNumber(kId3);
+  tracker.IncrementSequenceNumber(kId1);
+  tracker.IncrementSequenceNumber(kId2);
+  tracker.IncrementSequenceNumber(kId0);
+
+  std::vector<const SyncedBookmarkTracker::Entity*> entities_with_local_change =
+      tracker.GetEntitiesWithLocalChanges(kMaxEntries);
+
+  ASSERT_THAT(entities_with_local_change.size(), Eq(4U));
+  // Verify updates are in parent before child order node0 --> node1 --> node2.
+  EXPECT_THAT(entities_with_local_change[0]->metadata()->server_id(), Eq(kId0));
+  EXPECT_THAT(entities_with_local_change[1]->metadata()->server_id(), Eq(kId1));
+  EXPECT_THAT(entities_with_local_change[2]->metadata()->server_id(), Eq(kId2));
+  // Verify that deletion is the last entry.
+  EXPECT_THAT(entities_with_local_change[3]->metadata()->server_id(), Eq(kId3));
 }
 
 }  // namespace

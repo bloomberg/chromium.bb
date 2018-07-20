@@ -149,6 +149,17 @@ class SyncedBookmarkTracker {
   std::size_t TrackedEntitiesCountForTest() const;
 
  private:
+  // Reorders |entities| that represents local non-deletions such that parent
+  // creation/update is before child creation/update. Returns the ordered list.
+  std::vector<const Entity*> ReorderUnsyncedEntitiesExceptDeletions(
+      const std::vector<const Entity*>& entities) const;
+
+  // Recursive method that starting from |node| appends all corresponding
+  // entities with updates in top-down order to |ordered_entities|.
+  void TraverseAndAppend(const bookmarks::BookmarkNode* node,
+                         std::vector<const SyncedBookmarkTracker::Entity*>*
+                             ordered_entities) const;
+
   // A map of sync server ids to sync entities. This should contain entries and
   // metadata for almost everything.
   std::map<std::string, std::unique_ptr<Entity>> sync_id_to_entities_map_;
