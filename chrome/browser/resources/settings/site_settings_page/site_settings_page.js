@@ -130,9 +130,8 @@ Polymer({
       [R.SITE_SETTINGS_SENSORS, 'sensors'],
     ];
 
-    if (this.enablePaymentHandlerContentSetting_) {
-      pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'payment-handler']);
-    }
+    if (this.enablePaymentHandlerContentSetting_)
+      pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
 
     pairs.forEach(pair => {
       const route = pair[0];

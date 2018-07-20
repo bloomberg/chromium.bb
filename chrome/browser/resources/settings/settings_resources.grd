@@ -986,6 +986,12 @@
       <structure name="IDR_SETTINGS_SITE_DATA_DETAILS_SUBPAGE_JS"
                  file="site_settings/site_data_details_subpage.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_DATA_ENTRY_HTML"
+                 file="site_settings/site_data_entry.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_DATA_ENTRY_JS"
+                 file="site_settings/site_data_entry.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_LIST_HTML"
                  file="site_settings/site_list.html"
                  type="chrome_html" />

@@ -25,16 +25,6 @@ let CookieDataSummaryItem;
  */
 let CookieRemovePacket;
 
-/**
- * TODO(dbeam): upstream to polymer externs?
- * @constructor
- * @extends {Event}
- */
-function DomRepeatEvent() {}
-
-/** @type {?} */
-DomRepeatEvent.prototype.model;
-
 Polymer({
   is: 'site-data',
 
@@ -55,7 +45,7 @@ Polymer({
       type: String,
     },
 
-    /** @type {!Map<string, string>} */
+    /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
       observer: 'focusConfigChanged_',
@@ -63,7 +53,7 @@ Polymer({
 
     isLoading_: Boolean,
 
-    /** @type {!Array<!LocalDataItem>} */
+    /** @type {!Array<!CookieDataSummaryItem>} */
     sites: {
       type: Array,
       value: function() {
@@ -79,10 +69,21 @@ Polymer({
       type: Object,
       value: settings.routes.SITE_SETTINGS_SITE_DATA,
     },
+
+    /** @private */
+    lastFocused_: Object,
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
   browserProxy_: null,
+
+  /**
+   * When navigating to site data details sub-page, |lastSelected_| holds the
+   * site name as well as the index of the selected site. This is used when
+   * navigating back to site data in order to focus on the correct site.
+   * @private {!{item: CookieDataSummaryItem, index: number}|null}
+   */
+  lastSelected_: null,
 
   /** @override */
   ready: function() {
@@ -126,8 +127,8 @@ Polymer({
   },
 
   /**
-   * @param {!Map<string, string>} newConfig
-   * @param {?Map<string, string>} oldConfig
+   * @param {!Map<string, (string|Function)>} newConfig
+   * @param {?Map<string, (string|Function)>} oldConfig
    * @private
    */
   focusConfigChanged_: function(newConfig, oldConfig) {
@@ -139,9 +140,34 @@ Polymer({
     // element, with additional entries that correspond to subpage trigger
     // elements residing in this element's Shadow DOM.
     if (settings.routes.SITE_SETTINGS_DATA_DETAILS) {
+      const onNavigatedTo = () => this.async(() => {
+        if (this.lastSelected_ == null || this.sites.length == 0)
+          return;
+
+        const lastSelectedSite = this.lastSelected_.item.site;
+        const lastSelectedIndex = this.lastSelected_.index;
+        this.lastSelected_ = null;
+
+        const indexFromId =
+            this.sites.findIndex(site => site.site == lastSelectedSite);
+
+        // If the site is no longer in |sites|, use the index as a fallback.
+        // Since the sites are sorted, an alternative could be to select the
+        // site that comes next in sort order.
+        const indexFallback = lastSelectedIndex < this.sites.length ?
+            lastSelectedIndex :
+            this.sites.length - 1;
+        const index = indexFromId > -1 ? indexFromId : indexFallback;
+        const ironList =
+            /** @type {!IronListElement} */ (this.$$('iron-list'));
+        ironList.focusItem(index);
+        const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
+        const button =
+            this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow button');
+        cr.ui.focusWithoutInk(assert(button));
+      });
       this.focusConfig.set(
-          settings.routes.SITE_SETTINGS_DATA_DETAILS.path,
-          '* /deep/ #filter /deep/ #searchInput');
+          settings.routes.SITE_SETTINGS_DATA_DETAILS.path, onNavigatedTo);
     }
   },
 
@@ -209,22 +235,13 @@ Polymer({
   },
 
   /**
-   * Deletes all site data for a given site.
-   * @param {!DomRepeatEvent} e
+   * @param {!{model: !{item: CookieDataSummaryItem, index: number}}} event
    * @private
    */
-  onRemoveSiteTap_: function(e) {
-    e.stopPropagation();
-    this.browserProxy_.removeItem(e.model.item.site);
-  },
-
-  /**
-   * @param {!{model: !{item: CookieDataSummaryItem}}} event
-   * @private
-   */
-  onSiteTap_: function(event) {
+  onSiteClick_: function(event) {
     settings.navigateTo(
         settings.routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + event.model.item.site));
+    this.lastSelected_ = event.model;
   },
 });

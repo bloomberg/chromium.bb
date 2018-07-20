@@ -28,7 +28,8 @@ cr.define('cr.ui', function() {
   var focusWithoutInk = function(toFocus) {
     var innerButton = null;
 
-    if (toFocus.parentElement.tagName == 'PAPER-ICON-BUTTON-LIGHT') {
+    if (toFocus.parentElement &&
+        toFocus.parentElement.tagName == 'PAPER-ICON-BUTTON-LIGHT') {
       innerButton = toFocus;
       toFocus = toFocus.parentElement;
     }
