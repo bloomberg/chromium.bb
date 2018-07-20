@@ -32,6 +32,10 @@ interface Assistant {
   AddAssistantNotificationSubscriber(
       AssistantNotificationSubscriber subscriber);
 
+  // Registers assistant screen context event subscriber.
+  AddAssistantScreenContextSubscriber(
+    AssistantScreenContextSubscriber subscriber);
+
   // Retrieves a notification. A voiceless interaction will be sent to server to
   // retrieve the notification payload, which can trigger other assistant's
   // events such as OnTextResponse to show the result in the UI. The reteived
@@ -47,9 +51,10 @@ interface Assistant {
   RequestScreenContext(gfx.mojom.Rect region) => ();
 };
 
-// Subscribes to assistant's interaction event. Responses from the assistant may
-// contain untrusted third-party content. Subscriber implementations must be
-// sure to handle the response data appropriately.
+// Subscribes to assistant's interaction event. These events are server driven
+// in response to the user's direct interaction with the assistant. Responses
+// from the assistant may contain untrusted third-party content. Subscriber
+// implementations must be sure to handle the response data appropriately.
 interface AssistantInteractionSubscriber {
   // Assistant interaction has started. In the event of a voice interaction,
   // |is_voice_interaction| will be true. This implies that the mic is open.
@@ -87,7 +92,8 @@ interface AssistantInteractionSubscriber {
   OnSpeechLevelUpdated(float speech_level);
 };
 
-// Subscribes to assistant's notification event.
+// Subscribes to assistant's notification event. These events are server
+// driven and pertain to push notifications.
 interface AssistantNotificationSubscriber {
   // Assistant got notification from server.
   OnShowNotification(AssistantNotification notification);
@@ -95,6 +101,14 @@ interface AssistantNotificationSubscriber {
   // Notifies UI to remove the notification with the |grouping_key|.
   // If |grouping_key| is empty, remove all notifications.
   OnRemoveNotification(string grouping_key);
+};
+
+// Subscribes to assistant's screen context events. These events are server
+// driven and pertain to the user's screen context. Screen context includes
+// both screenshot and view hierarchy data.
+interface AssistantScreenContextSubscriber {
+  // Assistant got contextual Html response from server.
+  OnContextualHtmlResponse(string response);
 };
 
 // Interface for browser to bind and start assistant.

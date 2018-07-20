@@ -58,6 +58,9 @@ void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
 void FakeAssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
     mojom::AssistantNotificationSubscriberPtr subscriber) {}
 
+void FakeAssistantManagerServiceImpl::AddAssistantScreenContextSubscriber(
+    mojom::AssistantScreenContextSubscriberPtr subscriber) {}
+
 void FakeAssistantManagerServiceImpl::RetrieveNotification(
     mojom::AssistantNotificationPtr notification,
     int action_index) {}
