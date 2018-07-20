@@ -62,6 +62,7 @@ class ASH_EXPORT WideFrameView
 
   // views::View:
   void Layout() override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

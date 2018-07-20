@@ -617,6 +617,7 @@ TEST_F(CustomFrameViewAshTest, WideFrame) {
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   HeaderView* header_view =
       static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
+  widget->Maximize();
 
   WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
   wide_frame_view->GetWidget()->Show();
@@ -680,6 +681,13 @@ TEST_F(CustomFrameViewAshTest, WideFrame) {
   UpdateDisplay("1234x800");
   EXPECT_EQ(1234,
             wide_frame_view->GetWidget()->GetWindowBoundsInScreen().width());
+
+  // Double Click
+  EXPECT_TRUE(widget->IsMaximized());
+  generator->MoveMouseToCenterOf(
+      wide_header_view->GetWidget()->GetNativeWindow());
+  generator->DoubleClickLeftButton();
+  EXPECT_FALSE(widget->IsMaximized());
 }
 
 TEST_F(CustomFrameViewAshTest, WideFrameButton) {
