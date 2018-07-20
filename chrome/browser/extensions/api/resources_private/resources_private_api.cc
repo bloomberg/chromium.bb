@@ -45,9 +45,6 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
   SetL10nString(dict, "pageReload", IDS_PDF_PAGE_RELOAD_BUTTON);
   SetL10nString(dict, "bookmarks", IDS_PDF_BOOKMARKS);
   SetL10nString(dict, "labelPageNumber", IDS_PDF_LABEL_PAGE_NUMBER);
-  SetL10nString(dict, "saveCalledTitle", IDS_PDF_SAVE_CALLED_TITLE);
-  SetL10nString(dict, "saveCalledText", IDS_PDF_SAVE_CALLED_TEXT);
-  SetL10nString(dict, "saveCalledButton", IDS_OK);
   SetL10nString(dict, "tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW);
   SetL10nString(dict, "tooltipDownload", IDS_PDF_TOOLTIP_DOWNLOAD);
   SetL10nString(dict, "tooltipPrint", IDS_PDF_TOOLTIP_PRINT);

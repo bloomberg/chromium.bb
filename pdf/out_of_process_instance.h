@@ -152,7 +152,6 @@ class OutOfProcessInstance : public pp::Instance,
   void SelectionChanged(const pp::Rect& left, const pp::Rect& right) override;
   void IsEditModeChanged(bool is_edit_mode) override;
   float GetToolbarHeightInScreenCoords() override;
-  void SaveCalled() override;
 
   // PreviewModeClient::Client implementation.
   void PreviewDocumentLoadComplete() override;

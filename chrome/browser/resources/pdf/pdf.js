@@ -629,7 +629,6 @@ PDFViewer.prototype = {
     $('zoom-toolbar').strings = strings;
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;
-    $('save-called-screen').strings = strings;
   },
 
   /**
@@ -761,9 +760,6 @@ PDFViewer.prototype = {
         break;
       case 'transformPagePointReply':
         this.coordsTransformer_.onReplyReceived(message);
-        break;
-      case 'saveCalled':
-        $('save-called-screen').show();
         break;
     }
   },
