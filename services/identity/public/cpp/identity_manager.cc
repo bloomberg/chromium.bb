@@ -72,6 +72,7 @@ IdentityManager::IdentityManager(
 #endif
   token_service_->AddDiagnosticsObserver(this);
   token_service_->set_diagnostics_client(this);
+  gaia_cookie_manager_service_->AddObserver(this);
 }
 
 IdentityManager::~IdentityManager() {
@@ -82,6 +83,7 @@ IdentityManager::~IdentityManager() {
 #endif
   token_service_->RemoveDiagnosticsObserver(this);
   token_service_->set_diagnostics_client(nullptr);
+  gaia_cookie_manager_service_->RemoveObserver(this);
 }
 
 AccountInfo IdentityManager::GetPrimaryAccountInfo() const {
@@ -334,6 +336,25 @@ void IdentityManager::WillFireOnRefreshTokenRevoked(
 
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_info);
+  }
+}
+
+void IdentityManager::OnGaiaAccountsInCookieUpdated(
+    const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+    const GoogleServiceAuthError& error) {
+  std::vector<AccountInfo> account_infos;
+
+  for (const auto& listed_account : accounts) {
+    AccountInfo account_info;
+    account_info.account_id = listed_account.id;
+    account_info.gaia = listed_account.gaia_id;
+    account_info.email = listed_account.email;
+    account_infos.push_back(account_info);
+  }
+
+  for (auto& observer : observer_list_) {
+    observer.OnAccountsInCookieUpdated(account_infos);
   }
 }
 
