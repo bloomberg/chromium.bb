@@ -186,7 +186,7 @@ html[dir=rtl] .bg-option-text {
 }
 
 html[dir=rtl] #bg-sel-tiles {
-  padding-left: auto;
+  padding-left: 0;
   padding-right: 8px;
 }
 
@@ -202,8 +202,21 @@ html[dir=rtl] #bg-sel-tiles {
   background-size: 20px 20px;
   display: none;
   height: 20px;
-  margin: 16px 16px 0 16px;
   width: 20px;
+}
+
+#bg-sel-back-circle {
+  border-radius: 50%;
+  display: none;
+  height: 36px;
+  margin: 8px 8px 0 16px;
+  width: 36px;
+}
+
+#bg-sel-back-circle:active {
+  background: rgb(218, 220, 224);
+  background-position: center;
+  background-size: 36px 36px;
 }
 
 .is-col-sel #bg-sel-back {
@@ -211,15 +224,32 @@ html[dir=rtl] #bg-sel-tiles {
   text-align: left;
 }
 
+.is-col-sel #bg-sel-back-circle {
+  display: none;
+  text-align: left;
+}
+
+.is-img-sel #bg-sel-back-circle {
+  display: inline-block;
+  float: left;
+  margin: 8px 0 0 8px;
+}
+
+html[dir=rtl] .is-img-sel #bg-sel-back-circle {
+  display: inline-block;
+  float: right;
+  margin: 8px 8px 0 0;
+}
+
 .is-img-sel #bg-sel-back {
   display: inline-block;
   float: left;
-  margin: 18px 0 0 16px;
+  margin: 8px 0 0 8px;
 }
 
 html[dir=rtl] .is-img-sel #bg-sel-back {
   float: right;
-  margin: 18px 16px 0 0;
+  margin: 8px 8px 0 0;
   transform: scaleX(-1);
 }
 
@@ -228,7 +258,7 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
   display: inline-block;
   height: 20px;
   line-height: 20px;
-  margin: 16px 0 0 0;
+  margin: 8px 0 0 0;
   text-align: center;
 }
 
@@ -239,12 +269,12 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 
 .is-img-sel #bg-sel-title {
   float: left;
-  margin: 18px 0 0 16px;
+  margin: 16px 0 0 8px;
 }
 
 html[dir=rtl] .is-img-sel #bg-sel-title {
   float: right;
-  margin: 18px 16px 0 0;
+  margin: 16px 8px 0 0;
   text-align: left;
 }
 
