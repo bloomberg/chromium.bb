@@ -285,11 +285,21 @@ class ResourceLoadingHintsBrowserTest
   ResourceLoadingHintsHttpsWhitelisted
 #define MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps \
   ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
+#define MAYBE_ResourceLoadingHintsHttpsNoWhitelisted \
+  ResourceLoadingHintsHttpsNoWhitelisted
+#define MAYBE_ResourceLoadingHintsHttp ResourceLoadingHintsHttp
+#define MAYBE_ResourceLoadingHintsHttpsWhitelistedNoTransform \
+  ResourceLoadingHintsHttpsWhitelistedNoTransform
 #else
 #define MAYBE_ResourceLoadingHintsHttpsWhitelisted \
   DISABLED_ResourceLoadingHintsHttpsWhitelisted
 #define MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps \
   DISABLED_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
+#define MAYBE_ResourceLoadingHintsHttpsNoWhitelisted \
+  DISABLED_ResourceLoadingHintsHttpsNoWhitelisted
+#define MAYBE_ResourceLoadingHintsHttp DISABLED_ResourceLoadingHintsHttp
+#define MAYBE_ResourceLoadingHintsHttpsWhitelistedNoTransform \
+  DISABLED_ResourceLoadingHintsHttpsWhitelistedNoTransform
 #endif
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
@@ -370,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       ResourceLoadingHintsHttpsNoWhitelisted) {
+                       MAYBE_ResourceLoadingHintsHttpsNoWhitelisted) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
@@ -397,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       ResourceLoadingHintsHttp) {
+                       MAYBE_ResourceLoadingHintsHttp) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
@@ -424,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       ResourceLoadingHintsHttpsWhitelistedNoTransform) {
+                       MAYBE_ResourceLoadingHintsHttpsWhitelistedNoTransform) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
