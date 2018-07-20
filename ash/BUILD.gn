@@ -2406,7 +2406,6 @@ service("ash_service") {
   data_deps = [
     ":ash_service_resources",
     ":ash_service_resources_200",
-    "//services/ui",
   ]
 }
 

@@ -43,7 +43,6 @@ catalog("catalog") {
     "//mash/catalog_viewer:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
-    "//services/ui/demo:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
     "//services/viz:manifest",
   ]

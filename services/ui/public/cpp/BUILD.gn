@@ -42,10 +42,7 @@ source_set("cpp") {
 source_set("internal") {
   # This target is an implementation detail and is intended only to be used by
   # the 'cpp' target.
-  visibility = [
-    ":cpp",
-    "//services/ui/demo:lib",
-  ]
+  visibility = [ ":cpp" ]
 
   sources = [
     "property_type_converters.cc",
