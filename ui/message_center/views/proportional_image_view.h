@@ -27,6 +27,8 @@ class MESSAGE_CENTER_EXPORT ProportionalImageView : public views::View {
   void SetImage(const gfx::ImageSkia& image,
                 const gfx::Size& max_image_size);
 
+  const gfx::ImageSkia& image() const { return image_; }
+
   // Overridden from views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;

@@ -7,6 +7,7 @@
 #include "ash/app_menu/notification_item_view.h"
 #include "ash/app_menu/notification_menu_header_view.h"
 #include "ash/app_menu/notification_menu_view.h"
+#include "ash/app_menu/notification_overflow_view.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ui/views/controls/label.h"
 
@@ -31,6 +32,10 @@ NotificationMenuViewTestAPI::GetDisplayedNotificationItemView() const {
   return notification_menu_view_->notification_item_views_.empty()
              ? nullptr
              : notification_menu_view_->notification_item_views_.front().get();
+}
+
+NotificationOverflowView* NotificationMenuViewTestAPI::GetOverflowView() const {
+  return notification_menu_view_->overflow_view_.get();
 }
 
 }  // namespace ash

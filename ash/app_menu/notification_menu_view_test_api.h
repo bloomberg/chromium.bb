@@ -12,6 +12,7 @@ namespace ash {
 
 class NotificationItemView;
 class NotificationMenuView;
+class NotificationOverflowView;
 
 // Use the API in this class to test NotificationMenuView.
 class NotificationMenuViewTestAPI {
@@ -28,6 +29,9 @@ class NotificationMenuViewTestAPI {
 
   // Returns the NotificationItemView currently being displayed.
   NotificationItemView* GetDisplayedNotificationItemView() const;
+
+  // Returns the NotificationOverflowView if it is being shown.
+  NotificationOverflowView* GetOverflowView() const;
 
  private:
   NotificationMenuView* const notification_menu_view_;
