@@ -724,8 +724,9 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
 
 // SessionStorage is not supported by site data counting and the cookie tree
 // model but we can test the web visible behavior.
+// Disabled due to failures in https://crbug.com/865802.
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       SessionStorageDeletion) {
+                       DISABLED_SessionStorageDeletion2) {
   GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
   const std::string type = "SessionStorage";
@@ -837,7 +838,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Check if any data remains after a deletion and a Chrome restart to force
 // all writes to be finished.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
+// Disabled due to failures in https://crbug.com/865802.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       DISABLED_StorageRemovedFromDisk) {
   // Deletions should remove all traces of browsing data from disk
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().
