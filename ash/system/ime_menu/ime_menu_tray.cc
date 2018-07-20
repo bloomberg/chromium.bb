@@ -528,10 +528,8 @@ void ImeMenuTray::UpdateTrayLabel() {
   // IME.
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
-    // TODO(yhanada): We may want to update the globe icon later.
-    //                https://crbug.com/845079.
     image_view_->SetImage(
-        gfx::CreateVectorIcon(kKeyboardIcon, kTrayIconSize, kTrayIconColor));
+        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconSize, kTrayIconColor));
     return;
   }
 
