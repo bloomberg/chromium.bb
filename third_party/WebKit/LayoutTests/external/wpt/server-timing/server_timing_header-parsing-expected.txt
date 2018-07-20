@@ -1,6 +1,5 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Cannot read property 'name' of undefined
-Found 303 tests; 301 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 324 tests; 322 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS 0.js - count (0 ?== 0)
 PASS 1.js - count (1 ?== 1)
 PASS 1.js - name (metric ?== metric)
@@ -304,5 +303,26 @@ FAIL 68.js - count (1 ?== 2) assert_equals: 68.js - count (1 ?== 2) expected 2 b
 PASS 68.js - [0].name (metric1 ?== metric1)
 PASS 68.js - [0].duration (0 ?== 0)
 PASS 68.js - [0].description ( ?== )
+PASS 69.js - count (1 ?== 1)
+PASS 69.js - name (metric ?== metric)
+PASS 69.js - duration (0 ?== 0)
+PASS 69.js - description ( ?== )
+PASS 70.js - count (1 ?== 1)
+PASS 70.js - name (metric ?== metric)
+PASS 70.js - duration (0 ?== 0)
+PASS 70.js - description ( ?== )
+PASS 71.js - count (0 ?== 0)
+PASS 72.js - count (0 ?== 0)
+PASS 73.js - count (0 ?== 0)
+PASS 74.js - count (0 ?== 0)
+PASS 75.js - count (0 ?== 0)
+PASS 76.js - count (0 ?== 0)
+PASS 77.js - count (0 ?== 0)
+PASS 78.js - count (0 ?== 0)
+PASS 79.js - count (0 ?== 0)
+PASS 80.js - count (0 ?== 0)
+PASS 81.js - count (0 ?== 0)
+PASS 82.js - count (0 ?== 0)
+PASS 83.js - count (0 ?== 0)
 Harness: the test ran to completion.
 
