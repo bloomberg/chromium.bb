@@ -30,7 +30,6 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -212,7 +211,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
   params.single_process = false;
-  params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
+  params.using_mojo = features::IsOzoneDrmMojo();
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
@@ -339,10 +338,10 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
 #if defined(OS_CHROMEOS)
-  params.using_mojo = !features::IsAshInBrowserProcess() ||
-                      command_line->HasSwitch(switches::kEnableDrmMojo);
+  params.using_mojo =
+      !features::IsAshInBrowserProcess() || features::IsOzoneDrmMojo();
 #else
-  params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
+  params.using_mojo = features::IsOzoneDrmMojo();
 #endif
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();

@@ -22,12 +22,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_port_for_shutdown.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 namespace aura {
@@ -223,7 +223,7 @@ void Env::Init(service_manager::Connector* connector) {
   // instead of checking flags here.
   params.single_process = command_line->HasSwitch("single-process") ||
                           command_line->HasSwitch("in-process-gpu");
-  params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
+  params.using_mojo = features::IsOzoneDrmMojo();
 
   if (connector) {
     // Supplying a connector implies this process is hosting Viz.

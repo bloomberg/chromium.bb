@@ -44,6 +44,7 @@
 #include "ui/base/mojo/clipboard_host.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -59,7 +60,6 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -226,8 +226,7 @@ void Service::OnStart() {
     params.single_process = true;
     params.using_mojo = true;
   } else {
-    params.using_mojo = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        ::switches::kEnableDrmMojo);
+    params.using_mojo = features::IsOzoneDrmMojo();
   }
   ui::OzonePlatform::InitializeForUI(params);
 

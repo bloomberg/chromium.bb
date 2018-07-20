@@ -40,7 +40,6 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 namespace {
@@ -136,10 +135,6 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
     // Initialize GpuInit before starting the IO or compositor threads.
     gpu_init_ = std::make_unique<gpu::GpuInit>();
     gpu_init_->set_sandbox_helper(this);
-
-#if defined(USE_OZONE)
-    command_line->AppendSwitch(switches::kEnableDrmMojo);
-#endif
 
     // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
     // split into a separate process.

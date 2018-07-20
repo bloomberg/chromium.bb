@@ -167,4 +167,12 @@ bool IsViewsBrowserCocoa() {
 #endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
 #endif  //  defined(OS_MACOSX)
 
+const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsOzoneDrmMojo() {
+  return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo) ||
+         IsAshInBrowserProcess();
+}
+
 }  // namespace features
