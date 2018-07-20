@@ -207,7 +207,7 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
   UpdateVideoLock();
 
   if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
-      pip_player_ == player_id) {
+      pip_player_->render_frame_host == render_frame_host) {
     content::PictureInPictureWindowController::GetOrCreateForWebContents(
         web_contents())
         ->UpdatePlaybackState(false /* is not playing */,
@@ -259,7 +259,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
   }
 
   if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
-      pip_player_ == id) {
+      pip_player_->render_frame_host == render_frame_host) {
     content::PictureInPictureWindowController::GetOrCreateForWebContents(
         web_contents())
         ->UpdatePlaybackState(true /* is playing */,
