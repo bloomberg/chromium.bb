@@ -724,6 +724,9 @@
 	<description summary="the surface is maximized">
 	  The surface is maximized. The window geometry specified in the configure
 	  event must be obeyed by the client.
+
+	  The client should draw without shadow or other
+	  decoration outside of the window geometry.
 	</description>
       </entry>
       <entry name="fullscreen" value="2" summary="the surface is fullscreen">
@@ -865,8 +868,7 @@
 	After requesting that the surface should be maximized, the compositor
 	will respond by emitting a configure event with the "maximized" state
 	and the required window geometry. The client should then update its
-	content, drawing it in a maximized state, i.e. without shadow or other
-	decoration outside of the window geometry. The client must also
+	content, drawing it in a maximized state. The client must also
 	acknowledge the configure when committing the new content (see
 	ack_configure).
 
