@@ -134,6 +134,22 @@ class IdentityManager : public SigninManagerBase::Observer,
   // refresh tokens were added.
   std::vector<AccountInfo> GetAccountsWithRefreshTokens() const;
 
+  // Provides access to the latest cached information of all accounts that are
+  // present in the Gaia cookie in the cookie jar, ordered by their order in
+  // the cookie. If the cached state is known to be stale by the underlying
+  // implementation, a call to this method will trigger an internal update and
+  // subsequent invocation of
+  // IdentityManager::Observer::OnAccountsInCookieJarChanged().
+  // |source| is supplied as the source of any network requests that are made as
+  // part of an internal update.
+  // NOTE: The information of whether the cached state is known to be stale by
+  // the underlying implementation is not currently exposed. The design for
+  // exposing it if necessary is tracked by https://crbug.com/859882. If the
+  // lack of this exposure is a blocker for you in using this API, contact
+  // blundell@chromium.org.
+  std::vector<AccountInfo> GetAccountsInCookieJar(
+      const std::string& source) const;
+
   // Returns true if a refresh token exists for |account_id|.
   bool HasAccountWithRefreshToken(const std::string& account_id) const;
 

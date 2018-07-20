@@ -23,6 +23,23 @@ const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 // TODO(860492): Remove this once supervised user support is removed.
 const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 
+// Maps a vector of gaia::ListedAccount structs to a corresponding vector of
+// AccountInfo structs.
+std::vector<AccountInfo> ListedAccountsToAccountInfos(
+    const std::vector<gaia::ListedAccount>& listed_accounts) {
+  std::vector<AccountInfo> account_infos;
+
+  for (const auto& listed_account : listed_accounts) {
+    AccountInfo account_info;
+    account_info.account_id = listed_account.id;
+    account_info.gaia = listed_account.gaia_id;
+    account_info.email = listed_account.email;
+    account_infos.push_back(account_info);
+  }
+
+  return account_infos;
+}
+
 }  // namespace
 
 IdentityManager::IdentityManager(
@@ -147,6 +164,17 @@ std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   }
 
   return accounts;
+}
+
+std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar(
+    const std::string& source) const {
+  // TODO(859882): Change this implementation to interact asynchronously with
+  // GaiaCookieManagerService as detailed in
+  // https://docs.google.com/document/d/1hcrJ44facCSHtMGBmPusvcoP-fAR300Hi-UFez8ffYQ/edit?pli=1#heading=h.w97eil1cygs2.
+  std::vector<gaia::ListedAccount> listed_accounts;
+  gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr, source);
+
+  return ListedAccountsToAccountInfos(listed_accounts);
 }
 
 bool IdentityManager::HasAccountWithRefreshToken(
@@ -343,15 +371,8 @@ void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
-  std::vector<AccountInfo> account_infos;
-
-  for (const auto& listed_account : accounts) {
-    AccountInfo account_info;
-    account_info.account_id = listed_account.id;
-    account_info.gaia = listed_account.gaia_id;
-    account_info.email = listed_account.email;
-    account_infos.push_back(account_info);
-  }
+  std::vector<AccountInfo> account_infos =
+      ListedAccountsToAccountInfos(accounts);
 
   for (auto& observer : observer_list_) {
     observer.OnAccountsInCookieUpdated(account_infos);
