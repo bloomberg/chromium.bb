@@ -63,46 +63,11 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
 const uint64_t kSignatureHeaderDate = 1517892341;
 const uint64_t kSignatureHeaderExpires = 1517895941;
 
-// See content/testdata/sxg/README on how to generate this data.
+// See content/testdata/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderRSA[] =
-    "label; "
-    "sig=*RBFZPtl5xPDQyZuq4TcXY9fPkso5Edl7NofpdA9Bylwhvdsd7uCBAmOYx0BvXjrg8UVj"
-    "axIHeVNavLzTU42NZgSBd3po1qrT4TZb6piN/BMqmBWtaxEFxLaLZyBgrQpXN/l+OkWSvCF30"
-    "J9QEhqaI749SlVrrV37121Ik/WBIuo6Peo88HRP9292FEsrgwH3ggTJcTvkBbOIttO3UddEtN"
-    "3hQNNowNhsUCr3fXn0lIMW8Gyp0V6TVedIhgT7zqUxRqJRjedQzY+Bm7F01/jKzvD1etAcw7r"
-    "CidWFISmcyWjsLG1dlNtiZynO9gyyZduOSzBwEb9QcMTHekFsnmzFtg==*; "
-    "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi-draft2\"; "
-    "cert-url=\"https://example.com/cert.msg\"; "
-    "cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; "
-    "date=1517892341; expires=1517895941";
-// clang-format on
-
-// See content/testdata/sxg/README on how to generate this data.
-// clang-format off
-constexpr char kSignatureHeaderECDSAP256[] =
-    "label; "
-    "sig=*MEYCIQDtLdwjyge6hN35wF7SOgO2aHFYnVYqQvTguZmpZ2WncgIhAO22vzcYGuRXqnAX"
-    "3Bv/llls9DeQ2ecD8btESjxmRBmQ*; "
-    "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi-draft2\"; "
-    "cert-url=\"https://example.com/cert.msg\"; "
-    "cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; "
-    "date=1517892341; expires=1517895941";
-// clang-format on
-
-// See content/testdata/sxg/README on how to generate this data.
-// clang-format off
-constexpr char kSignatureHeaderECDSAP384[] =
-    "label; "
-    "sig=*MGUCMQDoljLI4+cdxPYk0e33WlIBILYN92fpDXG6tBs4GSW3NGcbnwaGxV8qRgg3PQdUZ"
-    "B4CMGe4bAef8YlOErfrfV6UdbAGNeBveoY4rMkDDaPCxt1aCCb/6BYzuFJn6maGOpDN5w==*; "
-    "validity-url=\"https://example.com/resource.validity.msg\"; "
-    "integrity=\"mi-draft2\"; "
-    "cert-url=\"https://example.com/cert.msg\"; "
-    "cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; "
-    "date=1517892341; expires=1517895941";
+constexpr char kSignatureHeaderRSA[] = R"(label; sig=*yYFb09i7VXuqsGBxc3RuJzGL4XMD9bZ20kXWSv1JObEf7KIG0MznSE1nu1fE+7DrgWQxH7FQfSWjyseOAvxsBOfkptmCCi/Ffklz3N1UU8LfwfaLWj80oBqDeofiIYwevSSpsaRKBYie7KjiVOjslFLOGe82MmHyF2utFRKY/i6UAHgMrg2FGfbwBaJsxEgtpPcN8/QnFKgt1la+JjwvYbMHpJhHTedDqx9GCxJOzbJjKRL1E2tIBvhDfK2m3eJv/nqvgWkK3MOd/Xp4FkndciS3eNyZZjwvJ6IL/3x4e0AZ36KvglpS092ZftiE4lKQWnHmVeDRmEHW6qOyv1Q3+w==*; validity-url="https://example.com/resource.validity.msg"; integrity="mi-draft2"; cert-url="https://example.com/cert.msg"; cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEQCIA0w6auOuWGT6//MO/h43/xkXBchJUOp53GU5dmA8U+/AiAe0FggCblVxzosT2Ow9rrC2Q8zO0DZPLSNbcu29xYP6g==*; validity-url="https://example.com/resource.validity.msg"; integrity="mi-draft2"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGYCMQC/P8m0ZnPrIMlI3I412MixcK9cQSirIECUNR7pOIlTiLaH95L72KXqq2aL+lxxKIICMQDU3s/BhoWtR61eKG9SqgGHd0ZtUJVY24xaJ2yHiYWxZU/QhOr5ZArSj3x1khivpRg=*; validity-url="https://example.com/resource.validity.msg"; integrity="mi-draft2"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
 // clang-format on
 
 // |expires| (1518497142) is more than 7 days (604800 seconds) after |date|

@@ -1,43 +1,32 @@
-The certificate message files (*.msg) and the signed exchange files (*.sxg) in
-this directory are generated using the following commands.
+#!/bin/sh
 
-gen-certurl and gen-signedexchange are available in [webpackage repository][1].
-Revision cf19833 is used to generate these files.
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
- [1] https://github.com/WICG/webpackage
+set -e
 
-# Install gen-certurl command.
-go get -v -u github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
+for cmd in gen-signedexchange gen-certurl dump-signedexchange; do
+    if ! command -v $cmd > /dev/null 2>&1; then
+        echo "$cmd is not installed. Please run:"
+        echo "  go get -u github.com/WICG/webpackage/go/signedexchange/cmd/..."
+        exit 1
+    fi
+done
 
-# Install gen-signedexchange command.
-go get -v -u github.com/WICG/webpackage/go/signedexchange/cmd/gen-signedexchange
-
-# Generate a "secp256r1 (== prime256v1) ecdsa with sha256" key/cert pair
-openssl ecparam -out prime256v1.key -name prime256v1 -genkey
-
-openssl req -new -sha256 -key prime256v1.key -out prime256v1-sha256.csr \
-  -subj '/CN=test.example.org/O=Test/C=US'
-
-openssl x509 -req -days 360 -in prime256v1-sha256.csr \
-  -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \
-  -out prime256v1-sha256.public.pem -set_serial 1 \
-  -extfile x509.ext
-
-openssl x509 -req -days 360 -in prime256v1-sha256.csr \
-  -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \
-  -out prime256v1-sha256-noext.public.pem -set_serial 1
+tmpdir=$(mktemp -d)
 
 # Make dummy OCSP and SCT data for cbor certificate chains.
-echo -n OCSP >/tmp/ocsp; echo -n SCT >/tmp/sct
+echo -n OCSP >$tmpdir/ocsp; echo -n SCT >$tmpdir/sct
 
 # Generate the certificate chain of "*.example.org".
 gen-certurl -pem prime256v1-sha256.public.pem \
-  -ocsp /tmp/ocsp -sct /tmp/sct > test.example.org.public.pem.cbor
+  -ocsp $tmpdir/ocsp -sct $tmpdir/sct > test.example.org.public.pem.cbor
 
 # Generate the certificate chain of "*.example.org", without
 # CanSignHttpExchangesDraft extension.
 gen-certurl -pem prime256v1-sha256-noext.public.pem \
-  -ocsp /tmp/ocsp -sct /tmp/sct > test.example.org-noext.public.pem.cbor
+  -ocsp $tmpdir/ocsp -sct $tmpdir/sct > test.example.org-noext.public.pem.cbor
 
 # Generate the signed exchange file.
 gen-signedexchange \
@@ -91,34 +80,58 @@ gen-signedexchange \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_hello.txt.sxg
 
-# Generate a "secp384r1 ecdsa with sha256" key/cert pair for negative test
-openssl ecparam -out secp384r1.key -name secp384r1 -genkey
+echo "Update the test signatures in "
+echo "signed_exchange_signature_verifier_unittest.cc with the followings:"
+echo "===="
 
-openssl req -new -sha256 -key secp384r1.key -out secp384r1-sha256.csr \
-  --subj '/CN=test.example.org/O=Test/C=US'
+sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' \
+  ../../../../net/data/ssl/certificates/wildcard.pem \
+  > $tmpdir/wildcard_example.org.private.pem
+sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
+  ../../../../net/data/ssl/certificates/wildcard.pem \
+  > $tmpdir/wildcard_example.org.public.pem
+gen-signedexchange \
+  -uri https://test.example.org/test/ \
+  -content test.html \
+  -certificate $tmpdir/wildcard_example.org.public.pem \
+  -privateKey $tmpdir/wildcard_example.org.private.pem \
+  -date 2018-02-06T04:45:41Z \
+  -o $tmpdir/out.htxg
 
-openssl x509 -req -days 360 -in secp384r1-sha256.csr \
-  -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \
-  -out secp384r1-sha256.public.pem -set_serial 1
+echo -n 'constexpr char kSignatureHeaderRSA[] = R"('
+dump-signedexchange -i $tmpdir/out.htxg | \
+    sed -n 's/^signature: //p' | \
+    tr -d '\n'
+echo ')";'
 
-# Generate test signatures in signed_exchange_signature_verifier_unittest.cc
 gen-signedexchange \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate ./prime256v1-sha256.public.pem \
   -privateKey ./prime256v1.key \
-  -date 2018-02-06T04:45:41Z
+  -date 2018-02-06T04:45:41Z \
+  -o $tmpdir/out.htxg
 
-gen-signedexchange \
-  -uri https://test.example.org/test/ \
-  -content test.html \
-  -certificate ./prime256v1-sha256.public.pem \
-  -privateKey ./prime256v1.key \
-  -date 2018-02-06T04:45:41Z
+echo -n 'constexpr char kSignatureHeaderECDSAP256[] = R"('
+dump-signedexchange -i $tmpdir/out.htxg | \
+    sed -n 's/^signature: //p' | \
+    tr -d '\n'
+echo ')";'
 
 gen-signedexchange \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate ./secp384r1-sha256.public.pem \
   -privateKey ./secp384r1.key \
-  -date 2018-02-06T04:45:41Z
+  -date 2018-02-06T04:45:41Z \
+  -o $tmpdir/out.htxg
+
+echo -n 'constexpr char kSignatureHeaderECDSAP384[] = R"('
+dump-signedexchange -i $tmpdir/out.htxg | \
+    sed -n 's/^signature: //p' | \
+    tr -d '\n'
+echo ')";'
+
+echo "===="
+
+rm -fr $tmpdir
