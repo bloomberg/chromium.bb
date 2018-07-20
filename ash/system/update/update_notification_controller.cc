@@ -61,7 +61,8 @@ void UpdateNotificationController::OnUpdateAvailable() {
               base::BindRepeating(
                   &UpdateNotificationController::HandleNotificationClick,
                   weak_ptr_factory_.GetWeakPtr())),
-          kSystemMenuUpdateIcon, warning_level);
+          model_->rollback() ? kSystemMenuRollbackIcon : kSystemMenuUpdateIcon,
+          warning_level);
   notification->set_pinned(true);
 
   if (model_->update_required()) {
