@@ -106,6 +106,9 @@ class DocStringChecker(BaseChecker):
   class _MessageCP017(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
+  # All the sections we recognize (and in this order).
+  VALID_SECTIONS = ('Examples', 'Args', 'Returns', 'Yields', 'Raises')
+
   # This is the section name in the pylintrc file.
   name = 'doc_string_checker'
   # Any pylintrc config options we accept.
@@ -127,10 +130,11 @@ class DocStringChecker(BaseChecker):
       'C9006': ('Section names should be preceded by one blank line'
                 ': ' + MSG_ARGS,
                 ('docstring-section-newline'), _MessageCP006),
-      'C9007': ('Section names should be "Args:", "Returns:", "Yields:", '
-                'and "Raises:": ' + MSG_ARGS,
+      'C9007': ('Section names should be one of "%s": %s' %
+                (', '.join(VALID_SECTIONS), MSG_ARGS),
                 ('docstring-section-name'), _MessageCP007),
-      'C9008': ('Sections should be in the order: Args, Returns/Yields, Raises',
+      'C9008': ('Sections should be in the order: %s' %
+                (' '.join(VALID_SECTIONS),),
                 ('docstring-section-order'), _MessageCP008),
       'C9009': ('First line should be a short summary',
                 ('docstring-first-line'), _MessageCP009),
@@ -154,9 +158,6 @@ class DocStringChecker(BaseChecker):
                 '%(line_old)i',
                 ('docstring-duplicate-section'), _MessageCP017),
   }
-
-  # TODO: Should we enforce Examples?
-  VALID_SECTIONS = ('Args', 'Returns', 'Yields', 'Raises',)
 
   def __init__(self, *args, **kwargs):
     BaseChecker.__init__(self, *args, **kwargs)
@@ -304,6 +305,7 @@ class DocStringChecker(BaseChecker):
     sections = collections.OrderedDict()
     invalid_sections = (
         # Handle common misnamings.
+        'example', 'usage', 'example usage',
         'arg', 'argument', 'arguments',
         'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
         'yield', 'yeild', 'yeilds',

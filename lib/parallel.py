@@ -78,7 +78,7 @@ def Manager():
   temp directory. This is needed because TMPDIR might be really long, and
   named sockets are limited to 108 characters.
 
-  Usage:
+  Examples:
     with Manager() as manager:
       queue = manager.Queue()
       ...
@@ -626,6 +626,15 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,
   them after all parallel tasks have finished running. Further, a
   BackgroundFailure is raised with full stack traces of all exceptions.
 
+  Examples:
+    # This snippet will execute in parallel:
+    #   somefunc()
+    #   anotherfunc()
+    #   funcfunc()
+    steps = [somefunc, anotherfunc, funcfunc]
+    RunParallelSteps(steps)
+    # Blocks until all calls have completed.
+
   Args:
     steps: A list of functions to run.
     max_parallel: The maximum number of simultaneous tasks to run in parallel.
@@ -638,15 +647,6 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,
   Returns:
     If |return_values| is True, the function will return a list containing the
     return values of the steps.
-
-  Example:
-    # This snippet will execute in parallel:
-    #   somefunc()
-    #   anotherfunc()
-    #   funcfunc()
-    steps = [somefunc, anotherfunc, funcfunc]
-    RunParallelSteps(steps)
-    # Blocks until all calls have completed.
   """
   def ReturnWrapper(queue, fn):
     """Put the return value of |fn| into |queue|."""
@@ -699,7 +699,7 @@ def BackgroundTaskRunner(task, *args, **kwargs):
   them after all parallel tasks have finished running. Further, a
   BackgroundFailure is raised with full stack traces of all exceptions.
 
-  Example:
+  Examples:
     # This will run somefunc(1, 'small', 'cow', foo='bar') in the background
     # as soon as data is added to the queue (i.e. queue.put() is called).
 
@@ -764,7 +764,7 @@ def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
   them after all parallel tasks have finished running. Further, a
   BackgroundFailure is raised with full stack traces of all exceptions.
 
-  Example:
+  Examples:
     # This snippet will execute in parallel:
     #   somefunc('hi', 'fat', 'code')
     #   somefunc('foo', 'bar', 'cow')

@@ -119,7 +119,7 @@ def GetUnusedPort(ip=LOCALHOST, family=socket.AF_INET,
                   stype=socket.SOCK_STREAM):
   """Returns a currently unused port.
 
-  Example:
+  Examples:
     Note: Since this does not guarantee the port remains unused when you
     attempt to bind it, your code should retry in a loop like so:
     while True:

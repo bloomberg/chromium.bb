@@ -392,7 +392,7 @@ def append_useflags(useflags):
   Useflags that shadow prior use flags will cause the prior flag to be removed.
   (e.g. appending '-foo' to 'foo' will cause 'foo' to be removed)
 
-  Usage:
+  Examples:
     new_config = base_config.derive(useflags=append_useflags(['foo', '-bar'])
 
   Args:

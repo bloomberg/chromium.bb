@@ -124,10 +124,11 @@ class LockableQueue(object):
   Objects of this class function just like a regular multiprocessing Queue,
   except that there is also an rlock attribute for getting a multiprocessing
   RLock associated with this queue.  Actual locking must still be handled by
-  the calling code.  Example usage:
+  the calling code.
 
-  with queue.rlock:
-    ... process the queue in some way.
+  Examples:
+    with queue.rlock:
+      ... process the queue in some way.
   """
 
   def __init__(self, manager):

@@ -230,6 +230,11 @@ class DocStringCheckerTest(CheckerTestCase):
       Yield:
         a car
       """,
+      """We want Examples, not Usage.
+
+      Usage:
+        a car
+      """,
       """Section name has bad spacing
 
       Args:\x20\x20\x20

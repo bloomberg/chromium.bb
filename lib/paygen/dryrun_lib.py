@@ -49,7 +49,7 @@ class DryRunMgr(object):
     """Run func(*args, **kwargs) if self.dry_run is not True.
 
     Examples:
-    drm.Run(os.remove, '/some/file')
+      drm.Run(os.remove, '/some/file')
 
     Args:
       func: Must be a function object.

@@ -387,31 +387,30 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
   CumulativeSecondsDistribution named |name|, with the given fields.
 
   Examples:
+    # Time the doSomething() call, with field values that are independent of the
+    # results of the operation.
+    with SecondsTimer('timer/name', fields={'foo': 'bar'},
+                      description="My timer",
+                      field_spec=[ts_mon.StringField('foo'),
+                                  ts_mon.BooleanField('success')]):
+      doSomething()
 
-  # Time the doSomething() call, with field values that are independent of the
-  # results of the operation.
-  with SecondsTimer('timer/name', fields={'foo': 'bar'},
-                    description="My timer",
-                    field_spec=[ts_mon.StringField('foo'),
-                                ts_mon.BooleanField('success')]):
-    doSomething()
+    # Time the doSomethingElse call, with field values that depend on the
+    # results of that operation. Note that it is important that a default value
+    # is specified for these fields, in case an exception is thrown by
+    # doSomethingElse()
+    f = {'success': False, 'foo': 'bar'}
+    with SecondsTimer('timer/name', fields=f, description="My timer",
+                      field_spec=[ts_mon.StringField('foo')]) as c:
+      doSomethingElse()
+      c['success'] = True
 
-  # Time the doSomethingElse call, with field values that depend on the results
-  # of that operation. Note that it is important that a default value is
-  # specified for these fields, in case an exception is thrown by
-  # doSomethingElse()
-  f = {'success': False, 'foo': 'bar'}
-  with SecondsTimer('timer/name', fields=f, description="My timer",
-                    field_spec=[ts_mon.StringField('foo')]) as c:
-    doSomethingElse()
-    c['success'] = True
-
-  # Incorrect Usage!
-  with SecondsTimer('timer/name', description="My timer") as c:
-    doSomething()
-    c['foo'] = bar # 'foo' is not a valid field, because no default
-                   # value for it was specified in the context constructor.
-                   # It will be silently ignored.
+    # Incorrect Usage!
+    with SecondsTimer('timer/name', description="My timer") as c:
+      doSomething()
+      c['foo'] = bar # 'foo' is not a valid field, because no default
+                     # value for it was specified in the context constructor.
+                     # It will be silently ignored.
 
   Args:
     name: The name of the metric to create
@@ -510,31 +509,30 @@ def SecondsInstanceTimer(name, fields=None, description=None,
   to provide flexibility in the future for higher accuracy.
 
   Examples:
+    # Time the doSomething() call, with field values that are independent of the
+    # results of the operation.
+    with SecondsInstanceTimer('timer/name', fields={'foo': 'bar'},
+                              description="My timer",
+                              field_spec=[ts_mon.StringField('foo'),
+                                          ts_mon.BooleanField('success')]):
+      doSomething()
 
-  # Time the doSomething() call, with field values that are independent of the
-  # results of the operation.
-  with SecondsInstanceTimer('timer/name', fields={'foo': 'bar'},
-                            description="My timer",
-                            field_spec=[ts_mon.StringField('foo'),
-                                        ts_mon.BooleanField('success')]):
-    doSomething()
+    # Time the doSomethingElse call, with field values that depend on the
+    # results of that operation. Note that it is important that a default value
+    # is specified for these fields, in case an exception is thrown by
+    # doSomethingElse()
+    f = {'success': False, 'foo': 'bar'}
+    with SecondsInstanceTimer('timer/name', fields=f, description="My timer",
+                              field_spec=[ts_mon.StringField('foo')]) as c:
+      doSomethingElse()
+      c['success'] = True
 
-  # Time the doSomethingElse call, with field values that depend on the results
-  # of that operation. Note that it is important that a default value is
-  # specified for these fields, in case an exception is thrown by
-  # doSomethingElse()
-  f = {'success': False, 'foo': 'bar'}
-  with SecondsInstanceTimer('timer/name', fields=f, description="My timer",
-                            field_spec=[ts_mon.StringField('foo')]) as c:
-    doSomethingElse()
-    c['success'] = True
-
-  # Incorrect Usage!
-  with SecondsInstanceTimer('timer/name', description="My timer") as c:
-    doSomething()
-    c['foo'] = bar # 'foo' is not a valid field, because no default
-                   # value for it was specified in the context constructor.
-                   # It will be silently ignored.
+    # Incorrect Usage!
+    with SecondsInstanceTimer('timer/name', description="My timer") as c:
+      doSomething()
+      c['foo'] = bar # 'foo' is not a valid field, because no default
+                     # value for it was specified in the context constructor.
+                     # It will be silently ignored.
 
   Args:
     name: The name of the metric to create

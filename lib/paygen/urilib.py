@@ -88,10 +88,10 @@ def ExtractProtocol(uri):
   """Take a URI and return the protocol it is using, if any.
 
   Examples:
-  'gs://some/path' ==> 'gs'
-  'file:///some/path' ==> 'file'
-  '/some/path' ==> None
-  '/cns/some/colossus/path' ==> None
+    'gs://some/path' ==> 'gs'
+    'file:///some/path' ==> 'file'
+    '/some/path' ==> None
+    '/cns/some/colossus/path' ==> None
 
   Args:
     uri: The URI to get protocol from.
@@ -129,10 +129,10 @@ def SplitURI(uri):
   """Get the protocol and path from a URI
 
   Examples:
-  'gs://some/path' ==> ('gs', 'some/path')
-  'file:///some/path' ==> ('file', '/some/path')
-  '/some/path' ==> (None, '/some/path')
-  '/cns/some/colossus/path' ==> (None, '/cns/some/colossus/path')
+    'gs://some/path' ==> ('gs', 'some/path')
+    'file:///some/path' ==> ('file', '/some/path')
+    '/some/path' ==> (None, '/some/path')
+    '/cns/some/colossus/path' ==> (None, '/cns/some/colossus/path')
 
   Args:
     uri: The uri to get protocol and path from.

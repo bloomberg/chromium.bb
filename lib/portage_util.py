@@ -1553,8 +1553,9 @@ def SplitEbuildPath(path):
   perform any check on ebuild name elements or their validity, merely splits
   a filename, absolute or relative, and returns the last 3 components.
 
-  Example: For /any/path/chromeos-base/power_manager/power_manager-9999.ebuild,
-  returns ('chromeos-base', 'power_manager', 'power_manager-9999').
+  Examples:
+    For /any/path/chromeos-base/power_manager/power_manager-9999.ebuild,
+    returns ('chromeos-base', 'power_manager', 'power_manager-9999').
 
   Args:
     path: Path to the ebuild.

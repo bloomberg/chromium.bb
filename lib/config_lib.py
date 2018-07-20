@@ -1380,7 +1380,7 @@ class SiteConfig(dict):
   def Add(self, name, template=None, *args, **kwargs):
     """Add a new BuildConfig to the SiteConfig.
 
-    Example usage:
+    Examples:
       # Creates default build named foo.
       site_config.Add('foo')
 

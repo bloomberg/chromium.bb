@@ -50,8 +50,7 @@ class DownloadCache(object):
   This classes uses locking to make this safe across processes, and
   threads.
 
-  Example usage:
-
+  Examples:
     # This will create the cache dir, and purge old contents.
     cache = DownloadCache('/tmp/my_cache')
 

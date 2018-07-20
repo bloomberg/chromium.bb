@@ -1447,9 +1447,9 @@ def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
   stopping descent on objects that either aren't iterable, or match
   isinstance(obj, terminate_on_kls).
 
-  Example:
-  >>> print list(iflatten_instance([1, 2, "as", ["4", 5]))
-  [1, 2, "as", "4", 5]
+  Examples:
+    >>> print list(iflatten_instance([1, 2, "as", ["4", 5]))
+    [1, 2, "as", "4", 5]
   """
   def descend_into(item):
     if isinstance(item, terminate_on_kls):
@@ -1815,7 +1815,7 @@ def Collection(classname, **kwargs):
   This is like collections.namedtuple, but mutable.  Also similar to the
   python 3.3 types.SimpleNamespace.
 
-  Example:
+  Examples:
     # Declare default values for this new class.
     Foo = cros_build_lib.Collection('Foo', a=0, b=10)
     # Create a new class but set b to 4.
@@ -1880,7 +1880,7 @@ TimedResults = Collection('TimedResults', start=None, finish=None, delta=None)
 def TimedSection():
   """Context manager to time how long a code block takes.
 
-  Example usage:
+  Examples:
     with cros_build_lib.TimedSection() as timer:
       DoWork()
     logging.info('DoWork took %s', timer.delta)
@@ -2227,23 +2227,24 @@ class _FdCapturer(object):
 class OutputCapturer(object):
   """Class for capturing stdout/stderr output.
 
-  Class is designed as a 'ContextManager'.  Example usage:
+  Class is designed as a 'ContextManager'.
 
-  with cros_build_lib.OutputCapturer() as output:
-    # Capturing of stdout/stderr automatically starts now.
-    # Do stuff that sends output to stdout/stderr.
-    # Capturing automatically stops at end of 'with' block.
+  Examples:
+    with cros_build_lib.OutputCapturer() as output:
+      # Capturing of stdout/stderr automatically starts now.
+      # Do stuff that sends output to stdout/stderr.
+      # Capturing automatically stops at end of 'with' block.
 
-  # stdout/stderr can be retrieved from the OutputCapturer object:
-  stdout = output.GetStdoutLines() # Or other access methods
+    # stdout/stderr can be retrieved from the OutputCapturer object:
+    stdout = output.GetStdoutLines() # Or other access methods
 
-  # Some Assert methods are only valid if capturing was used in test.
-  self.AssertOutputContainsError() # Or other related methods
+    # Some Assert methods are only valid if capturing was used in test.
+    self.AssertOutputContainsError() # Or other related methods
 
-  # OutputCapturer can also be used to capture output to specified files.
-  with self.OutputCapturer(stdout_path='/tmp/stdout.txt') as output:
-    # Do stuff.
-    # stdout will be captured to /tmp/stdout.txt.
+    # OutputCapturer can also be used to capture output to specified files.
+    with self.OutputCapturer(stdout_path='/tmp/stdout.txt') as output:
+      # Do stuff.
+      # stdout will be captured to /tmp/stdout.txt.
   """
 
   OPER_MSG_SPLIT_RE = re.compile(r'^\033\[1;.*?\033\[0m$|^[^\n]*$',

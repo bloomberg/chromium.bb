@@ -47,7 +47,7 @@ def SplitToChunks(input_iter, chunk_size):
   This function walks 1 entire chunk of |input_iter| at a time, but does not
   walk past that chunk until necessary.
 
-  Example usage
+  Examples:
     list(SplitToChunks([1, 2, 3, 4, 5], 3)) -> [[1, 2, 3], [4, 5]
 
   Args:
