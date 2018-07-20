@@ -55,6 +55,7 @@ std::string URLKeyedMetricsUIHTMLSource::GetSource() const {
 void URLKeyedMetricsUIHTMLSource::StartDataRequest(
     const std::string& path,
     const web::URLDataSourceIOS::GotDataCallback& callback) {
+  // TODO(crbug.com/843181): Use GetStructuredData() instead.
   std::string data =
       ukm::debug::UkmDebugDataExtractor::GetHTMLData(GetUkmService());
   callback.Run(base::RefCountedString::TakeString(&data));

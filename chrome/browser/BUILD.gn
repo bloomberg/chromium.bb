@@ -1801,7 +1801,6 @@ jumbo_split_static_library("browser") {
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/ukm:observers",
-    "//components/ukm/content/debug_page",
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",
