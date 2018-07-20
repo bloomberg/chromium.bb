@@ -248,9 +248,6 @@ bool StartupMaintenanceSync(
     const base::FilePath& temporary_archives_dir,
     const base::FilePath& private_archives_dir,
     sql::Connection* db) {
-  if (!db)
-    return false;
-
   // Clear temporary pages that are in legacy directory, which is also the
   // directory that serves as the 'private' directory.
   SyncOperationResult result = ClearLegacyPagesInPrivateDirSync(
@@ -304,7 +301,8 @@ void StartupMaintenanceTask::Run() {
                      archive_manager_->GetTemporaryArchivesDir(),
                      archive_manager_->GetPrivateArchivesDir()),
       base::BindOnce(&StartupMaintenanceTask::OnStartupMaintenanceDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void StartupMaintenanceTask::OnStartupMaintenanceDone(bool result) {

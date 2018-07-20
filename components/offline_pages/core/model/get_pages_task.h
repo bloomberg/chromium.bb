@@ -29,7 +29,7 @@ class GetPagesTask : public Task {
     ReadResult(const ReadResult& other);
     ~ReadResult();
 
-    bool success;
+    bool success = false;
     std::vector<OfflinePageItem> pages;
   };
 

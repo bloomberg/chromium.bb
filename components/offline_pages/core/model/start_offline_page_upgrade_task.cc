@@ -21,9 +21,6 @@ StartUpgradeResult StartOfflinePageUpgradeSync(
     int64_t offline_id,
     const base::FilePath& target_directory,
     sql::Connection* db) {
-  if (!db)
-    return StartUpgradeResult(StartUpgradeStatus::DB_ERROR);
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return StartUpgradeResult(StartUpgradeStatus::DB_ERROR);
@@ -93,7 +90,8 @@ void StartOfflinePageUpgradeTask::Run() {
       base::BindOnce(&StartOfflinePageUpgradeSync, offline_id_,
                      target_directory_),
       base::BindOnce(&StartOfflinePageUpgradeTask::InformUpgradeAttemptDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      StartUpgradeResult(StartUpgradeStatus::DB_ERROR));
 }
 
 void StartOfflinePageUpgradeTask::InformUpgradeAttemptDone(

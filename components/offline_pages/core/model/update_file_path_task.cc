@@ -20,9 +20,6 @@ namespace {
 bool UpdateFilePathSync(const base::FilePath& new_file_path,
                         int64_t offline_id,
                         sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -66,7 +63,8 @@ UpdateFilePathTask::~UpdateFilePathTask(){};
 void UpdateFilePathTask::Run() {
   store_->Execute(base::BindOnce(&UpdateFilePathSync, file_path_, offline_id_),
                   base::BindOnce(&UpdateFilePathTask::OnUpdateFilePathDone,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  false);
 }
 
 void UpdateFilePathTask::OnUpdateFilePathDone(bool result) {

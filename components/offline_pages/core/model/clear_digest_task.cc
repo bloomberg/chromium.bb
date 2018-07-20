@@ -14,9 +14,6 @@ namespace offline_pages {
 namespace {
 
 bool ClearDigestSync(int64_t offline_id, sql::Connection* db) {
-  if (!db)
-    return false;
-
   static const char kSql[] =
       "UPDATE OR IGNORE offlinepages_v1"
       " SET digest = '' "
@@ -39,7 +36,8 @@ ClearDigestTask::~ClearDigestTask(){};
 void ClearDigestTask::Run() {
   store_->Execute(base::BindOnce(&ClearDigestSync, offline_id_),
                   base::BindOnce(&ClearDigestTask::OnClearDigestDone,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  false);
 }
 
 void ClearDigestTask::OnClearDigestDone(bool result) {

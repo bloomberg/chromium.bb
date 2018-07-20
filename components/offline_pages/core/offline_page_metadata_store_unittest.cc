@@ -519,9 +519,6 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
 std::vector<OfflinePageItem> GetOfflinePagesSync(sql::Connection* db) {
   std::vector<OfflinePageItem> result;
 
-  if (!db)
-    return result;
-
   static const char kSql[] = "SELECT * FROM " OFFLINE_PAGES_TABLE_V1;
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
@@ -659,14 +656,15 @@ class OfflinePageMetadataStoreTest : public testing::Test {
 
   template <typename T>
   T ExecuteSync(OfflinePageMetadataStore* store,
-                base::OnceCallback<T(sql::Connection*)> run_callback) {
+                base::OnceCallback<T(sql::Connection*)> run_callback,
+                T default_value) {
     bool called = false;
     T result;
     auto result_callback = base::BindLambdaForTesting([&](T async_result) {
       result = std::move(async_result);
       called = true;
     });
-    store->Execute<T>(std::move(run_callback), result_callback);
+    store->Execute<T>(std::move(run_callback), result_callback, default_value);
     PumpLoop();
     EXPECT_TRUE(called);
     return result;
@@ -677,21 +675,18 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       base::OnceCallback<void(std::vector<OfflinePageItem>)> callback) {
     auto run_callback = base::BindOnce(&GetOfflinePagesSync);
     store->Execute<std::vector<OfflinePageItem>>(std::move(run_callback),
-                                                 std::move(callback));
+                                                 std::move(callback), {});
   }
 
   std::vector<OfflinePageItem> GetOfflinePages(
       OfflinePageMetadataStore* store) {
     return ExecuteSync<std::vector<OfflinePageItem>>(
-        store, base::BindOnce(&GetOfflinePagesSync));
+        store, base::BindOnce(&GetOfflinePagesSync), {});
   }
 
   ItemActionStatus AddOfflinePage(OfflinePageMetadataStore* store,
                                   const OfflinePageItem& item) {
     auto result_callback = base::BindLambdaForTesting([&](sql::Connection* db) {
-      if (!db)
-        return ItemActionStatus::STORE_ERROR;
-
       // Using 'INSERT OR FAIL' or 'INSERT OR ABORT' in the query below
       // causes debug builds to DLOG.
       static const char kSql[] =
@@ -730,7 +725,8 @@ class OfflinePageMetadataStoreTest : public testing::Test {
         return ItemActionStatus::ALREADY_EXISTS;
       return ItemActionStatus::SUCCESS;
     });
-    return ExecuteSync<ItemActionStatus>(store, result_callback);
+    return ExecuteSync<ItemActionStatus>(store, result_callback,
+                                         ItemActionStatus::SUCCESS);
   }
 
   std::vector<OfflinePageThumbnail> GetThumbnails(
@@ -752,7 +748,8 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       EXPECT_TRUE(statement.Succeeded());
       return thumbnails;
     });
-    return ExecuteSync<std::vector<OfflinePageThumbnail>>(store, run_callback);
+    return ExecuteSync<std::vector<OfflinePageThumbnail>>(store, run_callback,
+                                                          {});
   }
 
   void AddThumbnail(OfflinePageMetadataStore* store,
@@ -770,7 +767,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       EXPECT_TRUE(statement.Run());
       return thumbnails;
     });
-    ExecuteSync<std::vector<OfflinePageThumbnail>>(store, run_callback);
+    ExecuteSync<std::vector<OfflinePageThumbnail>>(store, run_callback, {});
   }
 
  protected:
