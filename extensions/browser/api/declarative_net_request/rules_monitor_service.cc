@@ -78,6 +78,16 @@ bool RulesMonitorService::HasRegisteredRuleset(
          extensions_with_rulesets_.end();
 }
 
+void RulesMonitorService::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void RulesMonitorService::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 // Helper to pass information related to the ruleset being loaded.
 struct RulesMonitorService::LoadRulesetInfo {
   LoadRulesetInfo(scoped_refptr<const Extension> extension,
@@ -328,6 +338,8 @@ void RulesMonitorService::OnRulesetLoaded(
     return;
 
   extensions_with_rulesets_.insert(info.extension->id());
+  for (auto& observer : observers_)
+    observer.OnRulesetLoaded();
 
   base::OnceClosure load_ruleset_on_io = base::BindOnce(
       &LoadRulesetOnIOThread, info.extension->id(), std::move(matcher),

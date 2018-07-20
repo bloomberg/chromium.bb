@@ -158,9 +158,25 @@ bool RulesRegistryService::HasAnyRegisteredRules() const {
                      });
 }
 
+void RulesRegistryService::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void RulesRegistryService::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 void RulesRegistryService::SimulateExtensionUninstalled(
     const Extension* extension) {
   NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled, extension);
+}
+
+void RulesRegistryService::OnUpdateRules() {
+  // Forward rule updates to observers.
+  for (auto& observer : observers_)
+    observer.OnUpdateRules();
 }
 
 scoped_refptr<RulesRegistry>
@@ -179,6 +195,7 @@ RulesRegistryService::RegisterWebRequestRulesRegistry(
       base::MakeRefCounted<WebRequestRulesRegistry>(
           browser_context_, web_request_cache_delegate.get(),
           rules_registry_id);
+  web_request_cache_delegate->AddObserver(this);
   cache_delegates_.push_back(std::move(web_request_cache_delegate));
   RegisterRulesRegistry(web_request_rules_registry);
   content::BrowserThread::PostTask(
@@ -217,6 +234,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered() {
       ExtensionsAPIClient::Get()->CreateContentRulesRegistry(
           browser_context_, content_rules_cache_delegate.get());
   if (content_rules_registry) {
+    content_rules_cache_delegate->AddObserver(this);
     cache_delegates_.push_back(std::move(content_rules_cache_delegate));
     RegisterRulesRegistry(content_rules_registry);
     content_rules_registry_ = content_rules_registry.get();

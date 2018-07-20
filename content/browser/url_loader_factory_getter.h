@@ -107,8 +107,15 @@ class URLLoaderFactoryGetter
   // The pointer shouldn't be cached.
   network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
-  // Call |network_factory_.FlushForTesting()|. For test use only.
-  void FlushNetworkInterfaceForTesting();
+  // Called when there is a connection error on |network_factory_|.
+  void HandleURLLoaderFactoryConnectionError();
+
+  // Called either during initialization or when an error occurs.
+  void Reinitialize();
+
+  // Call |network_factory_.FlushForTesting()|. For test use only. When the
+  // flush is complete, |callback| will be called.
+  void FlushNetworkInterfaceForTesting(base::OnceClosure callback);
 
   // Bound with appropriate URLLoaderFactories at HandleFactoryRequests().
   network::mojom::URLLoaderFactoryRequest pending_network_factory_request_;
@@ -121,6 +128,8 @@ class URLLoaderFactoryGetter
   // only be accessed on UI thread. Must be cleared by |StoragePartitionImpl|
   // when it's going away.
   StoragePartitionImpl* partition_ = nullptr;
+
+  base::WeakPtrFactory<URLLoaderFactoryGetter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryGetter);
 };

@@ -111,6 +111,7 @@ class TestNetworkContext : public mojom::NetworkContext {
                          const GURL& url,
                          int32_t load_flags,
                          bool privacy_mode_enabled) override {}
+  void ResetURLLoaderFactories() override {}
 };
 
 }  // namespace network

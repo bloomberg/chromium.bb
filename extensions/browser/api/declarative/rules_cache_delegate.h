@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,6 +28,15 @@ class RulesRegistry;
 // registering rules on initialization will be logged with UMA.
 class RulesCacheDelegate {
  public:
+  class Observer {
+   public:
+    // Called when |UpdateRules| is called on the |RulesCacheDelegate|.
+    virtual void OnUpdateRules() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   // Determines the type of a cache, indicating whether or not its rules are
   // persisted to storage.
   enum class Type {
@@ -59,6 +69,10 @@ class RulesCacheDelegate {
 
   // Indicates whether or not this registry has any registered rules cached.
   bool HasRules() const;
+
+  // Adds or removes an observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   base::WeakPtr<RulesCacheDelegate> GetWeakPtr() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -126,6 +140,8 @@ class RulesCacheDelegate {
 
   // We notified the RulesRegistry that the rules are loaded.
   bool notified_registry_;
+
+  base::ObserverList<Observer> observers_;
 
   // Use this factory to generate weak pointers bound to the UI thread.
   base::WeakPtrFactory<RulesCacheDelegate> weak_ptr_factory_;
