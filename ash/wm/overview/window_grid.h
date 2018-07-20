@@ -128,7 +128,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // WindowGrid.
   void OnWindowDragStarted(aura::Window* dragged_window);
   void OnWindowDragContinued(aura::Window* dragged_window,
-                             const gfx::Point& location_in_screen);
+                             const gfx::Point& location_in_screen,
+                             IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::Point& location_in_screen);
 

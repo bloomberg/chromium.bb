@@ -138,7 +138,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // TODO(xdai): Currently it doesn't work for multi-display scenario.
   void OnWindowDragStarted(aura::Window* dragged_window);
   void OnWindowDragContinued(aura::Window* dragged_window,
-                             const gfx::Point& location_in_screen);
+                             const gfx::Point& location_in_screen,
+                             IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::Point& location_in_screen);
 

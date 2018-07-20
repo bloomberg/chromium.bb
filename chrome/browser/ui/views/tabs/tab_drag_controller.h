@@ -221,6 +221,10 @@ class TabDragController : public views::WidgetObserver,
 
   typedef std::vector<TabDragData> DragData;
 
+#if defined(OS_CHROMEOS)
+  class DeferredTargetTabstripObserver;
+#endif
+
   // Sets |drag_data| from |tab|. This also registers for necessary
   // notifications and resets the delegate of the WebContents.
   void InitTabDragData(Tab* tab, TabDragData* drag_data);
@@ -500,10 +504,14 @@ class TabDragController : public views::WidgetObserver,
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
 
-  // The target TabStrip to attach to after the drag ends. It's only possible
-  // to happen in Chrome OS tablet mode, if the dragged tabs are dragged over
-  // an overview window, we should wait until the drag ends to attach it.
-  TabStrip* deferred_target_tabstrip_ = nullptr;
+#if defined(OS_CHROMEOS)
+  // Observe the target TabStrip to attach to after the drag ends. It's only
+  // possible to happen in Chrome OS tablet mode, if the dragged tabs are
+  // dragged over an overview window, we should wait until the drag ends to
+  // attach it.
+  std::unique_ptr<DeferredTargetTabstripObserver>
+      deferred_target_tabstrip_observer_;
+#endif
 
   // Whether capture can be released during the drag. When false, capture should
   // not be released when transferring capture between widgets and when starting

@@ -2883,6 +2883,77 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(3u, browser_list->size());
 }
 
+namespace {
+
+void DeferredTargetTabStripTestStep2(DetachToBrowserTabDragControllerTest* test,
+                                     TabStrip* not_attached_tab_strip,
+                                     TabStrip* target_tab_strip) {
+  ASSERT_FALSE(not_attached_tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(target_tab_strip->IsDragSessionActive());
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // And there should be three browser windows, incluing the newly created one
+  // for the dragged tab.
+  EXPECT_EQ(3u, test->browser_list->size());
+
+  // Put the window that accociated with |target_tab_strip| in overview.
+  target_tab_strip->GetWidget()->GetNativeWindow()->SetProperty(
+      ash::kIsShowingInOverviewKey, true);
+
+  // Drag to target_tab_strip.
+  gfx::Point target_point(target_tab_strip->width() / 2,
+                          target_tab_strip->height() / 2);
+  views::View::ConvertPointToScreen(target_tab_strip, &target_point);
+  ASSERT_TRUE(test->DragInputTo(target_point));
+
+  // At this point, |target_tab_strip| should be the deferred target tabstip.
+  // Theoratically the dragged tabstrip will merge into |target_tab_strip| after
+  // the drag ends.
+  EXPECT_TRUE(target_tab_strip->GetWidget()->GetNativeWindow()->GetProperty(
+      ash::kIsDeferredTabDraggingTargetWindowKey));
+
+  // Now clear the property.
+  target_tab_strip->GetWidget()->GetNativeWindow()->ClearProperty(
+      ash::kIsDeferredTabDraggingTargetWindowKey);
+
+  if (test->input_source() == INPUT_SOURCE_TOUCH)
+    ASSERT_TRUE(test->ReleaseInput());
+  else
+    ASSERT_TRUE(test->ReleaseMouseAsync());
+}
+
+}  // namespace
+
+// Test that if a tabstrip is a deferred target tabstrip, and its corresponding
+// window key is cleared to remove itself as the deferred target tabstrip, the
+// dragged tabstrip should not attach into it after the drag ends.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DeferredTargetTabStripTest) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::BindOnce(&DeferredTargetTabStripTestStep2, this, tab_strip,
+                     tab_strip2)));
+  QuitWhenNotDragging();
+
+  // Now the dragged tab should not be attached to the target tabstrip after
+  // the drag ends.
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(3u, browser_list->size());
+}
+
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
