@@ -90,6 +90,11 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
     "AutofillRestrictUnownedFieldsToFormlessCheckout",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, a sign in promo will show up right after the user
+// saves a card locally. This also introduces a "Manage Cards" bubble.
+const base::Feature kAutofillSaveCardSignInAfterLocalSave{
+    "AutofillSaveCardSignInAfterLocalSave", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether experiment ids should be sent through
 // Google Payments RPCs or not.
 const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
