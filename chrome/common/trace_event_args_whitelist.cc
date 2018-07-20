@@ -50,6 +50,7 @@ const char* kMetadataWhitelist[] = {"chrome-library-name",
                                     "physical-memory",
                                     "product-version",
                                     "scenario_name",
+                                    "trace-config",
                                     "user-agent"};
 
 }  // namespace
