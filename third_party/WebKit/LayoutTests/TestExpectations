@@ -2979,7 +2979,6 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-property-032.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-025.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-013.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/show-method-postmessage-manual.https.html [ Skip ]
-crbug.com/626703 external/wpt/payment-request/payment-request-show-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-request-canmakepayment-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-019.html [ Failure ]
 crbug.com/626703 external/wpt/payment-request/change-shipping-option-select-last-manual.https.html [ Skip ]
