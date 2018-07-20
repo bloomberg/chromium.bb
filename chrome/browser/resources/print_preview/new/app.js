@@ -137,6 +137,11 @@ Polymer({
     },
   },
 
+  listeners: {
+    'cr-dialog-open': 'onCrDialogOpen_',
+    'close': 'onCrDialogClose_',
+  },
+
   /** @private {?WebUIListenerTracker} */
   listenerTracker_: null,
 
@@ -160,6 +165,9 @@ Polymer({
 
   /** @private {boolean} */
   isInKioskAutoPrintMode_: false,
+
+  /** @private {!Array<!CrDialogElement>} */
+  openDialogs_: [],
 
   /** @override */
   attached: function() {
@@ -216,8 +224,22 @@ Polymer({
    * @private
    */
   onKeyDown_: function(e) {
-    // Escape key closes the dialog.
+    // Escape key closes the topmost dialog that is currently open within
+    // Print Preview. If no such dialog exists, then the Print Preview dialog
+    // itself is closed.
     if (e.code == 'Escape' && !hasKeyModifiers(e)) {
+      // Don't close the Print Preview dialog if there is a child dialog open.
+      const destinations = this.$.destinationSettings;
+      const advanced = this.$.advancedSettings;
+      if (this.openDialogs_.length != 0) {
+        // Manually cancel the dialog, since we call preventDefault() to prevent
+        // views from closing the Print Preview dialog.
+        const dialogToClose = this.openDialogs_[this.openDialogs_.length - 1];
+        dialogToClose.cancel();
+        e.preventDefault();
+        return;
+      }
+
       // On non-mac with toolkit-views, ESC key is handled by C++-side instead
       // of JS-side.
       if (cr.isMac) {
@@ -260,6 +282,29 @@ Polymer({
 
     // Pass certain directional keyboard events to the PDF viewer.
     this.$.previewArea.handleDirectionalKeyEvent(e);
+  },
+
+  /**
+   * @param {!Event} e The cr-dialog-open event.
+   * @private
+   */
+  onCrDialogOpen_: function(e) {
+    this.openDialogs_.push(
+        /** @type {!CrDialogElement} */ (e.composedPath()[0]));
+  },
+
+  /**
+   * @param {!Event} e The close event.
+   * @private
+   */
+  onCrDialogClose_: function(e) {
+    // Note: due to event re-firing in cr_dialog.js, this event will always
+    // appear to be coming from the outermost child dialog.
+    // TODO (rbpotter): Fix event re-firing so that the event comes from the
+    // dialog that has been closed, and add an assertion that the removed
+    // dialog matches e.composedPath()[0].
+    if (e.composedPath()[0].nodeName == 'CR-DIALOG')
+      this.openDialogs_.pop();
   },
 
   /**

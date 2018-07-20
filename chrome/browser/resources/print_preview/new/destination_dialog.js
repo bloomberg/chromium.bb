@@ -105,6 +105,18 @@ Polymer({
         this.onCloudPrintPromoDismissed_.bind(this));
   },
 
+  /**
+   * @param {!KeyboardEvent} e Event containing the key
+   * @private
+   */
+  onKeydown_: function(e) {
+    e.stopPropagation();
+    if (e.key == 'Escape' && !this.$.searchBox.getSearchInput().value.trim()) {
+      this.$.dialog.cancel();
+      e.preventDefault();
+    }
+  },
+
   /** @private */
   onDestinationStoreSet_: function() {
     assert(this.destinations_.length == 0);
