@@ -780,7 +780,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   AV1_COMMON *const cm = &pbi->common;
   int frame_decoding_finished = 0;
   int is_first_tg_obu_received = 1;
-  uint32_t frame_header_size = 0;
+  int frame_header_size = 0;
   int seq_header_received = 0;
   size_t seq_header_size = 0;
   ObuHeader obu_header;
@@ -870,44 +870,17 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_FRAME_HEADER:
       case OBU_REDUNDANT_FRAME_HEADER:
       case OBU_FRAME:
-        if ((obu_header.type == OBU_FRAME_HEADER && pbi->seen_frame_header) ||
-            (obu_header.type == OBU_REDUNDANT_FRAME_HEADER &&
-             !pbi->seen_frame_header)) {
-          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-          return -1;
-        }
         // Only decode first frame header received
         if (!pbi->seen_frame_header ||
             (cm->large_scale_tile && !pbi->camera_frame_header_ready)) {
           frame_header_size = read_frame_header_obu(
               pbi, &rb, data, p_data_end, obu_header.type != OBU_FRAME);
-          if (frame_header_size > pbi->frame_header_capacity) {
-            uint8_t *frame_header = (uint8_t *)aom_malloc(frame_header_size);
-            if (!frame_header) {
-              cm->error.error_code = AOM_CODEC_MEM_ERROR;
-              return -1;
-            }
-            aom_free(pbi->frame_header);
-            pbi->frame_header = frame_header;
-            pbi->frame_header_capacity = frame_header_size;
-          }
-          memcpy(pbi->frame_header, data, frame_header_size);
-          pbi->frame_header_size = frame_header_size;
           pbi->seen_frame_header = 1;
           if (!pbi->ext_tile_debug && cm->large_scale_tile)
             pbi->camera_frame_header_ready = 1;
-        } else {
-          // The frame_header_obu must be identical to the original
-          // frame_header_obu.
-          if (frame_header_size > payload_size ||
-              memcmp(pbi->frame_header, data, frame_header_size) != 0) {
-            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-            return -1;
-          }
-          assert(rb.bit_offset == 0);
-          rb.bit_offset = 8 * frame_header_size;
         }
         decoded_payload_size = frame_header_size;
+        pbi->frame_header_size = (size_t)frame_header_size;
 
         if (cm->show_existing_frame) {
           frame_decoding_finished = 1;
