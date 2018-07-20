@@ -451,6 +451,8 @@ bool DownloadManagerImpl::InterceptDownload(
       params.redirect_chain = url_chain;
       web_contents->GetController().LoadURLWithParams(params);
     }
+    if (info.request_handle)
+      info.request_handle->CancelRequest(false);
     return true;
   }
   if (!delegate_ ||
