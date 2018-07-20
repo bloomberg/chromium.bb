@@ -1831,7 +1831,6 @@ jumbo_split_static_library("browser") {
     "//content/public/common:buildflags",
     "//content/public/common:feature_h264_with_openh264_ffmpeg",
     "//content/public/common:service_names",
-    "//courgette:courgette_lib",
     "//crypto",
     "//crypto:platform",
     "//device/base",
@@ -2948,6 +2947,7 @@ jumbo_split_static_library("browser") {
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
+      "//courgette:courgette_lib",
     ]
 
     if (is_posix || is_fuchsia) {
