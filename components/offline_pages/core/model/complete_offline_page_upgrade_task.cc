@@ -24,9 +24,6 @@ CompleteUpgradeStatus CompleteOfflinePageUpgradeSync(
     const std::string& digest,
     int64_t file_size,
     sql::Connection* db) {
-  if (!db)
-    return CompleteUpgradeStatus::DB_ERROR;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return CompleteUpgradeStatus::DB_ERROR;
@@ -116,7 +113,8 @@ void CompleteOfflinePageUpgradeTask::Run() {
                      temporary_file_path_, target_file_path_, digest_,
                      file_size_),
       base::BindOnce(&CompleteOfflinePageUpgradeTask::InformUpgradeAttemptDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      CompleteUpgradeStatus::DB_ERROR);
 }
 
 void CompleteOfflinePageUpgradeTask::InformUpgradeAttemptDone(

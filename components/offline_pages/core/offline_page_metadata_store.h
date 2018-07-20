@@ -119,18 +119,20 @@ class OfflinePageMetadataStore {
   // its result back to calling thread through |result_callback|.
   // Calling |Execute| when store is NOT_LOADED will cause the store
   // initialization to start.
-  // Store state needs to be LOADED for test task to run, or FAILURE, in which
-  // case the |db| pointer passed to |run_callback| will be null and such case
-  // should be gracefully handled.
+  // Store state needs to be LOADED for |run_callback| to run.
+  // If initialization fails, |result_callback| is invoked with |default_value|.
   template <typename T>
-  void Execute(RunCallback<T> run_callback, ResultCallback<T> result_callback) {
+  void Execute(RunCallback<T> run_callback,
+               ResultCallback<T> result_callback,
+               T default_value) {
     // TODO(fgorski): Add a proper state indicating in progress initialization
     // and CHECK that state.
 
     if (state_ == StoreState::NOT_LOADED) {
       InitializeInternal(base::BindOnce(
           &OfflinePageMetadataStore::Execute<T>, weak_ptr_factory_.GetWeakPtr(),
-          std::move(run_callback), std::move(result_callback)));
+          std::move(run_callback), std::move(result_callback),
+          std::move(default_value)));
       return;
     }
 
@@ -142,7 +144,8 @@ class OfflinePageMetadataStore {
     if (state_ == StoreState::INITIALIZING) {
       pending_commands_.push_back(base::BindOnce(
           &OfflinePageMetadataStore::Execute<T>, weak_ptr_factory_.GetWeakPtr(),
-          std::move(run_callback), std::move(result_callback)));
+          std::move(run_callback), std::move(result_callback),
+          std::move(default_value)));
       TRACE_EVENT_ASYNC_END1("offline_pages", "Metadata Store: task execution",
                              this, "postponed", true);
       return;
@@ -152,7 +155,12 @@ class OfflinePageMetadataStore {
     closing_weak_ptr_factory_.InvalidateWeakPtrs();
 
     sql::Connection* db = state_ == StoreState::LOADED ? db_.get() : nullptr;
-
+    if (!db) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(result_callback), std::move(default_value)));
+      return;
+    }
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
         base::BindOnce(std::move(run_callback), db),

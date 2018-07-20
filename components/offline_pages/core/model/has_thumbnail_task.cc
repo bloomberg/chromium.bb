@@ -14,8 +14,6 @@ namespace offline_pages {
 namespace {
 
 bool ThumbnailExistsSync(int64_t offline_id, sql::Connection* db) {
-  if (!db)
-    return false;
   static const char kSql[] =
       "SELECT 1 FROM page_thumbnails WHERE offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -38,7 +36,8 @@ HasThumbnailTask::~HasThumbnailTask() = default;
 void HasThumbnailTask::Run() {
   store_->Execute(base::BindOnce(ThumbnailExistsSync, std::move(offline_id_)),
                   base::BindOnce(&HasThumbnailTask::OnThumbnailExists,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  false);
 }
 
 void HasThumbnailTask::OnThumbnailExists(bool exists) {

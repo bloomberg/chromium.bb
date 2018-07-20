@@ -80,7 +80,8 @@ int64_t OfflinePageMetadataStoreTestUtil::GetPageCount() {
       base::BindOnce(&GetPageCountSync),
       base::BindOnce(
           [](int64_t* out_count, int64_t cb_count) { *out_count = cb_count; },
-          &count));
+          &count),
+      int64_t());
   task_runner_->RunUntilIdle();
   return count;
 }

@@ -120,9 +120,6 @@ PersistentPageConsistencyCheckSync(
     base::Time check_time,
     sql::Connection* db) {
   std::vector<int64_t> download_ids_of_deleted_pages;
-  if (!db)
-    return {SyncOperationResult::INVALID_DB_CONNECTION,
-            download_ids_of_deleted_pages};
 
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -229,7 +226,8 @@ void PersistentPageConsistencyCheckTask::Run() {
                                  persistent_namespaces, check_time_),
                   base::BindOnce(&PersistentPageConsistencyCheckTask::
                                      OnPersistentPageConsistencyCheckDone,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  CheckResult{SyncOperationResult::INVALID_DB_CONNECTION, {}});
 }
 
 void PersistentPageConsistencyCheckTask::OnPersistentPageConsistencyCheckDone(

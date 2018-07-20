@@ -52,9 +52,6 @@ void ReportAccessHistogram(int64_t offline_id,
 bool MarkPageAccessedSync(const base::Time& access_time,
                           int64_t offline_id,
                           sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -92,7 +89,8 @@ void MarkPageAccessedTask::Run() {
   store_->Execute(
       base::BindOnce(&MarkPageAccessedSync, access_time_, offline_id_),
       base::BindOnce(&MarkPageAccessedTask::OnMarkPageAccessedDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void MarkPageAccessedTask::OnMarkPageAccessedDone(bool result) {

@@ -171,8 +171,6 @@ bool GetDeletedPageInfoWrapperByOfflineIdSync(
 DeletePageTaskResult DeletePagesByOfflineIdsSync(
     const std::vector<int64_t>& offline_ids,
     sql::Connection* db) {
-  if (!db)
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
   if (offline_ids.empty())
     return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
 
@@ -220,8 +218,6 @@ DeletePageTaskResult DeletePagesByClientIdsSync(
     sql::Connection* db) {
   std::vector<DeletedPageInfoWrapper> infos;
 
-  if (!db)
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
   if (client_ids.empty())
     return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
 
@@ -272,8 +268,6 @@ DeletePageTaskResult DeletePagesByClientIdsAndOriginSync(
     sql::Connection* db) {
   std::vector<DeletedPageInfoWrapper> infos;
 
-  if (!db)
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
   if (client_ids.empty())
     return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
 
@@ -330,9 +324,6 @@ DeletePageTaskResult DeleteCachedPagesByUrlPredicateSync(
     const std::vector<std::string>& namespaces,
     const UrlPredicate& predicate,
     sql::Connection* db) {
-  if (!db)
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-
   // If you create a transaction but dont Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
   sql::Transaction transaction(db);
@@ -387,9 +378,6 @@ DeletePageTaskResult DeletePagesForPageLimit(const GURL& url,
                                              std::string name_space,
                                              size_t limit,
                                              sql::Connection* db) {
-  if (!db)
-    return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-
   // If the namespace can have unlimited pages per url, just return success.
   if (limit == kUnlimitedPages)
     return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
@@ -502,7 +490,8 @@ DeletePageTask::~DeletePageTask() {}
 void DeletePageTask::Run() {
   store_->Execute(std::move(func_),
                   base::BindOnce(&DeletePageTask::OnDeletePageDone,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {}));
 }
 
 void DeletePageTask::OnDeletePageDone(DeletePageTaskResult result) {

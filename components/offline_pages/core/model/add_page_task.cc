@@ -37,9 +37,6 @@ AddPageResult ItemActionStatusToAddPageResult(ItemActionStatus status) {
 
 ItemActionStatus AddOfflinePageSync(const OfflinePageItem& item,
                                     sql::Connection* db) {
-  if (!db)
-    return ItemActionStatus::STORE_ERROR;
-
   static const char kSql[] =
       "INSERT OR IGNORE INTO offlinepages_v1"
       " (offline_id, online_url, client_namespace, client_id, file_path,"
@@ -95,7 +92,8 @@ void AddPageTask::Run() {
   }
   store_->Execute(base::BindOnce(&AddOfflinePageSync, offline_page_),
                   base::BindOnce(&AddPageTask::OnAddPageDone,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  ItemActionStatus::STORE_ERROR);
 }
 
 void AddPageTask::OnAddPageDone(ItemActionStatus status) {
