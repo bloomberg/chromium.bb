@@ -287,6 +287,13 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
         self.assertRaises(AssertionError, self.AssertDeepCopy, x,
                           copy_x, copy.copy(x))
 
+  def testPickle(self):
+    bc1 = MockBuildConfig()
+    bc2 = cPickle.loads(cPickle.dumps(bc1))
+
+    self.assertEquals(bc1.boards, bc2.boards)
+    self.assertEquals(bc1.name, bc2.name)
+
 
 class SiteParametersClassTest(cros_test_lib.TestCase):
   """SiteParameters tests."""

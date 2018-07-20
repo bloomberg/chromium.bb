@@ -70,7 +70,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the HWTest stage."""
 
-  BOT_ID = 'x86-mario-release'
+  eve = 'eve-release'
   VERSION = 'R36-5760.0.0'
   RELEASE_TAG = ''
 
@@ -191,7 +191,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testHandleTestWarning(self):
     """Tests that we pass the build on test warning."""
     # CQ passes.
-    self._Prepare('x86-alex-paladin')
+    self._Prepare('eve-paladin')
     self._RunHWTestSuite(warns=True, cmd_fail_mode='test_warn')
 
     # PFQ passes.
@@ -199,13 +199,13 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._RunHWTestSuite(warns=True, cmd_fail_mode='test_warn')
 
     # Canary passes.
-    self._Prepare('x86-alex-release')
+    self._Prepare('eve-release')
     self._RunHWTestSuite(warns=True, cmd_fail_mode='test_warn')
 
   def testHandleLabFail(self):
     """Tests that we handle lab failures correctly."""
     # CQ fails.
-    self._Prepare('x86-alex-paladin')
+    self._Prepare('eve-paladin')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='lab_fail')
 
     # PFQ fails.
@@ -213,7 +213,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._RunHWTestSuite(fails=True, cmd_fail_mode='lab_fail')
 
     # Canary fails.
-    self._Prepare('x86-alex-release')
+    self._Prepare('eve-release')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='lab_fail')
 
   def testWithSuiteWithFatalFailure(self):
@@ -222,17 +222,17 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testWithSuiteWithFatalFailureWarnFlag(self):
     """Tests that we don't fail if HWTestConfig warn_only is True."""
-    self._Prepare('x86-alex-release', warn_only=True)
+    self._Prepare('eve-release', warn_only=True)
     self._RunHWTestSuite(warns=True, cmd_fail_mode='test_fail')
 
   def testHandleSuiteTimeout(self):
     """Tests that we handle suite timeout correctly ."""
     # Canary fails.
-    self._Prepare('x86-alex-release')
+    self._Prepare('eve-release')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='suite_timeout')
 
     # CQ fails.
-    self._Prepare('x86-alex-paladin')
+    self._Prepare('eve-paladin')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='suite_timeout')
 
     # PFQ fails.
@@ -242,11 +242,11 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testHandleBoardNotAvailable(self):
     """Tests that we handle board not available correctly."""
     # Canary passes.
-    self._Prepare('x86-alex-release')
+    self._Prepare('eve-release')
     self._RunHWTestSuite(warns=True, cmd_fail_mode='board_not_available')
 
     # CQ fails.
-    self._Prepare('x86-alex-paladin')
+    self._Prepare('eve-paladin')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='board_not_available')
 
     # PFQ fails.
@@ -256,11 +256,11 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testHandleTimeout(self):
     """Tests that we handle timeout exceptions correctly."""
     # Canary fails.
-    self._Prepare('x86-alex-release')
+    self._Prepare('eve-release')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='timeout')
 
     # CQ fails.
-    self._Prepare('x86-alex-paladin')
+    self._Prepare('eve-paladin')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='timeout')
 
     # PFQ fails.
@@ -348,7 +348,7 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                          cbuildbot_unittest.SimpleBuilderTestCase):
   """Test image test stage."""
 
-  BOT_ID = 'x86-mario-release'
+  BOT_ID = 'eve-release'
   RELEASE_TAG = 'ToT.0.0'
 
   def setUp(self):

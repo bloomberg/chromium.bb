@@ -78,7 +78,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testNoPushImagesForRemoteTrybot(self):
     """Test that remote trybot overrides work to disable push images."""
     self._Prepare(cmd_args=['--remote-trybot', '-r', self.build_root,
-                            '--buildnumber=1234', 'x86-mario-release'])
+                            '--buildnumber=1234', 'eve-release'])
     self.RunStage()
     # pylint: disable=no-member
     self.assertEquals(commands.PushImages.call_count, 0)

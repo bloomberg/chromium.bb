@@ -102,17 +102,17 @@ class SDKFetcherMock(partial_mock.PartialMock):
 
   FAKE_METADATA = """
 {
-  "boards": ["x86-alex"],
+  "boards": ["eve"],
   "cros-version": "25.3543.2",
   "metadata-version": "1",
   "bot-hostname": "build82-m2.golo.chromium.org",
-  "bot-config": "x86-alex-release",
+  "bot-config": "eve-release",
   "toolchain-tuple": ["i686-pc-linux-gnu"],
   "toolchain-url": "2013/01/%(target)s-2013.01.23.003823.tar.xz",
   "sdk-version": "2013.01.23.003823"
 }"""
 
-  BOARD = 'x86-alex'
+  BOARD = 'eve'
   VERSION = 'XXXX.X.X'
 
   def __init__(self, external_mocks=None):

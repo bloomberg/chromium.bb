@@ -370,7 +370,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     self._update_metadata = True
     update = os.path.join(
         self.build_root,
-        'chroot/build/x86-generic/usr/sbin/chromeos-firmwareupdate')
+        'chroot/build/amd64-generic/usr/sbin/chromeos-firmwareupdate')
     osutils.Touch(update, makedirs=True)
 
     cros_config_host = os.path.join(self.build_root,
@@ -378,9 +378,9 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     osutils.Touch(cros_config_host, makedirs=True)
 
     self._mock_configurator = _HookRunCommand
-    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
     board_metadata = (self._run.attrs.metadata.GetDict()['board-metadata']
-                      .get('x86-generic'))
+                      .get('amd64-generic'))
     self.assertIsNotNone(board_metadata)
 
     if 'models' in board_metadata:

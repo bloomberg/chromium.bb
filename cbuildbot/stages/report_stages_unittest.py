@@ -181,7 +181,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   def testSuiteSchedulingEqualsTrue(self):
     """Test that a run of the stage makes suite_scheduling True."""
     # Test suite_scheduling for **-release
-    self._Prepare(bot_id='x86-alex-release')
+    self._Prepare(bot_id='eve-release')
     self.RunStage()
     self.assertTrue(self._run.attrs.metadata.GetValue('suite_scheduling'))
 

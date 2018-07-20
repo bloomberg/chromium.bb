@@ -42,12 +42,12 @@ class ManifestVersionedSyncCompletionStageTest(
 
   # pylint: disable=abstract-method
 
-  BOT_ID = 'x86-mario-release'
+  BOT_ID = 'eve-release'
 
 
   def testManifestVersionedSyncCompletedSuccess(self):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
-    board_runattrs = self._run.GetBoardRunAttrs('x86-mario')
+    board_runattrs = self._run.GetBoardRunAttrs('eve')
     board_runattrs.SetParallel('success', True)
     update_status_mock = self.PatchObject(
         manifest_version.BuildSpecsManager, 'UpdateStatus')
@@ -84,7 +84,7 @@ class ManifestVersionedSyncCompletionStageTest(
 
   def testGetBuilderSuccessMap(self):
     """Tests that the builder success map is properly created."""
-    board_runattrs = self._run.GetBoardRunAttrs('x86-mario')
+    board_runattrs = self._run.GetBoardRunAttrs('eve')
     board_runattrs.SetParallel('success', True)
     builder_success_map = completion_stages.GetBuilderSuccessMap(
         self._run, True)
@@ -663,7 +663,7 @@ class BaseCommitQueueCompletionStageTest(
 # pylint: disable=too-many-ancestors
 class SlaveCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
   """Tests how CQ a slave handles changes in CommitQueueCompletionStage."""
-  BOT_ID = 'x86-mario-paladin'
+  BOT_ID = 'eve-paladin'
 
   def testSuccess(self):
     """Test the slave succeeding."""

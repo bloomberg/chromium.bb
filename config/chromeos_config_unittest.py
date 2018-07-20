@@ -12,7 +12,6 @@ import json
 import mock
 import os
 import re
-import cPickle
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
@@ -294,17 +293,6 @@ class UnifiedBuildCqBuilders(
 
     master_paladin = self._site_config['master-paladin']
     self.assertIn('coral-paladin', master_paladin['slave_configs'])
-
-
-class ConfigPickleTest(ChromeosConfigTestBase):
-  """Test that a config object is pickleable."""
-
-  def testPickle(self):
-    bc1 = self.site_config['x86-mario-paladin']
-    bc2 = cPickle.loads(cPickle.dumps(bc1))
-
-    self.assertEquals(bc1.boards, bc2.boards)
-    self.assertEquals(bc1.name, bc2.name)
 
 
 class ConfigClassTest(ChromeosConfigTestBase):

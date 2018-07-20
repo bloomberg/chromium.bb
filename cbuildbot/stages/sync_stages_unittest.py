@@ -444,7 +444,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
 class SlaveCQSyncTest(BaseCQTestCase):
   """Tests the CommitQueueSync stage for the paladin slaves."""
-  BOT_ID = 'x86-alex-paladin'
+  BOT_ID = 'eve-paladin'
   MILESTONE_VERSION = '10'
 
   def setUp(self):
@@ -818,8 +818,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
   def testRequestedDefaultVerifications(self):
     change = MockPatch()
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
-                     return_value='default x86-zgb-pre-cq')
-    configs = constants.PRE_CQ_DEFAULT_CONFIGS + ['x86-zgb-pre-cq']
+                     return_value='default eve-pre-cq')
+    configs = constants.PRE_CQ_DEFAULT_CONFIGS + ['eve-pre-cq']
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           configs)
 

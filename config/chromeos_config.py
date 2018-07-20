@@ -470,7 +470,6 @@ _arm_internal_release_boards = frozenset([
     'lasilla-ground',
     'lasilla-sky',
     'macchiato-ground',
-    'nyan',
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
@@ -480,16 +479,13 @@ _arm_internal_release_boards = frozenset([
     'peach_pit',
     'rainier',
     'romer',
-    'rowan',
     'scarlet',
-    'smaug',
     'veyron_fievel',
     'veyron_jaq',
     'veyron_jerry',
     'veyron_mickey',
     'veyron_mighty',
     'veyron_minnie',
-    'veyron_pinky',
     'veyron_rialto',
     'veyron_speedy',
     'veyron_tiger',
@@ -509,7 +505,6 @@ _x86_internal_release_boards = frozenset([
     'amd64-generic-goofy',
     'asuka',
     'atlas',
-    'auron',
     'auron_paine',
     'auron_yuna',
     'banjo',
@@ -549,11 +544,9 @@ _x86_internal_release_boards = frozenset([
     'guado_labstation',
     'guado_moblab',
     'heli',
-    'jadeite',
     'jecht',
     'kefka',
     'kip',
-    'kunimitsu',
     'lakitu',
     'lakitu-gpu',
     'lakitu-nc',
@@ -582,7 +575,6 @@ _x86_internal_release_boards = frozenset([
     'poppy',
     'pyro',
     'quawks',
-    'rambi',
     'reef',
     'reks',
     'relm',
@@ -602,15 +594,9 @@ _x86_internal_release_boards = frozenset([
     'tidus',
     'tricky',
     'ultima',
-    'umaro',
     'winky',
     'wizpig',
     'wolf',
-    'x86-alex',
-    'x86-alex_he',
-    'x86-mario',
-    'x86-zgb',
-    'x86-zgb_he',
     'zako',
     'zoombini',
 ])
@@ -620,7 +606,6 @@ _x86_external_boards = frozenset([
     'moblab-generic-vm',
     'tatl',
     'x32-generic',
-    'x86-generic',
 ])
 
 # Board can appear in 1 or more of the following sets.
@@ -682,7 +667,6 @@ _termina_boards = frozenset([
 
 _nofactory_boards = (
     _lakitu_boards | _termina_boards | _lassen_boards | frozenset([
-        'smaug',
         'x30evb',
     ])
 )
@@ -2425,7 +2409,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Note that paladins are expected to fail occasionally as they block bad CLs
   # from landing, a red paladin from a bad CL in the CQ is a working paladin.
   _paladin_new_boards = frozenset([
-      'auron',
       'auron_paine',
       'cheza', #contact: philipchen@
       'dragonegg', # contact:yueherngl@
@@ -2704,7 +2687,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   #
   site_config.AddForBoards(
       'nowithdebug-paladin',
-      ['x86-generic', 'amd64-generic'],
+      ['amd64-generic'],
       board_configs,
       site_config.templates.paladin,
       site_config.templates.internal_nowithdebug_paladin,
@@ -2739,7 +2722,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   master_config.AddSlaves(
       site_config.AddForBoards(
           'full-compile-paladin',
-          ['falco', 'nyan'],
+          ['falco', 'nyan_kitty'],
           board_configs,
           site_config.templates.paladin,
           site_config.templates.no_hwtest_builder,
@@ -2755,15 +2738,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           vm_tests=[],
           active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
-  )
-
-  # TODO(ihf): remove this as obsolete.
-  site_config.Add(
-      'x86-generic-asan-paladin',
-      site_config.templates.paladin,
-      board_configs['x86-generic'],
-      site_config.templates.asan,
-      description='Paladin build with Address Sanitizer (Clang)',
   )
 
   site_config.Add(
@@ -2874,7 +2848,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   #
   # Available, but not regularly scheduled.
   #
-  # TODO(ihf): Delete this builder.
   site_config.Add(
       'x32-generic-incremental',
       site_config.templates.incremental,
@@ -3030,13 +3003,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       _tot_chrome_pfq_informational_board_configs,
       site_config.templates.chrome_pfq_informational)
 
-  # TODO(ihf): Remove as obsolete.
-  site_config.Add(
-      'x86-generic-tot-asan-informational',
-      site_config.templates.tot_asan_informational,
-      boards=['x86-generic'],
-  )
-
   site_config.Add(
       'amd64-generic-asan',
       site_config.templates.asan,
@@ -3121,7 +3087,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddForBoards(
       'telem-chromium-pfq-informational',
-      ['x86-generic', 'amd64-generic'],
+      ['amd64-generic'],
       internal_board_configs,
       site_config.templates.chromium_pfq_informational,
       site_config.templates.telemetry,
@@ -3662,12 +3628,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'lakitu_next-pre-cq':
           site_config.templates.lakitu_test_customizations,
-
-      ### Arm release configs
-      'smaug-release' : {
-          'paygen': False,
-          'sign_types':['nv_lp0_firmware'],
-      },
 
       'whirlwind-release': {
           'dev_installer_prebuilts':True,
