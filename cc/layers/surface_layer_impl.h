@@ -15,6 +15,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_range.h"
 
 namespace cc {
 
@@ -39,21 +40,9 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
 
   ~SurfaceLayerImpl() override;
 
-  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
-                           base::Optional<uint32_t> deadline_in_frames);
-  const viz::SurfaceId& primary_surface_id() const {
-    return primary_surface_id_;
-  }
-
-  // A fallback Surface is a Surface that is already known to exist in the
-  // display compositor. If surface synchronization is enabled, the display
-  // compositor will use the fallback if the primary surface is unavailable
-  // at the time of surface aggregation. If surface synchronization is not
-  // enabled, then the primary and fallback surfaces will always match.
-  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id);
-  const viz::SurfaceId& fallback_surface_id() const {
-    return fallback_surface_id_;
-  }
+  void SetRange(const viz::SurfaceRange& surface_range,
+                base::Optional<uint32_t> deadline_in_frames);
+  const viz::SurfaceRange& range() const { return surface_range_; }
 
   base::Optional<uint32_t> deadline_in_frames() const {
     return deadline_in_frames_;
@@ -91,8 +80,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   const char* LayerTypeAsString() const override;
 
   UpdateSubmissionStateCB update_submission_state_callback_;
-  viz::SurfaceId primary_surface_id_;
-  viz::SurfaceId fallback_surface_id_;
+  viz::SurfaceRange surface_range_;
   base::Optional<uint32_t> deadline_in_frames_;
 
   bool stretch_content_to_fill_bounds_ = false;

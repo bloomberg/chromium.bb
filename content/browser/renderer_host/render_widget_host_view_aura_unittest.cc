@@ -3477,7 +3477,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   // Resizing should update the primary SurfaceId.
   view_->SetSize(gfx::Size(400, 400));
   EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  EXPECT_EQ(nullptr, view_->window_->layer()->GetFallbackSurfaceId());
   EXPECT_EQ(gfx::Size(400, 400),
             view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
 
@@ -3509,7 +3509,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->size());
   viz::SurfaceId initial_surface_id =
       *view_->window_->layer()->GetPrimarySurfaceId();
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  EXPECT_EQ(nullptr, view_->window_->layer()->GetFallbackSurfaceId());
 
   // Resizing should update the primary SurfaceId.
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
@@ -5935,7 +5935,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->Hide();
   view_->SetSize(gfx::Size(54, 32));
   view_->Show();
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  EXPECT_EQ(nullptr, view_->window_->layer()->GetFallbackSurfaceId());
 }
 
 // If a tab is hidden and shown without being resized in the meantime, the

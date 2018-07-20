@@ -197,8 +197,8 @@ std::unique_ptr<Layer> Layer::Clone() const {
               : cc::DeadlinePolicy::UseDefaultDeadline(),
           surface_layer_->stretch_content_to_fill_bounds());
     }
-    if (surface_layer_->fallback_surface_id().is_valid())
-      clone->SetFallbackSurfaceId(surface_layer_->fallback_surface_id());
+    if (surface_layer_->fallback_surface_id())
+      clone->SetFallbackSurfaceId(*surface_layer_->fallback_surface_id());
   } else if (type_ == LAYER_SOLID_COLOR) {
     clone->SetColor(GetTargetColor());
   }
@@ -814,8 +814,8 @@ const viz::SurfaceId* Layer::GetPrimarySurfaceId() const {
 }
 
 const viz::SurfaceId* Layer::GetFallbackSurfaceId() const {
-  if (surface_layer_)
-    return &surface_layer_->fallback_surface_id();
+  if (surface_layer_ && surface_layer_->fallback_surface_id())
+    return &surface_layer_->fallback_surface_id().value();
   return nullptr;
 }
 
