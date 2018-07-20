@@ -32,38 +32,38 @@ std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
                                   std::move(update_submission_state_callback_));
 }
 
-void SurfaceLayerImpl::SetPrimarySurfaceId(
-    const viz::SurfaceId& surface_id,
-    base::Optional<uint32_t> deadline_in_frames) {
-  if (primary_surface_id_ == surface_id &&
+void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
+                                base::Optional<uint32_t> deadline_in_frames) {
+  if (surface_range_ == surface_range &&
       deadline_in_frames_ == deadline_in_frames) {
     return;
   }
 
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "LocalSurfaceId.Embed.Flow",
-      TRACE_ID_GLOBAL(surface_id.local_surface_id().embed_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "ImplSetPrimarySurfaceId", "surface_id", surface_id.ToString());
+  if (surface_range_.end() != surface_range.end()) {
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Embed.Flow",
+        TRACE_ID_GLOBAL(
+            surface_range.end().local_surface_id().embed_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "ImplSetPrimarySurfaceId", "surface_id",
+        surface_range.end().ToString());
+  }
 
-  primary_surface_id_ = surface_id;
+  if (surface_range.start() &&
+      surface_range_.start() != surface_range.start()) {
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Submission.Flow",
+        TRACE_ID_GLOBAL(
+            surface_range.start()->local_surface_id().submission_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "ImplSetFallbackSurfaceId", "surface_id",
+        surface_range.start()->ToString());
+  }
+
+  surface_range_ = surface_range;
   deadline_in_frames_ = deadline_in_frames;
-  NoteLayerPropertyChanged();
-}
-
-void SurfaceLayerImpl::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
-  if (fallback_surface_id_ == surface_id)
-    return;
-
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "LocalSurfaceId.Submission.Flow",
-      TRACE_ID_GLOBAL(surface_id.local_surface_id().submission_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "ImplSetFallbackSurfaceId", "surface_id", surface_id.ToString());
-
-  fallback_surface_id_ = surface_id;
   NoteLayerPropertyChanged();
 }
 
@@ -86,11 +86,10 @@ void SurfaceLayerImpl::SetSurfaceHitTestable(bool surface_hit_testable) {
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-  layer_impl->SetPrimarySurfaceId(primary_surface_id_, deadline_in_frames_);
+  layer_impl->SetRange(surface_range_, std::move(deadline_in_frames_));
   // Unless the client explicitly specifies otherwise, don't block on
-  // |primary_surface_id_| more than once.
+  // |surface_range_| more than once.
   deadline_in_frames_ = 0u;
-  layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
 }
@@ -108,23 +107,20 @@ bool SurfaceLayerImpl::WillDraw(
       update_submission_state_callback_.Run(will_draw);
   }
 
-  return primary_surface_id_.is_valid() && will_draw;
+  return surface_range_.IsValid() && will_draw;
 }
 
 void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass);
-  if (!primary_surface_id_.is_valid())
+  if (!surface_range_.IsValid())
     return;
 
-  auto* primary = CreateSurfaceDrawQuad(
-      render_pass, primary_surface_id_,
-      fallback_surface_id_.is_valid()
-          ? base::Optional<viz::SurfaceId>(fallback_surface_id_)
-          : base::nullopt);
-  if (primary && fallback_surface_id_ != primary_surface_id_) {
+  auto* primary = CreateSurfaceDrawQuad(render_pass, surface_range_.end(),
+                                        surface_range_.start());
+  if (primary && surface_range_.end() != surface_range_.start()) {
     // Add the primary surface ID as a dependency.
-    append_quads_data->activation_dependencies.push_back(primary_surface_id_);
+    append_quads_data->activation_dependencies.push_back(surface_range_.end());
     if (deadline_in_frames_) {
       if (!append_quads_data->deadline_in_frames)
         append_quads_data->deadline_in_frames = 0u;
@@ -135,7 +131,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     }
   }
   // Unless the client explicitly specifies otherwise, don't block on
-  // |primary_surface_id_| more than once.
+  // |surface_range_| more than once.
   deadline_in_frames_ = 0u;
 }
 
@@ -275,8 +271,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(viz::RenderPass* render_pass) {
 
 void SurfaceLayerImpl::AsValueInto(base::trace_event::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
-  dict->SetString("primar_surface_id", primary_surface_id_.ToString());
-  dict->SetString("fallback_surface_id", fallback_surface_id_.ToString());
+  dict->SetString("surface_range", surface_range_.ToString());
 }
 
 const char* SurfaceLayerImpl::LayerTypeAsString() const {

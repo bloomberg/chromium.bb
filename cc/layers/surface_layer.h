@@ -49,11 +49,11 @@ class CC_EXPORT SurfaceLayer : public Layer {
   void PushPropertiesTo(LayerImpl* layer) override;
 
   const viz::SurfaceId& primary_surface_id() const {
-    return primary_surface_id_;
+    return surface_range_.end();
   }
 
-  const viz::SurfaceId& fallback_surface_id() const {
-    return fallback_surface_id_;
+  const base::Optional<viz::SurfaceId>& fallback_surface_id() const {
+    return surface_range_.start();
   }
 
   base::Optional<uint32_t> deadline_in_frames() const {
@@ -68,14 +68,10 @@ class CC_EXPORT SurfaceLayer : public Layer {
  private:
   ~SurfaceLayer() override;
 
-  // Returns a SurfaceRange corresponding to the surface layer.
-  viz::SurfaceRange GetSurfaceRange() const;
-
   UpdateSubmissionStateCB update_submission_state_callback_;
 
   bool may_contain_video_ = false;
-  viz::SurfaceId primary_surface_id_;
-  viz::SurfaceId fallback_surface_id_;
+  viz::SurfaceRange surface_range_;
   base::Optional<uint32_t> deadline_in_frames_ = 0u;
 
   bool stretch_content_to_fill_bounds_ = false;

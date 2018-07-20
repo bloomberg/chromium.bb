@@ -155,8 +155,8 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
 
   // Verify that the primary and fallback SurfaceIds are pushed through.
-  EXPECT_EQ(primary_id, layer_impl->primary_surface_id());
-  EXPECT_EQ(primary_id, layer_impl->fallback_surface_id());
+  EXPECT_EQ(primary_id, layer_impl->range().end());
+  EXPECT_EQ(primary_id, layer_impl->range().start());
   EXPECT_EQ(SK_ColorBLUE, layer_impl->background_color());
   EXPECT_TRUE(layer_impl->stretch_content_to_fill_bounds());
   EXPECT_EQ(2u, layer_impl->deadline_in_frames());
@@ -181,8 +181,8 @@ TEST_F(SurfaceLayerTest, PushProperties) {
 
   // Verify that the primary viz::SurfaceId stays the same and the new
   // fallback viz::SurfaceId is pushed through.
-  EXPECT_EQ(fallback_id, layer_impl->primary_surface_id());
-  EXPECT_EQ(fallback_id, layer_impl->fallback_surface_id());
+  EXPECT_EQ(fallback_id, layer_impl->range().end());
+  EXPECT_EQ(fallback_id, layer_impl->range().start());
   EXPECT_EQ(SK_ColorGREEN, layer_impl->background_color());
   // The deadline resets back to 0 (no deadline) after the first commit.
   EXPECT_EQ(0u, layer_impl->deadline_in_frames());

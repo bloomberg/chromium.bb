@@ -32,7 +32,8 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
-  surface_layer_impl->SetPrimarySurfaceId(surface_id, base::nullopt);
+  surface_layer_impl->SetRange(viz::SurfaceRange(base::nullopt, surface_id),
+                               base::nullopt);
 
   impl.CalcDrawProps(viewport_size);
 
@@ -86,7 +87,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
 
   // Populate the fallback viz::SurfaceId.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
-      7, base::UnguessableToken::Create());
+      7, kArbitraryLocalSurfaceId1.embed_token());
   viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
 
   gfx::Size layer_size(400, 100);
@@ -95,8 +96,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   // SurfaceInfos are different.
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  surface_layer_impl->SetPrimarySurfaceId(surface_id1, 2u);
-  surface_layer_impl->SetFallbackSurfaceId(surface_id2);
+  surface_layer_impl->SetRange(viz::SurfaceRange(surface_id2, surface_id1), 2u);
   surface_layer_impl->SetBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
@@ -119,14 +119,12 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   // viz::SurfaceInfo.
   {
     AppendQuadsData data;
-    surface_layer_impl->SetFallbackSurfaceId(viz::SurfaceId());
+    surface_layer_impl->SetRange(viz::SurfaceRange(base::nullopt, surface_id1),
+                                 0u);
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
-    // The primary viz::SurfaceInfo should not be added to
-    // activation_dependencies.
+    // The primary viz::SurfaceInfo should be added to activation_dependencies.
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
-    // The deadline is reset after the first CompositorFrame submission with the
-    // new dependency.
     EXPECT_EQ(0u, data.deadline_in_frames);
     EXPECT_FALSE(data.use_default_lower_bound_deadline);
   }
@@ -135,16 +133,15 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   // re-emit DrawQuads.
   {
     AppendQuadsData data;
-    surface_layer_impl->SetPrimarySurfaceId(surface_id1, 4u);
-    surface_layer_impl->SetFallbackSurfaceId(surface_id2);
+    surface_layer_impl->SetRange(viz::SurfaceRange(surface_id2, surface_id1),
+                                 4u);
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
     // The the primary viz::SurfaceInfo will be added to
     // activation_dependencies.
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
     // The primary SurfaceId hasn't changed but a new deadline was explicitly
-    // requested in SetPrimarySurfaceId so we'll use it in the next
-    // CompositorFrame.
+    // requested in SetRange so we'll use it in the next CompositorFrame.
     EXPECT_EQ(4u, data.deadline_in_frames);
     EXPECT_FALSE(data.use_default_lower_bound_deadline);
   }
@@ -189,7 +186,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
   viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
 
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
-      2, base::UnguessableToken::Create());
+      2, kArbitraryLocalSurfaceId1.embed_token());
   viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
 
   gfx::Size viewport_size(1000, 1000);
@@ -199,13 +196,12 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
 
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  surface_layer_impl->SetPrimarySurfaceId(surface_id1, 1u);
-  surface_layer_impl->SetFallbackSurfaceId(surface_id2);
+  surface_layer_impl->SetRange(viz::SurfaceRange(surface_id1, surface_id2), 1u);
 
   surface_layer_impl2->SetBounds(layer_size);
   surface_layer_impl2->SetDrawsContent(true);
-  surface_layer_impl2->SetPrimarySurfaceId(surface_id1, base::nullopt);
-  surface_layer_impl2->SetFallbackSurfaceId(surface_id2);
+  surface_layer_impl2->SetRange(viz::SurfaceRange(surface_id1, surface_id2),
+                                base::nullopt);
 
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
@@ -237,9 +233,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   // SurfaceInfos are the same.
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  surface_layer_impl->SetPrimarySurfaceId(surface_id1, 1u);
-  surface_layer_impl->SetPrimarySurfaceId(surface_id1, 2u);
-  surface_layer_impl->SetFallbackSurfaceId(surface_id1);
+  surface_layer_impl->SetRange(viz::SurfaceRange(surface_id1), 1u);
+  surface_layer_impl->SetRange(viz::SurfaceRange(surface_id1), 2u);
   surface_layer_impl->SetBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);

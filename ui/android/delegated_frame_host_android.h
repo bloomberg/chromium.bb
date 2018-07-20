@@ -128,7 +128,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   // Returns the ID for the current Surface. Returns an invalid ID if no
   // surface exists (!HasDelegatedContent()).
-  const viz::SurfaceId& SurfaceId() const;
+  viz::SurfaceId SurfaceId() const;
 
   void TakeFallbackContentFrom(DelegatedFrameHostAndroid* other);
 

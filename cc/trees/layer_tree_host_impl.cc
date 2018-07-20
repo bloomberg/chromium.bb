@@ -2498,11 +2498,10 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
 static uint32_t GetFlagsForSurfaceLayer(const SurfaceLayerImpl* layer) {
   uint32_t flags = viz::HitTestRegionFlags::kHitTestMouse |
                    viz::HitTestRegionFlags::kHitTestTouch;
-  const auto& surface_id = layer->primary_surface_id();
   if (layer->is_clipped()) {
     flags |= viz::HitTestRegionFlags::kHitTestAsk;
   }
-  if (surface_id.local_surface_id().is_valid()) {
+  if (layer->range().IsValid()) {
     flags |= viz::HitTestRegionFlags::kHitTestChildSurface;
   } else {
     flags |= viz::HitTestRegionFlags::kHitTestMine;
@@ -2575,7 +2574,7 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
       auto flag = GetFlagsForSurfaceLayer(surface_layer);
       if (overlapping_region.Intersects(layer_screen_space_rect))
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
-      auto surface_id = surface_layer->primary_surface_id();
+      const auto& surface_id = surface_layer->range().end();
       hit_test_region_list->regions.emplace_back();
       PopulateHitTestRegion(&hit_test_region_list->regions.back(), layer, flag,
                             content_rect, surface_id, device_scale_factor);

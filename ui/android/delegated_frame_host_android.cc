@@ -130,8 +130,8 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
 
   // TODO(samans): We shouldn't need a readback layer. https://crbug.com/841734
   scoped_refptr<cc::Layer> readback_layer = CreateSurfaceLayer(
-      content_layer_->fallback_surface_id(),
-      content_layer_->fallback_surface_id(), content_layer_->bounds(),
+      *content_layer_->fallback_surface_id(),
+      *content_layer_->fallback_surface_id(), content_layer_->bounds(),
       cc::DeadlinePolicy::UseDefaultDeadline(), !has_transparent_background_);
   readback_layer->SetHideLayerAndSubtree(true);
   view_->GetWindowAndroid()->GetCompositor()->AttachLayerForReadback(
@@ -168,18 +168,22 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
   host_frame_sink_manager_->RequestCopyOfOutput(
-      content_layer_->fallback_surface_id(), std::move(request));
+      *content_layer_->fallback_surface_id(), std::move(request));
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
-  return content_layer_->fallback_surface_id().is_valid() &&
+  return content_layer_->fallback_surface_id() &&
+         content_layer_->fallback_surface_id()->is_valid() &&
          view_->GetWindowAndroid() &&
          view_->GetWindowAndroid()->GetCompositor();
 }
 
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
-  viz::SurfaceId surface_id = content_layer_->fallback_surface_id();
-  content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
+  viz::SurfaceId surface_id;
+  if (content_layer_->fallback_surface_id()) {
+    surface_id = *content_layer_->fallback_surface_id();
+    content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
+  }
   content_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
                                       cc::DeadlinePolicy::UseDefaultDeadline());
   if (!surface_id.is_valid())
@@ -280,7 +284,8 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
     if (pending_surface_size_in_pixels_ != content_layer_->bounds() &&
-        content_layer_->fallback_surface_id().is_valid()) {
+        content_layer_->fallback_surface_id() &&
+        content_layer_->fallback_surface_id()->is_valid()) {
       content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
@@ -439,24 +444,28 @@ void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
       this, frame_sink_id_, is_root, needs_sync_points);
 }
 
-const viz::SurfaceId& DelegatedFrameHostAndroid::SurfaceId() const {
-  return content_layer_->fallback_surface_id();
+viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
+  return content_layer_->fallback_surface_id()
+             ? *content_layer_->fallback_surface_id()
+             : viz::SurfaceId();
 }
 
 void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     DelegatedFrameHostAndroid* other) {
-  if (content_layer_->fallback_surface_id().is_valid() ||
-      !other->content_layer_->fallback_surface_id().is_valid()) {
+  if ((content_layer_->fallback_surface_id() &&
+       content_layer_->fallback_surface_id()->is_valid()) ||
+      !other->content_layer_->fallback_surface_id() ||
+      !other->content_layer_->fallback_surface_id()->is_valid()) {
     return;
   }
 
   if (!enable_surface_synchronization_) {
     content_layer_->SetPrimarySurfaceId(
-        other->content_layer_->fallback_surface_id(),
+        *other->content_layer_->fallback_surface_id(),
         cc::DeadlinePolicy::UseDefaultDeadline());
   }
   content_layer_->SetFallbackSurfaceId(
-      other->content_layer_->fallback_surface_id());
+      *other->content_layer_->fallback_surface_id());
 }
 
 void DelegatedFrameHostAndroid::DidNavigate() {

@@ -36,7 +36,7 @@ SurfaceLayer::~SurfaceLayer() {
 
 void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
                                        const DeadlinePolicy& deadline_policy) {
-  if (primary_surface_id_ == surface_id &&
+  if (surface_range_.end() == surface_id &&
       deadline_policy.use_existing_deadline()) {
     return;
   }
@@ -48,19 +48,17 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SetPrimarySurfaceId", "surface_id", surface_id.ToString());
 
-  const viz::SurfaceRange old_surface_range(GetSurfaceRange());
-  if (layer_tree_host() && old_surface_range.IsValid())
-    layer_tree_host()->RemoveSurfaceRange(old_surface_range);
+  if (layer_tree_host() && surface_range_.IsValid())
+    layer_tree_host()->RemoveSurfaceRange(surface_range_);
 
-  primary_surface_id_ = surface_id;
+  surface_range_ = viz::SurfaceRange(surface_range_.start(), surface_id);
 
-  const viz::SurfaceRange new_surface_range(GetSurfaceRange());
-  if (layer_tree_host() && new_surface_range.IsValid())
-    layer_tree_host()->AddSurfaceRange(new_surface_range);
+  if (layer_tree_host() && surface_range_.IsValid())
+    layer_tree_host()->AddSurfaceRange(surface_range_);
 
   // We should never block or set a deadline on an invalid
-  // |primary_surface_id_|.
-  if (!primary_surface_id_.is_valid()) {
+  // |surface_range_|.
+  if (!surface_range_.IsValid()) {
     deadline_in_frames_ = 0u;
   } else if (!deadline_policy.use_existing_deadline()) {
     deadline_in_frames_ = deadline_policy.deadline_in_frames();
@@ -70,7 +68,7 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
 }
 
 void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
-  if (fallback_surface_id_ == surface_id)
+  if (surface_range_.start() == surface_id)
     return;
 
   TRACE_EVENT_WITH_FLOW2(
@@ -80,15 +78,16 @@ void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SetFallbackSurfaceId", "surface_id", surface_id.ToString());
 
-  const viz::SurfaceRange old_surface_range(GetSurfaceRange());
-  if (layer_tree_host() && old_surface_range.IsValid())
-    layer_tree_host()->RemoveSurfaceRange(old_surface_range);
+  if (layer_tree_host() && surface_range_.IsValid())
+    layer_tree_host()->RemoveSurfaceRange(surface_range_);
 
-  fallback_surface_id_ = surface_id;
+  surface_range_ = viz::SurfaceRange(
+      surface_id.is_valid() ? base::Optional<viz::SurfaceId>(surface_id)
+                            : base::nullopt,
+      surface_range_.end());
 
-  const viz::SurfaceRange new_surface_range(GetSurfaceRange());
-  if (layer_tree_host() && new_surface_range.IsValid())
-    layer_tree_host()->AddSurfaceRange(new_surface_range);
+  if (layer_tree_host() && surface_range_.IsValid())
+    layer_tree_host()->AddSurfaceRange(surface_range_);
 
   SetNeedsCommit();
 }
@@ -121,45 +120,32 @@ std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
 }
 
 bool SurfaceLayer::HasDrawableContent() const {
-  return primary_surface_id_.is_valid() && Layer::HasDrawableContent();
+  return surface_range_.IsValid() && Layer::HasDrawableContent();
 }
 
 void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host() == host) {
     return;
   }
-  const viz::SurfaceRange old_surface_range(GetSurfaceRange());
-  if (layer_tree_host() && old_surface_range.IsValid())
-    layer_tree_host()->RemoveSurfaceRange(old_surface_range);
+  if (layer_tree_host() && surface_range_.IsValid())
+    layer_tree_host()->RemoveSurfaceRange(surface_range_);
 
   Layer::SetLayerTreeHost(host);
 
-  const viz::SurfaceRange new_surface_range(GetSurfaceRange());
-  if (layer_tree_host() && new_surface_range.IsValid())
-    layer_tree_host()->AddSurfaceRange(new_surface_range);
+  if (layer_tree_host() && surface_range_.IsValid())
+    layer_tree_host()->AddSurfaceRange(surface_range_);
 }
 
 void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
   TRACE_EVENT0("cc", "SurfaceLayer::PushPropertiesTo");
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-  layer_impl->SetPrimarySurfaceId(primary_surface_id_,
-                                  std::move(deadline_in_frames_));
+  layer_impl->SetRange(surface_range_, std::move(deadline_in_frames_));
   // Unless the client explicitly calls SetPrimarySurfaceId again after this
-  // commit, don't block on |primary_surface_id_| again.
+  // commit, don't block on |surface_range_| again.
   deadline_in_frames_ = 0u;
-  layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
-}
-
-viz::SurfaceRange SurfaceLayer::GetSurfaceRange() const {
-  return viz::SurfaceRange(
-      fallback_surface_id_.is_valid()
-          ? base::Optional<viz::SurfaceId>(fallback_surface_id_)
-          : base::nullopt,
-      primary_surface_id_.is_valid() ? primary_surface_id_
-                                     : fallback_surface_id_);
 }
 
 }  // namespace cc

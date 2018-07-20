@@ -4405,8 +4405,8 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     child->SetPosition(gfx::PointF(25.f * i, 0.f));
     child->SetBounds(gfx::Size(1, 1));
     child->SetDrawsContent(true);
-    child->SetPrimarySurfaceId(primary_surfaces[i], 2u);
-    child->SetFallbackSurfaceId(fallback_surfaces[i]);
+    child->SetRange(
+        viz::SurfaceRange(fallback_surfaces[i], primary_surfaces[i]), 2u);
     root->test_properties()->AddChild(std::move(child));
   }
 
@@ -13787,8 +13787,10 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
                                              base::UnguessableToken::Create());
   viz::FrameSinkId frame_sink_id(2, 0);
   viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
-  surface_child1->SetPrimarySurfaceId(child_surface_id, base::nullopt);
-  surface_child2->SetPrimarySurfaceId(child_surface_id, base::nullopt);
+  surface_child1->SetRange(viz::SurfaceRange(base::nullopt, child_surface_id),
+                           base::nullopt);
+  surface_child2->SetRange(viz::SurfaceRange(base::nullopt, child_surface_id),
+                           base::nullopt);
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl_->active_tree(), 1);
