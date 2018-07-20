@@ -39,10 +39,10 @@ namespace smb_client {
 
 class RequestManager;
 
-// Smb provided file system implementation. For communication with Smb
+// SMB provided file system implementation. For communication with SMB
 // filesystems.
-// Smb is an application level protocol used by Windows and Samba fileservers.
-// Allows Files App to mount smb filesystems.
+// SMB is an application level protocol used by Windows and Samba fileservers.
+// Allows Files App to mount SMB filesystems.
 class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
                       public base::SupportsWeakPtr<SmbFileSystem> {
  public:
