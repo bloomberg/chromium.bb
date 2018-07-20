@@ -454,6 +454,10 @@ void MessageLoop::ScheduleWork() {
   pump_->ScheduleWork();
 }
 
+TimeTicks MessageLoop::CapAtOneDay(TimeTicks next_run_time) {
+  return std::min(next_run_time, recent_time_ + TimeDelta::FromDays(1));
+}
+
 bool MessageLoop::DoWork() {
   if (!task_execution_allowed_)
     return false;
@@ -502,7 +506,7 @@ bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
   if (next_run_time > recent_time_) {
     recent_time_ = TimeTicks::Now();  // Get a better view of Now();
     if (next_run_time > recent_time_) {
-      *next_delayed_work_time = next_run_time;
+      *next_delayed_work_time = CapAtOneDay(next_run_time);
       return false;
     }
   }
@@ -510,8 +514,8 @@ bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
   PendingTask pending_task = incoming_task_queue_->delayed_tasks().Pop();
 
   if (incoming_task_queue_->delayed_tasks().HasTasks()) {
-    *next_delayed_work_time =
-        incoming_task_queue_->delayed_tasks().Peek().delayed_run_time;
+    *next_delayed_work_time = CapAtOneDay(
+        incoming_task_queue_->delayed_tasks().Peek().delayed_run_time);
   }
 
   return DeferOrRunPendingTask(std::move(pending_task));
