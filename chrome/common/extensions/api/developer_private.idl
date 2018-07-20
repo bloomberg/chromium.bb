@@ -375,7 +375,8 @@ namespace developerPrivate {
     PREFS_CHANGED,
     WARNINGS_CHANGED,
     COMMAND_ADDED,
-    COMMAND_REMOVED
+    COMMAND_REMOVED,
+    PERMISSIONS_CHANGED
   };
 
   dictionary PackDirectoryResponse {

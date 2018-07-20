@@ -225,7 +225,6 @@ chrome.developerPrivate.ControllerType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-HostAccess
  */
 chrome.developerPrivate.HostAccess = {
   ON_CLICK: 'ON_CLICK',
@@ -275,7 +274,6 @@ chrome.developerPrivate.Permission;
  *   hostAccess: (!chrome.developerPrivate.HostAccess|undefined),
  *   runtimeHostPermissions: (!Array<string>|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-Permissions
  */
 chrome.developerPrivate.Permissions;
 
@@ -459,6 +457,7 @@ chrome.developerPrivate.EventType = {
   WARNINGS_CHANGED: 'WARNINGS_CHANGED',
   COMMAND_ADDED: 'COMMAND_ADDED',
   COMMAND_REMOVED: 'COMMAND_REMOVED',
+  PERMISSIONS_CHANGED: 'PERMISSIONS_CHANGED',
 };
 
 /**

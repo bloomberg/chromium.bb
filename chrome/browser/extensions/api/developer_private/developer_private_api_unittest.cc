@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -41,6 +43,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_error_test_util.h"
@@ -51,12 +54,14 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/mock_external_provider.h"
+#include "extensions/browser/test_event_router_observer.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "services/data_decoder/data_decoder_service.h"
@@ -1492,6 +1497,66 @@ TEST_F(DeveloperPrivateApiUnitTest,
   RunUpdateHostAccess(*extension, "ON_SPECIFIC_SITES");
   EXPECT_TRUE(modifier.HasWithheldHostPermissions());
   EXPECT_FALSE(modifier.HasGrantedHostPermission(example_com));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
+  DeveloperPrivateAPI::Get(profile());
+  const ExtensionId listener_id = crx_file::id_util::GenerateId("listener");
+  EventRouter* event_router = EventRouter::Get(profile());
+
+  content::RenderProcessHost* process = nullptr;
+  const char* kEventName =
+      api::developer_private::OnItemStateChanged::kEventName;
+  event_router->AddEventListener(kEventName, process, listener_id);
+
+  scoped_refptr<const Extension> dummy_extension =
+      ExtensionBuilder("dummy")
+          .SetManifestKey("optional_permissions",
+                          ListBuilder().Append("tabs").Build())
+          .Build();
+
+  TestEventRouterObserver test_observer(event_router);
+  auto dispatched_updated_event = [&test_observer, kEventName,
+                                   &dummy_extension]() {
+    const auto& event_map = test_observer.events();
+    auto iter = event_map.find(kEventName);
+    if (iter == event_map.end())
+      return false;
+
+    const Event& event = *iter->second;
+    CHECK(event.event_args);
+    CHECK_GE(1u, event.event_args->GetList().size());
+    std::unique_ptr<api::developer_private::EventData> event_data =
+        api::developer_private::EventData::FromValue(
+            event.event_args->GetList()[0]);
+    if (!event_data)
+      return false;
+
+    if (event_data->item_id != dummy_extension->id() ||
+        event_data->event_type !=
+            api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED) {
+      return false;
+    }
+
+    return true;
+  };
+  EXPECT_FALSE(dispatched_updated_event());
+
+  APIPermissionSet apis;
+  apis.insert(APIPermission::kTab);
+  PermissionSet permissions(apis, ManifestPermissionSet(), URLPatternSet(),
+                            URLPatternSet());
+  PermissionsUpdater(profile()).GrantOptionalPermissions(*dummy_extension,
+                                                         permissions);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(dispatched_updated_event());
+
+  test_observer.ClearEvents();
+
+  PermissionsUpdater(profile()).RevokeOptionalPermissions(
+      *dummy_extension, permissions, PermissionsUpdater::REMOVE_HARD);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(dispatched_updated_event());
 }
 
 class DeveloperPrivateZipInstallerUnitTest

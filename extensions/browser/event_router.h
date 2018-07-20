@@ -15,6 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -80,6 +81,13 @@ class EventRouter : public KeyedService,
 
    protected:
     virtual ~Observer() {}
+  };
+
+  // A test observer to monitor event dispatching.
+  class TestObserver {
+   public:
+    virtual ~TestObserver() = default;
+    virtual void OnWillDispatchEvent(const Event& event) = 0;
   };
 
   // Gets the EventRouter for |browser_context|.
@@ -154,6 +162,10 @@ class EventRouter : public KeyedService,
 
   // Unregisters an observer from all events.
   void UnregisterObserver(Observer* observer);
+
+  // Adds/removes test observers.
+  void AddObserverForTesting(TestObserver* observer);
+  void RemoveObserverForTesting(TestObserver* observer);
 
   // Add or remove the extension as having a lazy background page that listens
   // to the event. The difference from the above methods is that these will be
@@ -360,6 +372,8 @@ class EventRouter : public KeyedService,
   using ObserverMap = std::unordered_map<std::string, Observer*>;
   ObserverMap observers_;
 
+  base::ObserverList<TestObserver> test_observers_;
+
   std::set<content::RenderProcessHost*> observed_process_set_;
 
   LazyEventDispatchUtil lazy_event_dispatch_util_;
@@ -440,7 +454,8 @@ struct Event {
 
   // Makes a deep copy of this instance. Ownership is transferred to the
   // caller.
-  Event* DeepCopy();
+  // TODO(devlin): Have this return a unique_ptr.
+  Event* DeepCopy() const;
 };
 
 struct EventListenerInfo {
