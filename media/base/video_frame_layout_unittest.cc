@@ -44,23 +44,60 @@ TEST(VideoFrameLayout, ConstructorNoStrideBufferSize) {
   EXPECT_EQ(layout.num_buffers(), 0u);
 }
 
-TEST(VideoFrameLayout, CopyConstructor) {
+TEST(VideoFrameLayout, Clone) {
   gfx::Size coded_size = gfx::Size(320, 180);
   std::vector<int32_t> strides = {384, 192, 192};
   std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
   VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, strides, buffer_sizes);
 
-  VideoFrameLayout layout_copy(layout);
+  VideoFrameLayout layout_clone = layout.Clone();
 
-  EXPECT_EQ(layout_copy.format(), PIXEL_FORMAT_I420);
-  EXPECT_EQ(layout_copy.coded_size(), coded_size);
-  EXPECT_EQ(layout_copy.num_strides(), 3u);
-  EXPECT_EQ(layout_copy.num_buffers(), 3u);
-  EXPECT_EQ(layout_copy.GetTotalBufferSize(), 110592u);
+  EXPECT_EQ(layout_clone.format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(layout_clone.coded_size(), coded_size);
+  EXPECT_EQ(layout_clone.num_strides(), 3u);
+  EXPECT_EQ(layout_clone.num_buffers(), 3u);
+  EXPECT_EQ(layout_clone.GetTotalBufferSize(), 110592u);
   for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(layout_copy.strides()[i], strides[i]);
-    EXPECT_EQ(layout_copy.buffer_sizes()[i], buffer_sizes[i]);
+    EXPECT_EQ(layout_clone.strides()[i], strides[i]);
+    EXPECT_EQ(layout_clone.buffer_sizes()[i], buffer_sizes[i]);
   }
+
+  // Object being cloned does not change.
+  EXPECT_EQ(layout.format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(layout.coded_size(), coded_size);
+  EXPECT_EQ(layout.num_strides(), 3u);
+  EXPECT_EQ(layout.num_buffers(), 3u);
+  EXPECT_EQ(layout.GetTotalBufferSize(), 110592u);
+  for (size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(layout.strides()[i], strides[i]);
+    EXPECT_EQ(layout.buffer_sizes()[i], buffer_sizes[i]);
+  }
+}
+
+TEST(VideoFrameLayout, MoveConstructor) {
+  gfx::Size coded_size = gfx::Size(320, 180);
+  std::vector<int32_t> strides = {384, 192, 192};
+  std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
+  VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, strides, buffer_sizes);
+
+  VideoFrameLayout layout_move(std::move(layout));
+
+  EXPECT_EQ(layout_move.format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(layout_move.coded_size(), coded_size);
+  EXPECT_EQ(layout_move.num_strides(), 3u);
+  EXPECT_EQ(layout_move.num_buffers(), 3u);
+  EXPECT_EQ(layout_move.GetTotalBufferSize(), 110592u);
+  for (size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(layout_move.strides()[i], strides[i]);
+    EXPECT_EQ(layout_move.buffer_sizes()[i], buffer_sizes[i]);
+  }
+
+  // Members in object being moved are cleared except const members.
+  EXPECT_EQ(layout.format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(layout.coded_size(), coded_size);
+  EXPECT_EQ(layout.num_strides(), 0u);
+  EXPECT_EQ(layout.num_buffers(), 0u);
+  EXPECT_EQ(layout.GetTotalBufferSize(), 0u);
 }
 
 TEST(VideoFrameLayout, ToString) {
