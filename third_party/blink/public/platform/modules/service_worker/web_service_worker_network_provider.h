@@ -81,6 +81,10 @@ class WebServiceWorkerNetworkProvider {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     return nullptr;
   }
+
+  // For service worker clients. Called when IdlenessDetector emits its network
+  // idle signal.
+  virtual void DispatchNetworkQuiet() {}
 };
 
 }  // namespace blink

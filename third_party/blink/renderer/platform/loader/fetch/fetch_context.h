@@ -280,6 +280,9 @@ class PLATFORM_EXPORT FetchContext
     return false;
   }
 
+  // Called when IdlenessDetector emits its network idle signal.
+  virtual void DispatchNetworkQuiet() {}
+
  protected:
   FetchContext();
 

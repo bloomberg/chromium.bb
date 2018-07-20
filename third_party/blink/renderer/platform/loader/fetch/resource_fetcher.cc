@@ -1740,6 +1740,11 @@ String ResourceFetcher::GetCacheIdentifier() const {
   return MemoryCache::DefaultCacheIdentifier();
 }
 
+void ResourceFetcher::OnNetworkQuiet() {
+  Context().DispatchNetworkQuiet();
+  scheduler_->OnNetworkQuiet();
+}
+
 void ResourceFetcher::EmulateLoadStartedForInspector(
     Resource* resource,
     const KURL& url,

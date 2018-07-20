@@ -293,6 +293,13 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   // https://crbug.com/854993.
   service_worker_object_hosts_.clear();
   registration_object_hosts_.clear();
+
+  // This host is being destroyed before it received the anticipated
+  // HintToUpdateServiceWorker IPC from the renderer. This can occur on
+  // navigation failure or if the frame closed soon after navigation. Schedule
+  // the update now.
+  if (version_to_update_)
+    version_to_update_->ScheduleUpdate();
 }
 
 int ServiceWorkerProviderHost::frame_id() const {
@@ -554,6 +561,17 @@ bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
 
 void ServiceWorkerProviderHost::NotifyControllerLost() {
   SetControllerVersionAttribute(nullptr, true /* notify_controllerchange */);
+}
+
+void ServiceWorkerProviderHost::SetServiceWorkerToUpdate(
+    scoped_refptr<ServiceWorkerVersion> version) {
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  // This is only called for windows now, but it should be called for all
+  // clients someday.
+  DCHECK_EQ(provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow);
+
+  version_to_update_ = std::move(version);
 }
 
 std::unique_ptr<ServiceWorkerRequestHandler>
@@ -1105,6 +1123,36 @@ void ServiceWorkerProviderHost::CloneForWorker(
 
 void ServiceWorkerProviderHost::Ping(PingCallback callback) {
   std::move(callback).Run();
+}
+
+void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  if (!IsProviderForClient()) {
+    mojo::ReportBadMessage("SWPH_HTUSW_NOT_CLIENT");
+    return;
+  }
+
+  // It's possible there is an edge case due to claim() where the
+  // page did not have a contoller at main resource request but got
+  // one later and sent this IPC. Since the controller wasn't eligible
+  // to receive the fetch event, it's not necessary to trigger a soft update for
+  // it, so return.
+  if (!version_to_update_)
+    return;
+
+  // Take |version_to_update_| as it's not needed after this returns.  It's safe
+  // to drop the reference to the version even if we call ScheduleUpdate, since
+  // that function internally ensures a reference until the update occurs.
+  scoped_refptr<ServiceWorkerVersion> version = std::move(version_to_update_);
+
+  // When this DevTools option is enabled, the service worker was already
+  // updated during the main resource request, so just return. It is possible
+  // the option was enabled after the main resource request and before we get
+  // here, but that's an edge case we just ignore.
+  if (context_->force_update_on_page_load())
+    return;
+
+  version->ScheduleUpdate();
 }
 
 bool ServiceWorkerProviderHost::IsValidRegisterMessage(

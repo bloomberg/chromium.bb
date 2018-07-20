@@ -184,6 +184,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   ResourceLoadPriority ModifyPriorityForExperiments(
       ResourceLoadPriority) const override;
+  void DispatchNetworkQuiet() override;
 
  private:
   friend class FrameFetchContextTest;

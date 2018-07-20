@@ -437,6 +437,29 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // cache.
   void NotifyControllerLost();
 
+  // S13nServiceWorker:
+  // For service worker clients. Called when |version| was
+  // eligible to get a fetch event for the main resource request for this
+  // client. Remembers |version| as needing an update. To avoid affecting
+  // page load performance, the update occurs when we get a
+  // HintToUpdateServiceWorker message from the renderer, or when |this| is
+  // destroyed before receiving that message.
+  //
+  // Corresponds to the Handle Fetch algorithm:
+  // "If request is a non-subresource request...invoke Soft Update algorithm
+  // with registration."
+  // https://w3c.github.io/ServiceWorker/#on-fetch-request-algorithm
+  //
+  // This can be called multiple times due to redirects during a main resource
+  // load. Currently we only respect the last redirect, but intermediate
+  // service workers should be updated too.
+  // TODO(falken): Update intermediate service workers too.
+  //
+  // For non-S13nServiceWorker: The update logic is controlled entirely
+  // by ServiceWorkerControlleeRequestHandler, which sees all resource
+  // request activity and schedules an update at a convenient time.
+  void SetServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
+
   bool is_execution_ready() const { return is_execution_ready_; }
 
  private:
@@ -518,6 +541,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CloneForWorker(
       mojom::ServiceWorkerContainerHostRequest container_host_request) override;
   void Ping(PingCallback callback) override;
+  void HintToUpdateServiceWorker() override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
   void RegistrationComplete(RegisterCallback callback,
@@ -669,6 +693,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // TODO(crbug.com/838410): Temporary debugging for the linked bug.
   bool in_dtor_ = false;
+
+  // For service worker clients. The service worker that was eligible to receive
+  // the fetch event for the main resource request for this client. This worker
+  // should be updated "soon". See SetServiceWorkerToUpdate documentation.
+  scoped_refptr<ServiceWorkerVersion> version_to_update_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };
