@@ -108,7 +108,8 @@ void CollectInlinesInternal(
                             kObjectReplacementCharacter, nullptr, node);
 
     } else if (node->IsOutOfFlowPositioned()) {
-      builder->AppendOpaque(NGInlineItem::kOutOfFlowPositioned, nullptr, node);
+      builder->AppendOpaque(NGInlineItem::kOutOfFlowPositioned,
+                            kObjectReplacementCharacter, nullptr, node);
 
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsLayoutNGListMarker()) {
@@ -477,8 +478,7 @@ void NGInlineNode::ShapeText(const String& text_content,
           break;
         end_offset = item.EndOffset();
       } else if (item.Type() == NGInlineItem::kOpenTag ||
-                 item.Type() == NGInlineItem::kCloseTag ||
-                 item.Type() == NGInlineItem::kOutOfFlowPositioned) {
+                 item.Type() == NGInlineItem::kCloseTag) {
         // These items are opaque to shaping.
         // Opaque items cannot have text, such as Object Replacement Characters,
         // since such characters can affect shaping.
