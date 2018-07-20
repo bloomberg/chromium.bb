@@ -104,6 +104,9 @@ void RulesCacheDelegate::UpdateRules(const std::string& extension_id,
 
   DCHECK(value.is_list());
   has_nonempty_ruleset_ = !value.GetList().empty();
+  for (auto& observer : observers_)
+    observer.OnUpdateRules();
+
   if (type_ == Type::kEphemeral)
     return;
 
@@ -121,6 +124,16 @@ void RulesCacheDelegate::UpdateRules(const std::string& extension_id,
 
 bool RulesCacheDelegate::HasRules() const {
   return has_nonempty_ruleset_;
+}
+
+void RulesCacheDelegate::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void RulesCacheDelegate::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
 }
 
 void RulesCacheDelegate::CheckIfReady() {
