@@ -263,6 +263,14 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // responsible for synchronizing ScheduleWork() calls.
   void ScheduleWork();
 
+  // Returns |next_run_time| capped at 1 day from |recent_time_|. This is used
+  // to mitigate https://crbug.com/850450 where some platforms are unhappy with
+  // delays > 100,000,000 seconds. In practice, a diagnosis metric showed that
+  // no sleep > 1 hour ever completes (always interrupted by an earlier
+  // MessageLoop event) and 99% of completed sleeps are the ones scheduled for
+  // <= 1 second. Details @ https://crrev.com/c/1142589.
+  TimeTicks CapAtOneDay(TimeTicks next_run_time);
+
   // MessagePump::Delegate methods:
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
