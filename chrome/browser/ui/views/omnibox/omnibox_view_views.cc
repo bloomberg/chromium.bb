@@ -228,7 +228,6 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 void OmniboxViewViews::InstallPlaceholderText() {
   set_placeholder_text_color(
       location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
-  set_placeholder_text_hidden_on_focus(true);
 
   const TemplateURL* const default_provider =
       model()->client()->GetTemplateURLService()->GetDefaultSearchProvider();
@@ -547,6 +546,13 @@ void OmniboxViewViews::UpdatePopup() {
 
 void OmniboxViewViews::ApplyCaretVisibility() {
   SetCursorEnabled(model()->is_caret_visible());
+
+  // TODO(tommycli): Because the LocationBarView has a somewhat different look
+  // depending on whether or not the caret is visible, we have to resend a
+  // "focused" notification. Remove this once we get rid of the concept of
+  // "invisible focus".
+  if (location_bar_view_)
+    location_bar_view_->OnOmniboxFocused();
 }
 
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(
@@ -1161,6 +1167,10 @@ void OmniboxViewViews::ExecuteTextEditCommand(ui::TextEditCommand command) {
       Textfield::ExecuteTextEditCommand(command);
       break;
   }
+}
+
+bool OmniboxViewViews::ShouldShowPlaceholderText() const {
+  return Textfield::ShouldShowPlaceholderText() && !model()->is_caret_visible();
 }
 
 #if defined(OS_CHROMEOS)

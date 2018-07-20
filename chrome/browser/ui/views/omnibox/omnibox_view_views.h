@@ -235,6 +235,7 @@ class OmniboxViewViews : public OmniboxView,
   void DoInsertChar(base::char16 ch) override;
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void ExecuteTextEditCommand(ui::TextEditCommand command) override;
+  bool ShouldShowPlaceholderText() const override;
 
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)

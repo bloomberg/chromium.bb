@@ -1997,6 +1997,10 @@ bool Textfield::IsDropCursorForInsertion() const {
   return true;
 }
 
+bool Textfield::ShouldShowPlaceholderText() const {
+  return text().empty() && !GetPlaceholderText().empty();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:
 
@@ -2149,8 +2153,7 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
 
   // Draw placeholder text if needed.
   gfx::RenderText* render_text = GetRenderText();
-  if (text().empty() && !GetPlaceholderText().empty() &&
-      (!placeholder_text_hidden_on_focus_ || !HasFocus())) {
+  if (ShouldShowPlaceholderText()) {
     // Disable subpixel rendering when the background color is not opaque
     // because it draws incorrect colors around the glyphs in that case.
     // See crbug.com/786343
