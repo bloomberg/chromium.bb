@@ -11,7 +11,7 @@
  * Binary Size Analysis HTML report.
  */
 
-{
+const newTreeElement = (() => {
   /** Capture one of: "::", "../", "./", "/", "#" */
   const _SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
   /** Insert zero-width space after capture group */
@@ -107,7 +107,7 @@
   }
 
   /**
-   * Keydown event handler to move focus for the given element
+   * Tree view keydown event handler to move focus for the given element.
    * @param {KeyboardEvent} event
    */
   function _handleKeyNavigation(event) {
@@ -163,11 +163,10 @@
         break;
       // If closed tree, open tree. Otherwise, move to first child.
       case 'ArrowRight': {
-        const data = _uiNodeData.get(link);
-        if (!data.children || data.children.length !== 0) {
-          const isExpanded =
-            link.parentElement.getAttribute('aria-expanded') === 'true';
-          if (isExpanded) {
+        const expanded = link.parentElement.getAttribute('aria-expanded');
+        if (expanded != null) {
+          // Leafs do not have the aria-expanded property
+          if (expanded === 'true') {
             _focusNext();
           } else {
             _toggle();
@@ -213,6 +212,10 @@
           }
         }
         break;
+      // Remove focus from the tree view.
+      case 'Escape':
+        link.blur();
+        break;
       // If a letter was pressed, find a node starting with that character.
       default:
         if (event.key.length === 1 && event.key.match(/\S/)) {
@@ -224,6 +227,18 @@
           }
         }
         break;
+    }
+  }
+
+  /**
+   * Display the infocard when a node is hovered over, unless a node is
+   * currently focused.
+   * @param {MouseEvent} event
+   */
+  function _handleMouseOver(event) {
+    const active = document.activeElement;
+    if (!active || !active.classList.contains('node')) {
+      displayInfocard(_uiNodeData.get(event.currentTarget));
     }
   }
 
@@ -288,9 +303,7 @@
     // Set the byte size and hover text
     _setSize(element.querySelector('.size'), data);
 
-    link.addEventListener('mouseover', event =>
-      displayInfocard(_uiNodeData.get(event.currentTarget))
-    );
+    link.addEventListener('mouseover', _handleMouseOver);
     if (!isLeaf) {
       link.addEventListener('click', _toggleTreeElement);
     }
@@ -317,9 +330,15 @@
   _symbolTree.addEventListener('focusout', event =>
     event.currentTarget.parentElement.classList.remove('focused')
   );
+  window.addEventListener('keydown', event => {
+    if (event.key === '?' && event.target.tagName !== 'INPUT') {
+      // Open help when "?" is pressed
+      document.getElementById('faq').click();
+    }
+  });
 
-  self.newTreeElement = newTreeElement;
-}
+  return newTreeElement
+})();
 
 {
   class ProgressBar {

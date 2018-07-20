@@ -242,6 +242,29 @@ function _startListeners() {
   setMethodCountModeUI();
   methodCountInput.addEventListener('change', setMethodCountModeUI);
 
+  /**
+   * Display error text on blur for regex inputs, if the input is invalid.
+   * @param {Event} event
+   */
+  function checkForRegExError(event) {
+    const input = /** @type {HTMLInputElement} */ (event.currentTarget);
+    const errorBox = document.getElementById(
+      input.getAttribute('aria-describedby')
+    );
+    try {
+      new RegExp(input.value);
+      errorBox.textContent = '';
+      input.setAttribute('aria-invalid', 'false');
+    } catch (err) {
+      errorBox.textContent = err.message;
+      input.setAttribute('aria-invalid', 'true');
+    }
+  }
+  for (const input of document.getElementsByClassName('input-regex')) {
+    input.addEventListener('blur', checkForRegExError);
+    input.dispatchEvent(new Event('blur'));
+  }
+
   document.getElementById('type-all').addEventListener('click', () => {
     for (const checkbox of typeCheckboxes) {
       checkbox.checked = true;
@@ -335,7 +358,7 @@ function _makeSizeTextGetter() {
   function getSizeContents(node) {
     if (state.has('method_count')) {
       const {count: methodCount = 0} =
-          node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
+        node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
       const methodStr = methodCount.toLocaleString(_LOCALE, {
         useGrouping: true,
       });

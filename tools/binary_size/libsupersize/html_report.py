@@ -118,6 +118,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   main_symbols = dex_symbols + ordered_symbols[:symbol_count]
   extra_symbols = ordered_symbols[symbol_count:]
 
+  logging.info('Found %d large symbols, %s small symbols',
+               len(main_symbols), len(extra_symbols))
+
   # Bundle symbols by the file they belong to,
   # and add all the file buckets into file_nodes
   for symbol in main_symbols:
