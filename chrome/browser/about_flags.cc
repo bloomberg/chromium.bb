@@ -3730,10 +3730,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
 
 #if defined(OS_CHROMEOS)
-    {"ash-enable-new-overview-animations",
-     flag_descriptions::kAshEnableNewOverviewAnimationsName,
-     flag_descriptions::kAshEnableNewOverviewAnimationsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNewOverviewAnimations)},
     {"enable-experimental-crostini-ui",
      flag_descriptions::kExperimentalCrostiniUIName,
      flag_descriptions::kExperimentalCrostiniUIDescription, kOsCrOS,

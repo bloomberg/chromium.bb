@@ -29,11 +29,6 @@ namespace ash {
 // Returns true if |window| can cover available workspace.
 bool CanCoverAvailableWorkspace(aura::Window* window);
 
-// Returns true if overview mode should use the new animations.
-// TODO(wutao): Remove this function when the old overview mode animations
-// become obsolete. See https://crbug.com/801465.
-bool IsNewOverviewAnimationsEnabled();
-
 bool IsOverviewSwipeToCloseEnabled();
 
 // Fades |widget| to opacity zero with animation settings depending on

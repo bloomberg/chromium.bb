@@ -290,15 +290,12 @@ void WindowSelector::Init(const WindowList& windows,
     // as we don't want to cause any window updates until all windows in
     // overview are observed. See http://crbug.com/384495.
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-      if (IsNewOverviewAnimationsEnabled()) {
         window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
                                                   OverviewTransition::kEnter);
-      }
       window_grid->PrepareForOverview();
       window_grid->PositionWindows(/*animate=*/true);
       // Reset |should_animate_when_entering_| in order to animate during
       // overview mode, such as dragging animations.
-      if (IsNewOverviewAnimationsEnabled())
         window_grid->ResetWindowListAnimationStates();
     }
 
@@ -343,7 +340,6 @@ void WindowSelector::Shutdown() {
 
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-    if (IsNewOverviewAnimationsEnabled()) {
       // During shutdown, do not animate all windows in overview if we need to
       // animate the snapped window.
       if (split_view_controller->IsSplitViewModeActive() &&
@@ -363,7 +359,6 @@ void WindowSelector::Shutdown() {
                 : nullptr,
             OverviewTransition::kExit);
       }
-    }
     for (const auto& window_selector_item : window_grid->window_list())
       window_selector_item->RestoreWindow(/*reset_transform=*/true);
     remaining_items += window_grid->size();
