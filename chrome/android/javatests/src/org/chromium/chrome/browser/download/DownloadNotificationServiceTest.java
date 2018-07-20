@@ -49,8 +49,8 @@ public class DownloadNotificationServiceTest
     private static class MockDownloadManagerService extends DownloadManagerService {
         final List<DownloadItem> mDownloads = new ArrayList<DownloadItem>();
 
-        public MockDownloadManagerService(Context context) {
-            super(context, null, getTestHandler(), 1000);
+        public MockDownloadManagerService() {
+            super(null, getTestHandler(), 1000);
         }
 
         @Override
@@ -408,8 +408,7 @@ public class DownloadNotificationServiceTest
         DownloadNotificationService service = bindNotificationService();
         DownloadManagerService.disableNetworkListenerForTest();
 
-        final MockDownloadManagerService manager = new MockDownloadManagerService(
-                InstrumentationRegistry.getTargetContext().getApplicationContext());
+        final MockDownloadManagerService manager = new MockDownloadManagerService();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

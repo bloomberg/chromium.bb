@@ -27,7 +27,7 @@ public class DownloadResumptionBackgroundTask extends NativeBackgroundTask {
     @Override
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, final TaskFinishedCallback callback) {
-        DownloadResumptionScheduler.getDownloadResumptionScheduler(context).resume();
+        DownloadResumptionScheduler.getDownloadResumptionScheduler().resume();
         new Handler().post(() -> callback.taskFinished(false));
     }
 
@@ -45,6 +45,6 @@ public class DownloadResumptionBackgroundTask extends NativeBackgroundTask {
 
     @Override
     public void reschedule(Context context) {
-        DownloadResumptionScheduler.getDownloadResumptionScheduler(context).scheduleIfNecessary();
+        DownloadResumptionScheduler.getDownloadResumptionScheduler().scheduleIfNecessary();
     }
 }

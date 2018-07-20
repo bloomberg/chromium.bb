@@ -501,10 +501,8 @@ public class DownloadNotificationService2 {
      * already in progress, do nothing.
      */
     void resumeAllPendingDownloads() {
-        Context context = ContextUtils.getApplicationContext();
-
         // Limit the number of auto resumption attempts in case Chrome falls into a vicious cycle.
-        DownloadResumptionScheduler.getDownloadResumptionScheduler(context).cancel();
+        DownloadResumptionScheduler.getDownloadResumptionScheduler().cancel();
         int numAutoResumptionAtemptLeft = getResumptionAttemptLeft();
         if (numAutoResumptionAtemptLeft <= 0) return;
 
@@ -515,7 +513,7 @@ public class DownloadNotificationService2 {
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
         for (int i = 0; i < entries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = entries.get(i);
-            if (!canResumeDownload(context, entry)) continue;
+            if (!canResumeDownload(ContextUtils.getApplicationContext(), entry)) continue;
             if (mDownloadsInProgress.contains(entry.id)) continue;
             notifyDownloadPending(entry.id, entry.fileName, entry.isOffTheRecord,
                     entry.canDownloadWhileMetered, entry.isTransient, null, false,
@@ -701,8 +699,6 @@ public class DownloadNotificationService2 {
 
     private void rescheduleDownloads() {
         if (getResumptionAttemptLeft() <= 0) return;
-        DownloadResumptionScheduler
-                .getDownloadResumptionScheduler(ContextUtils.getApplicationContext())
-                .scheduleIfNecessary();
+        DownloadResumptionScheduler.getDownloadResumptionScheduler().scheduleIfNecessary();
     }
 }

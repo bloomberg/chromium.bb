@@ -150,7 +150,6 @@ public class DownloadManagerService
     private final long mUpdateDelayInMillis;
 
     private final Handler mHandler;
-    private final Context mContext;
 
     /** Generic interface for notifying external UI components about downloads and their states. */
     public interface DownloadObserver extends DownloadSharedPreferenceHelper.Observer {
@@ -234,17 +233,16 @@ public class DownloadManagerService
      */
     public static DownloadManagerService getDownloadManagerService() {
         ThreadUtils.assertOnUiThread();
-        Context appContext = ContextUtils.getApplicationContext();
         if (sDownloadManagerService == null) {
             // TODO(crbug.com/765327): Remove temporary fix after flag is no longer being used.
             DownloadNotifier downloadNotifier =
                     (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                                     .isStartupSuccessfullyCompleted()
                             || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND))
-                    ? new SystemDownloadNotifier(appContext)
-                    : new SystemDownloadNotifier2(appContext);
+                    ? new SystemDownloadNotifier()
+                    : new SystemDownloadNotifier2();
             sDownloadManagerService = new DownloadManagerService(
-                    appContext, downloadNotifier, new Handler(), UPDATE_DELAY_MILLIS);
+                    downloadNotifier, new Handler(), UPDATE_DELAY_MILLIS);
         }
         return sDownloadManagerService;
     }
@@ -273,19 +271,19 @@ public class DownloadManagerService
     }
 
     @VisibleForTesting
-    protected DownloadManagerService(Context context, DownloadNotifier downloadNotifier,
-            Handler handler, long updateDelayInMillis) {
-        mContext = context;
+    protected DownloadManagerService(
+            DownloadNotifier downloadNotifier, Handler handler, long updateDelayInMillis) {
+        Context applicationContext = ContextUtils.getApplicationContext();
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
         // Clean up unused shared prefs. TODO(qinmin): remove this after M61.
         mSharedPrefs.edit().remove(PREF_IS_DOWNLOAD_HOME_ENABLED).apply();
         mDownloadNotifier = downloadNotifier;
         mUpdateDelayInMillis = updateDelayInMillis;
         mHandler = handler;
-        mDownloadSnackbarController = new DownloadSnackbarController(context);
-        mDownloadManagerDelegate = new DownloadManagerDelegate(mContext);
+        mDownloadSnackbarController = new DownloadSnackbarController();
+        mDownloadManagerDelegate = new DownloadManagerDelegate(applicationContext);
         mOMADownloadHandler = new OMADownloadHandler(
-                context, mDownloadManagerDelegate, mDownloadSnackbarController);
+                applicationContext, mDownloadManagerDelegate, mDownloadSnackbarController);
         // Note that this technically leaks the native object, however, DownloadManagerService
         // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
         init();
@@ -317,8 +315,8 @@ public class DownloadManagerService
     /**
      * Pre-load shared prefs to avoid being blocked on the disk access async task in the future.
      */
-    public static void warmUpSharedPrefs(Context context) {
-        getAutoRetryCountSharedPreference(context);
+    public static void warmUpSharedPrefs() {
+        getAutoRetryCountSharedPreference();
     }
 
     public DownloadNotifier getDownloadNotifier() {
@@ -383,10 +381,12 @@ public class DownloadManagerService
         if (progress == null) return;
         if (!isAutoResumable || sIsNetworkListenerDisabled) return;
         ConnectivityManager cm =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
         if (info == null || !info.isConnected()) return;
-        if (progress.mCanDownloadWhileMetered || !isActiveNetworkMetered(mContext)) {
+        if (progress.mCanDownloadWhileMetered
+                || !isActiveNetworkMetered(ContextUtils.getApplicationContext())) {
             // Normally the download will automatically resume when network is reconnected.
             // However, if there are multiple network connections and the interruption is caused
             // by switching between active networks, onConnectionTypeChanged() will not get called.
@@ -541,8 +541,10 @@ public class DownloadManagerService
             @Override
             public Pair<Long, Boolean> doInBackground(Void... params) {
                 boolean success = addCompletedDownload(item);
-                boolean canResolve = success ? (isOMADownloadDescription(item.getDownloadInfo())
-                        || canResolveDownloadItem(mContext, item, isSupportedMimeType)) : false;
+                boolean canResolve = success
+                        && (isOMADownloadDescription(item.getDownloadInfo())
+                                   || canResolveDownloadItem(ContextUtils.getApplicationContext(),
+                                              item, isSupportedMimeType));
                 return Pair.create(item.getSystemDownloadId(), canResolve);
             }
 
@@ -665,8 +667,9 @@ public class DownloadManagerService
         if (progress == null) {
             if (!downloadItem.getDownloadInfo().isPaused()) {
                 long startTime = System.currentTimeMillis();
-                progress = new DownloadProgress(
-                        startTime, isActiveNetworkMetered(mContext), downloadItem, downloadStatus);
+                progress = new DownloadProgress(startTime,
+                        isActiveNetworkMetered(ContextUtils.getApplicationContext()), downloadItem,
+                        downloadStatus);
                 progress.mIsUpdated = true;
                 progress.mIsSupportedMimeType = isSupportedMimeType;
                 mDownloadProgressMap.put(id, progress);
@@ -776,7 +779,7 @@ public class DownloadManagerService
             return;
         }
 
-        DownloadUtils.showDownloadStartToast(mContext);
+        DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
         addUmaStatsEntry(new DownloadUmaStatsEntry(
                 String.valueOf(downloadId), downloadItem.getStartTime(), 0, false, true, 0, 0));
     }
@@ -862,7 +865,7 @@ public class DownloadManagerService
     /** See {@link #openDownloadedContent(Context, String, boolean, boolean, String, long)}. */
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId,
             @DownloadOpenSource int source) {
-        openDownloadedContent(mContext, downloadInfo.getFilePath(),
+        openDownloadedContent(ContextUtils.getApplicationContext(), downloadInfo.getFilePath(),
                 isSupportedMimeType(downloadInfo.getMimeType()), downloadInfo.isOffTheRecord(),
                 downloadInfo.getDownloadGuid(), downloadId, downloadInfo.getOriginalUrl(),
                 downloadInfo.getReferrer(), source);
@@ -934,7 +937,8 @@ public class DownloadManagerService
                     failureMessage,
                     reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS);
         } else {
-            Toast.makeText(mContext, failureMessage, Toast.LENGTH_SHORT).show();
+            Toast.makeText(ContextUtils.getApplicationContext(), failureMessage, Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 
@@ -991,14 +995,15 @@ public class DownloadManagerService
             // can start. If the previous connection type is metered, manually resuming on an
             // unmetered network should not affect the original connection type.
             if (!progress.mCanDownloadWhileMetered) {
-                progress.mCanDownloadWhileMetered = isActiveNetworkMetered(mContext);
+                progress.mCanDownloadWhileMetered =
+                        isActiveNetworkMetered(ContextUtils.getApplicationContext());
             }
             incrementDownloadRetryCount(item.getId(), true);
             clearDownloadRetryCount(item.getId(), true);
         } else {
             // TODO(qinmin): Consolidate this logic with the logic in notification service that
             // throttles browser restarts.
-            SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
+            SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference();
             int count = sharedPrefs.getInt(item.getId(), 0);
             if (count >= getAutoResumptionLimit()) {
                 removeAutoResumableDownload(item.getId());
@@ -1329,7 +1334,7 @@ public class DownloadManagerService
     public void onConnectionTypeChanged(int connectionType) {
         if (mAutoResumableDownloadIds.isEmpty()) return;
         if (connectionType == ConnectionType.CONNECTION_NONE) return;
-        boolean isMetered = isActiveNetworkMetered(mContext);
+        boolean isMetered = isActiveNetworkMetered(ContextUtils.getApplicationContext());
         // Make a copy of |mAutoResumableDownloadIds| as scheduleDownloadResumption() may delete
         // elements inside the array.
         List<String> copies = new ArrayList<String>(mAutoResumableDownloadIds);
@@ -1479,20 +1484,21 @@ public class DownloadManagerService
      */
     @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
+        Context appContext = ContextUtils.getApplicationContext();
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isStartupSuccessfullyCompleted()
                 || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND)) {
-            Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
+            Intent intent = DownloadNotificationService.buildActionIntent(appContext, action,
                     LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                     downloadItem.getDownloadInfo().isOffTheRecord());
             addCancelExtra(intent, downloadItem);
-            mContext.sendBroadcast(intent);
+            appContext.sendBroadcast(intent);
         } else {
-            Intent intent = DownloadNotificationFactory.buildActionIntent(mContext, action,
+            Intent intent = DownloadNotificationFactory.buildActionIntent(appContext, action,
                     LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                     downloadItem.getDownloadInfo().isOffTheRecord());
             addCancelExtra(intent, downloadItem);
-            mContext.startService(intent);
+            appContext.startService(intent);
         }
     }
 
@@ -1690,7 +1696,8 @@ public class DownloadManagerService
                 boolean isSupportedMimeType =
                         isSupportedMimeType(downloadItem.getDownloadInfo().getMimeType());
                 boolean canResolve = isOMADownloadDescription(downloadItem.getDownloadInfo())
-                        || canResolveDownloadItem(mContext, downloadItem, isSupportedMimeType);
+                        || canResolveDownloadItem(ContextUtils.getApplicationContext(),
+                                   downloadItem, isSupportedMimeType);
                 return canResolve && shouldOpenAfterDownload(downloadItem.getDownloadInfo());
             }
 
@@ -1732,30 +1739,31 @@ public class DownloadManagerService
      * @param reason Reason of failure reported by android DownloadManager.
      */
     private String getDownloadFailureMessage(String fileName, int reason) {
+        Context appContext = ContextUtils.getApplicationContext();
         switch (reason) {
             case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_file_already_exists, fileName);
             case DownloadManager.ERROR_FILE_ERROR:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_file_system_error, fileName);
             case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_insufficient_space, fileName);
             case DownloadManager.ERROR_CANNOT_RESUME:
             case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_network_failures, fileName);
             case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
             case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_server_issues, fileName);
             case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_storage_not_found, fileName);
             case DownloadManager.ERROR_UNKNOWN:
             default:
-                return mContext.getString(
+                return appContext.getString(
                         R.string.download_failed_reason_unknown_error, fileName);
         }
     }
@@ -1764,8 +1772,9 @@ public class DownloadManagerService
      * Returns the SharedPreferences for download retry count.
      * @return The SharedPreferences to use.
      */
-    private static SharedPreferences getAutoRetryCountSharedPreference(Context context) {
-        return context.getSharedPreferences(DOWNLOAD_RETRY_COUNT_FILE_NAME, Context.MODE_PRIVATE);
+    private static SharedPreferences getAutoRetryCountSharedPreference() {
+        return ContextUtils.getApplicationContext().getSharedPreferences(
+                DOWNLOAD_RETRY_COUNT_FILE_NAME, Context.MODE_PRIVATE);
     }
 
     /**
@@ -1788,7 +1797,7 @@ public class DownloadManagerService
      * @param sharedPreferenceName Name of the SharedPreference entry.
      */
     private void incrementDownloadRetrySharedPreferenceCount(String sharedPreferenceName) {
-        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
+        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference();
         int count = sharedPrefs.getInt(sharedPreferenceName, 0);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         count++;
@@ -1818,7 +1827,7 @@ public class DownloadManagerService
      * @param isAutoRetryOnly Whether to clear the auto retry count only.
      */
     private void clearDownloadRetryCount(String downloadGuid, boolean isAutoRetryOnly) {
-        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference(mContext);
+        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference();
         String name = getDownloadRetryCountSharedPrefName(downloadGuid, !isAutoRetryOnly, false);
         int count = Math.min(sharedPrefs.getInt(name, 0), 200);
         assert count >= 0;

@@ -210,7 +210,7 @@ public class ChromeBrowserInitializer {
                     ContextUtils.getAppSharedPreferences();
                     DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
                     ActivityAssigner.warmUpSharedPrefs(mApplication);
-                    DownloadManagerService.warmUpSharedPrefs(mApplication);
+                    DownloadManagerService.warmUpSharedPrefs();
                     return null;
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -218,7 +218,7 @@ public class ChromeBrowserInitializer {
             ContextUtils.getAppSharedPreferences();
             DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
             ActivityAssigner.warmUpSharedPrefs(mApplication);
-            DownloadManagerService.warmUpSharedPrefs(mApplication);
+            DownloadManagerService.warmUpSharedPrefs();
         }
     }
 

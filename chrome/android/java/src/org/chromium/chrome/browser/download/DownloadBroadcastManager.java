@@ -53,7 +53,6 @@ public class DownloadBroadcastManager extends Service {
     private final DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper =
             DownloadSharedPreferenceHelper.getInstance();
 
-    private final Context mApplicationContext;
     private final DownloadNotificationService2 mDownloadNotificationService;
     private final Handler mHandler = new Handler();
     private final Runnable mStopSelfRunnable = new Runnable() {
@@ -64,7 +63,6 @@ public class DownloadBroadcastManager extends Service {
     };
 
     public DownloadBroadcastManager() {
-        mApplicationContext = ContextUtils.getApplicationContext();
         mDownloadNotificationService = DownloadNotificationService2.getInstance();
     }
 
@@ -109,9 +107,7 @@ public class DownloadBroadcastManager extends Service {
      * Cancel any download resumption tasks and reset the number of resumption attempts available.
      */
     void cancelQueuedResumptions() {
-        DownloadResumptionScheduler
-                .getDownloadResumptionScheduler(ContextUtils.getApplicationContext())
-                .cancel();
+        DownloadResumptionScheduler.getDownloadResumptionScheduler().cancel();
         // Reset number of attempts left if the action is triggered by user.
         clearResumptionAttemptLeft();
     }
@@ -142,7 +138,8 @@ public class DownloadBroadcastManager extends Service {
                 // If user manually resumes a download, update the network type if it
                 // is not metered previously.
                 boolean canDownloadWhileMetered = entry.canDownloadWhileMetered
-                        || DownloadManagerService.isActiveNetworkMetered(mApplicationContext);
+                        || DownloadManagerService.isActiveNetworkMetered(
+                                   ContextUtils.getApplicationContext());
                 // Update the SharedPreference entry.
                 mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
                         new DownloadSharedPreferenceEntry(entry.id, entry.notificationId,
@@ -191,9 +188,8 @@ public class DownloadBroadcastManager extends Service {
         };
 
         try {
-            ChromeBrowserInitializer.getInstance(mApplicationContext).handlePreNativeStartup(parts);
-            ChromeBrowserInitializer.getInstance(mApplicationContext)
-                    .handlePostNativeStartup(true, parts);
+            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
@@ -209,7 +205,7 @@ public class DownloadBroadcastManager extends Service {
         // Handle actions that do not require a specific entry or service delegate.
         switch (action) {
             case ACTION_NOTIFICATION_CLICKED:
-                openDownload(mApplicationContext, intent, id);
+                openDownload(ContextUtils.getApplicationContext(), intent, id);
                 return;
 
             case ACTION_DOWNLOAD_OPEN:

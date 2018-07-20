@@ -60,10 +60,6 @@ public class OMADownloadHandlerTest {
         public boolean mSucceeded;
         public boolean mFailed;
 
-        public MockDownloadSnackbarController() {
-            super(null);
-        }
-
         public void waitForSnackbarControllerToFinish(final boolean success) {
             CriteriaHelper.pollInstrumentationThread(
                     new Criteria("Failed while waiting for all calls to complete.") {

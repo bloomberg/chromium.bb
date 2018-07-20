@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.content.Context;
-
+import org.chromium.base.ContextUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.PendingState;
@@ -16,15 +15,13 @@ import org.chromium.components.offline_items_collection.PendingState;
  * to the latter to issue calls to show and update notifications.
  */
 public class SystemDownloadNotifier2 implements DownloadNotifier {
-    private final Context mApplicationContext;
     private final DownloadNotificationService2 mDownloadNotificationService;
 
     /**
      * Constructor.
      * @param context Application context.
      */
-    public SystemDownloadNotifier2(Context context) {
-        mApplicationContext = context.getApplicationContext();
+    public SystemDownloadNotifier2() {
         mDownloadNotificationService = DownloadNotificationService2.getInstance();
     }
 
@@ -84,7 +81,9 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
 
     @Override
     public void resumePendingDownloads() {
-        if (!DownloadNotificationService2.isTrackingResumableDownloads(mApplicationContext)) return;
-        mDownloadNotificationService.resumeAllPendingDownloads();
+        if (DownloadNotificationService2.isTrackingResumableDownloads(
+                    ContextUtils.getApplicationContext())) {
+            mDownloadNotificationService.resumeAllPendingDownloads();
+        }
     }
 }
