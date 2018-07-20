@@ -2360,6 +2360,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void ReadBackBuffersIntoShadowCopies(
       base::flat_set<scoped_refptr<Buffer>> buffers_to_shadow_copy);
 
+  // Compiles the given shader and exits command processing early.
+  void CompileShaderAndExitCommandProcessingEarly(Shader* shader);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -11030,7 +11033,7 @@ void GLES2DecoderImpl::DoGetShaderiv(GLuint shader_id,
     case GL_COMPILE_STATUS:
     case GL_INFO_LOG_LENGTH:
     case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
-      shader->DoCompile();
+      CompileShaderAndExitCommandProcessingEarly(shader);
       break;
 
     default:
@@ -11096,7 +11099,7 @@ error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
   }
 
   // Make sure translator has been utilized in compile.
-  shader->DoCompile();
+  CompileShaderAndExitCommandProcessingEarly(shader);
 
   bucket->SetFromString(shader->translated_source().c_str());
   return error::kNoError;
@@ -11135,7 +11138,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
   }
 
   // Shader must be compiled in order to get the info log.
-  shader->DoCompile();
+  CompileShaderAndExitCommandProcessingEarly(shader);
 
   bucket->SetFromString(shader->log_info().c_str());
   return error::kNoError;
@@ -20249,6 +20252,21 @@ void GLES2DecoderImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
   // All buffers in writes_submitted_but_not_completed_ should have shm
   // allocations.
   writes_submitted_but_not_completed_.insert(buffer);
+}
+
+void GLES2DecoderImpl::CompileShaderAndExitCommandProcessingEarly(
+    Shader* shader) {
+  // No need to call DoCompile or exit command processing early if the call
+  // to DoCompile will be a no-op.
+  if (!shader->CanCompile())
+    return;
+
+  shader->DoCompile();
+
+  // Shader compilation can be very slow (see https://crbug.com/844780), Exit
+  // command processing to allow for context preemption and GPU watchdog
+  // checks.
+  ExitCommandProcessingEarly();
 }
 
 // Include the auto-generated part of this file. We split this because it means

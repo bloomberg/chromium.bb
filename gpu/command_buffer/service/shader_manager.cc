@@ -75,9 +75,7 @@ void Shader::RequestCompile(scoped_refptr<ShaderTranslatorInterface> translator,
 }
 
 void Shader::DoCompile() {
-  // We require that RequestCompile() must be called before DoCompile(),
-  // so we can return early if the shader state is not what we expect.
-  if (shader_state_ != kShaderStateCompileRequested) {
+  if (!CanCompile()) {
     return;
   }
 
