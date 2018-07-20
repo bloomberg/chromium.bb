@@ -231,12 +231,12 @@ static bool Parse(const Dictionary& constraints_dictionary,
     if (!ok || optional_constraints.IsUndefinedOrNull())
       return false;
 
-    size_t number_of_constraints;
+    uint32_t number_of_constraints;
     ok = optional_constraints.length(number_of_constraints);
     if (!ok)
       return false;
 
-    for (size_t i = 0; i < number_of_constraints; ++i) {
+    for (uint32_t i = 0; i < number_of_constraints; ++i) {
       Dictionary constraint;
       ok = optional_constraints.Get(i, constraint);
       if (!ok || constraint.IsUndefinedOrNull())

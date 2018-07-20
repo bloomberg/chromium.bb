@@ -49,8 +49,8 @@ class CORE_EXPORT ArrayValue final {
 
   bool IsUndefinedOrNull() const;
 
-  bool length(size_t&) const;
-  bool Get(size_t index, Dictionary&) const;
+  bool length(uint32_t&) const;
+  bool Get(uint32_t index, Dictionary&) const;
 
  private:
   v8::Local<v8::Array> array_;
