@@ -81,6 +81,8 @@ blink_core_sources("loader") {
     "ping_loader.h",
     "prerenderer_client.cc",
     "prerenderer_client.h",
+    "previews_resource_loading_hints.cc",
+    "previews_resource_loading_hints.h",
     "previews_resource_loading_hints_receiver_impl.cc",
     "previews_resource_loading_hints_receiver_impl.h",
     "private/frame_client_hints_preferences_context.cc",

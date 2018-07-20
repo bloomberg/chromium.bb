@@ -213,6 +213,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const override;
   KURL GetSiteForCookies() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
+  PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
+      const override;
   bool AllowScriptFromSource(const KURL&) const override;
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,

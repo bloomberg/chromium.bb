@@ -4,14 +4,20 @@
 
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints_receiver_impl.h"
 
+#include <vector>
+
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 PreviewsResourceLoadingHintsReceiverImpl::
     PreviewsResourceLoadingHintsReceiverImpl(
-        mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request)
-    : binding_(this, std::move(request)) {}
+        mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request,
+        Document* document)
+    : binding_(this, std::move(request)), document_(document) {}
 
 PreviewsResourceLoadingHintsReceiverImpl::
     ~PreviewsResourceLoadingHintsReceiverImpl() {}
@@ -23,6 +29,16 @@ void PreviewsResourceLoadingHintsReceiverImpl::SetResourceLoadingHints(
   UMA_HISTOGRAM_COUNTS_100(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns",
       resource_loading_hints->subresources_to_block.size());
+
+  std::vector<WTF::String> subresource_patterns_to_block;
+  for (const auto& subresource :
+       resource_loading_hints->subresources_to_block) {
+    subresource_patterns_to_block.push_back(subresource);
+  }
+
+  document_->Loader()->SetPreviewsResourceLoadingHints(
+      PreviewsResourceLoadingHints::Create(*(document_.Get()),
+                                           subresource_patterns_to_block));
 }
 
 }  // namespace blink

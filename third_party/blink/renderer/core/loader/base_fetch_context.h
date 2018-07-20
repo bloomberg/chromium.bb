@@ -21,6 +21,7 @@ namespace blink {
 
 class ConsoleMessage;
 class KURL;
+class PreviewsResourceLoadingHints;
 class SecurityOrigin;
 class SubresourceFilter;
 class WebSocketHandshakeThrottle;
@@ -52,6 +53,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const = 0;
   virtual KURL GetSiteForCookies() const = 0;
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
+  virtual PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
+      const = 0;
   virtual void CountUsage(WebFeature) const = 0;
   virtual void CountDeprecation(WebFeature) const = 0;
   virtual bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const = 0;

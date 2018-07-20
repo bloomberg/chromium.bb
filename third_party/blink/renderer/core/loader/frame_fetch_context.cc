@@ -372,6 +372,16 @@ SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
   return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
 }
 
+PreviewsResourceLoadingHints*
+FrameFetchContext::GetPreviewsResourceLoadingHints() const {
+  if (IsDetached())
+    return nullptr;
+  DocumentLoader* document_loader = MasterDocumentLoader();
+  if (!document_loader)
+    return nullptr;
+  return document_loader->GetPreviewsResourceLoadingHints();
+}
+
 LocalFrame* FrameFetchContext::GetFrame() const {
   DCHECK(!IsDetached());
 

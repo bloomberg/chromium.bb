@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -410,6 +411,14 @@ BaseFetchContext::CanRequestInternal(
     CountDeprecation(WebFeature::kCanRequestURLHTTPContainingNewline);
     if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
       return ResourceRequestBlockedReason::kOther;
+  }
+
+  // Loading of a subresource may be blocked by previews resource loading hints.
+  if (GetPreviewsResourceLoadingHints() &&
+      !GetPreviewsResourceLoadingHints()->AllowLoad(url)) {
+    // TODO (tbansal): https://crbug.com/864253. Add a specific reason for why
+    // the resource fetch was blocked.
+    return ResourceRequestBlockedReason::kOther;
   }
 
   // Let the client have the final say into whether or not the load should

@@ -7,6 +7,8 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -16,8 +18,9 @@ namespace blink {
 class PreviewsResourceLoadingHintsReceiverImpl
     : public mojom::blink::PreviewsResourceLoadingHintsReceiver {
  public:
-  explicit PreviewsResourceLoadingHintsReceiverImpl(
-      mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request);
+  PreviewsResourceLoadingHintsReceiverImpl(
+      mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request,
+      Document* document);
   ~PreviewsResourceLoadingHintsReceiverImpl() override;
 
  private:
@@ -26,6 +29,8 @@ class PreviewsResourceLoadingHintsReceiverImpl
 
   // TODO(tbansal): https://crbug.com/800641. Consider using a RevocableBinding.
   mojo::Binding<mojom::blink::PreviewsResourceLoadingHintsReceiver> binding_;
+
+  WeakPersistent<Document> document_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsResourceLoadingHintsReceiverImpl);
 };

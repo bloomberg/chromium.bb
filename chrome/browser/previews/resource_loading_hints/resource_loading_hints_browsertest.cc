@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -84,7 +85,6 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
  public:
   ResourceLoadingNoFeaturesBrowserTest() = default;
-
   ~ResourceLoadingNoFeaturesBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -121,6 +121,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 
     redirect_url_ = http_server_->GetURL("/redirect.html");
     ASSERT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
+
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -138,7 +140,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
         previews_service->previews_ui_service();
 
     std::vector<std::string> hints;
-    hints.push_back("jpg");
+    hints.push_back("foo.jpg");
     hints.push_back("png");
     hints.push_back("woff2");
 
@@ -170,12 +172,45 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
 
+  void SetExpectedFooJpgRequest(bool expect_foo_jpg_requested) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    subresource_expected_["/foo.jpg"] = expect_foo_jpg_requested;
+  }
+  void SetExpectedBarJpgRequest(bool expect_bar_jpg_requested) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    subresource_expected_["/bar.jpg"] = expect_bar_jpg_requested;
+  }
+
+  // Verify that all subresources that were expected to be fetched were actually
+  // fetched.
+  void VerifyAllSubresourcesFetched() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    for (const auto& expect : subresource_expected_) {
+      EXPECT_FALSE(expect.second);
+    }
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
+  void TearDownOnMainThread() override {
+    VerifyAllSubresourcesFetched();
+
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
   // Called by |https_server_|.
-  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {}
+  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+    // This method is called on embedded test server thread. Post the
+    // information on UI thread.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
+                           MonitorResourceRequestOnUIThread,
+                       base::Unretained(this), request.GetURL()));
+  }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
       const net::test_server::HttpRequest& request) {
@@ -188,6 +223,19 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  void MonitorResourceRequestOnUIThread(const GURL& gurl) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    for (const auto& expect : subresource_expected_) {
+      if (gurl.path() == expect.first) {
+        EXPECT_TRUE(expect.second);
+        // Subresource should not be fetched again.
+        subresource_expected_[gurl.path()] = false;
+        return;
+      }
+    }
+  }
+
   optimization_guide::testing::TestComponentCreator test_component_creator_;
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -196,6 +244,12 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   GURL https_no_transform_url_;
   GURL http_url_;
   GURL redirect_url_;
+
+  // Mapping from a subresource path to whether the resource is expected to be
+  // fetched. Once a subresource present in this map is fetched, the
+  // corresponding value is set to false.
+  // Must only be accessed on UI thread.
+  std::map<std::string, bool> subresource_expected_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingNoFeaturesBrowserTest);
 };
@@ -240,6 +294,8 @@ class ResourceLoadingHintsBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        MAYBE_ResourceLoadingHintsHttpsWhitelisted) {
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
@@ -264,9 +320,12 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   // SetResourceLoadingHintsPatterns sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
+  VerifyAllSubresourcesFetched();
 
   // Load the same webpage to ensure that the resource loading hints are sent
   // again.
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
   ui_test_utils::NavigateToURL(browser(), https_url());
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -284,6 +343,8 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps) {
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
@@ -310,6 +371,8 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttpsNoWhitelisted) {
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
@@ -335,6 +398,8 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttp) {
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
@@ -360,6 +425,8 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttpsWhitelistedNoTransform) {
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
   SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
