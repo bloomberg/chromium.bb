@@ -5,7 +5,7 @@
 // https://wicg.github.io/webusb/#enumeration
 
 [
-    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers),
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers),
     ImplementedAs=WorkerNavigatorUSB,
     SecureContext
 ] partial interface WorkerNavigator {
