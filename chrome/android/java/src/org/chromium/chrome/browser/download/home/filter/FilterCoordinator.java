@@ -32,12 +32,15 @@ public class FilterCoordinator {
     }
 
     private final ObserverList<Observer> mObserverList = new ObserverList<>();
-    private final FilterModel mModel;
-    private final FilterViewBinder mViewBinder;
-    private final FilterView mView;
+    private FilterModel mModel;
+    private FilterViewBinder mViewBinder;
+    private FilterView mView;
 
-    private final ChipsCoordinator mChipsCoordinator;
-    private final FilterChipsProvider mChipsProvider;
+    private ChipsCoordinator mChipsCoordinator;
+    private FilterChipsProvider mChipsProvider;
+
+    /** No-args constructor to be used by subclasses. */
+    protected FilterCoordinator() {}
 
     /**
      * Builds a new FilterCoordinator.
@@ -105,7 +108,11 @@ public class FilterCoordinator {
             filterType = Filters.FilterType.PREFETCHED;
         }
 
-        for (Observer observer : mObserverList) observer.onFilterChanged(filterType);
+        notifyFilterChanged(filterType);
+    }
+
+    protected void notifyFilterChanged(@FilterType int filter) {
+        for (Observer observer : mObserverList) observer.onFilterChanged(filter);
     }
 
     private void handleChipSelected() {
