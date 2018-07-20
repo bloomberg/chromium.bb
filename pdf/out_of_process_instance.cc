@@ -162,9 +162,6 @@ const char kJSIsEditMode[] = "isEditMode";
 const char kJSFieldFocusType[] = "formFocusChange";
 const char kJSFieldFocus[] = "focused";
 
-// Notify when a save attempt has occured (Plugin -> Page)
-const char kJSSaveCalledType[] = "saveCalled";
-
 const int kFindResultCooldownMs = 100;
 
 // Same value as printing::COMPLETE_PREVIEW_DOCUMENT_INDEX.
@@ -1909,12 +1906,6 @@ void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
 
 float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {
   return top_toolbar_height_in_viewport_coords_ * device_scale_;
-}
-
-void OutOfProcessInstance::SaveCalled() {
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSSaveCalledType));
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,

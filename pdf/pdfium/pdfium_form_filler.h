@@ -22,8 +22,6 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
   PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript);
   ~PDFiumFormFiller();
 
-  void RegisterSaveCalledHandler();
-
  private:
   // FPDF_FORMFILLINFO callbacks.
   static void Form_Invalidate(FPDF_FORMFILLINFO* param,
@@ -63,7 +61,6 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
                                 int zoom_mode,
                                 float* position_array,
                                 int size_of_array);
-  static void Form_SaveCalled(FPDF_FORMFILLINFO* param);
 
 #if defined(PDF_ENABLE_XFA)
   static void Form_EmailTo(FPDF_FORMFILLINFO* param,
