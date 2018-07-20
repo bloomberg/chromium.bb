@@ -636,6 +636,11 @@ LayoutRect LayoutReplaced::ReplacedContentRect() const {
   return ComputeObjectFit();
 }
 
+LayoutRect LayoutReplaced::PreSnappedRectForPersistentSizing(LayoutRect rect) {
+  rect.SetSize(LayoutSize(RoundedIntSize(rect.Size())));
+  return rect;
+}
+
 void LayoutReplaced::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   if (ShouldApplySizeContainment()) {
