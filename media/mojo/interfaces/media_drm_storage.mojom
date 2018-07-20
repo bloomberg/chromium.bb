@@ -13,15 +13,21 @@ struct SessionData {
 
 // Allows MediaDrmBridge to store and retrieve persistent data. This is needed
 // for features like per-origin provisioning and persistent license support.
+// The persistent data stored by MediaDrmStorage is auxiliary data, which will
+// be used by MediaDrmBridge to retrieve the actual license. MediaDrm in media
+// service is the true source for the persistent license and origin
+// provisioning.
 interface MediaDrmStorage {
-  // Initializes |this| and return a random orign ID which can identify the
-  // current origin. The origin ID should be randomly generated if it doesn't
-  // exist. |origin_id| must be valid.
-  // This should not modify anything in the storage.
+  // Initializes |this| and returns a random identifier than can be used to
+  // identify the current origin. The origin ID should be randomly generated if
+  // it doesn't exist. |origin_id| must be valid and unique among all origins.
+  // If origin information doesn't exist, the implementation will persist the
+  // the information (e.g. origin ID, provision time) in the storage.
   Initialize() => (mojo_base.mojom.UnguessableToken origin_id);
 
   // Saves origin information (e.g. origin ID, provision time) in the storage
-  // after MediaDrm is provisioned for current origin.
+  // after MediaDrm is provisioned for current origin. It will clear all
+  // existing persistent session data for the origin.
   OnProvisioned() => (bool success);
 
   // Saves persistent session data for |session_id|.

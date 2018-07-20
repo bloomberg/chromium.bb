@@ -32,6 +32,12 @@
 //     },
 //     # more origin map...
 // }
+//
+// "creation_time" is the UTC time when "origin_id" was generated. When
+// provisioning for this origin completes, "creation_time" is updated to the UTC
+// time at which that occured. Since the value is only used to optimize the
+// clear media licenses process, and in practice the difference between the two
+// values is small, it's OK to replace the generation time with completion time.
 
 namespace cdm {
 
@@ -223,8 +229,9 @@ DictValue* GetSessionsDictFromStorageDict(DictValue* storage_dict,
   return sessions_dict;
 }
 
-// Create origin dict with empty sessions dict. It returns the sessions dict for
-// caller to write session information.
+// Create origin dict with |origin_id|, current time as creation time, and empty
+// sessions dict. It returns the sessions dict for caller to write session
+// information. Note that this clears any existing session information.
 base::Value* CreateOriginDictAndReturnSessionsDict(
     base::Value* storage_dict,
     const std::string& origin,
@@ -402,16 +409,18 @@ MediaDrmStorageImpl::~MediaDrmStorageImpl() {
 void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
   DVLOG(1) << __func__ << ": origin = " << origin();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!origin_id_);
 
-  const base::DictionaryValue* storage_dict =
-      pref_service_->GetDictionary(kMediaDrmStorage);
-
-  const base::Value* origin_dict = nullptr;
-  if (storage_dict) {
-    origin_dict = storage_dict->FindKeyOfType(origin().Serialize(),
-                                              base::Value::Type::DICTIONARY);
+  if (IsInitialized()) {
+    std::move(callback).Run(origin_id_);
+    return;
   }
+
+  DictionaryPrefUpdate update(pref_service_, kMediaDrmStorage);
+  base::DictionaryValue* storage_dict = update.Get();
+  DCHECK(storage_dict);
+
+  const base::Value* origin_dict = storage_dict->FindKeyOfType(
+      origin().Serialize(), base::Value::Type::DICTIONARY);
 
   base::UnguessableToken origin_id;
   if (origin_dict) {
@@ -422,14 +431,22 @@ void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
   }
 
   // |origin_id| can be empty even if |origin_dict| exists. This can happen if
-  // |origin_dict| is created with an old version app.
-  if (origin_id.is_empty())
+  // |origin_dict| was created with an old version of Chrome. When this happens,
+  // there's no origin ID. Generate a new one and store it in the storage.
+  if (origin_id.is_empty()) {
     origin_id = base::UnguessableToken::Create();
+
+    // Persist the origin ID into storage now. If multiple MediaDrmStorage
+    // instances from the same web origin call Initialize concurrently, they can
+    // get the same origin ID.
+    CreateOriginDictAndReturnSessionsDict(storage_dict, origin().Serialize(),
+                                          origin_id);
+  }
 
   origin_id_ = origin_id;
 
-  DCHECK(origin_id);
-  std::move(callback).Run(origin_id);
+  DCHECK(origin_id_);
+  std::move(callback).Run(origin_id_);
 }
 
 void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {
@@ -446,11 +463,9 @@ void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {
   base::DictionaryValue* storage_dict = update.Get();
   DCHECK(storage_dict);
 
-  // The origin string may contain dots. Do not use path expansion.
-  DVLOG_IF(1, storage_dict->FindKey(origin().Serialize()))
-      << __func__ << ": Entry for origin " << origin()
-      << " already exists and will be cleared";
-
+  // Update origin dict once origin provisioning completes. There may be
+  // orphaned session info from a previous provisioning. Clear them by
+  // recreating the dicts.
   CreateOriginDictAndReturnSessionsDict(storage_dict, origin().Serialize(),
                                         origin_id_);
   std::move(callback).Run(true);
