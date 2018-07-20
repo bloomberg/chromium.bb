@@ -10,6 +10,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -266,6 +267,7 @@ public class PageInfoController
         }
 
         mView = new PageInfoView(mContext, viewParams);
+        if (isSheet()) mView.setBackgroundColor(Color.WHITE);
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(
                 mContext, mWindowAndroid, mFullUrl, this, mView::setPermissions);
 
