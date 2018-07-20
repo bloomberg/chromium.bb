@@ -44,6 +44,9 @@ namespace {
 // Response shown on the page of |GetDestinationUrl|.
 const char kDestinationText[] = "bar!";
 
+// Response shown on the page of |GetGenericUrl|.
+const char kGenericText[] = "A generic page";
+
 // Label for the button in the form.
 const char kSubmitButtonLabel[] = "submit";
 
@@ -117,7 +120,7 @@ void TestFormResponseProvider::GetResponseHeadersAndBody(
 
   *headers = web::ResponseProvider::GetDefaultResponseHeaders();
   if (url == GetGenericUrl()) {
-    *response_body = "A generic page";
+    *response_body = kGenericText;
     return;
   }
   if (url == GetFormPostOnSamePageUrl()) {
@@ -156,6 +159,12 @@ id<GREYMatcher> GoButtonMatcher() {
   return grey_allOf(grey_accessibilityID(@"Go"), grey_interactable(), nil);
 }
 
+// Matcher for the resend POST button in the repost warning dialog.
+id<GREYMatcher> ResendPostButtonMatcher() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_HTTP_POST_WARNING_RESEND);
+}
+
 // Waits for view with Tab History accessibility ID.
 - (void)waitForTabHistoryView {
   GREYCondition* condition = [GREYCondition
@@ -182,10 +191,7 @@ id<GREYMatcher> GoButtonMatcher() {
 
 // Accepts the warning that the form POST data will be reposted.
 - (void)confirmResendWarning {
-  id<GREYMatcher> resendWarning =
-      chrome_test_util::ButtonWithAccessibilityLabelId(
-          IDS_HTTP_POST_WARNING_RESEND);
-  [[EarlGrey selectElementWithMatcher:resendWarning]
+  [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
       performAction:grey_longPress()];
 }
 
@@ -193,7 +199,7 @@ id<GREYMatcher> GoButtonMatcher() {
 // |GetFormUrl|, and posts data to |GetDestinationUrl| upon submission.
 - (void)setUpFormTestSimpleHttpServer {
   std::map<GURL, std::string> responses;
-  responses[GetGenericUrl()] = "A generic page";
+  responses[GetGenericUrl()] = kGenericText;
   responses[GetFormUrl()] =
       base::StringPrintf(kFormHtmlTemplate, GetDestinationUrl().spec().c_str());
   responses[GetDestinationUrl()] = kDestinationText;
@@ -331,6 +337,42 @@ id<GREYMatcher> GoButtonMatcher() {
       assertWithMatcher:grey_interactable()];
 }
 
+// A new navigation dismisses the repost dialog.
+- (void)testRepostFormDismissedByNewNavigation {
+  [self setUpFormTestSimpleHttpServer];
+  const GURL destinationURL = GetDestinationUrl();
+
+  [ChromeEarlGrey loadURL:GetFormUrl()];
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // WKBasedNavigationManager presents repost confirmation dialog before loading
+  // stops.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
+  } else {
+    // Legacy navigation manager presents repost confirmation dialog after
+    // loading stops.
+    [ChromeEarlGrey reload];
+  }
+
+  // Repost confirmation box should be visible.
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:ResendPostButtonMatcher()];
+
+  // Starting a new navigation while the repost dialog is presented should not
+  // crash.
+  [ChromeEarlGrey loadURL:GetGenericUrl()];
+  [ChromeEarlGrey waitForWebViewContainingText:kGenericText];
+
+  // Repost dialog should not be visible anymore.
+  [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+}
+
 // Tests that pressing the button on a POST-based form changes the page and that
 // the back button works as expected afterwards.
 - (void)testGoBackButtonAfterFormSubmission {
@@ -370,9 +412,7 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey reload];
 
   // Check that the popup did not show
-  id<GREYMatcher> resendWarning =
-      ButtonWithAccessibilityLabelId(IDS_HTTP_POST_WARNING_RESEND);
-  [[EarlGrey selectElementWithMatcher:resendWarning]
+  [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
       assertWithMatcher:grey_nil()];
   [ChromeEarlGrey waitForWebViewContainingText:"GET"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]

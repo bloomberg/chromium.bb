@@ -20,6 +20,8 @@
   UIAlertController* _dialogController;
   // Number of attempts to show the repost form action sheet.
   NSUInteger _repostAttemptCount;
+  // A completion handler to be called when the dialog is dismissed.
+  void (^_dismissCompletionHandler)(void);
 }
 
 // Creates a new UIAlertController to use for the dialog.
@@ -49,6 +51,12 @@
         [[self class] newDialogControllerForSourceView:webState->GetView()
                                             sourceRect:sourceRect
                                      completionHandler:completionHandler];
+    // The dialog may be dimissed when a new navigation starts while the dialog
+    // is still presenting. This should be treated as a NO from user.
+    // See https://crbug.com/854750 for a case why this matters.
+    _dismissCompletionHandler = ^{
+      completionHandler(NO);
+    };
   }
   return self;
 }
@@ -94,8 +102,9 @@
 - (void)stop {
   [_dialogController.presentingViewController
       dismissViewControllerAnimated:YES
-                         completion:nil];
+                         completion:_dismissCompletionHandler];
   _repostAttemptCount = 0;
+  _dismissCompletionHandler = nil;
 }
 
 #pragma mark - Private
