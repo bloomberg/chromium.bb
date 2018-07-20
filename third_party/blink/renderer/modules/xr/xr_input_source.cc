@@ -9,7 +9,7 @@ namespace blink {
 
 XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
     : session_(session), source_id_(source_id) {
-  SetTargetRayMode(kGazing);
+  SetTargetRayMode(kGaze);
   SetHandedness(kHandNone);
 }
 
@@ -20,14 +20,14 @@ void XRInputSource::SetTargetRayMode(TargetRayMode target_ray_mode) {
   target_ray_mode_ = target_ray_mode;
 
   switch (target_ray_mode_) {
-    case kGazing:
-      target_ray_mode_string_ = "gazing";
+    case kGaze:
+      target_ray_mode_string_ = "gaze";
       return;
-    case kPointing:
-      target_ray_mode_string_ = "pointing";
+    case kTrackedPointer:
+      target_ray_mode_string_ = "tracked-pointer";
       return;
-    case kTapping:
-      target_ray_mode_string_ = "tapping";
+    case kScreen:
+      target_ray_mode_string_ = "screen";
       return;
   }
 
