@@ -30,7 +30,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/screen_info.h"
-#include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/layout_test_dependencies.h"
