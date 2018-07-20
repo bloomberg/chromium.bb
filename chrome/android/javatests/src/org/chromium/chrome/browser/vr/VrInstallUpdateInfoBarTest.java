@@ -84,9 +84,11 @@ public class VrInstallUpdateInfoBarTest {
             }
             VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, true);
             TextView tempView = (TextView) decorView.findViewById(R.id.infobar_message);
-            Assert.assertEquals(expectedMessage, tempView.getText().toString());
+            Assert.assertEquals("VR install/update infobar text did not match expectation",
+                    expectedMessage, tempView.getText().toString());
             tempView = (TextView) decorView.findViewById(R.id.button_primary);
-            Assert.assertEquals(expectedButton, tempView.getText().toString());
+            Assert.assertEquals("VR install/update button text did not match expectation",
+                    expectedButton, tempView.getText().toString());
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_SUPPORTED) {
             VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
         } else {

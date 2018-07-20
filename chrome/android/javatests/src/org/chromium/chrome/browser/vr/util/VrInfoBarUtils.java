@@ -11,11 +11,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Class containing utility functions for interacting with InfoBars at
@@ -46,16 +44,13 @@ public class VrInfoBarUtils {
     public static void clickInfoBarButton(final Button button, ChromeActivityTestRule rule) {
         if (!isInfoBarPresent(rule)) return;
         final List<InfoBar> infoBars = rule.getInfoBars();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                switch (button) {
-                    case PRIMARY:
-                        InfoBarUtil.clickPrimaryButton(infoBars.get(0));
-                        break;
-                    default:
-                        InfoBarUtil.clickSecondaryButton(infoBars.get(0));
-                }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            switch (button) {
+                case PRIMARY:
+                    InfoBarUtil.clickPrimaryButton(infoBars.get(0));
+                    break;
+                default:
+                    InfoBarUtil.clickSecondaryButton(infoBars.get(0));
             }
         });
         InfoBarUtil.waitUntilNoInfoBarsExist(rule.getInfoBars());
@@ -69,12 +64,7 @@ public class VrInfoBarUtils {
     public static void clickInfobarCloseButton(ChromeActivityTestRule rule) {
         if (!isInfoBarPresent(rule)) return;
         final List<InfoBar> infoBars = rule.getInfoBars();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                InfoBarUtil.clickCloseButton(infoBars.get(0));
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> { InfoBarUtil.clickCloseButton(infoBars.get(0)); });
         InfoBarUtil.waitUntilNoInfoBarsExist(rule.getInfoBars());
     }
 
@@ -83,12 +73,11 @@ public class VrInfoBarUtils {
      * @param rule The ChromeActivityTestRule to get the InfoBars from
      * @param present Whether an InfoBar should be present.
      */
-    public static void expectInfoBarPresent(final ChromeActivityTestRule rule, boolean present) {
-        CriteriaHelper.pollUiThread(Criteria.equals(present, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return isInfoBarPresent(rule);
-            }
-        }), POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+    public static void expectInfoBarPresent(
+            final ChromeActivityTestRule rule, final boolean present) {
+        CriteriaHelper.pollUiThread(()
+                                            -> { return isInfoBarPresent(rule) == present; },
+                "InfoBar bar did not " + (present ? "appear" : "disappear"), POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

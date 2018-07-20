@@ -6,12 +6,9 @@ package org.chromium.chrome.browser.vr;
 
 import android.content.DialogInterface;
 
-import org.junit.Assert;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 
@@ -27,9 +24,8 @@ public class WebXrArTestFramework extends WebXrTestFramework {
     public static boolean arSessionRequestWouldTriggerPermissionPrompt(WebContents webContents) {
         runJavaScriptOrFail("checkIfArSessionWouldTriggerPermissionPrompt()", POLL_TIMEOUT_SHORT_MS,
                 webContents);
-        Assert.assertTrue(
-                pollJavaScriptBoolean("arSessionRequestWouldTriggerPermissionPrompt !== null",
-                        POLL_TIMEOUT_SHORT_MS, webContents));
+        pollJavaScriptBooleanOrFail("arSessionRequestWouldTriggerPermissionPrompt !== null",
+                POLL_TIMEOUT_SHORT_MS, webContents);
         return Boolean.valueOf(runJavaScriptOrFail("arSessionRequestWouldTriggerPermissionPrompt",
                 POLL_TIMEOUT_SHORT_MS, webContents));
     }
@@ -59,13 +55,10 @@ public class WebXrArTestFramework extends WebXrTestFramework {
         enterSessionWithUserGesture(webContents);
         if (expectPermissionPrompt) {
             // Wait for the permission prompt to appear.
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return PermissionDialogController.getInstance().getCurrentDialogForTesting()
-                            != null;
-                }
-            });
+            CriteriaHelper.pollUiThread(() -> {
+                return PermissionDialogController.getInstance().getCurrentDialogForTesting()
+                        != null;
+            }, "Camera permission prompt did not appear");
             // Accept the permission prompt.
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 PermissionDialogController.getInstance()
@@ -74,9 +67,8 @@ public class WebXrArTestFramework extends WebXrTestFramework {
                         .performClick();
             });
         }
-        Assert.assertTrue(
-                pollJavaScriptBoolean("sessionInfos[sessionTypes.AR].currentSession != null",
-                        POLL_TIMEOUT_LONG_MS, webContents));
+        pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.AR].currentSession != null",
+                POLL_TIMEOUT_LONG_MS, webContents);
     }
 
     /**

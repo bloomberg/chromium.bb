@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
@@ -74,13 +73,14 @@ public class VrBrowserWebInputEditingTest {
         // focus gain spawns the keyboard by clicking in the center of the page.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.CONTENT_QUAD, new PointF());
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Boolean visible = keyboard.getLastKeyboardVisibility();
-                return visible != null && visible;
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> {
+                    Boolean visible = keyboard.getLastKeyboardVisibility();
+                    return visible != null && visible;
+                },
+                "Keyboard did not show from focusing a web input box", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
 
         // Add text to the input field via the input connection and verify that the keyboard
         // interface is called to update the indices.
@@ -90,23 +90,25 @@ public class VrBrowserWebInputEditingTest {
         // Inserting 'i' should move the cursor by one character and there should be no composition.
         MockBrowserKeyboardInterface.Indices expectedIndices =
                 new MockBrowserKeyboardInterface.Indices(1, 1, -1, -1);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                MockBrowserKeyboardInterface.Indices indices = keyboard.getLastIndices();
-                return indices == null ? false : indices.equals(expectedIndices);
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> {
+                    MockBrowserKeyboardInterface.Indices indices = keyboard.getLastIndices();
+                    return indices == null ? false : indices.equals(expectedIndices);
+                },
+                "Inputting text did not move cursor the expected amount", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
 
         // The second click should result in a focus loss and should hide the keyboard.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.CONTENT_QUAD, new PointF());
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Boolean visible = keyboard.getLastKeyboardVisibility();
-                return visible != null && !visible;
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> {
+                    Boolean visible = keyboard.getLastKeyboardVisibility();
+                    return visible != null && !visible;
+                },
+                "Keyboard did not hide from unfocusing a web input box", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

@@ -24,12 +24,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private Boolean mAllow2dIntents;
 
     public static void createTestVrShellDelegate(final ChromeActivity activity) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                sInstance = new TestVrShellDelegate(activity);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> { sInstance = new TestVrShellDelegate(activity); });
     }
 
     public static TestVrShellDelegate getInstance() {

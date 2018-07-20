@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.RenderCoordinates;
@@ -63,13 +62,10 @@ public class VrBrowserControllerInputTest {
 
     private void waitForPageToBeScrollable(final RenderCoordinates coord) {
         final View view = mVrTestRule.getActivity().getActivityTab().getContentView();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return coord.getContentHeightPixInt() > view.getHeight()
-                        && coord.getContentWidthPixInt() > view.getWidth();
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        CriteriaHelper.pollUiThread(() -> {
+            return coord.getContentHeightPixInt() > view.getHeight()
+                    && coord.getContentWidthPixInt() > view.getWidth();
+        }, "Page did not become scrollable", POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
     }
 
     /**
@@ -98,25 +94,25 @@ public class VrBrowserControllerInputTest {
         // TODO(bsheedy): Figure out why this is the case
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         int endScrollPoint = coord.getScrollYPixInt();
-        Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
+        Assert.assertTrue("Controller failed to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
         startScrollPoint = endScrollPoint;
         mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollYPixInt();
-        Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
+        Assert.assertTrue("Controller failed to scroll up", startScrollPoint > endScrollPoint);
 
         // Test that scrolling right works
         startScrollPoint = coord.getScrollXPixInt();
         mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollXPixInt();
-        Assert.assertTrue("Controller was able to scroll right", startScrollPoint < endScrollPoint);
+        Assert.assertTrue("Controller failed to scroll right", startScrollPoint < endScrollPoint);
 
         // Test that scrolling left works
         startScrollPoint = endScrollPoint;
         mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollXPixInt();
-        Assert.assertTrue("Controller was able to scroll left", startScrollPoint > endScrollPoint);
+        Assert.assertTrue("Controller failed to scroll left", startScrollPoint > endScrollPoint);
     }
 
     /**
@@ -140,23 +136,21 @@ public class VrBrowserControllerInputTest {
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
         // Check that we continue to scroll past wherever we were when we let go of the touchpad
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return coord.getScrollYPixInt() > endScrollPoint.get();
-            }
-        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> { return coord.getScrollYPixInt() > endScrollPoint.get(); },
+                "Controller failed to fling scroll down", POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
         mController.cancelFlingScroll();
 
         // Test fling scrolling up
         mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollYPixInt());
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return coord.getScrollYPixInt() < endScrollPoint.get();
-            }
-        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> { return coord.getScrollYPixInt() < endScrollPoint.get(); },
+                "Controller failed  to fling scroll up", POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
         mController.cancelFlingScroll();
         // Horizontal scrolling becomes flaky if the scroll bar is at the top when we try to scroll
         // horizontally, so scroll down a bit to ensure that isn't the case.
@@ -165,23 +159,21 @@ public class VrBrowserControllerInputTest {
         // Test fling scrolling right
         mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollXPixInt());
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return coord.getScrollXPixInt() > endScrollPoint.get();
-            }
-        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> { return coord.getScrollXPixInt() > endScrollPoint.get(); },
+                "Controller failed to fling scroll right", POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
         mController.cancelFlingScroll();
 
         // Test fling scrolling left
         mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollXPixInt());
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return coord.getScrollXPixInt() < endScrollPoint.get();
-            }
-        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> { return coord.getScrollXPixInt() < endScrollPoint.get(); },
+                "Controller failed to fling scroll left", POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
     }
 
     /**
@@ -242,13 +234,13 @@ public class VrBrowserControllerInputTest {
         int scrollSpeed = 60;
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         int endScrollPoint = recyclerView.computeVerticalScrollOffset();
-        Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
+        Assert.assertTrue("Controller failed to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
         startScrollPoint = endScrollPoint;
         mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint = recyclerView.computeVerticalScrollOffset();
-        Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
+        Assert.assertTrue("Controller failed to scroll up", startScrollPoint > endScrollPoint);
     }
 
     /**
@@ -266,18 +258,21 @@ public class VrBrowserControllerInputTest {
         DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
         mVrBrowserTestFramework.waitOnJavaScriptStep();
-        Assert.assertTrue(DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
+        Assert.assertTrue("Page did not enter fullscreen",
+                DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
 
         mController.pressReleaseAppButton();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return !DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents());
-                } catch (InterruptedException | TimeoutException e) {
-                    return false;
-                }
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> {
+                    try {
+                        return !DOMUtils.isFullscreen(
+                                mVrBrowserTestFramework.getFirstTabWebContents());
+                    } catch (InterruptedException | TimeoutException e) {
+                        return false;
+                    }
+                },
+                "Page did not exit fullscreen after app button was pressed", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
     }
 }

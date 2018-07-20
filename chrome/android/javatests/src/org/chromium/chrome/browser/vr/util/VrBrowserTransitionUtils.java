@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.vr.VrIntentUtils;
 import org.chromium.chrome.browser.vr.VrMainActivity;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.chrome.browser.vr.VrShellImpl;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.ExecutionException;
@@ -146,12 +145,9 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      * @param timeout How long in milliseconds to wait before timing out and failing.
      */
     public static void waitForNativeUiPrompt(final int timeout) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                VrShellImpl vrShell = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
-                return vrShell.isDisplayingDialogView();
-            }
-        }, timeout, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            VrShellImpl vrShell = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
+            return vrShell.isDisplayingDialogView();
+        }, "Native UI prompt did not display", timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

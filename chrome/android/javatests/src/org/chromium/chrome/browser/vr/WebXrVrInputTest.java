@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.ViewEventSink;
@@ -88,7 +87,7 @@ public class WebXrVrInputTest {
         String boolExpression = (framework instanceof WebVrTestFramework)
                 ? "!vrDisplay.isPresenting"
                 : "sessionInfos[sessionTypes.IMMERSIVE].currentSession == null";
-        Assert.assertEquals("App button exited presentation", shouldHaveExited,
+        Assert.assertEquals("App button effect matched expectation", shouldHaveExited,
                 mWebXrVrTestFramework.pollJavaScriptBoolean(boolExpression, POLL_TIMEOUT_SHORT_MS));
     }
 
@@ -143,7 +142,7 @@ public class WebXrVrInputTest {
                     }
                 });
         TouchCommon.singleClickView(mTestRule.getActivity().getWindow().getDecorView());
-        Assert.assertTrue("VrShellImpl dispatched touches",
+        Assert.assertTrue("VrShellImpl did not dispatch touches",
                 touchRegisteredLatch.await(POLL_TIMEOUT_LONG_MS * 10, TimeUnit.MILLISECONDS));
         framework.executeStepAndWait("stepVerifyNoAdditionalTaps()");
         framework.endTest();
@@ -174,11 +173,11 @@ public class WebXrVrInputTest {
                 break;
             }
         }
-        Assert.assertTrue("Gamepad API detected controller", controllerConnected);
+        Assert.assertTrue("Gamepad API did not detect controller", controllerConnected);
         // It's possible for input to get backed up if the emulated controller is being slow, so
         // ensure that any outstanding output has been received before starting by waiting for
         // 60 frames (1 second) of not receiving input.
-        mWebVrTestFramework.pollJavaScriptBoolean("isInputDrained()", POLL_TIMEOUT_LONG_MS);
+        mWebVrTestFramework.pollJavaScriptBooleanOrFail("isInputDrained()", POLL_TIMEOUT_LONG_MS);
         // Have a separate start condition so that the above presses/releases don't get
         // accidentally detected during the actual test
         mWebVrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS);
@@ -227,24 +226,18 @@ public class WebXrVrInputTest {
 
     private long sendScreenTouchDown(final View view, final int x, final int y) {
         long downTime = SystemClock.uptimeMillis();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                view.dispatchTouchEvent(
-                        MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            view.dispatchTouchEvent(
+                    MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
         });
         return downTime;
     }
 
     private void sendScreenTouchUp(final View view, final int x, final int y, final long downTime) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                long now = SystemClock.uptimeMillis();
-                view.dispatchTouchEvent(
-                        MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            long now = SystemClock.uptimeMillis();
+            view.dispatchTouchEvent(
+                    MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
         });
     }
 
@@ -503,19 +496,18 @@ public class WebXrVrInputTest {
                         "generic_webvr_page_with_activate_listener"),
                 PAGE_LOAD_TIMEOUT_S);
 
-        CriteriaHelper.pollUiThread(new Criteria("DisplayActivate was never registered.") {
-            @Override
-            public boolean isSatisfied() {
-                return VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate();
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewEventSink.from(mTestRule.getWebContents()).onPauseForTesting();
-                Assert.assertFalse(
-                        VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate());
-            }
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> {
+                    return VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate();
+                },
+                "DisplayActivate was never registered", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewEventSink.from(mTestRule.getWebContents()).onPauseForTesting();
+            Assert.assertFalse(
+                    "VR Shell is listening for headset insertion after WebContents paused",
+                    VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate());
         });
     }
 

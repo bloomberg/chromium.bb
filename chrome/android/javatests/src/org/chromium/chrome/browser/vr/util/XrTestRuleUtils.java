@@ -64,7 +64,7 @@ public class XrTestRuleUtils {
      * Creates a RuleChain that applies the XrActivityRestrictionRule before the given XrTestRule.
      */
     public static RuleChain wrapRuleInXrActivityRestrictionRule(TestRule rule) {
-        Assert.assertTrue("Given rule is a XrTestRule", rule instanceof XrTestRule);
+        Assert.assertTrue("Given rule is not an XrTestRule", rule instanceof XrTestRule);
         return RuleChain
                 .outerRule(new XrActivityRestrictionRule(((XrTestRule) rule).getRestriction()))
                 .around(rule);

@@ -100,8 +100,10 @@ public class NativeUiUtils {
 
         // Wait for any outstanding animations to finish.
         resultLatch.await();
-        Assert.assertEquals(
-                VrUiTestActivityResult.QUIESCENT, instance.getLastUiActivityResultForTesting());
+        int uiResult = instance.getLastUiActivityResultForTesting();
+        Assert.assertEquals("UI reported non-quiescent result '"
+                        + vrUiTestActivityResultToString(uiResult) + "'",
+                VrUiTestActivityResult.QUIESCENT, uiResult);
     }
 
     /**
@@ -128,11 +130,11 @@ public class NativeUiUtils {
         VrShellImpl vrShell = (VrShellImpl) (TestVrShellDelegate.getVrShellForTesting());
         VrViewContainer viewContainer = vrShell.getVrViewContainerForTesting();
         Assert.assertTrue(
-                "VrViewContainer actually has children", viewContainer.getChildCount() > 0);
+                "VrViewContainer does not have children", viewContainer.getChildCount() > 0);
         // Click on whatever dialog was most recently added
         VrDialog vrDialog = (VrDialog) viewContainer.getChildAt(viewContainer.getChildCount() - 1);
         View button = vrDialog.findViewById(buttonId);
-        Assert.assertNotNull("Found a View with matching ID", button);
+        Assert.assertNotNull("Did not find view with specified ID", button);
         // Calculate the center of the button we want to click on and scale it to fit a unit square
         // centered on (0,0).
         float x = ((button.getX() + button.getWidth() / 2) - vrDialog.getWidth() / 2)
@@ -141,5 +143,20 @@ public class NativeUiUtils {
                 / vrDialog.getHeight();
         PointF buttonCenter = new PointF(x, y);
         clickElementAndWaitForUiQuiescence(UserFriendlyElementName.BROWSING_DIALOG, buttonCenter);
+    }
+
+    private static String vrUiTestActivityResultToString(int result) {
+        switch (result) {
+            case VrUiTestActivityResult.UNREPORTED:
+                return "Unreported";
+            case VrUiTestActivityResult.QUIESCENT:
+                return "Quiescent";
+            case VrUiTestActivityResult.TIMEOUT_NO_START:
+                return "Timeout (UI activity not started)";
+            case VrUiTestActivityResult.TIMEOUT_NO_END:
+                return "Timeout (UI activity not stopped)";
+            default:
+                return "Unknown result";
+        }
     }
 }

@@ -26,12 +26,8 @@ public class VrShellDelegateUtils {
     public static TestVrShellDelegate getDelegateInstance() {
         final AtomicReference<TestVrShellDelegate> delegate =
                 new AtomicReference<TestVrShellDelegate>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                delegate.set(TestVrShellDelegate.getInstance());
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { delegate.set(TestVrShellDelegate.getInstance()); });
         return delegate.get();
     }
 
@@ -46,14 +42,12 @@ public class VrShellDelegateUtils {
     public static MockVrCoreVersionCheckerImpl setVrCoreCompatibility(int compatibility) {
         final MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
         mockChecker.setMockReturnValue(new VrCoreInfo(null, compatibility));
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(
-                        mockChecker);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(
+                    mockChecker);
         });
-        Assert.assertEquals(compatibility, mockChecker.getLastReturnValue().compatibility);
+        Assert.assertEquals("Overriding VrCoreVersionChecker failed", compatibility,
+                mockChecker.getLastReturnValue().compatibility);
         return mockChecker;
     }
 }

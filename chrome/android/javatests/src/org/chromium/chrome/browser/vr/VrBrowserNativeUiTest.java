@@ -55,7 +55,7 @@ public class VrBrowserNativeUiTest {
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         for (String url : NATIVE_URLS_OF_INTEREST) {
             mVrTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
-            Assert.assertFalse("Should not be showing URL on " + url,
+            Assert.assertFalse("URL is being shown for native page " + url,
                     TestVrShellDelegate.isDisplayingUrlForTesting());
         }
     }
@@ -68,6 +68,7 @@ public class VrBrowserNativeUiTest {
     public void testUrlOnNonNativeUi()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", TestVrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertTrue("URL is not being show for non-native page",
+                TestVrShellDelegate.isDisplayingUrlForTesting());
     }
 }

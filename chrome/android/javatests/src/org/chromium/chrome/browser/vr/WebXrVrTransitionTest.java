@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
@@ -116,35 +115,37 @@ public class WebXrVrTransitionTest {
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
-        Assert.assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
+        Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
 
         // Initial Pixel Test - Verify that the Canvas is blue.
         // The Canvas is set to blue while presenting.
         final UiDevice uiDevice =
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Bitmap screenshot = InstrumentationRegistry.getInstrumentation()
-                                            .getUiAutomation()
-                                            .takeScreenshot();
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> {
+                    Bitmap screenshot = InstrumentationRegistry.getInstrumentation()
+                                                .getUiAutomation()
+                                                .takeScreenshot();
 
-                if (screenshot != null) {
-                    // Calculate center of eye coordinates.
-                    int height = uiDevice.getDisplayHeight() / 2;
-                    int width = uiDevice.getDisplayWidth() / 4;
+                    if (screenshot != null) {
+                        // Calculate center of eye coordinates.
+                        int height = uiDevice.getDisplayHeight() / 2;
+                        int width = uiDevice.getDisplayWidth() / 4;
 
-                    // Verify screen is blue.
-                    int pixel = screenshot.getPixel(width, height);
-                    // Workaround for the immersive mode popup sometimes being rendered over the
-                    // screen on K, which causes the pure blue to be darkened to (0, 0, 127).
-                    // TODO(https://crbug.com/819021): Only check pure blue.
-                    return pixel == Color.BLUE || pixel == Color.rgb(0, 0, 127);
-                }
-                return false;
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
+                        // Verify screen is blue.
+                        int pixel = screenshot.getPixel(width, height);
+                        // Workaround for the immersive mode popup sometimes being rendered over
+                        // the screen on K, which causes the pure blue to be darkened to (0, 0,
+                        // 127).
+                        // TODO(https://crbug.com/819021): Only check pure blue.
+                        return pixel == Color.BLUE || pixel == Color.rgb(0, 0, 127);
+                    }
+                    return false;
+                },
+                "Immersive session started, but browser not visibly in VR", POLL_TIMEOUT_LONG_MS,
+                POLL_CHECK_INTERVAL_LONG_MS);
     }
 
     /**
@@ -291,12 +292,9 @@ public class WebXrVrTransitionTest {
         // Wait until the DON flow appears to be triggered
         // TODO(bsheedy): Make this less hacky if there's ever an explicit way to check if the
         // DON flow is currently active https://crbug.com/758296
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return uiDevice.getCurrentPackageName().equals("com.google.vr.vrcore");
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollUiThread(() -> {
+            return uiDevice.getCurrentPackageName().equals("com.google.vr.vrcore");
+        }, "DON flow did not start", POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         uiDevice.pressBack();
         framework.waitOnJavaScriptStep();
         framework.endTest();
@@ -336,13 +334,14 @@ public class WebXrVrTransitionTest {
         // to propagate. In the worst case this test will erroneously pass, but should never
         // erroneously fail, and should only be flaky if omnibox showing is broken.
         Thread.sleep(100);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ChromeActivity activity = framework.getRule().getActivity();
-                return activity.getFullscreenManager().getBrowserControlHiddenRatio() == 0.0;
-            }
-        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> {
+                    ChromeActivity activity = framework.getRule().getActivity();
+                    return activity.getFullscreenManager().getBrowserControlHiddenRatio() == 0.0;
+                },
+                "Browser controls did not unhide after exiting VR", POLL_TIMEOUT_SHORT_MS,
+                POLL_CHECK_INTERVAL_SHORT_MS);
     }
 
     /**
@@ -428,7 +427,7 @@ public class WebXrVrTransitionTest {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         framework.simulateRendererKilled();
-        Assert.assertTrue("Browser is in VR", VrShellDelegate.isInVr());
+        Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
     }
 
     /**
