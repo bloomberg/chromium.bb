@@ -69,7 +69,10 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
     mock_app_discovery_service_ = mock_app_discovery_service.get();
     media_sink_service_->SetAppDiscoveryServiceForTest(
         std::move(mock_app_discovery_service));
+    base::RunLoop().RunUntilIdle();
   }
+
+  void TearDown() override { test_dial_registry_.DoShutdown(); }
 
   DialMediaSinkServiceImpl::SinkQueryByAppSubscription
   StartMonitoringAvailableSinksForApp(const std::string& app_name) {

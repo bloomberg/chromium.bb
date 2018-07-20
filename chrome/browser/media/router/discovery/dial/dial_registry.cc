@@ -20,7 +20,6 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using net::NetworkChangeNotifier;
 
 namespace {
 
@@ -32,6 +31,10 @@ const int kDialExpirationSecs = 240;
 
 // The maximum number of devices retained at once in the registry.
 const size_t kDialMaxDevices = 256;
+
+// We create a global instead of using base::Singleton so we can check whether
+// an instance has been created.
+media_router::DialRegistry* g_dial_registry_instance;
 
 }  // namespace
 
@@ -48,9 +51,12 @@ DialRegistry::DialRegistry()
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
-  // This is a leaky singleton, so there's no code to remove |this| as an
-  // observer.
-  NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&BrowserProcess::network_connection_tracker,
+                     base::Unretained(g_browser_process)),
+      base::BindOnce(&DialRegistry::SetNetworkConnectionTracker,
+                     base::Unretained(this)));
 }
 
 // This is a leaky singleton and the dtor won't be called.
@@ -59,8 +65,31 @@ DialRegistry::~DialRegistry() = default;
 // static
 DialRegistry* DialRegistry::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return base::Singleton<DialRegistry,
-                         base::LeakySingletonTraits<DialRegistry>>::get();
+  if (!g_dial_registry_instance)
+    g_dial_registry_instance = new DialRegistry();
+  return g_dial_registry_instance;
+}
+
+// static
+void DialRegistry::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (g_dial_registry_instance) {
+    g_dial_registry_instance->StopPeriodicDiscovery();
+    g_dial_registry_instance->DoShutdown();
+  }
+}
+
+void DialRegistry::SetNetworkConnectionTracker(
+    content::NetworkConnectionTracker* tracker) {
+  network_connection_tracker_ = tracker;
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  // If there are no observers yet, it won't actually start.
+  StartPeriodicDiscovery();
+}
+
+void DialRegistry::DoShutdown() {
+  if (network_connection_tracker_)
+    network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 void DialRegistry::SetNetLog(net::NetLog* net_log) {
@@ -134,12 +163,21 @@ bool DialRegistry::ReadyToDiscover() {
     OnDialError(DIAL_NO_LISTENERS);
     return false;
   }
-  if (NetworkChangeNotifier::IsOffline()) {
+  network::mojom::ConnectionType type;
+  if (!network_connection_tracker_ ||
+      !network_connection_tracker_->GetConnectionType(
+          &type, base::BindOnce(&DialRegistry::OnConnectionChanged,
+                                base::Unretained(this)))) {
+    // If the ConnectionType is unknown, return false. We'll try to start
+    // discovery again when we receive the OnConnectionChanged callback.
+    OnDialError(DIAL_UNKNOWN);
+    return false;
+  }
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE) {
     OnDialError(DIAL_NETWORK_DISCONNECTED);
     return false;
   }
-  if (NetworkChangeNotifier::IsConnectionCellular(
-          NetworkChangeNotifier::GetConnectionType())) {
+  if (content::NetworkConnectionTracker::IsConnectionCellular(type)) {
     OnDialError(DIAL_CELLULAR_NETWORK);
     return false;
   }
@@ -350,10 +388,9 @@ void DialRegistry::OnError(DialService* service,
   }
 }
 
-void DialRegistry::OnNetworkChanged(
-    NetworkChangeNotifier::ConnectionType type) {
+void DialRegistry::OnConnectionChanged(network::mojom::ConnectionType type) {
   switch (type) {
-    case NetworkChangeNotifier::CONNECTION_NONE:
+    case network::mojom::ConnectionType::CONNECTION_NONE:
       if (dial_) {
         VLOG(2) << "Lost connection, shutting down discovery and clearing"
                 << " list.";
@@ -367,13 +404,13 @@ void DialRegistry::OnNetworkChanged(
         MaybeSendEvent();
       }
       break;
-    case NetworkChangeNotifier::CONNECTION_2G:
-    case NetworkChangeNotifier::CONNECTION_3G:
-    case NetworkChangeNotifier::CONNECTION_4G:
-    case NetworkChangeNotifier::CONNECTION_ETHERNET:
-    case NetworkChangeNotifier::CONNECTION_WIFI:
-    case NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+    case network::mojom::ConnectionType::CONNECTION_2G:
+    case network::mojom::ConnectionType::CONNECTION_3G:
+    case network::mojom::ConnectionType::CONNECTION_4G:
+    case network::mojom::ConnectionType::CONNECTION_ETHERNET:
+    case network::mojom::ConnectionType::CONNECTION_WIFI:
+    case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
+    case network::mojom::ConnectionType::CONNECTION_BLUETOOTH:
       if (!dial_) {
         VLOG(2) << "Connection detected, restarting discovery.";
         StartPeriodicDiscovery();
