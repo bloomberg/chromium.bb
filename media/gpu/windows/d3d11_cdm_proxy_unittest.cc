@@ -541,7 +541,8 @@ TEST_F(D3D11CdmProxyTest, Process) {
 
   // The value does not matter, so making non zero vector.
   std::vector<uint8_t> test_output_data(kExpectedOutputDataSize, 0xAA);
-  EXPECT_CALL(callback_mock_, ProcessCallback(CdmProxy::Status::kOk, _));
+  EXPECT_CALL(callback_mock_,
+              ProcessCallback(CdmProxy::Status::kOk, test_output_data));
 
   auto set_test_output_data = [&test_output_data](void* output) {
     D3D11_KEY_EXCHANGE_HW_PROTECTION_DATA* kex_struct =

@@ -420,10 +420,10 @@ void D3D11CdmProxy::Process(Function function,
     return;
   }
 
-  std::vector<uint8_t> output_vec;
-  output_vec.reserve(expected_output_data_size);
-  memcpy(output_vec.data(), output_data->pbOutput, expected_output_data_size);
-  std::move(process_cb).Run(Status::kOk, output_vec);
+  std::move(process_cb)
+      .Run(Status::kOk, std::vector<uint8_t>(
+                            output_data->pbOutput,
+                            output_data->pbOutput + expected_output_data_size));
   return;
 }
 
