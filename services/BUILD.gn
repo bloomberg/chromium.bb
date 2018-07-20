@@ -51,10 +51,6 @@ service_test("services_unittests") {
       "//services/ui/public/interfaces:tests",
       "//services/ui/ws2:tests",
     ]
-
-    if (is_linux && !is_chromeos) {
-      deps += [ "//services/ui/demo:tests" ]
-    }
   }
 
   if (is_android) {
@@ -117,10 +113,6 @@ catalog("services_unittests_catalog") {
       "//services/ui/ime:tests_catalog",
       "//services/ui/ws2:tests_catalog",
     ]
-
-    if (is_linux && !is_chromeos) {
-      catalog_deps += [ "//services/ui/demo:tests_catalog" ]
-    }
   }
 }
 
