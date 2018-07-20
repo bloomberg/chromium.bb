@@ -73,13 +73,6 @@ PerfettoService* PerfettoService::GetInstance() {
   return g_perfetto_service;
 }
 
-// static
-void PerfettoService::DestroyOnSequence(
-    std::unique_ptr<PerfettoService> service) {
-  PerfettoService::GetInstance()->task_runner()->DeleteSoon(FROM_HERE,
-                                                            std::move(service));
-}
-
 void PerfettoService::CreateServiceOnSequence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   service_ = perfetto::TracingService::CreateInstance(

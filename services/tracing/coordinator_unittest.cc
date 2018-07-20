@@ -26,12 +26,10 @@ namespace tracing {
 class CoordinatorTest : public testing::Test,
                         public mojo::DataPipeDrainer::Client {
  public:
-  CoordinatorTest() : service_ref_factory_(base::DoNothing()) {}
-
   // testing::Test
   void SetUp() override {
-    agent_registry_.reset(new AgentRegistry(&service_ref_factory_));
-    coordinator_.reset(new Coordinator(&service_ref_factory_));
+    agent_registry_ = std::make_unique<AgentRegistry>();
+    coordinator_ = std::make_unique<Coordinator>(agent_registry_.get());
     output_ = "";
   }
 
@@ -166,7 +164,6 @@ class CoordinatorTest : public testing::Test,
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   base::RepeatingClosure quit_closure_;
   std::string output_;
-  service_manager::ServiceContextRefFactory service_ref_factory_;
 };
 
 TEST_F(CoordinatorTest, StartTracingSimple) {

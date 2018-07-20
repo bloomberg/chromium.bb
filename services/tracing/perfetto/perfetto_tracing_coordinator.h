@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/tracing/coordinator.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace service_manager {
@@ -23,11 +24,10 @@ namespace tracing {
 // coordinator to clients (like the content::TracingController)
 // but which uses Perfetto rather than the TraceLog for
 // collecting trace events behind the scenes.
-class PerfettoTracingCoordinator : public mojom::Coordinator {
+class PerfettoTracingCoordinator : public Coordinator {
  public:
-  static void DestroyOnSequence(std::unique_ptr<PerfettoTracingCoordinator>);
+  explicit PerfettoTracingCoordinator(AgentRegistry* agent_registry);
 
-  PerfettoTracingCoordinator();
   ~PerfettoTracingCoordinator() override;
 
   void BindCoordinatorRequest(
@@ -44,8 +44,6 @@ class PerfettoTracingCoordinator : public mojom::Coordinator {
                          const std::string& agent_label,
                          StopAndFlushCallback callback) override;
   void IsTracing(IsTracingCallback callback) override;
-  void RequestBufferUsage(RequestBufferUsageCallback callback) override;
-  void GetCategories(GetCategoriesCallback callback) override;
 
  private:
   void BindOnSequence(mojom::CoordinatorRequest request);
