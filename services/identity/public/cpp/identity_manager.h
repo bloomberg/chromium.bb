@@ -47,7 +47,8 @@ class IdentityManager : public SigninManagerBase::Observer,
                         public SigninManager::DiagnosticsClient,
 #endif
                         public ProfileOAuth2TokenService::DiagnosticsClient,
-                        public OAuth2TokenService::DiagnosticsObserver {
+                        public OAuth2TokenService::DiagnosticsObserver,
+                        public GaiaCookieManagerService::Observer {
  public:
   class Observer {
    public:
@@ -87,6 +88,11 @@ class IdentityManager : public SigninManagerBase::Observer,
     // is problematic for your use case, please contact blundell@chromium.org.
     virtual void OnRefreshTokenRemovedForAccount(
         const AccountInfo& account_info) {}
+
+    // Called whenever the list of Gaia accounts in the cookie jar has changed.
+    // |accounts| is ordered by the order of the accounts in the cookie.
+    virtual void OnAccountsInCookieUpdated(
+        const std::vector<AccountInfo>& accounts) {}
   };
 
   // Observer interface for classes that want to monitor status of various
@@ -207,6 +213,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   void WillFireGoogleSigninSucceeded(const AccountInfo& account_info) override;
   void WillFireGoogleSignedOut(const AccountInfo& account_info) override;
 #endif
+
+  // GaiaCookieManagerService::Observer:
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(
