@@ -241,10 +241,10 @@ std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
   // This is the bottleneck for the creation of the header, so validate the size
   // here. Force a hard maximum on the ID count in case the Variations server
   // returns too many IDs and DOSs receiving servers with large requests.
-  DCHECK_LE(total_id_count, 10U);
+  DCHECK_LE(total_id_count, 20U);
   UMA_HISTOGRAM_COUNTS_100("Variations.Headers.ExperimentCount",
                            total_id_count);
-  if (total_id_count > 20)
+  if (total_id_count > 30)
     return std::string();
 
   std::string serialized;
