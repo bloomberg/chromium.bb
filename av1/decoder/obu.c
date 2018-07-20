@@ -780,7 +780,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   AV1_COMMON *const cm = &pbi->common;
   int frame_decoding_finished = 0;
   int is_first_tg_obu_received = 1;
-  int frame_header_size = 0;
+  uint32_t frame_header_size = 0;
   int seq_header_received = 0;
   size_t seq_header_size = 0;
   ObuHeader obu_header;
@@ -878,9 +878,19 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           pbi->seen_frame_header = 1;
           if (!pbi->ext_tile_debug && cm->large_scale_tile)
             pbi->camera_frame_header_ready = 1;
+        } else {
+          // TODO(wtc): Verify that the frame_header_obu is identical to the
+          // original frame_header_obu. For now just skip frame_header_size
+          // bytes in the bit buffer.
+          if (frame_header_size > payload_size) {
+            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+            return -1;
+          }
+          assert(rb.bit_offset == 0);
+          rb.bit_offset = 8 * frame_header_size;
         }
         decoded_payload_size = frame_header_size;
-        pbi->frame_header_size = (size_t)frame_header_size;
+        pbi->frame_header_size = frame_header_size;
 
         if (cm->show_existing_frame) {
           frame_decoding_finished = 1;
