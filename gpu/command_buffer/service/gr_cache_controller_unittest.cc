@@ -36,7 +36,7 @@ class GrCacheControllerTest : public testing::Test {
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */);
-    context_state_->InitializeGrContext(workarounds);
+    context_state_->InitializeGrContext(workarounds, nullptr);
 
     controller_ =
         std::make_unique<GrCacheController>(context_state_.get(), task_runner_);

@@ -172,7 +172,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Forcefully terminates the GPU process.
   void ForceShutdown();
 
-  void LoadedShader(const std::string& key, const std::string& data);
+  void LoadedShader(int32_t client_id,
+                    const std::string& key,
+                    const std::string& data);
 
   CONTENT_EXPORT viz::mojom::GpuService* gpu_service();
 
