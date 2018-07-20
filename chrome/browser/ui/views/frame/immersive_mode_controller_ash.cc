@@ -344,20 +344,17 @@ void ImmersiveModeControllerAsh::Observe(
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
                                                          const void* key,
                                                          intptr_t old) {
-  if (key == ash::kWindowStateTypeKey) {
-    ash::mojom::WindowStateType new_state =
-        window->GetProperty(ash::kWindowStateTypeKey);
-    ash::mojom::WindowStateType old_state = ash::mojom::WindowStateType(old);
+  if (key == aura::client::kShowStateKey) {
+    ui::WindowShowState new_state =
+        window->GetProperty(aura::client::kShowStateKey);
+    auto old_state = static_cast<ui::WindowShowState>(old);
 
     // Disable immersive fullscreen when the user exits fullscreen without going
     // through FullscreenController::ToggleBrowserFullscreenMode(). This is the
     // case if the user exits fullscreen via the restore button.
-    if (controller_->IsEnabled() &&
-        new_state != ash::mojom::WindowStateType::FULLSCREEN &&
-        new_state != ash::mojom::WindowStateType::PINNED &&
-        new_state != ash::mojom::WindowStateType::TRUSTED_PINNED &&
-        new_state != ash::mojom::WindowStateType::MINIMIZED &&
-        old_state == ash::mojom::WindowStateType::FULLSCREEN) {
+    if (controller_->IsEnabled() && new_state != ui::SHOW_STATE_FULLSCREEN &&
+        new_state != ui::SHOW_STATE_MINIMIZED &&
+        old_state == ui::SHOW_STATE_FULLSCREEN) {
       browser_view_->FullscreenStateChanged();
     }
   }
