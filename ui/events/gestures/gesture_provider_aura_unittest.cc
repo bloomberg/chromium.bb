@@ -78,6 +78,45 @@ TEST_F(GestureProviderAuraTest, IgnoresExtraMoveOrReleaseEvents) {
   EXPECT_FALSE(provider()->OnTouchEvent(&move1));
 }
 
+TEST_F(GestureProviderAuraTest, DoesntStallOnCancelAndRelease) {
+  base::TimeTicks time = ui::EventTimeForNow();
+
+  TouchEvent touch_press(
+      ET_TOUCH_PRESSED, gfx::Point(10, 10), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_press));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent pen_press1(
+      ET_TOUCH_PRESSED, gfx::Point(20, 20), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&pen_press1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_cancel(
+      ET_TOUCH_CANCELLED, gfx::Point(30, 30), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_cancel));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent pen_release1(
+      ET_TOUCH_RELEASED, gfx::Point(40, 40), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 1));
+  EXPECT_FALSE(provider()->OnTouchEvent(&pen_release1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent pen_press2(
+      ET_TOUCH_PRESSED, gfx::Point(10, 10), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&pen_press2));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent pen_release2(
+      ET_TOUCH_RELEASED, gfx::Point(10, 10), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&pen_release2));
+}
+
 TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
   const float kRadiusX = 20.f;
   const float kRadiusY = 30.f;
