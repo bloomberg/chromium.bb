@@ -99,9 +99,27 @@ class CORE_EXPORT DocumentMarker
 
   class MarkerTypes {
    public:
-    // The constructor is intentionally implicit to allow conversion from the
-    // bit-wise sum of above types
-    MarkerTypes(unsigned mask) : mask_(mask) {}
+    explicit MarkerTypes(unsigned mask = 0) : mask_(mask) {}
+
+    static MarkerTypes All() {
+      return MarkerTypes((1 << kMarkerTypeIndexesCount) - 1);
+    }
+
+    static MarkerTypes AllBut(const MarkerTypes& types) {
+      return MarkerTypes(All().mask_ & ~types.mask_);
+    }
+
+    static MarkerTypes ActiveSuggestion() {
+      return MarkerTypes(kActiveSuggestion);
+    }
+    static MarkerTypes Composition() { return MarkerTypes(kComposition); }
+    static MarkerTypes Grammar() { return MarkerTypes(kGrammar); }
+    static MarkerTypes Misspelling() {
+      return MarkerTypes(kSpelling | kGrammar);
+    }
+    static MarkerTypes Spelling() { return MarkerTypes(kSpelling); }
+    static MarkerTypes TextMatch() { return MarkerTypes(kTextMatch); }
+    static MarkerTypes Suggestion() { return MarkerTypes(kSuggestion); }
 
     bool Contains(MarkerType type) const { return mask_ & type; }
     bool Intersects(const MarkerTypes& types) const {
@@ -111,24 +129,15 @@ class CORE_EXPORT DocumentMarker
       return mask_ == other.mask_;
     }
 
-    void Add(const MarkerTypes& types) { mask_ |= types.mask_; }
-    void Remove(const MarkerTypes& types) { mask_ &= ~types.mask_; }
+    MarkerTypes Add(const MarkerTypes& types) const {
+      return MarkerTypes(mask_ | types.mask_);
+    }
 
     MarkerTypesIterator begin() const { return MarkerTypesIterator(mask_); }
     MarkerTypesIterator end() const { return MarkerTypesIterator(0); }
 
    private:
     unsigned mask_;
-  };
-
-  class AllMarkers : public MarkerTypes {
-   public:
-    AllMarkers() : MarkerTypes((1 << kMarkerTypeIndexesCount) - 1) {}
-  };
-
-  class MisspellingMarkers : public MarkerTypes {
-   public:
-    MisspellingMarkers() : MarkerTypes(kSpelling | kGrammar) {}
   };
 
   virtual ~DocumentMarker();

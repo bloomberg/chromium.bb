@@ -120,7 +120,7 @@ void SpellChecker::IgnoreSpelling() {
                     .Selection()
                     .ComputeVisibleSelectionInDOMTree()
                     .ToNormalizedEphemeralRange(),
-                DocumentMarker::kSpelling);
+                DocumentMarker::MarkerTypes::Spelling());
 }
 
 void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
@@ -322,7 +322,7 @@ void SpellChecker::MarkAndReplaceFor(
   }
 
   // Clear the stale markers.
-  RemoveMarkers(checking_range, DocumentMarker::MisspellingMarkers());
+  RemoveMarkers(checking_range, DocumentMarker::MarkerTypes::Misspelling());
 
   if (!results.size())
     return;
@@ -415,12 +415,10 @@ void SpellChecker::RemoveSpellingAndGrammarMarkers(const HTMLElement& element,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutTreeForNode(&element);
 
-  DocumentMarker::MarkerTypes marker_types(DocumentMarker::kSpelling);
-  marker_types.Add(DocumentMarker::kGrammar);
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(element)) {
     if (elements_type == ElementsType::kAll || !HasEditableStyle(node)) {
-      GetFrame().GetDocument()->Markers().RemoveMarkersForNode(&node,
-                                                               marker_types);
+      GetFrame().GetDocument()->Markers().RemoveMarkersForNode(
+          &node, DocumentMarker::MarkerTypes::Misspelling());
     }
   }
 }
@@ -456,7 +454,7 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() const {
   DocumentMarker* const marker =
       GetFrame().GetDocument()->Markers().FirstMarkerIntersectingOffsetRange(
           ToText(*selection_start_container), selection_start_offset,
-          selection_end_offset, DocumentMarker::MisspellingMarkers());
+          selection_end_offset, DocumentMarker::MarkerTypes::Misspelling());
   if (!marker)
     return {};
 
@@ -547,7 +545,7 @@ void SpellChecker::RespondToChangedContents() {
 
 void SpellChecker::RemoveSpellingMarkers() {
   GetFrame().GetDocument()->Markers().RemoveMarkersOfTypes(
-      DocumentMarker::MisspellingMarkers());
+      DocumentMarker::MarkerTypes::Misspelling());
 }
 
 void SpellChecker::RemoveSpellingMarkersUnderWords(
