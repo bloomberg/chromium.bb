@@ -43,6 +43,8 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetAppCacheHostID(50);
   original.SetRequestContext(WebURLRequest::kRequestContextAudio);
   original.SetFrameType(network::mojom::RequestContextFrameType::kNested);
+  // TODO(domfarolino): Use SetReferrerString() when we stop setting
+  // ResourceRequest's referrer with SetHTTPReferrer (https://crbug.com/850813).
   original.SetHTTPReferrer(
       Referrer("http://www.example.com/referrer.htm", kReferrerPolicyDefault));
 
@@ -75,6 +77,8 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(WebURLRequest::kRequestContextAudio, original.GetRequestContext());
   EXPECT_EQ(network::mojom::RequestContextFrameType::kNested,
             original.GetFrameType());
+  // TODO(domfarolino): Use GetReferrerString() when we stop setting
+  // ResourceRequest's referrer with SetHTTPReferrer (https://crbug.com/850813).
   EXPECT_STREQ("http://www.example.com/referrer.htm",
                original.HttpReferrer().Utf8().data());
   EXPECT_EQ(kReferrerPolicyDefault, original.GetReferrerPolicy());
@@ -109,6 +113,8 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(WebURLRequest::kRequestContextAudio, copy1.GetRequestContext());
   EXPECT_EQ(network::mojom::RequestContextFrameType::kNested,
             copy1.GetFrameType());
+  // TODO(domfarolino): Use GetReferrerString() when we stop setting
+  // ResourceRequest's referrer with SetHTTPReferrer (https://crbug.com/850813).
   EXPECT_STREQ("http://www.example.com/referrer.htm",
                copy1.HttpReferrer().Utf8().data());
   EXPECT_EQ(kReferrerPolicyDefault, copy1.GetReferrerPolicy());

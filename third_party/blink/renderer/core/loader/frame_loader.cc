@@ -168,6 +168,8 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // document. If this reload is a client redirect (e.g., location.reload()), it
   // was initiated by something in the current document and should therefore
   // show the current document's url as the referrer.
+  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
+  // header and instead use a separate member. See https://crbug.com/850813.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
     request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         frame_->GetDocument()->GetReferrerPolicy(),
@@ -593,20 +595,26 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
 
   if (!origin_document)
     return;
-  // Anchor elements with the 'referrerpolicy' attribute will have already set
-  // the referrer on the request.
-  if (request.DidSetHTTPReferrer())
-    return;
   if (frame_request.GetShouldSendReferrer() == kNeverSendReferrer)
     return;
 
   // Always use the initiating document to generate the referrer. We need to
   // generateReferrer(), because we haven't enforced ReferrerPolicy or
   // https->http referrer suppression yet.
-  Referrer referrer = SecurityPolicy::GenerateReferrer(
-      origin_document->GetReferrerPolicy(), request.Url(),
-      origin_document->OutgoingReferrer());
+  String referrer_to_use = request.ReferrerString();
+  ReferrerPolicy referrer_policy_to_use = request.GetReferrerPolicy();
 
+  if (referrer_to_use == Referrer::ClientReferrerString())
+    referrer_to_use = origin_document->OutgoingReferrer();
+
+  if (referrer_policy_to_use == kReferrerPolicyDefault)
+    referrer_policy_to_use = origin_document->GetReferrerPolicy();
+
+  Referrer referrer = SecurityPolicy::GenerateReferrer(
+      referrer_policy_to_use, request.Url(), referrer_to_use);
+
+  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
+  // header and instead use a separate member. See https://crbug.com/850813.
   request.SetHTTPReferrer(referrer);
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }

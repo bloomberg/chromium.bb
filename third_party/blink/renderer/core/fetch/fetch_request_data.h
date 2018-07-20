@@ -55,12 +55,10 @@ class FetchRequestData final
   void SetSameOriginDataURLFlag(bool flag) {
     same_origin_data_url_flag_ = flag;
   }
-  const Referrer& GetReferrer() const { return referrer_; }
-  void SetReferrer(const Referrer& r) { referrer_ = r; }
-  const AtomicString& ReferrerString() const { return referrer_.referrer; }
-  void SetReferrerString(const AtomicString& s) { referrer_.referrer = s; }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_.referrer_policy; }
-  void SetReferrerPolicy(ReferrerPolicy p) { referrer_.referrer_policy = p; }
+  const AtomicString& ReferrerString() const { return referrer_string_; }
+  void SetReferrerString(const AtomicString& s) { referrer_string_ = s; }
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  void SetReferrerPolicy(ReferrerPolicy p) { referrer_policy_ = p; }
   void SetMode(network::mojom::FetchRequestMode mode) { mode_ = mode; }
   network::mojom::FetchRequestMode Mode() const { return mode_; }
   void SetCredentials(network::mojom::FetchCredentialsMode credentials) {
@@ -106,12 +104,6 @@ class FetchRequestData final
     url_loader_factory_ = std::move(factory);
   }
 
-  // We use these strings instead of "no-referrer" and "client" in the spec.
-  static AtomicString NoReferrerString() { return AtomicString(); }
-  static AtomicString ClientReferrerString() {
-    return AtomicString("about:client");
-  }
-
   void Trace(blink::Visitor*);
 
  private:
@@ -127,10 +119,8 @@ class FetchRequestData final
   scoped_refptr<const SecurityOrigin> origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
   bool same_origin_data_url_flag_;
-  // |m_referrer| consists of referrer string and referrer policy.
-  // We use |noReferrerString()| and |clientReferrerString()| as
-  // "no-referrer" and "client" strings in the spec.
-  Referrer referrer_;
+  AtomicString referrer_string_;
+  ReferrerPolicy referrer_policy_;
   // FIXME: Support m_authenticationFlag;
   // FIXME: Support m_synchronousFlag;
   network::mojom::FetchRequestMode mode_;

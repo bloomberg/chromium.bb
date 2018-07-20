@@ -154,6 +154,8 @@ void WebURLRequest::SetHTTPReferrer(const WebString& web_referrer,
   DCHECK_EQ(Referrer::NoReferrer(), String());
   String referrer =
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
+  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
+  // header and instead use a separate member. See https://crbug.com/850813.
   resource_request_->SetHTTPReferrer(
       Referrer(referrer, static_cast<ReferrerPolicy>(referrer_policy)));
 }

@@ -396,10 +396,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       resource_request.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
     }
 
-    if (referrer_policy != kReferrerPolicyDefault) {
-      resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-          referrer_policy, url, document.OutgoingReferrer()));
-    }
+    resource_request.SetReferrerPolicy(referrer_policy);
 
     // Correct the RequestContext if necessary.
     if (IsHTMLPictureElement(GetElement()->parentNode()) ||
