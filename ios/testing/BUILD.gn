@@ -12,20 +12,6 @@ group("all_tests") {
   ]
 }
 
-source_set("ios_test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-
-  deps = [
-    "//base/test:test_support",
-  ]
-
-  sources = [
-    "wait_util.h",
-    "wait_util.mm",
-  ]
-}
-
 source_set("embedded_test_server_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
