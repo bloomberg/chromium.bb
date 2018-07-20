@@ -11,6 +11,6 @@
   readonly attribute DOMString id;
   readonly attribute DOMString message;
   readonly attribute DOMString? sourceFile;
-  readonly attribute long? lineNumber;
-  readonly attribute long? columnNumber;
+  readonly attribute unsigned long? lineNumber;
+  readonly attribute unsigned long? columnNumber;
 };
