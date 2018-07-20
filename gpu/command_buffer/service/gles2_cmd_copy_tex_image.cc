@@ -5,23 +5,9 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 
 #include "gpu/command_buffer/service/decoder_context.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
-
-namespace {
-
-void CompileShader(GLuint shader, const char* shader_source) {
-  glShaderSource(shader, 1, &shader_source, 0);
-  glCompileShader(shader);
-#ifndef NDEBUG
-  GLint compile_status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
-  if (GL_TRUE != compile_status)
-    DLOG(ERROR) << "CopyTexImage: shader compilation failure.";
-#endif
-}
-
-}  // anonymous namespace
 
 namespace gpu {
 namespace gles2 {
@@ -65,7 +51,7 @@ void CopyTexImageResourceManager::Initialize(const DecoderContext* decoder) {
       "}\n";
 
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-  CompileShader(vs, vs_source);
+  CompileShaderWithLog(vs, vs_source);
   glAttachShader(blit_program_, vs);
   glDeleteShader(vs);
 
@@ -82,7 +68,7 @@ void CopyTexImageResourceManager::Initialize(const DecoderContext* decoder) {
       "}\n";
 
   GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-  CompileShader(fs, fs_source);
+  CompileShaderWithLog(fs, fs_source);
   glAttachShader(blit_program_, fs);
   glDeleteShader(fs);
 

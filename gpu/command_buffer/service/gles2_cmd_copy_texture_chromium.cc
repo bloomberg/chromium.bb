@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -505,24 +506,6 @@ GLenum getIntermediateFormat(GLenum format) {
     default:
       return format;
   }
-}
-
-void CompileShader(GLuint shader, const char* shader_source) {
-  glShaderSource(shader, 1, &shader_source, 0);
-  glCompileShader(shader);
-#if DCHECK_IS_ON()
-  {
-    GLint compile_status;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
-    if (GL_TRUE != compile_status) {
-      char buffer[1024];
-      GLsizei length = 0;
-      glGetShaderInfoLog(shader, sizeof(buffer), &length, buffer);
-      std::string log(buffer, length);
-      DLOG(ERROR) << "CopyTextureCHROMIUM: shader compilation failure: " << log;
-    }
-  }
-#endif
 }
 
 void DeleteShader(GLuint shader) {
@@ -1420,7 +1403,7 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
       *vertex_shader = glCreateShader(GL_VERTEX_SHADER);
       std::string source =
           GetVertexShaderSource(gl_version_info, source_target);
-      CompileShader(*vertex_shader, source.c_str());
+      CompileShaderWithLog(*vertex_shader, source.c_str());
     }
     glAttachShader(info->program, *vertex_shader);
     GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
@@ -1430,7 +1413,7 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
           gl_version_info, premultiply_alpha, unpremultiply_alpha, dither,
           nv_egl_stream_consumer_external_, source_target, source_format,
           dest_format);
-      CompileShader(*fragment_shader, source.c_str());
+      CompileShaderWithLog(*fragment_shader, source.c_str());
     }
     glAttachShader(info->program, *fragment_shader);
     glBindAttribLocation(info->program, kVertexPositionAttrib, "a_position");

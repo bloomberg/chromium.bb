@@ -4,23 +4,9 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_srgb_converter.h"
 
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
-
-namespace {
-
-void CompileShader(GLuint shader, const char* shader_source) {
-  glShaderSource(shader, 1, &shader_source, 0);
-  glCompileShader(shader);
-#ifndef NDEBUG
-  GLint compile_status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
-  if (GL_TRUE != compile_status)
-    DLOG(ERROR) << "CopyTexImage: shader compilation failure.";
-#endif
-}
-
-}  // anonymous namespace
 
 namespace gpu {
 namespace gles2 {
@@ -91,7 +77,7 @@ void SRGBConverter::InitializeSRGBConverterProgram() {
       "    v_texcoord = quad_positions[gl_VertexID];\n"
       "}\n";
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-  CompileShader(vs, vs_source.c_str());
+  CompileShaderWithLog(vs, vs_source.c_str());
   glAttachShader(srgb_converter_program_, vs);
   glDeleteShader(vs);
 
@@ -150,7 +136,7 @@ void SRGBConverter::InitializeSRGBConverterProgram() {
       "}\n";
 
   GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-  CompileShader(fs, fs_source.c_str());
+  CompileShaderWithLog(fs, fs_source.c_str());
   glAttachShader(srgb_converter_program_, fs);
   glDeleteShader(fs);
 
