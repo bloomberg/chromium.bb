@@ -273,6 +273,7 @@ vs-chromium-project.txt
 /ui/keyboard/keyboard_mojom_bindings.xml
 /ui/surface/surface.xml
 /ui/surface/surface_gpu_tests.xml
+/ui/webui/internal
 /v8
 /webkit/data
 /webpagereplay_logs/
