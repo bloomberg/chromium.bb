@@ -226,8 +226,11 @@ UIResponder* GetFirstResponder();
 
 // Trigger a haptic vibration for various types of actions. This is a no-op for
 // devices that do not support haptic feedback.
-void TriggerHapticFeedbackForAction();
 void TriggerHapticFeedbackForSelectionChange();
+// |impactStyle| should represent the mass of the object in the collision
+// simulated by this feedback.
+void TriggerHapticFeedbackForImpact(UIImpactFeedbackStyle impactStyle);
+// |type| represent the type of notification associated with this feedback.
 void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 
 // Returns the safeAreaInsets for a given view.
