@@ -69,10 +69,6 @@
     "message": "Go back",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Maximize",
-    "description": "Text to speech Label for the maximize button."
-  },
   "closeButton": {
     "message": "Close",
     "description": "Text to speech label for the close button."
