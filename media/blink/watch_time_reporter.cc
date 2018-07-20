@@ -133,6 +133,7 @@ WatchTimeReporter::~WatchTimeReporter() {
   muted_reporter_.reset();
 
   // This is our last chance, so finalize now if there's anything remaining.
+  in_shutdown_ = true;
   MaybeFinalizeWatchTime(FinalizeTime::IMMEDIATELY);
   if (base::PowerMonitor* pm = base::PowerMonitor::Get())
     pm->RemoveObserver(this);
@@ -145,6 +146,7 @@ void WatchTimeReporter::OnPlaying() {
     muted_reporter_->OnPlaying();
 
   is_playing_ = true;
+  is_seeking_ = false;
   MaybeStartReportingTimer(get_media_time_cb_.Run());
 }
 
@@ -166,6 +168,7 @@ void WatchTimeReporter::OnSeeking() {
 
   // Seek is a special case that does not have hysteresis, when this is called
   // the seek is imminent, so finalize the previous playback immediately.
+  is_seeking_ = true;
   MaybeFinalizeWatchTime(FinalizeTime::IMMEDIATELY);
 }
 
@@ -325,7 +328,7 @@ void WatchTimeReporter::OnDisplayTypeChanged(DisplayType display_type) {
   }
 }
 
-bool WatchTimeReporter::ShouldReportWatchTime() {
+bool WatchTimeReporter::ShouldReportWatchTime() const {
   // Report listen time or watch time for videos of sufficient size.
   return properties_->has_video
              ? (initial_natural_size_.height() >= kMinimumVideoSize.height() &&
@@ -333,20 +336,22 @@ bool WatchTimeReporter::ShouldReportWatchTime() {
              : properties_->has_audio;
 }
 
+bool WatchTimeReporter::ShouldReportingTimerRun() const {
+  // TODO(dalecurtis): We should only consider |volume_| when there is actually
+  // an audio track; requires updating lots of tests to fix.
+  return ShouldReportWatchTime() && is_playing_ && volume_ && is_visible_ &&
+         !in_shutdown_ && !is_seeking_;
+}
+
 void WatchTimeReporter::MaybeStartReportingTimer(
     base::TimeDelta start_timestamp) {
   DCHECK_NE(start_timestamp, kInfiniteDuration);
   DCHECK_GE(start_timestamp, base::TimeDelta());
 
-  // Don't start the timer if any of our state indicates we shouldn't; this
-  // check is important since the various event handlers do not have to care
-  // about the state of other events.
-  //
-  // TODO(dalecurtis): We should only consider |volume_| when there is actually
-  // an audio track; requires updating lots of tests to fix.
-  const bool should_start =
-      ShouldReportWatchTime() && is_playing_ && volume_ && is_visible_;
-
+  // Don't start the timer if our state indicates we shouldn't; this check is
+  // important since the various event handlers do not have to care about the
+  // state of other events.
+  const bool should_start = ShouldReportingTimerRun();
   if (reporting_timer_.IsRunning()) {
     base_component_->SetPendingValue(should_start);
     return;
@@ -372,9 +377,9 @@ void WatchTimeReporter::MaybeStartReportingTimer(
 }
 
 void WatchTimeReporter::MaybeFinalizeWatchTime(FinalizeTime finalize_time) {
-  if (HandlePropertyChange<bool>(false, reporting_timer_.IsRunning(),
-                                 base_component_.get()) ==
-      PropertyAction::kNoActionRequired) {
+  if (HandlePropertyChange<bool>(
+          ShouldReportingTimerRun(), reporting_timer_.IsRunning(),
+          base_component_.get()) == PropertyAction::kNoActionRequired) {
     return;
   }
 

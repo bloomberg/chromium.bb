@@ -169,7 +169,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void OnNativeControlsChanged(bool has_native_controls);
   void OnDisplayTypeChanged(blink::WebMediaPlayer::DisplayType display_type);
 
-  bool ShouldReportWatchTime();
+  bool ShouldReportWatchTime() const;
+  bool ShouldReportingTimerRun() const;
   void MaybeStartReportingTimer(base::TimeDelta start_timestamp);
   enum class FinalizeTime { IMMEDIATELY, ON_NEXT_UPDATE };
   void MaybeFinalizeWatchTime(FinalizeTime finalize_time);
@@ -205,10 +206,13 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
 
   base::RepeatingTimer reporting_timer_;
 
-  // Updated by the OnXXX() methods above.
+  // Updated by the OnXXX() methods above; controls timer state.
   bool is_playing_ = false;
   bool is_visible_ = true;
+  bool is_seeking_ = false;
+  bool in_shutdown_ = false;
   double volume_ = 1.0;
+
   int underflow_count_ = 0;
   std::vector<base::TimeDelta> pending_underflow_events_;
 
