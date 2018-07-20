@@ -914,6 +914,7 @@ void SpdySession::CancelPush(const GURL& url) {
     return;
 
   DCHECK(IsStreamActive(stream_id));
+  RecordSpdyPushedStreamFateHistogram(SpdyPushedStreamFate::kAlreadyInCache);
   ResetStream(stream_id, ERR_ABORTED, "Cancelled push stream.");
 }
 
@@ -1654,7 +1655,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
   const RequestPriority request_priority = IDLE;
 
   if (!enable_push_) {
-    // TODO(bnc): Call RecordSpdyPushedStreamFateHistogram().
+    RecordSpdyPushedStreamFateHistogram(SpdyPushedStreamFate::kPushDisabled);
     EnqueueResetStreamFrame(stream_id, request_priority,
                             spdy::ERROR_CODE_REFUSED_STREAM,
                             "Push is disabled.");

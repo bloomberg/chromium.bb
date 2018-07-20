@@ -2748,6 +2748,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
 // such a setting is sent out in the initial SETTINGS frame, and if the server
 // creates a pushed stream despite of this, it is immediately reset.
 TEST_F(SpdyNetworkTransactionTest, ServerPushDisabled) {
+  base::HistogramTester histogram_tester;
+
   spdy::SpdySerializedFrame preface(
       const_cast<char*>(spdy::kHttp2ConnectionHeaderPrefix),
       spdy::kHttp2ConnectionHeaderPrefixSize,
@@ -2790,6 +2792,11 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushDisabled) {
   pool_peer.SetEnableSendingInitialData(true);
 
   helper.RunToCompletion(&data);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kPushDisabled), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerPushHeadMethod) {

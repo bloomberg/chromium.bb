@@ -43966,6 +43966,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="16" label="VARY_MISMATCH"/>
   <int value="17" label="ACCEPTED_NO_VARY"/>
   <int value="18" label="ACCEPTED_MATCHING_VARY"/>
+  <int value="19" label="PUSH_DISABLED"/>
+  <int value="20" label="ALREADY_IN_CACHE"/>
 </enum>
 
 <enum name="SpdySessionGet">
