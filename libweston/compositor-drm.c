@@ -3488,6 +3488,11 @@ drm_output_propose_state(struct weston_output *output_base,
 	pixman_region32_fini(&renderer_region);
 	pixman_region32_fini(&occluded_region);
 
+	/* In renderer-only mode, we can't test the state as we don't have a
+	 * renderer buffer yet. */
+	if (mode == DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY)
+		return state;
+
 	/* Check to see if this state will actually work. */
 	ret = drm_pending_state_test(state->pending_state);
 	if (ret != 0)
