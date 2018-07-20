@@ -86,8 +86,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 
   std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager() {
     return std::make_unique<PerUserTopicRegistrationManager>(
-        kFakeInstanceIdToken, "access_token", &pref_service_,
-        url_loader_factory(),
+        "access_token", &pref_service_, url_loader_factory(),
         base::BindRepeating(&syncer::JsonUnsafeParser::Parse));
   }
 

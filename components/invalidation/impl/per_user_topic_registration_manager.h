@@ -35,7 +35,6 @@ namespace syncer {
 class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
  public:
   PerUserTopicRegistrationManager(
-      const std::string& instance_id_token,
       const std::string& access_token,
       PrefService* local_state,
       network::mojom::URLLoaderFactory* url_loader_factory,
