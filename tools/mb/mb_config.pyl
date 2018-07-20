@@ -204,10 +204,13 @@
       'linux-chromium-tests-staging-builder': 'release_bot',
       'Mac deterministic': 'release_bot_mac_strip',
       'Mac deterministic (dbg)': 'debug_bot',
+
+      'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
       'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
       'Mojo Android': 'android_release_bot_minimal_symbols_arm64',
       'Mojo Linux': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
+
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'VR Linux': 'vr_release_bot',
       'Win 10 Fast Ring': 'release_trybot',
