@@ -353,6 +353,13 @@
 
   'chromeos_gtests_experimental': {
     'base_unittests': {},
+    'chromeos_unittests': {
+      'args': [
+        # TODO(crbug.com/865693): Don't stub out dbus clients.
+        '--dbus-stub',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter',
+      ],
+    },
     'cros_vm_sanity_test': {},
     # net_unittests has a test-time dependency on vpython. So add a CIPD'ed
     # vpython of the right arch to the task, and tell the test runner to copy

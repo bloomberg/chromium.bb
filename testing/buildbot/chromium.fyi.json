@@ -2719,6 +2719,25 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--dbus-stub",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
+        },
+        "test": "chromeos_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
