@@ -37,17 +37,15 @@ class TypeConversions final : public ScriptWrappable {
  public:
   static TypeConversions* Create() { return new TypeConversions(); }
 
-  long testLong() { return long_; }
-  void setTestLong(long value) { long_ = value; }
-  unsigned long testUnsignedLong() { return unsigned_long_; }
-  void setTestUnsignedLong(unsigned long value) { unsigned_long_ = value; }
+  int32_t testLong() { return long_; }
+  void setTestLong(int32_t value) { long_ = value; }
+  uint32_t testUnsignedLong() { return unsigned_long_; }
+  void setTestUnsignedLong(uint32_t value) { unsigned_long_ = value; }
 
-  long long testLongLong() { return long_long_; }
-  void setTestLongLong(long long value) { long_long_ = value; }
-  unsigned long long testUnsignedLongLong() { return unsigned_long_long_; }
-  void setTestUnsignedLongLong(unsigned long long value) {
-    unsigned_long_long_ = value;
-  }
+  int64_t testLongLong() { return long_long_; }
+  void setTestLongLong(int64_t value) { long_long_ = value; }
+  uint64_t testUnsignedLongLong() { return unsigned_long_long_; }
+  void setTestUnsignedLongLong(uint64_t value) { unsigned_long_long_ = value; }
 
   int8_t testByte() { return byte_; }
   void setTestByte(int8_t value) { byte_ = value; }
@@ -81,10 +79,10 @@ class TypeConversions final : public ScriptWrappable {
         short_(0),
         unsigned_short_(0) {}
 
-  long long_;
-  unsigned long unsigned_long_;
-  long long long_long_;
-  unsigned long long unsigned_long_long_;
+  int32_t long_;
+  uint32_t unsigned_long_;
+  int64_t long_long_;
+  uint64_t unsigned_long_long_;
   int8_t byte_;
   uint8_t octet_;
   int16_t short_;
