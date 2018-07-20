@@ -17,11 +17,14 @@
 <link rel="import" href="cookie_info.html">
 <link rel="import" href="local_data_browser_proxy.html">
 <link rel="import" href="site_settings_behavior.html">
-<link rel="import" href="site_data_entry.html">
 
 <dom-module id="site-data">
   <template>
     <style include="settings-shared">
+      [first] {
+        border-top: none;
+      }
+
       paper-spinner-lite {
         @apply --cr-icon-height-width;
         opacity: 0;
@@ -35,6 +38,10 @@
       #removeShowingSites {
         -webkit-margin-start: auto;
       }
+
+      .separator {
+        -webkit-padding-start: 0;
+      }
     </style>
     <div class="settings-box continuation">
       <paper-spinner-lite active="[[isLoading_]]"></paper-spinner-lite>
@@ -45,13 +52,27 @@
       </paper-button>
     </div>
     <iron-list id="list" items="[[sites]]" preserve-focus
-        scroll-target="[[subpageScrollTarget]]" class="cr-separators">
+        scroll-target="[[subpageScrollTarget]]">
       <template>
-        <site-data-entry id$="siteItem_[[item.site]]" actionable
-            model="[[item]]" first$="[[!index]]" tabindex$="[[tabIndex]]"
-            iron-list-tab-index="[[tabIndex]]" last-focused="{{lastFocused_}}"
-            on-click="onSiteClick_" on-remove-site="onRemoveSite_">
-        </site-data-entry>
+        <div class="settings-box two-line site-item" first$="[[!index]]"
+            on-click="onSiteTap_" actionable>
+          <div class="favicon-image"
+              style$="background-image: [[favicon_(item.site)]]">
+          </div>
+          <div class="middle">
+            <span class="url-directionality">[[item.site]]</span>
+            <div class="secondary">[[item.localData]]</div>
+          </div>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label$="[[item.site]]"></button>
+          </paper-icon-button-light>
+          <div class="separator"></div>
+          <paper-icon-button-light class="icon-delete-gray">
+            <button title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
+                on-click="onRemoveSiteTap_">
+            </button>
+          </paper-icon-button-light>
+        </div>
       </template>
     </iron-list>
 

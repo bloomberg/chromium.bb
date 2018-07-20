@@ -108,12 +108,6 @@ Polymer({
               settings.routes.SITE_SETTINGS.path,
               '#site-settings-subpage-trigger .subpage-arrow button');
         }
-
-        if (settings.routes.SITE_SETTINGS_SITE_DATA) {
-          map.set(
-              settings.routes.SITE_SETTINGS_SITE_DATA.path,
-              '#site-data-trigger .subpage-arrow button');
-        }
         return map;
       },
     },
