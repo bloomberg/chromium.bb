@@ -189,7 +189,6 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return;
 
-  ReportGeolocationViolation(GetDocument());
   probe::breakableLocation(GetDocument(), "Geolocation.getCurrentPosition");
 
   GeoNotifier* notifier =
@@ -206,7 +205,6 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return 0;
 
-  ReportGeolocationViolation(GetDocument());
   probe::breakableLocation(GetDocument(), "Geolocation.watchPosition");
 
   GeoNotifier* notifier =
@@ -240,13 +238,15 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kGeolocationDisabledByFeaturePolicy);
       GetDocument()->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+          ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
                                  kFeaturePolicyConsoleWarning));
       notifier->SetFatalError(PositionError::Create(
           PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
       return;
     }
   }
+
+  ReportGeolocationViolation(GetDocument());
 
   if (HaveSuitableCachedPosition(notifier->Options())) {
     notifier->SetUseCachedPosition();
