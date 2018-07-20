@@ -75,9 +75,9 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
   safe_size += sizeof(uint32_t);  // width
   safe_size += sizeof(uint32_t);  // height
   safe_size += sizeof(uint32_t);  // has mips
-  safe_size += sizeof(size_t);    // pixels size
-  safe_size += target_color_space_size + sizeof(size_t);
-  safe_size += pixmap_color_space_size + sizeof(size_t);
+  safe_size += sizeof(uint64_t) + alignof(uint64_t);  // pixels size
+  safe_size += target_color_space_size + sizeof(uint64_t) + alignof(uint64_t);
+  safe_size += pixmap_color_space_size + sizeof(uint64_t) + alignof(uint64_t);
   // Include 4 bytes of padding so we can always align our data pointer to a
   // 4-byte boundary.
   safe_size += 4;

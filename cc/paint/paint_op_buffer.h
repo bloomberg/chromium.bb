@@ -877,9 +877,7 @@ using LargestPaintOp =
 class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
  public:
   enum { kInitialBufferSize = 4096 };
-  // It's not necessarily the case that the op with the maximum alignment
-  // requirements is also the biggest op, but for now that's true.
-  static constexpr size_t PaintOpAlign = alignof(DrawDRRectOp);
+  static constexpr size_t PaintOpAlign = 8;
   static inline size_t ComputeOpSkip(size_t sizeof_op) {
     return MathUtil::UncheckedRoundUp(sizeof_op, PaintOpBuffer::PaintOpAlign);
   }

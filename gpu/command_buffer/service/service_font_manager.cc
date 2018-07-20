@@ -36,7 +36,7 @@ class Deserializer {
     if (size == 0u)
       return true;
 
-    if (!AlignMemory(size, alignof(std::max_align_t)))
+    if (!AlignMemory(size, 16))
       return false;
 
     if (!strike_client->readStrikeData(memory_, size))
@@ -121,8 +121,8 @@ bool ServiceFontManager::Deserialize(
 
   // All new handles.
   Deserializer deserializer(memory, memory_size);
-  size_t new_handles_created;
-  if (!deserializer.Read<size_t>(&new_handles_created))
+  uint64_t new_handles_created;
+  if (!deserializer.Read<uint64_t>(&new_handles_created))
     return false;
 
   for (size_t i = 0; i < new_handles_created; ++i) {
@@ -143,8 +143,8 @@ bool ServiceFontManager::Deserialize(
   }
 
   // All locked handles
-  size_t num_locked_handles;
-  if (!deserializer.Read<size_t>(&num_locked_handles))
+  uint64_t num_locked_handles;
+  if (!deserializer.Read<uint64_t>(&num_locked_handles))
     return false;
 
   locked_handles->resize(num_locked_handles);
@@ -154,8 +154,8 @@ bool ServiceFontManager::Deserialize(
   }
 
   // Skia font data.
-  size_t skia_data_size = 0u;
-  if (!deserializer.Read<size_t>(&skia_data_size))
+  uint64_t skia_data_size = 0u;
+  if (!deserializer.Read<uint64_t>(&skia_data_size))
     return false;
 
   if (!deserializer.ReadStrikeData(strike_client_.get(), skia_data_size))
