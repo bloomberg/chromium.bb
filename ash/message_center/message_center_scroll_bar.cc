@@ -4,6 +4,7 @@
 
 #include "ash/message_center/message_center_scroll_bar.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace {
@@ -26,7 +27,10 @@ void CollectScrollActionReason(ScrollActionReason reason) {
 namespace ash {
 
 MessageCenterScrollBar::MessageCenterScrollBar()
-    : views::OverlayScrollBar(false) {}
+    : views::OverlayScrollBar(false) {
+  GetThumb()->layer()->SetVisible(!features::IsSystemTrayUnifiedEnabled() ||
+                                  features::IsNotificationScrollBarEnabled());
+}
 
 bool MessageCenterScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
   if (!stats_recorded_ &&
