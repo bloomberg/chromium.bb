@@ -33,6 +33,12 @@ cr.define('extensions', function() {
       incognitoAvailable: Boolean,
 
       /**
+       * Whether the dialog to add a new host permission is shown.
+       * @private
+       */
+      showRuntimeHostsDialog_: Boolean,
+
+      /**
        * Proxying the enum to be used easily by the html template.
        * @private
        */
@@ -327,6 +333,17 @@ cr.define('extensions', function() {
       return this.data.permissions &&
           this.data.permissions.hostAccess ==
           chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
+    },
+
+    /** @private */
+    onAddRuntimeHostClick_: function() {
+      this.showRuntimeHostsDialog_ = true;
+    },
+
+    /** @private */
+    onRuntimeHostsDialogClosed_: function() {
+      this.showRuntimeHostsDialog_ = false;
+      cr.ui.focusWithoutInk(assert(this.$$('#add-runtime-host')));
     },
   });
 

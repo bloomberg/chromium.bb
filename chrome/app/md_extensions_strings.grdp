@@ -264,6 +264,15 @@
   <message name="IDS_MD_EXTENSIONS_APPS_TITLE" desc="The text displayed in the sidebar to go to the apps section of the page.">
     Chrome Apps
   </message>
+  <message name="IDS_MD_EXTENSIONS_RUNTIME_HOSTS_DIALOG_TITLE" desc="The title of the dialog used to allow a user to add a new site that an extension is allowed to run on.">
+    Add a site
+  </message>
+  <message name="IDS_MD_EXTENSIONS_RUNTIME_HOSTS_DIALOG_INPUT_ERROR" desc="The error message shown to the user when they entered an invalid site address into the input field.">
+    Not a valid web address
+  </message>
+  <message name="IDS_MD_EXTENSIONS_RUNTIME_HOSTS_DIALOG_INPUT_LABEL" desc="The label for the input field where a user enters a new site for an extension to run on.">
+    Site
+  </message>
   <message name="IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS" desc="The text displayed in the sidebar to go to the extensions section of the page.">
     Extensions
   </message>

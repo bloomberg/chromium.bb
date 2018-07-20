@@ -69,6 +69,13 @@ cr.define('extensions', function() {
      * @return {!Promise<string>}
      */
     getExtensionSize(id) {}
+
+    /**
+     * @param {string} id
+     * @param {string} host
+     * @return {!Promise<string>}
+     */
+    addRuntimeHostPermission(id, host) {}
   }
 
   const Item = Polymer({

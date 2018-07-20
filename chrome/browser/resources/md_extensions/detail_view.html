@@ -19,6 +19,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="runtime_hosts_dialog.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="item_util.html">
 <link rel="import" href="navigation_helper.html">
@@ -122,6 +123,13 @@
 
       .section-content {
         color: var(--cr-secondary-text-color);
+      }
+
+      #add-runtime-hosts-section {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
       }
 
       .mid-section-header {
@@ -360,7 +368,15 @@
                   </select>
                 </div>
                 <template is="dom-if" if="[[showSpecificSites_(data.*)]]">
-                  <div class="mid-section-header">$i18n{itemAllowedHosts}</div>
+                  <div id="add-runtime-hosts-section">
+                    <div class="mid-section-header">
+                      $i18n{itemAllowedHosts}
+                    </div>
+                    <paper-button id="add-runtime-host"
+                        on-click="onAddRuntimeHostClick_">
+                      $i18n{add}
+                    </paper-button>
+                  </div>
                   <ul id="runtime-hosts">
                     <template is="dom-repeat"
                         items="[[data.permissions.runtimeHostPermissions]]">
@@ -449,6 +465,12 @@
         </cr-link-row>
       </div>
     </div>
+    <template is="dom-if" if="[[showRuntimeHostsDialog_]]" restamp>
+      <extensions-runtime-hosts-dialog
+          delegate="[[delegate]]" item-id="[[data.id]]"
+          on-close="onRuntimeHostsDialogClosed_">
+      </extensions-runtime-hosts-dialog>
+    </template>
   </template>
   <script src="detail_view.js"></script>
 </dom-module>

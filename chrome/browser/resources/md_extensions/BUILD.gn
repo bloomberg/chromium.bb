@@ -68,6 +68,7 @@ js_type_check("closure_compile") {
     ":options_dialog",
     ":pack_dialog",
     ":pack_dialog_alert",
+    ":runtime_hosts_dialog",
     ":service",
     ":shortcut_input",
     ":shortcut_util",
@@ -277,6 +278,13 @@ js_library("pack_dialog_alert") {
     "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
+}
+
+js_library("runtime_hosts_dialog") {
+  deps = [
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+  ]
 }
 
 js_library("service") {

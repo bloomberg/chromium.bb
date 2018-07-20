@@ -67,6 +67,19 @@ cr.define('extensions', function() {
       });
     }
 
+    /** @override */
+    addRuntimeHostPermission(id, host) {
+      return new Promise((resolve, reject) => {
+        chrome.developerPrivate.addHostPermission(id, host, () => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError.message);
+            return;
+          }
+          resolve();
+        });
+      });
+    }
+
     /**
      * Opens a file browser dialog for the user to select a file (or directory).
      * @param {chrome.developerPrivate.SelectType} selectType

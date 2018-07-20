@@ -835,3 +835,23 @@ TEST_F('CrExtensionsKioskModeTest', 'AddError', function() {
 });
 
 GEN('#endif');
+
+////////////////////////////////////////////////////////////////////////////////
+// RuntimeHostsDialog tests
+
+CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browserPreload() {
+    return 'chrome://extensions/runtime_hosts_dialog.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_runtime_hosts_dialog_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsRuntimeHostsDialogTest', 'All', () => {
+  mocha.run();
+});
