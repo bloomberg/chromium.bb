@@ -905,10 +905,9 @@ PeopleHandler::GetSyncStatusDictionary() {
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
   bool status_has_error =
-      sync_ui_util::GetStatusLabels(profile_, service, *signin,
-                                    sync_ui_util::PLAIN_TEXT, &status_label,
-                                    &link_label, &action_type) ==
-      sync_ui_util::SYNC_ERROR;
+      sync_ui_util::GetStatusLabels(profile_, service, *signin, &status_label,
+                                    &link_label,
+                                    &action_type) == sync_ui_util::SYNC_ERROR;
   sync_status->SetString("statusText", status_label);
   sync_status->SetBoolean("hasError", status_has_error);
   sync_status->SetString("statusAction", GetSyncErrorAction(action_type));

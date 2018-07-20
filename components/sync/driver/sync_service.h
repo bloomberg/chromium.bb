@@ -332,7 +332,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Initializes a struct of status indicators with data from the engine.
   // Returns false if the engine was not available for querying; in that case
   // the struct will be filled with default data.
-  virtual bool QueryDetailedSyncStatus(SyncStatus* result) = 0;
+  virtual bool QueryDetailedSyncStatus(SyncStatus* result) const = 0;
 
   // Returns the last synced time.
   virtual base::Time GetLastSyncedTime() const = 0;

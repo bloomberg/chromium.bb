@@ -15,7 +15,7 @@ SyncErrorController::SyncErrorController(SyncService* service)
 
 SyncErrorController::~SyncErrorController() {}
 
-bool SyncErrorController::HasError() {
+bool SyncErrorController::HasError() const {
   return service_->IsFirstSetupComplete() && service_->IsPassphraseRequired() &&
          service_->IsPassphraseRequiredForDecryption();
 }

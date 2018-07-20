@@ -59,11 +59,9 @@ enum AvatarSyncErrorType {
 
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
-// |style| sets the link properties, see |StatusLabelStyle|.
 MessageType GetStatusLabels(Profile* profile,
-                            browser_sync::ProfileSyncService* service,
+                            const browser_sync::ProfileSyncService* service,
                             const SigninManagerBase& signin,
-                            StatusLabelStyle style,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type);
@@ -79,8 +77,9 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 #endif
 
 MessageType GetStatus(Profile* profile,
-                      browser_sync::ProfileSyncService* service,
+                      const browser_sync::ProfileSyncService* service,
                       const SigninManagerBase& signin);
 
 }  // namespace sync_ui_util
+
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_

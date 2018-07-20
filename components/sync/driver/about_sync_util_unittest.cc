@@ -21,7 +21,9 @@ class SyncServiceMock : public FakeSyncService {
     return DISABLE_REASON_UNRECOVERABLE_ERROR;
   }
 
-  bool QueryDetailedSyncStatus(SyncStatus* result) override { return false; }
+  bool QueryDetailedSyncStatus(SyncStatus* result) const override {
+    return false;
+  }
 
   SyncCycleSnapshot GetLastCycleSnapshot() const override {
     return SyncCycleSnapshot();

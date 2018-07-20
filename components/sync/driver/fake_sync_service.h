@@ -75,7 +75,7 @@ class FakeSyncService : public SyncService {
   const LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
   void ReenableDatatype(ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
-  bool QueryDetailedSyncStatus(SyncStatus* result) override;
+  bool QueryDetailedSyncStatus(SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
   SyncCycleSnapshot GetLastCycleSnapshot() const override;
   std::unique_ptr<base::Value> GetTypeStatusMap() override;
