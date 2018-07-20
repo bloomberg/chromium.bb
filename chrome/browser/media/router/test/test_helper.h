@@ -18,8 +18,8 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/presentation_service_delegate.h"
-#include "content/public/common/presentation_connection_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 #if !defined(OS_ANDROID)
 
@@ -99,18 +99,11 @@ class MockMediaRoutesObserver : public MediaRoutesObserver {
 class MockPresentationConnectionProxy
     : public blink::mojom::PresentationConnection {
  public:
-  // PresentationConnectionMessage is move-only.
-  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
-  // move-only type support.
   MockPresentationConnectionProxy();
   ~MockPresentationConnectionProxy() override;
-  void OnMessage(content::PresentationConnectionMessage message,
-                 OnMessageCallback cb) override {
-    OnMessageInternal(message, cb);
-  }
-  MOCK_METHOD2(OnMessageInternal,
-               void(const content::PresentationConnectionMessage&,
-                    OnMessageCallback&));
+  MOCK_METHOD2(OnMessage,
+               void(blink::mojom::PresentationConnectionMessagePtr,
+                    OnMessageCallback));
   MOCK_METHOD1(DidChangeState,
                void(blink::mojom::PresentationConnectionState state));
   MOCK_METHOD0(RequestClose, void());

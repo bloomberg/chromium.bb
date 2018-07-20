@@ -11,6 +11,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace media_router {
 
@@ -56,7 +57,7 @@ class BrowserPresentationConnectionProxy
   ~BrowserPresentationConnectionProxy() override;
 
   // blink::mojom::PresentationConnection implementation
-  void OnMessage(content::PresentationConnectionMessage message,
+  void OnMessage(blink::mojom::PresentationConnectionMessagePtr message,
                  OnMessageCallback on_message_callback) override;
 
   // Underlying media route is always connected. Media route class does not

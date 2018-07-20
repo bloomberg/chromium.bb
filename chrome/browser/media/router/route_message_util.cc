@@ -26,18 +26,20 @@ RouteMessagePtr RouteMessageFromData(std::vector<uint8_t> data) {
   return route_message;
 }
 
-content::PresentationConnectionMessage PresentationConnectionFromRouteMessage(
-    RouteMessagePtr route_message) {
+blink::mojom::PresentationConnectionMessagePtr
+PresentationConnectionFromRouteMessage(RouteMessagePtr route_message) {
+  // NOTE: Makes a copy of |route_message| contents.  This can be eliminated
+  // when media_router::mojom::RouteMessage is deleted.
   switch (route_message->type) {
     case RouteMessage::Type::TEXT:
-      return content::PresentationConnectionMessage(
+      return blink::mojom::PresentationConnectionMessage::NewMessage(
           route_message->message.value());
     case RouteMessage::Type::BINARY:
-      return content::PresentationConnectionMessage(
+      return blink::mojom::PresentationConnectionMessage::NewData(
           route_message->data.value());
     default:
       NOTREACHED() << "Unknown RouteMessageType " << route_message->type;
-      return content::PresentationConnectionMessage();
+      return blink::mojom::PresentationConnectionMessage::New();
   }
 }
 

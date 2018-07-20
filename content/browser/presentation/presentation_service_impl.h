@@ -29,7 +29,6 @@
 
 namespace content {
 
-struct PresentationConnectionMessage;
 class RenderFrameHost;
 
 // Implementation of Mojo PresentationService.
@@ -112,9 +111,6 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // Maximum number of pending ReconnectPresentation requests at any given time.
   static const int kMaxQueuedRequests = 10;
-
-  using ConnectionMessagesCallback =
-      base::OnceCallback<void(std::vector<PresentationConnectionMessage>)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of
   // this is created when PresentationRequest.getAvailability() is resolved.
@@ -218,7 +214,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // later invocation when connection messages arrive.
   void OnConnectionMessages(
       const blink::mojom::PresentationInfo& presentation_info,
-      std::vector<content::PresentationConnectionMessage> messages);
+      std::vector<blink::mojom::PresentationConnectionMessagePtr> messages);
 
   // A callback registered to LocalPresentationManager when
   // the PresentationServiceImpl for the presentation receiver is initialized.
