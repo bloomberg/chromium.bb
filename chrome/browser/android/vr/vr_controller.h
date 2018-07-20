@@ -55,12 +55,6 @@ class VrController : public PlatformController {
 
   std::unique_ptr<InputEventList> DetectGestures();
 
-  bool IsTouching();
-
-  float TouchPosX();
-
-  float TouchPosY();
-
   gfx::Quaternion Orientation() const;
   gfx::Point3F Position() const;
   void GetTransform(gfx::Transform* out) const;
@@ -82,6 +76,8 @@ class VrController : public PlatformController {
 
   // PlatformController
   bool IsButtonDown(PlatformController::ButtonType type) const override;
+  bool IsTouchingTrackpad() const override;
+  gfx::PointF GetPositionInTrackpad() const override;
   base::TimeTicks GetLastOrientationTimestamp() const override;
   base::TimeTicks GetLastTouchTimestamp() const override;
   base::TimeTicks GetLastButtonTimestamp() const override;
@@ -91,19 +87,9 @@ class VrController : public PlatformController {
 
  private:
 
-  struct ButtonInfo {
-    gvr::ControllerButton button;
-    bool button_up;
-    bool button_down;
-    bool button_state;
-    int64_t timestamp;
-  };
-
   bool GetButtonLongPressFromButtonInfo();
 
-  void UpdateTouchInfo();
-
-  void UpdateCurrentTouchInfo();
+  void UpdateTimestamps();
 
   void UpdateOverallVelocity();
 
@@ -128,11 +114,12 @@ class VrController : public PlatformController {
   // Handedness from user prefs.
   gvr::ControllerHandedness handedness_;
 
-  // Current touch info from GVR.
-  TouchInfo touch_info_;
-
   // Head offset. Keeps the controller at the user's side with 6DoF headsets.
   gfx::Point3F head_offset_;
+
+  base::TimeTicks last_orientation_timestamp_;
+  base::TimeTicks last_touch_timestamp_;
+  base::TimeTicks last_button_timestamp_;
 
   int64_t last_timestamp_nanos_ = 0;
 

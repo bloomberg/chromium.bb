@@ -10,25 +10,15 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/vr_export.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace vr {
 
 class InputEvent;
+class PlatformController;
 
 using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
-
-struct TouchPoint {
-  gfx::Vector2dF position;
-  base::TimeTicks timestamp;
-};
-
-struct TouchInfo {
-  TouchPoint touch_point;
-  bool touch_up;
-  bool touch_down;
-  bool is_touching;
-};
 
 class VR_EXPORT GestureDetector {
  public:
@@ -36,9 +26,8 @@ class VR_EXPORT GestureDetector {
   virtual ~GestureDetector();
 
   std::unique_ptr<InputEventList> DetectGestures(
-      const TouchInfo& touch_info,
-      base::TimeTicks current_timestamp,
-      bool force_cancel);
+      const PlatformController& controller,
+      base::TimeTicks current_timestamp);
 
  private:
   enum GestureDetectorStateLabel {
@@ -46,6 +35,11 @@ class VR_EXPORT GestureDetector {
     TOUCHING,    // touching the touch pad but not scrolling
     SCROLLING,   // scrolling on the touch pad
     POST_SCROLL  // scroll has finished and we are hallucinating events
+  };
+
+  struct TouchPoint {
+    gfx::PointF position;
+    base::TimeTicks timestamp;
   };
 
   struct GestureDetectorState {
@@ -60,42 +54,44 @@ class VR_EXPORT GestureDetector {
   };
 
   std::unique_ptr<InputEvent> GetGestureFromTouchInfo(
-      const TouchInfo& input_touch_info,
-      bool force_cancel);
+      const TouchPoint& touch_point);
 
-  std::unique_ptr<InputEvent> HandleWaitingState(const TouchInfo& touch_info);
-  std::unique_ptr<InputEvent> HandleDetectingState(const TouchInfo& touch_info,
-                                                   bool force_cancel);
-  std::unique_ptr<InputEvent> HandleScrollingState(const TouchInfo& touch_info,
-                                                   bool force_cancel);
+  std::unique_ptr<InputEvent> HandleWaitingState(const TouchPoint& touch_point);
+  std::unique_ptr<InputEvent> HandleDetectingState(
+      const TouchPoint& touch_point);
+  std::unique_ptr<InputEvent> HandleScrollingState(
+      const TouchPoint& touch_point);
   std::unique_ptr<InputEvent> HandlePostScrollingState(
-      const TouchInfo& touch_info,
-      bool force_cancel);
+      const TouchPoint& touch_point);
 
   void UpdateGestureWithScrollDelta(InputEvent* gesture);
 
   // If the user is touching the touch pad and the touch point is different from
   // before, update the touch point and return true. Otherwise, return false.
-  bool UpdateCurrentTouchPoint(const TouchInfo& touch_info);
+  bool UpdateCurrentTouchPoint(const PlatformController& controller);
 
-  void ExtrapolateTouchInfo(TouchInfo* touch_info,
-                            base::TimeTicks current_timestamp);
+  void ExtrapolateTouchPoint(TouchPoint* touch_point,
+                             base::TimeTicks current_timestamp);
 
-  void UpdateOverallVelocity(const TouchInfo& touch_info);
+  void UpdateOverallVelocity(const TouchPoint& touch_info);
 
-  void UpdateGestureParameters(const TouchInfo& touch_info);
+  void UpdateGestureParameters(const TouchPoint& touch_info);
 
-  bool InSlop(const gfx::Vector2dF touch_position) const;
+  bool InSlop(const gfx::PointF touch_position) const;
 
   void Reset();
 
   std::unique_ptr<GestureDetectorState> state_;
+
+  bool is_select_button_pressed_ = false;
+  bool is_touching_trackpad_ = false;
 
   // Number of consecutively extrapolated touch points
   int extrapolated_touch_ = 0;
 
   base::TimeTicks last_touch_timestamp_;
   base::TimeTicks last_timestamp_;
+  bool last_touching_state_ = false;
 
   bool touch_position_changed_;
 
