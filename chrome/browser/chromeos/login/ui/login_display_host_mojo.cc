@@ -190,6 +190,13 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     return;
   }
 
+  if (signin_screen_started_) {
+    HideOobeDialog();
+    return;
+  }
+
+  signin_screen_started_ = true;
+
   existing_user_controller_ = std::make_unique<ExistingUserController>();
   login_display_->set_delegate(existing_user_controller_.get());
 
@@ -252,6 +259,8 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
       GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
     LoadWallpaper(*prefilled_account);
   } else {
+    if (GetOobeUI()->current_screen() != OobeScreen::SCREEN_GAIA_SIGNIN)
+      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
     LoadSigninWallpaper();
   }
 
