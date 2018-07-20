@@ -96,6 +96,7 @@ jumbo_static_library("sync") {
     "driver/async_directory_type_controller.h",
     "driver/backend_migrator.cc",
     "driver/backend_migrator.h",
+    "driver/clear_server_data_events.h",
     "driver/data_type_controller.cc",
     "driver/data_type_controller.h",
     "driver/data_type_encryption_handler.cc",

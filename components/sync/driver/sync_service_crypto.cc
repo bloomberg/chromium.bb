@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/nigori.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
