@@ -17,12 +17,23 @@
 """pylint packaging information"""
 from __future__ import absolute_import
 
+import sys
+from os.path import join
+
+
 modname = distname = 'pylint'
 
-numversion = (1, 4, 5)
+numversion = (1, 5, 6)
 version = '.'.join([str(num) for num in numversion])
 
-install_requires = ['logilab-common >= 0.53.0', 'astroid >= 1.3.6,<1.4.0', 'six']
+install_requires = [
+    'astroid>=1.4.5,<1.5.0',
+    'six',
+]
+
+if sys.platform == 'win32':
+    install_requires.append('colorama')
+
 
 license = 'GPL'
 description = "python code static checker"
@@ -62,7 +73,6 @@ long_desc = """\
  Pylint is shipped with "pylint-gui", "pyreverse" (UML diagram generator)
  and "symilar" (an independent similarities checker)."""
 
-from os.path import join
 scripts = [join('bin', filename)
            for filename in ('pylint', 'pylint-gui', "symilar", "epylint",
                             "pyreverse")]

@@ -16,10 +16,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """Utilities for creating VCG and Dot diagrams"""
 
-from logilab.common.vcgutils import VCGPrinter
-from logilab.common.graph import DotBackend
-
 from pylint.pyreverse.utils import is_exception
+from pylint.pyreverse.vcgutils import VCGPrinter
+from pylint.graph import DotBackend
 
 class DiagramWriter(object):
     """base class for writing project diagrams
@@ -106,7 +105,7 @@ class DotWriter(DiagramWriter):
         """initialize DotWriter and add options for layout.
         """
         layout = dict(rankdir="BT")
-        self.printer = DotBackend(basename, additionnal_param=layout)
+        self.printer = DotBackend(basename, additional_param=layout)
         self.file_name = file_name
 
     def get_title(self, obj):

@@ -17,17 +17,21 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """some functions that may be useful for various checkers
 """
-
+import functools
 import re
 import sys
 import string
+import warnings
+
+import six
+from six.moves import map, builtins # pylint: disable=redefined-builtin
 
 import astroid
 from astroid import scoped_nodes
-from logilab.common.compat import builtins
 
 BUILTINS_NAME = builtins.__name__
-COMP_NODE_TYPES = astroid.ListComp, astroid.SetComp, astroid.DictComp, astroid.GenExpr
+COMP_NODE_TYPES = (astroid.ListComp, astroid.SetComp,
+                   astroid.DictComp, astroid.GeneratorExp)
 PY3K = sys.version_info[0] == 3
 
 if not PY3K:
@@ -36,6 +40,60 @@ else:
     EXCEPTIONS_MODULE = "builtins"
 ABC_METHODS = set(('abc.abstractproperty', 'abc.abstractmethod',
                    'abc.abstractclassmethod', 'abc.abstractstaticmethod'))
+ITER_METHOD = '__iter__'
+NEXT_METHOD = 'next' if six.PY2 else '__next__'
+GETITEM_METHOD = '__getitem__'
+CONTAINS_METHOD = '__contains__'
+KEYS_METHOD = 'keys'
+
+# Dictionary which maps the number of expected parameters a
+# special method can have to a set of special methods.
+# The following keys are used to denote the parameters restrictions:
+#
+# * None: variable number of parameters
+# * number: exactly that number of parameters
+# * tuple: this are the odd ones. Basically it means that the function
+#          can work with any number of arguments from that tuple,
+#          although it's best to implement it in order to accept
+#          all of them.
+_SPECIAL_METHODS_PARAMS = {
+    None: ('__new__', '__init__', '__call__'),
+
+    0: ('__del__', '__repr__', '__str__', '__bytes__', '__hash__', '__bool__',
+        '__dir__', '__len__', '__length_hint__', '__iter__', '__reversed__',
+        '__neg__', '__pos__', '__abs__', '__invert__', '__complex__', '__int__',
+        '__float__', '__neg__', '__pos__', '__abs__', '__complex__', '__int__',
+        '__float__', '__index__', '__enter__', '__aenter__', '__getnewargs_ex__',
+        '__getnewargs__', '__getstate__', '__reduce__', '__copy__',
+        '__unicode__', '__nonzero__', '__await__', '__aiter__', '__anext__'),
+
+    1: ('__format__', '__lt__', '__le__', '__eq__', '__ne__', '__gt__',
+        '__ge__', '__getattr__', '__getattribute__', '__delattr__',
+        '__delete__', '__instancecheck__', '__subclasscheck__',
+        '__getitem__', '__missing__', '__delitem__', '__contains__',
+        '__add__', '__sub__', '__mul__', '__truediv__', '__floordiv__',
+        '__mod__', '__divmod__', '__lshift__', '__rshift__', '__and__',
+        '__xor__', '__or__', '__radd__', '__rsub__', '__rmul__', '__rtruediv__',
+        '__rmod__', '__rdivmod__', '__rpow__', '__rlshift__', '__rrshift__',
+        '__rand__', '__rxor__', '__ror__', '__iadd__', '__isub__', '__imul__',
+        '__itruediv__', '__ifloordiv__', '__imod__', '__ilshift__',
+        '__irshift__', '__iand__', '__ixor__', '__ior__', '__ipow__',
+        '__setstate__', '__reduce_ex__', '__deepcopy__', '__cmp__',
+        '__matmul__', '__rmatmul__'),
+
+    2: ('__setattr__', '__get__', '__set__', '__setitem__'),
+
+    3: ('__exit__', '__aexit__'),
+
+    (0, 1): ('__round__', ),
+}
+
+SPECIAL_METHODS_PARAMS = {
+    name: params
+    for params, methods in _SPECIAL_METHODS_PARAMS.items()
+    for name in methods
+}
+PYMETHODS = set(SPECIAL_METHODS_PARAMS)
 
 
 class NoSuchArgumentError(Exception):
@@ -67,38 +125,20 @@ def clobber_in_except(node):
     Returns (True, args for W0623) if assignment clobbers an existing variable,
     (False, None) otherwise.
     """
-    if isinstance(node, astroid.AssAttr):
+    if isinstance(node, astroid.AssignAttr):
         return (True, (node.attrname, 'object %r' % (node.expr.as_string(),)))
-    elif isinstance(node, astroid.AssName):
+    elif isinstance(node, astroid.AssignName):
         name = node.name
         if is_builtin(name):
             return (True, (name, 'builtins'))
         else:
             stmts = node.lookup(name)[1]
-            if (stmts and not isinstance(stmts[0].ass_type(),
+            if (stmts and not isinstance(stmts[0].assign_type(),
                                          (astroid.Assign, astroid.AugAssign,
                                           astroid.ExceptHandler))):
                 return (True, (name, 'outer scope (line %s)' % stmts[0].fromlineno))
     return (False, None)
 
-
-def safe_infer(node):
-    """return the inferred value for the given node.
-    Return None if inference failed or if there is some ambiguity (more than
-    one node has been inferred)
-    """
-    try:
-        inferit = node.infer()
-        value = next(inferit)
-    except astroid.InferenceError:
-        return
-    try:
-        next(inferit)
-        return # None if there is ambiguity on the inferred node
-    except astroid.InferenceError:
-        return # there is some kind of ambiguity
-    except StopIteration:
-        return value
 
 def is_super(node):
     """return True if the node is referencing the "super" builtin function
@@ -122,10 +162,6 @@ def is_raising(body):
             return True
     return False
 
-def is_empty(body):
-    """return true if the given node does nothing but 'pass'"""
-    return len(body) == 1 and isinstance(body[0], astroid.Pass)
-
 builtins = builtins.__dict__.copy()
 SPECIAL_BUILTINS = ('__builtins__',) # '__path__', '__file__')
 
@@ -133,14 +169,10 @@ def is_builtin_object(node):
     """Returns True if the given node is an object from the __builtin__ module."""
     return node and node.root().name == BUILTINS_NAME
 
-def is_builtin(name): # was is_native_builtin
+def is_builtin(name):
     """return true if <name> could be considered as a builtin defined by python
     """
-    if name in builtins:
-        return True
-    if name in SPECIAL_BUILTINS:
-        return True
-    return False
+    return name in builtins or name in SPECIAL_BUILTINS
 
 def is_defined_before(var_node):
     """return True if the variable node is defined by a parent node (list,
@@ -151,11 +183,11 @@ def is_defined_before(var_node):
     _node = var_node.parent
     while _node:
         if isinstance(_node, COMP_NODE_TYPES):
-            for ass_node in _node.nodes_of_class(astroid.AssName):
+            for ass_node in _node.nodes_of_class(astroid.AssignName):
                 if ass_node.name == varname:
                     return True
         elif isinstance(_node, astroid.For):
-            for ass_node in _node.target.nodes_of_class(astroid.AssName):
+            for ass_node in _node.target.nodes_of_class(astroid.AssignName):
                 if ass_node.name == varname:
                     return True
         elif isinstance(_node, astroid.With):
@@ -163,17 +195,27 @@ def is_defined_before(var_node):
                 if expr.parent_of(var_node):
                     break
                 if (ids and
-                        isinstance(ids, astroid.AssName) and
+                        isinstance(ids, astroid.AssignName) and
                         ids.name == varname):
                     return True
-        elif isinstance(_node, (astroid.Lambda, astroid.Function)):
+        elif isinstance(_node, (astroid.Lambda, astroid.FunctionDef)):
             if _node.args.is_argument(varname):
+                # If the name is found inside a default value
+                # of a function, then let the search continue
+                # in the parent's tree.
+                if _node.args.parent_of(var_node):
+                    try:
+                        _node.args.default_value(varname)
+                        _node = _node.parent
+                        continue
+                    except astroid.NoDefault:
+                        pass
                 return True
             if getattr(_node, 'name', None) == varname:
                 return True
             break
         elif isinstance(_node, astroid.ExceptHandler):
-            if isinstance(_node.name, astroid.AssName):
+            if isinstance(_node.name, astroid.AssignName):
                 ass_node = _node.name
                 if ass_node.name == varname:
                     return True
@@ -183,10 +225,10 @@ def is_defined_before(var_node):
     _node = stmt.previous_sibling()
     lineno = stmt.fromlineno
     while _node and _node.fromlineno == lineno:
-        for ass_node in _node.nodes_of_class(astroid.AssName):
+        for ass_node in _node.nodes_of_class(astroid.AssignName):
             if ass_node.name == varname:
                 return True
-        for imp_node in _node.nodes_of_class((astroid.From, astroid.Import)):
+        for imp_node in _node.nodes_of_class((astroid.ImportFrom, astroid.Import)):
             if varname in [name[1] or name[0] for name in imp_node.names]:
                 return True
         _node = _node.previous_sibling()
@@ -197,7 +239,7 @@ def is_func_default(node):
     value
     """
     parent = node.scope()
-    if isinstance(parent, astroid.Function):
+    if isinstance(parent, astroid.FunctionDef):
         for default_node in parent.args.defaults:
             for default_name_node in default_node.nodes_of_class(astroid.Name):
                 if default_name_node is node:
@@ -234,48 +276,19 @@ def is_ancestor_name(frame, node):
 def assign_parent(node):
     """return the higher parent which is not an AssName, Tuple or List node
     """
-    while node and isinstance(node, (astroid.AssName,
+    while node and isinstance(node, (astroid.AssignName,
                                      astroid.Tuple,
                                      astroid.List)):
         node = node.parent
     return node
 
-def overrides_an_abstract_method(class_node, name):
-    """return True if pnode is a parent of node"""
-    for ancestor in class_node.ancestors():
-        if name in ancestor and isinstance(ancestor[name], astroid.Function) and \
-               ancestor[name].is_abstract(pass_is_abstract=False):
-            return True
-    return False
 
 def overrides_a_method(class_node, name):
     """return True if <name> is a method overridden from an ancestor"""
     for ancestor in class_node.ancestors():
-        if name in ancestor and isinstance(ancestor[name], astroid.Function):
+        if name in ancestor and isinstance(ancestor[name], astroid.FunctionDef):
             return True
     return False
-
-PYMETHODS = set(('__new__', '__init__', '__del__', '__hash__',
-                 '__str__', '__repr__',
-                 '__len__', '__iter__',
-                 '__delete__', '__get__', '__set__',
-                 '__getitem__', '__setitem__', '__delitem__', '__contains__',
-                 '__getattribute__', '__getattr__', '__setattr__', '__delattr__',
-                 '__call__',
-                 '__enter__', '__exit__',
-                 '__cmp__', '__ge__', '__gt__', '__le__', '__lt__', '__eq__',
-                 '__nonzero__', '__neg__', '__invert__',
-                 '__mul__', '__imul__', '__rmul__',
-                 '__div__', '__idiv__', '__rdiv__',
-                 '__add__', '__iadd__', '__radd__',
-                 '__sub__', '__isub__', '__rsub__',
-                 '__pow__', '__ipow__', '__rpow__',
-                 '__mod__', '__imod__', '__rmod__',
-                 '__and__', '__iand__', '__rand__',
-                 '__or__', '__ior__', '__ror__',
-                 '__xor__', '__ixor__', '__rxor__',
-                 # XXX To be continued
-                ))
 
 def check_messages(*messages):
     """decorator to store messages that are handled by a checker method"""
@@ -370,7 +383,7 @@ def is_attr_protected(attrname):
     """return True if attribute name is protected (start with _ and some other
     details), False otherwise.
     """
-    return attrname[0] == '_' and not attrname == '_' and not (
+    return attrname[0] == '_' and attrname != '_' and not (
         attrname.startswith('__') and attrname.endswith('__'))
 
 def node_frame_class(node):
@@ -379,7 +392,7 @@ def node_frame_class(node):
     """
     klass = node.frame()
 
-    while klass is not None and not isinstance(klass, astroid.Class):
+    while klass is not None and not isinstance(klass, astroid.ClassDef):
         if klass.parent is None:
             klass = None
         else:
@@ -387,13 +400,6 @@ def node_frame_class(node):
 
     return klass
 
-def is_super_call(expr):
-    """return True if expression node is a function call and if function name
-    is super. Check before that you're in a method.
-    """
-    return (isinstance(expr, astroid.CallFunc) and
-            isinstance(expr.func, astroid.Name) and
-            expr.func.name == 'super')
 
 def is_attr_private(attrname):
     """Check that attribute name is private (at least two leading underscores,
@@ -416,15 +422,16 @@ def get_argument_from_call(callfunc_node, position=None, keyword=None):
     """
     if position is None and keyword is None:
         raise ValueError('Must specify at least one of: position or keyword.')
-    try:
-        if position is not None and not isinstance(callfunc_node.args[position], astroid.Keyword):
+    if position is not None:
+        try:
             return callfunc_node.args[position]
-    except IndexError as error:
-        raise NoSuchArgumentError(error)
-    if keyword:
-        for arg in callfunc_node.args:
-            if isinstance(arg, astroid.Keyword) and arg.arg == keyword:
+        except IndexError:
+            pass
+    if keyword and callfunc_node.keywords:
+        for arg in callfunc_node.keywords:
+            if arg.arg == keyword:
                 return arg.value
+
     raise NoSuchArgumentError
 
 def inherit_from_std_ex(node):
@@ -438,49 +445,33 @@ def inherit_from_std_ex(node):
     return any(inherit_from_std_ex(parent)
                for parent in node.ancestors(recurs=False))
 
-def is_import_error(handler):
+def error_of_type(handler, error_type):
     """
     Check if the given exception handler catches
-    ImportError.
+    the given error_type.
 
-    :param handler: A node, representing an ExceptHandler node.
-    :returns: True if the handler catches ImportError, False otherwise.
+    The *handler* parameter is a node, representing an ExceptHandler node.
+    The *error_type* can be an exception, such as AttributeError, or it
+    can be a tuple of errors.
+    The function will return True if the handler catches any of the
+    given errors.
     """
-    names = None
-    if isinstance(handler.type, astroid.Tuple):
-        names = [name for name in handler.type.elts
-                 if isinstance(name, astroid.Name)]
-    elif isinstance(handler.type, astroid.Name):
-        names = [handler.type]
-    else:
-        # Don't try to infer that.
-        return
-    for name in names:
-        try:
-            for infered in name.infer():
-                if (isinstance(infered, astroid.Class) and
-                        inherit_from_std_ex(infered) and
-                        infered.name == 'ImportError'):
-                    return True
-        except astroid.InferenceError:
-            continue
+    if not isinstance(error_type, tuple):
+        error_type = (error_type, )
+    expected_errors = {error.__name__ for error in error_type}
+    if not handler.type:
+        # bare except. While this indeed catches anything, if the desired errors
+        # aren't specified directly, then we just ignore it.
+        return False
+    return handler.catch(expected_errors)
 
-def has_known_bases(klass):
-    """Returns true if all base classes of a class could be inferred."""
-    try:
-        return klass._all_bases_known
-    except AttributeError:
-        pass
-    for base in klass.bases:
-        result = safe_infer(base)
-        # TODO: check for A->B->A->B pattern in class structure too?
-        if (not isinstance(result, astroid.Class) or
-                result is klass or
-                not has_known_bases(result)):
-            klass._all_bases_known = False
-            return False
-    klass._all_bases_known = True
-    return True
+
+def is_import_error(handler):
+    warnings.warn("This function is deprecated in the favour of "
+                  "error_of_type. It will be removed in Pylint 1.6.",
+                  DeprecationWarning, stacklevel=2)
+    return error_of_type(handler, ImportError)
+
 
 def decorated_with_property(node):
     """ Detect if the given function node is decorated with a property. """
@@ -491,7 +482,7 @@ def decorated_with_property(node):
             continue
         try:
             for infered in decorator.infer():
-                if isinstance(infered, astroid.Class):
+                if isinstance(infered, astroid.ClassDef):
                     if (infered.root().name == BUILTINS_NAME and
                             infered.name == 'property'):
                         return True
@@ -503,19 +494,16 @@ def decorated_with_property(node):
             pass
 
 
-def decorated_with_abc(func):
-    """Determine if the `func` node is decorated with `abc` decorators."""
-    if func.decorators:
-        for node in func.decorators.nodes:
-            try:
-                infered = next(node.infer())
-            except astroid.InferenceError:
-                continue
-            if infered and infered.qname() in ABC_METHODS:
-                return True
+def decorated_with(func, qnames):
+    """Determine if the `func` node has a decorator with the qualified name `qname`."""
+    decorators = func.decorators.nodes if func.decorators else []
+    for decorator_node in decorators:
+        dec = safe_infer(decorator_node)
+        if dec and dec.qname() in qnames:
+            return True
 
 
-def unimplemented_abstract_methods(node, is_abstract_cb=decorated_with_abc):
+def unimplemented_abstract_methods(node, is_abstract_cb=None):
     """
     Get the unimplemented abstract methods for the given *node*.
 
@@ -527,6 +515,9 @@ def unimplemented_abstract_methods(node, is_abstract_cb=decorated_with_abc):
     For the rest of them, it will return a dictionary of abstract method
     names and their inferred objects.
     """
+    if is_abstract_cb is None:
+        is_abstract_cb = functools.partial(
+            decorated_with, qnames=ABC_METHODS)
     visited = {}
     try:
         mro = reversed(node.mro())
@@ -540,14 +531,20 @@ def unimplemented_abstract_methods(node, is_abstract_cb=decorated_with_abc):
     for ancestor in mro:
         for obj in ancestor.values():
             infered = obj
-            if isinstance(obj, astroid.AssName):
+            if isinstance(obj, astroid.AssignName):
                 infered = safe_infer(obj)
                 if not infered:
-                    continue
-                if not isinstance(infered, astroid.Function):
+                    # Might be an abstract function,
+                    # but since we don't have enough information
+                    # in order to take this decision, we're taking
+                    # the *safe* decision instead.
                     if obj.name in visited:
                         del visited[obj.name]
-            if isinstance(infered, astroid.Function):
+                    continue
+                if not isinstance(infered, astroid.FunctionDef):
+                    if obj.name in visited:
+                        del visited[obj.name]
+            if isinstance(infered, astroid.FunctionDef):
                 # It's critical to use the original name,
                 # since after inferring, an object can be something
                 # else than expected, as in the case of the
@@ -562,3 +559,183 @@ def unimplemented_abstract_methods(node, is_abstract_cb=decorated_with_abc):
                 elif not abstract and obj.name in visited:
                     del visited[obj.name]
     return visited
+
+
+def node_ignores_exception(node, exception):
+    """Check if the node is in a TryExcept which handles the given exception."""
+    current = node
+    ignores = (astroid.ExceptHandler, astroid.TryExcept)
+    while current and not isinstance(current.parent, ignores):
+        current = current.parent
+
+    func = functools.partial(error_of_type,
+                             error_type=(exception, ))
+    if current and isinstance(current.parent, astroid.TryExcept):
+        if any(map(func, current.parent.handlers)):
+            return True
+    return False
+
+
+def class_is_abstract(node):
+    """return true if the given class node should be considered as an abstract
+    class
+    """
+    for method in node.methods():
+        if method.parent.frame() is node:
+            if method.is_abstract(pass_is_abstract=False):
+                return True
+    return False
+
+
+def _hasattr(value, attr):
+    try:
+        value.getattr(attr)
+        return True
+    except astroid.NotFoundError:
+        return False
+
+
+def is_comprehension(node):
+    comprehensions = (astroid.ListComp,
+                      astroid.SetComp,
+                      astroid.DictComp,
+                      astroid.GeneratorExp)
+    return isinstance(node, comprehensions)
+
+
+def _supports_mapping_protocol(value):
+    return _hasattr(value, GETITEM_METHOD) and _hasattr(value, KEYS_METHOD)
+
+
+def _supports_membership_test_protocol(value):
+    return _hasattr(value, CONTAINS_METHOD)
+
+
+def _supports_iteration_protocol(value):
+    return _hasattr(value, ITER_METHOD) or _hasattr(value, GETITEM_METHOD)
+
+
+def _supports_subscript_protocol(value):
+    return _hasattr(value, GETITEM_METHOD)
+
+
+def _is_abstract_class_name(name):
+    lname = name.lower()
+    is_mixin = lname.endswith('mixin')
+    is_abstract = lname.startswith('abstract')
+    is_base = lname.startswith('base') or lname.endswith('base')
+    return is_mixin or is_abstract or is_base
+
+
+def is_inside_abstract_class(node):
+    while node is not None:
+        if isinstance(node, astroid.ClassDef):
+            if class_is_abstract(node):
+                return True
+            name = getattr(node, 'name', None)
+            if name is not None and _is_abstract_class_name(name):
+                return True
+        node = node.parent
+    return False
+
+
+def is_iterable(value):
+    if isinstance(value, astroid.ClassDef):
+        if not has_known_bases(value):
+            return True
+        # classobj can only be iterable if it has an iterable metaclass
+        meta = value.metaclass()
+        if meta is not None:
+            if _supports_iteration_protocol(meta):
+                return True
+    if isinstance(value, astroid.Instance):
+        if not has_known_bases(value):
+            return True
+        if _supports_iteration_protocol(value):
+            return True
+    return False
+
+
+def is_mapping(value):
+    if isinstance(value, astroid.ClassDef):
+        if not has_known_bases(value):
+            return True
+        # classobj can only be a mapping if it has a metaclass is mapping
+        meta = value.metaclass()
+        if meta is not None:
+            if _supports_mapping_protocol(meta):
+                return True
+    if isinstance(value, astroid.Instance):
+        if not has_known_bases(value):
+            return True
+        if _supports_mapping_protocol(value):
+            return True
+    return False
+
+
+def supports_membership_test(value):
+    if isinstance(value, astroid.ClassDef):
+        if not has_known_bases(value):
+            return True
+        meta = value.metaclass()
+        if meta is not None and _supports_membership_test_protocol(meta):
+            return True
+    if isinstance(value, astroid.Instance):
+        if not has_known_bases(value):
+            return True
+        if _supports_membership_test_protocol(value):
+            return True
+    return is_iterable(value)
+
+
+def supports_subscript(value):
+    if isinstance(value, astroid.ClassDef):
+        if not has_known_bases(value):
+            return True
+        meta = value.metaclass()
+        if meta is not None and _supports_subscript_protocol(meta):
+            return True
+    if isinstance(value, astroid.Instance):
+        if not has_known_bases(value):
+            return True
+        if _supports_subscript_protocol(value):
+            return True
+    return False
+
+# TODO(cpopa): deprecate these or leave them as aliases?
+def safe_infer(node, context=None):
+    """Return the inferred value for the given node.
+
+    Return None if inference failed or if there is some ambiguity (more than
+    one node has been inferred).
+    """
+    try:
+        inferit = node.infer(context=context)
+        value = next(inferit)
+    except astroid.InferenceError:
+        return
+    try:
+        next(inferit)
+        return # None if there is ambiguity on the inferred node
+    except astroid.InferenceError:
+        return # there is some kind of ambiguity
+    except StopIteration:
+        return value
+
+
+def has_known_bases(klass, context=None):
+    """Return true if all base classes of a class could be inferred."""
+    try:
+        return klass._all_bases_known
+    except AttributeError:
+        pass
+    for base in klass.bases:
+        result = safe_infer(base, context=context)
+        # TODO: check for A->B->A->B pattern in class structure too?
+        if (not isinstance(result, astroid.ClassDef) or
+                result is klass or
+                not has_known_bases(result, context=context)):
+            klass._all_bases_known = False
+            return False
+    klass._all_bases_known = True
+    return True
