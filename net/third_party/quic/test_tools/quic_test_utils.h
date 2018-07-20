@@ -22,7 +22,6 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/third_party/quic/core/quic_framer.h"
-#include "net/third_party/quic/core/quic_per_connection_packet_writer.h"
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 #include "net/third_party/quic/core/quic_server_session_base.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"

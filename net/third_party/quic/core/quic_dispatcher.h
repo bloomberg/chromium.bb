@@ -277,13 +277,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   QuicPacketWriter* writer() { return writer_.get(); }
 
-  // Creates per-connection packet writers out of the QuicDispatcher's shared
-  // QuicPacketWriter. The per-connection writers' IsWriteBlocked() state must
-  // always be the same as the shared writer's IsWriteBlocked(), or else the
-  // QuicDispatcher::OnCanWrite logic will not work. (This will hopefully be
-  // cleaned up for bug 16950226.)
-  virtual QuicPacketWriter* CreatePerConnectionWriter();
-
   // Returns true if a session should be created for a connection with an
   // unknown version identified by |version_label|.
   virtual bool ShouldCreateSessionForUnknownVersion(
