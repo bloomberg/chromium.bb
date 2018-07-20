@@ -247,17 +247,18 @@ AccessibilityManager::AccessibilityManager()
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kChromeVoxExtensionId,
       resources_path.Append(extension_misc::kChromeVoxExtensionPath),
-      base::Bind(&AccessibilityManager::PostUnloadChromeVox,
-                 weak_ptr_factory_.GetWeakPtr())));
+      base::BindRepeating(&AccessibilityManager::PostUnloadChromeVox,
+                          weak_ptr_factory_.GetWeakPtr())));
   select_to_speak_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSelectToSpeakExtensionId,
       resources_path.Append(extension_misc::kSelectToSpeakExtensionPath),
-      base::Bind(&AccessibilityManager::PostUnloadSelectToSpeak,
-                 weak_ptr_factory_.GetWeakPtr())));
+      base::BindRepeating(&AccessibilityManager::PostUnloadSelectToSpeak,
+                          weak_ptr_factory_.GetWeakPtr())));
   switch_access_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSwitchAccessExtensionId,
       resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
-      base::Closure()));
+      base::BindRepeating(&AccessibilityManager::PostUnloadSwitchAccess,
+                          weak_ptr_factory_.GetWeakPtr())));
 
   // Connect to ash's AccessibilityController interface.
   content::ServiceManagerConnection::GetForProcess()
@@ -1253,6 +1254,14 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
 
   // Stop speech.
   TtsController::GetInstance()->Stop();
+}
+
+void AccessibilityManager::PostUnloadSwitchAccess() {
+  // Do any teardown work needed immediately after SwitchAccess actually
+  // unloads.
+
+  // Clear the accessibility focus ring.
+  HideFocusRing(extension_misc::kSwitchAccessExtensionId);
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(

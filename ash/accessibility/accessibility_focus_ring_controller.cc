@@ -97,6 +97,7 @@ void AccessibilityFocusRingController::HideFocusRing(
   if (!focus_ring_group)
     return;
   focus_ring_group->ClearFocusRects(this);
+  OnLayerChange(focus_ring_group->focus_animation_info());
 }
 
 void AccessibilityFocusRingController::SetHighlights(
