@@ -210,12 +210,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   void ListenForConnectionStateChange(
       const blink::mojom::PresentationInfo& connection);
 
-  // Passed to embedder's implementation of PresentationServiceDelegate for
-  // later invocation when connection messages arrive.
-  void OnConnectionMessages(
-      const blink::mojom::PresentationInfo& presentation_info,
-      std::vector<blink::mojom::PresentationConnectionMessagePtr> messages);
-
   // A callback registered to LocalPresentationManager when
   // the PresentationServiceImpl for the presentation receiver is initialized.
   // Calls |receiver_| to create a new PresentationConnection on receiver page.
