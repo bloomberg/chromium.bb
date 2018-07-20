@@ -622,7 +622,7 @@
     },
     {
       name: "InterventionReporting",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Tracks "jank" from layout objects changing their visual location
