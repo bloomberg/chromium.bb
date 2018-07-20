@@ -131,8 +131,8 @@ class MockPresentationServiceDelegate
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
-  MOCK_METHOD3(GetMediaController,
-               std::unique_ptr<media::MediaController>(
+  MOCK_METHOD3(GetFlingingController,
+               std::unique_ptr<media::FlingingController>(
                    int render_process_id,
                    int render_frame_id,
                    const std::string& presentation_id));

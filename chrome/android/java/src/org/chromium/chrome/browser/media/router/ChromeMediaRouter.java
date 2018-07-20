@@ -390,14 +390,14 @@ public class ChromeMediaRouter implements MediaRouteManager {
      */
     @Nullable
     @CalledByNative
-    public MediaControllerBridge getMediaControllerBridge(String routeId) {
+    public FlingingControllerBridge getFlingingControllerBridge(String routeId) {
         MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
         if (provider == null) return null;
 
         MediaController controller = provider.getMediaController(routeId);
         if (controller == null) return null;
 
-        return new MediaControllerBridge(controller);
+        return new FlingingControllerBridge(controller);
     }
 
     @VisibleForTesting

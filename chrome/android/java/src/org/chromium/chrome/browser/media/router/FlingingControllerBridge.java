@@ -8,15 +8,15 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * A wrapper around a MediaController that allows the native code to use it.
- * See chrome/browser/media/android/remote/media_controller_bridge.h for the corresponding native
- * code.
+ * A wrapper around a MediaController that allows the native code to use it, and to subscribe to
+ * status changes. See chrome/browser/media/android/remote/flinging_controller_bridge.h for the
+ * corresponding native code.
  */
 @JNINamespace("media_router")
-public class MediaControllerBridge {
+public class FlingingControllerBridge {
     private final MediaController mMediaController;
 
-    public MediaControllerBridge(MediaController mediaController) {
+    public FlingingControllerBridge(MediaController mediaController) {
         mMediaController = mediaController;
     }
 

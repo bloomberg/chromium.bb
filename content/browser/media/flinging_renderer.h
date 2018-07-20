@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "media/base/media_controller.h"
+#include "media/base/flinging_controller.h"
 #include "media/base/media_resource.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
@@ -50,9 +50,10 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer {
  private:
   friend class FlingingRendererTest;
 
-  explicit FlingingRenderer(std::unique_ptr<media::MediaController> controller);
+  explicit FlingingRenderer(
+      std::unique_ptr<media::FlingingController> controller);
 
-  std::unique_ptr<media::MediaController> controller_;
+  std::unique_ptr<media::FlingingController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingingRenderer);
 };
