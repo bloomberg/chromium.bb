@@ -136,6 +136,9 @@ void AssistantInteractionController::OnInteractionStarted(
     assistant_interaction_model_.SetInputModality(InputModality::kVoice);
     assistant_interaction_model_.SetMicState(MicState::kOpen);
   } else {
+    // In the case of a non-voice interaction, we commit the pending query.
+    // This will trigger a clearing of the interaction which wipes the stage.
+    assistant_interaction_model_.CommitPendingQuery();
     assistant_interaction_model_.SetMicState(MicState::kClosed);
   }
 }
@@ -268,7 +271,6 @@ void AssistantInteractionController::StartTextInteraction(
 
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text));
-  assistant_interaction_model_.CommitPendingQuery();
 
   assistant_->SendTextQuery(text);
 }
