@@ -769,7 +769,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     TableViewTextItem* entriesStatusItem =
         [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
     entriesStatusItem.text = statusMessage;
-    entriesStatusItem.textColor = TextItemColorBlack;
+    entriesStatusItem.textColor = [UIColor blackColor];
     statusMessageItem = entriesStatusItem;
   }
   return statusMessageItem;

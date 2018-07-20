@@ -17,3 +17,5 @@ const CGFloat kTableViewHighlightedCellColor = 0xA6A6A6;
 const CGFloat kTableViewHighlightedCellColorAlpha = 0.5;
 const CGFloat kUseDefaultFontSize = 0.0;
 const CGFloat kTableViewLabelVerticalTopSpacing = 13.0;
+
+const CGFloat kTableViewTextLabelColorLightGrey = 0x6D6D72;
