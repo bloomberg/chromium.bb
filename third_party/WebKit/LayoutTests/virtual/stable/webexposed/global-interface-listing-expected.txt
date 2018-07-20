@@ -4809,6 +4809,7 @@ interface RTCPeerConnection : EventTarget
     method addIceCandidate
     method addStream
     method addTrack
+    method addTransceiver
     method close
     method constructor
     method createAnswer
@@ -8339,6 +8340,7 @@ interface webkitRTCPeerConnection : EventTarget
     method addIceCandidate
     method addStream
     method addTrack
+    method addTransceiver
     method close
     method constructor
     method createAnswer

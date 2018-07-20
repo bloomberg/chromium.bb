@@ -50,6 +50,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/idb_object_store_or_idb_index_or_idb_cursor.h",
   "$bindings_modules_v8_output_dir/long_or_constrain_long_range.cc",
   "$bindings_modules_v8_output_dir/long_or_constrain_long_range.h",
+  "$bindings_modules_v8_output_dir/media_stream_track_or_string.cc",
+  "$bindings_modules_v8_output_dir/media_stream_track_or_string.h",
   "$bindings_modules_v8_output_dir/offscreen_rendering_context.cc",
   "$bindings_modules_v8_output_dir/offscreen_rendering_context.h",
   "$bindings_modules_v8_output_dir/password_credential_data_or_html_form_element.cc",
