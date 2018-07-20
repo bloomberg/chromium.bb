@@ -1387,7 +1387,7 @@
     },
     {
       name: "WebUSBOnDedicatedWorkers",
-      status: "experimental",
+      status: "stable",
       depends_on: ["WebUSB"],
     },
     {
