@@ -27,6 +27,10 @@ bool SyncService::IsSyncActive() const {
   return state == State::CONFIGURING || state == State::ACTIVE;
 }
 
+bool SyncService::IsFirstSetupInProgress() const {
+  return !IsFirstSetupComplete() && IsSetupInProgress();
+}
+
 bool SyncService::HasUnrecoverableError() const {
   return HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR);
 }

@@ -262,7 +262,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // if the user is customizing sync after already completing setup once).
   // SyncService uses this to determine if it's OK to start syncing, or if the
   // user is still setting up the initial sync configuration.
-  virtual bool IsFirstSetupInProgress() const = 0;
+  bool IsFirstSetupInProgress() const;
 
   // Called by the UI to notify the SyncService that UI is visible so it will
   // not start syncing. This tells sync whether it's safe to start downloading
@@ -275,7 +275,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual std::unique_ptr<SyncSetupInProgressHandle>
   GetSetupInProgressHandle() = 0;
 
-  // Used by tests.
   virtual bool IsSetupInProgress() const = 0;
 
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;

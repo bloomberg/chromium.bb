@@ -104,10 +104,6 @@ void FakeSyncService::OnUserChoseDatatypes(bool sync_everything,
 
 void FakeSyncService::SetFirstSetupComplete() {}
 
-bool FakeSyncService::IsFirstSetupInProgress() const {
-  return false;
-}
-
 std::unique_ptr<SyncSetupInProgressHandle>
 FakeSyncService::GetSetupInProgressHandle() {
   return nullptr;

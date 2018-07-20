@@ -76,7 +76,7 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
             browser()->profile()));
     EXPECT_CALL(*mock_sync_service_1_, IsFirstSetupComplete())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_sync_service_1_, IsFirstSetupInProgress())
+    EXPECT_CALL(*mock_sync_service_1_, IsSetupInProgress())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_sync_service_1_, IsSyncConfirmationNeeded())
         .WillRepeatedly(Return(false));
@@ -105,7 +105,7 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
 
     EXPECT_CALL(*mock_sync_service_2_, IsFirstSetupComplete())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_sync_service_2_, IsFirstSetupInProgress())
+    EXPECT_CALL(*mock_sync_service_2_, IsSetupInProgress())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_sync_service_2_, IsSyncConfirmationNeeded())
         .WillRepeatedly(Return(false));
