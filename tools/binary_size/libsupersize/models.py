@@ -110,13 +110,33 @@ SECTION_TO_SECTION_NAME = collections.OrderedDict((
 ))
 
 
+# Relevant for native symbols. All anonymous:: namespaces are removed during
+# name normalization. This flag means that the name had one or more anonymous::
+# namespaces stripped from it.
 FLAG_ANONYMOUS = 1
+# Relevant for .text symbols. The actual symbol name had a "startup." prefix on
+# it, which was removed by name normalization.
 FLAG_STARTUP = 2
+# Relevant for .text symbols. The actual symbol name had a "unlikely." prefix on
+# it, which was removed by name normalization.
 FLAG_UNLIKELY = 4
+# Relevant to .data & .rodata symbols. The actual symbol name had a "rel."
+# prefix on it, which was removed by name normalization.
 FLAG_REL = 8
+# Relevant to .data & .rodata symbols. The actual symbol name had a "rel.local."
+# prefix on it, which was removed by name normalization.
 FLAG_REL_LOCAL = 16
+# The source path did not have the usual "../.." prefix, but instead had a
+# prefix of "gen", meaning that the symbol is from a source file that was
+# generated during the build (the "gen" prefix is removed during normalization).
 FLAG_GENERATED_SOURCE = 32
+# Relevant for .text symbols. The actual symbol name had a " [clone .####]"
+# suffix, which was removed by name normalization. Cloned symbols are created by
+# compiler optimizations (e.g. partial inlining).
 FLAG_CLONE = 64
+# Relevant for .text symbols. The actual symbol name had a "hot." prefix on it,
+# which was removed by name normalization. Occurs when an AFDO profile is
+# supplied to the linker.
 FLAG_HOT = 128
 
 
