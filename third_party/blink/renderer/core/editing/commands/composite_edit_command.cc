@@ -135,8 +135,6 @@ bool CompositeEditCommand::Apply() {
       case InputEvent::InputType::kNone:
         break;
       default:
-        NOTREACHED() << "Not supported input type on plain-text only element:"
-                     << static_cast<int>(GetInputType());
         return false;
     }
   }
