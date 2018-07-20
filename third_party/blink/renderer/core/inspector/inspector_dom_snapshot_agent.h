@@ -93,18 +93,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       bool include_event_listeners,
       bool include_user_agent_shadow_tree);
   void VisitContainerChildren2(Node* container, int parent_index);
-
-  // Collect LayoutTreeNodes owned by a pseudo element.
-  void VisitPseudoLayoutChildren(Node* pseudo_node,
-                                 LayoutObject* layout_object,
-                                 int index);
-  void VisitPseudoLayoutChildren2(Node* pseudo_node,
-                                  LayoutObject* layout_object,
-                                  int index);
-
   std::unique_ptr<protocol::Array<int>> VisitPseudoElements(
       Element* parent,
-      int index,
       bool include_event_listeners,
       bool include_user_agent_shadow_tree);
   void VisitPseudoElements2(Element* parent, int parent_index);
@@ -112,11 +102,11 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   BuildArrayForElementAttributes(Element*);
   std::unique_ptr<protocol::Array<int>> BuildArrayForElementAttributes2(Node*);
 
-  // Adds a LayoutTreeNode for the LayoutObject to |layout_tree_nodes_| and
-  // returns its index. Returns -1 if the Node has no associated LayoutObject.
-  // Associates LayoutObjects under a pseudo element with the element.
-  int VisitLayoutTreeNode(LayoutObject*, Node*, int node_index);
-  int BuildLayoutTreeNode(LayoutObject*, Node*, int node_index);
+  // Adds a LayoutTreeNode for the LayoutObject of the given Node to
+  // |layout_tree_nodes_| and returns its index. Returns -1 if the Node has no
+  // associated LayoutObject.
+  int VisitLayoutTreeNode(Node*, int node_index);
+  int BuildLayoutTreeNode(Node*, int node_index);
 
   // Returns the index of the ComputedStyle in |computed_styles_| for the given
   // Node. Adds a new ComputedStyle if necessary, but ensures no duplicates are
