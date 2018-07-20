@@ -7663,29 +7663,31 @@ static INLINE int64_t interpolation_filter_rd(
                     &tmp_skip_sse, NULL, NULL, NULL);
 #endif
     if (num_planes > 1) {
-      int64_t tmp_y_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
-      if (tmp_y_rd > *rd) {
-        mbmi->interp_filters = last_best;
-        return 0;
-      }
       int tmp_rate_uv, tmp_skip_sb_uv;
       int64_t tmp_dist_uv, tmp_skip_sse_uv;
-      av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, orig_dst, bsize);
-      for (int plane = 1; plane < num_planes; ++plane)
+      for (int plane = 1; plane < num_planes; ++plane) {
+        int64_t tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
+        if (tmp_rd >= *rd) {
+          mbmi->interp_filters = last_best;
+          return 0;
+        }
+        av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, orig_dst, bsize,
+                                       plane);
         av1_subtract_plane(x, bsize, plane);
 #if DNN_BASED_RD_INTERP_FILTER
-      model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 1, num_planes - 1,
-                               &tmp_rate_uv, &tmp_dist_uv, &tmp_skip_sb_uv,
-                               &tmp_skip_sse_uv, NULL, NULL, NULL);
+        model_rd_for_sb_with_dnn(cpi, bsize, x, xd, plane, plane, &tmp_rate_uv,
+                                 &tmp_dist_uv, &tmp_skip_sb_uv,
+                                 &tmp_skip_sse_uv, NULL, NULL, NULL);
 #else
-      model_rd_for_sb(cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate_uv,
-                      &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL,
-                      NULL, NULL);
+        model_rd_for_sb(cpi, bsize, x, xd, plane, plane, &tmp_rate_uv,
+                        &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL,
+                        NULL, NULL);
 #endif
-      tmp_rate += tmp_rate_uv;
-      tmp_skip_sb &= tmp_skip_sb_uv;
-      tmp_dist += tmp_dist_uv;
-      tmp_skip_sse += tmp_skip_sse_uv;
+        tmp_rate += tmp_rate_uv;
+        tmp_skip_sb &= tmp_skip_sb_uv;
+        tmp_dist += tmp_dist_uv;
+        tmp_skip_sse += tmp_skip_sse_uv;
+      }
     }
   } else {
     tmp_rate = *rate;

@@ -245,6 +245,10 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col, BUFFER_SET *ctx,
                                      BLOCK_SIZE bsize);
 
+void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    int mi_row, int mi_col, BUFFER_SET *ctx,
+                                    BLOCK_SIZE bsize, int plane_idx);
+
 void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize);
