@@ -125,9 +125,9 @@ public class NotificationPlatformBridgeTest {
     }
 
     private void checkThatShowNotificationIsDenied() throws Exception {
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "showNotification('MyNotification', {})");
+        showNotification("MyNotification", "{}");
         waitForTitle("TypeError: No notification permission has been granted for this origin.");
+
         // Ideally we'd wait a little here, but it's hard to wait for things that shouldn't happen.
         Assert.assertTrue(mNotificationTestRule.getNotificationEntries().isEmpty());
     }
@@ -158,14 +158,12 @@ public class NotificationPlatformBridgeTest {
     @DisabledTest
     public void testPermissionDenied() throws Exception {
         // Notifications permission should initially be prompt, and showing should fail.
-        Assert.assertEquals("\"default\"",
-                mNotificationTestRule.runJavaScriptCodeInCurrentTab("Notification.permission"));
+        Assert.assertEquals("\"default\"", runJavaScript("Notification.permission"));
         checkThatShowNotificationIsDenied();
 
         // Notification.requestPermission() should show the notifications infobar.
         Assert.assertEquals(0, mNotificationTestRule.getInfoBars().size());
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "Notification.requestPermission(sendToTest)");
+        runJavaScript("Notification.requestPermission(sendToTest)");
         InfoBar infoBar = getInfobarBlocking();
 
         // Dismissing the infobar should pass prompt to the requestPermission callback.
@@ -174,13 +172,11 @@ public class NotificationPlatformBridgeTest {
         waitForTitle("default"); // See https://crbug.com/434547.
 
         // Notifications permission should still be prompt.
-        Assert.assertEquals("\"default\"",
-                mNotificationTestRule.runJavaScriptCodeInCurrentTab("Notification.permission"));
+        Assert.assertEquals("\"default\"", runJavaScript("Notification.permission"));
         checkThatShowNotificationIsDenied();
 
         // Notification.requestPermission() should show the notifications infobar again.
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "Notification.requestPermission(sendToTest)");
+        runJavaScript("Notification.requestPermission(sendToTest)");
         infoBar = getInfobarBlocking();
 
         // Denying the infobar should pass denied to the requestPermission callback.
@@ -189,8 +185,7 @@ public class NotificationPlatformBridgeTest {
         waitForTitle("denied");
 
         // This should have caused notifications permission to become denied.
-        Assert.assertEquals("\"denied\"",
-                mNotificationTestRule.runJavaScriptCodeInCurrentTab("Notification.permission"));
+        Assert.assertEquals("\"denied\"", runJavaScript("Notification.permission"));
         checkThatShowNotificationIsDenied();
 
         // Reload page to ensure the block is persisted.
@@ -199,14 +194,12 @@ public class NotificationPlatformBridgeTest {
 
         // Notification.requestPermission() should immediately pass denied to the callback without
         // showing an infobar.
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "Notification.requestPermission(sendToTest)");
+        runJavaScript("Notification.requestPermission(sendToTest)");
         waitForTitle("denied");
         Assert.assertEquals(0, mNotificationTestRule.getInfoBars().size());
 
         // Notifications permission should still be denied.
-        Assert.assertEquals("\"denied\"",
-                mNotificationTestRule.runJavaScriptCodeInCurrentTab("Notification.permission"));
+        Assert.assertEquals("\"denied\"", runJavaScript("Notification.permission"));
         checkThatShowNotificationIsDenied();
     }
 
@@ -220,14 +213,12 @@ public class NotificationPlatformBridgeTest {
     @DisabledTest
     public void testPermissionGranted() throws Exception {
         // Notifications permission should initially be prompt, and showing should fail.
-        Assert.assertEquals("\"default\"",
-                mNotificationTestRule.runJavaScriptCodeInCurrentTab("Notification.permission"));
+        Assert.assertEquals("\"default\"", runJavaScript("Notification.permission"));
         checkThatShowNotificationIsDenied();
 
         // Notification.requestPermission() should show the notifications infobar.
         Assert.assertEquals(0, mNotificationTestRule.getInfoBars().size());
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "Notification.requestPermission(sendToTest)");
+        runJavaScript("Notification.requestPermission(sendToTest)");
         InfoBar infoBar = getInfobarBlocking();
 
         // Accepting the infobar should pass granted to the requestPermission callback.
@@ -240,9 +231,8 @@ public class NotificationPlatformBridgeTest {
                 mEmbeddedTestServerRule.getServer().getURL(NOTIFICATION_TEST_PAGE));
 
         // Notifications permission should now be granted, and showing should succeed.
-        Assert.assertEquals("\"granted\"",
-                mNotificationTestRule.runJavaScriptCodeInCurrentTab("Notification.permission"));
-        mNotificationTestRule.showAndGetNotification("MyNotification", "{}");
+        Assert.assertEquals("\"granted\"", runJavaScript("Notification.permission"));
+        showAndGetNotification("MyNotification", "{}");
     }
 
     /**
@@ -258,8 +248,8 @@ public class NotificationPlatformBridgeTest {
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
         Context context = InstrumentationRegistry.getTargetContext();
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("MyNotification", "{ body: 'Hello' }");
+        Notification notification = showAndGetNotification("MyNotification", "{body: 'Hello'}");
+
         String expectedOrigin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                 mEmbeddedTestServerRule.getOrigin());
 
@@ -321,7 +311,7 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
-        Notification notification = mNotificationTestRule.showAndGetNotification("MyNotification",
+        Notification notification = showAndGetNotification("MyNotification",
                 "{ "
                         + " actions: [{action: 'myAction', title: 'reply', type: 'text',"
                         + " placeholder: 'hi' }]}");
@@ -357,7 +347,8 @@ public class NotificationPlatformBridgeTest {
 
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
-        Notification notification = mNotificationTestRule.showAndGetNotification("MyNotification",
+        runJavaScript("SetupReplyForwardingForTests();");
+        Notification notification = showAndGetNotification("MyNotification",
                 "{ "
                         + " actions: [{action: 'myAction', title: 'reply', type: 'text'}],"
                         + " data: 'ACTION_REPLY'}");
@@ -402,7 +393,8 @@ public class NotificationPlatformBridgeTest {
 
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
-        Notification notification = mNotificationTestRule.showAndGetNotification("MyNotification",
+        runJavaScript("SetupReplyForwardingForTests();");
+        Notification notification = showAndGetNotification("MyNotification",
                 "{ "
                         + " actions: [{action: 'myAction', title: 'reply', type: 'text'}],"
                         + " data: 'ACTION_REPLY'}");
@@ -460,7 +452,8 @@ public class NotificationPlatformBridgeTest {
 
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
-        Notification notification = mNotificationTestRule.showAndGetNotification("MyNotification",
+        runJavaScript("SetupReplyForwardingForTests();");
+        Notification notification = showAndGetNotification("MyNotification",
                 "{ "
                         + " actions: [{action: 'myAction', title: 'reply', type: 'text'}],"
                         + " data: 'ACTION_REPLY'}");
@@ -484,8 +477,8 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
-        Notification notification = mNotificationTestRule.showAndGetNotification(
-                "MyNotification", "{ tag: 'myTag', renotify: true }");
+        Notification notification =
+                showAndGetNotification("MyNotification", "{ tag: 'myTag', renotify: true }");
 
         Assert.assertEquals(0, notification.flags & Notification.FLAG_ONLY_ALERT_ONCE);
     }
@@ -501,8 +494,7 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("MyNotification", "{ silent: true }");
+        Notification notification = showAndGetNotification("MyNotification", "{ silent: true }");
 
         // Zero indicates that no defaults should be inherited from the system.
         Assert.assertEquals(0, notification.defaults);
@@ -521,8 +513,7 @@ public class NotificationPlatformBridgeTest {
             }
         });
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("MyNotification", notificationOptions);
+        Notification notification = showAndGetNotification("MyNotification", notificationOptions);
 
         // Vibration should not be in the defaults.
         Assert.assertEquals(
@@ -576,8 +567,7 @@ public class NotificationPlatformBridgeTest {
             }
         });
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("MyNotification", "{ vibrate: 42 }");
+        Notification notification = showAndGetNotification("MyNotification", "{ vibrate: 42 }");
 
         // Vibration should not be in the defaults, a custom pattern was provided.
         Assert.assertEquals(
@@ -602,8 +592,8 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
-        Notification notification = mNotificationTestRule.showAndGetNotification(
-                "MyNotification", "{badge: 'badge.png'}");
+        Notification notification =
+                showAndGetNotification("MyNotification", "{badge: 'badge.png'}");
 
         Assert.assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
 
@@ -656,8 +646,7 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("MyNotification", "{icon: 'red.png'}");
+        Notification notification = showAndGetNotification("MyNotification", "{icon: 'red.png'}");
 
         Assert.assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
 
@@ -680,8 +669,7 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("NoIconNotification", "{}");
+        Notification notification = showAndGetNotification("NoIconNotification", "{}");
 
         Assert.assertEquals("NoIconNotification", NotificationTestUtil.getExtraTitle(notification));
 
@@ -721,8 +709,7 @@ public class NotificationPlatformBridgeTest {
 
         UserActionTester actionTester = new UserActionTester();
 
-        Notification notification =
-                mNotificationTestRule.showAndGetNotification("MyNotification", "{}");
+        Notification notification = showAndGetNotification("MyNotification", "{}");
 
         // Sending the PendingIntent resembles activating the notification.
         Assert.assertNotNull(notification.contentIntent);
@@ -768,8 +755,8 @@ public class NotificationPlatformBridgeTest {
                 "Expected the notification test page to be the sole tab in the current model", 1,
                 mNotificationTestRule.getActivity().getCurrentTabModel().getCount());
 
-        Notification notification = mNotificationTestRule.showAndGetNotification(
-                "MyNotification", "{ data: 'ACTION_CREATE_TAB' }");
+        Notification notification =
+                showAndGetNotification("MyNotification", "{ data: 'ACTION_CREATE_TAB' }");
 
         // Sending the PendingIntent resembles activating the notification.
         Assert.assertNotNull(notification.contentIntent);
@@ -807,22 +794,20 @@ public class NotificationPlatformBridgeTest {
         // +0.5 engagement from navigating to the test page.
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
 
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "showNotification('MyNotification', {tag: 'myTag'});");
+        showNotification("First", "{tag: 'myTag'}");
         mNotificationTestRule.waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = mNotificationTestRule.getNotificationEntries();
         String tag = notifications.get(0).tag;
         int id = notifications.get(0).id;
 
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab(
-                "showNotification('SecondNotification', {tag: 'myTag'});");
+        showNotification("Second", "{tag: 'myTag'}");
         mNotificationTestRule.waitForNotificationManagerMutation();
 
         // Verify that the notification was successfully replaced.
         notifications = mNotificationTestRule.getNotificationEntries();
         Assert.assertEquals(1, notifications.size());
-        Assert.assertEquals("SecondNotification",
-                NotificationTestUtil.getExtraTitle(notifications.get(0).notification));
+        Assert.assertEquals(
+                "Second", NotificationTestUtil.getExtraTitle(notifications.get(0).notification));
 
         // Verify that for replaced notifications their tag was the same.
         Assert.assertEquals(tag, notifications.get(0).tag);
@@ -849,7 +834,7 @@ public class NotificationPlatformBridgeTest {
         Assert.assertEquals(0.5, getEngagementScoreBlocking(), 0);
 
         // Open the first notification and verify it is displayed.
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab("showNotification('One');");
+        showNotification("One", "{}");
         mNotificationTestRule.waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = mNotificationTestRule.getNotificationEntries();
         Assert.assertEquals(1, notifications.size());
@@ -857,7 +842,7 @@ public class NotificationPlatformBridgeTest {
         Assert.assertEquals("One", NotificationTestUtil.getExtraTitle(notificationOne));
 
         // Open the second notification and verify it is displayed.
-        mNotificationTestRule.runJavaScriptCodeInCurrentTab("showNotification('Two');");
+        showNotification("Two", "{}");
         mNotificationTestRule.waitForNotificationManagerMutation();
         notifications = mNotificationTestRule.getNotificationEntries();
         Assert.assertEquals(2, notifications.size());
@@ -898,6 +883,31 @@ public class NotificationPlatformBridgeTest {
 
         // Expect +1 engagement from interacting with the notification.
         Assert.assertEquals(2.5, getEngagementScoreBlocking(), 0);
+    }
+    /**
+     * Shows a notification with |title| and |options|, waits until it has been displayed and then
+     * returns the Notification object to the caller. Requires that only a single notification is
+     * being displayed in the notification manager.
+     *
+     * @param title Title of the Web Notification to show.
+     * @param options Optional map of options to include when showing the notification.
+     * @return The Android Notification object, as shown in the framework.
+     */
+    private Notification showAndGetNotification(String title, String options)
+            throws TimeoutException, InterruptedException {
+        showNotification(title, options);
+        return mNotificationTestRule.waitForNotification().notification;
+    }
+
+    private void showNotification(String title, String options)
+            throws TimeoutException, InterruptedException {
+        runJavaScript("GetActivatedServiceWorkerForTest()"
+                + ".then(reg => reg.showNotification('" + title + "', " + options + "))"
+                + ".catch(sendToTest)");
+    }
+
+    private String runJavaScript(String code) throws TimeoutException, InterruptedException {
+        return mNotificationTestRule.runJavaScriptCodeInCurrentTab(code);
     }
 
     /**

@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.notifications;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.app.Notification;
-
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -77,21 +75,6 @@ public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedAct
         } else {
             Assert.assertEquals("\"default\"", permission);
         }
-    }
-
-    /**
-     * Shows a notification with |title| and |options|, waits until it has been displayed and then
-     * returns the Notification object to the caller. Requires that only a single notification is
-     * being displayed in the notification manager.
-     *
-     * @param title Title of the Web Notification to show.
-     * @param options Optional map of options to include when showing the notification.
-     * @return The Android Notification object, as shown in the framework.
-     */
-    public Notification showAndGetNotification(String title, String options)
-            throws InterruptedException, TimeoutException {
-        runJavaScriptCodeInCurrentTab("showNotification(\"" + title + "\", " + options + ");");
-        return waitForNotification().notification;
     }
 
     /**

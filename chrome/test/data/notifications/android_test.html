@@ -9,16 +9,19 @@
          test suite on Android. -->
     <script src="notification_test_utils.js"></script>
     <script>
-      function showNotification(title, options) {
-        GetActivatedServiceWorker('android_test_worker.js', location.pathname)
+      function GetActivatedServiceWorkerForTest() {
+        return GetActivatedServiceWorker(
+            'android_test_worker.js', location.pathname);
+      }
+
+      function SetupReplyForwardingForTests() {
+        GetActivatedServiceWorkerForTest()
             .then(registration => {
-                messagePort.addEventListener('message', function replyListener(event) {
-                  if (event.data.startsWith('reply: ')) {
-                    messagePort.removeEventListener('message', replyListener);
-                    sendToTest(event.data);
-                  }
-                });
-                return registration.showNotification(title, options);
+              messagePort.addEventListener('message', function replyListener(event) {
+                if (event.data.startsWith('reply: ')) {
+                  messagePort.removeEventListener('message', replyListener);
+                  sendToTest(event.data);
+                }});
             })
             .catch(sendToTest);
       }
