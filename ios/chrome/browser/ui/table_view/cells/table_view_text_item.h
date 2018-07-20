@@ -9,22 +9,16 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
-// Defines the colors used for the cell text.
-typedef NS_ENUM(UInt32, TextItemColor) {
-  TextItemColorLightGrey = 0x6D6D72,
-  TextItemColorBlack = 0x000000,
-};
-
 // TableViewTextItem contains the model data for a TableViewTextCell.
 @interface TableViewTextItem : TableViewItem
 
 // Text Alignment for the cell's textLabel. Default is NSTextAlignmentLeft.
 @property(nonatomic, assign) NSTextAlignment textAlignment;
 
-// Hex color for the cell's textLabel. Default is TextItemColorLightGrey.
-// ChromeTableViewStyler's |cellTitleColor| takes precedence over the default
-// color, but not over |textColor|.
-@property(nonatomic, assign) TextItemColor textColor;
+// UIColor for the cell's textLabel. Default is
+// kTableViewTextLabelColorLightGrey. ChromeTableViewStyler's |cellTitleColor|
+// takes precedence over the default color, but not over |textColor|.
+@property(nonatomic, assign) UIColor* textColor;
 
 @property(nonatomic, readwrite, strong) NSString* text;
 

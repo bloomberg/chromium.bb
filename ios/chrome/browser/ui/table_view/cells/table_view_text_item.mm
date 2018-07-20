@@ -42,13 +42,13 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
   // This item's text color takes precedence over the global styler.
   // TODO(crbug.com/854249): redo the logic for this convoluted if clause.
-  if (self.textColor == TextItemColorBlack ||
-      self.textColor == TextItemColorLightGrey) {
-    cell.textLabel.textColor = UIColorFromRGB(self.textColor);
+  if (self.textColor) {
+    cell.textLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {
     cell.textLabel.textColor = styler.cellTitleColor;
   } else {
-    cell.textLabel.textColor = UIColorFromRGB(TextItemColorLightGrey);
+    cell.textLabel.textColor =
+        UIColorFromRGB(kTableViewTextLabelColorLightGrey);
   }
   cell.textLabel.textAlignment =
       self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
