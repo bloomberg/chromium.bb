@@ -141,6 +141,12 @@
       <structure name="IDR_MD_EXTENSIONS_PACK_DIALOG_ALERT_JS"
                  file="pack_dialog_alert.js"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_RUNTIME_HOSTS_DIALOG_HTML"
+                 file="runtime_hosts_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_RUNTIME_HOSTS_DIALOG_JS"
+                 file="runtime_hosts_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_SERVICE_HTML"
                  file="service.html"
                  type="chrome_html" />
