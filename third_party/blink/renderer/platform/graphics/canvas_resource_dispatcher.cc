@@ -127,9 +127,14 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
 }
 
 void CanvasResourceDispatcher::DispatchFrameSync(
-    scoped_refptr<CanvasResource> canvas_resource,
+    scoped_refptr<StaticBitmapImage> image,
     base::TimeTicks commit_start_time,
     const SkIRect& damage_rect) {
+  scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
+      std::move(image),
+      nullptr,  // Resource provider not specified -> recycling will not work
+      kLow_SkFilterQuality, CanvasColorParams());
+
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
                     &frame))
@@ -144,9 +149,14 @@ void CanvasResourceDispatcher::DispatchFrameSync(
 }
 
 void CanvasResourceDispatcher::DispatchFrame(
-    scoped_refptr<CanvasResource> canvas_resource,
+    scoped_refptr<StaticBitmapImage> image,
     base::TimeTicks commit_start_time,
     const SkIRect& damage_rect) {
+  scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
+      std::move(image),
+      nullptr,  // Resource provider not specified -> recycling will not work
+      kLow_SkFilterQuality, CanvasColorParams());
+
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
                     &frame))
@@ -219,23 +229,37 @@ bool CanvasResourceDispatcher::PrepareFrame(
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       // Case 1: both canvas and compositor are gpu accelerated.
       commit_type = kCommitGPUCanvasGPUCompositing;
+      offscreen_canvas_resource_provider_
+          ->SetTransferableResourceToStaticBitmapImage(&resource,
+                                                       canvas_resource);
       yflipped = true;
     } else {
       // Case 2: canvas is accelerated but gpu compositing is disabled.
       commit_type = kCommitGPUCanvasSoftwareCompositing;
+      offscreen_canvas_resource_provider_
+          ->SetTransferableResourceToSharedBitmap(resource,
+                                                  canvas_resource->Bitmap());
     }
   } else {
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       // Case 3: canvas is not gpu-accelerated, but compositor is.
       commit_type = kCommitSoftwareCanvasGPUCompositing;
+      scoped_refptr<CanvasResource> accelerated_resource =
+          canvas_resource->MakeAccelerated(
+              SharedGpuContext::ContextProviderWrapper());
+      if (!accelerated_resource)
+        return false;
+      offscreen_canvas_resource_provider_
+          ->SetTransferableResourceToStaticBitmapImage(&resource,
+                                                       accelerated_resource);
     } else {
       // Case 4: both canvas and compositor are not gpu accelerated.
       commit_type = kCommitSoftwareCanvasSoftwareCompositing;
+      offscreen_canvas_resource_provider_
+          ->SetTransferableResourceToSharedBitmap(resource,
+                                                  canvas_resource->Bitmap());
     }
   }
-
-  offscreen_canvas_resource_provider_->SetTransferableResource(&resource,
-                                                               canvas_resource);
 
   commit_type_histogram.Count(commit_type);
 
@@ -453,14 +477,12 @@ void CanvasResourceDispatcher::Reshape(const IntSize& size) {
 void CanvasResourceDispatcher::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     ::gpu::mojom::blink::MailboxPtr id) {
-  if (sink_)
-    sink_->DidAllocateSharedBitmap(std::move(buffer), std::move(id));
+  sink_->DidAllocateSharedBitmap(std::move(buffer), std::move(id));
 }
 
 void CanvasResourceDispatcher::DidDeleteSharedBitmap(
     ::gpu::mojom::blink::MailboxPtr id) {
-  if (sink_)
-    sink_->DidDeleteSharedBitmap(std::move(id));
+  sink_->DidDeleteSharedBitmap(std::move(id));
 }
 
 }  // namespace blink

@@ -10,7 +10,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 using testing::_;
@@ -49,13 +48,6 @@ class CanvasResourceDispatcherTest : public testing::Test {
  protected:
   CanvasResourceDispatcherTest() {
     dispatcher_ = std::make_unique<MockCanvasResourceDispatcher>();
-    resource_provider_ = CanvasResourceProvider::Create(
-        IntSize(10, 10),
-        CanvasResourceProvider::kSoftwareCompositedResourceUsage,
-        nullptr,  // context_provider_wrapper
-        0,        // msaa_sample_count
-        CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
-        dispatcher_->GetWeakPtr());
   }
 
   MockCanvasResourceDispatcher* Dispatcher() { return dispatcher_.get(); }
@@ -63,12 +55,13 @@ class CanvasResourceDispatcherTest : public testing::Test {
  private:
   scoped_refptr<StaticBitmapImage> PrepareStaticBitmapImage();
   std::unique_ptr<MockCanvasResourceDispatcher> dispatcher_;
-  std::unique_ptr<CanvasResourceProvider> resource_provider_;
 };
 
 void CanvasResourceDispatcherTest::DispatchOneFrame() {
-  dispatcher_->DispatchFrame(resource_provider_->ProduceFrame(),
-                             base::TimeTicks(), SkIRect::MakeEmpty());
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
+  dispatcher_->DispatchFrame(
+      StaticBitmapImage::Create(surface->makeImageSnapshot()),
+      base::TimeTicks(), SkIRect::MakeEmpty());
 }
 
 TEST_F(CanvasResourceDispatcherTest, PlaceholderRunsNormally) {

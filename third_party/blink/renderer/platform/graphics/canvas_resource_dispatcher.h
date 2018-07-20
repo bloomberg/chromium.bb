@@ -47,11 +47,11 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   void SetSuspendAnimation(bool);
   bool NeedsBeginFrame() const { return needs_begin_frame_; }
   bool IsAnimationSuspended() const { return suspend_animation_; }
-  void DispatchFrame(scoped_refptr<CanvasResource>,
+  void DispatchFrame(scoped_refptr<StaticBitmapImage>,
                      base::TimeTicks commit_start_time,
                      const SkIRect& damage_rect);
   void ReclaimResource(viz::ResourceId);
-  void DispatchFrameSync(scoped_refptr<CanvasResource>,
+  void DispatchFrameSync(scoped_refptr<StaticBitmapImage>,
                          base::TimeTicks commit_start_time,
                          const SkIRect& damage_rect);
 

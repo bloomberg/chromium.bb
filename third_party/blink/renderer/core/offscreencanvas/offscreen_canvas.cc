@@ -51,8 +51,7 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   current_frame_damage_rect_.join(damage_rect);
   GetOrCreateResourceDispatcher()->DispatchFrameSync(
-      std::move(canvas_resource), commit_start_time,
-      current_frame_damage_rect_);
+      canvas_resource->Bitmap(), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
@@ -391,9 +390,8 @@ void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
   if (current_frame_damage_rect_.isEmpty())
     return;
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
-  GetOrCreateResourceDispatcher()->DispatchFrame(std::move(canvas_resource),
-                                                 commit_start_time,
-                                                 current_frame_damage_rect_);
+  GetOrCreateResourceDispatcher()->DispatchFrame(
+      canvas_resource->Bitmap(), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 

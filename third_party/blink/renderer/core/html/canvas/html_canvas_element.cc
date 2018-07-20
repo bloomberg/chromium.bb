@@ -424,15 +424,14 @@ void HTMLCanvasElement::FinalizeFrame() {
       ResourceProvider()->TryEnableSingleBuffering();
       // Push a frame
       base::TimeTicks start_time = WTF::CurrentTimeTicks();
-      scoped_refptr<CanvasResource> canvas_resource =
-          ResourceProvider()->ProduceFrame();
+      scoped_refptr<StaticBitmapImage> image =
+          canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration);
       FloatRect src_rect(0, 0, Size().Width(), Size().Height());
       dirty_rect_.Intersect(src_rect);
       IntRect int_dirty = EnclosingIntRect(dirty_rect_);
       SkIRect damage_rect = SkIRect::MakeXYWH(
           int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
-      frame_dispatcher_->DispatchFrameSync(std::move(canvas_resource),
-                                           start_time, damage_rect);
+      frame_dispatcher_->DispatchFrameSync(image, start_time, damage_rect);
       (void)start_time;
       (void)damage_rect;
       dirty_rect_ = FloatRect();
