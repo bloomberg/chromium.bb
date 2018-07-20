@@ -809,7 +809,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (!target_frame && !request.FrameName().IsEmpty()) {
     if (policy == kNavigationPolicyDownload) {
       Client()->DownloadURL(request.GetResourceRequest(),
-                            DownloadCrossOriginRedirects::kNavigate);
+                            DownloadCrossOriginRedirects::kFollow);
       return;  // Navigation/download will be handled by the client.
     } else if (should_navigate_target_frame) {
       request.GetResourceRequest().SetFrameType(
