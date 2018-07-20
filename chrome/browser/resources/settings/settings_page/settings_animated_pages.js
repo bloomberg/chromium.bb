@@ -31,9 +31,10 @@ Polymer({
 
     /**
      * A Map specifying which element should be focused when exiting a subpage.
-     * The key of the map holds a settings.Route path, and the value holds a
-     * query selector that identifies the desired element.
-     * @type {?Map<string, string>}
+     * The key of the map holds a settings.Route path, and the value holds
+     * either a query selector that identifies the desired element or a function
+     * to be run when a neon-animation-finish event is handled.
+     * @type {?Map<string, (string|Function)>}
      */
     focusConfig: Object,
   },
@@ -80,33 +81,43 @@ Polymer({
     if (!settings.lastRouteChangeWasPopstate())
       return;
 
-    // Only handle iron-select events from neon-animatable elements and the
-    // given whitelist of settings-subpage instances.
-    let whitelist = 'settings-subpage#site-settings';
+    const subpagePaths = [];
+    if (settings.routes.SITE_SETTINGS_COOKIES)
+      subpagePaths.push(settings.routes.SITE_SETTINGS_COOKIES.path);
 
-    if (settings.routes.SITE_SETTINGS_COOKIES) {
-      whitelist += ', settings-subpage[route-path=\"' +
-          settings.routes.SITE_SETTINGS_COOKIES.path + '\"]';
-    }
+    if (settings.routes.SITE_SETTINGS_SITE_DATA)
+      subpagePaths.push(settings.routes.SITE_SETTINGS_SITE_DATA.path);
 
     // <if expr="chromeos">
-    if (settings.routes.INTERNET_NETWORKS) {
-      whitelist += ', settings-subpage[route-path=\"' +
-          settings.routes.INTERNET_NETWORKS.path + '\"]';
-    }
+    if (settings.routes.INTERNET_NETWORKS)
+      subpagePaths.push(settings.routes.INTERNET_NETWORKS.path);
     // </if>
 
-    if (!e.detail.item.matches('neon-animatable, ' + whitelist))
+    // Only handle iron-select events from neon-animatable elements and the
+    // given whitelist of settings-subpage instances.
+    const whitelist = ['settings-subpage#site-settings', 'neon-animatable'];
+    whitelist.push.apply(
+        whitelist,
+        subpagePaths.map(path => `settings-subpage[route-path="${path}"]`));
+    const query = whitelist.join(', ');
+
+    if (!e.detail.item.matches(query))
       return;
 
-    const selector = this.focusConfig.get(this.previousRoute_.path);
-    if (selector) {
-      // neon-animatable has "display: none" until the animation finishes, so
-      // calling focus() on any of its children has no effect until "display:
-      // none" is removed. Therefore, don't set focus from within the
-      // currentRouteChanged callback. Using 'iron-select' listener which fires
-      // after the animation has finished allows setting focus to work.
-      cr.ui.focusWithoutInk(assert(this.querySelector(selector)));
+    const selectorOrFunction = this.focusConfig.get(this.previousRoute_.path);
+    if (selectorOrFunction) {
+      // neon-animatable has "display: none" until the animation finishes,
+      // so calling focus() on any of its children has no effect until
+      // "display:none" is removed. Therefore, don't set focus from within
+      // the currentRouteChanged callback.
+      listenOnce(this, 'neon-animation-finish', () => {
+        if (typeof selectorOrFunction == 'function') {
+          selectorOrFunction();
+        } else {
+          const selector = /** @type {string} */ (selectorOrFunction);
+          cr.ui.focusWithoutInk(assert(this.querySelector(selector)));
+        }
+      });
     }
   },
 

@@ -26,7 +26,7 @@ suite('SiteDataTest', function() {
             .then(() => {
               Polymer.dom.flush();
               const button =
-                  siteData.$$('.site-item').querySelector('.icon-delete-gray');
+                  siteData.$$('site-data-entry').$$('.icon-delete-gray');
               assertTrue(!!button);
               assertEquals('PAPER-ICON-BUTTON-LIGHT', button.tagName);
               button.querySelector('button').click();

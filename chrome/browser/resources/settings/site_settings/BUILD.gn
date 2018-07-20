@@ -17,6 +17,7 @@ js_type_check("closure_compile") {
     ":protocol_handlers",
     ":site_data",
     ":site_data_details_subpage",
+    ":site_data_entry",
     ":site_details",
     ":site_details_permission",
     ":site_entry",
@@ -124,6 +125,7 @@ js_library("site_data") {
   deps = [
     ":cookie_info",
     ":local_data_browser_proxy",
+    ":site_data_entry",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior",
     "../settings_page:settings_subpage_search",
@@ -143,6 +145,16 @@ js_library("site_data_details_subpage") {
     "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("site_data_entry") {
+  deps = [
+    ":cookie_info",
+    ":local_data_browser_proxy",
+    "..:focus_row_behavior",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:icon",
   ]
 }
 
