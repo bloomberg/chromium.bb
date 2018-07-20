@@ -107,12 +107,25 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
                                                    FetchResourceType type) {
   bool is_main_resource = type == kFetchMainResource;
   if (!is_main_resource) {
+    // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
+    // no matter what now.
     if (!request.DidSetHTTPReferrer()) {
+      String referrer_to_use = request.ReferrerString();
+      ReferrerPolicy referrer_policy_to_use = request.GetReferrerPolicy();
+
+      if (referrer_to_use == Referrer::ClientReferrerString())
+        referrer_to_use = GetFetchClientSettingsObject()->GetOutgoingReferrer();
+
+      if (referrer_policy_to_use == kReferrerPolicyDefault) {
+        referrer_policy_to_use =
+            GetFetchClientSettingsObject()->GetReferrerPolicy();
+      }
+
+      // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
+      // and store it elsewhere. See https://crbug.com/850813.
       request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-          GetFetchClientSettingsObject()->GetReferrerPolicy(), request.Url(),
-          GetFetchClientSettingsObject()->GetOutgoingReferrer()));
-      request.SetHTTPOriginIfNeeded(
-          GetFetchClientSettingsObject()->GetSecurityOrigin());
+          referrer_policy_to_use, request.Url(), referrer_to_use));
+      request.SetHTTPOriginIfNeeded(GetSecurityOrigin());
     } else {
       DCHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
                                                  request.Url(),

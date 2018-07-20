@@ -361,10 +361,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   ResourceRequest request(url);
   ReferrerPolicy policy = ReferrerPolicyAttribute();
-  if (policy != kReferrerPolicyDefault) {
-    request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        policy, url, GetDocument().OutgoingReferrer()));
-  }
+  request.SetReferrerPolicy(policy);
 
   WebFrameLoadType child_load_type = WebFrameLoadType::kReplaceCurrentItem;
   if (!GetDocument().LoadEventFinished() &&

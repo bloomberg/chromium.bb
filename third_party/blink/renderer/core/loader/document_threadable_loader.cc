@@ -213,8 +213,10 @@ DocumentThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   preflight_request->SetSkipServiceWorker(true);
-  preflight_request->SetHTTPReferrer(
-      Referrer(request.HttpReferrer(), request.GetReferrerPolicy()));
+  // TODO(domfarolino): Use ReferrerString() once https://crbug.com/850813 is
+  // closed and we stop storing the referrer string as a `Referer` header.
+  preflight_request->SetReferrerString(request.HttpReferrer());
+  preflight_request->SetReferrerPolicy(request.GetReferrerPolicy());
 
   if (request.IsExternalRequest()) {
     preflight_request->SetHTTPHeaderField(
@@ -424,6 +426,9 @@ void DocumentThreadableLoader::PrepareCrossOriginRequest(
     ResourceRequest& request) const {
   if (GetSecurityOrigin())
     request.SetHTTPOrigin(GetSecurityOrigin());
+
+  // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead use
+  // ResourceRequest::referrer_. See https://crbug.com/850813.
   if (override_referrer_)
     request.SetHTTPReferrer(referrer_after_redirect_);
 }
@@ -777,6 +782,8 @@ bool DocumentThreadableLoader::RedirectReceived(
 
   // Save the referrer to use when following the redirect.
   override_referrer_ = true;
+  // TODO(domfarolino): Use ReferrerString() once https://crbug.com/850813 is
+  // closed and we stop storing the referrer string as a `Referer` header.
   referrer_after_redirect_ =
       Referrer(new_request.HttpReferrer(), new_request.GetReferrerPolicy());
 

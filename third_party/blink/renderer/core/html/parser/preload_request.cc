@@ -37,11 +37,10 @@ Resource* PreloadRequest::Start(Document* document,
   DCHECK(!url.ProtocolIsData());
 
   ResourceRequest resource_request(url);
-  resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-      referrer_policy_, url,
-      referrer_source_ == kBaseUrlIsReferrer
-          ? base_url_.StrippedForUseAsReferrer()
-          : document->OutgoingReferrer()));
+  resource_request.SetReferrerPolicy(referrer_policy_);
+  if (referrer_source_ == kBaseUrlIsReferrer)
+    resource_request.SetReferrerString(base_url_.StrippedForUseAsReferrer());
+
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type_, is_image_set_, false));
 

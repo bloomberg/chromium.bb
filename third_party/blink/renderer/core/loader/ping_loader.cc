@@ -230,8 +230,10 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   }
 
   request.SetKeepalive(true);
-  request.SetHTTPReferrer(
-      Referrer(Referrer::NoReferrer(), kReferrerPolicyNever));
+  // TODO(domfarolino): Add WPTs ensuring that pings do not have a referrer
+  // header.
+  request.SetReferrerString(Referrer::NoReferrer());
+  request.SetReferrerPolicy(kReferrerPolicyNever);
   request.SetRequestContext(WebURLRequest::kRequestContextPing);
   FetchParameters params(request);
   params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::ping;

@@ -807,12 +807,13 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
           ? execution_context_->GetReferrerPolicy()
           : fetch_request_data_->GetReferrerPolicy();
   const String referrer_string =
-      fetch_request_data_->ReferrerString() ==
-              FetchRequestData::ClientReferrerString()
+      fetch_request_data_->ReferrerString() == Referrer::ClientReferrerString()
           ? execution_context_->OutgoingReferrer()
           : fetch_request_data_->ReferrerString();
   // Note that generateReferrer generates |no-referrer| from |no-referrer|
   // referrer string (i.e. String()).
+  // TODO(domfarolino): Can we use ResourceRequest's SetReferrerString() and
+  // SetReferrerPolicy() instead of calling SetHTTPReferrer()?
   request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
       referrer_policy, fetch_request_data_->Url(), referrer_string));
   request.SetSkipServiceWorker(is_isolated_world_);

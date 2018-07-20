@@ -45,7 +45,9 @@ struct Referrer {
     DCHECK(referrer == NoReferrer() || KURL(NullURL(), referrer).IsValid());
   }
   Referrer() : referrer_policy(kReferrerPolicyDefault) {}
+  // We use these strings instead of "no-referrer" and "client" in the spec.
   static String NoReferrer() { return String(); }
+  static String ClientReferrerString() { return "about:client"; }
 
   AtomicString referrer;
   ReferrerPolicy referrer_policy;

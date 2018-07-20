@@ -74,6 +74,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
       fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
+      referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(kReferrerPolicyDefault),
       did_set_http_referrer_(false),
       check_for_browser_side_navigation_(true),
@@ -114,6 +115,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetFetchCredentialsMode(data->fetch_credentials_mode_);
   SetFetchRedirectMode(data->fetch_redirect_mode_);
   SetFetchIntegrity(data->fetch_integrity_.IsolatedCopy());
+  SetReferrerString(data->referrer_string_.IsolatedCopy());
   referrer_policy_ = data->referrer_policy_;
   did_set_http_referrer_ = data->did_set_http_referrer_;
   check_for_browser_side_navigation_ = data->check_for_browser_side_navigation_;
@@ -146,6 +148,8 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetSiteForCookies(new_site_for_cookies);
   String referrer =
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
+  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
+  // header and instead use a separate member. See https://crbug.com/850813.
   request->SetHTTPReferrer(
       Referrer(referrer, static_cast<ReferrerPolicy>(new_referrer_policy)));
   request->SetSkipServiceWorker(skip_service_worker);
@@ -211,6 +215,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->fetch_credentials_mode_ = fetch_credentials_mode_;
   data->fetch_redirect_mode_ = fetch_redirect_mode_;
   data->fetch_integrity_ = fetch_integrity_.IsolatedCopy();
+  data->referrer_string_ = referrer_string_.IsolatedCopy();
   data->referrer_policy_ = referrer_policy_;
   data->did_set_http_referrer_ = did_set_http_referrer_;
   data->check_for_browser_side_navigation_ = check_for_browser_side_navigation_;

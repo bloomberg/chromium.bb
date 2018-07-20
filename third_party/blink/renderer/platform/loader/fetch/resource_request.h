@@ -132,13 +132,25 @@ class PLATFORM_EXPORT ResourceRequest final {
     SetHTTPHeaderField(HTTPNames::Content_Type, http_content_type);
   }
 
-  bool DidSetHTTPReferrer() const { return did_set_http_referrer_; }
+  // TODO(domfarolino): Remove this once we stop storing the generated referrer
+  // as a header, and instead use a separate member. See
+  // https://crbug.com/850813.
   const AtomicString& HttpReferrer() const {
     return HttpHeaderField(HTTPNames::Referer);
   }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
   void SetHTTPReferrer(const Referrer&);
+  bool DidSetHTTPReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
+
+  void SetReferrerPolicy(ReferrerPolicy referrer_policy) {
+    referrer_policy_ = referrer_policy;
+  }
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+
+  void SetReferrerString(const String& referrer_string) {
+    referrer_string_ = referrer_string;
+  }
+  const String& ReferrerString() const { return referrer_string_; }
 
   const AtomicString& HttpOrigin() const {
     return HttpHeaderField(HTTPNames::Origin);
@@ -424,6 +436,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;
   network::mojom::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
+  // TODO(domfarolino): Use AtomicString for referrer_string_ once
+  // off-main-thread fetch is fully implemented and ResourceRequest never gets
+  // transferred between threads. See https://crbug.com/706331.
+  String referrer_string_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool check_for_browser_side_navigation_;
@@ -487,6 +503,7 @@ struct PLATFORM_EXPORT CrossThreadResourceRequestData {
   int requestor_id_;
   int plugin_child_id_;
   int app_cache_host_id_;
+  WebURLRequest::PreviewsState previews_state_;
   WebURLRequest::RequestContext request_context_;
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
@@ -494,7 +511,7 @@ struct PLATFORM_EXPORT CrossThreadResourceRequestData {
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;
   network::mojom::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
-  WebURLRequest::PreviewsState previews_state_;
+  String referrer_string_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool check_for_browser_side_navigation_;

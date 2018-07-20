@@ -364,6 +364,8 @@ DOMWindow* CreateWindow(const String& url_string,
   // an embedder-initiated navigation.  FrameLoader assumes no responsibility
   // for generating an embedder-initiated navigation's referrer, so we need to
   // ensure the proper referrer is set now.
+  // TODO(domfarolino): Stop setting ResourceRequest's HTTP Referrer and store
+  // this is a separate member. See https://crbug.com/850813.
   frame_request.GetResourceRequest().SetHTTPReferrer(
       SecurityPolicy::GenerateReferrer(
           active_frame->GetDocument()->GetReferrerPolicy(), completed_url,

@@ -80,10 +80,7 @@ void LinkImport::Process() {
 
   ResourceRequest resource_request(GetDocument().CompleteURL(url));
   ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
-  if (referrer_policy != kReferrerPolicyDefault) {
-    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_policy, url, GetDocument().OutgoingReferrer()));
-  }
+  resource_request.SetReferrerPolicy(referrer_policy);
 
   ResourceLoaderOptions options;
   options.initiator_info.name = owner_->localName();

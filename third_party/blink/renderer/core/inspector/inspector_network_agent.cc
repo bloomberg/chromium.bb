@@ -859,6 +859,10 @@ void InspectorNetworkAgent::WillSendRequest(
         continue;
       // When overriding referer, also override referrer policy
       // for this request to assure the request will be allowed.
+      // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead
+      // use ResourceRequest::referrer_. See https://crbug.com/850813. This
+      // seems to require storing the referrer info that is currently stored
+      // inside state_'s kExtraRequestHeaders, somewhere else.
       if (header_name.LowerASCII() == HTTPNames::Referer.LowerASCII())
         request.SetHTTPReferrer(Referrer(value, kReferrerPolicyAlways));
       else

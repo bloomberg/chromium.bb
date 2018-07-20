@@ -411,10 +411,7 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet, false));
 
-  if (params.referrer_policy != kReferrerPolicyDefault) {
-    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        params.referrer_policy, url, document.OutgoingReferrer()));
-  }
+  resource_request.SetReferrerPolicy(params.referrer_policy);
 
   resource_request.SetFetchImportanceMode(
       GetFetchImportanceAttributeValue(params.importance));
@@ -577,10 +574,7 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
-    if (params.referrer_policy != kReferrerPolicyDefault) {
-      resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-          params.referrer_policy, params.href, document.OutgoingReferrer()));
-    }
+    resource_request.SetReferrerPolicy(params.referrer_policy);
 
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));
@@ -702,11 +696,7 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
                                 Document& document,
                                 ResourceClient* link_client) {
   ResourceRequest resource_request(document.CompleteURL(params.href));
-  ReferrerPolicy referrer_policy = params.referrer_policy;
-  if (referrer_policy != kReferrerPolicyDefault) {
-    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_policy, params.href, document.OutgoingReferrer()));
-  }
+  resource_request.SetReferrerPolicy(params.referrer_policy);
 
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);

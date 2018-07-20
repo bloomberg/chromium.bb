@@ -353,8 +353,7 @@ void HTMLAnchorElement::HandleClick(Event* event) {
       !HasRel(kRelationNoReferrer)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLAnchorElementReferrerPolicyAttribute);
-    request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        policy, completed_url, GetDocument().OutgoingReferrer()));
+    request.SetReferrerPolicy(policy);
   }
 
   if (hasAttribute(downloadAttr)) {
