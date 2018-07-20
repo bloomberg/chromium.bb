@@ -71,6 +71,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool webkitSupportsFullscreen();
   bool webkitDisplayingFullscreen();
   bool UsesOverlayFullscreenVideo() const override;
+  void DidEnterFullscreen();
+  void DidExitFullscreen();
 
   // Statistics
   unsigned webkitDecodedFrameCount() const;
@@ -148,6 +150,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   bool SupportsPictureInPicture() const final;
+  void enterPictureInPicture(WebMediaPlayer::PipWindowOpenedCallback callback);
+  void exitPictureInPicture(WebMediaPlayer::PipWindowClosedCallback callback);
   void PictureInPictureStopped() final;
   void PictureInPictureControlClicked(const WebString& control_id) final;
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
@@ -207,6 +211,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // Whether the video is currently in auto-pip (Android). It is not similar to
   // a video being in regular Picture-in-Picture mode.
   bool is_auto_picture_in_picture_ = false;
+
+  // Whether this element is in overlay fullscreen mode.
+  bool in_overlay_fullscreen_video_;
 };
 
 }  // namespace blink
