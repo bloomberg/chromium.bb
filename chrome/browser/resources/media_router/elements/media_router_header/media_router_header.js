@@ -99,8 +99,7 @@ Polymer({
   attached: function() {
     // isRTL() only works after i18n_template.js runs to set <html dir>.
     // Set the back button icon based on text direction.
-    this.arrowDropIcon_ =
-        isRTL() ? 'media-router:arrow-forward' : 'media-router:arrow-back';
+    this.arrowDropIcon_ = isRTL() ? 'cr:arrow-forward' : 'cr:arrow-back';
   },
 
   /**
@@ -110,8 +109,8 @@ Polymer({
    */
   computeArrowDropIcon_: function(view) {
     return view == media_router.MediaRouterView.CAST_MODE_LIST ?
-        'media-router:arrow-drop-up' :
-        'media-router:arrow-drop-down';
+        'cr:arrow-drop-up' :
+        'cr:arrow-drop-down';
   },
 
   /**

@@ -117,7 +117,7 @@ cr.define('inline.login', function() {
 
   function showBackButton() {
     $('navigation-button').icon =
-        isRTL() ? 'icons:arrow-forward' : 'icons:arrow-back';
+        isRTL() ? 'cr:arrow-forward' : 'cr:arrow-back';
 
     $('navigation-button')
         .setAttribute(
@@ -125,7 +125,7 @@ cr.define('inline.login', function() {
   }
 
   function showCloseButton() {
-    $('navigation-button').icon = 'icons:close';
+    $('navigation-button').icon = 'cr:close';
     $('navigation-button').classList.add('enabled');
     $('navigation-button')
         .setAttribute(
