@@ -1389,9 +1389,6 @@ component("ash") {
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/ui/gpu_host",
-
-    # TODO(sky): this should not be necessary once --mash goes away.
-    "//services/ui:lib",
     "//services/ui/public/cpp/input_devices:input_device_controller",
     "//services/ui/public/interfaces/input_devices",
 

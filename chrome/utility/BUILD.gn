@@ -153,7 +153,6 @@ static_library("utility") {
       "//ash/components/tap_visualizer:lib",
       "//ash/components/tap_visualizer/public/mojom",
       "//chrome/services/file_util:lib",
-      "//services/ui:lib",
       "//services/ui/public/interfaces",
     ]
   }

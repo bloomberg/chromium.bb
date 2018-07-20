@@ -41,7 +41,6 @@ source_set("tests") {
 
   data_deps = [
     ":lib",
-    "//services/ui",
     "//services/ui/ime/test_ime_driver",
   ]
 }
