@@ -73,6 +73,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertEquals(
           passwordInfo.numCharactersInPassword,
           node.$$('#password').value.length);
+      assertDeepEquals(listElement.items[index].entry, passwordInfo);
     }
   }
 
@@ -267,10 +268,10 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     // Test verifies that removing a password will update the elements.
     test('verifyPasswordListRemove', function() {
-      const passwordList = [
-        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1),
-        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7),
-        FakeDataMaker.passwordEntry('website.com', 'mario', 70)
+      let passwordList = [
+        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
+        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
+        FakeDataMaker.passwordEntry('website.com', 'mario', 70, 2)
       ];
 
       const passwordsSection =
@@ -278,14 +279,42 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
       // Simulate 'longwebsite.com' being removed from the list.
-      passwordsSection.splice('savedPasswords', 1, 1);
-      passwordList.splice(1, 1);
+      passwordList = [
+        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
+        FakeDataMaker.passwordEntry('website.com', 'mario', 70, 1)
+      ];
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
       Polymer.dom.flush();
 
       assertFalse(listContainsUrl(
           passwordsSection.savedPasswords.map(entry => entry.entry),
           'longwebsite.com'));
       assertFalse(listContainsUrl(passwordList, 'longwebsite.com'));
+
+      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+    });
+
+    // Test verifies that adding a password will update the elements.
+    test('verifyPasswordListAdd', function() {
+      let passwordList = [
+        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
+        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
+      ];
+
+      const passwordsSection =
+          createPasswordsSection(passwordManager, passwordList, []);
+
+      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      // Simulate 'website.com' being added to the list.
+      passwordList = [
+        FakeDataMaker.passwordEntry('website.com', 'mario', 70, 0),
+        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 1),
+        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 2),
+      ];
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      Polymer.dom.flush();
 
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
     });
@@ -310,6 +339,13 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       passwordList =
           [FakeDataMaker.passwordEntry('website.com', 'luigi', 7, 0)];
 
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      Polymer.dom.flush();
+      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+
+      // Simulate '(website.com, luigi)' being removed from the list as well.
+      passwordList = [];
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
@@ -374,6 +410,51 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         FakeDataMaker.passwordEntry('six-show.com', 'one', 6),
       ];
 
+      validatePasswordList(passwordsSection.$.passwordList, expectedList);
+    });
+
+    test('verifyFilterPasswordsWithRemoval', function() {
+      let passwordList = [
+        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
+        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
+        FakeDataMaker.passwordEntry('three.com/show', 'four', 1, 2),
+        FakeDataMaker.passwordEntry('four.com', 'three', 2, 3),
+        FakeDataMaker.passwordEntry('five.com', 'two', 4, 4),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 5),
+      ];
+
+      const passwordsSection =
+          createPasswordsSection(passwordManager, passwordList, []);
+      passwordsSection.filter = 'SHow';
+      Polymer.dom.flush();
+
+      let expectedList = [
+        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
+        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
+        FakeDataMaker.passwordEntry('three.com/show', 'four', 1, 2),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 5),
+      ];
+
+      validatePasswordList(passwordsSection.$.passwordList, expectedList);
+
+      // Simulate removal of three.com/show
+      passwordList = [
+        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
+        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
+        FakeDataMaker.passwordEntry('four.com', 'three', 2, 2),
+        FakeDataMaker.passwordEntry('five.com', 'two', 4, 3),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 4),
+      ];
+
+      expectedList = [
+        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
+        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 4),
+      ];
+
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      Polymer.dom.flush();
       validatePasswordList(passwordsSection.$.passwordList, expectedList);
     });
 
