@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomepageStateListener;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -1127,8 +1128,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (TextUtils.isEmpty(homePageUrl) || FeatureUtilities.isNewTabPageButtonEnabled()) {
             homePageUrl = UrlConstants.NTP_URL;
         }
-        if (TextUtils.equals(ToolbarLayout.getNTPButtonVariation(),
-                    ToolbarLayout.NTP_BUTTON_NEWS_FEED_VARIATION)) {
+        if (TextUtils.equals(ChromePreferenceManager.getInstance().getNewTabPageButtonVariant(),
+                    ToolbarLayout.NTP_BUTTON_NEWS_FEED_VARIANT)) {
             homePageUrl = homePageUrl + UrlConstants.CONTENT_SUGGESTIONS_SUFFIX;
         }
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));

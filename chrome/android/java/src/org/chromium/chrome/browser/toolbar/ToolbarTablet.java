@@ -98,6 +98,7 @@ public class ToolbarTablet
         mLocationBar = (LocationBarTablet) findViewById(R.id.location_bar);
 
         mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
+        changeIconToNTPIcon(mHomeButton);
         mBackButton = (TintedImageButton) findViewById(R.id.back_button);
         mForwardButton = (TintedImageButton) findViewById(R.id.forward_button);
         mReloadButton = (TintedImageButton) findViewById(R.id.refresh_button);
@@ -147,6 +148,7 @@ public class ToolbarTablet
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
         mLocationBar.onNativeLibraryReady();
+        changeIconToNTPIcon(mHomeButton);
         mHomeButton.setOnClickListener(this);
         mHomeButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
@@ -165,7 +167,6 @@ public class ToolbarTablet
                 return findViewById(R.id.menu_button);
             }
         });
-        if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
 
         mBackButton.setOnClickListener(this);
         mBackButton.setLongClickable(true);

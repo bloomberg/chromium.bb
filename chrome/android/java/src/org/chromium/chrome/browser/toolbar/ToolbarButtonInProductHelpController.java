@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
@@ -48,21 +49,23 @@ public class ToolbarButtonInProductHelpController {
     private static void maybeShowNTPButtonIPH(ChromeTabbedActivity activity) {
         if (!canShowNTPButtonIPH(activity)) return;
 
-        String variation = ToolbarLayout.getNTPButtonVariation();
-        if (TextUtils.isEmpty(variation)) return;
+        // This method is called after native initialization, at which point the variant should
+        // be pulled from variations associated data and cached.
+        String variant = ChromePreferenceManager.getInstance().getNewTabPageButtonVariant();
+        if (TextUtils.isEmpty(variant)) return;
 
         int iphText = 0;
         int iphTextForAccessibility = 0;
-        switch (variation) {
-            case ToolbarLayout.NTP_BUTTON_HOME_VARIATION:
+        switch (variant) {
+            case ToolbarLayout.NTP_BUTTON_HOME_VARIANT:
                 iphText = R.string.iph_ntp_button_text_home_text;
                 iphTextForAccessibility = R.string.iph_ntp_button_text_home_accessibility_text;
                 break;
-            case ToolbarLayout.NTP_BUTTON_NEWS_FEED_VARIATION:
+            case ToolbarLayout.NTP_BUTTON_NEWS_FEED_VARIANT:
                 iphText = R.string.iph_ntp_button_text_news_feed_text;
                 iphTextForAccessibility = R.string.iph_ntp_button_text_news_feed_accessibility_text;
                 break;
-            case ToolbarLayout.NTP_BUTTON_CHROME_VARIATION:
+            case ToolbarLayout.NTP_BUTTON_CHROME_VARIANT:
                 iphText = R.string.iph_ntp_button_text_chrome_text;
                 iphTextForAccessibility = R.string.iph_ntp_button_text_chrome_accessibility_text;
                 break;
@@ -147,8 +150,9 @@ public class ToolbarButtonInProductHelpController {
     }
 
     private static boolean canShowNTPButtonIPH(ChromeTabbedActivity activity) {
+        View homeButton = activity.findViewById(R.id.home_button);
         return FeatureUtilities.isNewTabPageButtonEnabled()
-                && !activity.getCurrentTabModel().isIncognito()
-                && activity.findViewById(R.id.home_button).getVisibility() == View.VISIBLE;
+                && !activity.getCurrentTabModel().isIncognito() && homeButton != null
+                && homeButton.getVisibility() == View.VISIBLE;
     }
 }
