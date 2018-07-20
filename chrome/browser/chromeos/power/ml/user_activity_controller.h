@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim_model_impl.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_manager.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_impl.h"
 
@@ -27,6 +28,7 @@ class UserActivityController {
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   UserActivityUkmLoggerImpl user_activity_ukm_logger_;
   std::unique_ptr<UserActivityManager> user_activity_manager_;
+  SmartDimModelImpl smart_dim_model_;
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityController);
 };

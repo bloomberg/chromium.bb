@@ -51,7 +51,7 @@ UserActivityController::UserActivityController() {
       &user_activity_ukm_logger_, idle_event_notifier_.get(), detector,
       power_manager_client, session_manager,
       mojo::MakeRequest(&video_observer_user_logger),
-      chromeos::ChromeUserManager::Get());
+      chromeos::ChromeUserManager::Get(), &smart_dim_model_);
   aura::Env::GetInstance()
       ->context_factory_private()
       ->GetHostFrameSinkManager()

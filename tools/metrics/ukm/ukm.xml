@@ -4073,6 +4073,26 @@ be describing additional metrics about the same event.
       Last user activity time as hours since midnight in the local time zone.
     </summary>
   </metric>
+  <metric name="ModelApplied">
+    <summary>
+      A boolean value whether model prediction is applied in the screen-dim
+      decision. False means powerd dims the screen regardless of the model
+      prediction.
+    </summary>
+  </metric>
+  <metric name="ModelDecisionThreshold">
+    <summary>
+      A threhold in the range of [0, 100]. Higher threshold makes screen-dim
+      less likely.
+    </summary>
+  </metric>
+  <metric name="ModelInactivityScore">
+    <summary>
+      Probability that user will remain inactive as predicted by the model. It
+      is in the range of [0, 100]. If score is less than the decision threshold,
+      dim will be deferred.
+    </summary>
+  </metric>
   <metric name="MouseEventsInLastHour">
     <summary>
       The number of mouse events reported as user activity in the last hour.
@@ -4085,6 +4105,16 @@ be describing additional metrics about the same event.
     <summary>
       Boolean value to represent whether the device is currently on battery
       power.
+    </summary>
+  </metric>
+  <metric name="PreviousNegativeActionsCount">
+    <summary>
+      Number of times user reactivated, not including the current event.
+    </summary>
+  </metric>
+  <metric name="PreviousPositiveActionsCount">
+    <summary>
+      Number of times user has remained idle, not including the current event.
     </summary>
   </metric>
   <metric name="RecentTimeActive">

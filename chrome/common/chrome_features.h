@@ -314,6 +314,8 @@ extern const base::Feature kUseGoogleLocalNtp;
 extern const base::Feature kAdaptiveScreenBrightnessLogging;
 
 extern const base::Feature kUserActivityEventLogging;
+
+extern const base::Feature kUserActivityPrediction;
 #endif
 
 extern const base::Feature kUseSameCacheForMedia;

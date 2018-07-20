@@ -162,9 +162,36 @@ message UserActivityEvent {
     optional bool screen_dimmed_initially = 22;
     optional bool screen_off_initially = 23;
     optional bool screen_locked_initially = 24;
-  }  // next id = 25
+
+    // Properties associated with the active tab of the visible focused/topmost
+    // browser. Unset if there's no such tab.
+    optional int32 engagement_score = 25;
+    optional bool has_form_entry = 26;
+    optional int64 source_id = 27;
+    // A valid URL could still have empty domain.
+    optional string tab_domain = 28;
+
+    // Number of times user reactivated and thus undimmed the screen before
+    // system was suspended.
+    optional int32 previous_negative_actions_count = 29;
+    // Number of times user remained idle after dim until system was suspended
+    // or closed.
+    optional int32 previous_positive_actions_count = 30;
+  }  // next id = 31
+
+  message ModelPrediction {
+    // If |inactivity_score| < |decision_threshold| then dim will be deferred.
+    optional int32 decision_threshold = 1;
+    // How likely user will remain inactive if screen is dimmed.
+    optional int32 inactivity_score = 2;
+    // Whether model decision (regardless if dim is to be deferred) is
+    // taken by powerd.
+    optional bool model_applied = 3;
+  }
 
   optional ModelParams params = 1;
   optional Event event = 2;
   optional Features features = 3;
+  // Unset if model prediction is disabled in an experiment.
+  optional ModelPrediction model_prediction = 4;
 }

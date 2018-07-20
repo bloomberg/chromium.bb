@@ -4,15 +4,19 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_manager.h"
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim_model.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -20,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
@@ -55,6 +60,17 @@ void EqualEvent(const UserActivityEvent::Event& expected_event,
             result_event.screen_lock_occurred());
 }
 
+void EqualModelPrediction(
+    const UserActivityEvent::ModelPrediction& expected_prediction,
+    const UserActivityEvent::ModelPrediction& result_prediction) {
+  EXPECT_EQ(expected_prediction.decision_threshold(),
+            result_prediction.decision_threshold());
+  EXPECT_EQ(expected_prediction.inactivity_score(),
+            result_prediction.inactivity_score());
+  EXPECT_EQ(expected_prediction.model_applied(),
+            result_prediction.model_applied());
+}
+
 // Testing UKM logger.
 class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
  public:
@@ -64,9 +80,7 @@ class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
   const std::vector<UserActivityEvent>& events() const { return events_; }
 
   // UserActivityUkmLogger overrides:
-  void LogActivity(
-      const UserActivityEvent& event,
-      const std::map<ukm::SourceId, TabProperty>& source_ids) override {
+  void LogActivity(const UserActivityEvent& event) override {
     events_.push_back(event);
   }
 
@@ -74,6 +88,35 @@ class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
   std::vector<UserActivityEvent> events_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingUserActivityUkmLogger);
+};
+
+// Testing smart dim model.
+class FakeSmartDimModel : public SmartDimModel {
+ public:
+  FakeSmartDimModel() = default;
+  ~FakeSmartDimModel() override = default;
+
+  void set_inactive_probability(const float inactive_probability) {
+    inactive_probability_ = inactive_probability;
+  }
+
+  void set_threshold(const float threshold) { threshold_ = threshold; }
+
+  // SmartDimModel overrides:
+  bool ShouldDim(const UserActivityEvent::Features& features,
+                 float* inactive_probability_out,
+                 float* threshold_out) override {
+    DCHECK(inactive_probability_out);
+    DCHECK(threshold_out);
+    *inactive_probability_out = inactive_probability_;
+    *threshold_out = threshold_;
+    return inactive_probability_ >= threshold_;
+  }
+
+ private:
+  float inactive_probability_ = 0;
+  float threshold_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(FakeSmartDimModel);
 };
 
 class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
@@ -88,7 +131,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     activity_logger_ = std::make_unique<UserActivityManager>(
         &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
         &fake_power_manager_client_, &session_manager_,
-        mojo::MakeRequest(&observer), &fake_user_manager_);
+        mojo::MakeRequest(&observer), &fake_user_manager_, &model_);
     activity_logger_->SetTaskRunnerForTesting(
         task_runner_, std::make_unique<FakeBootClock>(
                           task_runner_, base::TimeDelta::FromSeconds(10)));
@@ -151,7 +194,13 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     fake_power_manager_client_.SetInactivityDelays(proto);
   }
 
-  void UpdateOpenTabsURLs() { activity_logger_->UpdateOpenTabsURLs(); }
+  int GetNumberOfDeferredDims() {
+    return fake_power_manager_client_.num_defer_screen_dim_calls();
+  }
+
+  TabProperty UpdateOpenTabURL() {
+    return activity_logger_->UpdateOpenTabURL();
+  }
 
   // Creates a test browser window and sets its visibility, activity and
   // incognito status.
@@ -208,39 +257,12 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     return ukm::GetSourceIdForWebContentsDocument(contents);
   }
 
-  void CheckTabsProperties(
-      const std::map<ukm::SourceId, TabProperty>& expected_map) {
-    // Does not just use std::equal to give a better sense of where they fail
-    // when debugging.
-    const auto& actual_map = activity_logger_->open_tabs_;
-    EXPECT_EQ(expected_map.size(), actual_map.size());
-    for (const auto& expected_value : expected_map) {
-      const auto& it = actual_map.find(expected_value.first);
-      ASSERT_TRUE(it != actual_map.end())
-          << "Failed to find a match for " << expected_value.first;
-      const TabProperty& actual = it->second;
-      const TabProperty& expected = expected_value.second;
-      EXPECT_EQ(expected.is_active, actual.is_active) << expected_value.first;
-      EXPECT_EQ(expected.is_browser_focused, actual.is_browser_focused)
-          << expected_value.first;
-      EXPECT_EQ(expected.is_browser_visible, actual.is_browser_visible)
-          << expected_value.first;
-      EXPECT_EQ(expected.is_topmost_browser, actual.is_topmost_browser)
-          << expected_value.first;
-      EXPECT_EQ(expected.engagement_score, actual.engagement_score)
-          << expected_value.first;
-      EXPECT_EQ(expected.content_type, actual.content_type)
-          << expected_value.first;
-      EXPECT_EQ(expected.has_form_entry, actual.has_form_entry)
-          << expected_value.first;
-    }
-  }
-
   const scoped_refptr<base::TestMockTimeTaskRunner>& GetTaskRunner() {
     return task_runner_;
   }
 
   TestingUserActivityUkmLogger delegate_;
+  FakeSmartDimModel model_;
   chromeos::FakeChromeUserManager fake_user_manager_;
   // Only used to get SourceIds for URLs.
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
@@ -283,6 +305,9 @@ TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
   expected_event.set_screen_off_occurred(false);
   expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
+  EXPECT_FALSE(events[0].has_model_prediction());
+  EXPECT_EQ(0, events[0].features().previous_positive_actions_count());
+  EXPECT_EQ(0, events[0].features().previous_negative_actions_count());
 }
 
 // Get a user event before an idle event, we should not log it.
@@ -316,24 +341,39 @@ TEST_F(UserActivityManagerTest, LogSecondEvent) {
   expected_event.set_screen_off_occurred(false);
   expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
+  EXPECT_FALSE(events[0].has_model_prediction());
+  EXPECT_EQ(0, events[0].features().previous_positive_actions_count());
+  EXPECT_EQ(0, events[0].features().previous_negative_actions_count());
 }
 
 // Log multiple events.
 TEST_F(UserActivityManagerTest, LogMultipleEvents) {
-  // Trigger an idle event.
+  // Trigger the 1st idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
   // First user event.
   ReportUserActivity(nullptr);
 
-  // Trigger an idle event.
+  // Trigger the 2nd idle event.
   ReportIdleEvent(data);
   // Second user event.
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportUserActivity(nullptr);
 
+  // Trigger the 3rd idle event.
+  ReportIdleEvent(data);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(3));
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                base::TimeDelta::FromSeconds(10));
+
+  // Trigger the 4th idle event.
+  ReportIdleEvent(data);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(4));
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                base::TimeDelta::FromSeconds(10));
+
   const std::vector<UserActivityEvent>& events = delegate_.events();
-  ASSERT_EQ(2U, events.size());
+  ASSERT_EQ(4U, events.size());
 
   UserActivityEvent::Event expected_event1;
   expected_event1.set_type(UserActivityEvent::Event::REACTIVATE);
@@ -351,8 +391,42 @@ TEST_F(UserActivityManagerTest, LogMultipleEvents) {
   expected_event2.set_screen_off_occurred(false);
   expected_event2.set_screen_lock_occurred(false);
 
+  UserActivityEvent::Event expected_event3;
+  expected_event3.set_type(UserActivityEvent::Event::TIMEOUT);
+  expected_event3.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event3.set_log_duration_sec(3);
+  expected_event3.set_screen_dim_occurred(false);
+  expected_event3.set_screen_off_occurred(false);
+  expected_event3.set_screen_lock_occurred(false);
+
+  UserActivityEvent::Event expected_event4;
+  expected_event4.set_type(UserActivityEvent::Event::TIMEOUT);
+  expected_event4.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event4.set_log_duration_sec(4);
+  expected_event4.set_screen_dim_occurred(false);
+  expected_event4.set_screen_off_occurred(false);
+  expected_event4.set_screen_lock_occurred(false);
+
   EqualEvent(expected_event1, events[0].event());
   EqualEvent(expected_event2, events[1].event());
+  EqualEvent(expected_event3, events[2].event());
+  EqualEvent(expected_event4, events[3].event());
+  EXPECT_FALSE(events[0].has_model_prediction());
+  EXPECT_FALSE(events[1].has_model_prediction());
+  EXPECT_FALSE(events[2].has_model_prediction());
+  EXPECT_FALSE(events[3].has_model_prediction());
+
+  EXPECT_EQ(0, events[0].features().previous_positive_actions_count());
+  EXPECT_EQ(0, events[0].features().previous_negative_actions_count());
+
+  EXPECT_EQ(0, events[1].features().previous_positive_actions_count());
+  EXPECT_EQ(1, events[1].features().previous_negative_actions_count());
+
+  EXPECT_EQ(0, events[2].features().previous_positive_actions_count());
+  EXPECT_EQ(2, events[2].features().previous_negative_actions_count());
+
+  EXPECT_EQ(1, events[3].features().previous_positive_actions_count());
+  EXPECT_EQ(2, events[3].features().previous_negative_actions_count());
 }
 
 TEST_F(UserActivityManagerTest, UserCloseLid) {
@@ -363,7 +437,7 @@ TEST_F(UserActivityManagerTest, UserCloseLid) {
 
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   EXPECT_TRUE(events.empty());
 }
 
@@ -377,7 +451,7 @@ TEST_F(UserActivityManagerTest, PowerChangeActivity) {
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 25.0f);
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::DISCONNECTED,
                          28.0f);
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -396,7 +470,7 @@ TEST_F(UserActivityManagerTest, VideoActivity) {
   ReportIdleEvent(data);
 
   ReportVideoStart();
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -422,7 +496,7 @@ TEST_F(UserActivityManagerTest, SystemIdleSuspend) {
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(10));
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -447,7 +521,7 @@ TEST_F(UserActivityManagerTest, SystemIdleNotSuspend) {
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
   GetTaskRunner()->FastForwardUntilNoTasksRemain();
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(0U, events.size());
 }
 
@@ -467,7 +541,7 @@ TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
   ReportUserActivity(nullptr);
   GetTaskRunner()->FastForwardUntilNoTasksRemain();
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -486,7 +560,7 @@ TEST_F(UserActivityManagerTest, ScreenLockNoSuspend) {
   ReportIdleEvent(data);
 
   ReportScreenLocked();
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(0U, events.size());
 }
 
@@ -499,7 +573,7 @@ TEST_F(UserActivityManagerTest, ScreenLockWithSuspend) {
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(1));
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -522,7 +596,7 @@ TEST_F(UserActivityManagerTest, SuspendIdleShortSleepDuration) {
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(1));
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -542,7 +616,7 @@ TEST_F(UserActivityManagerTest, SuspendLidClosed) {
 
   ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
                 base::TimeDelta::FromSeconds(10));
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -562,7 +636,7 @@ TEST_F(UserActivityManagerTest, SuspendOther) {
 
   ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
                 base::TimeDelta::FromSeconds(10));
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -596,7 +670,7 @@ TEST_F(UserActivityManagerTest, FeatureExtraction) {
   ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   const UserActivityEvent::Features& features = events[0].features();
@@ -630,7 +704,7 @@ TEST_F(UserActivityManagerTest, ManagedDevice) {
   ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   const UserActivityEvent::Features& features = events[0].features();
@@ -645,7 +719,7 @@ TEST_F(UserActivityManagerTest, DimAndOffDelays) {
   ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   const UserActivityEvent::Features& features = events[0].features();
@@ -661,7 +735,7 @@ TEST_F(UserActivityManagerTest, DimDelays) {
   ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   const UserActivityEvent::Features& features = events[0].features();
@@ -677,7 +751,7 @@ TEST_F(UserActivityManagerTest, OffDelays) {
   ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   const UserActivityEvent::Features& features = events[0].features();
@@ -698,7 +772,7 @@ TEST_F(UserActivityManagerTest, InitialScreenOff) {
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
 
   const UserActivityEvent::Features& features = events[0].features();
   EXPECT_TRUE(features.screen_dimmed_initially());
@@ -728,7 +802,7 @@ TEST_F(UserActivityManagerTest, InitialScreenStateFlipped) {
 
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
 
   const UserActivityEvent::Features& features = events[0].features();
   EXPECT_TRUE(features.screen_dimmed_initially());
@@ -756,7 +830,7 @@ TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
   ReportScreenIdleState(false /* screen_dim */, false /* screen_off */);
   ReportUserActivity(nullptr);
 
-  const auto& events = delegate_.events();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
 
   const UserActivityEvent::Features& features = events[0].features();
   EXPECT_FALSE(features.screen_dimmed_initially());
@@ -772,6 +846,205 @@ TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
   EqualEvent(expected_event, events[0].event());
 }
 
+TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactive_probability(0.6);
+  model_.set_threshold(0.651);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportUserActivity(nullptr);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
+  EqualEvent(expected_event, events[0].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction;
+  expected_prediction.set_decision_threshold(65);
+  expected_prediction.set_inactivity_score(60);
+  expected_prediction.set_model_applied(true);
+  EqualModelPrediction(expected_prediction, events[0].model_prediction());
+}
+
+TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactive_probability(0.6);
+  model_.set_threshold(0.651);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  EXPECT_TRUE(events.empty());
+}
+
+TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", base::NumberToString(0.5)}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactive_probability(0.6);
+  model_.set_threshold(0.5);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportUserActivity(nullptr);
+  EXPECT_EQ(0, GetNumberOfDeferredDims());
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::ModelPrediction expected_prediction;
+  expected_prediction.set_decision_threshold(50);
+  expected_prediction.set_inactivity_score(60);
+  expected_prediction.set_model_applied(true);
+  EqualModelPrediction(expected_prediction, events[0].model_prediction());
+}
+
+TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", base::NumberToString(0.5)}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+  model_.set_threshold(0.5);
+
+  // 1st ScreenDimImminent gets deferred
+  model_.set_inactive_probability(0.4);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(6));
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                base::TimeDelta::FromSeconds(3));
+
+  // 2nd ScreenDimImminent is not deferred despite model score says so.
+  model_.set_inactive_probability(0.2);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  ReportIdleEvent(data);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  // Log when a SuspendImminent is received
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                base::TimeDelta::FromSeconds(3));
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(2U, events.size());
+
+  // The first screen dim imminent event.
+  UserActivityEvent::Event expected_event1;
+  expected_event1.set_type(UserActivityEvent::Event::TIMEOUT);
+  expected_event1.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event1.set_log_duration_sec(6);
+  expected_event1.set_screen_dim_occurred(false);
+  expected_event1.set_screen_off_occurred(false);
+  expected_event1.set_screen_lock_occurred(false);
+  EqualEvent(expected_event1, events[0].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction1;
+  expected_prediction1.set_decision_threshold(50);
+  expected_prediction1.set_inactivity_score(40);
+  expected_prediction1.set_model_applied(true);
+  EqualModelPrediction(expected_prediction1, events[0].model_prediction());
+
+  // The second screen dim imminent event.
+  UserActivityEvent::Event expected_event2;
+  expected_event2.set_type(UserActivityEvent::Event::TIMEOUT);
+  expected_event2.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event2.set_log_duration_sec(20);
+  expected_event2.set_screen_dim_occurred(false);
+  expected_event2.set_screen_off_occurred(false);
+  expected_event2.set_screen_lock_occurred(false);
+  EqualEvent(expected_event2, events[1].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction2;
+  expected_prediction2.set_decision_threshold(50);
+  expected_prediction2.set_inactivity_score(20);
+  expected_prediction2.set_model_applied(false);
+  EqualModelPrediction(expected_prediction2, events[1].model_prediction());
+}
+
+TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", base::NumberToString(0.5)}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+  model_.set_threshold(0.5);
+
+  // 1st ScreenDimImminent gets deferred
+  model_.set_inactive_probability(0.4);
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  // 2nd ScreenDimImminent is not deferred despite model score says so.
+  model_.set_inactive_probability(0.2);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  ReportIdleEvent(data);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  // Log when a SuspendImminent is received
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                base::TimeDelta::FromSeconds(3));
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(2U, events.size());
+
+  // The first event logged is the current one.
+  UserActivityEvent::Event expected_event1;
+  expected_event1.set_type(UserActivityEvent::Event::TIMEOUT);
+  expected_event1.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event1.set_log_duration_sec(20);
+  expected_event1.set_screen_dim_occurred(false);
+  expected_event1.set_screen_off_occurred(false);
+  expected_event1.set_screen_lock_occurred(false);
+  EqualEvent(expected_event1, events[0].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction1;
+  expected_prediction1.set_decision_threshold(50);
+  expected_prediction1.set_inactivity_score(20);
+  expected_prediction1.set_model_applied(false);
+  EqualModelPrediction(expected_prediction1, events[0].model_prediction());
+
+  // The earlier idle event is logged afterwards.
+  UserActivityEvent::Event expected_event2 = expected_event1;
+  expected_event2.set_log_duration_sec(30);
+  EqualEvent(expected_event2, events[1].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction2;
+  expected_prediction2.set_decision_threshold(50);
+  expected_prediction2.set_inactivity_score(40);
+  expected_prediction2.set_model_applied(true);
+  EqualModelPrediction(expected_prediction2, events[1].model_prediction());
+}
+
 TEST_F(UserActivityManagerTest, BasicTabs) {
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
@@ -781,34 +1054,21 @@ TEST_F(UserActivityManagerTest, BasicTabs) {
       tab_strip_model, url1_, true /* is_active */, "application/pdf");
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(url1_, 95);
 
-  const ukm::SourceId source_id2 =
-      CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
+  CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
 
-  UpdateOpenTabsURLs();
+  IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportUserActivity(nullptr);
 
-  TabProperty expected_property1;
-  expected_property1.is_active = true;
-  expected_property1.is_browser_focused = true;
-  expected_property1.is_browser_visible = true;
-  expected_property1.is_topmost_browser = true;
-  expected_property1.engagement_score = 90;
-  expected_property1.content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_APPLICATION;
-  expected_property1.has_form_entry = false;
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
 
-  TabProperty expected_property2;
-  expected_property2.is_active = false;
-  expected_property2.is_browser_focused = true;
-  expected_property2.is_browser_visible = true;
-  expected_property2.is_topmost_browser = true;
-  expected_property2.engagement_score = 0;
-  expected_property2.content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  expected_property2.has_form_entry = false;
-
-  const std::map<ukm::SourceId, TabProperty> expected_sources(
-      {{source_id1, expected_property1}, {source_id2, expected_property2}});
-  CheckTabsProperties(expected_sources);
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_EQ(features.source_id(), source_id1);
+  EXPECT_EQ(features.tab_domain(), url1_.host());
+  EXPECT_FALSE(features.tab_domain().empty());
+  EXPECT_EQ(features.engagement_score(), 90);
+  EXPECT_FALSE(features.has_form_entry());
 
   tab_strip_model->CloseAllTabs();
 }
@@ -829,67 +1089,28 @@ TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
   BrowserList::GetInstance()->SetLastActive(browser1.get());
 
   TabStripModel* tab_strip_model1 = browser1->tab_strip_model();
-  const ukm::SourceId source_id1 =
-      CreateTestWebContents(tab_strip_model1, url1_, false /* is_active */);
-  const ukm::SourceId source_id2 =
-      CreateTestWebContents(tab_strip_model1, url2_, true /* is_active */);
+  CreateTestWebContents(tab_strip_model1, url1_, false /* is_active */);
+  CreateTestWebContents(tab_strip_model1, url2_, true /* is_active */);
 
   TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
   const ukm::SourceId source_id3 =
       CreateTestWebContents(tab_strip_model2, url3_, true /* is_active */);
 
   TabStripModel* tab_strip_model3 = browser3->tab_strip_model();
-  const ukm::SourceId source_id4 =
-      CreateTestWebContents(tab_strip_model3, url4_, true /* is_active */);
+  CreateTestWebContents(tab_strip_model3, url4_, true /* is_active */);
 
-  UpdateOpenTabsURLs();
+  IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportUserActivity(nullptr);
 
-  TabProperty expected_property1;
-  expected_property1.is_active = false;
-  expected_property1.is_browser_focused = false;
-  expected_property1.is_browser_visible = false;
-  expected_property1.is_topmost_browser = false;
-  expected_property1.engagement_score = 0;
-  expected_property1.content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  expected_property1.has_form_entry = false;
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
 
-  TabProperty expected_property2;
-  expected_property2.is_active = true;
-  expected_property2.is_browser_focused = false;
-  expected_property2.is_browser_visible = false;
-  expected_property2.is_topmost_browser = false;
-  expected_property2.engagement_score = 0;
-  expected_property2.content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  expected_property2.has_form_entry = false;
-
-  TabProperty expected_property3;
-  expected_property3.is_active = true;
-  expected_property3.is_browser_focused = true;
-  expected_property3.is_browser_visible = true;
-  expected_property3.is_topmost_browser = true;
-  expected_property3.engagement_score = 0;
-  expected_property3.content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  expected_property3.has_form_entry = false;
-
-  TabProperty expected_property4;
-  expected_property4.is_active = true;
-  expected_property4.is_browser_focused = false;
-  expected_property4.is_browser_visible = true;
-  expected_property4.is_topmost_browser = false;
-  expected_property4.engagement_score = 0;
-  expected_property4.content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  expected_property4.has_form_entry = false;
-
-  const std::map<ukm::SourceId, TabProperty> expected_properties(
-      {{source_id1, expected_property1},
-       {source_id2, expected_property2},
-       {source_id3, expected_property3},
-       {source_id4, expected_property4}});
-  CheckTabsProperties(expected_properties);
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_EQ(features.source_id(), source_id3);
+  EXPECT_EQ(features.tab_domain(), url3_.host());
+  EXPECT_EQ(features.engagement_score(), 0);
+  EXPECT_FALSE(features.has_form_entry());
 
   tab_strip_model1->CloseAllTabs();
   tab_strip_model2->CloseAllTabs();
@@ -905,10 +1126,18 @@ TEST_F(UserActivityManagerTest, Incognito) {
   CreateTestWebContents(tab_strip_model, url1_, true /* is_active */);
   CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
 
-  UpdateOpenTabsURLs();
+  IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportUserActivity(nullptr);
 
-  const std::map<ukm::SourceId, TabProperty> empty_map;
-  CheckTabsProperties(empty_map);
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_FALSE(features.has_source_id());
+  EXPECT_FALSE(features.has_tab_domain());
+  EXPECT_FALSE(features.has_engagement_score());
+  EXPECT_FALSE(features.has_has_form_entry());
 
   tab_strip_model->CloseAllTabs();
 }
@@ -917,10 +1146,18 @@ TEST_F(UserActivityManagerTest, NoOpenTabs) {
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
 
-  UpdateOpenTabsURLs();
+  IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportUserActivity(nullptr);
 
-  const std::map<ukm::SourceId, TabProperty> empty_map;
-  CheckTabsProperties(empty_map);
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_FALSE(features.has_source_id());
+  EXPECT_FALSE(features.has_tab_domain());
+  EXPECT_FALSE(features.has_engagement_score());
+  EXPECT_FALSE(features.has_has_form_entry());
 }
 
 }  // namespace ml
