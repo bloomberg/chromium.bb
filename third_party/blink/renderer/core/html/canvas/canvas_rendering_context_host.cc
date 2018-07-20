@@ -33,7 +33,7 @@ CanvasRenderingContextHost::CreateTransparentImage(const IntSize& size) const {
   return StaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
-void CanvasRenderingContextHost::Commit(scoped_refptr<StaticBitmapImage>,
+void CanvasRenderingContextHost::Commit(scoped_refptr<CanvasResource>,
                                         const SkIRect&) {
   NOTIMPLEMENTED();
 }
@@ -177,16 +177,6 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   exception_state.ThrowDOMException(DOMExceptionCode::kNotReadableError,
                                     "Readback of the source image has failed.");
   return ScriptPromise();
-}
-
-void CanvasRenderingContextHost::PushFrame(scoped_refptr<CanvasResource> image,
-                                           const SkIRect& damage_rect) {
-  PushFrame(image ? image->Bitmap() : nullptr, damage_rect);
-}
-
-void CanvasRenderingContextHost::Commit(scoped_refptr<CanvasResource> image,
-                                        const SkIRect& damage_rect) {
-  Commit(image ? image->Bitmap() : nullptr, damage_rect);
 }
 
 }  // namespace blink
