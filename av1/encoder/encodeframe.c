@@ -4943,11 +4943,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     av1_inter_mode_data_init();
 #endif
 
-    // If allowed, encoding tiles in parallel with one thread handling one tile.
-    // TODO(geza.lore): The multi-threaded encoder is not safe with more than
-    // 1 tile rows, as it uses the single above_context et al arrays from
-    // cpi->common
-    if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols) > 1 && cm->tile_rows == 1)
+    if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
       av1_encode_tiles_mt(cpi);
     else
       encode_tiles(cpi);
