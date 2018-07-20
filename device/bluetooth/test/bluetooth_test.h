@@ -62,6 +62,25 @@ class BluetoothTestBase : public testing::Test {
     INDICATE,
   };
 
+  // Utility struct to simplify simulating a low energy device.
+  struct LowEnergyDeviceData {
+    LowEnergyDeviceData();
+    LowEnergyDeviceData(LowEnergyDeviceData&& data);
+    ~LowEnergyDeviceData();
+
+    base::Optional<std::string> name;
+    std::string address;
+    int8_t rssi = 0;
+    base::Optional<uint8_t> flags;
+    BluetoothDevice::UUIDList advertised_uuids;
+    base::Optional<int8_t> tx_power;
+    BluetoothDevice::ServiceDataMap service_data;
+    BluetoothDevice::ManufacturerDataMap manufacturer_data;
+    BluetoothTransport transport = BLUETOOTH_TRANSPORT_LE;
+
+    DISALLOW_COPY_AND_ASSIGN(LowEnergyDeviceData);
+  };
+
   static const char kTestAdapterName[];
   static const char kTestAdapterAddress[];
 
@@ -110,7 +129,7 @@ class BluetoothTestBase : public testing::Test {
   static const char kTestUUIDServerCharacteristicConfiguration[];
   static const char kTestUUIDCharacteristicPresentationFormat[];
   // Manufacturer data
-  static const unsigned short kTestManufacturerId;
+  static const uint16_t kTestManufacturerId;
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;
@@ -164,6 +183,7 @@ class BluetoothTestBase : public testing::Test {
   //   1: Name: kTestDeviceName
   //      Address:           kTestDeviceAddress1
   //      RSSI:              TestRSSI::LOWEST
+  //      Flags:             0x04
   //      Advertised UUIDs: {kTestUUIDGenericAccess, kTestUUIDGenericAttribute}
   //      Service Data:     {kTestUUIDHeartRate: [1]}
   //      ManufacturerData: {kTestManufacturerId: [1, 2, 3, 4]}
@@ -171,6 +191,7 @@ class BluetoothTestBase : public testing::Test {
   //   2: Name: kTestDeviceName
   //      Address:           kTestDeviceAddress1
   //      RSSI:              TestRSSI::LOWER
+  //      Flags:             0x05
   //      Advertised UUIDs: {kTestUUIDImmediateAlert, kTestUUIDLinkLoss}
   //      Service Data:     {kTestUUIDHeartRate: [],
   //                         kTestUUIDImmediateAlert: [0, 2]}
@@ -179,6 +200,7 @@ class BluetoothTestBase : public testing::Test {
   //   3: Name:    kTestDeviceNameEmpty
   //      Address: kTestDeviceAddress1
   //      RSSI:    TestRSSI::LOW
+  //      No Flags
   //      No Advertised UUIDs
   //      No Service Data
   //      No Manufacturer Data
@@ -186,6 +208,7 @@ class BluetoothTestBase : public testing::Test {
   //   4: Name:    kTestDeviceNameEmpty
   //      Address: kTestDeviceAddress2
   //      RSSI:    TestRSSI::MEDIUM
+  //      No Flags
   //      No Advertised UUIDs
   //      No Service Data
   //      No Manufacturer Data
@@ -193,11 +216,13 @@ class BluetoothTestBase : public testing::Test {
   //   5: No name device
   //      Address: kTestDeviceAddress1
   //      RSSI:    TestRSSI::HIGH
+  //      Flags:   0x06
   //      No Advertised UUIDs
   //      No Service Data
   //      No Tx Power
   //   6: Name:    kTestDeviceName
   //      Address: kTestDeviceAddress2
+  //      Flags:   0x18
   //      RSSI:    TestRSSI::LOWEST
   //      No Advertised UUIDs
   //      No Service Data
@@ -206,6 +231,7 @@ class BluetoothTestBase : public testing::Test {
   //      Supports BR/EDR and LE.
   //   7: Name:    kTestDeviceNameU2f
   //      Address: kTestDeviceAddress1
+  //      Flags:   0x07
   //      RSSI:    TestRSSI::LOWEST
   //      Advertised UUIDs: {kTestUUIDU2f}
   //      Service Data:     {kTestUUIDU2fControlPointLength: [0, 20]}
@@ -216,7 +242,7 @@ class BluetoothTestBase : public testing::Test {
   // Simulates a connected low energy device. Used before starting a low energy
   // discovey session.
   virtual void SimulateConnectedLowEnergyDevice(
-      ConnectedDeviceType device_ordinal){};
+      ConnectedDeviceType device_ordinal) {}
 
   // Create a fake classic device and discover it. The device will have
   // name kTestDeviceName, no advertised UUIDs and address kTestDeviceAddress3.
@@ -538,25 +564,8 @@ class BluetoothTestBase : public testing::Test {
   void RemoveTimedOutDevices();
 
  protected:
-  // Utility struct and method to return required data to simulate a LE device
-  // corresponding to |device_ordinal|.
-  struct LowEnergyDeviceData {
-    LowEnergyDeviceData();
-    LowEnergyDeviceData(LowEnergyDeviceData&& data);
-    ~LowEnergyDeviceData();
-
-    base::Optional<std::string> name;
-    std::string address;
-    int8_t rssi = 0;
-    BluetoothDevice::UUIDList advertised_uuids;
-    BluetoothDevice::ServiceDataMap service_data;
-    BluetoothDevice::ManufacturerDataMap manufacturer_data;
-    base::Optional<int8_t> tx_power;
-    BluetoothTransport transport = BLUETOOTH_TRANSPORT_LE;
-
-    DISALLOW_COPY_AND_ASSIGN(LowEnergyDeviceData);
-  };
-
+  // Utility method to simplify creading a low energy device of a given
+  // |device_ordinal|.
   LowEnergyDeviceData GetLowEnergyDeviceData(int device_ordinal) const;
 
   // A ScopedTaskEnvironment is required by some implementations that will

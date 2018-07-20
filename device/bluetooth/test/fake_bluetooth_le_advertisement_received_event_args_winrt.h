@@ -23,6 +23,7 @@ class FakeBluetoothLEAdvertisementReceivedEventArgsWinrt
               IBluetoothLEAdvertisementReceivedEventArgs> {
  public:
   FakeBluetoothLEAdvertisementReceivedEventArgsWinrt(
+      int16_t rssi,
       base::StringPiece address,
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
                                  IBluetoothLEAdvertisement> advertisement);
@@ -41,6 +42,7 @@ class FakeBluetoothLEAdvertisementReceivedEventArgsWinrt
           IBluetoothLEAdvertisement** value) override;
 
  private:
+  int16_t rssi_;
   uint64_t raw_address_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
                              IBluetoothLEAdvertisement>

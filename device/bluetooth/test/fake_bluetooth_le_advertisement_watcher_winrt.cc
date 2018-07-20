@@ -4,6 +4,10 @@
 
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
 
+#include "base/strings/string_piece.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_received_event_args_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_winrt.h"
+
 namespace device {
 
 namespace {
@@ -29,6 +33,7 @@ using ABI::Windows::Devices::Bluetooth::IBluetoothSignalStrengthFilter;
 using ABI::Windows::Foundation::TimeSpan;
 using ABI::Windows::Foundation::ITypedEventHandler;
 using Microsoft::WRL::ComPtr;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
@@ -131,10 +136,18 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::remove_Stopped(
   return E_NOTIMPL;
 }
 
-void FakeBluetoothLEAdvertisementWatcherWinrt::SimulateAdvertisement(
-    ComPtr<IBluetoothLEAdvertisementReceivedEventArgs> advertisement) {
-  if (handler_)
-    handler_->Invoke(this, advertisement.Get());
+void FakeBluetoothLEAdvertisementWatcherWinrt::SimulateLowEnergyDevice(
+    const BluetoothTestBase::LowEnergyDeviceData& device_data) {
+  if (handler_) {
+    handler_->Invoke(
+        this, Make<FakeBluetoothLEAdvertisementReceivedEventArgsWinrt>(
+                  device_data.rssi, device_data.address,
+                  Make<FakeBluetoothLEAdvertisementWinrt>(
+                      device_data.name, device_data.flags,
+                      device_data.advertised_uuids, device_data.tx_power,
+                      device_data.service_data, device_data.manufacturer_data))
+                  .Get());
+  }
 }
 
 }  // namespace device

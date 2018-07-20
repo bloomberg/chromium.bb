@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "device/bluetooth/test/bluetooth_test.h"
 
 namespace device {
 
@@ -74,10 +75,8 @@ class FakeBluetoothLEAdvertisementWatcherWinrt
       EventRegistrationToken* token) override;
   IFACEMETHODIMP remove_Stopped(EventRegistrationToken token) override;
 
-  void SimulateAdvertisement(
-      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
-                                 IBluetoothLEAdvertisementReceivedEventArgs>
-          advertisement);
+  void SimulateLowEnergyDevice(
+      const BluetoothTestBase::LowEnergyDeviceData& device_data);
 
  private:
   ABI::Windows::Devices::Bluetooth::Advertisement::
