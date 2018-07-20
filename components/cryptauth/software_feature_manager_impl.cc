@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/proto/enum_util.h"
 
 namespace cryptauth {
 
@@ -79,7 +80,8 @@ void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
   // Note: For legacy reasons, this proto message mentions "ToggleEasyUnlock"
   // instead of "SetSoftwareFeature" in its name.
   auto request = std::make_unique<ToggleEasyUnlockRequest>();
-  request->set_feature(software_feature);
+  request->set_feature(
+      cryptauth::SoftwareFeatureEnumToString(software_feature));
   request->set_enable(enabled);
   request->set_is_exclusive(enabled && is_exclusive);
 
@@ -105,7 +107,8 @@ void SoftwareFeatureManagerImpl::FindEligibleDevices(
   // Note: For legacy reasons, this proto message mentions "UnlockDevices"
   // instead of "MultiDeviceHosts" in its name.
   auto request = std::make_unique<FindEligibleUnlockDevicesRequest>();
-  request->set_feature(software_feature);
+  request->set_feature(
+      cryptauth::SoftwareFeatureEnumToString(software_feature));
 
   pending_requests_.emplace(std::make_unique<Request>(
       std::move(request), success_callback, error_callback));

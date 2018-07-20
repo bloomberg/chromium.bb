@@ -25,6 +25,7 @@ message DeviceClassifier {
   optional string device_software_package = 19;
 
   // Device type/platform.
+  // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
   optional DeviceType device_type = 32 [default = UNKNOWN];
 }
 
@@ -90,6 +91,7 @@ message ExternalDeviceInfo {
   optional bool mobile_hotspot_supported = 7 [ default = false ];
 
   // The type of the device (e.g. Android vs iOS).
+  // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
   optional DeviceType device_type = 8 [ default = UNKNOWN ];
 
   // A list of seeds for EID BLE advertisements targeting this device.
@@ -102,11 +104,11 @@ message ExternalDeviceInfo {
   optional bool pixel_phone = 11 [default = false];
 
   // A list of multi-device software features supported by the device.
-  repeated SoftwareFeature supported_software_features = 12;
+  repeated string supported_software_features = 12;
 
   // A list of multi-device software features currently enabled (active) on the
   // device.
-  repeated SoftwareFeature enabled_software_features = 13;
+  repeated string enabled_software_features = 13;
 }
 
 // Determine if the calling device is allowed to promote the SmartLock
@@ -163,7 +165,7 @@ message FindEligibleUnlockDevicesRequest {
   // The feature for which eligibility should be checked. Note that this RPC is
   // overloaded instead of adding new RPCs due to the ongoing V2 transition.
   // See go/unified-better-together-cryptauth for more details.
-  optional SoftwareFeature feature = 8 [default = EASY_UNLOCK_HOST];
+  optional string feature = 8 [default = "easyUnlockHost"];
 }
 
 // Response containing a list of devices that could be made Unlock Keys
@@ -290,6 +292,7 @@ message GcmDeviceInfo {
   optional string device_manufacturer = 31;
 
   // Used to indicate which type of device this is.
+  // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
   optional DeviceType device_type = 32 [default = ANDROIDOS];
 
   // Fields corresponding to screenlock type/features and hardware features
@@ -606,7 +609,7 @@ message ToggleEasyUnlockRequest {
   // The feature for which enabled state should be toggled. Note that this RPC
   // is overloaded instead of adding new RPCs due to the ongoing V2 transition.
   // See go/unified-better-together-cryptauth for more details.
-  optional SoftwareFeature feature = 5 [default = EASY_UNLOCK_HOST];
+  optional string feature = 5 [default = "easyUnlockHost"];
 
   // True if enabling one device for this feature should disable all others on
   // the account.
