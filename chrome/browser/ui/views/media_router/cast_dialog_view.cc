@@ -121,7 +121,6 @@ views::View* CastDialogView::CreateExtraView() {
 }
 
 bool CastDialogView::Accept() {
-  scroll_position_ = scroll_view_->GetVisibleRect().y();
   const UIMediaSink& sink = GetSelectedSink();
   if (!sink.route_id.empty()) {
     controller_->StopCasting(sink.route_id);
@@ -147,6 +146,7 @@ bool CastDialogView::Close() {
 
 void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
   if (model.media_sinks().empty()) {
+    scroll_position_ = 0;
     ShowNoSinksView();
   } else {
     // If |sink_buttons_| is empty, the sink list was empty before this update.
@@ -154,7 +154,10 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
     // stopped with one click.
     if (sink_buttons_.empty())
       selected_sink_index_ = model.GetFirstActiveSinkIndex().value_or(0);
-    ShowScrollView();
+    if (scroll_view_)
+      scroll_position_ = scroll_view_->GetVisibleRect().y();
+    else
+      ShowScrollView();
     PopulateScrollView(model.media_sinks());
     RestoreSinkListState();
     metrics_.OnSinksLoaded(base::Time::Now());
