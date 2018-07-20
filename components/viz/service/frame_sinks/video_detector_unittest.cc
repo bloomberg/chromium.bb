@@ -133,10 +133,10 @@ class VideoDetectorTest : public testing::Test {
     for (CompositorFrameSinkSupport* frame_sink : embedded_clients_) {
       SurfaceDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-      quad->SetNew(shared_quad_state, gfx::Rect(0, 0, 10, 10),
-                   gfx::Rect(0, 0, 5, 5),
-                   frame_sink->last_activated_surface_id(), base::nullopt,
-                   SK_ColorMAGENTA, false);
+      quad->SetNew(
+          shared_quad_state, gfx::Rect(0, 0, 10, 10), gfx::Rect(0, 0, 5, 5),
+          SurfaceRange(base::nullopt, frame_sink->last_activated_surface_id()),
+          SK_ColorMAGENTA, false);
     }
     root_frame_sink_->SubmitCompositorFrame(
         root_frame_sink_->last_activated_local_surface_id(), std::move(frame));

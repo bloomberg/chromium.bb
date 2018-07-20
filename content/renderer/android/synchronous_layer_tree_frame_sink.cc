@@ -313,8 +313,10 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
-        viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_),
-        base::nullopt, SK_ColorWHITE, false);
+        viz::SurfaceRange(
+            base::nullopt,
+            viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_)),
+        SK_ColorWHITE, false);
 
     child_support_->SubmitCompositorFrame(child_local_surface_id_,
                                           std::move(frame));

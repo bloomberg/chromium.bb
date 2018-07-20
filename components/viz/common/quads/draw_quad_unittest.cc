@@ -283,19 +283,21 @@ TEST(DrawQuadTest, CopySurfaceDrawQuad) {
       LocalSurfaceId(5678, base::UnguessableToken::Create()));
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, primary_surface_id,
-                  fallback_surface_id, SK_ColorWHITE, true);
+  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect,
+                  SurfaceRange(fallback_surface_id, primary_surface_id),
+                  SK_ColorWHITE, true);
   EXPECT_EQ(DrawQuad::SURFACE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(primary_surface_id, copy_quad->primary_surface_id);
-  EXPECT_EQ(fallback_surface_id, copy_quad->fallback_surface_id);
+  EXPECT_EQ(primary_surface_id, copy_quad->surface_range.end());
+  EXPECT_EQ(fallback_surface_id, *copy_quad->surface_range.start());
   EXPECT_TRUE(copy_quad->stretch_content_to_fill_bounds);
 
-  CREATE_QUAD_ALL(SurfaceDrawQuad, primary_surface_id, fallback_surface_id,
+  CREATE_QUAD_ALL(SurfaceDrawQuad,
+                  SurfaceRange(fallback_surface_id, primary_surface_id),
                   SK_ColorWHITE, false);
   EXPECT_EQ(DrawQuad::SURFACE_CONTENT, copy_quad->material);
-  EXPECT_EQ(primary_surface_id, copy_quad->primary_surface_id);
-  EXPECT_EQ(fallback_surface_id, copy_quad->fallback_surface_id);
+  EXPECT_EQ(primary_surface_id, copy_quad->surface_range.end());
+  EXPECT_EQ(fallback_surface_id, *copy_quad->surface_range.start());
   EXPECT_FALSE(copy_quad->stretch_content_to_fill_bounds);
 }
 
@@ -573,8 +575,9 @@ TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
                        LocalSurfaceId(4321, base::UnguessableToken::Create()));
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, surface_id, base::nullopt,
-                  SK_ColorWHITE, false);
+  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect,
+                  SurfaceRange(base::nullopt, surface_id), SK_ColorWHITE,
+                  false);
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 

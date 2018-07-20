@@ -93,8 +93,10 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
-            SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)),
-            base::nullopt, SK_ColorWHITE, false);
+            SurfaceRange(base::nullopt,
+                         SurfaceId(FrameSinkId(1, i),
+                                   LocalSurfaceId(i, kArbitraryToken))),
+            SK_ColorWHITE, false);
       }
 
       frame_builder.AddRenderPass(std::move(pass));
@@ -115,9 +117,11 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
       surface_quad->SetNew(
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
-          SurfaceId(FrameSinkId(1, num_surfaces),
-                    LocalSurfaceId(num_surfaces, kArbitraryToken)),
-          base::nullopt, SK_ColorWHITE, false);
+          SurfaceRange(
+              base::nullopt,
+              SurfaceId(FrameSinkId(1, num_surfaces),
+                        LocalSurfaceId(num_surfaces, kArbitraryToken))),
+          SK_ColorWHITE, false);
 
       pass->output_rect = gfx::Rect(0, 0, 100, 100);
 

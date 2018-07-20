@@ -71,8 +71,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
  private:
   viz::SurfaceDrawQuad* CreateSurfaceDrawQuad(
       viz::RenderPass* render_pass,
-      const viz::SurfaceId& surface_id,
-      const base::Optional<viz::SurfaceId>& fallback_surface_id);
+      const viz::SurfaceRange& surface_range);
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
   void AppendRainbowDebugBorder(viz::RenderPass* render_pass);

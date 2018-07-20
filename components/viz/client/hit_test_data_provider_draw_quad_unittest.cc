@@ -47,9 +47,10 @@ std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
                        1, SkBlendMode::kSrcOver, 0);
 
   auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  surface_quad->SetNew(pass->shared_quad_state_list.back(), child_rect,
-                       child_rect, child_surface_id, fallback_child_surface_id,
-                       SK_ColorWHITE, false);
+  surface_quad->SetNew(
+      pass->shared_quad_state_list.back(), child_rect, child_rect,
+      SurfaceRange(fallback_child_surface_id, child_surface_id), SK_ColorWHITE,
+      false);
 
   return pass;
 }

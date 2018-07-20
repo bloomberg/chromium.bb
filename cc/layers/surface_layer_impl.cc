@@ -116,8 +116,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   if (!surface_range_.IsValid())
     return;
 
-  auto* primary = CreateSurfaceDrawQuad(render_pass, surface_range_.end(),
-                                        surface_range_.start());
+  auto* primary = CreateSurfaceDrawQuad(render_pass, surface_range_);
   if (primary && surface_range_.end() != surface_range_.start()) {
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(surface_range_.end());
@@ -141,9 +140,8 @@ bool SurfaceLayerImpl::is_surface_layer() const {
 
 viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     viz::RenderPass* render_pass,
-    const viz::SurfaceId& primary_surface_id,
-    const base::Optional<viz::SurfaceId>& fallback_surface_id) {
-  DCHECK(primary_surface_id.is_valid());
+    const viz::SurfaceRange& surface_range) {
+  DCHECK(surface_range.end().is_valid());
 
   float device_scale_factor = layer_tree_impl()->device_scale_factor();
 
@@ -168,9 +166,9 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
 
   auto* surface_draw_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
-  surface_draw_quad->SetNew(
-      shared_quad_state, quad_rect, visible_quad_rect, primary_surface_id,
-      fallback_surface_id, background_color(), stretch_content_to_fill_bounds_);
+  surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
+                            surface_range, background_color(),
+                            stretch_content_to_fill_bounds_);
 
   return surface_draw_quad;
 }
