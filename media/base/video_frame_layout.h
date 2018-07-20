@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,7 +32,8 @@ class MEDIA_EXPORT VideoFrameLayout {
                    std::vector<int32_t> strides = std::vector<int32_t>(),
                    std::vector<size_t> buffer_sizes = std::vector<size_t>());
 
-  VideoFrameLayout(const VideoFrameLayout& layout);
+  // Move constructor.
+  VideoFrameLayout(VideoFrameLayout&&);
 
   ~VideoFrameLayout();
 
@@ -57,6 +59,9 @@ class MEDIA_EXPORT VideoFrameLayout {
     buffer_sizes_ = std::move(buffer_sizes);
   }
 
+  // Clones this as a explicitly copy constructor.
+  VideoFrameLayout Clone() const;
+
   // Returns sum of bytes of all buffers.
   size_t GetTotalBufferSize() const;
 
@@ -81,6 +86,8 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Vector of sizes for each buffer, typically greater or equal to the area of
   // |coded_size_|.
   std::vector<size_t> buffer_sizes_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameLayout);
 };
 
 }  // namespace media

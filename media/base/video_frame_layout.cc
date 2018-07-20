@@ -36,8 +36,12 @@ VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
       strides_(std::move(strides)),
       buffer_sizes_(std::move(buffer_sizes)) {}
 
-VideoFrameLayout::VideoFrameLayout(const VideoFrameLayout& layout) = default;
+VideoFrameLayout::VideoFrameLayout(VideoFrameLayout&&) = default;
 VideoFrameLayout::~VideoFrameLayout() = default;
+
+VideoFrameLayout VideoFrameLayout::Clone() const {
+  return VideoFrameLayout(format_, coded_size_, strides_, buffer_sizes_);
+}
 
 size_t VideoFrameLayout::GetTotalBufferSize() const {
   return std::accumulate(buffer_sizes_.begin(), buffer_sizes_.end(), 0u);
