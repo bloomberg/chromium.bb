@@ -66,8 +66,8 @@ class WatchTimeComponent {
   void SetPendingValue(T new_value);
 
   // Called when the primary value tracked by this component changes and the
-  // change should take effect immediately. Clears any pending finalize. This is
-  // typically only called when the watch time timer is not running.
+  // change should take effect immediately. This is typically only called when
+  // the watch time timer is not running.
   void SetCurrentValue(T new_value);
 
   // If there's no pending finalize, records the amount of watch time which has
@@ -77,8 +77,9 @@ class WatchTimeComponent {
   // |keys_to_finalize_| are recorded to.
   //
   // If there's a pending finalize it records the delta between |end_timestamp_|
-  // and |start_timestamp_|. Does not complete any pending finalize. May be
-  // called multiple times even if a finalize is pending.
+  // and |start_timestamp_| if |end_timestamp_| < |current_timestamp|. Does not
+  // complete any pending finalize. May be called multiple times even if a
+  // finalize is pending.
   void RecordWatchTime(base::TimeDelta current_timestamp);
 
   // Completes any pending finalize. Which means setting |current_value_| to
