@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -646,6 +648,51 @@ TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
   ::testing::Mock::VerifyAndClear(&observer);
 
   tab_lifecycle_unit.RemoveObserver(&observer);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfSharingBrowsingInstance) {
+  TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+
+  // Creates a second WebContents that use the same SiteInstance.
+  auto* site_instance = web_contents_->GetSiteInstance();
+  std::unique_ptr<content::WebContents> contents =
+      content::WebContentsTester::CreateTestWebContents(browser_context(),
+                                                        site_instance);
+  // Navigate this second WebContents to another URL, after this these 2
+  // WebContents will use separate SiteInstances owned by the same
+  // BrowsingInstance.
+  contents->GetController().LoadURL(GURL("http://another-url.com/"),
+                                    content::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_NE(web_contents_->GetSiteInstance(), contents->GetSiteInstance());
+  EXPECT_EQ(2U,
+            web_contents_->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+
+  {
+    GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
+        ->should_protect_tabs_sharing_browsing_instance = true;
+    decision_details.Clear();
+    EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+    EXPECT_FALSE(decision_details.IsPositive());
+    EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
+              decision_details.FailureReason());
+
+    decision_details.Clear();
+
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive,
+                                               &decision_details));
+    EXPECT_FALSE(decision_details.IsPositive());
+    EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
+              decision_details.FailureReason());
+  }
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardIfEnterpriseOptOutUsed) {

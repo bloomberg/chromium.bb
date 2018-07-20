@@ -3688,6 +3688,12 @@ be describing additional metrics about the same event.
       currently playing audio.
     </summary>
   </metric>
+  <metric name="FailureLiveStateSharingBrowsingInstance">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab is
+      sharing its BrowsingInstance with at least one other tab.
+    </summary>
+  </metric>
   <metric name="FailureLiveStateUsingWebSockets">
     <summary>
       Boolean indicating that the intervention was disallowed because the tab is

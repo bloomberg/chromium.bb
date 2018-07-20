@@ -883,20 +883,30 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
   // This ensures that the decision details lists all possible reasons that the
   // transition can be denied.
 
+  auto* web_contents = GetWebContents();
+
   // Do not freeze tabs that are casting/mirroring/playing audio.
   IsMediaTabImpl(decision_details);
+
+  if (GetStaticProactiveTabFreezeAndDiscardParams()
+          .should_protect_tabs_sharing_browsing_instance) {
+    if (web_contents->GetSiteInstance()->GetRelatedActiveContentsCount() > 1U) {
+      decision_details->AddReason(
+          DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE);
+    }
+  }
 
   // Consult the local database to see if this tab could try to communicate with
   // the user while in background (don't check for the visibility here as
   // there's already a check for that above). Only do this for proactive
   // interventions.
   if (intervention_type == InterventionType::kProactive) {
-    CheckIfTabCanCommunicateWithUserWhileInBackground(GetWebContents(),
+    CheckIfTabCanCommunicateWithUserWhileInBackground(web_contents,
                                                       decision_details);
   }
 
   // Do not freeze/discard a tab that has active WebUSB connections.
-  if (auto* usb_tab_helper = UsbTabHelper::FromWebContents(GetWebContents())) {
+  if (auto* usb_tab_helper = UsbTabHelper::FromWebContents(web_contents)) {
     if (usb_tab_helper->IsDeviceConnected()) {
       decision_details->AddReason(
           DecisionFailureReason::LIVE_STATE_USING_WEB_USB);
@@ -904,7 +914,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
   }
 
   // Do not freeze tabs that are currently using DevTools.
-  if (DevToolsWindow::GetInstanceForInspectedWebContents(GetWebContents())) {
+  if (DevToolsWindow::GetInstanceForInspectedWebContents(web_contents)) {
     decision_details->AddReason(
         DecisionFailureReason::LIVE_STATE_DEVTOOLS_OPEN);
   }

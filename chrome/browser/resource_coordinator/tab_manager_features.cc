@@ -89,6 +89,15 @@ const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[] =
     "ShouldProactivelyDiscard";
 const char kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[] =
     "ShouldPeriodicallyUnfreeze";
+
+// NOTE: This parameter is disabled by default and shouldn't be enabled until
+// the privacy review for the UKM associated with it has been approved, see
+//  https://docs.google.com/a/google.com/document/d/1BNQ5nLOtPuwP7oxr9r-XKNKr5iObXEiA_69WXAvuYAo/edit?disco=AAAABzM-vE0
+//
+// TODO(sebmarchand): Remove this comment once the UKM has been approved.
+const char
+    kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam
+        [] = "ShouldProtectTabsSharingBrowsingInstance";
 const char kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam[] =
     "LowLoadedTabCount";
 const char kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam[] =
@@ -137,6 +146,16 @@ const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault =
     false;
 const bool kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault =
     false;
+
+// NOTE: This parameter is disabled by default and shouldn't be enabled until
+// the privacy review for the UKM associated with it has been approved, see
+//  https://docs.google.com/a/google.com/document/d/1BNQ5nLOtPuwP7oxr9r-XKNKr5iObXEiA_69WXAvuYAo/edit?disco=AAAABzM-vE0
+//
+// TODO(sebmarchand): Remove this comment once the UKM has been approved.
+const bool
+    kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault =
+        false;
+
 // 50% of people cap out at 4 tabs, so for them proactive discarding won't even
 // be invoked. See Tabs.MaxTabsInADay.
 // TODO(chrisha): This should eventually be informed by the number of tabs
@@ -231,6 +250,12 @@ ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
       kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
       kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault);
 
+  params.should_protect_tabs_sharing_browsing_instance =
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam,
+          kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault);
+
   params.low_loaded_tab_count = base::GetFieldTrialParamByFeatureAsInt(
       features::kProactiveTabFreezeAndDiscard,
       kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam,
@@ -292,6 +317,12 @@ GetStaticProactiveTabFreezeAndDiscardParams() {
   static base::NoDestructor<ProactiveTabFreezeAndDiscardParams> params(
       GetProactiveTabFreezeAndDiscardParams());
   return *params;
+}
+
+ProactiveTabFreezeAndDiscardParams*
+GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting() {
+  return const_cast<ProactiveTabFreezeAndDiscardParams*>(
+      &GetStaticProactiveTabFreezeAndDiscardParams());
 }
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout) {
