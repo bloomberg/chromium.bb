@@ -105,6 +105,7 @@
 		D21F97D711CBA12300239E38 /* test_assembler_unittest.cc in Sources */ = {isa = PBXBuildFile; fileRef = B88FB0D9116CEC0600407530 /* test_assembler_unittest.cc */; };
 		D21F97D811CBA13D00239E38 /* libgtestmockall.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B88FB024116BDFFF00407530 /* libgtestmockall.a */; };
 		D21F97E911CBA1FF00239E38 /* test_assembler.cc in Sources */ = {isa = PBXBuildFile; fileRef = B88FAE0911665B5700407530 /* test_assembler.cc */; };
+		EB06C7531FEBC516000214D9 /* path_helper.cc in Sources */ = {isa = PBXBuildFile; fileRef = EB06C7511FEBC515000214D9 /* path_helper.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -347,6 +348,8 @@
 		B8C5B5111166531A00D34F4E /* dump_syms */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dump_syms; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8E8CA0C1156C854009E61B2 /* byteswap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = byteswap.h; path = ../../../common/mac/byteswap.h; sourceTree = SOURCE_ROOT; };
 		D21F97D211CBA0F200239E38 /* test_assembler_unittest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_assembler_unittest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB06C7511FEBC515000214D9 /* path_helper.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = path_helper.cc; path = ../../../common/path_helper.cc; sourceTree = "<group>"; };
+		EB06C7521FEBC516000214D9 /* path_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = path_helper.h; path = ../../../common/path_helper.h; sourceTree = "<group>"; };
 		F95B422B0E0E22D100DBDE83 /* bytereader-inl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "bytereader-inl.h"; path = "../../../common/dwarf/bytereader-inl.h"; sourceTree = SOURCE_ROOT; };
 		F95B422C0E0E22D100DBDE83 /* bytereader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bytereader.cc; path = ../../../common/dwarf/bytereader.cc; sourceTree = SOURCE_ROOT; };
 		F95B422D0E0E22D100DBDE83 /* bytereader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bytereader.h; path = ../../../common/dwarf/bytereader.h; sourceTree = SOURCE_ROOT; };
@@ -501,6 +504,8 @@
 				9BDF186E0B1BB43700F8391B /* dump_syms_tool.cc */,
 				B89E0E701166573700DD08C9 /* macho_dump.cc */,
 				4D72CAF413DFBAC2006CABE3 /* md5.cc */,
+				EB06C7511FEBC515000214D9 /* path_helper.cc */,
+				EB06C7521FEBC516000214D9 /* path_helper.h */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
@@ -1082,6 +1087,7 @@
 				B88FAE2C1166606200407530 /* macho_reader.cc in Sources */,
 				8BCAAA4C1CE3A7980046090B /* elf_reader.cc in Sources */,
 				B8C5B5171166534700D34F4E /* dwarf2reader.cc in Sources */,
+				EB06C7531FEBC516000214D9 /* path_helper.cc in Sources */,
 				B8C5B5181166534700D34F4E /* bytereader.cc in Sources */,
 				B8C5B5191166534700D34F4E /* macho_utilities.cc in Sources */,
 				B8C5B51A1166534700D34F4E /* file_id.cc in Sources */,
