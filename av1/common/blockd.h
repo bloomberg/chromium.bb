@@ -1160,38 +1160,6 @@ static INLINE PLANE_TYPE get_plane_type(int plane) {
   return (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
 }
 
-static INLINE void transpose_uint8(uint8_t *dst, int dst_stride,
-                                   const uint8_t *src, int src_stride, int w,
-                                   int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
-}
-
-static INLINE void transpose_uint16(uint16_t *dst, int dst_stride,
-                                    const uint16_t *src, int src_stride, int w,
-                                    int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
-}
-
-static INLINE void transpose_int16(int16_t *dst, int dst_stride,
-                                   const int16_t *src, int src_stride, int w,
-                                   int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
-}
-
-static INLINE void transpose_int32(int32_t *dst, int dst_stride,
-                                   const int32_t *src, int src_stride, int w,
-                                   int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
-}
-
 static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
   if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64) {
     return 1024;
