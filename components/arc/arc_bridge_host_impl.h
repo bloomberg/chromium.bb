@@ -79,6 +79,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::ObbMounterInstancePtr obb_mounter_ptr) override;
   void OnOemCryptoInstanceReady(
       mojom::OemCryptoInstancePtr oemcrypto_ptr) override;
+  void OnPipInstanceReady(mojom::PipInstancePtr policy_ptr) override;
   void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
   void OnPrintInstanceReady(mojom::PrintInstancePtr print_ptr) override;

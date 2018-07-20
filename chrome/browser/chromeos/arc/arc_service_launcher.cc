@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 #include "chrome/browser/chromeos/arc/notification/arc_provision_notification_service.h"
 #include "chrome/browser/chromeos/arc/oemcrypto/arc_oemcrypto_bridge.h"
+#include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/print/arc_print_service.h"
@@ -163,6 +164,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcNetHostImpl::GetForBrowserContext(profile);
   ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcOemCryptoBridge::GetForBrowserContext(profile);
+  ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile);
   ArcPrintService::GetForBrowserContext(profile);
