@@ -50,6 +50,7 @@ class TabManagerFeaturesTest : public testing::Test {
   void ExpectProactiveTabFreezeAndDiscardParams(
       bool should_proactively_discard,
       bool should_periodically_unfreeze,
+      bool should_protect_tabs_sharing_browsing_instance,
       int low_loaded_tab_count,
       int moderate_loaded_tab_count,
       int high_loaded_tab_count,
@@ -66,6 +67,8 @@ class TabManagerFeaturesTest : public testing::Test {
     EXPECT_EQ(should_proactively_discard, params.should_proactively_discard);
     EXPECT_EQ(should_periodically_unfreeze,
               params.should_periodically_unfreeze);
+    EXPECT_EQ(should_protect_tabs_sharing_browsing_instance,
+              params.should_protect_tabs_sharing_browsing_instance);
     EXPECT_EQ(low_loaded_tab_count, params.low_loaded_tab_count);
     EXPECT_EQ(moderate_loaded_tab_count, params.moderate_loaded_tab_count);
 
@@ -131,6 +134,7 @@ class TabManagerFeaturesTest : public testing::Test {
     ExpectProactiveTabFreezeAndDiscardParams(
         kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault,
         kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault,
+        kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault,
         kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault,
         kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault *
             memory_in_gb,
@@ -187,6 +191,9 @@ TEST_F(TabManagerFeaturesTest,
   SetParam(kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, "blah");
   SetParam(kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
            "blah");
+  SetParam(
+      kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam,
+      "bleh");
   SetParam(kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam, "ab");
   SetParam(kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam,
            "27.8");
@@ -205,6 +212,9 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
   SetParam(kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, "true");
   SetParam(kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
            "true");
+  SetParam(
+      kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam,
+      "true");
   SetParam(kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam, "7");
   SetParam(kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam, "4");
   SetParam(kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam, "42");
@@ -222,17 +232,17 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
   // |moderate_tab_count_per_gb_ram|) < |low_loaded_tab_count|).
   int memory_in_gb_low = 1;
   ExpectProactiveTabFreezeAndDiscardParams(
-      true, true, 7, 7, 42, memory_in_gb_low, base::TimeDelta::FromSeconds(60),
-      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247),
-      base::TimeDelta::FromSeconds(10), base::TimeDelta::FromSeconds(20),
-      base::TimeDelta::FromSeconds(30));
+      true, true, true, 7, 7, 42, memory_in_gb_low,
+      base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
+      base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
+      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30));
 
   // Should snap |moderate_loaded_tab_count| to |high_loaded_tab_count|, when
   // the amount of physical memory is so high that (|memory_in_gb| *
   // |moderate_tab_count_per_gb_ram|) > |high_loaded_tab_count|).
   int memory_in_gb_high = 100;
   ExpectProactiveTabFreezeAndDiscardParams(
-      true, true, 7, 42, 42, memory_in_gb_high,
+      true, true, true, 7, 42, 42, memory_in_gb_high,
       base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
       base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
       base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30));
@@ -241,7 +251,7 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
   // in the interval [low_loaded_tab_count, high_loaded_tab_count].
   int memory_in_gb_normal = 4;
   ExpectProactiveTabFreezeAndDiscardParams(
-      true, true, 7, 16, 42, memory_in_gb_normal,
+      true, true, true, 7, 16, 42, memory_in_gb_normal,
       base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
       base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
       base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30));

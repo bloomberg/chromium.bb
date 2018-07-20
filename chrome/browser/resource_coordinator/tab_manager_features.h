@@ -29,9 +29,14 @@ extern const char kProactiveTabFreezeAndDiscardFeatureName[];
 
 // Variations parameter names related to proactive discarding.
 // See ProactiveTabFreezeAndDiscardsParams for details.
+//
+// TODO(sebmarchand): Use the base::FeatureParam API here.
 extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
 extern const char
     kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[];
+extern const char
+    kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam
+        [];
 extern const char kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam[];
 extern const char
     kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam[];
@@ -66,6 +71,8 @@ extern const char kInfiniteSessionRestore_MinSiteEngagementToRestore[];
 extern const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault;
 extern const bool
     kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault;
+extern const bool
+    kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault;
 extern const uint32_t kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault;
 extern const uint32_t
     kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault;
@@ -152,6 +159,9 @@ struct ProactiveTabFreezeAndDiscardParams {
   bool should_proactively_discard;
   // Whether frozen tabs should periodically be unfrozen to update their state.
   bool should_periodically_unfreeze;
+  // Whether tabs should be protected from freezing/discarding if they share
+  // their BrowsingInstance with another tab.
+  bool should_protect_tabs_sharing_browsing_instance;
   // Tab count (inclusive) beyond which the state transitions to MODERATE.
   // Intended to cover the majority of simple workflows and be small enough that
   // it is very unlikely that memory pressure will be encountered with this many
@@ -256,6 +266,8 @@ ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
 // all the classes that need one.
 const ProactiveTabFreezeAndDiscardParams&
 GetStaticProactiveTabFreezeAndDiscardParams();
+ProactiveTabFreezeAndDiscardParams*
+GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting();
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
 
