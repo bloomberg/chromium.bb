@@ -20,6 +20,7 @@ import android.support.v4.text.BidiFormatter;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Selection;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
@@ -38,14 +39,12 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.UiUtils;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -182,17 +181,6 @@ public class UrlBar extends AutocompleteEditText {
         void onTextChangedForAutocomplete();
 
         /**
-         * @return True if the displayed URL should be emphasized, false if the displayed text
-         *         already has formatting for emphasis applied.
-         */
-        boolean shouldEmphasizeUrl();
-
-        /**
-         * @return Whether the light security theme should be used.
-         */
-        boolean shouldEmphasizeHttpsScheme();
-
-        /**
          * Called to notify that back key has been pressed while the URL bar has focus.
          */
         void backKeyPressed();
@@ -285,9 +273,10 @@ public class UrlBar extends AutocompleteEditText {
      * Specifies whether the URL bar should use dark text colors or light colors.
      * @param useDarkColors Whether the text colors should be dark (i.e. appropriate for use
      *                      on a light background).
+     * @return Whether this update resulted in a change from the previous state of text color state.
      */
-    public void setUseDarkTextColors(boolean useDarkColors) {
-        if (mUseDarkColors != null && mUseDarkColors.booleanValue() == useDarkColors) return;
+    public boolean setUseDarkTextColors(boolean useDarkColors) {
+        if (mUseDarkColors != null && mUseDarkColors.booleanValue() == useDarkColors) return false;
 
         mUseDarkColors = useDarkColors;
         if (mUseDarkColors) {
@@ -319,9 +308,7 @@ public class UrlBar extends AutocompleteEditText {
             setIgnoreTextChangesForAutocomplete(false);
         }
 
-        if (!hasFocus()) {
-            emphasizeUrl();
-        }
+        return true;
     }
 
     @Override
@@ -715,6 +702,44 @@ public class UrlBar extends AutocompleteEditText {
         return textChanged;
     }
 
+    @Override
+    protected boolean isNewTextEquivalentToExistingText(CharSequence newCharSequence) {
+        Spanned currentText = getEditableText();
+        if (currentText == null) return newCharSequence == null;
+
+        // Regardless of focus state, ensure the text content is the same.
+        if (!TextUtils.equals(currentText, newCharSequence)) return false;
+
+        if (isFocused()) {
+            // When focused if the existing text has emphasis spans, then clear that text as well as
+            // those spans should only apply when unfocused.
+            return currentText.getSpans(0, currentText.length(), UrlEmphasisSpan.class).length == 0;
+        }
+
+        // When not focused, compare the emphasis spans applied to the text to determine
+        // equality.  Internally, TextView applies many additional spans that need to be
+        // ignored for this comparison to be useful, so this is scoped to only the span types
+        // applied by our UI.
+        if (!(newCharSequence instanceof Spanned)) return false;
+
+        Spanned newText = (Spanned) newCharSequence;
+        UrlEmphasisSpan[] currentSpans =
+                currentText.getSpans(0, currentText.length(), UrlEmphasisSpan.class);
+        UrlEmphasisSpan[] newSpans = newText.getSpans(0, newText.length(), UrlEmphasisSpan.class);
+        if (currentSpans.length != newSpans.length) return false;
+        for (int i = 0; i < currentSpans.length; i++) {
+            UrlEmphasisSpan currentSpan = currentSpans[i];
+            UrlEmphasisSpan newSpan = newSpans[i];
+            if (!currentSpan.equals(newSpan)
+                    || currentText.getSpanStart(currentSpan) != newText.getSpanStart(newSpan)
+                    || currentText.getSpanEnd(currentSpan) != newText.getSpanEnd(newSpan)
+                    || currentText.getSpanFlags(currentSpan) != newText.getSpanFlags(newSpan)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Scrolls the omnibox text to a position determined by the call to
      * {@link UrlBarDelegate#getScrollType}.
@@ -955,43 +980,6 @@ public class UrlBar extends AutocompleteEditText {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-    }
-
-    /**
-     * Emphasize components of the URL for readability.
-     */
-    public void emphasizeUrl() {
-        if (hasFocus()) return;
-
-        if (mUrlBarDelegate != null && !mUrlBarDelegate.shouldEmphasizeUrl()) return;
-
-        Editable url = getText();
-        if (url.length() < 1) return;
-
-        Tab currentTab = mUrlBarDelegate.getCurrentTab();
-        if (currentTab == null || currentTab.getProfile() == null) return;
-
-        boolean isInternalPage = false;
-        try {
-            String tabUrl = currentTab.getUrl();
-            isInternalPage = UrlUtilities.isInternalScheme(new URI(tabUrl));
-        } catch (URISyntaxException e) {
-            // Ignore as this only is for applying color
-        }
-
-        // Since we emphasize the scheme of the URL based on the security type, we need to
-        // deEmphasize first to refresh.
-        deEmphasizeUrl();
-        OmniboxUrlEmphasizer.emphasizeUrl(url, getResources(), currentTab.getProfile(),
-                currentTab.getSecurityLevel(), isInternalPage,
-                mUseDarkColors, mUrlBarDelegate.shouldEmphasizeHttpsScheme());
-    }
-
-    /**
-     * Reset the modifications done to emphasize components of the URL.
-     */
-    public void deEmphasizeUrl() {
-        OmniboxUrlEmphasizer.deEmphasizeUrl(getText());
     }
 
     @Override

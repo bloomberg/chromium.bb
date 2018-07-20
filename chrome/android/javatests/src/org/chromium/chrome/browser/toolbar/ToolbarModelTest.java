@@ -78,12 +78,12 @@ public class ToolbarModelTest {
             model.mUrl = "chrome://about";
             model.mDisplayUrl = "chrome://about";
             model.mFullUrl = "chrome://about";
-            assertDisplayAndEditText(model, "chrome://about", null);
+            assertDisplayAndEditText(model, "chrome://about", "chrome://about");
 
             model.mUrl = "https://www.foo.com";
             model.mDisplayUrl = "foo.com";
             model.mFullUrl = "https://foo.com";
-            assertDisplayAndEditText(model, "https://foo.com", null);
+            assertDisplayAndEditText(model, "https://foo.com", "https://foo.com");
         });
     }
 
@@ -99,7 +99,7 @@ public class ToolbarModelTest {
             model.mUrl = "chrome://about";
             model.mDisplayUrl = "chrome://about";
             model.mFullUrl = "chrome://about";
-            assertDisplayAndEditText(model, "chrome://about", null);
+            assertDisplayAndEditText(model, "chrome://about", "chrome://about");
 
             model.mUrl = "https://www.foo.com";
             model.mDisplayUrl = "foo.com";

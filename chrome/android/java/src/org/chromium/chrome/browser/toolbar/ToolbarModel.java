@@ -9,6 +9,7 @@ import android.content.res.ColorStateList;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -25,11 +26,13 @@ import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
+import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -37,6 +40,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Provides a way of accessing toolbar data and state.
@@ -155,7 +159,7 @@ public class ToolbarModel implements ToolbarDataProvider {
         }
 
         String formattedUrl = getFormattedFullUrl();
-        if (mTab.isFrozen()) return UrlBarData.forUrlAndText(url, formattedUrl);
+        if (mTab.isFrozen()) return buildUrlBarData(url, formattedUrl);
 
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             DomDistillerService domDistillerService =
@@ -164,16 +168,16 @@ public class ToolbarModel implements ToolbarDataProvider {
             if (!TextUtils.isEmpty(entryIdFromUrl)
                     && domDistillerService.hasEntry(entryIdFromUrl)) {
                 String originalUrl = domDistillerService.getUrlForEntry(entryIdFromUrl);
-                return UrlBarData.forUrl(
+                return buildUrlBarData(
                         DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
             }
 
             String originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
             if (originalUrl != null) {
-                return UrlBarData.forUrl(
+                return buildUrlBarData(
                         DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
             }
-            return UrlBarData.forUrlAndText(url, formattedUrl);
+            return buildUrlBarData(url, formattedUrl);
         }
 
         if (isOfflinePage()) {
@@ -183,26 +187,84 @@ public class ToolbarModel implements ToolbarDataProvider {
 
             // Clear the editing text for untrusted offline pages.
             if (!OfflinePageUtils.isShowingTrustedOfflinePage(mTab)) {
-                return UrlBarData.forUrlAndText(url, formattedUrl, "");
+                return buildUrlBarData(url, formattedUrl, "");
             }
 
-            return UrlBarData.forUrlAndText(url, formattedUrl);
+            return buildUrlBarData(url, formattedUrl);
         }
 
         if (shouldDisplaySearchTerms()) {
             // Show the search terms in the omnibox instead of the URL if this is a DSE search URL.
-            return UrlBarData.forUrlAndText(url, getDisplaySearchTerms());
+            return buildUrlBarData(url, getDisplaySearchTerms());
         }
 
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE)) {
             String urlForDisplay = getUrlForDisplay();
             if (!urlForDisplay.equals(formattedUrl)) {
-                return UrlBarData.forUrlAndText(url, urlForDisplay, formattedUrl);
+                return buildUrlBarData(url, urlForDisplay, formattedUrl);
             }
         }
 
-        return UrlBarData.forUrlAndText(url, formattedUrl);
+        return buildUrlBarData(url, formattedUrl);
+    }
+
+    private UrlBarData buildUrlBarData(String url) {
+        return buildUrlBarData(url, url, url);
+    }
+
+    private UrlBarData buildUrlBarData(String url, String displayText) {
+        return buildUrlBarData(url, displayText, displayText);
+    }
+
+    private UrlBarData buildUrlBarData(String url, String displayText, String editingText) {
+        SpannableStringBuilder spannableDisplayText = new SpannableStringBuilder(displayText);
+
+        if (mNativeToolbarModelAndroid != 0 && spannableDisplayText.length() > 0
+                && shouldEmphasizeUrl()) {
+            boolean isInternalPage = false;
+            try {
+                isInternalPage = UrlUtilities.isInternalScheme(new URI(url));
+            } catch (URISyntaxException e) {
+                // Ignore as this only is for applying color
+            }
+
+            OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText, mContext.getResources(),
+                    getProfile(), getSecurityLevel(), isInternalPage, shouldUseDarkUrlColors(),
+                    shouldEmphasizeHttpsScheme());
+        }
+
+        return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
+    }
+
+    /**
+     * @return True if the displayed URL should be emphasized, false if the displayed text
+     *         already has formatting for emphasis applied.
+     */
+    private boolean shouldEmphasizeUrl() {
+        // If the toolbar shows the publisher URL, it applies its own formatting for emphasis.
+        if (mTab == null) return true;
+
+        return !shouldDisplaySearchTerms() && mTab.getTrustedCdnPublisherUrl() == null;
+    }
+
+    /**
+     * @return Whether the light security theme should be used.
+     */
+    @VisibleForTesting
+    public boolean shouldEmphasizeHttpsScheme() {
+        return !isUsingBrandColor() && !isIncognito();
+    }
+
+    private boolean shouldUseDarkUrlColors() {
+        boolean brandColorNeedsLightText = false;
+        if (isUsingBrandColor()) {
+            int currentPrimaryColor = getPrimaryColor();
+            brandColorNeedsLightText =
+                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
+        }
+
+        return !isIncognito() && (!hasTab() || !brandColorNeedsLightText);
     }
 
     @Override

@@ -837,6 +837,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         return mBookmarkBridge;
     }
 
+    /** Return the toolbar model for testing purposes. */
+    public ToolbarModel getToolbarModelForTesting() {
+        return mToolbarModel;
+    }
+
     /**
      * @return The toolbar interface that this manager handles.
      */

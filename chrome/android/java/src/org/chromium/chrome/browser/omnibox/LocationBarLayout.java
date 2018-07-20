@@ -185,7 +185,6 @@ public class LocationBarLayout extends FrameLayout
 
     private boolean mSuggestionModalShown;
     private boolean mUseDarkColors;
-    private boolean mIsEmphasizingHttpsScheme;
 
     private Runnable mShowSuggestions;
 
@@ -752,8 +751,8 @@ public class LocationBarLayout extends FrameLayout
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
             UrlBarData urlBarData = mToolbarDataProvider.getUrlBarData();
-            if (urlBarData.editingText == null || !setUrlBarText(urlBarData)) {
-                mUrlBar.deEmphasizeUrl();
+            if (urlBarData.editingText != null) {
+                setUrlBarText(urlBarData);
             }
 
             // Explicitly tell InputMethodManager that the url bar is focused before any callbacks
@@ -771,7 +770,6 @@ public class LocationBarLayout extends FrameLayout
             // Focus change caused by a close-tab may result in an invalid current tab.
             if (mToolbarDataProvider.hasTab()) {
                 setUrlToPageUrl();
-                emphasizeUrl();
             }
 
             // Moving focus away from UrlBar(EditText) to a non-editable focus holder, such as
@@ -1045,9 +1043,7 @@ public class LocationBarLayout extends FrameLayout
 
         updateVerboseStatusVisibility();
 
-        boolean shouldEmphasizeHttpsScheme = shouldEmphasizeHttpsScheme();
-        if (mSecurityIconResource == id && mIsEmphasizingHttpsScheme == shouldEmphasizeHttpsScheme
-                && mLocationBarButtonType == getLocationBarButtonToShow()) {
+        if (mSecurityIconResource == id && mLocationBarButtonType == getLocationBarButtonToShow()) {
             return;
         }
         mSecurityIconResource = id;
@@ -1055,26 +1051,8 @@ public class LocationBarLayout extends FrameLayout
         changeLocationBarIcon();
         updateLocationBarIconContainerVisibility();
 
-        emphasizeUrl();
-        mIsEmphasizingHttpsScheme = shouldEmphasizeHttpsScheme;
-    }
-
-    private void emphasizeUrl() {
-        if (mToolbarDataProvider.shouldDisplaySearchTerms()) return;
-        mUrlBar.emphasizeUrl();
-    }
-
-    @Override
-    public boolean shouldEmphasizeUrl() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldEmphasizeHttpsScheme() {
-        if (mToolbarDataProvider.isUsingBrandColor() || mToolbarDataProvider.isIncognito()) {
-            return false;
-        }
-        return true;
+        // Update the URL in case the scheme change triggers a URL emphasis change.
+        setUrlToPageUrl();
     }
 
     /**
@@ -1835,9 +1813,7 @@ public class LocationBarLayout extends FrameLayout
         }
 
         mOriginalUrl = currentUrl;
-        if (setUrlBarText(mToolbarDataProvider.getUrlBarData())) {
-            emphasizeUrl();
-        }
+        setUrlBarText(mToolbarDataProvider.getUrlBarData());
         if (!mToolbarDataProvider.hasTab()) return;
 
         // Profile may be null if switching to a tab that has not yet been initialized.
@@ -2116,16 +2092,19 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateVisualsForState() {
-        if (updateUseDarkColors() || mIsEmphasizingHttpsScheme != shouldEmphasizeHttpsScheme()) {
-            updateSecurityIcon();
-        }
+        if (updateUseDarkColors()) updateSecurityIcon();
         int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         mMicButton.setTint(colorStateList);
         mDeleteButton.setTint(colorStateList);
 
         setNavigationButtonType(mNavigationButtonType);
-        mUrlBar.setUseDarkTextColors(mUseDarkColors);
+
+        // If the URL changed colors and is not focused, update the URL to account for the new
+        // color scheme.
+        if (mUrlBar.setUseDarkTextColors(mUseDarkColors) && !mUrlBar.hasFocus()) {
+            setUrlToPageUrl();
+        }
 
         if (mSuggestionList != null) {
             mSuggestionList.refreshPopupBackground();

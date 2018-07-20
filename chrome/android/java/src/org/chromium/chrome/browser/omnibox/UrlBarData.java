@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.omnibox;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 
@@ -58,17 +60,25 @@ public class UrlBarData {
     }
 
     public static UrlBarData forUrlAndText(
-            String url, String displayText, @Nullable String editingText) {
-        int pathSearchOffset = 0;
-        String scheme = Uri.parse(displayText).getScheme();
-
+            String url, CharSequence displayText, @Nullable String editingText) {
         // Because Android versions 4.2 and before lack proper RTL support,
         // force the formatted URL to render as LTR using an LRM character.
         // See: https://www.ietf.org/rfc/rfc3987.txt and https://crbug.com/709417
         if (displayText.length() > 0 && Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1
                 && displayText.charAt(0) != LRM) {
-            displayText = LRM + displayText;
+            if (displayText instanceof String) {
+                displayText = LRM + (String) displayText;
+            } else if (displayText instanceof Spannable) {
+                displayText =
+                        new SpannableStringBuilder(displayText).insert(0, Character.toString(LRM));
+            } else {
+                assert false : "Unsupported CharSequence type for display text";
+            }
         }
+
+        int pathSearchOffset = 0;
+        String displayTextStr = displayText.toString();
+        String scheme = Uri.parse(displayTextStr).getScheme();
 
         if (!TextUtils.isEmpty(scheme)) {
             if (UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
@@ -84,14 +94,14 @@ public class UrlBarData {
         }
         int pathOffset = -1;
         if (pathSearchOffset < displayText.length()) {
-            pathOffset = displayText.indexOf('/', pathSearchOffset);
+            pathOffset = displayTextStr.indexOf('/', pathSearchOffset);
         }
         if (pathOffset == -1) return create(url, displayText, 0, displayText.length(), editingText);
 
         // If the '/' is the last character and the beginning of the path, then just drop
         // the path entirely.
         if (pathOffset == displayText.length() - 1) {
-            String prePathText = displayText.substring(0, pathOffset);
+            String prePathText = displayTextStr.substring(0, pathOffset);
             return create(url, prePathText, 0, prePathText.length(), editingText);
         }
 
