@@ -4,10 +4,10 @@ PASS picture-in-picture interfaces.
 PASS Partial interface HTMLVideoElement: original interface defined
 PASS Partial interface Document: original interface defined
 PASS Partial interface DocumentOrShadowRoot: original interface defined
-FAIL PictureInPictureWindow interface: existence and properties of interface object assert_equals: prototype of self's property "PictureInPictureWindow" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
+PASS PictureInPictureWindow interface: existence and properties of interface object
 PASS PictureInPictureWindow interface object length
 PASS PictureInPictureWindow interface object name
-FAIL PictureInPictureWindow interface: existence and properties of interface prototype object assert_equals: prototype of PictureInPictureWindow.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
+PASS PictureInPictureWindow interface: existence and properties of interface prototype object
 PASS PictureInPictureWindow interface: existence and properties of interface prototype object's "constructor" property
 PASS PictureInPictureWindow interface: existence and properties of interface prototype object's @@unscopables property
 PASS PictureInPictureWindow interface: attribute width

@@ -7,12 +7,16 @@ FAIL PerformanceMark interface object name assert_own_property: self does not ha
 FAIL PerformanceMark interface: existence and properties of interface prototype object assert_own_property: self does not have own property "PerformanceMark" expected property "PerformanceMark" missing
 FAIL PerformanceMark interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "PerformanceMark" expected property "PerformanceMark" missing
 FAIL PerformanceMark interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "PerformanceMark" expected property "PerformanceMark" missing
+FAIL PerformanceMark must be primary interface of mark assert_own_property: self does not have own property "PerformanceMark" expected property "PerformanceMark" missing
+PASS Stringification of mark
 FAIL PerformanceMeasure interface: existence and properties of interface object assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
 FAIL PerformanceMeasure interface object length assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
 FAIL PerformanceMeasure interface object name assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
 FAIL PerformanceMeasure interface: existence and properties of interface prototype object assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
 FAIL PerformanceMeasure interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
 FAIL PerformanceMeasure interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
+FAIL PerformanceMeasure must be primary interface of measure assert_own_property: self does not have own property "PerformanceMeasure" expected property "PerformanceMeasure" missing
+PASS Stringification of measure
 PASS Performance interface: operation mark(DOMString)
 PASS Unscopable handled correctly for mark(DOMString) on Performance
 PASS Performance interface: operation clearMarks(DOMString)
