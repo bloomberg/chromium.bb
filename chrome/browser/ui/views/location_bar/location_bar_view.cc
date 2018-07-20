@@ -785,8 +785,9 @@ void LocationBarView::RefreshBackground() {
   SkColor border_color = GetBorderColor();
 
   if (IsRounded()) {
-    // Match the background color to the popup if the Omnibox is focused.
-    if (omnibox_view_->HasFocus()) {
+    // Match the background color to the popup if the Omnibox is visibly
+    // focused.
+    if (omnibox_view_->model()->is_caret_visible()) {
       background_color = border_color =
           GetColor(OmniboxPart::RESULTS_BACKGROUND);
     }
@@ -916,8 +917,9 @@ void LocationBarView::RefreshFocusRing() {
     focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
       auto* v = static_cast<LocationBarView*>(view);
 
-      // Show focus ring when the Omnibox is focused and the popup is closed.
-      return v->omnibox_view_->HasFocus() &&
+      // Show focus ring when the Omnibox is visibly focused and the popup is
+      // closed.
+      return v->omnibox_view_->model()->is_caret_visible() &&
              !v->GetOmniboxPopupView()->IsOpen();
     });
   }
