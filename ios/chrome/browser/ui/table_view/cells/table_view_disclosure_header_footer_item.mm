@@ -52,6 +52,22 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
     header.titleLabel.textColor = styler.headerFooterTitleColor;
 }
 
+- (CGFloat)headerHeightForWidth:(CGFloat)width {
+  static TableViewDisclosureHeaderFooterView* header;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    header = [[TableViewDisclosureHeaderFooterView alloc] init];
+  });
+
+  [self configureHeaderFooterView:header
+                       withStyler:[[ChromeTableViewStyler alloc] init]];
+  header.frame = CGRectMake(0, 0, width, 0);
+  [header setNeedsLayout];
+  [header layoutIfNeeded];
+  return
+      [header systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+}
+
 @end
 
 #pragma mark - TableViewDisclosureHeaderFooterView
