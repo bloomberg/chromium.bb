@@ -134,11 +134,13 @@ bool NetworkLocationRequest::MakeRequest(
                                             R"(
         semantics {
           description:
-            "Obtains geo position based on current IP address."
+            "Obtains geo position based on current IP address and local "
+            "network information including Wi-Fi access points (even if you’re "
+            "not using them)."
           trigger:
             "Location requests are sent when the page requests them or new "
             "IP address is available."
-          data: "IP Address."
+          data: "Wi-Fi data, IP address."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
