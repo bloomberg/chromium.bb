@@ -83,7 +83,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/intersection_geometry.h"
 #include "third_party/blink/renderer/core/layout/layout_media.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -94,7 +93,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
@@ -504,7 +502,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       tracks_are_ready_(true),
       processing_preference_change_(false),
       playing_remotely_(false),
-      in_overlay_fullscreen_video_(false),
       mostly_filling_viewport_(false),
       was_always_muted_(true),
       audio_tracks_(AudioTrackList::Create(*this)),
@@ -2655,21 +2652,6 @@ void HTMLMediaElement::setMuted(bool muted) {
   autoplay_policy_->StopAutoplayMutedWhenVisible();
 }
 
-void HTMLMediaElement::enterPictureInPicture(
-    WebMediaPlayer::PipWindowOpenedCallback callback) {
-  if (DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
-    Fullscreen::ExitFullscreen(GetDocument());
-
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->EnterPictureInPicture(std::move(callback));
-}
-
-void HTMLMediaElement::exitPictureInPicture(
-    WebMediaPlayer::PipWindowClosedCallback callback) {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->ExitPictureInPicture(std::move(callback));
-}
-
 double HTMLMediaElement::EffectiveMediaVolume() const {
   if (muted_)
     return 0;
@@ -3644,42 +3626,6 @@ bool HTMLMediaElement::HasPendingActivity() const {
 
 bool HTMLMediaElement::IsFullscreen() const {
   return Fullscreen::IsFullscreenElement(*this);
-}
-
-void HTMLMediaElement::DidEnterFullscreen() {
-  UpdateControlsVisibility();
-
-  if (DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture)
-    exitPictureInPicture(base::DoNothing());
-
-  if (web_media_player_) {
-    // FIXME: There is no embedder-side handling in layout test mode.
-    if (!LayoutTestSupport::IsRunningLayoutTest())
-      web_media_player_->EnteredFullscreen();
-    web_media_player_->OnDisplayTypeChanged(DisplayType());
-  }
-
-  // Cache this in case the player is destroyed before leaving fullscreen.
-  in_overlay_fullscreen_video_ = UsesOverlayFullscreenVideo();
-  if (in_overlay_fullscreen_video_) {
-    GetDocument().GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
-        kCompositingUpdateRebuildTree);
-  }
-}
-
-void HTMLMediaElement::DidExitFullscreen() {
-  UpdateControlsVisibility();
-
-  if (GetWebMediaPlayer()) {
-    GetWebMediaPlayer()->ExitedFullscreen();
-    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
-  }
-
-  if (in_overlay_fullscreen_video_) {
-    GetDocument().GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
-        kCompositingUpdateRebuildTree);
-  }
-  in_overlay_fullscreen_video_ = false;
 }
 
 cc::Layer* HTMLMediaElement::CcLayer() const {

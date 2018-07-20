@@ -48,10 +48,12 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -72,7 +74,8 @@ enum VideoPersistenceControlsType {
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(videoTag, document),
       remoting_interstitial_(nullptr),
-      picture_in_picture_interstitial_(nullptr) {
+      picture_in_picture_interstitial_(nullptr),
+      in_overlay_fullscreen_video_(false) {
   if (document.GetSettings()) {
     default_poster_url_ =
         AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
@@ -423,6 +426,42 @@ bool HTMLVideoElement::UsesOverlayFullscreenVideo() const {
          GetWebMediaPlayer()->SupportsOverlayFullscreenVideo();
 }
 
+void HTMLVideoElement::DidEnterFullscreen() {
+  UpdateControlsVisibility();
+
+  if (DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture)
+    exitPictureInPicture(base::DoNothing());
+
+  if (GetWebMediaPlayer()) {
+    // FIXME: There is no embedder-side handling in layout test mode.
+    if (!LayoutTestSupport::IsRunningLayoutTest())
+      GetWebMediaPlayer()->EnteredFullscreen();
+    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+  }
+
+  // Cache this in case the player is destroyed before leaving fullscreen.
+  in_overlay_fullscreen_video_ = UsesOverlayFullscreenVideo();
+  if (in_overlay_fullscreen_video_) {
+    GetDocument().GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateRebuildTree);
+  }
+}
+
+void HTMLVideoElement::DidExitFullscreen() {
+  UpdateControlsVisibility();
+
+  if (GetWebMediaPlayer()) {
+    GetWebMediaPlayer()->ExitedFullscreen();
+    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+  }
+
+  if (in_overlay_fullscreen_video_) {
+    GetDocument().GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateRebuildTree);
+  }
+  in_overlay_fullscreen_video_ = false;
+}
+
 void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
   if (image_loader_)
     image_loader_->ElementDidMoveToNewDocument();
@@ -547,6 +586,21 @@ bool HTMLVideoElement::SupportsPictureInPicture() const {
   return PictureInPictureController::From(GetDocument())
              .IsElementAllowed(*this) ==
          PictureInPictureController::Status::kEnabled;
+}
+
+void HTMLVideoElement::enterPictureInPicture(
+    WebMediaPlayer::PipWindowOpenedCallback callback) {
+  if (DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
+    Fullscreen::ExitFullscreen(GetDocument());
+
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->EnterPictureInPicture(std::move(callback));
+}
+
+void HTMLVideoElement::exitPictureInPicture(
+    WebMediaPlayer::PipWindowClosedCallback callback) {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->ExitPictureInPicture(std::move(callback));
 }
 
 void HTMLVideoElement::PictureInPictureStopped() {
