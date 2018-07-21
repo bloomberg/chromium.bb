@@ -78,7 +78,7 @@ cr.define('print_preview', function() {
      */
     loadPreviewPage(previewUid, pageIndex, index) {
       if (this.loadCallback_)
-        this.loadCallback_();
+        this.loadCallback_(true);
     }
   }
 

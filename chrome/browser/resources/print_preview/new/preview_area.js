@@ -421,10 +421,15 @@ Polymer({
    * Called when the plugin loads. This is a consequence of calling
    * plugin.reload(). Certain plugin state can only be set after the plugin
    * has loaded.
+   * @param {boolean} success Whether the plugin load succeeded or not.
    * @private
    */
-  onPluginLoad_: function() {
-    this.pluginLoaded_ = true;
+  onPluginLoad_: function(success) {
+    if (success) {
+      this.pluginLoaded_ = true;
+    } else {
+      this.previewState = print_preview_new.PreviewAreaState.PREVIEW_FAILED;
+    }
   },
 
   /**
