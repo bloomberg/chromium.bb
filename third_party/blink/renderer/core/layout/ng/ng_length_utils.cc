@@ -624,13 +624,6 @@ NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
       .ConvertToLogical(compute_for.GetWritingMode(), compute_for.Direction());
 }
 
-NGBoxStrut ComputeMarginsForContainer(const NGConstraintSpace& constraint_space,
-                                      const ComputedStyle& style) {
-  return ComputePhysicalMargins(constraint_space, style)
-      .ConvertToLogical(constraint_space.GetWritingMode(),
-                        constraint_space.Direction());
-}
-
 NGBoxStrut ComputeMarginsForVisualContainer(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {

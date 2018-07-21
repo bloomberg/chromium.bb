@@ -704,18 +704,14 @@ void NGBlockLayoutAlgorithm::HandleFloat(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child,
     NGBlockBreakToken* child_break_token) {
-  // Calculate margins in the BFC's writing mode.
-  NGBoxStrut margins = CalculateMargins(child, child_break_token);
-
   LayoutUnit origin_inline_offset =
       ConstraintSpace().BfcOffset().line_offset +
       border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction());
 
   scoped_refptr<NGUnpositionedFloat> unpositioned_float =
-      NGUnpositionedFloat::Create(child_available_size_, child_percentage_size_,
-                                  origin_inline_offset,
-                                  ConstraintSpace().BfcOffset().line_offset,
-                                  margins, child, child_break_token);
+      NGUnpositionedFloat::Create(
+          child_available_size_, child_percentage_size_, origin_inline_offset,
+          ConstraintSpace().BfcOffset().line_offset, child, child_break_token);
   AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
                        unpositioned_float);
 

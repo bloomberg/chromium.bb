@@ -26,11 +26,10 @@ struct CORE_EXPORT NGUnpositionedFloat
       NGLogicalSize percentage_size,
       LayoutUnit origin_bfc_line_offset,
       LayoutUnit bfc_line_offset,
-      NGBoxStrut margins,
       NGBlockNode node,
       NGBlockBreakToken* token) {
     return base::AdoptRef(new NGUnpositionedFloat(
-        margins, available_size, percentage_size, origin_bfc_line_offset,
+        available_size, percentage_size, origin_bfc_line_offset,
         bfc_line_offset, node, token));
   }
 
@@ -66,8 +65,7 @@ struct CORE_EXPORT NGUnpositionedFloat
   EClear ClearType() const;
 
  private:
-  NGUnpositionedFloat(const NGBoxStrut& margins,
-                      const NGLogicalSize& available_size,
+  NGUnpositionedFloat(const NGLogicalSize& available_size,
                       const NGLogicalSize& percentage_size,
                       LayoutUnit origin_bfc_line_offset,
                       LayoutUnit bfc_line_offset,
