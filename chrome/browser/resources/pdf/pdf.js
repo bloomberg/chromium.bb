@@ -106,7 +106,7 @@ function PDFViewer(browserApi) {
   this.delayedScriptingMessages_ = [];
 
   this.isPrintPreview_ = location.origin === 'chrome://print';
-  this.isPrintPreviewLoaded_ = false;
+  this.isPrintPreviewLoadingFinished_ = false;
   this.isUserInitiatedEvent_ = true;
 
   /**
@@ -521,7 +521,7 @@ PDFViewer.prototype = {
   sendDocumentLoadedMessage_: function() {
     if (this.loadState_ == LoadState.LOADING)
       return;
-    if (this.isPrintPreview_ && !this.isPrintPreviewLoaded_)
+    if (this.isPrintPreview_ && !this.isPrintPreviewLoadingFinished_)
       return;
     this.sendScriptingMessage_(
         {type: 'documentLoaded', load_state: this.loadState_});
@@ -598,6 +598,7 @@ PDFViewer.prototype = {
         this.passwordScreen_.close();
       }
       this.loadState_ = LoadState.FAILED;
+      this.isPrintPreviewLoadingFinished_ = true;
       this.sendDocumentLoadedMessage_();
     } else if (progress == 100) {
       // Document load complete.
@@ -718,7 +719,7 @@ PDFViewer.prototype = {
         }
         break;
       case 'printPreviewLoaded':
-        this.isPrintPreviewLoaded_ = true;
+        this.isPrintPreviewLoadingFinished_ = true;
         this.sendDocumentLoadedMessage_();
         break;
       case 'setScrollPosition':
