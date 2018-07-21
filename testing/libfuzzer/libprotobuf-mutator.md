@@ -95,28 +95,18 @@ the full protobuf library, all `.proto` files in Chromium that are used in
 production contain this line: `option optimize_for = LITE_RUNTIME` But this
 line is incompatible with libprotobuf-mutator. Thus, we need to modify the
 `proto_library` build target so that builds when fuzzing are compatible with
-libprotobuf-mutator. We do this by using a protobuf compiler plugin,
-`override_lite_runtime_plugin`. Here's what a `proto_library` build target that
-is configured properly looks like:
+libprotobuf-mutator. To do this, change your `proto_library` to
+`fuzzable_proto_library` (don't worry, this works just like `proto_library` when
+`use_libfuzzer` is `false`) like so:
 
 ```python
-proto_library("my_proto") {
-  ... // These lines (probably) dont need to be changed.
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
-  if (use_libfuzzer && current_toolchain == host_toolchain) {
-    generator_plugin_label =
-      "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
-    generator_plugin_suffix = ".pb"
-    # The plugin will generate cc, so don't ask for it to be done by protoc.
-    generate_cc = false
-    // If deps is already defined, change "=" to "+=".
-    deps = ["//third_party/libprotobuf-mutator:override_lite_runtime_plugin"]
-  }
+fuzzable_proto_library("my_proto") {
+  ...
 }
 ```
 
-Note that this will not have any affects on the proto_library in production,
-since the plugin is only used when `use_libfuzzer == true`.
 And with that we have completed writing a libprotobuf-mutator fuzz target for
 Chromium code that accepts protobufs.
 
