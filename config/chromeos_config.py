@@ -71,9 +71,6 @@ class HWTestList(object):
                                 **bvt_inline_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                 **bvt_inline_kwargs),
-        # TODO(derat): Make HWTEST_TAST_SUITE run in DefaultListNonCanary.
-        config_lib.HWTestConfig(constants.HWTEST_TAST_SUITE,
-                                warn_only=True, **bvt_inline_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
                                 blocking=True, **installer_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
@@ -93,7 +90,9 @@ class HWTestList(object):
     # the suite job for canary builds.
     kwargs.setdefault('minimum_duts', 4)
     kwargs.setdefault('file_bugs', True)
-    return self.DefaultList(**kwargs)
+    suite_list = self.DefaultList(**kwargs)
+    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CQ_SUITE, **kwargs))
+    return suite_list
 
   def AFDOList(self, **kwargs):
     """Returns a default list of HWTestConfigs for a AFDO build.
@@ -146,10 +145,13 @@ class HWTestList(object):
                         minimum_duts=4)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
-    return self.DefaultListNonCanary(**default_dict)
+    suite_list = self.DefaultListNonCanary(**default_dict)
+    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                                      **default_dict))
+    return suite_list
 
   def DefaultListPFQ(self, **kwargs):
-    """Return a default list of HWTestConfigs for a PFQ build.
+    """Return a default list of HWTestConfigs for a Chrome PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
@@ -159,10 +161,13 @@ class HWTestList(object):
                         minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
-    return self.DefaultListNonCanary(**default_dict)
+    suite_list = self.DefaultListNonCanary(**default_dict)
+    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CHROME_PFQ_SUITE,
+                                      **default_dict))
+    return suite_list
 
   def DefaultListChromePFQInformational(self, **kwargs):
-    """Return a default list of HWTestConfigs for an inform. PFQ build.
+    """Return a default list of HWTestConfigs for an inform. Chrome PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
@@ -177,10 +182,12 @@ class HWTestList(object):
     suite_list = self.DefaultListNonCanary(**default_dict)
     suite_list.append(config_lib.HWTestConfig(
         constants.HWTEST_CHROME_INFORMATIONAL, **default_dict))
+    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CHROME_PFQ_SUITE,
+                                      **default_dict))
     return suite_list
 
   def SharedPoolPFQ(self, **kwargs):
-    """Return a list of HWTestConfigs for PFQ which uses a shared pool.
+    """Return a list of HWTestConfigs for Chrome PFQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
     shared with other types of builders (canaries, cq). The first suite in the
@@ -200,7 +207,7 @@ class HWTestList(object):
     return suite_list
 
   def DefaultListAndroidPFQ(self, **kwargs):
-    """Return a default list of HWTestConfig's for a PFQ build.
+    """Return a default list of HWTestConfig's for an ARC PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
@@ -211,17 +218,16 @@ class HWTestList(object):
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
 
-    # TODO(crbug.com/610807): Disable the HWTests for now, since we are having
-    # issues getting them to run and complete in time.
-    # return [config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-    #                                pool=constants.HWTEST_MACH_POOL,
-    #                                **default_dict),
-    return [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                    pool=constants.HWTEST_MACH_POOL,
-                                    **default_dict)]
+    return [
+        config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                pool=constants.HWTEST_MACH_POOL,
+                                **default_dict),
+        self.TastConfig(constants.HWTEST_TAST_ANDROID_PFQ_SUITE,
+                        pool=constants.HWTEST_MACH_POOL, **default_dict),
+    ]
 
   def SharedPoolAndroidPFQ(self, **kwargs):
-    """Return a list of HWTestConfigs for PFQ which uses a shared pool.
+    """Return a list of HWTestConfigs for ARC PFQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
     shared with other types of builders (canaries, cq). The first suite in the
@@ -384,6 +390,31 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_GTS_QUAL_SUITE,
                                     **gts_config)]
 
+  def TastConfig(self, suite_name, **kwargs):
+    """Return an HWTestConfig that runs the provided Tast test suite.
+
+    Args:
+      suite_name: String suite name, e.g. constants.HWTEST_TAST_CQ_SUITE.
+      kwargs: Dict containing additional keyword args to use when constructing
+              the HWTestConfig.
+
+    Returns:
+      HWTestConfig object for running the suite.
+    """
+    kwargs = kwargs.copy()
+
+    # Tast test suites run at most three jobs (for system, Chrome, and Android
+    # tests) and have short timeouts, so request at most 1 DUT (while retaining
+    # passed-in requests for 0 DUTs).
+    if kwargs.get('minimum_duts', 0):
+      kwargs['minimum_duts'] = 1
+    if kwargs.get('suite_min_duts', 0):
+      kwargs['suite_min_duts'] = 1
+
+    # For now, Tast test failures only cause warnings.
+    kwargs['warn_only'] = True
+
+    return config_lib.HWTestConfig(suite_name, **kwargs)
 
 
 def append_useflags(useflags):
@@ -809,11 +840,17 @@ def GeneralTemplates(site_config, ge_build_config):
   is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
   hw_test_list = HWTestList(ge_build_config)
 
+  # TryjobMirrors uses hw_tests_override to ensure that tryjobs run all suites
+  # rather than just the ones that are assigned to the board being used. Add
+  # bvt-tast-cq here since it includes system, Chrome, and Android tests.
+  suite_list = hw_test_list.DefaultList(
+      pool=constants.HWTEST_TRYBOT_POOL,
+      file_bugs=False)
+  suite_list.append(hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                                            pool=constants.HWTEST_TRYBOT_POOL))
   site_config.AddTemplate(
       'default_hw_tests_override',
-      hw_tests_override=hw_test_list.DefaultList(
-          pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False),
+      hw_tests_override=suite_list,
   )
 
   # Config parameters for builders that do not run tests on the builder.
@@ -875,6 +912,7 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk_build_chrome=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
       # This only applies to vmtest enabled boards like betty and novato.
+      # TODO(derat): Add TastVMTestConfig here.
       vm_tests=[config_lib.VMTestConfig(
           constants.VM_SUITE_TEST_TYPE,
           test_suite='smoke')],
@@ -2650,37 +2688,37 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       master_config.AddSlave(config)
 
   # N.B. The ordering of columns here is coupled to the ordering of
-  # suites returned by DefaultListNonCanary().  If you change the
-  # ordering here, you must also change the ordering there.
+  # suites returned by DefaultListCQ().  If you change the ordering here,
+  # you must also change the ordering there.
   #
   # CAUTION: Only add devices to this table which are known to be stable in
   # the HW test lab, even low rates of flake from these devices quickly
   # add up and can destabilize the commit queue.
   #
   # TODO: Fill in any notable gaps in this table. crbug.com/730076
-  # pylint: disable=bad-continuation
-  # pylint: disable=bad-whitespace
+  # pylint: disable=bad-continuation, bad-whitespace, line-too-long
   _paladin_hwtest_assignments = frozenset([
-    # bvt-inline      bvt-cq           bvt-arc           family
-    ('link',          None,            None),            # ivybridge
-    (None,            None,            None),            # daisy (Exynos5250)
-    ('wolf',          'peppy',         None),            # slippy (HSW)
-    ('peach_pit',     None,            None),            # peach (Exynos5420)
-    ('winky',         'kip',           None),            # rambi (BYT)
-    ('nyan_big',      'nyan_kitty',    None),            # nyan (K1)
-    ('auron_paine',   'tidus',         'auron_yuna'),    # auron (BDW)
-    ('veyron_mighty', 'veyron_speedy', 'veyron_minnie'), # pinky (RK3288)
-    ('wizpig',        'edgar',         'cyan'),          # strago (BSW)
-    ('cave',          'sentry',        None),            # glados (SKL)
-    ('elm',           None,            'hana'),          # oak (MTK8173)
-    ('bob',           None,            'kevin'),         # gru (RK3399)
-    ('reef',          None,            None),            # reef (APL)
-    ('coral',         None,            None),            # coral (APL)
-    (None,            'eve',           'soraka'),        # poppy (KBL)
-    (None,            None,            'kevin-arcnext'), # gru + arcnext
-    (None,            None,            'caroline-arcnext'), # arcnext
-    ('nyan_blaze',    None,            None),            # Add for Skylab test
+    # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq       family
+    ('link',          None,            None,               None),            # ivybridge
+    (None,            None,            None,               None),            # daisy (Exynos5250)
+    ('wolf',          'peppy',         None,               'peppy'),         # slippy (HSW)
+    ('peach_pit',     None,            None,               None),            # peach (Exynos5420)
+    ('winky',         'kip',           None,               'kip'),           # rambi (BYT)
+    ('nyan_big',      'nyan_kitty',    None,               'nyan_kitty'),    # nyan (K1)
+    ('auron_paine',   'tidus',         'auron_yuna',       'tidus'),         # auron (BDW)
+    ('veyron_mighty', 'veyron_speedy', 'veyron_minnie',    'veyron_speedy'), # pinky (RK3288)
+    ('wizpig',        'edgar',         'cyan',             'edgar'),         # strago (BSW)
+    ('cave',          'sentry',        None,               'sentry'),        # glados (SKL)
+    ('elm',           None,            'hana',             None),            # oak (MTK8173)
+    ('bob',           None,            'kevin',            None),            # gru (RK3399)
+    ('reef',          None,            None,               None),            # reef (APL)
+    ('coral',         None,            None,               None),            # coral (APL)
+    (None,            'eve',           'soraka',           'eve'),           # poppy (KBL)
+    (None,            None,            'kevin-arcnext',    None),            # gru + arcnext
+    (None,            None,            'caroline-arcnext', None),            # arcnext
+    ('nyan_blaze',    None,            None,               None),            # Add for Skylab test
   ])
+  # pylint: enable=bad-continuation, bad-whitespace, line-too-long
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
   # Run provision suite first everywhere.

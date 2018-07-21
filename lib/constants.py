@@ -695,7 +695,12 @@ HWTEST_BVT_SUITE = 'bvt-inline'
 HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'
 HWTEST_INSTALLER_SUITE = 'bvt-installer'
-HWTEST_TAST_SUITE = 'bvt-tast'
+# Runs all non-informational Tast tests (exercising any of OS, Chrome, and ARC).
+HWTEST_TAST_CQ_SUITE = 'bvt-tast-cq'
+# Runs non-informational Tast tests exercising either Chrome or ARC.
+HWTEST_TAST_CHROME_PFQ_SUITE = 'bvt-tast-chrome-pfq'
+# Runs non-informational Tast tests exercising ARC.
+HWTEST_TAST_ANDROID_PFQ_SUITE = 'bvt-tast-android-pfq'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 HWTEST_JETSTREAM_COMMIT_SUITE = 'jetstream_cq'
 HWTEST_MOBLAB_SUITE = 'moblab'
