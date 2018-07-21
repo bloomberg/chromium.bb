@@ -159,6 +159,8 @@ typedef struct {
 
   // Auto frame-scaling variables.
   int rf_level_maxq[RATE_FACTOR_LEVELS];
+  // Q index used for ALT frame
+  int arf_q;
 } RATE_CONTROL;
 
 struct AV1_COMP;
@@ -228,7 +230,7 @@ void av1_rc_compute_frame_size_bounds(const struct AV1_COMP *cpi,
                                       int *frame_over_shoot_limit);
 
 // Picks q and q bounds given the target for bits
-int av1_rc_pick_q_and_bounds(const struct AV1_COMP *cpi, int width, int height,
+int av1_rc_pick_q_and_bounds(struct AV1_COMP *cpi, int width, int height,
                              int *bottom_index, int *top_index);
 
 // Estimates q to achieve a target bits per frame
