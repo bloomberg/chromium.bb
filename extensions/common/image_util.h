@@ -7,6 +7,8 @@
 
 #include <string>
 
+class SkBitmap;
+
 typedef unsigned int SkColor;
 
 // This file contains various utility functions for extension images and colors.
@@ -29,6 +31,10 @@ bool ParseRgbColorString(const std::string& color_string, SkColor* result);
 
 // Parses hsl() or hsla() string to a SkColor. Returns true for success.
 bool ParseHslColorString(const std::string& color_string, SkColor* result);
+
+// Analyzes an icon image to determine if it will be visible in its display
+// context.
+bool IsIconSufficientlyVisible(const SkBitmap& bitmap);
 
 }  // namespace image_util
 }  // namespace extensions
