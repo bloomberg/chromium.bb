@@ -1043,8 +1043,7 @@ bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
 }
 
 void RenderWidgetHostViewMac::TransformPointToRootSurface(gfx::PointF* point) {
-  if (display_only_using_parent_ui_layer_)
-    *point += view_bounds_in_window_dip_.OffsetFromOrigin();
+  browser_compositor_->TransformPointToRootSurface(point);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
