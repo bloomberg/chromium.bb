@@ -12,6 +12,22 @@
 #include "base/stl_util.h"
 #include "printing/print_job_constants.h"
 
+namespace {
+
+#if DCHECK_IS_ON()
+void ValidatePreviewData(const scoped_refptr<base::RefCountedMemory>& data) {
+  // PDFs are generally much bigger. This is just a sanity check on size.
+  DCHECK(data);
+  DCHECK_GE(data->size(), 50U);
+
+  static const char kPdfHeader[] = "%PDF-";
+  const char* content = data->front_as<const char>();
+  DCHECK_EQ(0, memcmp(content, kPdfHeader, strlen(kPdfHeader)));
+}
+#endif
+
+}  // namespace
+
 // PrintPreviewDataStore stores data for preview workflow and preview printing
 // workflow.
 //
@@ -49,6 +65,10 @@ class PrintPreviewDataStore {
                               scoped_refptr<base::RefCountedMemory> data) {
     if (IsInvalidIndex(index))
       return;
+
+#if DCHECK_IS_ON()
+    ValidatePreviewData(data);
+#endif
 
     page_data_map_[index] = std::move(data);
   }
