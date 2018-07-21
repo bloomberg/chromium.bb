@@ -79,6 +79,27 @@ using EnableIfSpanCompatibleContainer =
                      ContainerHasConvertibleData<Container, T>::value &&
                      ContainerHasIntegralSize<Container>::value>;
 
+// A helper template for storing the size of a span. Spans with static extents
+// don't require additional storage, since the extent itself is specified in the
+// template parameter.
+template <size_t Extent>
+class ExtentStorage {
+ public:
+  constexpr explicit ExtentStorage(size_t size) noexcept {}
+  constexpr size_t size() const noexcept { return Extent; }
+};
+
+// Specialization of ExtentStorage for dynamic extents, which do require
+// explicit storage for the size.
+template <>
+struct ExtentStorage<dynamic_extent> {
+  constexpr explicit ExtentStorage(size_t size) noexcept : size_(size) {}
+  constexpr size_t size() const noexcept { return size_; }
+
+ private:
+  size_t size_;
+};
+
 }  // namespace internal
 
 // A span is a value type that represents an array of elements of type T. Since
@@ -167,7 +188,10 @@ using EnableIfSpanCompatibleContainer =
 
 // [span], class template span
 template <typename T, size_t Extent>
-class span {
+class span : public internal::ExtentStorage<Extent> {
+ private:
+  using ExtentStorage = internal::ExtentStorage<Extent>;
+
  public:
   using element_type = T;
   using value_type = std::remove_cv_t<T>;
@@ -182,11 +206,12 @@ class span {
   static constexpr index_type extent = Extent;
 
   // [span.cons], span constructors, copy, assignment, and destructor
-  constexpr span() noexcept : data_(nullptr), size_(0) {
+  constexpr span() noexcept : ExtentStorage(0), data_(nullptr) {
     static_assert(Extent == dynamic_extent || Extent == 0, "Invalid Extent");
   }
 
-  constexpr span(T* data, size_t size) noexcept : data_(data), size_(size) {
+  constexpr span(T* data, size_t size) noexcept
+      : ExtentStorage(size), data_(data) {
     CHECK(Extent == dynamic_extent || Extent == size);
   }
 
@@ -304,7 +329,7 @@ class span {
   }
 
   // [span.obs], span observers
-  constexpr size_t size() const noexcept { return size_; }
+  constexpr size_t size() const noexcept { return ExtentStorage::size(); }
   constexpr size_t size_bytes() const noexcept { return size() * sizeof(T); }
   constexpr bool empty() const noexcept { return size() == 0; }
 
@@ -346,7 +371,6 @@ class span {
 
  private:
   T* data_;
-  size_t size_;
 };
 
 // span<T, Extent>::extent can not be declared inline prior to C++17, hence this
