@@ -41,6 +41,7 @@ class CORE_EXPORT PictureInPictureController
     kDisabledBySystem,
     kDisabledByFeaturePolicy,
     kDisabledByAttribute,
+    kMediaStreamsNotSupportedYet,
   };
 
   // Enter Picture-in-Picture for a video element and resolve promise if any.
