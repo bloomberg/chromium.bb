@@ -421,6 +421,10 @@ bool NonClientFrameController::ShouldShowWindowTitle() const {
   return window_ && window_->GetProperty(aura::client::kTitleShownKey);
 }
 
+void NonClientFrameController::DeleteDelegate() {
+  delete this;
+}
+
 views::Widget* NonClientFrameController::GetWidget() {
   return widget_;
 }
