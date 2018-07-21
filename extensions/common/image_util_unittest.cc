@@ -4,10 +4,30 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/image_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
+
+namespace {
+
+bool LoadPngFromFile(const base::FilePath& path, SkBitmap* dst) {
+  std::string png_bytes;
+  if (!base::ReadFileToString(path, &png_bytes)) {
+    return false;
+  }
+  return gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(png_bytes.data()),
+      png_bytes.length(), dst);
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -174,6 +194,40 @@ TEST(ImageUtilTest, BasicColorKeyword) {
   EXPECT_EQ(color, SK_ColorBLUE);
 
   EXPECT_FALSE(image_util::ParseCssColorString("my_red", &color));
+}
+
+TEST(ImageUtilTest, IsIconSufficientlyVisible) {
+  base::FilePath test_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &test_dir));
+  base::FilePath icon_path;
+  {
+    // This icon has all transparent pixels, so it will fail.
+    icon_path = test_dir.AppendASCII("transparent_icon.png");
+    SkBitmap transparent_icon;
+    ASSERT_TRUE(LoadPngFromFile(icon_path, &transparent_icon));
+    EXPECT_FALSE(image_util::IsIconSufficientlyVisible(transparent_icon));
+  }
+  {
+    // Test with an icon that has one opaque pixel.
+    icon_path = test_dir.AppendASCII("one_pixel_opaque_icon.png");
+    SkBitmap visible_icon;
+    ASSERT_TRUE(LoadPngFromFile(icon_path, &visible_icon));
+    EXPECT_FALSE(image_util::IsIconSufficientlyVisible(visible_icon));
+  }
+  {
+    // Test with an icon that has one transparent pixel.
+    icon_path = test_dir.AppendASCII("one_pixel_transparent_icon.png");
+    SkBitmap visible_icon;
+    ASSERT_TRUE(LoadPngFromFile(icon_path, &visible_icon));
+    EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+  }
+  {
+    // Test with an icon that is completely opaque.
+    icon_path = test_dir.AppendASCII("opaque_icon.png");
+    SkBitmap visible_icon;
+    ASSERT_TRUE(LoadPngFromFile(icon_path, &visible_icon));
+    EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+  }
 }
 
 }  // namespace extensions
