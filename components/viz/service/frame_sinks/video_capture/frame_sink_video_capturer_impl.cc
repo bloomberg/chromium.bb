@@ -447,6 +447,10 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                       frame_metadata.root_scroll_offset.x());
   metadata->SetDouble(VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y,
                       frame_metadata.root_scroll_offset.y());
+  metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_HEIGHT,
+                      frame_metadata.top_controls_height);
+  metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
+                      frame_metadata.top_controls_shown_ratio);
 
   oracle_.RecordCapture(utilization);
   const int64_t frame_number = next_capture_frame_number_++;
