@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
@@ -27,10 +28,6 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
-
-#if !defined(OS_ANDROID)
-#include "content/browser/devtools/devtools_video_consumer.h"
-#endif  // !defined(OS_ANDROID)
 
 class SkBitmap;
 
@@ -162,9 +159,7 @@ class PageHandler : public DevToolsDomainHandler,
   WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
-#if !defined(OS_ANDROID)
   void OnFrameFromVideoConsumer(scoped_refptr<media::VideoFrame> frame);
-#endif  // !defined(OS_ANDROID)
   void ScreencastFrameCaptured(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
       const SkBitmap& bitmap);
@@ -206,7 +201,6 @@ class PageHandler : public DevToolsDomainHandler,
   int frame_counter_;
   int frames_in_flight_;
 
-#if !defined(OS_ANDROID)
   // |video_consumer_| consumes video frames from FrameSinkVideoCapturerImpl,
   // and provides PageHandler with these frames via OnFrameFromVideoConsumer.
   // This is only used if Viz is enabled and if OS is not Android.
@@ -215,7 +209,6 @@ class PageHandler : public DevToolsDomainHandler,
   // The last surface size used to determine if frames with new sizes need
   // to be requested. This changes due to window resizing.
   gfx::Size last_surface_size_;
-#endif  // !defined(OS_ANDROID)
 
   RenderFrameHostImpl* host_;
   EmulationHandler* emulation_handler_;

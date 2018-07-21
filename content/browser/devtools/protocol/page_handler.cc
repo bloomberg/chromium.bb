@@ -153,11 +153,12 @@ gfx::Size DetermineSnapshotSize(const gfx::Size& surface_size,
   return gfx::ToRoundedSize(gfx::ScaleSize(gfx::SizeF(surface_size), scale));
 }
 
-#if !defined(OS_ANDROID)
 void GetMetadataFromFrame(const media::VideoFrame& frame,
                           double* device_scale_factor,
                           double* page_scale_factor,
-                          gfx::Vector2dF* root_scroll_offset) {
+                          gfx::Vector2dF* root_scroll_offset,
+                          double* top_controls_height,
+                          double* top_controls_shown_ratio) {
   // Get metadata from |frame| and ensure that no metadata is missing.
   bool success = true;
   double root_scroll_offset_x, root_scroll_offset_y;
@@ -169,12 +170,16 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
       media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_X, &root_scroll_offset_x);
   success &= frame.metadata()->GetDouble(
       media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &root_scroll_offset_y);
+  success &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::TOP_CONTROLS_HEIGHT, top_controls_height);
+  success &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
+      top_controls_shown_ratio);
   DCHECK(success);
 
   root_scroll_offset->set_x(root_scroll_offset_x);
   root_scroll_offset->set_y(root_scroll_offset_y);
 }
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -191,15 +196,12 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       session_id_(0),
       frame_counter_(0),
       frames_in_flight_(0),
-#if !defined(OS_ANDROID)
       video_consumer_(nullptr),
       last_surface_size_(gfx::Size()),
-#endif  // !defined(OS_ANDROID)
       host_(nullptr),
       emulation_handler_(emulation_handler),
       observer_(this),
       weak_factory_(this) {
-#if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       base::FeatureList::IsEnabled(
           features::kUseVideoCaptureApiForDevToolsSnapshots)) {
@@ -207,7 +209,6 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
         base::BindRepeating(&PageHandler::OnFrameFromVideoConsumer,
                             weak_factory_.GetWeakPtr()));
   }
-#endif  // !defined(OS_ANDROID)
   DCHECK(emulation_handler_);
 }
 
@@ -252,12 +253,10 @@ void PageHandler::SetRenderer(int process_host_id,
   if (widget_host)
     observer_.Add(widget_host);
 
-#if !defined(OS_ANDROID)
   if (video_consumer_ && frame_host) {
     video_consumer_->SetFrameSinkId(
         frame_host->GetRenderWidgetHost()->GetFrameSinkId());
   }
-#endif  // !defined(OS_ANDROID)
 }
 
 void PageHandler::Wire(UberDispatcher* dispatcher) {
@@ -365,10 +364,8 @@ Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
 
-#if !defined(OS_ANDROID)
   if (video_consumer_)
     video_consumer_->StopCapture();
-#endif  // !defined(OS_ANDROID)
 
   if (!pending_dialog_.is_null()) {
     WebContentsImpl* web_contents = GetWebContents();
@@ -768,7 +765,6 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   bool visible = !widget_host->is_hidden();
   NotifyScreencastVisibility(visible);
 
-#if !defined(OS_ANDROID)
   if (video_consumer_) {
     gfx::Size surface_size = gfx::Size();
     RenderWidgetHostViewBase* const view =
@@ -786,7 +782,6 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
     video_consumer_->StartCapture();
     return Response::FallThrough();
   }
-#endif  // !defined(OS_ANDROID)
 
   if (!visible)
     return Response::FallThrough();
@@ -801,10 +796,8 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
 
 Response PageHandler::StopScreencast() {
   screencast_enabled_ = false;
-#if !defined(OS_ANDROID)
   if (video_consumer_)
     video_consumer_->StopCapture();
-#endif  // !defined(OS_ANDROID)
   return Response::FallThrough();
 }
 
@@ -968,7 +961,6 @@ void PageHandler::InnerSwapCompositorFrame() {
   frames_in_flight_++;
 }
 
-#if !defined(OS_ANDROID)
 void PageHandler::OnFrameFromVideoConsumer(
     scoped_refptr<media::VideoFrame> frame) {
   if (!host_)
@@ -994,24 +986,21 @@ void PageHandler::OnFrameFromVideoConsumer(
   }
 
   double device_scale_factor, page_scale_factor;
+  double top_controls_height, top_controls_shown_ratio;
   gfx::Vector2dF root_scroll_offset;
   GetMetadataFromFrame(*frame, &device_scale_factor, &page_scale_factor,
-                       &root_scroll_offset);
-  // Top controls are only present on Android. Hence use default values of 0.f.
-  // TODO(dgozman): fix this when viz capture is available on Android.
-  const float kTopControlsHeight = 0.f;
-  const float kTopControlsShownRatio = 0.f;
+                       &root_scroll_offset, &top_controls_height,
+                       &top_controls_shown_ratio);
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
-      BuildScreencastFrameMetadata(surface_size, device_scale_factor,
-                                   page_scale_factor, root_scroll_offset,
-                                   kTopControlsHeight, kTopControlsShownRatio);
+      BuildScreencastFrameMetadata(
+          surface_size, device_scale_factor, page_scale_factor,
+          root_scroll_offset, top_controls_height, top_controls_shown_ratio);
   if (!page_metadata)
     return;
 
   ScreencastFrameCaptured(std::move(page_metadata),
                           DevToolsVideoConsumer::GetSkBitmapFromFrame(frame));
 }
-#endif  // !defined(OS_ANDROID)
 
 void PageHandler::ScreencastFrameCaptured(
     std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
