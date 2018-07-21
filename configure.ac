@@ -109,7 +109,6 @@ if test "x$enable_libraries" = "xyes"; then
 	AC_CHECK_DECL(CLOCK_MONOTONIC,[],
 		      [AC_MSG_ERROR("CLOCK_MONOTONIC is needed to compile wayland libraries")],
 		      [[#include <time.h>]])
-	AC_CHECK_HEADERS([execinfo.h])
 fi
 
 PKG_CHECK_MODULES(EXPAT, [expat], [],
