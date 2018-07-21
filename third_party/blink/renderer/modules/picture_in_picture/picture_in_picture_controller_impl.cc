@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -76,6 +77,10 @@ PictureInPictureControllerImpl::IsElementAllowed(
 
   if (element.FastHasAttribute(HTMLNames::disablepictureinpictureAttr))
     return Status::kDisabledByAttribute;
+
+  // TODO(crbug.com/806249): Remove this when MediaStreams are supported.
+  if (element.GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return Status::kMediaStreamsNotSupportedYet;
 
   return Status::kEnabled;
 }
