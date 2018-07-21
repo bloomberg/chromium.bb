@@ -39,6 +39,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/context/incorrect-context-object-behaviour.html',
         bug=857303)
 
+    # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
+    self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
+              ['linux'], bug=859400)
+    self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
+              ['win', 'opengl', 'passthrough'], bug=859400)
+
+    # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2658
+    self.Fail('conformance2/transform_feedback/' +
+              'same-buffer-two-binding-points.html', bug=866089)
+
     # Need to fix test, which uses a bad interpretation of the spec
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
         bug=754733)
