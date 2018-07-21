@@ -21,6 +21,7 @@ class DecoratedListItemModel
     private final ListItemModel mModel;
 
     private ViewListItem mHeaderItem;
+    private ViewListItem mEmptyViewItem;
 
     /** Creates a {@link DecoratedListItemModel} instance that wraos {@code model}. */
     public DecoratedListItemModel(ListItemModel model) {
@@ -49,15 +50,41 @@ class DecoratedListItemModel
         }
     }
 
+    /**
+     * Adds {@code item} as a empty view for the list.  Clears the empty view if it is {@code
+     * null}. Empty view must be the second item in the list after the header. If there is no
+     * header, it must be the first item in the list.
+     */
+    public void setEmptyView(ViewListItem item) {
+        if (mEmptyViewItem == item) return;
+
+        int index = mHeaderItem == null ? 0 : 1;
+
+        ViewListItem oldEmptyView = mEmptyViewItem;
+        mEmptyViewItem = item;
+
+        if (oldEmptyView != null && item == null) {
+            notifyItemRemoved(index);
+        } else if (oldEmptyView == null && item != null) {
+            notifyItemInserted(index);
+        } else {
+            notifyItemRangeChanged(index, 1);
+        }
+    }
+
     // SimpleList implementation.
     @Override
     public int size() {
-        return mModel.size() + (mHeaderItem == null ? 0 : 1);
+        return mModel.size() + (mHeaderItem == null ? 0 : 1) + (mEmptyViewItem == null ? 0 : 1);
     }
 
     @Override
     public ListItem get(int index) {
-        if (index == 0 && mHeaderItem != null) return mHeaderItem;
+        if (mHeaderItem != null || mEmptyViewItem != null) {
+            if (index == 0) return mHeaderItem != null ? mHeaderItem : mEmptyViewItem;
+            if (index == 1 && mEmptyViewItem != null) return mEmptyViewItem;
+        }
+
         return mModel.get(convertIndexForSource(index));
     }
 
@@ -80,10 +107,12 @@ class DecoratedListItemModel
     }
 
     private int convertIndexForSource(int index) {
-        return mHeaderItem == null ? index : index - 1;
+        int offset = (mHeaderItem == null ? 0 : 1) + (mEmptyViewItem == null ? 0 : 1);
+        return index - offset;
     }
 
     private int convertIndexFromSource(int index) {
-        return mHeaderItem == null ? index : index + 1;
+        int offset = (mHeaderItem == null ? 0 : 1) + (mEmptyViewItem == null ? 0 : 1);
+        return index + offset;
     }
 }

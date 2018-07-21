@@ -2432,6 +2432,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_CAPTION" desc="Text containing the prefetched article description.">
         <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph> - <ph name="FILE_SIZE">%2$s<ex>1.56 MB</ex></ph>
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_TAB_EMPTY" desc="Tab text indicating that there is no prefetched content.">
+        No content here
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_ENABLE_PREFETCH_MESSAGE" desc="Tab text indicating that users can enable prefetch to allow chrome to download articles on Wi-Fi.">
+        Allow Chrome to download articles for you when on Wi-Fi under settings.
+      </message>
       <message name="IDS_DOWNLOAD_MANAGER_N_HOURS" desc="How many hours ago an item was downloaded (if downloaded on the same day). [ICU Syntax]">
         {HOURS, plural, =1 {# hr} other {# hrs}}
       </message>

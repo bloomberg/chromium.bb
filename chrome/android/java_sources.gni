@@ -475,6 +475,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/list/DateOrderedListView.java",
   "java/src/org/chromium/chrome/browser/download/home/list/DateOrderedListViewAdapter.java",
   "java/src/org/chromium/chrome/browser/download/home/list/DecoratedListItemModel.java",
+  "java/src/org/chromium/chrome/browser/download/home/list/EmptyViewCoordinator.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ItemUtils.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ListItem.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ListItemModel.java",
