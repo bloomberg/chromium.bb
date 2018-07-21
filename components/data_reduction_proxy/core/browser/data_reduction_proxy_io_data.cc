@@ -357,10 +357,10 @@ void DataReductionProxyIOData::UpdateContentLengths(
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DataReductionProxyService::UpdateContentLengths, service_,
-                     data_used, original_size, data_reduction_proxy_enabled,
-                     request_type, mime_type, is_user_traffic, content_type,
-                     service_hash_code));
+      base::BindRepeating(&DataReductionProxyService::UpdateContentLengths,
+                          service_, data_used, original_size,
+                          data_reduction_proxy_enabled, request_type, mime_type,
+                          is_user_traffic, content_type, service_hash_code));
 }
 
 void DataReductionProxyIOData::AddEvent(std::unique_ptr<base::Value> event) {

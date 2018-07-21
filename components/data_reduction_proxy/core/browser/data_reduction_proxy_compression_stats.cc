@@ -247,10 +247,12 @@ void MoveAndClearDictionaryPrefs(PrefService* pref_service,
                                  const std::string& pref_dst,
                                  const std::string& pref_src) {
   DictionaryPrefUpdate pref_update_dst(pref_service, pref_dst);
+  base::DictionaryValue* pref_dict_dst = pref_update_dst.Get();
   DictionaryPrefUpdate pref_update_src(pref_service, pref_src);
-  pref_update_dst->Clear();
-  pref_update_dst->Swap(pref_update_src.Get());
-  DCHECK(pref_update_src->empty());
+  base::DictionaryValue* pref_dict_src = pref_update_src.Get();
+  pref_dict_dst->Clear();
+  pref_dict_dst->Swap(pref_dict_src);
+  DCHECK(pref_dict_src->empty());
 }
 
 void MaybeInitWeeklyAggregateDataUsePrefs(const base::Time& now,
