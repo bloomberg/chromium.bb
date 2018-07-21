@@ -2817,20 +2817,6 @@ if (!is_ios && !is_android) {
     ]
   }
 
-  executable("gdig") {
-    testonly = true
-    sources = [
-      "tools/gdig/file_net_log.cc",
-      "tools/gdig/file_net_log.h",
-      "tools/gdig/gdig.cc",
-    ]
-    deps = [
-      ":net",
-      "//base",
-      "//build/win:default_exe_manifest",
-    ]
-  }
-
   executable("hpack_example_generator") {
     testonly = true
     sources = [
