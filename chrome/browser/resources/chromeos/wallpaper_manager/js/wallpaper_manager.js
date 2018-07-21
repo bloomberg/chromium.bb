@@ -1267,12 +1267,10 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
     this.wallpaperRequest_ = null;
   }
 
-  var wallpaperUrl = selectedItem.highResolutionURL ?
-      selectedItem.highResolutionURL :
-      selectedItem.baseURL + str('highResolutionSuffix');
   var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
   chrome.wallpaperPrivate.setWallpaperIfExists(
-      wallpaperUrl, selectedItem.layout, previewMode, exists => {
+      selectedItem.highResolutionURL, selectedItem.layout, previewMode,
+      exists => {
         if (exists) {
           successCallback();
           return;
@@ -1286,7 +1284,8 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
             xhr => {
               var image = xhr.response;
               chrome.wallpaperPrivate.setWallpaper(
-                  image, selectedItem.layout, wallpaperUrl, previewMode, () => {
+                  image, selectedItem.layout, selectedItem.highResolutionURL,
+                  previewMode, () => {
                     this.progressManager_.hideProgressBar(selectedGridItem);
 
                     if (chrome.runtime.lastError != undefined &&
@@ -1310,7 +1309,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
           failureCallback();
         };
         WallpaperUtil.fetchURL(
-            wallpaperUrl, 'arraybuffer', onSuccess, onFailure,
+            selectedItem.highResolutionURL, 'arraybuffer', onSuccess, onFailure,
             this.wallpaperRequest_);
       });
 };
@@ -2093,6 +2092,8 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
         var wallpaperInfo = {
           wallpaperId: i,
           baseURL: this.manifest_.wallpaper_list[i].base_url,
+          highResolutionURL: this.manifest_.wallpaper_list[i].base_url +
+              str('highResolutionSuffix'),
           layout: this.manifest_.wallpaper_list[i].default_layout,
           source: Constants.WallpaperSourceEnum.Online,
           availableOffline: false,
@@ -2107,9 +2108,7 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
           wallpaperInfo.availableOffline = true;
         }
         wallpapersDataModel.push(wallpaperInfo);
-        var url = this.manifest_.wallpaper_list[i].base_url +
-            str('highResolutionSuffix');
-        if (url == this.currentWallpaper_) {
+        if (wallpaperInfo.highResolutionURL == this.currentWallpaper_) {
           selectedItem = wallpaperInfo;
         }
       }
