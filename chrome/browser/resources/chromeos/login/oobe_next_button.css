@@ -7,10 +7,6 @@ paper-button {
   -webkit-padding-start: 16px;
 }
 
-slot {
-  -webkit-padding-end: 4px;
-}
-
 hd-iron-icon {
   -webkit-padding-start: 4px;
 }
