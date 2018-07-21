@@ -807,40 +807,26 @@ numericnocontchars abcdefghij
 
 @opcode{numericmodechars, characters}
 
-Any of these characters can appear within a number without terminating
-the effect of the number sign.
-When one of these characters is encountered between two digits
-without any intervening none-numeric characters, numeric mode is
-resumed without any number sign.
+@opcode{midnumericmodechars, characters}
 
-Characters declared with this opcode have the extra feature of
-jumping between the number sign and the first digit if they
-appear immediately before a number. This is a feature primarily used
-in various English Braille codes. If you don't want this behaviour,
-then use the @opcoderef{midnumericmodechars} instead.
+Any of these characters can appear within a number without terminating
+the effect of the number sign (see the @opcoderef{numsign} opcode). In
+other words, they don't cancel numeric mode.
+
+The difference between the two opcodes is that
+@opcoderef{numericmodechars} characters can appear anywhere in a
+number whereas @opcoderef{numericmodechars} characters can appear only
+in the middle or at the end of a number. Like
+@opcoderef{midnumericmodechars}, @opcoderef{numericmodechars}
+characters keep numeric mode active, but in addition they activate
+numeric mode immediately when at least one digit follows, and the
+number sign will precede the @opcoderef{numericmodechars} character in
+this case.
 
 Example:
 
 @example
 numericmodechars .,
-@end example
-
-@opcode{midnumericmodechars, characters}
-
-Any of these characters can appear within a number without terminating
-the effect of the number sign.
-When one of these characters is encountered between two digits
-without any intervening none-numeric characters, numeric mode is
-resumed without any number sign.
-
-As opposed to the @opcoderef{numericmodechars}, Characters declared with this opcode do not
-jump between the number sign and the first digit if they
-appear immediately before a number. If you  want this behaviour,
-then use the @opcoderef{numericmodechars} instead.
-
-Example:
-
-@example
 midnumericmodechars -/
 @end example
 
