@@ -98,4 +98,74 @@ TEST_F(PDFiumEngineExportsTest, GetPDFPageSizeByIndex) {
   }
 }
 
+TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
+  base::FilePath pdf_path =
+      pdf_data_dir().Append(FILE_PATH_LITERAL("rectangles.pdf"));
+  std::string pdf_data;
+  ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
+
+  std::vector<base::span<const uint8_t>> pdf_buffers;
+
+  EXPECT_FALSE(
+      ConvertPdfPagesToNupPdf(pdf_buffers, 1, 512, 792, nullptr, nullptr));
+
+  pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
+  pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
+
+  void* output_pdf_buffer;
+  size_t output_pdf_buffer_size;
+  ASSERT_TRUE(ConvertPdfPagesToNupPdf(
+      pdf_buffers, 2, 512, 792, &output_pdf_buffer, &output_pdf_buffer_size));
+  ASSERT_GT(output_pdf_buffer_size, 0U);
+  ASSERT_NE(output_pdf_buffer, nullptr);
+  int page_count;
+  ASSERT_TRUE(GetPDFDocInfo(output_pdf_buffer, output_pdf_buffer_size,
+                            &page_count, nullptr));
+  ASSERT_EQ(1, page_count);
+
+  double width;
+  double height;
+  ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_buffer, output_pdf_buffer_size,
+                                    0, &width, &height));
+  EXPECT_DOUBLE_EQ(792.0, width);
+  EXPECT_DOUBLE_EQ(512.0, height);
+
+  free(output_pdf_buffer);
+}
+
+TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
+  base::FilePath pdf_path =
+      pdf_data_dir().Append(FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  std::string pdf_data;
+  ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
+
+  base::span<const uint8_t> pdf_buffer;
+
+  EXPECT_FALSE(
+      ConvertPdfDocumentToNupPdf(pdf_buffer, 1, 512, 792, nullptr, nullptr));
+
+  pdf_buffer = base::as_bytes(base::make_span(pdf_data));
+
+  void* output_pdf_buffer;
+  size_t output_pdf_buffer_size;
+  ASSERT_TRUE(ConvertPdfDocumentToNupPdf(
+      pdf_buffer, 4, 512, 792, &output_pdf_buffer, &output_pdf_buffer_size));
+  ASSERT_GT(output_pdf_buffer_size, 0U);
+  ASSERT_NE(output_pdf_buffer, nullptr);
+  int page_count;
+  ASSERT_TRUE(GetPDFDocInfo(output_pdf_buffer, output_pdf_buffer_size,
+                            &page_count, nullptr));
+  ASSERT_EQ(2, page_count);
+  for (int page_number = 0; page_number < page_count; ++page_number) {
+    double width;
+    double height;
+    ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_buffer, output_pdf_buffer_size,
+                                      page_number, &width, &height));
+    EXPECT_DOUBLE_EQ(512.0, width);
+    EXPECT_DOUBLE_EQ(792.0, height);
+  }
+
+  free(output_pdf_buffer);
+}
+
 }  // namespace chrome_pdf

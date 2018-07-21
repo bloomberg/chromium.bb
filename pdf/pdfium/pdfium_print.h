@@ -40,6 +40,15 @@ class PDFiumPrint {
       const PP_PrintSettings_Dev& print_settings,
       const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
+  // Check the source doc orientation.  Returns true if the doc is landscape.
+  // For now the orientation of the doc is determined by its first page's
+  // orientation.  Improvement can be added in the future to better determine
+  // the orientation of the source docs that have mixed orientation.
+  // TODO(xlou): rotate pages if the source doc has mixed orientation.  So that
+  // the orientation of all pages of the doc are uniform.  Pages of square size
+  // will not be rotated.
+  static bool IsSourcePdfLandscape(FPDF_DOCUMENT doc);
+
  private:
   FPDF_DOCUMENT CreateSinglePageRasterPdf(
       double source_page_width,

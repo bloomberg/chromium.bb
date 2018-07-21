@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/containers/span.h"
 #include "build/build_config.h"
 #include "pdf/pdf_engine.h"
 
@@ -36,6 +37,19 @@ class PDFiumEngineExports : public PDFEngineExports {
                              int page_number,
                              const RenderingSettings& settings,
                              void* bitmap_buffer) override;
+  bool ConvertPdfPagesToNupPdf(
+      std::vector<base::span<const uint8_t>> input_buffers,
+      size_t pages_per_sheet,
+      size_t page_size_width,
+      size_t page_size_height,
+      void** dest_pdf_buffer,
+      size_t* dest_pdf_buffer_size) override;
+  bool ConvertPdfDocumentToNupPdf(base::span<const uint8_t> input_buffer,
+                                  size_t pages_per_sheet,
+                                  size_t page_size_width,
+                                  size_t page_size_height,
+                                  void** dest_pdf_buffer,
+                                  size_t* dest_pdf_buffer_size) override;
   bool GetPDFDocInfo(const void* pdf_buffer,
                      int buffer_size,
                      int* page_count,

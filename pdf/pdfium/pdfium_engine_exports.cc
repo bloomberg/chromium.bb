@@ -8,8 +8,13 @@
 #include <utility>
 
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
+#include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
+#include "pdf/pdfium/pdfium_print.h"
+#include "printing/nup_parameters.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
+#include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
 using printing::ConvertUnitDouble;
@@ -87,6 +92,66 @@ int CalculatePosition(FPDF_PAGE page,
     dest->Offset(offset);
   }
   return rotate;
+}
+
+ScopedFPDFDocument LoadPdfData(base::span<const uint8_t> pdf_buffer) {
+  ScopedFPDFDocument doc;
+  if (base::IsValueInRangeForNumericType<int>(pdf_buffer.size())) {
+    doc.reset(
+        FPDF_LoadMemDocument(pdf_buffer.data(), pdf_buffer.size(), nullptr));
+  }
+  return doc;
+}
+
+ScopedFPDFDocument CreatePdfDoc(
+    std::vector<base::span<const uint8_t>> input_buffers) {
+  ScopedFPDFDocument doc(FPDF_CreateNewDocument());
+
+  size_t index = 0;
+  for (auto input_buffer : input_buffers) {
+    ScopedFPDFDocument single_page_doc = LoadPdfData(input_buffer);
+    if (!FPDF_ImportPages(doc.get(), single_page_doc.get(), "1", index++)) {
+      return nullptr;
+    }
+  }
+
+  return doc;
+}
+
+bool CreateNupPdfDocument(FPDF_DOCUMENT doc,
+                          size_t pages_per_sheet,
+                          size_t page_size_width,
+                          size_t page_size_height,
+                          void** dest_pdf_buffer,
+                          size_t* dest_pdf_buffer_size) {
+  if (!dest_pdf_buffer || !dest_pdf_buffer_size)
+    return false;
+
+  printing::NupParameters nup_params;
+  bool is_landscape = PDFiumPrint::IsSourcePdfLandscape(doc);
+  nup_params.SetParameters(pages_per_sheet, is_landscape);
+  bool paper_is_landscape = page_size_width > page_size_height;
+  if (nup_params.landscape() != paper_is_landscape)
+    std::swap(page_size_width, page_size_height);
+
+  ScopedFPDFDocument output_doc_nup(FPDF_ImportNPagesToOne(
+      doc, page_size_width, page_size_height, nup_params.num_pages_on_x_axis(),
+      nup_params.num_pages_on_y_axis()));
+
+  if (!output_doc_nup)
+    return false;
+
+  // Copy data to the |dest_pdf_buffer| here.
+  // TODO(thestig): Avoid this copy.
+  PDFiumMemBufferFileWrite output_file_write;
+  if (!FPDF_SaveAsCopy(output_doc_nup.get(), &output_file_write, 0)) {
+    return false;
+  }
+  *dest_pdf_buffer = malloc(output_file_write.size());
+  memcpy(*dest_pdf_buffer, output_file_write.buffer().c_str(),
+         output_file_write.size());
+  *dest_pdf_buffer_size = output_file_write.size();
+  return true;
 }
 
 }  // namespace
@@ -243,6 +308,38 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
   FPDF_RenderPageBitmap(bitmap.get(), page.get(), dest.x(), dest.y(),
                         dest.width(), dest.height(), rotate, flags);
   return true;
+}
+
+bool PDFiumEngineExports::ConvertPdfPagesToNupPdf(
+    std::vector<base::span<const uint8_t>> input_buffers,
+    size_t pages_per_sheet,
+    size_t page_size_width,
+    size_t page_size_height,
+    void** dest_pdf_buffer,
+    size_t* dest_pdf_buffer_size) {
+  ScopedFPDFDocument doc = CreatePdfDoc(std::move(input_buffers));
+  if (!doc)
+    return false;
+
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size_width,
+                              page_size_height, dest_pdf_buffer,
+                              dest_pdf_buffer_size);
+}
+
+bool PDFiumEngineExports::ConvertPdfDocumentToNupPdf(
+    base::span<const uint8_t> input_buffer,
+    size_t pages_per_sheet,
+    size_t page_size_width,
+    size_t page_size_height,
+    void** dest_pdf_buffer,
+    size_t* dest_pdf_buffer_size) {
+  ScopedFPDFDocument doc = LoadPdfData(input_buffer);
+  if (!doc)
+    return false;
+
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size_width,
+                              page_size_height, dest_pdf_buffer,
+                              dest_pdf_buffer_size);
 }
 
 bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,

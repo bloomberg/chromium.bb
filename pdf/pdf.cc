@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -141,6 +143,39 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
       true, autorotate, use_color);
   return engine_exports->RenderPDFPageToBitmap(
       pdf_buffer, pdf_buffer_size, page_number, settings, bitmap_buffer);
+}
+
+bool ConvertPdfPagesToNupPdf(
+    std::vector<base::span<const uint8_t>> input_buffers,
+    size_t pages_per_sheet,
+    size_t page_size_width,
+    size_t page_size_height,
+    void** dest_pdf_buffer,
+    size_t* dest_pdf_buffer_size) {
+  ScopedSdkInitializer scoped_sdk_initializer;
+  if (!scoped_sdk_initializer.Init())
+    return false;
+
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
+  return engine_exports->ConvertPdfPagesToNupPdf(
+      std::move(input_buffers), pages_per_sheet, page_size_width,
+      page_size_height, dest_pdf_buffer, dest_pdf_buffer_size);
+}
+
+bool ConvertPdfDocumentToNupPdf(base::span<const uint8_t> input_buffer,
+                                size_t pages_per_sheet,
+                                size_t page_size_width,
+                                size_t page_size_height,
+                                void** dest_pdf_buffer,
+                                size_t* dest_pdf_buffer_size) {
+  ScopedSdkInitializer scoped_sdk_initializer;
+  if (!scoped_sdk_initializer.Init())
+    return false;
+
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
+  return engine_exports->ConvertPdfDocumentToNupPdf(
+      input_buffer, pages_per_sheet, page_size_width, page_size_height,
+      dest_pdf_buffer, dest_pdf_buffer_size);
 }
 
 }  // namespace chrome_pdf
