@@ -105,6 +105,7 @@ component("accessibility") {
     "//base",
     "//base:i18n",
     "//ui/base",
+    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/strings",

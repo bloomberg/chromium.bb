@@ -137,6 +137,16 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // that might send notifications.
   bool IsLeaf();
 
+  // Returns true if this node can be scrolled either in the horizontal or the
+  // vertical direction.
+  bool IsScrollable() const;
+
+  // Returns true if this node can be scrolled in the horizontal direction.
+  bool IsHorizontallyScrollable() const;
+
+  // Returns true if this node can be scrolled in the vertical direction.
+  bool IsVerticallyScrollable() const;
+
   bool HasFocus();
 
   virtual base::string16 GetText();

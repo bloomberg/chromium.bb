@@ -7,6 +7,7 @@ include_rules = [
   "+ui/base/l10n",
   "+ui/base/win",
   "+ui/gfx",
+  "+ui/display",
   "+ui/strings/grit/ui_strings.h",
 ]
 
