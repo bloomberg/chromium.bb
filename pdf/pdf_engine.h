@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -463,6 +464,24 @@ class PDFEngineExports {
                                      int page_number,
                                      const RenderingSettings& settings,
                                      void* bitmap_buffer) = 0;
+
+  // See the definition of ConvertPdfPagesToNupPdf in pdf.cc for details.
+  virtual bool ConvertPdfPagesToNupPdf(
+      std::vector<base::span<const uint8_t>> input_buffers,
+      size_t pages_per_sheet,
+      size_t page_size_width,
+      size_t page_size_height,
+      void** dest_pdf_buffer,
+      size_t* dest_pdf_buffer_size) = 0;
+
+  // See the definition of ConvertPdfDocumentToNupPdf in pdf.cc for details.
+  virtual bool ConvertPdfDocumentToNupPdf(
+      base::span<const uint8_t> input_buffer,
+      size_t pages_per_sheet,
+      size_t page_size_width,
+      size_t page_size_height,
+      void** dest_pdf_buffer,
+      size_t* dest_pdf_buffer_size) = 0;
 
   virtual bool GetPDFDocInfo(const void* pdf_buffer,
                              int buffer_size,

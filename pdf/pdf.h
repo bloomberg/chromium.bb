@@ -5,6 +5,9 @@
 #ifndef PDF_PDF_H_
 #define PDF_PDF_H_
 
+#include <vector>
+
+#include "base/containers/span.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -125,6 +128,59 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
                            int dpi_y,
                            bool autorotate,
                            bool use_color);
+
+// Convert multiple PDF pages into a N-up PDF.
+// |input_buffers| is the vector of buffers with each buffer contains a PDF.
+//     If any of the PDFs contains multiple pages, only the first page of the
+//     document is used.
+// |pages_per_sheet| is the number of pages to put on one sheet.
+// |page_size_width| is the width of the output page size, measured in PDF
+//     "user space" units.
+// |page_size_height| is the height of the output page size, measured in PDF
+//     "user space" units.
+// |dest_pdf_buffer| is the output N-up PDF page.  Caller takes ownership, and
+//     needs to free the memory.
+// |dest_pdf_buffer_size| is the size of output N-up PDF page.
+//
+// |page_size_width| and |page_size_height| are the print media size.  The page
+// size of the output N-up PDF is determined by the |pages_per_sheet|, the
+// orientation of the PDF pages contained in the |input_buffers|, and the media
+// page size |page_size_width| and |page_size_height|.  For example, when
+// |page_size_width| = 512, |page_size_height| = 792, |pages_per_sheet| = 2, and
+// the orientation of |input_buffers| = portrait, the output N-up PDF will have
+// |page_size_width| = 792, and |page_size_height| = 512.
+// See printing::NupParameters for more details on how the output page
+// orientation is determined, to understand why |page_size_width| and
+// |page_size_height| may be swapped in some cases.
+bool ConvertPdfPagesToNupPdf(
+    std::vector<base::span<const uint8_t>> input_buffers,
+    size_t pages_per_sheet,
+    size_t page_size_width,
+    size_t page_size_height,
+    void** dest_pdf_buffer,
+    size_t* dest_pdf_buffer_size);
+
+// Convert a PDF document to a N-up PDF document.
+// |input_buffer| is the buffer that contains the entire PDF document to be
+//     converted to a N-up PDF document.
+// |pages_per_sheet| is the number of pages to put on one sheet.
+// |page_size_width| is the width of the media page size, measured in PDF
+//     "user space" units.
+// |page_size_height| is the height of the media page size, measured in PDF
+//     "user space" units.
+// |dest_pdf_buffer| is the output N-up PDF page.  Caller takes ownership, and
+//     needs to free the memory.
+// |dest_pdf_buffer_size| is the size of output N-up PDF document.
+//
+// Refer to the description of ConvertPdfPagesToNupPdf to understand how the
+// output page size |page_size_width| and |page_size_height| will be calculated.
+// The algorithm used to determine the output page size is the same.
+bool ConvertPdfDocumentToNupPdf(base::span<const uint8_t> input_buffer,
+                                size_t pages_per_sheet,
+                                size_t page_size_width,
+                                size_t page_size_height,
+                                void** dest_pdf_buffer,
+                                size_t* dest_pdf_buffer_size);
 
 }  // namespace chrome_pdf
 

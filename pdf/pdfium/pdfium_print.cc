@@ -37,24 +37,6 @@ bool ShouldDoNup(int pages_per_sheet) {
   return pages_per_sheet > 1;
 }
 
-// Check the source doc orientation.  Returns true if the doc is landscape.
-// For now the orientation of the doc is determined by its first page's
-// orientation.  Improvement can be added in the future to better determine the
-// orientation of the source docs that have mixed orientation.
-// TODO(xlou): rotate pages if the source doc has mixed orientation.  So that
-// the orientation of all pages of the doc are uniform.  Pages of square size
-// will not be rotated.
-bool IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
-  DCHECK(doc);
-
-  ScopedFPDFPage pdf_page(FPDF_LoadPage(doc, 0));
-  DCHECK(pdf_page);
-
-  bool is_source_landscape =
-      FPDF_GetPageWidth(pdf_page.get()) > FPDF_GetPageHeight(pdf_page.get());
-  return is_source_landscape;
-}
-
 // Set the destination page size and content area in points based on source
 // page rotation and orientation.
 //
@@ -233,6 +215,17 @@ std::vector<uint32_t> PDFiumPrint::GetPageNumbersFromPrintPageNumberRange(
     }
   }
   return page_numbers;
+}
+
+bool PDFiumPrint::IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
+  DCHECK(doc);
+
+  ScopedFPDFPage pdf_page(FPDF_LoadPage(doc, 0));
+  DCHECK(pdf_page);
+
+  bool is_source_landscape =
+      FPDF_GetPageWidth(pdf_page.get()) > FPDF_GetPageHeight(pdf_page.get());
+  return is_source_landscape;
 }
 
 pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPDF(
