@@ -111,16 +111,7 @@ if test "x$enable_libraries" = "xyes"; then
 		      [[#include <time.h>]])
 fi
 
-PKG_CHECK_MODULES(EXPAT, [expat], [],
-	[AC_CHECK_HEADERS(expat.h, [],
-		[AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
-	 SAVE_LIBS="$LIBS"
-	 AC_SEARCH_LIBS(XML_ParserCreate, expat, [],
-		[AC_MSG_ERROR([Can't find expat library. Please install expat.])])
-	 EXPAT_LIBS="$LIBS"
-	 LIBS="$SAVE_LIBS"
-	 AC_SUBST(EXPAT_LIBS)
-	])
+PKG_CHECK_MODULES(EXPAT, [expat])
 
 AM_CONDITIONAL([DTD_VALIDATION], [test "x$enable_dtd_validation" = "xyes"])
 if test "x$enable_dtd_validation" = "xyes"; then
