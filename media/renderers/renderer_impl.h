@@ -148,7 +148,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // Fix state booleans after the stream switching is finished.
   void CleanUpTrackChange(base::RepeatingClosure on_finished,
-                          bool* pending_change,
                           bool* ended,
                           bool* playing);
 
