@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 
 <!--
   <iron-icon> that automatically displays one of the two icond depending on
@@ -17,9 +18,10 @@
       'icon2x' - a name of icon from material design set to show on button.
 -->
 <dom-module id="hd-iron-icon">
-  <link rel="stylesheet" href="hd-iron-icon.css">
   <template>
-    <div>
+    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
+    <link rel="stylesheet" href="hd-iron-icon.css">
+    <div class="flex layout vertical center">
       <iron-icon id="icon1x" icon="[[icon1x]]"></iron-icon>
       <iron-icon id="icon2x" icon="[[icon2x]]"></iron-icon>
     </div>

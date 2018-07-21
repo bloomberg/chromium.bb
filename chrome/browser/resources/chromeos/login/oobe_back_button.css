@@ -7,10 +7,7 @@ paper-button {
   -webkit-padding-start: 8px;
 }
 
-:host ::slotted(*) {
-  -webkit-padding-start: 4px;
-}
-
 hd-iron-icon {
+  -webkit-padding-start: 4px; /* transform(180deg) will make it padding-end. */
   transform: rotate(180deg);
 }
