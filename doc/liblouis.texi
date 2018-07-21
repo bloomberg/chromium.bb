@@ -780,8 +780,8 @@ space, a letter or any other none-@opcoderef{litdigit} character is
 encountered.
 
 You can define characters or strings to be part of a number by using
-the @opcoderef{midnum} opcode or the @opcoderef{numericmodechars}
-opcode.
+the @opcoderef{midnum} opcode, the @opcoderef{numericmodechars} opcode
+or the @opcoderef{midnumericmodechars} opcode.
 
 Example:
 
@@ -808,16 +808,40 @@ numericnocontchars abcdefghij
 @opcode{numericmodechars, characters}
 
 Any of these characters can appear within a number without terminating
-the effect of the number sign (see the @opcoderef{numsign} opcode).
+the effect of the number sign.
+When one of these characters is encountered between two digits
+without any intervening none-numeric characters, numeric mode is
+resumed without any number sign.
 
-it works like the @opcoderef{midnum} opcode, but instead of specifying
-a character string and its corresponding dot pattern, you just specify
-the list of characters that can appear within a number
+Characters declared with this opcode have the extra feature of
+jumping between the number sign and the first digit if they
+appear immediately before a number. This is a feature primarily used
+in various English Braille codes. If you don't want this behaviour,
+then use the @opcoderef{midnumericmodechars} instead.
 
 Example:
 
 @example
-numericmodechars -/
+numericmodechars .,
+@end example
+
+@opcode{midnumericmodechars, characters}
+
+Any of these characters can appear within a number without terminating
+the effect of the number sign.
+When one of these characters is encountered between two digits
+without any intervening none-numeric characters, numeric mode is
+resumed without any number sign.
+
+As opposed to the @opcoderef{numericmodechars}, Characters declared with this opcode do not
+jump between the number sign and the first digit if they
+appear immediately before a number. If you  want this behaviour,
+then use the @opcoderef{numericmodechars} instead.
+
+Example:
+
+@example
+midnumericmodechars -/
 @end example
 
 @end table
