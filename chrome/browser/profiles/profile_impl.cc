@@ -174,7 +174,9 @@
 
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_manager_service.h"
+#else
 #include "chrome/browser/apps/foundation/app_service/app_service.h"
 #include "chrome/browser/apps/foundation/app_service/public/mojom/constants.mojom.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -1209,6 +1211,16 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
 
 std::string ProfileImpl::GetMediaDeviceIDSalt() {
   return media_device_id_salt_->GetSalt();
+}
+
+download::InProgressDownloadManager*
+ProfileImpl::RetriveInProgressDownloadManager() {
+#if defined(OS_ANDROID)
+  return DownloadManagerService::GetInstance()
+      ->RetriveInProgressDownloadManager(this);
+#else
+  return nullptr;
+#endif
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

@@ -694,4 +694,9 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
   return decode_history;
 }
 
+download::InProgressDownloadManager*
+BrowserContext::RetriveInProgressDownloadManager() {
+  return nullptr;
+}
+
 }  // namespace content

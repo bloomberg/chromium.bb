@@ -32,6 +32,10 @@ namespace base {
 class FilePath;
 }
 
+namespace download {
+class InProgressDownloadManager;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -328,6 +332,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // have similar decode performance and stats are not exposed to the web
   // directly, so privacy is not compromised.
   virtual media::VideoDecodePerfHistory* GetVideoDecodePerfHistory();
+
+  // Retrieves the InProgressDownloadManager associated with this object if
+  // available
+  virtual download::InProgressDownloadManager*
+  RetriveInProgressDownloadManager();
 
  private:
   const std::string unique_id_;

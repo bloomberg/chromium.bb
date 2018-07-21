@@ -16,6 +16,7 @@
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/download/download_history.h"
 #include "components/download/content/public/all_download_item_notifier.h"
+#include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -133,6 +134,10 @@ class DownloadManagerService
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // Retrives the in-progress manager and give up the ownership.
+  download::InProgressDownloadManager* RetriveInProgressDownloadManager(
+      content::BrowserContext* context);
 
  protected:
   // Called to get the content::DownloadManager instance.

@@ -105,6 +105,8 @@ class ProfileImpl : public Profile {
       bool in_memory) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   std::string GetMediaDeviceIDSalt() override;
+  download::InProgressDownloadManager* RetriveInProgressDownloadManager()
+      override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
