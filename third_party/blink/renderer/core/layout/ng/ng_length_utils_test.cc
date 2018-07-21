@@ -391,12 +391,13 @@ TEST_F(NGLengthUtilsTest, testMargins) {
   scoped_refptr<NGConstraintSpace> constraint_space(
       ConstructConstraintSpace(200, 300));
 
-  NGBoxStrut margins = ComputeMarginsForContainer(*constraint_space, *style_);
+  NGPhysicalBoxStrut margins =
+      ComputePhysicalMargins(*constraint_space, *style_);
 
-  EXPECT_EQ(LayoutUnit(20), margins.block_start);
-  EXPECT_EQ(LayoutUnit(52), margins.inline_end);
-  EXPECT_EQ(LayoutUnit(), margins.block_end);
-  EXPECT_EQ(LayoutUnit(22), margins.inline_start);
+  EXPECT_EQ(LayoutUnit(20), margins.top);
+  EXPECT_EQ(LayoutUnit(52), margins.right);
+  EXPECT_EQ(LayoutUnit(), margins.bottom);
+  EXPECT_EQ(LayoutUnit(22), margins.left);
 }
 
 TEST_F(NGLengthUtilsTest, testBorders) {

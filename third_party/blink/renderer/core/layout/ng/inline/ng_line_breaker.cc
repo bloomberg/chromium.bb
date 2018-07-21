@@ -829,8 +829,6 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
 
   const ComputedStyle& float_style = node.Style();
-  NGBoxStrut margins =
-      ComputeMarginsForContainer(constraint_space_, float_style);
 
   // TODO(ikilpatrick): Add support for float break tokens inside an inline
   // layout context.
@@ -839,8 +837,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
                                   constraint_space_.PercentageResolutionSize(),
                                   constraint_space_.BfcOffset().line_offset,
                                   constraint_space_.BfcOffset().line_offset,
-                                  margins, node,
-                                  /* break_token */ nullptr);
+                                  node, /* break_token */ nullptr);
 
   // If we are currently computing our min/max-content size simply append
   // to the unpositioned floats list and abort.
@@ -851,10 +848,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   }
 
   LayoutUnit inline_margin_size =
-      (ComputeInlineSizeForUnpositionedFloat(constraint_space_,
-                                             unpositioned_float.get()) +
-       margins.InlineSum())
-          .ClampNegativeToZero();
+      ComputeMarginBoxInlineSizeForUnpositionedFloat(constraint_space_,
+                                                     unpositioned_float.get());
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
 
@@ -892,9 +887,6 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
         bfc_block_offset, constraint_space_.BfcOffset().block_offset,
         unpositioned_float.get(), constraint_space_, exclusion_space_);
     positioned_floats_->push_back(positioned_float);
-
-    DCHECK_EQ(positioned_float.bfc_offset.block_offset,
-              bfc_block_offset + margins.block_start);
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},

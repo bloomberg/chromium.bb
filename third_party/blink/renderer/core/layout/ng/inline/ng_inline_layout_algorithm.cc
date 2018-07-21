@@ -805,14 +805,12 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
 
     if (item.Type() == NGInlineItem::kFloating) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
-      NGBoxStrut margins =
-          ComputeMarginsForContainer(ConstraintSpace(), node.Style());
 
       scoped_refptr<NGUnpositionedFloat> unpositioned_float =
           NGUnpositionedFloat::Create(
               ConstraintSpace().AvailableSize(),
               ConstraintSpace().PercentageResolutionSize(), bfc_line_offset,
-              bfc_line_offset, margins, node, /* break_token */ nullptr);
+              bfc_line_offset, node, /* break_token */ nullptr);
       AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
                            std::move(unpositioned_float));
     }
