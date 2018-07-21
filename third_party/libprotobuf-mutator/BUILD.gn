@@ -1,7 +1,7 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/protobuf/proto_library.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
 config("include_config") {
   include_dirs = [ "src/" ]
@@ -63,18 +63,9 @@ if (current_toolchain == host_toolchain) {
     ]
     public_configs = [ "//third_party/protobuf:protobuf_config" ]
   }
-  # To use the plugin in a proto_library you want to fuzz, add these lines to
-  # the proto_library definition (note the "=" in second to last line in the
-  # comment will need to be changed to "+=" if you have already defined
-  # deps):
-  # if (use_libfuzzer && current_toolchain == host_toolchain) {
-  #   generator_plugin_label =
-  #     "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
-  #   generator_plugin_suffix = ".pb"
-  #   # The plugin will generate cc, so don't ask for it to be done by protoc.
-  #   generate_cc = false
-  #   deps = ["//third_party/libprotobuf-mutator:override_lite_runtime_plugin"]
-  # }
+  # To use the plugin in a proto_library you want to fuzz, change the build
+  # target to fuzzable_proto_library (defined in
+  # //third_party/libprotobuf-mutator/fuzzable_proto_library.gni)
 }
 
 # The CQ will try building this target without "use_libfuzzer" if it is defined.
@@ -99,24 +90,21 @@ if (use_libfuzzer) {
 }
 
 # Proto library for override_lite_runtime_plugin_test_fuzzer
-proto_library("override_lite_runtime_plugin_test_fuzzer_proto") {
+fuzzable_proto_library("override_lite_runtime_plugin_test_fuzzer_proto") {
   sources = [
     "protoc_plugin/imported.proto",
     "protoc_plugin/imported_publicly.proto",
     "protoc_plugin/test_fuzzer_input.proto",
   ]
+}
 
-  # TODO(metzman): Figure out how we can avoid using this toolchain check
-  # (maybe remove compilation from the plugin).
-  if (use_libfuzzer && current_toolchain == host_toolchain) {
-    generator_plugin_label =
-        "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
-    generator_plugin_suffix = ".pb"
-
-    # The plugin will generate cc, so don't ask for it to be done by protoc.
-    generate_cc = false
-    deps = [
-      "//third_party/libprotobuf-mutator:override_lite_runtime_plugin",
-    ]
+# Component that can provide protobuf_full to non-testonly targets
+component("protobuf_full") {
+  # Stop people from using me by accident.
+  if (!use_libfuzzer) {
+    testonly = true
   }
+  public_deps = [
+    "//third_party/protobuf:protobuf_full",
+  ]
 }
