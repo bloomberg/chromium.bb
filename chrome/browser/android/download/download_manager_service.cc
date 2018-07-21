@@ -206,6 +206,13 @@ void DownloadManagerService::Observe(
   }
 }
 
+download::InProgressDownloadManager*
+DownloadManagerService::RetriveInProgressDownloadManager(
+    content::BrowserContext* context) {
+  // TODO(qinmin): return pre-created InProgressDownloadManager here.
+  return nullptr;
+}
+
 void DownloadManagerService::OpenDownload(download::DownloadItem* download,
                                           int source) {
   JNIEnv* env = base::android::AttachCurrentThread();

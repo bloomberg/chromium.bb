@@ -296,15 +296,27 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       in_progress_cache_initialized_(false),
       browser_context_(browser_context),
       delegate_(nullptr),
+      in_progress_manager_(
+          browser_context_->RetriveInProgressDownloadManager()),
       weak_factory_(this) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     download::UrlDownloadHandlerFactory::Install(new UrlDownloaderFactory());
-  in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
-      this, IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
-      base::BindRepeating(&IsOriginSecure));
+
+  if (!in_progress_manager_) {
+    in_progress_manager_ =
+        std::make_unique<download::InProgressDownloadManager>(
+            this,
+            IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
+            base::BindRepeating(&IsOriginSecure));
+  } else {
+    in_progress_manager_->set_delegate(this);
+    in_progress_manager_->set_download_start_observer(nullptr);
+    in_progress_manager_->set_is_origin_secure_cb(
+        base::BindRepeating(&IsOriginSecure));
+  }
   in_progress_manager_->NotifyWhenInitialized(base::BindOnce(
       &DownloadManagerImpl::OnInProgressDownloadManagerInitialized,
       weak_factory_.GetWeakPtr()));
