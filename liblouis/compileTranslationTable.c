@@ -121,9 +121,9 @@ static const char *opcodeNames[CTO_None] = {
 	"include", "locale", "undefined", "capsletter", "begcapsword", "endcapsword",
 	"begcaps", "endcaps", "begcapsphrase", "endcapsphrase", "lencapsphrase", "letsign",
 	"noletsignbefore", "noletsign", "noletsignafter", "numsign", "numericmodechars",
-	"numericnocontchars", "seqdelimiter", "seqbeforechars", "seqafterchars",
-	"seqafterpattern", "seqafterexpression", "emphclass", "emphletter", "begemphword",
-	"endemphword", "begemph", "endemph", "begemphphrase", "endemphphrase",
+	"midnumericmodechars", "numericnocontchars", "seqdelimiter", "seqbeforechars",
+	"seqafterchars", "seqafterpattern", "seqafterexpression", "emphclass", "emphletter",
+	"begemphword", "endemphword", "begemph", "endemph", "begemphphrase", "endemphphrase",
 	"lenemphphrase", "capsmodechars",
 	// "emphmodechars",
 	"begcomp", "compbegemph1", "compendemph1", "compbegemph2", "compendemph2",
@@ -3038,6 +3038,25 @@ doOpcode:
 					c->attributes |= CTC_NumericMode;
 				else {
 					compileError(nested, "Numeric mode character undefined");
+					ok = 0;
+					break;
+				}
+			}
+			(*table)->usesNumericMode = 1;
+		}
+		break;
+
+	case CTO_MidNumericModeChars:
+
+		c = NULL;
+		ok = 1;
+		if (getRuleCharsText(nested, &ruleChars, &lastToken)) {
+			for (k = 0; k < ruleChars.length; k++) {
+				c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
+				if (c)
+					c->attributes |= CTC_MidNumericMode;
+				else {
+					compileError(nested, "Midnumeric mode character undefined");
 					ok = 0;
 					break;
 				}

@@ -703,7 +703,7 @@ back_selectRule(const TranslationTableHeader *table, int pos, int mode,
 						// nocontractsign is inserted either when in numeric mode and the
 						// next
 						// character is not numeric (CTC_Digit | CTC_LitDigit |
-						// CTC_NumericMode),
+						// CTC_NumericMode | CTC_MidNumericMode),
 						// or when a "contraction" rule is matched and the characters are
 						// preceded and followed by space or punctuation (CTC_Space |
 						// CTC_Punctuation).
@@ -1108,7 +1108,8 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 			allUpper = 0;
 		if ((itsANumber == 2) && output->length > 0 &&
 				!(beforeAttributes & CTC_LitDigit) &&
-				!(beforeAttributes & CTC_NumericMode))
+				!(beforeAttributes & CTC_NumericMode) &&
+				!(beforeAttributes & CTC_MidNumericMode))
 			itsANumber = 0;
 		back_selectRule(table, pos, mode, input, output, itsANumber, itsALetter,
 				&currentDotslen, &currentOpcode, &currentRule, previousOpcode,
