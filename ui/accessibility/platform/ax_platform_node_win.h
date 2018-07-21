@@ -247,6 +247,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IRangeValueProvider,
                         public IRawElementProviderSimple,
                         public IScrollItemProvider,
+                        public IScrollProvider,
                         public ISelectionItemProvider,
                         public ISelectionProvider,
                         public IServiceProvider,
@@ -273,6 +274,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
+    COM_INTERFACE_ENTRY(IScrollProvider)
     COM_INTERFACE_ENTRY(ISelectionItemProvider)
     COM_INTERFACE_ENTRY(ISelectionProvider)
     COM_INTERFACE_ENTRY(ITableItemProvider)
@@ -481,6 +483,32 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   //
 
   STDMETHODIMP ScrollIntoView() override;
+
+  //
+  // IScrollProvider methods.
+  //
+
+  STDMETHODIMP Scroll(ScrollAmount horizontal_amount,
+                      ScrollAmount vertical_amount) override;
+
+  STDMETHODIMP SetScrollPercent(double horizontal_percent,
+                                double vertical_percent) override;
+
+  STDMETHODIMP get_HorizontallyScrollable(BOOL* result) override;
+
+  STDMETHODIMP get_HorizontalScrollPercent(double* result) override;
+
+  // Horizontal size of the viewable region as a percentage of the total content
+  // area.
+  STDMETHODIMP get_HorizontalViewSize(double* result) override;
+
+  STDMETHODIMP get_VerticallyScrollable(BOOL* result) override;
+
+  STDMETHODIMP get_VerticalScrollPercent(double* result) override;
+
+  // Vertical size of the viewable region as a percentage of the total content
+  // area.
+  STDMETHODIMP get_VerticalViewSize(double* result) override;
 
   //
   // ISelectionItemProvider methods.
@@ -984,6 +1012,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Return an array of automation elements given a vector
   // of |AXNode| ids.
   SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
+
+  // Returns the scroll offsets to which UI Automation should scroll an
+  // accessible object, given the horizontal and vertical scroll amounts.
+  gfx::Vector2d CalculateUIAScrollPoint(
+      const ScrollAmount horizontal_amount,
+      const ScrollAmount vertical_amount) const;
 
   void AddAlertTarget();
   void RemoveAlertTarget();

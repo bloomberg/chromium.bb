@@ -27,7 +27,9 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 //
 // Macros to use at the top of any AXPlatformNodeWin function that implements
@@ -170,8 +172,13 @@ base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>::Leaky
     g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
 
 // Sets the multiplier by which large changes to a RangeValueProvider are
-// greater than small changes
+// greater than small changes.
 constexpr int kLargeChangeScaleFactor = 10;
+
+// The amount to scroll when UI Automation asks to scroll by a small increment.
+// Value is in device independent pixels and is the same used by Blink when
+// cursor keys are used to scroll a webpage.
+constexpr float kSmallScrollIncrement = 40.0f;
 
 }  // namespace
 
@@ -421,6 +428,72 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
   }
 
   return uia_array;
+}
+
+gfx::Vector2d AXPlatformNodeWin::CalculateUIAScrollPoint(
+    const ScrollAmount horizontal_amount,
+    const ScrollAmount vertical_amount) const {
+  if (!delegate_ || !IsScrollable())
+    return {};
+
+  const gfx::Rect bounds = delegate_->GetClippedScreenBoundsRect();
+  const int large_horizontal_change = bounds.width();
+  const int large_vertical_change = bounds.height();
+
+  const HWND hwnd = delegate_->GetTargetForNativeAccessibilityEvent();
+  DCHECK(hwnd);
+  const float scale_factor =
+      display::win::ScreenWin::GetScaleFactorForHWND(hwnd);
+  const int small_change =
+      gfx::ToRoundedInt(kSmallScrollIncrement * scale_factor);
+
+  const int x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+  const int x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  const int y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+  const int y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+
+  int x = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+  int y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  switch (horizontal_amount) {
+    case ScrollAmount_LargeDecrement:
+      x -= large_horizontal_change;
+      break;
+    case ScrollAmount_LargeIncrement:
+      x += large_horizontal_change;
+      break;
+    case ScrollAmount_NoAmount:
+      break;
+    case ScrollAmount_SmallDecrement:
+      x -= small_change;
+      break;
+    case ScrollAmount_SmallIncrement:
+      x += small_change;
+      break;
+  }
+  x = std::min(x, x_max);
+  x = std::max(x, x_min);
+
+  switch (vertical_amount) {
+    case ScrollAmount_LargeDecrement:
+      y -= large_vertical_change;
+      break;
+    case ScrollAmount_LargeIncrement:
+      y += large_vertical_change;
+      break;
+    case ScrollAmount_NoAmount:
+      break;
+    case ScrollAmount_SmallDecrement:
+      y -= small_change;
+      break;
+    case ScrollAmount_SmallIncrement:
+      y += small_change;
+      break;
+  }
+  y = std::min(y, y_max);
+  y = std::max(y, y_min);
+
+  return {x, y};
 }
 
 //
@@ -1292,7 +1365,7 @@ STDMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
   // ax::mojom::Action::kScrollToMakeVisible wants a target rect in *local*
   // coords.
   gfx::Rect r = gfx::ToEnclosingRect(GetData().location);
-  r.Offset(-r.OffsetFromOrigin());
+  r -= r.OffsetFromOrigin();
   switch (scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
       r = gfx::Rect(r.x(), r.y(), 0, 0);
@@ -1313,7 +1386,6 @@ STDMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
       r = gfx::Rect(r.right(), r.y(), 0, r.height());
       break;
     case IA2_SCROLL_TYPE_ANYWHERE:
-    default:
       break;
   }
 
@@ -1330,11 +1402,9 @@ STDMETHODIMP AXPlatformNodeWin::scrollToPoint(
     LONG x,
     LONG y) {
   COM_OBJECT_VALIDATE();
-
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_POINT);
 
   gfx::Point scroll_to(x, y);
-
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
     scroll_to -= delegate_->GetUnclippedScreenBoundsRect().OffsetFromOrigin();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
@@ -1525,7 +1595,6 @@ STDMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
 
 STDMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
   COM_OBJECT_VALIDATE();
-
   gfx::Rect r = gfx::ToEnclosingRect(GetData().location);
   r -= r.OffsetFromOrigin();
 
@@ -1533,10 +1602,128 @@ STDMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
   action_data.target_node_id = GetData().id;
   action_data.target_rect = r;
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
-
   if (delegate_->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
+}
+
+//
+// IScrollProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::Scroll(ScrollAmount horizontal_amount,
+                                       ScrollAmount vertical_amount) {
+  COM_OBJECT_VALIDATE();
+  if (!IsScrollable())
+    return E_FAIL;
+
+  AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ax::mojom::Action::kSetScrollOffset;
+  action_data.target_point = gfx::PointAtOffsetFromOrigin(
+      CalculateUIAScrollPoint(horizontal_amount, vertical_amount));
+  if (delegate_->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::SetScrollPercent(double horizontal_percent,
+                                                 double vertical_percent) {
+  COM_OBJECT_VALIDATE();
+  if (!IsScrollable())
+    return E_FAIL;
+
+  const double x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+  const double x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  const double y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+  const double y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+  const int x = gfx::ToRoundedInt(horizontal_percent * (x_max - x_min) + x_min);
+  const int y = gfx::ToRoundedInt(vertical_percent * (y_max - y_min) + y_min);
+  const gfx::Point scroll_to(x, y);
+
+  AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ax::mojom::Action::kSetScrollOffset;
+  action_data.target_point = scroll_to;
+  if (delegate_->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_HorizontallyScrollable(BOOL* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = IsHorizontallyScrollable();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_HorizontalScrollPercent(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  if (!IsHorizontallyScrollable()) {
+    *result = UIA_ScrollPatternNoScroll;
+    return S_OK;
+  }
+
+  float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+  float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  float x = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+  *result = 100.0 * (x - x_min) / (x_max - x_min);
+  return S_OK;
+}
+
+// Horizontal size of the viewable region as a percentage of the total content
+// area.
+STDMETHODIMP AXPlatformNodeWin::get_HorizontalViewSize(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  if (!IsHorizontallyScrollable()) {
+    *result = 100.;
+    return S_OK;
+  }
+
+  gfx::RectF clipped_bounds(delegate_->GetClippedScreenBoundsRect());
+  float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+  float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  float total_width = clipped_bounds.width() + x_max - x_min;
+  DCHECK_LE(clipped_bounds.width(), total_width);
+  *result = 100.0 * clipped_bounds.width() / total_width;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_VerticallyScrollable(BOOL* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = IsVerticallyScrollable();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_VerticalScrollPercent(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  if (!IsVerticallyScrollable()) {
+    *result = UIA_ScrollPatternNoScroll;
+    return S_OK;
+  }
+
+  float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+  float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+  float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+  *result = 100.0 * (y - y_min) / (y_max - y_min);
+  return S_OK;
+}
+
+// Vertical size of the viewable region as a percentage of the total content
+// area.
+STDMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  if (!IsVerticallyScrollable()) {
+    *result = 100.0;
+    return S_OK;
+  }
+
+  gfx::RectF clipped_bounds(delegate_->GetClippedScreenBoundsRect());
+  float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+  float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+  float total_height = clipped_bounds.height() + y_max - y_min;
+  DCHECK_LE(clipped_bounds.height(), total_height);
+  *result = 100.0 * clipped_bounds.height() / total_height;
+  return S_OK;
 }
 
 //
