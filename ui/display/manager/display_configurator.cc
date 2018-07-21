@@ -593,6 +593,10 @@ void DisplayConfigurator::SetInitialDisplayPower(
   UpdatePowerState(power_state);
 }
 
+void DisplayConfigurator::InitializeDisplayPowerState() {
+  SetInitialDisplayPower(chromeos::DISPLAY_POWER_ALL_ON);
+}
+
 void DisplayConfigurator::Init(
     std::unique_ptr<NativeDisplayDelegate> display_delegate,
     bool is_panel_fitting_enabled) {

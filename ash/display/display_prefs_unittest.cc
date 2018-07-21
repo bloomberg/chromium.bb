@@ -285,6 +285,13 @@ TEST_P(DisplayPrefsTest, ListedLayoutOverrides) {
       chromeos::switches::kFirstExecAfterBoot);
   LoadDisplayPreferences();
 
+  // requested_power_state_ should be chromeos::DISPLAY_POWER_ALL_ON at boot
+  const base::Optional<chromeos::DisplayPowerState> requested_power_state =
+      ash::Shell::Get()
+          ->display_configurator()
+          ->GetRequestedPowerStateForTest();
+  ASSERT_NE(base::nullopt, requested_power_state);
+  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, *requested_power_state);
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, GetRequestedPowerState());
 
