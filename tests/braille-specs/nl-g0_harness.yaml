@@ -202,4 +202,3 @@ tests:
   - - Digits followed by lowercase letters
     - ⠼⠁⠠⠁ ⠼⠁⠲⠠⠁ ⠼⠁⠂⠠⠁ ⠼⠁⠒⠠⠁
     - 1a 1.a 1,a 1:a
-    - xfail: true
