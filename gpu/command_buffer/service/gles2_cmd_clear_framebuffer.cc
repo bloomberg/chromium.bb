@@ -34,6 +34,7 @@ const char* g_fragment_shader_source = {
     }
   ),
 };
+#undef SHADER
 
 }  // namespace
 

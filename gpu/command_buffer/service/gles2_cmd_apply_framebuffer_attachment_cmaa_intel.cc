@@ -1847,3 +1847,5 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
 
 }  // namespace gles2
 }  // namespace gpu
+
+#undef SHADER
