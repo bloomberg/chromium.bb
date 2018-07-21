@@ -342,6 +342,28 @@ FAKE OUTPUT. Will be filled in later.
       finally:
         print(logs.messages)
 
+  def testRemoveSeededSteps(self):
+    output = ('2018-xx-xx info | kicked off a test\n'
+              '@@@SEED_STEP Scheduled Tests@@@\n'
+              '@@@STEP_CURSOR Scheduled Tests@@@\n'
+              '@@@STEP_STARTED@@@\n'
+              '@@@STEP_LINK@[Test-logs]: test 1'
+              '@https://chrome-swarming.appspot.com/user/task/123@@@\n'
+              '@@@STEP_CLOSED@@@\n'
+              '@@@SEED_STEP Scheduled Tests 2@@@\n'
+              '@@@STEP_CURSOR Scheduled Tests 2@@@\n'
+              '@@@STEP_STARTED@@@\n'
+              '@@@STEP_LINK@[Test-logs]: test 2'
+              '@https://chrome-swarming.appspot.com/user/task/456@@@\n'
+              '@@@STEP_CLOSED@@@\n'
+              '@@@STEP_LINK@[Test-logs]: test 3'
+              '@https://chrome-swarming.appspot.com/user/task/789@@@\n')
+    expected_output = (
+        '2018-xx-xx info | kicked off a test\n'
+        '@@@STEP_LINK@[Test-logs]: test 3'
+        '@https://chrome-swarming.appspot.com/user/task/789@@@\n')
+    self.assertEqual(commands._remove_seeded_steps(output), expected_output)
+
   def testRunSkylabHWTestSuiteWithWait(self):
     """Test RunSkylabHWTestSuite with waiting for results."""
     self.SetCmdResults(swarming_cli_cmd='run')
