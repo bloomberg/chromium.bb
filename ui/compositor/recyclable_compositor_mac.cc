@@ -111,7 +111,11 @@ RecyclableCompositorMacFactory::CreateCompositor(
     std::unique_ptr<RecyclableCompositorMac> result;
     result = std::move(compositors_.back());
     compositors_.pop_back();
-    return result;
+    if (result->compositor()->context_factory() == context_factory &&
+        result->compositor()->context_factory_private() ==
+            context_factory_private) {
+      return result;
+    }
   }
   return std::make_unique<RecyclableCompositorMac>(context_factory,
                                                    context_factory_private);

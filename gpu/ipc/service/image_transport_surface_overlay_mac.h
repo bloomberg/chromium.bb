@@ -77,8 +77,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
 
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect,
                                       const PresentationCallback& callback);
-  void ApplyBackpressure(base::TimeTicks* before_flush_time,
-                         base::TimeTicks* after_flush_before_commit_time);
+  void ApplyBackpressure();
   void BufferPresented(const PresentationCallback& callback,
                        const gfx::PresentationFeedback& feedback);
 

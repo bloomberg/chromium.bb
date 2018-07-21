@@ -103,22 +103,49 @@ bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
   return false;
 }
 
-void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
-    base::TimeTicks* before_flush_time,
-    base::TimeTicks* after_flush_before_commit_time) {
+void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ApplyBackpressure");
+
+  // TODO(ccameron): If this fixes the crashes in GLFence::Create, then
+  // determine how we are getting into this situation.
+  // https://crbug.com/863817
+  CGLContextObj current_context = CGLGetCurrentContext();
+  if (!current_context) {
+    LOG(ERROR) << "No context current!";
+    return;
+  }
 
   // If supported, use GLFence to ensure that we haven't gotten more than one
   // frame ahead of GL.
   if (gl::GLFence::IsSupported()) {
     CheckGLErrors("Before fence/flush");
 
+    // All GL writes to IOSurfaces prior to a glFlush will appear when that
+    // IOSurface is next displayed as a CALayer.
+    // TODO(ccameron): This is unnecessary if the below GLFence is a GLFenceARB,
+    // as that will call glFlush after creating the sync object.
+    {
+      TRACE_EVENT0("gpu", "glFlush");
+      base::TimeTicks before_flush_time = base::TimeTicks::Now();
+      glFlush();
+      base::TimeTicks after_flush_time = base::TimeTicks::Now();
+      CheckGLErrors("After fence/flush");
+      UMA_HISTOGRAM_TIMES("GPU.IOSurface.GLFlushTime",
+                          after_flush_time - before_flush_time);
+    }
+
+    // Create a fence for the current frame's work.
+    std::unique_ptr<gl::GLFence> this_frame_fence;
+    {
+      TRACE_EVENT0("gpu", "Create GLFence");
+      this_frame_fence = gl::GLFence::Create();
+    }
+
     // If we have gotten more than one frame ahead of GL, wait for the previous
     // frame to complete.
     bool fence_context_changed = true;
     if (previous_frame_fence_) {
-      fence_context_changed =
-          fence_context_obj_.get() != CGLGetCurrentContext();
+      fence_context_changed = fence_context_obj_.get() != current_context;
       TRACE_EVENT0("gpu", "ClientWait");
 
       // Ensure we are using the context with which the fence was created.
@@ -157,30 +184,14 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
       // https://crbug.com/863817
       previous_frame_fence_.reset();
     }
-    // Save the context that we will be using for the GLFence object we will
-    // create (or just leave the previously saved one, if it is unchanged).
+
+    // Update the previous fame fence and save the context that we will be
+    // using for the GLFence object we will create (or just leave the
+    // previously saved one, if it is unchanged).
+    previous_frame_fence_ = std::move(this_frame_fence);
     if (fence_context_changed) {
-      fence_context_obj_.reset(CGLGetCurrentContext(),
-                               base::scoped_policy::RETAIN);
+      fence_context_obj_.reset(current_context, base::scoped_policy::RETAIN);
     }
-    *before_flush_time = base::TimeTicks::Now();
-
-    // Create a fence for the current frame's work.
-    {
-      TRACE_EVENT0("gpu", "Create GLFence");
-      previous_frame_fence_ = gl::GLFence::Create();
-    }
-
-    // A glFlush is necessary to ensure correct content appears.
-    {
-      TRACE_EVENT0("gpu", "glFlush");
-      glFlush();
-      CheckGLErrors("After fence/flush");
-    }
-
-    *after_flush_before_commit_time = base::TimeTicks::Now();
-    UMA_HISTOGRAM_TIMES("GPU.IOSurface.GLFlushTime",
-                        *after_flush_before_commit_time - *before_flush_time);
   } else {
     // GLFence isn't supported - issue a glFinish on each frame to ensure
     // there is backpressure from GL.
@@ -188,7 +199,6 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
     CheckGLErrors("Before finish");
     glFinish();
     CheckGLErrors("After finish");
-    *after_flush_before_commit_time = base::TimeTicks::Now();
   }
 }
 
@@ -207,18 +217,17 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
   // Do a GL fence for flush to apply back-pressure before drawing.
-  base::TimeTicks before_flush_time;
-  base::TimeTicks after_flush_before_commit_time;
-  ApplyBackpressure(&before_flush_time, &after_flush_before_commit_time);
+  ApplyBackpressure();
 
+  // Update the CALayer tree in the GPU process.
+  base::TimeTicks before_transaction_time = base::TimeTicks::Now();
   {
     TRACE_EVENT0("gpu", "CommitPendingTreesToCA");
     ca_layer_tree_coordinator_->CommitPendingTreesToCA(pixel_damage_rect);
+    base::TimeTicks after_transaction_time = base::TimeTicks::Now();
+    UMA_HISTOGRAM_TIMES("GPU.IOSurface.CATransactionTime",
+                        after_transaction_time - before_transaction_time);
   }
-
-  base::TimeTicks after_transaction_time = base::TimeTicks::Now();
-  UMA_HISTOGRAM_TIMES("GPU.IOSurface.CATransactionTime",
-                      after_transaction_time - after_flush_before_commit_time);
 
   // Populate the swap-complete parameters to send to the browser.
   SwapBuffersCompleteParams params;
@@ -242,8 +251,8 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     params.swap_response.swap_id = 0;  // Set later, in DecoderClient.
     params.swap_response.result = gfx::SwapResult::SWAP_ACK;
     // TODO(brianderson): Tie swap_start to before_flush_time.
-    params.swap_response.swap_start = after_flush_before_commit_time;
-    params.swap_response.swap_end = after_flush_before_commit_time;
+    params.swap_response.swap_start = before_transaction_time;
+    params.swap_response.swap_end = before_transaction_time;
     for (auto& query : ca_layer_in_use_queries_) {
       gpu::TextureInUseResponse response;
       response.texture = query.texture;
