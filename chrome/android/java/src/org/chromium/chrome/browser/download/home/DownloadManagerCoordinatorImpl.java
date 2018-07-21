@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
@@ -56,7 +55,6 @@ class DownloadManagerCoordinatorImpl
     private boolean mMuteFilterChanges;
     private boolean mIsSeparateActivity;
     private int mSearchMenuId;
-    private TextView mEmptyView;
 
     private SelectionDelegate<ListItem> mSelectionDelegate;
 
@@ -89,7 +87,10 @@ class DownloadManagerCoordinatorImpl
                 (ViewGroup) LayoutInflater.from(mActivity).inflate(R.layout.download_main, null);
         mSelectableListLayout =
                 (SelectableListLayout<ListItem>) mMainView.findViewById(R.id.selectable_list);
-        mEmptyView = mSelectableListLayout.initializeEmptyView(
+
+        // TODO(shaktisahu): Maybe refactor SelectableListLayout to work without supplying empty
+        // view.
+        mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.downloads_big, mActivity.getTheme()),
                 R.string.download_manager_ui_empty, R.string.download_manager_no_results);

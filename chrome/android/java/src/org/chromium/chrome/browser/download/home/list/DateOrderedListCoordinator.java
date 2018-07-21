@@ -44,7 +44,7 @@ public class DateOrderedListCoordinator {
     }
 
     private final FilterCoordinator mFilterCoordinator;
-
+    private final EmptyViewCoordinator mEmptyViewCoordinator;
     private final DateOrderedListMediator mMediator;
     private final DateOrderedListView mView;
 
@@ -74,6 +74,10 @@ public class DateOrderedListCoordinator {
                 : new FilterCoordinatorWithNoTabs(context, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
+
+        mEmptyViewCoordinator =
+                new EmptyViewCoordinator(context, decoratedModel, mMediator.getFilterSource());
+        mFilterCoordinator.addObserver(mEmptyViewCoordinator::onFilterTypeSelected);
         decoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
     }
 
