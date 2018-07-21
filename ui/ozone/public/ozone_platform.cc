@@ -67,14 +67,6 @@ void OzonePlatform::InitializeForGPU(const InitParams& args) {
 }
 
 // static
-void OzonePlatform::Shutdown() {
-  base::AutoLock lock(GetOzoneInstanceLock());
-  auto* tmp = instance_;
-  instance_ = nullptr;
-  delete tmp;
-}
-
-// static
 OzonePlatform* OzonePlatform::GetInstance() {
   base::AutoLock lock(GetOzoneInstanceLock());
   DCHECK(instance_) << "OzonePlatform is not initialized";

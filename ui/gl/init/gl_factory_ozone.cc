@@ -50,7 +50,7 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
       return stub_context;
     }
     default:
-      NOTREACHED();
+      NOTREACHED() << "Expected Mock or Stub, actual:" << GetGLImplementation();
   }
   return nullptr;
 }
@@ -66,7 +66,7 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
     case kGLImplementationStubGL:
       return InitializeGLSurface(new GLSurfaceStub());
     default:
-      NOTREACHED();
+      NOTREACHED() << "Expected Mock or Stub, actual:" << GetGLImplementation();
   }
 
   return nullptr;
@@ -99,7 +99,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
     case kGLImplementationStubGL:
       return InitializeGLSurface(new GLSurfaceStub);
     default:
-      NOTREACHED();
+      NOTREACHED() << "Expected Mock or Stub, actual:" << GetGLImplementation();
   }
 
   return nullptr;
@@ -116,7 +116,7 @@ void SetDisabledExtensionsPlatform(const std::string& disabled_extensions) {
     case kGLImplementationStubGL:
       break;
     default:
-      NOTREACHED();
+      NOTREACHED() << "Expected Mock or Stub, actual:" << GetGLImplementation();
   }
 }
 
@@ -129,7 +129,7 @@ bool InitializeExtensionSettingsOneOffPlatform() {
     case kGLImplementationStubGL:
       return true;
     default:
-      NOTREACHED();
+      NOTREACHED() << "Expected Mock or Stub, actual:" << GetGLImplementation();
       return false;
   }
 }

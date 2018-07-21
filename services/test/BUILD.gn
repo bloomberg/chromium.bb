@@ -37,10 +37,6 @@ source_set("run_all_service_tests") {
   if (is_android) {
     deps += [ "//mojo/public/java/system:native_support" ]
   }
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
 }
 
 bundle_data("tests_bundle_data") {

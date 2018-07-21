@@ -12,16 +12,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 namespace {
 
 class ServiceTestSuite : public base::TestSuite {
  public:
   ServiceTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
-  ~ServiceTestSuite() override {}
+  ~ServiceTestSuite() override = default;
 
  protected:
   void Initialize() override {
@@ -31,13 +27,6 @@ class ServiceTestSuite : public base::TestSuite {
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-
-#if defined(USE_OZONE)
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
-    ui::OzonePlatform::InitializeForGPU(params);
-    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-#endif
 
     // base::TestSuite and ViewsInit both try to load icu. That's ok for tests.
     base::i18n::AllowMultipleInitializeCallsForTesting();

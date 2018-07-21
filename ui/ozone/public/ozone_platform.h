@@ -105,10 +105,6 @@ class OZONE_EXPORT OzonePlatform {
   // provided by |args| as with InitalizeForUI.
   static void InitializeForGPU(const InitParams& args);
 
-  // Deletes the instance. Does nothing if OzonePlatform has not yet been
-  // initialized.
-  static void Shutdown();
-
   static OzonePlatform* GetInstance();
 
   // Registers a callback to be run when the OzonePlatform is initialized. Note
