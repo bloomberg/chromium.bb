@@ -902,18 +902,6 @@
       ]
     },
     {
-      "name": "link",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "ivybridge",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "lulu",
       "configs": [
         {
@@ -1130,18 +1118,6 @@
       ]
     },
     {
-      "name": "parrot_ivb",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "ivybridge",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "peach_pi",
       "configs": [
         {
@@ -1353,18 +1329,6 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "rambi",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "stout",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "ivybridge",
           "arch": "X86_INTERNAL"
         }
       ]
