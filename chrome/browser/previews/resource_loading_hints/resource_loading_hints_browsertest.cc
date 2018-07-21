@@ -186,6 +186,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void VerifyAllSubresourcesFetched() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+    base::RunLoop().RunUntilIdle();
+
     for (const auto& expect : subresource_expected_) {
       EXPECT_FALSE(expect.second);
     }
@@ -196,6 +198,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 
  private:
   void TearDownOnMainThread() override {
+    EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
+    EXPECT_TRUE(http_server_->ShutdownAndWaitUntilComplete());
     VerifyAllSubresourcesFetched();
 
     InProcessBrowserTest::TearDownOnMainThread();
