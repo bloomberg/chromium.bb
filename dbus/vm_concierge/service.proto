@@ -386,7 +386,7 @@ message ContainerSshKeysResponse {
 
   // Private key for the container, counterpart to the public key which is
   // stored in the container. This will be a multiline string that
-  // is equivalent to the contents in the ssh-keygen generated file. This will
-  // be the same for all VMs/containers.
+  // is equivalent to the contents in the ssh-keygen generated file. This is
+  // unique for each container.
   string container_private_key = 5;
 }

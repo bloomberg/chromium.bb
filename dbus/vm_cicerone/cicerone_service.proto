@@ -28,6 +28,9 @@ message NotifyVmStartedRequest {
 
   // The IPv4 address of the VM in network byte order.
   uint32 ipv4_address = 5;
+
+  // The virtual socket context id assigned to the VM.
+  uint32 cid = 6;
 }
 
 // Message sent to cicerone when a VM stopped or failed to complete startup.
