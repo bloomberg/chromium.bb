@@ -898,15 +898,22 @@ void DisplayPrefs::LoadDisplayPreferences() {
   LoadDisplayMixedMirrorModeParams(local_state);
   LoadDisplayRotationState(local_state);
   LoadDisplayTouchAssociations(local_state);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+
+  // Ensure that we have a reasonable initial display power state if
+  // powerd fails to send us one over D-Bus. Otherwise, we won't restore
+  // displays correctly after retaking control when changing virtual terminals.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kFirstExecAfterBoot)) {
-    // Restore DisplayPowerState:
-    std::string value =
-        local_state->Get(prefs::kDisplayPowerState)->GetString();
-    chromeos::DisplayPowerState power_state;
-    if (GetDisplayPowerStateFromString(value, &power_state))
-      Shell::Get()->display_configurator()->SetInitialDisplayPower(power_state);
+    Shell::Get()->display_configurator()->InitializeDisplayPowerState();
+    return;
   }
+
+  // Restore DisplayPowerState:
+  const std::string value =
+      local_state->Get(prefs::kDisplayPowerState)->GetString();
+  chromeos::DisplayPowerState power_state;
+  if (GetDisplayPowerStateFromString(value, &power_state))
+    Shell::Get()->display_configurator()->SetInitialDisplayPower(power_state);
 }
 
 void DisplayPrefs::StoreDisplayRotationPrefsForTest(

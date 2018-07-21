@@ -216,6 +216,9 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // e.g. via SetDisplayPower().
   void SetInitialDisplayPower(chromeos::DisplayPowerState power_state);
 
+  // Initialize the display power state to DISPLAY_POWER_ALL_ON
+  void InitializeDisplayPowerState();
+
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
   void Init(std::unique_ptr<NativeDisplayDelegate> delegate,
@@ -305,6 +308,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   void reset_requested_power_state_for_test() {
     requested_power_state_ = base::nullopt;
+  }
+
+  base::Optional<chromeos::DisplayPowerState>
+  GetRequestedPowerStateForTest() const {
+    return requested_power_state_;
   }
 
  private:
