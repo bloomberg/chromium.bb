@@ -1332,16 +1332,20 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 #if LOOP_FILTER_BITMASK
 static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
                                BLOCK_SIZE bsize, MB_MODE_INFO *mbmi, int type) {
+  int index;
+  int shift;
+  int row;
+  int col;
   if (type == 0) {
     // TODO(chengchen): optimize step
     LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
     // vertical direction
     for (int r = mi_row; r < mi_row + mi_size_high[bsize]; ++r) {
       for (int c = mi_col; c < mi_col + mi_size_wide[bsize];) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
+        index = 0;
+        row = r % MI_SIZE_64X64;
+        col = c % MI_SIZE_64X64;
+        shift = get_index_shift(col, row, &index);
         const uint64_t mask = ((uint64_t)1 << shift);
         // Y plane
         const int blk_row = r & (mi_size_high[bsize] - 1);
@@ -1362,10 +1366,10 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
     // horizontal direction
     for (int c = mi_col; c < mi_col + mi_size_wide[bsize]; ++c) {
       for (int r = mi_row; r < mi_row + mi_size_high[bsize];) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
+        index = 0;
+        row = r % MI_SIZE_64X64;
+        col = c % MI_SIZE_64X64;
+        shift = get_index_shift(col, row, &index);
         const uint64_t mask = ((uint64_t)1 << shift);
         // Y plane
         const int blk_row = r & (mi_size_high[bsize] - 1);
@@ -1384,60 +1388,33 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
       }
     }
     // store other info
-    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; ++r) {
-      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
-        const uint64_t mask = ((uint64_t)1 << shift);
-        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
-        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
-        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
-        const int blk_row = r & (mi_size_high[bsize] - 1);
-        const int blk_col = c & (mi_size_wide[bsize] - 1);
-        const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
-            bsize, blk_row, blk_col)];
-        c += tx_size_wide_unit[mb_tx_size];
-      }
-    }
-    for (int c = mi_col; c < mi_col + mi_size_wide[bsize]; ++c) {
-      for (int r = mi_row; r < mi_row + mi_size_high[bsize];) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
-        const uint64_t mask = ((uint64_t)1 << shift);
-        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
-        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
-        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
-        const int blk_row = r & (mi_size_high[bsize] - 1);
-        const int blk_col = c & (mi_size_wide[bsize] - 1);
-        const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
-            bsize, blk_row, blk_col)];
-        r += tx_size_high_unit[mb_tx_size];
-      }
-    }
-    const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
-    const uint8_t level_vert_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
-    const uint8_t level_vert_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
-    const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
-    const uint8_t level_horz_u = get_filter_level(cm, &cm->lf_info, 1, 1, mbmi);
-    const uint8_t level_horz_v = get_filter_level(cm, &cm->lf_info, 1, 2, mbmi);
+    const int row_start = mi_row % MI_SIZE_64X64;
     const int col_start = mi_col % MI_SIZE_64X64;
+    shift = get_index_shift(col_start, row_start, &index);
+    const uint64_t top_edge_mask =
+        ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
+    lfm->is_horz_border.bits[index] |= top_edge_mask;
+    const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
+    const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
+    const uint8_t level_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
+    const uint8_t level_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
+    const int is_skip = mbmi->skip && is_inter_block(mbmi);
     for (int r = mi_row; r < mi_row + mi_size_high[bsize]; r++) {
-      const int row = r % MI_SIZE_64X64;
+      index = 0;
+      row = r % MI_SIZE_64X64;
+      shift = get_index_shift(col_start, row, &index);
+      const uint64_t mask = ((uint64_t)1 << shift);
+      lfm->is_vert_border.bits[index] |= mask;
+      const uint64_t skip_mask =
+          ((uint64_t)1 << (shift + mi_size_wide[bsize])) - mask;
+      if (is_skip) lfm->skip.bits[index] |= skip_mask;
       memset(&lfm->lfl_y_ver[row][col_start], level_vert_y,
-             sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_u_ver[row][col_start], level_vert_u,
-             sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_v_ver[row][col_start], level_vert_v,
              sizeof(uint8_t) * mi_size_wide[bsize]);
       memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
              sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_u_hor[row][col_start], level_horz_u,
+      memset(&lfm->lfl_u[row][col_start], level_u,
              sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_v_hor[row][col_start], level_horz_v,
+      memset(&lfm->lfl_v[row][col_start], level_v,
              sizeof(uint8_t) * mi_size_wide[bsize]);
     }
   } else {
@@ -1456,10 +1433,9 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
          r += tx_size_high_unit[mbmi->tx_size]) {
       for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
            c += tx_size_wide_unit[mbmi->tx_size]) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
+        row = r % MI_SIZE_64X64;
+        col = c % MI_SIZE_64X64;
+        shift = get_index_shift(col, row, &index);
         if (tx_size_y_vert <= TX_8X8) {
           lfm->tx_size_ver[0][tx_size_y_horz].bits[index] |=
               (left_txform_mask[tx_size_y_vert].bits[0] << shift);
@@ -1483,10 +1459,9 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
          r += tx_size_high_unit[tx_size_uv_vert]) {
       for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
            c += tx_size_wide_unit[tx_size_uv_horz]) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
+        row = r % MI_SIZE_64X64;
+        col = c % MI_SIZE_64X64;
+        shift = get_index_shift(col, row, &index);
         if (tx_size_uv_vert <= TX_8X8) {
           lfm->tx_size_ver[1][tx_size_uv_horz].bits[index] |=
               (left_txform_mask[tx_size_uv_vert].bits[0] << shift);
@@ -1511,10 +1486,9 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
          c += tx_size_wide_unit[mbmi->tx_size]) {
       for (int r = mi_row; r < mi_row + mi_size_high[bsize];
            r += tx_size_high_unit[mbmi->tx_size]) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
+        row = r % MI_SIZE_64X64;
+        col = c % MI_SIZE_64X64;
+        shift = get_index_shift(col, row, &index);
         lfm->tx_size_hor[0][tx_size_y_vert].bits[index] |=
             (above_txform_mask[0][tx_size_y_horz] << shift);
       }
@@ -1523,61 +1497,40 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
          c += tx_size_wide_unit[tx_size_uv_horz]) {
       for (int r = mi_row; r < mi_row + mi_size_high[bsize];
            r += tx_size_high_unit[tx_size_uv_vert]) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
+        row = r % MI_SIZE_64X64;
+        col = c % MI_SIZE_64X64;
+        shift = get_index_shift(col, row, &index);
         lfm->tx_size_hor[1][tx_size_uv_vert].bits[index] |=
             (above_txform_mask[0][tx_size_uv_horz] << shift);
       }
     }
     // store other info
-    for (int r = mi_row; r < mi_row + mi_size_high[bsize]; ++r) {
-      for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
-           c += tx_size_wide_unit[mbmi->tx_size]) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
-        const uint64_t mask = ((uint64_t)1 << shift);
-        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
-        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
-        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
-      }
-    }
-    for (int c = mi_col; c < mi_col + mi_size_wide[bsize]; ++c) {
-      for (int r = mi_row; r < mi_row + mi_size_high[bsize];
-           r += tx_size_high_unit[mbmi->tx_size]) {
-        int index = 0;
-        const int row = r % MI_SIZE_64X64;
-        const int col = c % MI_SIZE_64X64;
-        const int shift = get_index_shift(col, row, &index);
-        const uint64_t mask = ((uint64_t)1 << shift);
-        if (mbmi->skip && is_inter_block(mbmi)) lfm->skip.bits[index] |= mask;
-        if (r == mi_row) lfm->is_horz_border.bits[index] |= mask;
-        if (c == mi_col) lfm->is_vert_border.bits[index] |= mask;
-      }
-    }
-    const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
-    const uint8_t level_vert_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
-    const uint8_t level_vert_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
-    const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
-    const uint8_t level_horz_u = get_filter_level(cm, &cm->lf_info, 1, 1, mbmi);
-    const uint8_t level_horz_v = get_filter_level(cm, &cm->lf_info, 1, 2, mbmi);
+    const int row_start = mi_row % MI_SIZE_64X64;
     const int col_start = mi_col % MI_SIZE_64X64;
+    shift = get_index_shift(col_start, row_start, &index);
+    const uint64_t top_edge_mask =
+        ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
+    lfm->is_horz_border.bits[index] |= top_edge_mask;
+    const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
+    const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
+    const uint8_t level_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
+    const uint8_t level_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
+    const int is_skip = mbmi->skip && is_inter_block(mbmi);
     for (int r = mi_row; r < mi_row + mi_size_high[bsize]; r++) {
-      const int row = r % MI_SIZE_64X64;
+      row = r % MI_SIZE_64X64;
+      shift = get_index_shift(col_start, row, &index);
+      const uint64_t mask = ((uint64_t)1 << shift);
+      lfm->is_vert_border.bits[index] |= mask;
+      const uint64_t skip_mask =
+          ((uint64_t)1 << (shift + mi_size_wide[bsize])) - mask;
+      if (is_skip) lfm->skip.bits[index] |= skip_mask;
       memset(&lfm->lfl_y_ver[row][col_start], level_vert_y,
-             sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_u_ver[row][col_start], level_vert_u,
-             sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_v_ver[row][col_start], level_vert_v,
              sizeof(uint8_t) * mi_size_wide[bsize]);
       memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
              sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_u_hor[row][col_start], level_horz_u,
+      memset(&lfm->lfl_u[row][col_start], level_u,
              sizeof(uint8_t) * mi_size_wide[bsize]);
-      memset(&lfm->lfl_v_hor[row][col_start], level_horz_v,
+      memset(&lfm->lfl_v[row][col_start], level_v,
              sizeof(uint8_t) * mi_size_wide[bsize]);
     }
   }
@@ -1609,7 +1562,18 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
 #if LOOP_FILTER_BITMASK
-    store_bitmask_info(cm, mi_row, mi_col, bsize, mbmi, 0);
+    const int w = mi_size_wide[bsize];
+    const int h = mi_size_high[bsize];
+    if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
+      store_bitmask_info(cm, mi_row, mi_col, bsize, mbmi, 0);
+    } else {
+      for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
+        for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
+          store_bitmask_info(cm, mi_row + row, mi_col + col, BLOCK_64X64, mbmi,
+                             0);
+        }
+      }
+    }
 #endif
   } else {
     mbmi->tx_size = read_tx_size(cm, xd, inter_block_tx, !mbmi->skip, r);
@@ -1618,7 +1582,18 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
     set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h,
                   mbmi->skip && is_inter_block(mbmi), xd);
 #if LOOP_FILTER_BITMASK
-    store_bitmask_info(cm, mi_row, mi_col, bsize, mbmi, 1);
+    const int w = mi_size_wide[bsize];
+    const int h = mi_size_high[bsize];
+    if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
+      store_bitmask_info(cm, mi_row, mi_col, bsize, mbmi, 1);
+    } else {
+      for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
+        for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
+          store_bitmask_info(cm, mi_row + row, mi_col + col, BLOCK_64X64, mbmi,
+                             1);
+        }
+      }
+    }
 #endif
   }
 

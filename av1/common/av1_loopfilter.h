@@ -60,13 +60,11 @@ typedef struct {
   uint8_t lfl_y_hor[MI_SIZE_64X64][MI_SIZE_64X64];
   uint8_t lfl_y_ver[MI_SIZE_64X64][MI_SIZE_64X64];
 
-  // U plane vertical edge and horizontal edge filter level
-  uint8_t lfl_u_hor[MI_SIZE_64X64][MI_SIZE_64X64];
-  uint8_t lfl_u_ver[MI_SIZE_64X64][MI_SIZE_64X64];
+  // U plane filter level
+  uint8_t lfl_u[MI_SIZE_64X64][MI_SIZE_64X64];
 
-  // V plane vertical edge and horizontal edge filter level
-  uint8_t lfl_v_hor[MI_SIZE_64X64][MI_SIZE_64X64];
-  uint8_t lfl_v_ver[MI_SIZE_64X64][MI_SIZE_64X64];
+  // V plane filter level
+  uint8_t lfl_v[MI_SIZE_64X64][MI_SIZE_64X64];
 
   // other info
   FilterMask skip;

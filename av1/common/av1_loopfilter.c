@@ -461,15 +461,9 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
           else
             lfm->lfl_y_hor[row][col] = level;
         } else if (plane == 1) {
-          if (dir == VERT_EDGE)
-            lfm->lfl_u_ver[row][col] = level;
-          else
-            lfm->lfl_u_hor[row][col] = level;
+          lfm->lfl_u[row][col] = level;
         } else {
-          if (dir == VERT_EDGE)
-            lfm->lfl_v_ver[row][col] = level;
-          else
-            lfm->lfl_v_hor[row][col] = level;
+          lfm->lfl_v[row][col] = level;
         }
       }
     }
@@ -757,13 +751,11 @@ void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
       } else if (plane == 1) {
         av1_zero(lfm->left_u);
         av1_zero(lfm->above_u);
-        av1_zero(lfm->lfl_u_ver);
-        av1_zero(lfm->lfl_u_hor);
+        av1_zero(lfm->lfl_u);
       } else {
         av1_zero(lfm->left_v);
         av1_zero(lfm->above_v);
-        av1_zero(lfm->lfl_v_ver);
-        av1_zero(lfm->lfl_v_hor);
+        av1_zero(lfm->lfl_v);
       }
     }
   }
@@ -1220,15 +1212,15 @@ void av1_filter_block_plane_ver(AV1_COMMON *const cm,
           mask_16x16 = lfm->left_u[TX_16X16].bits[index];
           mask_8x8 = lfm->left_u[TX_8X8].bits[index];
           mask_4x4 = lfm->left_u[TX_4X4].bits[index];
-          lfl = &lfm->lfl_u_ver[row][col];
-          lfl2 = &lfm->lfl_u_ver[row_next][col];
+          lfl = &lfm->lfl_u[row][col];
+          lfl2 = &lfm->lfl_u[row_next][col];
           break;
         case 2:
           mask_16x16 = lfm->left_v[TX_16X16].bits[index];
           mask_8x8 = lfm->left_v[TX_8X8].bits[index];
           mask_4x4 = lfm->left_v[TX_4X4].bits[index];
-          lfl = &lfm->lfl_v_ver[row][col];
-          lfl2 = &lfm->lfl_v_ver[row_next][col];
+          lfl = &lfm->lfl_v[row][col];
+          lfl2 = &lfm->lfl_v[row_next][col];
           break;
         default: assert(pl >= 0 && pl <= 2); return;
       }
@@ -1295,13 +1287,13 @@ void av1_filter_block_plane_hor(AV1_COMMON *const cm,
           mask_16x16 = lfm->above_u[TX_16X16].bits[index];
           mask_8x8 = lfm->above_u[TX_8X8].bits[index];
           mask_4x4 = lfm->above_u[TX_4X4].bits[index];
-          lfl = &lfm->lfl_u_hor[row][col];
+          lfl = &lfm->lfl_u[row][col];
           break;
         case 2:
           mask_16x16 = lfm->above_v[TX_16X16].bits[index];
           mask_8x8 = lfm->above_v[TX_8X8].bits[index];
           mask_4x4 = lfm->above_v[TX_4X4].bits[index];
-          lfl = &lfm->lfl_v_hor[row][col];
+          lfl = &lfm->lfl_v[row][col];
           break;
         default: assert(pl >= 0 && pl <= 2); return;
       }
