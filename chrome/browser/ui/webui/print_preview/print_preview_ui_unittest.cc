@@ -31,7 +31,7 @@ namespace {
 
 scoped_refptr<base::RefCountedBytes> CreateTestData() {
   const unsigned char blob1[] =
-      "12346102356120394751634516591348710478123649165419234519234512349134";
+      "%PDF-1.4123461023561203947516345165913487104781236491654192345192345";
   std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
   return base::MakeRefCounted<base::RefCountedBytes>(preview_data);
 }
@@ -104,11 +104,6 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
       &data);
   EXPECT_EQ(dummy_data->size(), data->size());
   EXPECT_EQ(dummy_data.get(), data.get());
-
-  // This should not cause any memory leaks.
-  dummy_data = base::MakeRefCounted<base::RefCountedBytes>();
-  preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX,
-                                          dummy_data.get());
 
   // Clear the preview data.
   preview_ui->ClearAllPreviewData();
