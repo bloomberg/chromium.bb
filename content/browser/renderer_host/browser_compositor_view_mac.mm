@@ -472,6 +472,14 @@ bool BrowserCompositorMac::UpdateRendererLocalSurfaceIdFromChild(
       child_allocated_local_surface_id);
 }
 
+void BrowserCompositorMac::TransformPointToRootSurface(gfx::PointF* point) {
+  gfx::Transform transform_to_root;
+  if (parent_ui_layer_)
+    parent_ui_layer_->GetTargetTransformRelativeTo(nullptr, &transform_to_root);
+  gfx::Point origin_in_root;
+  transform_to_root.TransformPoint(&origin_in_root);
+}
+
 void BrowserCompositorMac::LayerDestroyed(ui::Layer* layer) {
   DCHECK_EQ(layer, parent_ui_layer_);
   SetParentUiLayer(nullptr);

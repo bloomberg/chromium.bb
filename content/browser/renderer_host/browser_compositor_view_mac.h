@@ -121,6 +121,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   const viz::LocalSurfaceId& AllocateNewRendererLocalSurfaceId();
   bool UpdateRendererLocalSurfaceIdFromChild(
       const viz::LocalSurfaceId& child_allocated_local_surface_id);
+  void TransformPointToRootSurface(gfx::PointF* point);
 
   // Indicate that the recyclable compositor should be destroyed, and no future
   // compositors should be recycled.
