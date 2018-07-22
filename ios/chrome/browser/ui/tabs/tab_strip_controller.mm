@@ -523,11 +523,6 @@ NSString* StringForItemCount(long count) {
 
 - (void)hideTabStrip:(BOOL)hidden {
   self.view.hidden = hidden;
-  if (!hidden) {
-    NamedGuide* tabSwitcherGuide =
-        [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
-    tabSwitcherGuide.constrainedView = _tabSwitcherButton;
-  }
 }
 
 #pragma mark - Private
@@ -749,6 +744,21 @@ NSString* StringForItemCount(long count) {
 
 - (NSUInteger)modelIndexForTabView:(TabView*)view {
   return [self modelIndexForIndex:[_tabArray indexOfObject:view]];
+}
+
+// The |tabSwitcherGuide| cannot use constrainedView in the tab strip because
+// here views use CGAffineTransformMakeScale to support RTL, and NamedGuide
+// doesn't honor transforms. Instead we set the tabSwitcherGuide as necessary.
+- (void)updateTabSwitcherGuide {
+  NamedGuide* tabSwitcherGuide =
+      [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
+  tabSwitcherGuide.constrainedFrame = _tabSwitcherButton.frame;
+  if (UseRTLLayout()) {
+    CGRect frame = tabSwitcherGuide.constrainedFrame;
+    frame.origin.x =
+        self.view.frame.size.width - _tabSwitcherButton.frame.origin.x;
+    tabSwitcherGuide.constrainedFrame = frame;
+  }
 }
 
 #pragma mark -
@@ -1392,6 +1402,7 @@ NSString* StringForItemCount(long count) {
 // Creates TabViews for each Tab in the TabModel and positions them in the
 // correct location onscreen.
 - (void)layoutTabStripSubviews {
+  [self updateTabSwitcherGuide];
   const NSUInteger tabCount = [_tabArray count] - [_closingTabs count];
   if (!tabCount)
     return;
