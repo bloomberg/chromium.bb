@@ -448,6 +448,10 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
     if (input->type() == InputTypeNames::password)
       data.input_field_type = WebContextMenuData::kInputFieldTypePassword;
+    else if (input->type() == InputTypeNames::number)
+      data.input_field_type = WebContextMenuData::kInputFieldTypeNumber;
+    else if (input->type() == InputTypeNames::tel)
+      data.input_field_type = WebContextMenuData::kInputFieldTypeTelephone;
     else if (input->IsTextField())
       data.input_field_type = WebContextMenuData::kInputFieldTypePlainText;
     else

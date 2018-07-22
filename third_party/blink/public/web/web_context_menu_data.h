@@ -145,10 +145,14 @@ struct WebContextMenuData {
   enum InputFieldType {
     // Not an input field.
     kInputFieldTypeNone,
-    // type = text, tel, search, number, email, url
+    // type = text, search, email, url
     kInputFieldTypePlainText,
     // type = password
     kInputFieldTypePassword,
+    // type = number
+    kInputFieldTypeNumber,
+    // type = tel
+    kInputFieldTypeTelephone,
     // type = <etc.>
     kInputFieldTypeOther,
     kInputFieldTypeLast = kInputFieldTypeOther
