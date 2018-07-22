@@ -1778,6 +1778,13 @@ split_static_library("ui") {
     }
   }
 
+  if (enable_supervised_users && !is_android && !is_chromeos) {
+    sources += [
+      "startup/supervised_users_deprecated_infobar_delegate.cc",
+      "startup/supervised_users_deprecated_infobar_delegate.h",
+    ]
+  }
+
   if (is_chromeos) {
     assert(enable_extensions)
     assert(toolkit_views)
