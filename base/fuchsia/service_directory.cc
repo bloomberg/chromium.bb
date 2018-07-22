@@ -18,7 +18,7 @@ namespace base {
 namespace fuchsia {
 
 ServiceDirectory::ServiceDirectory(zx::channel directory_request) {
-  zx_status_t status = svc_dir_create(async_get_default(),
+  zx_status_t status = svc_dir_create(async_get_default_dispatcher(),
                                       directory_request.release(), &svc_dir_);
   ZX_CHECK(status == ZX_OK, status);
 }

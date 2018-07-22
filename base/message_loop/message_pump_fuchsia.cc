@@ -67,7 +67,7 @@ bool MessagePumpFuchsia::ZxHandleWatchController::StopWatchingZxHandle() {
 
 // static
 void MessagePumpFuchsia::ZxHandleWatchController::HandleSignal(
-    async_t* async,
+    async_dispatcher_t* async,
     async_wait_t* wait,
     zx_status_t status,
     const zx_packet_signal_t* signal) {
