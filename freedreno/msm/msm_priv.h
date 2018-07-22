@@ -68,7 +68,7 @@ drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
 		enum fd_pipe_id id, uint32_t prio);
 
 drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
-		uint32_t size);
+		uint32_t size, enum fd_ringbuffer_flags flags);
 
 struct msm_bo {
 	struct fd_bo base;

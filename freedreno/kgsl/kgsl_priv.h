@@ -106,7 +106,7 @@ drm_private struct fd_pipe * kgsl_pipe_new(struct fd_device *dev,
 		enum fd_pipe_id id, uint32_t prio);
 
 drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
-		uint32_t size);
+		uint32_t size, enum fd_ringbuffer_flags flags);
 
 drm_private int kgsl_bo_new_handle(struct fd_device *dev,
 		uint32_t size, uint32_t flags, uint32_t *handle);

@@ -583,10 +583,12 @@ static const struct fd_ringbuffer_funcs funcs = {
 };
 
 drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
-		uint32_t size)
+		uint32_t size, enum fd_ringbuffer_flags flags)
 {
 	struct msm_ringbuffer *msm_ring;
 	struct fd_ringbuffer *ring;
+
+	assert(!flags);
 
 	msm_ring = calloc(1, sizeof(*msm_ring));
 	if (!msm_ring) {

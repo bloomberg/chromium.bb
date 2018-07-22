@@ -33,8 +33,7 @@
 
 /* the ringbuffer object is not opaque so that OUT_RING() type stuff
  * can be inlined.  Note that users should not make assumptions about
- * the size of this struct.. more stuff will be added when we eventually
- * have a kernel driver that can deal w/ reloc's..
+ * the size of this struct.
  */
 
 struct fd_ringbuffer_funcs;
@@ -52,10 +51,15 @@ struct fd_ringbuffer {
 	 * ringbuffer data
 	 */
 	void *user;
+
+	uint32_t flags;
 };
 
 struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);
+struct fd_ringbuffer * fd_ringbuffer_new_object(struct fd_pipe *pipe,
+		uint32_t size);
+
 void fd_ringbuffer_del(struct fd_ringbuffer *ring);
 void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *parent);
@@ -95,6 +99,7 @@ will_be_deprecated void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring
 uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring);
 uint32_t fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target, uint32_t cmd_idx);
+uint32_t fd_ringbuffer_size(struct fd_ringbuffer *ring);
 
 will_be_deprecated struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring);
 will_be_deprecated void fd_ringmarker_del(struct fd_ringmarker *marker);
