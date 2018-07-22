@@ -516,6 +516,19 @@ void OnProfileCreated(const GURL& link_url,
   }
 }
 
+bool DoesInputFieldTypeSupportEmoji(
+    blink::WebContextMenuData::InputFieldType text_input_type) {
+  // Disable emoji for input types that definitely do not support emoji.
+  switch (text_input_type) {
+    case blink::WebContextMenuData::kInputFieldTypeNumber:
+    case blink::WebContextMenuData::kInputFieldTypeTelephone:
+    case blink::WebContextMenuData::kInputFieldTypeOther:
+      return false;
+    default:
+      return true;
+  }
+}
+
 }  // namespace
 
 // static
@@ -1447,7 +1460,9 @@ void RenderViewContextMenu::AppendEditableItems() {
     AppendSearchProvider();
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  if (params_.misspelled_word.empty() && ui::IsEmojiPanelSupported()) {
+  if (params_.misspelled_word.empty() &&
+      DoesInputFieldTypeSupportEmoji(params_.input_field_type) &&
+      ui::IsEmojiPanelSupported()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
                                     IDS_CONTENT_CONTEXT_EMOJI);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
