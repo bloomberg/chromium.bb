@@ -536,6 +536,8 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       grey_minimumVisiblePercent(0.2), nil);
   [[EarlGrey selectElementWithMatcher:locationbarButton]
       performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
 
   // Tap the "/" keyboard accessory button.
   id<GREYMatcher> slashButtonMatcher = grey_allOf(

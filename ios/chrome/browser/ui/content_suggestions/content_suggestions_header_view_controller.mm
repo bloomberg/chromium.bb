@@ -154,14 +154,17 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)updateFakeOmniboxForOffset:(CGFloat)offset
                        screenWidth:(CGFloat)screenWidth
                     safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  if (!IsSplitToolbarMode(self) && IsUIRefreshPhase1Enabled()) {
+  if (self.isShowing && IsUIRefreshPhase1Enabled()) {
     CGFloat progress =
         self.logoIsShowing
             ? [self.headerView searchFieldProgressForOffset:offset
                                              safeAreaInsets:safeAreaInsets]
             : 1;
-    if (self.isShowing) {
+    if (!IsSplitToolbarMode()) {
       [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
+    } else {
+      // Ensure omnibox is reset when not a regular tablet.
+      [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
     }
   }
 
@@ -383,7 +386,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 }
 
 - (void)fakeOmniboxTapped:(id)sender {
-  [self.dispatcher focusFakebox];
+  [self shiftTilesUp];
 }
 
 // If Google is not the default search engine, hide the logo, doodle and
@@ -443,6 +446,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (void)shiftTilesUp {
   void (^completionBlock)() = ^{
+    [self.dispatcher focusFakebox];
     if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
         (!IsUIRefreshPhase1Enabled() &&
          !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
@@ -497,7 +501,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     return;
 
   self.omniboxFocused = YES;
-  [self shiftTilesUp];
+
+  if (![self.delegate isScrolledToTop])
+    [self shiftTilesUp];
 }
 
 - (void)locationBarResignsFirstResponder {
