@@ -157,19 +157,22 @@ INSTANTIATE_TEST_CASE_P(
                       FFTTestArg(16, aom_fft16x16_float_c, 0),
                       FFTTestArg(32, aom_fft32x32_float_c, 0)));
 #if ARCH_X86 || ARCH_X86_64
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
     FFT2DTestSSE2, FFT2DTest,
     ::testing::Values(FFTTestArg(4, aom_fft4x4_float_sse2, HAS_SSE2),
                       FFTTestArg(8, aom_fft8x8_float_sse2, HAS_SSE2),
                       FFTTestArg(16, aom_fft16x16_float_sse2, HAS_SSE2),
                       FFTTestArg(32, aom_fft32x32_float_sse2, HAS_SSE2)));
-
+#endif  // HAVE_SSE2
+#if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
     FFT2DTestAVX2, FFT2DTest,
     ::testing::Values(FFTTestArg(8, aom_fft8x8_float_avx2, HAS_AVX2),
                       FFTTestArg(16, aom_fft16x16_float_avx2, HAS_AVX2),
                       FFTTestArg(32, aom_fft32x32_float_avx2, HAS_AVX2)));
-#endif
+#endif  // HAVE_AVX2
+#endif  // ARCH_X86 || ARCH_X86_64
 
 struct IFFTTestArg {
   int n;
@@ -258,17 +261,22 @@ INSTANTIATE_TEST_CASE_P(
                       IFFTTestArg(16, aom_ifft16x16_float_c, 0),
                       IFFTTestArg(32, aom_ifft32x32_float_c, 0)));
 #if ARCH_X86 || ARCH_X86_64
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
     IFFT2DTestSSE2, IFFT2DTest,
     ::testing::Values(IFFTTestArg(4, aom_ifft4x4_float_sse2, HAS_SSE2),
                       IFFTTestArg(8, aom_ifft8x8_float_sse2, HAS_SSE2),
                       IFFTTestArg(16, aom_ifft16x16_float_sse2, HAS_SSE2),
                       IFFTTestArg(32, aom_ifft32x32_float_sse2, HAS_SSE2)));
+#endif  // HAVE_SSE2
 
+#if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
     IFFT2DTestAVX2, IFFT2DTest,
     ::testing::Values(IFFTTestArg(8, aom_ifft8x8_float_avx2, HAS_AVX2),
                       IFFTTestArg(16, aom_ifft16x16_float_avx2, HAS_AVX2),
                       IFFTTestArg(32, aom_ifft32x32_float_avx2, HAS_AVX2)));
-#endif
+#endif  // HAVE_AVX2
+#endif  // ARCH_X86 || ARCH_X86_64
+
 }  // namespace
