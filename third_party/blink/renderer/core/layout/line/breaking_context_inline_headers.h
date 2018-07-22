@@ -824,7 +824,7 @@ ALWAYS_INLINE bool BreakingContext::RewindToFirstMidWordBreak(
   int start = word_measurement.start_offset;
   int end = CanMidWordBreakBefore(text)
                 ? start
-                : break_iterator.NextBreakOpportunity(start);
+                : break_iterator.NextBreakOpportunity(start + 1);
   if (end >= word_measurement.end_offset)
     return false;
 
@@ -1063,13 +1063,11 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
                              break_all, next_breakable_position_for_break_all);
     }
 
-    // Determine if we are in the whitespace between words or in a leading
-    // whitespace.
+    // Determine if we are in the whitespace between words.
     int next_breakable_position = current_.NextBreakablePosition();
     bool between_words =
         c == kNewlineCharacter ||
-        (curr_ws_ != EWhiteSpace::kPre &&
-         (!at_start_ || current_character_is_space_) &&
+        (curr_ws_ != EWhiteSpace::kPre && !at_start_ &&
          layout_text_info_.line_break_iterator_.IsBreakable(
              current_.Offset(), next_breakable_position, line_break_type) &&
          (!disable_soft_hyphen ||
@@ -1213,8 +1211,7 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
     }
 
     // Auto-wrapping text should not wrap in the middle of a word once it has
-    // had an opportunity to break after a word or before, at a leading
-    // white-space.
+    // had an opportunity to break after a word.
     if (auto_wrap_ && between_words) {
       width_.Commit();
       width_from_last_breaking_opportunity = 0;
