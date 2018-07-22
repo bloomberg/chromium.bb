@@ -25,7 +25,9 @@ struct TestTask : public async_task_t {
     deadline = 0;
   }
 
-  static void TaskProc(async_t* async, async_task_t* task, zx_status_t status);
+  static void TaskProc(async_dispatcher_t* async,
+                       async_task_t* task,
+                       zx_status_t status);
 
   int num_calls = 0;
   int repeats = 1;
@@ -34,10 +36,10 @@ struct TestTask : public async_task_t {
 };
 
 // static
-void TestTask::TaskProc(async_t* async,
+void TestTask::TaskProc(async_dispatcher_t* async,
                         async_task_t* task,
                         zx_status_t status) {
-  EXPECT_EQ(async, async_get_default());
+  EXPECT_EQ(async, async_get_default_dispatcher());
   EXPECT_TRUE(status == ZX_OK || status == ZX_ERR_CANCELED)
       << "status: " << status;
 
@@ -61,7 +63,7 @@ struct TestWait : public async_wait_t {
     trigger = signals;
   }
 
-  static void HandleProc(async_t* async,
+  static void HandleProc(async_dispatcher_t* async,
                          async_wait_t* wait,
                          zx_status_t status,
                          const zx_packet_signal_t* signal);
@@ -71,11 +73,11 @@ struct TestWait : public async_wait_t {
 };
 
 // static
-void TestWait::HandleProc(async_t* async,
+void TestWait::HandleProc(async_dispatcher_t* async,
                           async_wait_t* wait,
                           zx_status_t status,
                           const zx_packet_signal_t* signal) {
-  EXPECT_EQ(async, async_get_default());
+  EXPECT_EQ(async, async_get_default_dispatcher());
   EXPECT_TRUE(status == ZX_OK || status == ZX_ERR_CANCELED)
       << "status: " << status;
 
@@ -95,7 +97,7 @@ class AsyncDispatcherTest : public testing::Test {
   AsyncDispatcherTest() {
     dispatcher_ = std::make_unique<AsyncDispatcher>();
 
-    async_ = async_get_default();
+    async_ = async_get_default_dispatcher();
     EXPECT_TRUE(async_);
 
     EXPECT_EQ(zx::socket::create(ZX_SOCKET_DATAGRAM, &socket1_, &socket2_),
@@ -117,7 +119,7 @@ class AsyncDispatcherTest : public testing::Test {
  protected:
   std::unique_ptr<AsyncDispatcher> dispatcher_;
 
-  async_t* async_ = nullptr;
+  async_dispatcher_t* async_ = nullptr;
 
   zx::socket socket1_;
   zx::socket socket2_;

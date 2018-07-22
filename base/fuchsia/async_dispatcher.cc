@@ -91,13 +91,13 @@ AsyncDispatcher::AsyncDispatcher() : ops_storage_({}) {
   ops_storage_.v1.set_guest_bell_trap = SetGuestBellTrapOp;
   ops = &ops_storage_;
 
-  DCHECK(!async_get_default());
-  async_set_default(this);
+  DCHECK(!async_get_default_dispatcher());
+  async_set_default_dispatcher(this);
 }
 
 AsyncDispatcher::~AsyncDispatcher() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(async_get_default(), this);
+  DCHECK_EQ(async_get_default_dispatcher(), this);
 
   // Some waits and tasks may be canceled while the dispatcher is being
   // destroyed, so pop-from-head until none remain.
@@ -116,7 +116,7 @@ AsyncDispatcher::~AsyncDispatcher() {
     task->handler(this, task, ZX_ERR_CANCELED);
   }
 
-  async_set_default(nullptr);
+  async_set_default_dispatcher(nullptr);
 }
 
 zx_status_t AsyncDispatcher::DispatchOrWaitUntil(zx_time_t deadline) {
@@ -165,34 +165,38 @@ void AsyncDispatcher::Stop() {
   ZX_DCHECK(status == ZX_OK, status);
 }
 
-zx_time_t AsyncDispatcher::NowOp(async_t* async) {
+zx_time_t AsyncDispatcher::NowOp(async_dispatcher_t* async) {
   DCHECK(async);
   return zx_clock_get(ZX_CLOCK_MONOTONIC);
 }
 
-zx_status_t AsyncDispatcher::BeginWaitOp(async_t* async, async_wait_t* wait) {
+zx_status_t AsyncDispatcher::BeginWaitOp(async_dispatcher_t* async,
+                                         async_wait_t* wait) {
   return static_cast<AsyncDispatcher*>(async)->BeginWait(wait);
 }
 
-zx_status_t AsyncDispatcher::CancelWaitOp(async_t* async, async_wait_t* wait) {
+zx_status_t AsyncDispatcher::CancelWaitOp(async_dispatcher_t* async,
+                                          async_wait_t* wait) {
   return static_cast<AsyncDispatcher*>(async)->CancelWait(wait);
 }
 
-zx_status_t AsyncDispatcher::PostTaskOp(async_t* async, async_task_t* task) {
+zx_status_t AsyncDispatcher::PostTaskOp(async_dispatcher_t* async,
+                                        async_task_t* task) {
   return static_cast<AsyncDispatcher*>(async)->PostTask(task);
 }
 
-zx_status_t AsyncDispatcher::CancelTaskOp(async_t* async, async_task_t* task) {
+zx_status_t AsyncDispatcher::CancelTaskOp(async_dispatcher_t* async,
+                                          async_task_t* task) {
   return static_cast<AsyncDispatcher*>(async)->CancelTask(task);
 }
 
-zx_status_t AsyncDispatcher::QueuePacketOp(async_t* async,
+zx_status_t AsyncDispatcher::QueuePacketOp(async_dispatcher_t* async,
                                            async_receiver_t* receiver,
                                            const zx_packet_user_t* data) {
   return ZX_ERR_NOT_SUPPORTED;
 }
 
-zx_status_t AsyncDispatcher::SetGuestBellTrapOp(async_t* async,
+zx_status_t AsyncDispatcher::SetGuestBellTrapOp(async_dispatcher_t* async,
                                                 async_guest_bell_trap_t* trap,
                                                 zx_handle_t guest,
                                                 zx_vaddr_t addr,
