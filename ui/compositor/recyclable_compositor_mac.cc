@@ -123,6 +123,10 @@ RecyclableCompositorMacFactory::CreateCompositor(
 
 void RecyclableCompositorMacFactory::RecycleCompositor(
     std::unique_ptr<RecyclableCompositorMac> compositor) {
+  // Disable all recycling to see if it fixes https://crbug.com/863817
+  // TODO(ccameron): Remove this.
+  return;
+
   if (recycling_disabled_)
     return;
 
