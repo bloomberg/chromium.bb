@@ -370,7 +370,8 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 	if (len == -1) {
 		weston_log("read error from data source: %m\n");
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
-		wl_event_source_remove(wm->property_source);
+		if (wm->property_source)
+			wl_event_source_remove(wm->property_source);
 		wm->property_source = NULL;
 		close(fd);
 		wl_array_release(&wm->source_data);
@@ -394,7 +395,8 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 					    1, &incr_chunk_size);
 			wm->selection_property_set = 1;
 			wm->flush_property_on_delete = 1;
-			wl_event_source_remove(wm->property_source);
+			if (wm->property_source)
+				wl_event_source_remove(wm->property_source);
 			wm->property_source = NULL;
 			weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		} else if (wm->selection_property_set) {
@@ -402,7 +404,8 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 				"property delete\n", wm->source_data.size);
 
 			wm->flush_property_on_delete = 1;
-			wl_event_source_remove(wm->property_source);
+			if (wm->property_source)
+				wl_event_source_remove(wm->property_source);
 			wm->property_source = NULL;
 		} else {
 			weston_log("got %zu bytes, "
@@ -416,7 +419,8 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		weston_wm_flush_source_data(wm);
 		weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		xcb_flush(wm->conn);
-		wl_event_source_remove(wm->property_source);
+		if (wm->property_source)
+			wl_event_source_remove(wm->property_source);
 		wm->property_source = NULL;
 		close(fd);
 		wl_array_release(&wm->source_data);
@@ -435,7 +439,8 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 			weston_wm_flush_source_data(wm);
 		}
 		xcb_flush(wm->conn);
-		wl_event_source_remove(wm->property_source);
+		if (wm->property_source)
+			wl_event_source_remove(wm->property_source);
 		wm->property_source = NULL;
 		close(wm->data_source_fd);
 		wm->data_source_fd = -1;
