@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
@@ -36,7 +37,7 @@ struct DeviceDescription;
 
 #if BUILDFLAG(ENABLE_MDNS)
 class PrivetTrafficDetector;
-#endif  // ENABLE_MDNS
+#endif
 
 // Contains logic related to notifications not tied actually displaying them.
 class PrivetNotificationsListener  {
@@ -140,7 +141,7 @@ class PrivetNotificationService
 
 #if BUILDFLAG(ENABLE_MDNS)
   scoped_refptr<PrivetTrafficDetector> traffic_detector_;
-#endif  // ENABLE_MDNS
+#endif
 };
 
 class PrivetNotificationDelegate : public message_center::NotificationDelegate {
