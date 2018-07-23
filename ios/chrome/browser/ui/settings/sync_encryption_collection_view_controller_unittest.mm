@@ -53,8 +53,8 @@ class SyncEncryptionCollectionViewControllerTest
         static_cast<browser_sync::ProfileSyncServiceMock*>(
             ProfileSyncServiceFactory::GetForBrowserState(
                 chrome_browser_state_.get()));
-    ON_CALL(*mock_profile_sync_service_, IsEngineInitialized())
-        .WillByDefault(Return(true));
+    ON_CALL(*mock_profile_sync_service_, GetState())
+        .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
     ON_CALL(*mock_profile_sync_service_, IsUsingSecondaryPassphrase())
         .WillByDefault(Return(true));
 

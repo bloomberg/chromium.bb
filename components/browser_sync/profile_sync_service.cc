@@ -774,7 +774,7 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   // Typically, Sync won't start until the initial setup is at least in
   // progress. StartupController::TryStartImmediately bypasses the first setup
   // check though, so we first have to check whether the engine is initialized.
-  if (!IsEngineInitialized()) {
+  if (!engine_initialized_) {
     switch (startup_controller_->GetState()) {
       case syncer::StartupController::State::NOT_STARTED:
         DCHECK(!engine_);
@@ -826,7 +826,7 @@ bool ProfileSyncService::IsFirstSetupComplete() const {
 void ProfileSyncService::SetFirstSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_prefs_.SetFirstSetupComplete();
-  if (IsEngineInitialized()) {
+  if (engine_initialized_) {
     ReconfigureDatatypeManager();
   }
 }
@@ -1319,11 +1319,6 @@ bool ProfileSyncService::IsSignedIn() const {
   return !GetAuthenticatedAccountInfo().account_id.empty();
 }
 
-bool ProfileSyncService::IsEngineInitialized() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return engine_initialized_;
-}
-
 bool ProfileSyncService::IsPassphraseRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return crypto_->passphrase_required_reason() !=
@@ -1750,7 +1745,7 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdatedWithCallback(
     const std::vector<gaia::ListedAccount>& accounts,
     const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!IsEngineInitialized())
+  if (!engine_initialized_)
     return;
 
   bool cookie_jar_mismatch = HasCookieJarMismatch(accounts);
@@ -2187,7 +2182,7 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
   if (--outstanding_setup_in_progress_handles_ != 0)
     return;
 
-  if (IsEngineInitialized())
+  if (engine_initialized_)
     ReconfigureDatatypeManager();
   NotifyObservers();
 }

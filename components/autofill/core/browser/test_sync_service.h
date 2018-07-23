@@ -19,7 +19,6 @@ class TestSyncService : public syncer::FakeSyncService {
   int GetDisableReasons() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  bool IsEngineInitialized() const override;
   bool IsFirstSetupComplete() const override;
   bool IsUsingSecondaryPassphrase() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
@@ -34,10 +33,6 @@ class TestSyncService : public syncer::FakeSyncService {
     data_types_ = data_types;
   }
 
-  void SetIsEngineInitialized(bool is_engine_initialized) {
-    is_engine_initialized_ = is_engine_initialized;
-  }
-
   void SetIsUsingSecondaryPassphrase(bool is_using_secondary_passphrase) {
     is_using_secondary_passphrase_ = is_using_secondary_passphrase;
   }
@@ -50,7 +45,6 @@ class TestSyncService : public syncer::FakeSyncService {
   int disable_reasons_ = DISABLE_REASON_NONE;
   // Used as both "preferred" and "active" data types.
   syncer::ModelTypeSet data_types_;
-  bool is_engine_initialized_ = true;
   bool is_using_secondary_passphrase_ = false;
   bool sync_cycle_complete_ = true;
   GoogleServiceAuthError auth_error_;

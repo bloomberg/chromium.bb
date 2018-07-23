@@ -87,8 +87,8 @@ void PassphraseCollectionViewControllerTest::SetUp() {
   // Set up non-default return values for our sync service mock.
   ON_CALL(*fake_sync_service_, IsPassphraseRequired())
       .WillByDefault(Return(true));
-  ON_CALL(*fake_sync_service_, IsEngineInitialized())
-      .WillByDefault(Return(true));
+  ON_CALL(*fake_sync_service_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
 
   ios::FakeChromeIdentityService* identityService =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();

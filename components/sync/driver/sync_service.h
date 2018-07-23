@@ -265,9 +265,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Equivalent to "HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)".
   bool HasUnrecoverableError() const;
 
-  // Returns true if the SyncEngine has told us it's ready to accept changes.
-  // DEPRECATED! Use GetState instead.
-  virtual bool IsEngineInitialized() const = 0;
+  // DEPRECATED! Use GetState instead. Equivalent to
+  // "GetState() == State::PENDING_DESIRED_CONFIGURATION ||
+  // GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
+  bool IsEngineInitialized() const;
 
   // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
   // not currently syncing, returns nullptr.

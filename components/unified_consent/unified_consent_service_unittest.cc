@@ -22,8 +22,8 @@ namespace {
 class TestSyncService : public syncer::FakeSyncService {
  public:
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+  State GetState() const override { return state_; }
   bool IsFirstSetupComplete() const override { return true; }
-  bool IsEngineInitialized() const override { return engine_initialized_; }
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observer_ = observer;
   }
@@ -32,9 +32,7 @@ class TestSyncService : public syncer::FakeSyncService {
     is_syncing_everything_ = sync_everything;
   }
 
-  void SetEngineInitialized(bool engine_initialized) {
-    engine_initialized_ = engine_initialized;
-  }
+  void SetState(State state) { state_ = state; }
   void FireStateChanged() {
     if (observer_)
       observer_->OnStateChanged(this);
@@ -46,7 +44,7 @@ class TestSyncService : public syncer::FakeSyncService {
 
  private:
   syncer::SyncServiceObserver* observer_ = nullptr;
-  bool engine_initialized_ = true;
+  State state_ = State::ACTIVE;
   bool is_syncing_everything_ = false;
 };
 
@@ -167,7 +165,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
 
   // Make sure sync is not active.
-  sync_service_.SetEngineInitialized(false);
+  sync_service_.SetState(syncer::SyncService::State::INITIALIZING);
   EXPECT_FALSE(sync_service_.IsEngineInitialized());
   EXPECT_NE(sync_service_.GetState(), syncer::SyncService::State::ACTIVE);
 
@@ -179,8 +177,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   EXPECT_FALSE(sync_service_.IsSyncingEverything());
 
   // Initalize sync engine and therefore activate sync.
-  sync_service_.SetEngineInitialized(true);
-  EXPECT_EQ(sync_service_.GetState(), syncer::SyncService::State::ACTIVE);
+  sync_service_.SetState(syncer::SyncService::State::ACTIVE);
   sync_service_.FireStateChanged();
 
   // UnifiedConsentService starts syncing everything.

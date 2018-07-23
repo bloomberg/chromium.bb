@@ -253,7 +253,8 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync engine.
     ASSERT_TRUE(mock_signin_->IsInitialized());
-    ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(true));
+    ON_CALL(*mock_pss_, GetState())
+        .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
   }
 
   void ExpectPageStatusResponse(const std::string& expected_status) {
@@ -396,7 +397,8 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_, IsFirstSetupComplete()).WillByDefault(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(false));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
   EXPECT_CALL(*mock_pss_, RequestStart());
 
   // We're simulating a user setting up sync, which would cause the engine to
@@ -422,7 +424,9 @@ TEST_F(PeopleHandlerTest,
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   // Sync engine is stopped initially, and will start up.
-  ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(false));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(
+          Return(syncer::SyncService::State::WAITING_FOR_START_REQUEST));
   EXPECT_CALL(*mock_pss_, RequestStart());
   SetDefaultExpectationsForConfigPage();
 
@@ -434,7 +438,8 @@ TEST_F(PeopleHandlerTest,
   Mock::VerifyAndClearExpectations(mock_pss_);
   // Now, act as if the ProfileSyncService has started up.
   SetDefaultExpectationsForConfigPage();
-  ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(true));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error_));
   handler_->SyncStartupCompleted();
@@ -459,9 +464,9 @@ TEST_F(PeopleHandlerTest,
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_, IsFirstSetupComplete()).WillByDefault(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, IsEngineInitialized())
-      .WillOnce(Return(false))
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, GetState())
+      .WillOnce(Return(syncer::SyncService::State::INITIALIZING))
+      .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
   EXPECT_CALL(*mock_pss_, RequestStart());
   SetDefaultExpectationsForConfigPage();
   handler_->HandleShowSetupUI(nullptr);
@@ -483,7 +488,8 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_, IsFirstSetupComplete()).WillByDefault(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(false));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
   EXPECT_CALL(*mock_pss_, RequestStart());
 
   handler_->HandleShowSetupUI(nullptr);
@@ -503,7 +509,8 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
 // Tests that signals not related to user intention to configure sync don't
 // trigger sync engine start.
 TEST_F(PeopleHandlerTest, OnlyStartEngineWhenConfiguringSync) {
-  ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(false));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
   EXPECT_CALL(*mock_pss_, RequestStart()).Times(0);
   NotifySyncStateChanged();
 }
@@ -767,7 +774,8 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   ON_CALL(*mock_pss_, IsPassphraseRequired()).WillByDefault(Return(false));
   ON_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillByDefault(Return(false));
-  ON_CALL(*mock_pss_, IsEngineInitialized()).WillByDefault(Return(false));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
 
 #if defined(OS_CHROMEOS)
   // On ChromeOS, auth errors are ignored - instead we just try to start the
