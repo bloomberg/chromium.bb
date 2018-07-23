@@ -27,6 +27,10 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
+  std::string GetFullTestCaseName() const override {
+    return test_case_name_;
+  }
+
   const char* GetTestExtensionManifestName() const override {
     return "video_player_test_manifest.json";
   }

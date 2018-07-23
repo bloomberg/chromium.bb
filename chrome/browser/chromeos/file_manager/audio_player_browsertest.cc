@@ -18,6 +18,10 @@ class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
+  std::string GetFullTestCaseName() const override {
+    return test_case_name_;
+  }
+
   const char* GetTestExtensionManifestName() const override {
     return "audio_player_test_manifest.json";
   }

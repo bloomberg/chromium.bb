@@ -53,6 +53,25 @@ struct TestCase {
     return *this;
   }
 
+  static std::string GetFullTestCaseName(const TestCase& test) {
+    std::string name(test.test_case_name);
+
+    CHECK(!name.empty()) << "FATAL: no test case name.";
+
+    if (test.guest_mode == IN_GUEST_MODE)
+      name.append("_GuestMode");
+    else if (test.guest_mode == IN_INCOGNITO)
+      name.append("_Incognito");
+
+    if (test.tablet_mode)
+      name.append("_TabletMode");
+
+    if (test.enable_drivefs)
+      name.append("_DriveFs");
+
+    return name;
+  }
+
   const char* test_case_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
   bool trusted_events = false;
@@ -92,17 +111,23 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   }
 
   GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
-  bool GetEnableDriveFs() const override { return GetParam().enable_drivefs; }
-  bool GetRequiresStartupBrowser() const override {
-    return GetParam().with_browser;
-  }
 
   const char* GetTestCaseName() const override {
     return GetParam().test_case_name;
   }
 
+  std::string GetFullTestCaseName() const override {
+    return TestCase::GetFullTestCaseName(GetParam());
+  }
+
   const char* GetTestExtensionManifestName() const override {
     return "file_manager_test_manifest.json";
+  }
+
+  bool GetEnableDriveFs() const override { return GetParam().enable_drivefs; }
+
+  bool GetRequiresStartupBrowser() const override {
+    return GetParam().with_browser;
   }
 
  private:
@@ -122,22 +147,7 @@ IN_PROC_BROWSER_TEST_P(FilesAppBrowserTest, Test) {
   INSTANTIATE_TEST_CASE_P(prefix, test_class, generator, &PostTestCaseName)
 
 std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
-  std::string name(test.param.test_case_name);
-
-  CHECK(!name.empty()) << "FATAL: a test case name is required";
-
-  if (test.param.guest_mode == IN_GUEST_MODE)
-    name.append("_GuestMode");
-  else if (test.param.guest_mode == IN_INCOGNITO)
-    name.append("_Incognito");
-
-  if (test.param.tablet_mode)
-    name.append("_TabletMode");
-
-  if (test.param.enable_drivefs)
-    name.append("_DriveFs");
-
-  return name;
+  return TestCase::GetFullTestCaseName(test.param);
 }
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
@@ -612,6 +622,10 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
 
   const char* GetTestCaseName() const override {
     return test_case_name_.c_str();
+  }
+
+  std::string GetFullTestCaseName() const override {
+    return test_case_name_;
   }
 
   const char* GetTestExtensionManifestName() const override {
