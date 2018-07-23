@@ -186,8 +186,10 @@ class FakeModuleListFilter : public ModuleListFilter {
 
   void AddWhitelistedModule(const third_party_dlls::PackedListModule& module) {
     whitelisted_modules_.emplace(
-        reinterpret_cast<const char*>(module.basename_hash),
-        reinterpret_cast<const char*>(module.code_id_hash));
+        base::StringPiece(reinterpret_cast<const char*>(module.basename_hash),
+                          base::size(module.basename_hash)),
+        base::StringPiece(reinterpret_cast<const char*>(module.code_id_hash),
+                          base::size(module.basename_hash)));
   }
 
   // ModuleListFilter:
