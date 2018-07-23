@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "device/fido/fido_ble_frames.h"
+#include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/fido_constants.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {

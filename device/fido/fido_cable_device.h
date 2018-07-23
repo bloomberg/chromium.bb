@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "crypto/aead.h"
-#include "device/fido/fido_ble_device.h"
+#include "device/fido/ble/fido_ble_device.h"
 
 namespace device {
 

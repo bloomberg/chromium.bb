@@ -17,7 +17,7 @@
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/fido/fido_ble_uuids.h"
+#include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/fido_cable_device.h"
 #include "device/fido/fido_cable_handshake_handler.h"
 #include "device/fido/fido_parsing_utils.h"

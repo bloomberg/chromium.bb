@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_ble_device.h"
+#include "device/fido/ble/fido_ble_device.h"
 
 #include <bitset>
 
@@ -10,8 +10,8 @@
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/fido/fido_ble_frames.h"
-#include "device/fido/fido_ble_uuids.h"
+#include "device/fido/ble/fido_ble_frames.h"
+#include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {

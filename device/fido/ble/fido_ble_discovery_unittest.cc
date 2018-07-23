@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_ble_discovery.h"
+#include "device/fido/ble/fido_ble_discovery.h"
 
 #include <string>
 
@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "device/bluetooth/test/bluetooth_test.h"
-#include "device/fido/fido_ble_device.h"
+#include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

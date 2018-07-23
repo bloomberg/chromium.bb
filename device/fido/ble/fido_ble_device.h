@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_BLE_DEVICE_H_
-#define DEVICE_FIDO_FIDO_BLE_DEVICE_H_
+#ifndef DEVICE_FIDO_BLE_FIDO_BLE_DEVICE_H_
+#define DEVICE_FIDO_BLE_FIDO_BLE_DEVICE_H_
 
 #include <memory>
 #include <string>
@@ -17,8 +17,8 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
-#include "device/fido/fido_ble_connection.h"
-#include "device/fido/fido_ble_transaction.h"
+#include "device/fido/ble/fido_ble_connection.h"
+#include "device/fido/ble/fido_ble_transaction.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 
@@ -93,4 +93,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_BLE_DEVICE_H_
+#endif  // DEVICE_FIDO_BLE_FIDO_BLE_DEVICE_H_

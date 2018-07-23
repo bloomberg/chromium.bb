@@ -25,6 +25,20 @@ component("fido") {
     "authenticator_selection_criteria.h",
     "authenticator_supported_options.cc",
     "authenticator_supported_options.h",
+    "ble/fido_ble_connection.cc",
+    "ble/fido_ble_connection.h",
+    "ble/fido_ble_device.cc",
+    "ble/fido_ble_device.h",
+    "ble/fido_ble_discovery.cc",
+    "ble/fido_ble_discovery.h",
+    "ble/fido_ble_discovery_base.cc",
+    "ble/fido_ble_discovery_base.h",
+    "ble/fido_ble_frames.cc",
+    "ble/fido_ble_frames.h",
+    "ble/fido_ble_transaction.cc",
+    "ble/fido_ble_transaction.h",
+    "ble/fido_ble_uuids.cc",
+    "ble/fido_ble_uuids.h",
     "ctap2_device_operation.h",
     "ctap_empty_authenticator_request.cc",
     "ctap_empty_authenticator_request.h",
@@ -40,20 +54,6 @@ component("fido") {
     "fido_attestation_statement.cc",
     "fido_attestation_statement.h",
     "fido_authenticator.h",
-    "fido_ble_connection.cc",
-    "fido_ble_connection.h",
-    "fido_ble_device.cc",
-    "fido_ble_device.h",
-    "fido_ble_discovery.cc",
-    "fido_ble_discovery.h",
-    "fido_ble_discovery_base.cc",
-    "fido_ble_discovery_base.h",
-    "fido_ble_frames.cc",
-    "fido_ble_frames.h",
-    "fido_ble_transaction.cc",
-    "fido_ble_transaction.h",
-    "fido_ble_uuids.cc",
-    "fido_ble_uuids.h",
     "fido_cable_device.cc",
     "fido_cable_device.h",
     "fido_cable_discovery.cc",
@@ -187,8 +187,8 @@ source_set("mocks") {
   testonly = true
 
   sources = [
-    "mock_fido_ble_connection.cc",
-    "mock_fido_ble_connection.h",
+    "ble/mock_fido_ble_connection.cc",
+    "ble/mock_fido_ble_connection.h",
     "mock_fido_device.cc",
     "mock_fido_device.h",
     "mock_fido_discovery_observer.cc",
@@ -216,7 +216,7 @@ fuzzer_test("fido_hid_message_fuzzer") {
 
 fuzzer_test("fido_ble_frames_fuzzer") {
   sources = [
-    "fido_ble_frames_fuzzer.cc",
+    "ble/fido_ble_frames_fuzzer.cc",
   ]
   deps = [
     ":fido",

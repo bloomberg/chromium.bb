@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_BLE_DISCOVERY_H_
-#define DEVICE_FIDO_FIDO_BLE_DISCOVERY_H_
+#ifndef DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_H_
+#define DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_H_
 
 #include <memory>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "device/fido/fido_ble_discovery_base.h"
+#include "device/fido/ble/fido_ble_discovery_base.h"
 
 namespace device {
 
@@ -43,4 +43,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_BLE_DISCOVERY_H_
+#endif  // DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_H_

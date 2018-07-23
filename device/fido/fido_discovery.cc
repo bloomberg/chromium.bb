@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "device/fido/fido_ble_discovery.h"
+#include "device/fido/ble/fido_ble_discovery.h"
 #include "device/fido/fido_device.h"
 
 // HID is not supported on Android.

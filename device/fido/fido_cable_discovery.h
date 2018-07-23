@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "device/fido/fido_ble_discovery_base.h"
+#include "device/fido/ble/fido_ble_discovery_base.h"
 
 namespace device {
 
