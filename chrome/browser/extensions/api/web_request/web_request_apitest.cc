@@ -268,17 +268,15 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
 
-  network::mojom::URLLoaderFactoryPtr CreateURLLoaderFactory() {
-    network::mojom::URLLoaderFactoryParamsPtr params =
-        network::mojom::URLLoaderFactoryParams::New();
-    params->process_id = network::mojom::kBrowserProcessId;
-    params->is_corb_enabled = false;
-    network::mojom::URLLoaderFactoryPtr loader_factory;
+  // TODO(https://crbug.com/857577): remove this hack. When an unrelated
+  // browser issued request (typically from GaiaAuthFetcher) has run, it causes
+  // the StoragePartitionImpl to create and cache a URLLoaderFactory without the
+  // web request proxying. This resets it so one with the web request proxying
+  // is created the next time a request is made.
+  void ResetStoragePartitionURLLoaderFactory() {
+    base::RunLoop().RunUntilIdle();
     content::BrowserContext::GetDefaultStoragePartition(profile())
-        ->GetNetworkContext()
-        ->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                 std::move(params));
-    return loader_factory;
+        ->ResetURLLoaderFactoryForBrowserProcessForTesting();
   }
 };
 
@@ -1041,6 +1039,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     EXPECT_EQ(200, loader->ResponseInfo()->headers->response_code());
   };
 
+  // TODO(https://crbug.com/857577): remove this call.
+  ResetStoragePartitionURLLoaderFactory();
+
   // Now perform a request to "client1.google.com" from the browser process.
   // This should *not* be visible to the WebRequest API. We should still have
   // only seen the single render-initiated request from the first half of the
@@ -1361,6 +1362,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
         }
       };
 
+  // TODO(https://crbug.com/857577): remove this call.
+  ResetStoragePartitionURLLoaderFactory();
+
   // Next, try a series of requests through URLRequestFetchers (rather than a
   // renderer).
   auto* url_loader_factory =
@@ -1446,37 +1450,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
           initiator_listener.message());
     }
   }
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestApiClearsBindingOnFirstListener) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  auto loader_factory = CreateURLLoaderFactory();
-  bool has_connection_error = false;
-  loader_factory.set_connection_error_handler(
-      base::BindLambdaForTesting([&]() { has_connection_error = true; }));
-
-  auto* web_request_api =
-      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-          profile());
-  web_request_api->OnListenerAdded(
-      EventListenerInfo("name", "id1", GURL(), profile()));
-  content::BrowserContext::GetDefaultStoragePartition(profile())
-      ->FlushNetworkInterfaceForTesting();
-  EXPECT_TRUE(has_connection_error);
-
-  // The second time there should be no connection error.
-  loader_factory = CreateURLLoaderFactory();
-  has_connection_error = false;
-  loader_factory.set_connection_error_handler(
-      base::BindLambdaForTesting([&]() { has_connection_error = true; }));
-  web_request_api->OnListenerAdded(
-      EventListenerInfo("name", "id2", GURL(), profile()));
-  content::BrowserContext::GetDefaultStoragePartition(profile())
-      ->FlushNetworkInterfaceForTesting();
-  EXPECT_FALSE(has_connection_error);
 }
 
 // Test fixture which sets a custom NTP Page.

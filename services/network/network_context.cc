@@ -512,7 +512,7 @@ void NetworkContext::DisableQuic() {
 }
 
 void NetworkContext::DestroyURLLoaderFactory(
-    cors::CORSURLLoaderFactory* url_loader_factory) {
+    mojom::URLLoaderFactory* url_loader_factory) {
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);
@@ -829,11 +829,6 @@ void NetworkContext::PreconnectSockets(uint32_t num_streams,
   net::HttpStreamFactory* http_stream_factory = session->http_stream_factory();
   http_stream_factory->PreconnectStreams(
       base::saturated_cast<int32_t>(num_streams), request_info);
-}
-
-void NetworkContext::ResetURLLoaderFactories() {
-  for (const auto& factory : url_loader_factories_)
-    factory->ClearBindings();
 }
 
 // ApplyContextParamsToBuilder represents the core configuration for

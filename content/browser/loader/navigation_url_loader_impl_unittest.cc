@@ -145,10 +145,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
   ~NavigationURLLoaderImplTest() override {
-    // The context needs to be deleted before ServiceManagerConnection is
-    // destroyed, so the storage partition in the context does not try to
-    // reconnect to the network service after ServiceManagerConnection is dead.
-    browser_context_.reset();
     ServiceManagerConnection::DestroyForProcess();
   }
 

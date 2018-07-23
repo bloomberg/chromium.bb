@@ -58,10 +58,6 @@ class ResourceSchedulerClient;
 class URLRequestContextBuilderMojo;
 class WebSocketFactory;
 
-namespace cors {
-class CORSURLLoaderFactory;
-}  // namespace cors
-
 // A NetworkContext creates and manages access to a URLRequestContext.
 //
 // When the network service is enabled, NetworkContexts are created through
@@ -207,14 +203,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          const GURL& url,
                          int32_t load_flags,
                          bool privacy_mode_enabled) override;
-  void ResetURLLoaderFactories() override;
 
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
   // Destroys the specified factory. Called by the factory itself when it has
   // no open pipes.
-  void DestroyURLLoaderFactory(cors::CORSURLLoaderFactory* url_loader_factory);
+  void DestroyURLLoaderFactory(mojom::URLLoaderFactory* url_loader_factory);
 
  private:
   class ContextNetworkDelegate;
@@ -279,8 +274,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // This must be below |url_request_context_| so that the URLRequestContext
   // outlives all the URLLoaderFactories and URLLoaders that depend on it.
-  std::set<std::unique_ptr<cors::CORSURLLoaderFactory>,
-           base::UniquePtrComparator>
+  std::set<std::unique_ptr<mojom::URLLoaderFactory>, base::UniquePtrComparator>
       url_loader_factories_;
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
