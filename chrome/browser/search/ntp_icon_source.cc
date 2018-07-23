@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -36,6 +37,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -162,6 +164,18 @@ void DrawFavicon(const SkBitmap& bitmap, gfx::Canvas* canvas, int size) {
                        x_origin, y_origin);
 }
 
+// Returns a color that based on the hash of |icon_url|'s origin.
+SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
+  if (!icon_url.is_valid())
+    return SK_ColorGRAY;
+
+  unsigned char hash[20];
+  const std::string origin = icon_url.GetOrigin().spec();
+  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(origin.c_str()),
+                      origin.size(), hash);
+  return SkColorSetRGB(hash[0], hash[1], hash[2]);
+}
+
 // For the given |icon_url|, will render a fallback icon with an appropriate
 // letter in a circle.
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
@@ -177,8 +191,14 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
     DrawCircleInCanvas(&canvas, size, /*background_color=*/kFaviconBackground);
     DrawFavicon(favicon, &canvas, size);
   } else {
-    // TODO(crbug.com/853780): Set the appropriate fallback background color.
-    DrawCircleInCanvas(&canvas, size, /*background_color=*/SK_ColorGRAY);
+    SkColor background_color = GetBackgroundColorForUrl(icon_url);
+    // If luminance is too high, the white text will become unreadable. Invert
+    // the background color to achieve better constrast. The constant comes
+    // W3C Accessibility standards.
+    if (color_utils::GetRelativeLuminance(background_color) > 0.179)
+      background_color = color_utils::InvertColor(background_color);
+
+    DrawCircleInCanvas(&canvas, size, background_color);
     DrawFallbackIconLetter(icon_url, size, &canvas);
   }
   std::vector<unsigned char> bitmap_data;
