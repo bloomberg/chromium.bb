@@ -36,6 +36,8 @@ class RASTER_EXPORT ClientFontManager
   SkStrikeServer* strike_server() { return &strike_server_; }
 
  private:
+  static constexpr SkDiscardableHandleId kInvalidSkDiscardableHandleId = -1;
+
   Client* client_;
   CommandBuffer* command_buffer_;
 
