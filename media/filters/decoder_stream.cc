@@ -688,7 +688,6 @@ void DecoderStream<StreamType>::OnBufferReady(
     pending_buffers_.clear();
 
     const DecoderConfig& config = traits_->GetDecoderConfig(stream_);
-    traits_->OnConfigChanged(config);
 
     MEDIA_LOG(INFO, media_log_)
         << GetStreamTypeString()

@@ -8,19 +8,18 @@
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/channel_layout.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
-#include "media/base/video_decoder_config.h"
 #include "media/filters/audio_timestamp_validator.h"
 
 namespace media {
 
 class AudioBuffer;
-class AudioDecoderConfig;
 class CdmContext;
 class DemuxerStream;
 class VideoDecoderConfig;
@@ -60,9 +59,10 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);
-  void OnConfigChanged(const DecoderConfigType& config);
 
  private:
+  void OnConfigChanged(const AudioDecoderConfig& config);
+
   // Validates encoded timestamps match decoded output duration. MEDIA_LOG warns
   // if timestamp gaps are detected. Sufficiently large gaps can lead to AV sync
   // drift.
@@ -72,6 +72,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   // device changes.
   ChannelLayout initial_hw_layout_;
   PipelineStatistics stats_;
+  AudioDecoderConfig config_;
 };
 
 template <>
@@ -103,7 +104,6 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);
-  void OnConfigChanged(const DecoderConfigType& config) {}
 
  private:
   base::TimeDelta last_keyframe_timestamp_;
