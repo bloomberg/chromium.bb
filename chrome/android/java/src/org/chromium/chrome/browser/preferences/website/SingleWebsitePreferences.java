@@ -192,11 +192,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // This loop looks expensive, but the amount of data is likely to be relatively small
         // because most sites have very few permissions.
         for (Website other : websites) {
-            if (merged.getContentSettingPermission(ContentSettingException.Type.ADS) == null
-                    && other.getContentSettingPermission(ContentSettingException.Type.ADS) != null
+            if (merged.getContentSettingException(ContentSettingException.Type.ADS) == null
+                    && other.getContentSettingException(ContentSettingException.Type.ADS) != null
                     && other.compareByAddressTo(merged) == 0) {
-                merged.setContentSettingPermission(ContentSettingException.Type.ADS,
-                        other.getContentSettingPermission(ContentSettingException.Type.ADS));
+                merged.setContentSettingException(ContentSettingException.Type.ADS,
+                        other.getContentSettingException(ContentSettingException.Type.ADS));
             }
             for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES;
                     type++) {
@@ -230,10 +230,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
                             || type == ContentSettingException.Type.COOKIE) {
                         continue;
                     }
-                    if (merged.getContentSettingPermission(type) == null
-                            && other.getContentSettingPermission(type) != null) {
-                        merged.setContentSettingPermission(
-                                type, other.getContentSettingPermission(type));
+                    if (merged.getContentSettingException(type) == null
+                            && other.getContentSettingException(type) != null) {
+                        merged.setContentSettingException(
+                                type, other.getContentSettingException(type));
                     }
                 }
             }
