@@ -125,6 +125,10 @@ const char kSiteCharacteristicsDb_AudioUsageObservationWindow[] =
     "AudioUsageObservationWindow";
 const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[] =
     "NotificationsUsageObservationWindow";
+const char kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod[] =
+    "TitleOrFaviconChangeGracePeriod";
+const char kSiteCharacteristicsDb_AudioUsageGracePeriod[] =
+    "AudioUsageGracePeriod";
 
 const char kInfiniteSessionRestore_MinSimultaneousTabLoads[] =
     "MinSimultaneousTabLoads";
@@ -203,6 +207,14 @@ const base::TimeDelta
 const base::TimeDelta
     kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default =
         base::TimeDelta::FromHours(2);
+
+// TODO(sebmarchand): Get some real-world data and choose an appropriate value
+// here.
+const base::TimeDelta
+    kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod_Default =
+        base::TimeDelta::FromSeconds(20);
+const base::TimeDelta kSiteCharacteristicsDb_AudioUsageGracePeriod_Default =
+    base::TimeDelta::FromSeconds(10);
 
 // Default values for infinite session restore feature. Many of these are taken
 // from thin air, but others are motivated by existing metrics.
@@ -366,6 +378,19 @@ SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams() {
           kSiteCharacteristicsDb_NotificationsUsageObservationWindow,
           kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default
               .InSeconds()));
+
+  params.title_or_favicon_change_grace_period =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSiteCharacteristicsDatabase,
+          kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod,
+          kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod_Default
+              .InSeconds()));
+
+  params.audio_usage_grace_period =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSiteCharacteristicsDatabase,
+          kSiteCharacteristicsDb_AudioUsageGracePeriod,
+          kSiteCharacteristicsDb_AudioUsageGracePeriod_Default.InSeconds()));
 
   return params;
 }

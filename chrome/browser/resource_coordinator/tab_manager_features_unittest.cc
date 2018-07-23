@@ -91,7 +91,9 @@ class TabManagerFeaturesTest : public testing::Test {
       base::TimeDelta favicon_update_observation_window,
       base::TimeDelta title_update_observation_window,
       base::TimeDelta audio_usage_observation_window,
-      base::TimeDelta notifications_usage_observation_window) {
+      base::TimeDelta notifications_usage_observation_window,
+      base::TimeDelta title_or_favicon_change_grace_period,
+      base::TimeDelta audio_usage_grace_period) {
     SiteCharacteristicsDatabaseParams params =
         GetSiteCharacteristicsDatabaseParams();
 
@@ -103,6 +105,9 @@ class TabManagerFeaturesTest : public testing::Test {
               params.audio_usage_observation_window);
     EXPECT_EQ(notifications_usage_observation_window,
               params.notifications_usage_observation_window);
+    EXPECT_EQ(title_or_favicon_change_grace_period,
+              params.title_or_favicon_change_grace_period);
+    EXPECT_EQ(audio_usage_grace_period, params.audio_usage_grace_period);
   }
 
   void ExpectInfiniteSessionRestoreParams(
@@ -152,7 +157,9 @@ class TabManagerFeaturesTest : public testing::Test {
         kSiteCharacteristicsDb_FaviconUpdateObservationWindow_Default,
         kSiteCharacteristicsDb_TitleUpdateObservationWindow_Default,
         kSiteCharacteristicsDb_AudioUsageObservationWindow_Default,
-        kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default);
+        kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default,
+        kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod_Default,
+        kSiteCharacteristicsDb_AudioUsageGracePeriod_Default);
   }
 
   void ExpectDefaultInfiniteSessionRestoreParams() {
@@ -274,6 +281,8 @@ TEST_F(TabManagerFeaturesTest,
   SetParam(kSiteCharacteristicsDb_TitleUpdateObservationWindow, "foo");
   SetParam(kSiteCharacteristicsDb_AudioUsageObservationWindow, ".");
   SetParam(kSiteCharacteristicsDb_NotificationsUsageObservationWindow, "abc");
+  SetParam(kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod, "bleh");
+  SetParam(kSiteCharacteristicsDb_AudioUsageGracePeriod, "!!!");
   EnableSiteCharacteristicsDatabase();
   ExpectDefaultSiteCharacteristicsDatabaseParams();
 }
@@ -284,13 +293,16 @@ TEST_F(TabManagerFeaturesTest, GetSiteCharacteristicsDatabaseParams) {
   SetParam(kSiteCharacteristicsDb_AudioUsageObservationWindow, "360000");
   SetParam(kSiteCharacteristicsDb_NotificationsUsageObservationWindow,
            "3600000");
+  SetParam(kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod, "42");
+  SetParam(kSiteCharacteristicsDb_AudioUsageGracePeriod, "43");
 
   EnableSiteCharacteristicsDatabase();
 
   ExpectSiteCharacteristicsDatabaseParams(
       base::TimeDelta::FromSeconds(3600), base::TimeDelta::FromSeconds(36000),
       base::TimeDelta::FromSeconds(360000),
-      base::TimeDelta::FromSeconds(3600000));
+      base::TimeDelta::FromSeconds(3600000), base::TimeDelta::FromSeconds(42),
+      base::TimeDelta::FromSeconds(43));
 }
 
 TEST_F(TabManagerFeaturesTest,

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
@@ -68,15 +69,28 @@ class LocalSiteCharacteristicsWebContentsObserver
   }
 
  private:
+  enum class FeatureType {
+    kTitleChange,
+    kFaviconChange,
+    kAudioUsage,
+    kNotificationUsage,
+  };
+
   // Indicates if the feature usage event just received should be ignored.
-  bool ShouldIgnoreFeatureUsageEvent();
+  bool ShouldIgnoreFeatureUsageEvent(FeatureType feature_type);
 
   // Helper function to maybe notify |writer_| that a feature event has been
-  // received while in background. Doen't do anything if
-  // ShouldIgnoreFeatureUsageEvent returns true or if the tab isn't
-  // backgrounded.
+  // received while in background. Doesn't do anything if
+  // ShouldIgnoreFeatureUsageEvent returns true.
   void MaybeNotifyBackgroundFeatureUsage(
-      void (SiteCharacteristicsDataWriter::*method)());
+      void (SiteCharacteristicsDataWriter::*method)(),
+      FeatureType feature_type);
+
+  // Function to call when the site switch to the loaded state.
+  void OnSiteLoaded();
+
+  // Updates |backgrounded_time_| based on |visibility|.
+  void UpdateBackgroundedTime(TabVisibility visibility);
 
   // The writer that processes the event received by this class.
   std::unique_ptr<SiteCharacteristicsDataWriter> writer_;
@@ -93,6 +107,14 @@ class LocalSiteCharacteristicsWebContentsObserver
 
   // The PageSignalReceiver observed by this instance.
   PageSignalReceiver* page_signal_receiver_ = nullptr;
+
+  // The time at which this tab switched to the loaded state, null if this tab
+  // is not currently loaded.
+  base::TimeTicks loaded_time_;
+
+  // The time at which this tab has been backgrounded, null if this tab is
+  // currently visible.
+  base::TimeTicks backgrounded_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
