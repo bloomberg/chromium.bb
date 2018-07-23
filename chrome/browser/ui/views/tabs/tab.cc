@@ -1702,14 +1702,11 @@ void Tab::OnButtonColorMaybeChanged() {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
-    if (!MD::IsTouchOptimizedUiEnabled()) {
-      close_button_->SetTabColor(button_color_,
-                                 color_utils::IsDark(theme_provider->GetColor(
-                                     ThemeProperties::COLOR_TOOLBAR)));
-    }
   }
-  if (MD::IsTouchOptimizedUiEnabled())
-    close_button_->ActiveStateChanged(this);
+  SkColor icon_color = MD::IsNewerMaterialUi()
+                           ? GetCloseTabButtonColor(views::Button::STATE_NORMAL)
+                           : button_color_;
+  close_button_->SetIconColors(icon_color);
 }
 
 Tab::BackgroundCache::BackgroundCache() = default;

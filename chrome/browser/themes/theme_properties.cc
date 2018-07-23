@@ -338,6 +338,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return kDefaultColorTabAlertRecordingIcon;
     case COLOR_TAB_ALERT_CAPTURING:
       return kDefaultColorTabAlertCapturingIcon;
+    case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
+      return SkColorSetRGB(0xDB, 0x44, 0x37);
+    case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
+      return SkColorSetRGB(0xA8, 0x35, 0x2A);
 #if defined(OS_MACOSX)
     case COLOR_FRAME_VIBRANCY_OVERLAY:
       return incognito ? kDefaultColorFrameVibrancyOverlayIncognito

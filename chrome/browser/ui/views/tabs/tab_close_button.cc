@@ -58,26 +58,8 @@ int TabCloseButton::GetWidth() {
   return gfx::GetDefaultSizeOfVectorIcon(close_icon);
 }
 
-void TabCloseButton::SetTabColor(SkColor color, bool tab_color_is_dark) {
-  SkColor hover_color = SkColorSetRGB(0xDB, 0x44, 0x37);
-  SkColor pressed_color = SkColorSetRGB(0xA8, 0x35, 0x2A);
-  SkColor icon_color = SK_ColorWHITE;
-  if (MD::IsRefreshUi()) {
-    hover_color = tab_color_is_dark ? gfx::kGoogleGrey700 : gfx::kGoogleGrey200;
-    pressed_color =
-        tab_color_is_dark ? gfx::kGoogleGrey600 : gfx::kGoogleGrey300;
-    icon_color = color;
-  }
-  GenerateImages(false, color, icon_color, hover_color, pressed_color);
-}
-
-void TabCloseButton::ActiveStateChanged(const Tab* parent_tab) {
-  SkColor icon_color =
-      parent_tab->GetCloseTabButtonColor(views::Button::STATE_NORMAL);
-  GenerateImages(
-      true, icon_color, icon_color,
-      parent_tab->GetCloseTabButtonColor(views::Button::STATE_HOVERED),
-      parent_tab->GetCloseTabButtonColor(views::Button::STATE_PRESSED));
+void TabCloseButton::SetIconColors(SkColor color) {
+  GenerateImages(color, MD::IsNewerMaterialUi() ? color : SK_ColorWHITE);
 }
 
 views::View* TabCloseButton::GetTooltipHandlerForPoint(
@@ -131,6 +113,20 @@ void TabCloseButton::Layout() {
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->SaveLayerAlpha(GetOpacity());
+  ButtonState button_state = state();
+  if (button_state != views::Button::STATE_NORMAL) {
+    // Draw the background circle highlight.
+    gfx::Path path;
+    SkColor background_color =
+        static_cast<Tab*>(parent())->GetCloseTabButtonColor(button_state);
+    gfx::Point center = GetContentsBounds().CenterPoint();
+    path.setFillType(SkPath::kEvenOdd_FillType);
+    path.addCircle(center.x(), center.y(), GetWidth() / 2);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(background_color);
+    canvas->DrawPath(path, flags);
+  }
   views::ImageButton::PaintButtonContents(canvas);
   canvas->Restore();
 }
@@ -178,34 +174,18 @@ SkAlpha TabCloseButton::GetOpacity() {
                                      SK_AlphaOPAQUE);
 }
 
-void TabCloseButton::GenerateImages(bool is_touch,
-                                    SkColor normal_icon_color,
-                                    SkColor hover_pressed_icon_color,
-                                    SkColor hover_highlight_color,
-                                    SkColor pressed_highlight_color) {
-  const gfx::VectorIcon& button_icon =
-      is_touch ? kTabCloseButtonTouchIcon : kTabCloseNormalIcon;
-  const gfx::VectorIcon& highlight = is_touch
-                                         ? kTabCloseButtonTouchHighlightIcon
-                                         : kTabCloseButtonHighlightIcon;
-  const gfx::ImageSkia& normal =
+void TabCloseButton::GenerateImages(SkColor normal_icon_color,
+                                    SkColor hover_pressed_icon_color) {
+  const gfx::VectorIcon& button_icon = MD::IsTouchOptimizedUiEnabled()
+                                           ? kTabCloseButtonTouchIcon
+                                           : kTabCloseNormalIcon;
+  const gfx::ImageSkia normal =
       gfx::CreateVectorIcon(button_icon, normal_icon_color);
-  const gfx::ImageSkia& hover_pressed =
+  const gfx::ImageSkia hover_pressed =
       normal_icon_color != hover_pressed_icon_color
           ? gfx::CreateVectorIcon(button_icon, hover_pressed_icon_color)
           : normal;
-
-  const gfx::ImageSkia& hover_highlight =
-      gfx::CreateVectorIcon(highlight, hover_highlight_color);
-  const gfx::ImageSkia& pressed_highlight =
-      gfx::CreateVectorIcon(highlight, pressed_highlight_color);
-  const gfx::ImageSkia& hover =
-      gfx::ImageSkiaOperations::CreateSuperimposedImage(hover_highlight,
-                                                        hover_pressed);
-  const gfx::ImageSkia& pressed =
-      gfx::ImageSkiaOperations::CreateSuperimposedImage(pressed_highlight,
-                                                        hover_pressed);
   SetImage(views::Button::STATE_NORMAL, normal);
-  SetImage(views::Button::STATE_HOVERED, hover);
-  SetImage(views::Button::STATE_PRESSED, pressed);
+  SetImage(views::Button::STATE_HOVERED, hover_pressed);
+  SetImage(views::Button::STATE_PRESSED, hover_pressed);
 }
