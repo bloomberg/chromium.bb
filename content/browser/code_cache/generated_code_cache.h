@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "url/origin.h"
@@ -53,6 +54,13 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // Delete the entry corresponding to <url, origin>
   void DeleteEntry(const GURL& url, const url::Origin& origin);
 
+  // Clear code cache.
+  // TODO(mythria): Add support to conditional clearing based on URL
+  // and time range.
+  // TODO(mythria): Also check if we can avoid retruning an error code and
+  // always call the callback to be consistent with other methods.
+  int ClearCache(net::CompletionCallback callback);
+
   const base::FilePath& path() const { return path_; }
 
  private:
@@ -63,7 +71,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
   enum BackendState { kUnInitialized, kInitializing, kInitialized, kFailed };
 
   // The operation requested.
-  enum Operation { kFetch, kWrite, kDelete };
+  enum Operation { kFetch, kWrite, kDelete, kClearCache };
 
   // Data streams corresponding to each entry.
   enum { kDataIndex = 1 };
@@ -106,6 +114,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
 
   // Delete entry from cache
   void DeleteEntryImpl(const std::string& key);
+
+  void DoPendingClearCache(net::CompletionCallback callback);
+  void PendingClearComplete(net::CompletionCallback callback, int rv);
 
   std::unique_ptr<disk_cache::Backend> backend_;
   BackendState backend_state_;
