@@ -586,6 +586,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
     std::unique_ptr<quic::ProofVerifierCallback> callback) {
   if (!verify_context) {
+    DLOG(FATAL) << "Missing proof verify context";
     *error_details = "Missing context";
     return quic::QUIC_FAILURE;
   }
@@ -629,6 +630,12 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     active_jobs_[job_ptr] = std::move(job);
   }
   return status;
+}
+
+std::unique_ptr<quic::ProofVerifyContext>
+ProofVerifierChromium::CreateDefaultContext() {
+  return std::make_unique<ProofVerifyContextChromium>(0,
+                                                      net::NetLogWithSource());
 }
 
 void ProofVerifierChromium::OnJobComplete(Job* job) {

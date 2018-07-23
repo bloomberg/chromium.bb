@@ -107,6 +107,11 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
       QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
       std::unique_ptr<ProofVerifierCallback> callback) = 0;
+
+  // Returns a ProofVerifyContext instance which can be use for subsequent
+  // verifications. Applications may chose create a different context and
+  // supply it for verifications instead.
+  virtual std::unique_ptr<ProofVerifyContext> CreateDefaultContext() = 0;
 };
 
 }  // namespace quic

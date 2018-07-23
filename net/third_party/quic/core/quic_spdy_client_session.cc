@@ -131,7 +131,7 @@ std::unique_ptr<QuicCryptoClientStreamBase>
 QuicSpdyClientSession::CreateQuicCryptoStream() {
   return QuicMakeUnique<QuicCryptoClientStream>(
       server_id_, this,
-      new net::ProofVerifyContextChromium(0, net::NetLogWithSource()),
+      crypto_config_->proof_verifier()->CreateDefaultContext().release(),
       crypto_config_, this);
 }
 

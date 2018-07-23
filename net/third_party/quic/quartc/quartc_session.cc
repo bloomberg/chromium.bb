@@ -96,6 +96,10 @@ class InsecureProofVerifier : public ProofVerifier {
       std::unique_ptr<ProofVerifierCallback> callback) override {
     return QUIC_SUCCESS;
   }
+
+  std::unique_ptr<ProofVerifyContext> CreateDefaultContext() override {
+    return nullptr;
+  }
 };
 
 }  // namespace

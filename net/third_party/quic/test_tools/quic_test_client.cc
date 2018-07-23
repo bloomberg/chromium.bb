@@ -98,6 +98,10 @@ class RecordingProofVerifier : public ProofVerifier {
     return QUIC_SUCCESS;
   }
 
+  std::unique_ptr<ProofVerifyContext> CreateDefaultContext() override {
+    return verifier_->CreateDefaultContext();
+  }
+
   const string& common_name() const { return common_name_; }
 
   const string& cert_sct() const { return cert_sct_; }

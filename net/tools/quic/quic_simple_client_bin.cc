@@ -132,6 +132,10 @@ class FakeProofVerifier : public quic::ProofVerifier {
       std::unique_ptr<quic::ProofVerifierCallback> callback) override {
     return quic::QUIC_SUCCESS;
   }
+
+  std::unique_ptr<quic::ProofVerifyContext> CreateDefaultContext() override {
+    return nullptr;
+  }
 };
 
 int main(int argc, char* argv[]) {

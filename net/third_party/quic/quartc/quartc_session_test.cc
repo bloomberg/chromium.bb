@@ -229,6 +229,10 @@ class FakeProofVerifier : public ProofVerifier {
     return success_ ? QUIC_SUCCESS : QUIC_FAILURE;
   }
 
+  std::unique_ptr<ProofVerifyContext> CreateDefaultContext() override {
+    return nullptr;
+  }
+
  private:
   // Whether or not proof verification succeeds.
   bool success_;
