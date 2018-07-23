@@ -142,14 +142,11 @@ void ShowSSLClientCertificateSelector(
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
 #if defined(OS_MACOSX)
-  // TODO(ellyjones): Always use the Cocoa cert selector, even in Views builds.
-  // See also https://crbug.com/804950.
-  if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return ShowSSLClientCertificateSelectorCocoa(contents, cert_request_info,
-                                                 std::move(client_certs),
-                                                 std::move(delegate));
-  }
-#endif
+  return ShowSSLClientCertificateSelectorCocoa(contents, cert_request_info,
+                                               std::move(client_certs),
+                                               std::move(delegate));
+#else   // defined(OS_MACOSX)
+
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Not all WebContentses can show modal dialogs.
@@ -164,6 +161,7 @@ void ShowSSLClientCertificateSelector(
       std::move(delegate));
   selector->Init();
   selector->Show();
+#endif  // defined(OS_MACOSX)
 }
 
 }  // namespace chrome
