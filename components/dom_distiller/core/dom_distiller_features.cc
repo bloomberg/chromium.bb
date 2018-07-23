@@ -16,9 +16,4 @@ bool IsEnableDomDistillerSet() {
           switches::kEnableDomDistiller);
 }
 
-bool IsEnableSyncArticlesSet() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncArticles);
-}
-
 }  // namespace dom_distiller

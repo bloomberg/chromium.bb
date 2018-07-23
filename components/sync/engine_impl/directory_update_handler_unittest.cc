@@ -542,7 +542,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
         bookmarks_emitter_(BOOKMARKS, &type_observers_),
         passwords_emitter_(PASSWORDS, &type_observers_),
-        articles_emitter_(ARTICLES, &type_observers_) {}
+        articles_emitter_(DEPRECATED_ARTICLES, &type_observers_) {}
 
   void SetUp() override {
     dir_maker_.SetUp();
@@ -556,9 +556,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         PASSWORDS,
         std::make_unique<DirectoryUpdateHandler>(
             directory(), PASSWORDS, password_worker_, &passwords_emitter_)));
-    update_handler_map_.insert(std::make_pair(
-        ARTICLES, std::make_unique<DirectoryUpdateHandler>(
-                      directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 
   void TearDown() override { dir_maker_.TearDown(); }
@@ -582,10 +579,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
   void ApplyPasswordUpdates(StatusController* status) {
     update_handler_map_.find(PASSWORDS)->second->ApplyUpdates(status);
-  }
-
-  void ApplyArticlesUpdates(StatusController* status) {
-    update_handler_map_.find(ARTICLES)->second->ApplyUpdates(status);
   }
 
   TestEntryFactory* entry_factory() { return entry_factory_.get(); }

@@ -121,8 +121,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, "MANAGED_USER_SHARED_SETTING",
      "managed_user_shared_settings", "Managed User Shared Settings",
      sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber, 30},
-    {ARTICLES, "ARTICLE", "articles", "Articles",
-     sync_pb::EntitySpecifics::kArticleFieldNumber, 28},
+    {DEPRECATED_ARTICLES, "ARTICLE", "deprecated_articles",
+     "Deprecated Articles", sync_pb::EntitySpecifics::kArticleFieldNumber, 28},
     {APP_LIST, "APP_LIST", "app_list", "App List",
      sync_pb::EntitySpecifics::kAppListFieldNumber, 29},
     {WIFI_CREDENTIALS, "WIFI_CREDENTIAL", "wifi_credentials",
@@ -250,7 +250,7 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
       specifics->mutable_managed_user_shared_setting();
       break;
-    case ARTICLES:
+    case DEPRECATED_ARTICLES:
       specifics->mutable_article();
       break;
     case APP_LIST:
@@ -403,7 +403,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_managed_user_shared_setting())
     return DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS;
   if (specifics.has_article())
-    return ARTICLES;
+    return DEPRECATED_ARTICLES;
   if (specifics.has_app_list())
     return APP_LIST;
   if (specifics.has_wifi_credential())

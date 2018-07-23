@@ -551,14 +551,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return base::WeakPtr<syncer::SyncableService>();
     }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    case syncer::ARTICLES: {
-      dom_distiller::DomDistillerService* service =
-          dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
-              profile_);
-      if (service)
-        return service->GetSyncableService()->AsWeakPtr();
-      return base::WeakPtr<syncer::SyncableService>();
-    }
     case syncer::SESSIONS: {
       return ProfileSyncServiceFactory::GetForProfile(profile_)->
           GetSessionsSyncableService()->AsWeakPtr();

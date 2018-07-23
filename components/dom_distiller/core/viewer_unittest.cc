@@ -28,7 +28,6 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   TestDomDistillerService() {}
   ~TestDomDistillerService() override {}
 
-  MOCK_CONST_METHOD0(GetSyncableService, syncer::SyncableService*());
   MOCK_METHOD3(AddToList,
                const std::string(const GURL&,
                                  DistillerPage*,

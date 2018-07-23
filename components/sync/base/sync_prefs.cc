@@ -393,7 +393,7 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncSupervisedUsers;
     case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
       return prefs::kSyncSupervisedUserSharedSettings;
-    case ARTICLES:
+    case DEPRECATED_ARTICLES:
       return prefs::kSyncArticles;
     case APP_LIST:
       return prefs::kSyncAppList;

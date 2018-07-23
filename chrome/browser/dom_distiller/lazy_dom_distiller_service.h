@@ -36,7 +36,6 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
 
  public:
   // DomDistillerServiceInterface implementation:
-  syncer::SyncableService* GetSyncableService() const override;
   const std::string AddToList(
       const GURL& url,
       std::unique_ptr<DistillerPage> distiller_page,
