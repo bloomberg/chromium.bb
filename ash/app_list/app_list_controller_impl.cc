@@ -93,20 +93,19 @@ app_list::SearchModel* AppListControllerImpl::GetSearchModel() {
 
 void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
   const std::string folder_id = item_data->folder_id;
-  if (folder_id.empty()) {
+  if (folder_id.empty())
     model_.AddItem(CreateAppListItem(std::move(item_data)));
-  } else {
-    // When we're setting a whole model of a profile, each item may have its
-    // folder id set properly. However, |AppListModel::AddItemToFolder| requires
-    // the item to add is not in the target folder yet, and sets its folder id
-    // later. So we should clear the folder id here to avoid breaking checks.
-    item_data->folder_id.clear();
+  else
     AddItemToFolder(std::move(item_data), folder_id);
-  }
 }
 
 void AppListControllerImpl::AddItemToFolder(AppListItemMetadataPtr item_data,
                                             const std::string& folder_id) {
+  // When we're setting a whole model of a profile, each item may have its
+  // folder id set properly. However, |AppListModel::AddItemToFolder| requires
+  // the item to add is not in the target folder yet, and sets its folder id
+  // later. So we should clear the folder id here to avoid breaking checks.
+  item_data->folder_id.clear();
   model_.AddItemToFolder(CreateAppListItem(std::move(item_data)), folder_id);
 }
 
