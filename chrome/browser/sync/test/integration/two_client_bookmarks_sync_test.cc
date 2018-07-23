@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -26,10 +27,12 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
 namespace {
@@ -75,6 +78,22 @@ const char kGenericFolderName[] = "Folder Name";
 const char kGenericSubfolderName[] = "Subfolder Name";
 const char kValidPassphrase[] = "passphrase!";
 
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(switches::kSyncUSSBookmarks);
+    } else {
+      override_features_.InitAndDisableFeature(switches::kSyncUSSBookmarks);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
 class TwoClientBookmarksSyncTest : public SyncTest {
  public:
   TwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT) {}
@@ -91,6 +110,19 @@ class TwoClientBookmarksSyncTest : public SyncTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientBookmarksSyncTest);
+};
+
+// TODO(crbug.com/516866): Merge the two fixtures into one when all tests are
+// passing for USS.
+class TwoClientBookmarksSyncTestIncludingUssTests
+    : public UssSwitchToggler,
+      public TwoClientBookmarksSyncTest {
+ public:
+  TwoClientBookmarksSyncTestIncludingUssTests(){};
+  ~TwoClientBookmarksSyncTestIncludingUssTests() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TwoClientBookmarksSyncTestIncludingUssTests);
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
@@ -144,7 +176,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstFolder) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       SC_AddFirstFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -2171,5 +2204,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        TwoClientBookmarksSyncTestIncludingUssTests,
+                        ::testing::Values(false, true));
 
 }  // namespace
