@@ -121,6 +121,11 @@ bool Launch(content::BrowserContext* context,
     return false;
   }
 
+  if (app_info->suspended) {
+    VLOG(2) << "Cannot launch suspended app: " << app_id << ".";
+    return false;
+  }
+
   arc::mojom::IntentHelperInstance* intent_helper_instance =
       GET_INTENT_HELPER_INSTANCE(SendBroadcast);
   if (intent_helper_instance) {
@@ -319,8 +324,8 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     prefs->SetLastLaunchTime(app_id);
     return true;
   }
-  arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
 
+  arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
   return Launch(context, app_id, launch_intent, event_flags,
                 GetValidDisplayId(display_id));
 }

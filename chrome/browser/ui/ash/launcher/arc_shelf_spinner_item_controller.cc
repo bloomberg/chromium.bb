@@ -39,14 +39,23 @@ void ArcShelfSpinnerItemController::SetHost(
   ShelfSpinnerItemController::SetHost(controller);
 }
 
-void ArcShelfSpinnerItemController::OnAppReadyChanged(
-    const std::string& changed_app_id,
-    bool ready) {
-  if (!ready || app_id() != changed_app_id)
+void ArcShelfSpinnerItemController::OnAppStatesChanged(
+    const std::string& arc_app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  if (app_id() != arc_app_id)
+    return;
+
+  // App was suspended. Launch is no longer available, close controller.
+  if (app_info.suspended) {
+    Close();
+    return;
+  }
+
+  if (!app_info.ready)
     return;
 
   // Close() destroys this object, so start launching the app first.
-  arc::LaunchApp(observed_profile_, changed_app_id, event_flags_,
+  arc::LaunchApp(observed_profile_, arc_app_id, event_flags_,
                  arc::UserInteractionType::APP_STARTED_FROM_SHELF, display_id_);
   Close();
 }

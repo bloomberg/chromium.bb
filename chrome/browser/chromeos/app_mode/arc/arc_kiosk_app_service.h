@@ -65,7 +65,8 @@ class ArcKioskAppService
   // ArcAppListPrefs::Observer overrides
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
-  void OnAppReadyChanged(const std::string& id, bool ready) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
                      const std::string& activity,

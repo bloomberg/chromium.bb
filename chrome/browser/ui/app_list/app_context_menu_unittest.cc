@@ -645,6 +645,47 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
   }
 }
 
+// In suspended state app does not have launch item.
+TEST_P(AppContextMenuTest, ArcMenuSuspendedItem) {
+  ArcAppTest arc_test;
+  arc_test.SetUp(profile());
+
+  arc::mojom::AppInfo app = arc_test.fake_apps()[0];
+  app.suspended = true;
+
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList({app});
+
+  const std::string app_id = ArcAppTest::GetAppId(app);
+  controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
+  ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
+  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
+  ASSERT_NE(nullptr, menu);
+
+  // Separators are not added to touchable app context menus. For touchable
+  // app context menus, arc app has double separator, three more app shortcuts
+  // provided by arc::FakeAppInstance and two separators between shortcuts.
+  int expected_items = features::IsTouchableAppContextMenuEnabled() ? 8 : 3;
+  ASSERT_EQ(expected_items, menu->GetItemCount());
+  int index = 0;
+  ValidateItemState(menu.get(), index++, MenuState(ash::TOGGLE_PIN));
+  if (!features::IsTouchableAppContextMenuEnabled())
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++, MenuState(ash::SHOW_APP_INFO));
+
+  // Test that arc app shortcuts provided by arc::FakeAppInstance have a
+  // separator between each app shortcut.
+  if (features::IsTouchableAppContextMenuEnabled()) {
+    EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
+    for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
+      EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
+                base::UTF16ToUTF8(menu->GetLabelAt(index++)));
+      if (index < menu->GetItemCount())
+        EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
+    }
+  }
+}
+
 TEST_F(AppContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   // Tests that CommandId enums are not changed as the values are used in
   // histograms.

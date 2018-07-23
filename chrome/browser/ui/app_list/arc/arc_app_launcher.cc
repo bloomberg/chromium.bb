@@ -24,9 +24,7 @@ ArcAppLauncher::ArcAppLauncher(content::BrowserContext* context,
   DCHECK(prefs);
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id_);
-  if (app_info && (app_info->ready || deferred_launch_allowed_))
-    LaunchApp();
-  else
+  if (!app_info || !MaybeLaunchApp(app_id, *app_info))
     prefs->AddObserver(this);
 }
 
@@ -42,17 +40,23 @@ ArcAppLauncher::~ArcAppLauncher() {
 void ArcAppLauncher::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  if (app_id == app_id_ && (app_info.ready || deferred_launch_allowed_))
-    LaunchApp();
+  MaybeLaunchApp(app_id, app_info);
 }
 
-void ArcAppLauncher::OnAppReadyChanged(const std::string& app_id, bool ready) {
-  if (app_id == app_id_ && (ready || deferred_launch_allowed_))
-    LaunchApp();
+void ArcAppLauncher::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  MaybeLaunchApp(app_id, app_info);
 }
 
-void ArcAppLauncher::LaunchApp() {
+bool ArcAppLauncher::MaybeLaunchApp(const std::string& app_id,
+                                    const ArcAppListPrefs::AppInfo& app_info) {
   DCHECK(!app_launched_);
+
+  if (app_id != app_id_ || (!app_info.ready && !deferred_launch_allowed_) ||
+      app_info.suspended) {
+    return false;
+  }
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs && prefs->GetApp(app_id_));
@@ -64,4 +68,5 @@ void ArcAppLauncher::LaunchApp() {
   }
 
   app_launched_ = true;
+  return true;
 }

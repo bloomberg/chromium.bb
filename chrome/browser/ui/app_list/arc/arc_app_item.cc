@@ -4,14 +4,10 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
-#include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/app_sorting.h"
-#include "ui/gfx/image/image_skia.h"
 
 // static
 const char ArcAppItem::kItemType[] = "ArcAppItem";
@@ -25,12 +21,8 @@ ArcAppItem::ArcAppItem(
     : ChromeAppListItem(profile, id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  arc_app_icon_.reset(new ArcAppIcon(
-      profile, id, app_list::AppListConfig::instance().grid_icon_dimension(),
-      this));
-
   SetName(name);
-  UpdateIcon();
+
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
   else
@@ -58,15 +50,6 @@ void ArcAppItem::ExecuteLaunchCommand(int event_flags) {
 
 void ArcAppItem::SetName(const std::string& name) {
   SetNameAndShortName(name, name);
-}
-
-void ArcAppItem::UpdateIcon() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  SetIcon(arc_app_icon_->image_skia());
-}
-
-void ArcAppItem::OnIconUpdated(ArcAppIcon* icon) {
-  UpdateIcon();
 }
 
 void ArcAppItem::GetContextMenuModel(GetMenuModelCallback callback) {

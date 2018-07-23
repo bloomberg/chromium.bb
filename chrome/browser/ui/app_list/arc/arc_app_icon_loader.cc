@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 ArcAppIconLoader::ArcAppIconLoader(Profile* profile,
                                    int icon_size,
@@ -51,15 +52,24 @@ void ArcAppIconLoader::UpdateImage(const std::string& app_id) {
   if (it == icon_map_.end())
     return;
 
-  delegate()->OnAppImageUpdated(app_id, it->second->image_skia());
+  gfx::ImageSkia image = it->second->image_skia();
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs_->GetApp(app_id);
+  if (app_info && app_info->suspended) {
+    image =
+        gfx::ImageSkiaOperations::CreateHSLShiftedImage(image, {-1, 0, 0.75});
+  }
+
+  delegate()->OnAppImageUpdated(app_id, image);
 }
 
 void ArcAppIconLoader::OnIconUpdated(ArcAppIcon* icon) {
   UpdateImage(icon->app_id());
 }
 
-void ArcAppIconLoader::OnAppReadyChanged(const std::string& app_id,
-                                         bool ready) {
+void ArcAppIconLoader::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
   AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
   if (it == icon_map_.end())
     return;

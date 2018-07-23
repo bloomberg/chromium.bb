@@ -978,10 +978,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
     // Adding app to the prefs, and check that the app is accessible by id.
     prefs->AddAppAndShortcut(
-        true /* app_ready */, app_info.name, app_info.package_name,
-        app_info.activity, std::string() /* intent_uri */,
-        std::string() /* icon_resource_id */, false /* sticky */,
-        true /* notifications_enabled */, false /* shortcut */,
+        app_info.name, app_info.package_name, app_info.activity,
+        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
+        false /* sticky */, true /* notifications_enabled */,
+        true /* app_ready */, false /* suspended */, false /* shortcut */,
         true /* launchable */);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
@@ -1956,6 +1956,39 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
               (request1->IsForApp(app3) && request2->IsForApp(app2)));
   EXPECT_EQ(arc_test_.app_instance()->launch_intents()[0].c_str(),
             shortcut.intent_uri);
+}
+
+// Launch is canceled in case app becomes suspended.
+TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
+  InitLauncherController();
+
+  arc::mojom::AppInfo app = arc_test_.fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  // Register app first.
+  arc_test_.app_instance()->RefreshAppList();
+  arc_test_.app_instance()->SendRefreshAppList({app});
+  arc_test_.StopArcInstance();
+
+  // Restart ARC
+  arc_test_.RestartArcInstance();
+
+  // Deferred controller should be allocated on start.
+  const ash::ShelfID shelf_id(app_id);
+  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
+                 arc::UserInteractionType::NOT_USER_INITIATED);
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
+
+  // Send app with suspended state.
+  app.suspended = true;
+  arc_test_.app_instance()->RefreshAppList();
+  arc_test_.app_instance()->SendRefreshAppList({app});
+
+  // Controler automatically closed.
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+
+  // And no launch request issued.
+  EXPECT_TRUE(arc_test_.app_instance()->launch_requests().empty());
 }
 
 // Ensure the spinner controller does not override the active app controller

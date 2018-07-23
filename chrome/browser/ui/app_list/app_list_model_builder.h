@@ -44,11 +44,11 @@ class AppListModelBuilder {
   AppListModelUpdater* model_updater() { return model_updater_; }
 
   // Inserts an app based on app ordinal prefs.
-  void InsertApp(std::unique_ptr<ChromeAppListItem> app);
+  virtual void InsertApp(std::unique_ptr<ChromeAppListItem> app);
 
   // Removes an app based on app id. If |unsynced_change| is set to true then
   // app is removed only from model and sync service is not used.
-  void RemoveApp(const std::string& id, bool unsynced_change);
+  virtual void RemoveApp(const std::string& id, bool unsynced_change);
 
   const app_list::AppListSyncableService::SyncItem* GetSyncItem(
       const std::string& id);

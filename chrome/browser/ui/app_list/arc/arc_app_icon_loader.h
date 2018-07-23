@@ -16,6 +16,8 @@
 
 class Profile;
 
+// ARC++ icon provider for the apps. It can support multiple ARC++ apps. This
+// observes apps changes and updates icons accordingly.
 class ArcAppIconLoader : public AppIconLoader,
                          public ArcAppListPrefs::Observer,
                          public ArcAppIcon::Observer {
@@ -32,7 +34,8 @@ class ArcAppIconLoader : public AppIconLoader,
   void UpdateImage(const std::string& id) override;
 
   // Overrides ArcAppListPrefs::Observer:
-  void OnAppReadyChanged(const std::string& id, bool ready) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppIconUpdated(const std::string& id,
                         ui::ScaleFactor scale_factor) override;
 

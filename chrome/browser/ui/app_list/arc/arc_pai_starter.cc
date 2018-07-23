@@ -88,11 +88,13 @@ void ArcPaiStarter::MaybeStartPai() {
 
 void ArcPaiStarter::OnAppRegistered(const std::string& app_id,
                                     const ArcAppListPrefs::AppInfo& app_info) {
-  OnAppReadyChanged(app_id, app_info.ready);
+  OnAppStatesChanged(app_id, app_info);
 }
 
-void ArcPaiStarter::OnAppReadyChanged(const std::string& app_id, bool ready) {
-  if (app_id == kPlayStoreAppId && ready)
+void ArcPaiStarter::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  if (app_id == kPlayStoreAppId && app_info.ready)
     MaybeStartPai();
 }
 

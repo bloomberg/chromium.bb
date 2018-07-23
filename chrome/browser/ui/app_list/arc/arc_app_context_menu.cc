@@ -46,7 +46,7 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     return;
   }
 
-  if (!controller()->IsAppOpen(app_id())) {
+  if (!controller()->IsAppOpen(app_id()) && !app_info->suspended) {
     AddContextMenuOption(menu_model, ash::LAUNCH_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
@@ -57,12 +57,13 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 
   if (!features::IsTouchableAppContextMenuEnabled())
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-  if (arc_prefs->IsShortcut(app_id()))
+  if (arc_prefs->IsShortcut(app_id())) {
     AddContextMenuOption(menu_model, ash::UNINSTALL,
                          IDS_APP_LIST_REMOVE_SHORTCUT);
-  else if (!app_info->sticky)
+  } else if (!app_info->sticky) {
     AddContextMenuOption(menu_model, ash::UNINSTALL,
                          IDS_APP_LIST_UNINSTALL_ITEM);
+  }
 
   // App Info item.
   AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
@@ -77,9 +78,8 @@ bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {
 
   switch (command_id) {
     case ash::UNINSTALL:
-      return app_info &&
-          !app_info->sticky &&
-          (app_info->ready || app_info->shortcut);
+      return app_info && !app_info->sticky &&
+             (app_info->ready || app_info->shortcut);
     case ash::SHOW_APP_INFO:
       return app_info && app_info->ready;
     default:
