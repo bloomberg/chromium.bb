@@ -250,13 +250,13 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
   EXPECT_FALSE(spell_check_enabled_);
+  EXPECT_FALSE(safe_browsing_extended_reporting_enabled_);
 
   // Consent is not revoked for the following services.
   EXPECT_TRUE(alternate_error_pages_enabled_);
   EXPECT_TRUE(metrics_reporting_enabled_);
   EXPECT_TRUE(network_predictions_enabled_);
   EXPECT_TRUE(safe_browsing_enabled_);
-  EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
   EXPECT_TRUE(search_suggest_enabled_);
 }
 #endif  // !defined(OS_CHROMEOS)

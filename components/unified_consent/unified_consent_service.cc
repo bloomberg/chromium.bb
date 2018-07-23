@@ -97,6 +97,7 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   // services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             false);
+  service_client_->SetSafeBrowsingExtendedReportingEnabled(false);
   service_client_->SetSpellCheckEnabled(false);
 
   switch (GetMigrationState()) {
