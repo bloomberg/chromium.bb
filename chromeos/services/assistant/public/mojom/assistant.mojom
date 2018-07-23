@@ -154,6 +154,9 @@ interface AudioInputObserver {
 interface DeviceActions {
   // Enables or disables WiFi.
   SetWifiEnabled(bool enabled);
+
+  // Enables or disables Bluetooth.
+  SetBluetoothEnabled(bool enabled);
 };
 
 // Enumeration of possible completions for an Assistant interaction.

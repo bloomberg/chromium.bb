@@ -14,7 +14,8 @@ class DeviceActions : public chromeos::assistant::mojom::DeviceActions {
   ~DeviceActions() override;
 
   // mojom::DeviceActions overrides:
-  void SetWifiEnabled(bool enable) override;
+  void SetWifiEnabled(bool enabled) override;
+  void SetBluetoothEnabled(bool enabled) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceActions);
