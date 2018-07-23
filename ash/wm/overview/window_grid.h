@@ -88,11 +88,13 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
       const aura::Window* window) const;
 
   // Adds |window| to the grid. Intended to be used by split view. |window|
-  // cannot already be on the grid.
-  void AddItem(aura::Window* window);
+  // cannot already be on the grid. If |reposition| is true, reposition all
+  // window items in the grid after adding the item.
+  void AddItem(aura::Window* window, bool reposition);
 
-  // Removes |selector_item| from the grid.
-  void RemoveItem(WindowSelectorItem* selector_item);
+  // Removes |selector_item| from the grid. If |reprosition| is ture, reposition
+  // all window items in the grid after removing the item.
+  void RemoveItem(WindowSelectorItem* selector_item, bool reposition);
 
   // Dims the items whose titles do not contain |pattern| and prevents their
   // selection. The pattern has its accents removed and is converted to

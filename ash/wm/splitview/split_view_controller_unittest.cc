@@ -2040,7 +2040,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
       window_selector->GetGridWithRootWindow(window2->GetRootWindow());
   ASSERT_TRUE(current_grid);
   window_selector->RemoveWindowSelectorItem(
-      current_grid->GetWindowSelectorItemContaining(window2.get()));
+      current_grid->GetWindowSelectorItemContaining(window2.get()),
+      /*reposition=*/false);
   resizer = StartDrag(window2.get(), window1.get());
   ASSERT_TRUE(resizer.get());
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
@@ -2076,7 +2077,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   // causing overview mode to end.
   // Remove |window1| from overview first before tab dragging.
   window_selector->RemoveWindowSelectorItem(
-      current_grid->GetWindowSelectorItemContaining(window1.get()));
+      current_grid->GetWindowSelectorItemContaining(window1.get()),
+      /*reposition=*/false);
   resizer = StartDrag(window1.get(), window2.get());
   ASSERT_TRUE(resizer.get());
   DragWindowTo(resizer.get(), gfx::Point(600, 500));

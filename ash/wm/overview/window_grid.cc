@@ -462,7 +462,7 @@ WindowSelectorItem* WindowGrid::GetWindowSelectorItemContaining(
   return nullptr;
 }
 
-void WindowGrid::AddItem(aura::Window* window) {
+void WindowGrid::AddItem(aura::Window* window, bool reposition) {
   DCHECK(!GetWindowSelectorItemContaining(window));
 
   window_observer_.Add(window);
@@ -478,10 +478,12 @@ void WindowGrid::AddItem(aura::Window* window) {
     window_list_.back()->set_should_animate_when_exiting(false);
   }
 
-  PositionWindows(/*animate=*/true);
+  if (reposition)
+    PositionWindows(/*animate=*/true);
 }
 
-void WindowGrid::RemoveItem(WindowSelectorItem* selector_item) {
+void WindowGrid::RemoveItem(WindowSelectorItem* selector_item,
+                            bool reposition) {
   auto iter =
       GetWindowSelectorItemIterContainingWindow(selector_item->GetWindow());
   if (iter != window_list_.end()) {
@@ -491,7 +493,8 @@ void WindowGrid::RemoveItem(WindowSelectorItem* selector_item) {
     window_list_.erase(iter);
   }
 
-  PositionWindows(/*animate=*/true);
+  if (reposition)
+    PositionWindows(/*animate=*/true);
 }
 
 void WindowGrid::FilterItems(const base::string16& pattern) {
@@ -571,7 +574,8 @@ void WindowGrid::OnWindowDragStarted(aura::Window* dragged_window) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(!new_selector_item_widget_);
   new_selector_item_widget_ = CreateNewSelectorItemWidget(dragged_window);
-  window_selector_->AddItem(new_selector_item_widget_->GetNativeWindow());
+  window_selector_->AddItem(new_selector_item_widget_->GetNativeWindow(),
+                            /*reposition=*/true);
 
   // Stack the newly added window item below |dragged_window|.
   DCHECK_EQ(dragged_window->parent(),
@@ -649,20 +653,28 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(new_selector_item_widget_.get());
 
-  // Check to see if the dragged window needs to be added to overview.
+  // Check to see if the dragged window needs to be added to overview. If so,
+  // add it to overview without repositioning the grid. It will be done at the
+  // end of this function.
   if (SelectedWindow()) {
     if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow()))
-      window_selector_->AddItem(dragged_window);
+      window_selector_->AddItem(dragged_window, /*reposition=*/false);
     SelectedWindow()->set_selected(false);
     selection_widget_.reset();
   }
 
-  window_selector_->RemoveWindowSelectorItem(GetWindowSelectorItemContaining(
-      new_selector_item_widget_->GetNativeWindow()));
+  window_selector_->RemoveWindowSelectorItem(
+      GetWindowSelectorItemContaining(
+          new_selector_item_widget_->GetNativeWindow()),
+      /*reposition=*/false);
   new_selector_item_widget_.reset();
 
   // Called to reset caption and title visibility after dragging.
   OnSelectorItemDragEnded();
+
+  // Need to call PositionWindows() here as the above two functions AddItem()
+  // and RemoveWindowSelectorItem() are called without repositioning windows.
+  PositionWindows(/*animate=*/true);
 }
 
 bool WindowGrid::IsNewSelectorItemWindow(aura::Window* window) const {
