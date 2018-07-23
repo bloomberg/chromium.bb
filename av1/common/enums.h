@@ -274,7 +274,7 @@ typedef enum ATTRIBUTE_PACKED {
   TX_TYPES,
 } TX_TYPE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   REG_REG,
   REG_SMOOTH,
   REG_SHARP,
@@ -478,7 +478,7 @@ typedef enum ATTRIBUTE_PACKED {
   INTERINTRA_MODES
 } INTERINTRA_MODE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   COMPOUND_AVERAGE,
   COMPOUND_WEDGE,
   COMPOUND_DIFFWTD,

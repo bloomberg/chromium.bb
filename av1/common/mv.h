@@ -56,7 +56,7 @@ typedef struct mv32 {
 #define WARPEDDIFF_PREC_BITS (WARPEDMODEL_PREC_BITS - WARPEDPIXEL_PREC_BITS)
 
 /* clang-format off */
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   IDENTITY = 0,      // identity transformation, 0-parameter
   TRANSLATION = 1,   // translational motion 2-parameter
   ROTZOOM = 2,       // simplified affine with rotation + zoom only, 4-parameter
