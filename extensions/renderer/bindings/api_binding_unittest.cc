@@ -803,7 +803,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
       EXPECT_EQ(1u, arguments->size());
       return result;
     }
-    EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
+    EXPECT_EQ("foo", gin::V8ToString(context->GetIsolate(), arguments->at(0)));
     return result;
   };
   hooks->AddHandler("test.oneString", base::Bind(hook, &did_call));
@@ -1066,7 +1066,7 @@ TEST_F(APIBindingUnittest,
       return result;
     }
     v8::Isolate* isolate = context->GetIsolate();
-    std::string arg_value = gin::V8ToString(arguments->at(0));
+    std::string arg_value = gin::V8ToString(isolate, arguments->at(0));
     if (arg_value == "throw") {
       isolate->ThrowException(v8::Exception::Error(
           gin::StringToV8(isolate, "Custom Hook Error")));

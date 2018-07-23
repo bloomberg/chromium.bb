@@ -172,7 +172,7 @@ void ArgumentSpecUnitTest::RunTest(RunTestParams& params) {
     }
   } else if (should_throw) {
     EXPECT_EQ(params.expected_thrown_message,
-              gin::V8ToString(try_catch.Message()->Get()));
+              gin::V8ToString(isolate, try_catch.Message()->Get()));
   }
 }
 

@@ -134,7 +134,7 @@ void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
       NOTREACHED();
       return;
     }
-    event_name = gin::V8ToString(v8_event_name);
+    event_name = gin::V8ToString(isolate, v8_event_name);
   }
 
   DCHECK(!supports_filters || !event_name.empty())
@@ -233,7 +233,7 @@ void APIBindingJSUtil::HandleException(gin::Arguments* arguments,
     std::string exception_string;
     v8::Local<v8::String> v8_exception_string;
     if (exception->ToString(context).ToLocal(&v8_exception_string))
-      exception_string = gin::V8ToString(v8_exception_string);
+      exception_string = gin::V8ToString(isolate, v8_exception_string);
     else
       exception_string = "(failed to get error message)";
     full_message =

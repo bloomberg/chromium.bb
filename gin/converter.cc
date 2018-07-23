@@ -141,9 +141,10 @@ bool Converter<std::string>::FromV8(Isolate* isolate,
   if (!val->IsString())
     return false;
   Local<String> str = Local<String>::Cast(val);
-  int length = str->Utf8Length();
+  int length = str->Utf8Length(isolate);
   out->resize(length);
-  str->WriteUtf8(&(*out)[0], length, NULL, String::NO_NULL_TERMINATION);
+  str->WriteUtf8(isolate, &(*out)[0], length, NULL,
+                 String::NO_NULL_TERMINATION);
   return true;
 }
 
@@ -217,11 +218,11 @@ v8::Local<v8::String> StringToSymbol(v8::Isolate* isolate,
       .ToLocalChecked();
 }
 
-std::string V8ToString(v8::Local<v8::Value> value) {
+std::string V8ToString(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return std::string();
   std::string result;
-  if (!ConvertFromV8(NULL, value, &result))
+  if (!ConvertFromV8(isolate, value, &result))
     return std::string();
   return result;
 }
