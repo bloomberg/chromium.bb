@@ -97,6 +97,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public quic::ProofVerifier {
       std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
       std::unique_ptr<quic::ProofVerifierCallback> callback) override;
+  std::unique_ptr<quic::ProofVerifyContext> CreateDefaultContext() override;
 
  private:
   class Job;

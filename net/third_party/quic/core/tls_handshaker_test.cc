@@ -59,6 +59,10 @@ class FakeProofVerifier : public ProofVerifier {
     return QUIC_PENDING;
   }
 
+  std::unique_ptr<ProofVerifyContext> CreateDefaultContext() override {
+    return nullptr;
+  }
+
   void Activate() { active_ = true; }
 
   size_t NumPendingCallbacks() const { return pending_ops_.size(); }
