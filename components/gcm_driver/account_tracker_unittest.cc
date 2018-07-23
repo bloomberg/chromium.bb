@@ -433,10 +433,11 @@ TEST_F(AccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
   NotifyTokenAvailable(kPrimaryAccountKey);
   EXPECT_TRUE(observer()->CheckEvents());
 
+  NotifyTokenRevoked(kPrimaryAccountKey);
+  EXPECT_TRUE(observer()->CheckEvents());
+
   NotifyLogin(kPrimaryAccountKey);
-  ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
-  EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+  EXPECT_TRUE(observer()->CheckEvents());
 }
 #endif
 
