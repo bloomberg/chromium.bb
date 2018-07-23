@@ -79,7 +79,8 @@
         this._log(id, 'Auth required for ' + id);
         requestInterceptedDict[filename + '+Auth'](event);
         return;
-      } else if (event.params.hasOwnProperty('redirectUrl')) {
+      }
+      if (event.params.hasOwnProperty('redirectUrl')) {
         var errorReason = '';
         if (event.params.responseErrorReason)
           errorReason = event.params.responseErrorReason + ' ';

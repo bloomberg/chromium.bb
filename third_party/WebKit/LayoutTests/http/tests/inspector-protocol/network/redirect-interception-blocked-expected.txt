@@ -11,8 +11,8 @@ Network.requestIntercepted ID 2 GET redirect1.pl type: Script
 allowRequest ID 2
 Network.requestIntercepted ID 2 307 redirect redirect1.pl -> redirect2.pl
 allowRequest ID 2
-Network.requestIntercepted ID 2 302 redirect redirect2.pl -> redirect3.pl
-blockRequest ID 2 AddressUnreachable
+Network.requestIntercepted ID 3 GET redirect2.pl type: Script
+blockRequest ID 3 AddressUnreachable
 Network.loadingFailed redirect2.pl net::ERR_ADDRESS_UNREACHABLE
 Page.frameStoppedLoading
 

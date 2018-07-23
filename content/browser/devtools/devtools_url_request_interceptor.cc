@@ -141,8 +141,7 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
     return nullptr;
   DCHECK(interception_stage != DONT_INTERCEPT);
 
-  bool is_redirect;
-  std::string interception_id = GetIdForRequest(request, &is_redirect);
+  std::string interception_id = base::StringPrintf("id-%zu", ++next_id_);
 
   if (IsNavigationRequest(resource_type)) {
     BrowserThread::PostTask(
@@ -155,8 +154,7 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
       this, interception_id, reinterpret_cast<intptr_t>(entry), request,
       network_delegate, target_info->devtools_token, entry->callback,
-      is_redirect, resource_request_info->GetResourceType(),
-      interception_stage);
+      resource_request_info->GetResourceType(), interception_stage);
   interception_id_to_job_map_[interception_id] = job;
   return job;
 }
@@ -259,28 +257,6 @@ void DevToolsURLRequestInterceptor::UnregisterSubRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sub_requests_.find(sub_request) != sub_requests_.end());
   sub_requests_.erase(sub_request);
-}
-
-void DevToolsURLRequestInterceptor::ExpectRequestAfterRedirect(
-    const net::URLRequest* request,
-    std::string id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  expected_redirects_[request] = id;
-}
-
-std::string DevToolsURLRequestInterceptor::GetIdForRequest(
-    const net::URLRequest* request,
-    bool* is_redirect) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto find_it = expected_redirects_.find(request);
-  if (find_it == expected_redirects_.end()) {
-    *is_redirect = false;
-    return base::StringPrintf("id-%zu", ++next_id_);
-  }
-  *is_redirect = true;
-  std::string id = find_it->second;
-  expected_redirects_.erase(find_it);
-  return id;
 }
 
 DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::GetJob(
