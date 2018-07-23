@@ -327,16 +327,23 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
                photos[0].photoContainerId == tile.dataset.photoContainerId);
         }
 
-        // Dependent upon the succces of the load, populate the image selection
+        // Dependent upon the success of the load, populate the image selection
         // dialog or close the current dialog.
-        customBackgrounds.resetSelectionDialog();
         if (imageDataLoaded) {
+          customBackgrounds.resetSelectionDialog();
           customBackgrounds.showImageSelectionDialog(tile.dataset.name);
         } else {
-          let source = customBackgrounds.dialogCollectionsSource;
-          customBackgrounds.closeCollectionDialog(menu);
-
-          let errors = source ? coll_img_errors : photos_errors;
+          let errors =
+              (collectionsSource ==
+                       customBackgrounds.SOURCES.CHROME_BACKGROUNDS ?
+                   coll_img_errors :
+                   photos_errors);
+          // If an auth error occurs leave the dialog open and redirect the
+          // user to sign-in again. Then they can return to the same place in
+          // the customization flow.
+          if (!errors.auth_error) {
+            customBackgrounds.closeCollectionDialog(menu);
+          }
           customBackgrounds.handleError(errors);
         }
       };
@@ -493,7 +500,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
  * variable name "coll" which is a dict of background collections data.
  * @private
  */
-customBackgrounds.loadCollections = function() {
+customBackgrounds.loadChromeBackgrounds = function() {
   var collElement = $('ntp-collection-loader');
   if (collElement) {
     collElement.parentNode.removeChild(collElement);
@@ -503,7 +510,14 @@ customBackgrounds.loadCollections = function() {
   collScript.src = 'chrome-search://local-ntp/ntp-background-collections.js?' +
       'collection_type=background';
   document.body.appendChild(collScript);
+};
 
+/**
+ * Load the NTPGooglePhotoAlbums script. It'll create a global
+ * variable name "albums" which is a dict of album data.
+ * @private
+ */
+customBackgrounds.loadGooglePhotosAlbums = function() {
   var albumElement = $('ntp-album-loader');
   if (albumElement) {
     albumElement.parentNode.removeChild(albumElement);
@@ -580,7 +594,6 @@ customBackgrounds.initCustomBackgrounds = function() {
 
   // Edit gear icon interaction events.
   var editBackgroundInteraction = function(event) {
-    customBackgrounds.loadCollections();
     editDialog.showModal();
   };
   $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
@@ -623,13 +636,16 @@ customBackgrounds.initCustomBackgrounds = function() {
 
   // Interactions with the "Chrome backgrounds" option.
   var defaultWallpapersInteraction = function(event) {
-    editDialog.close();
-    if (typeof coll != 'undefined' && coll.length > 0) {
-      customBackgrounds.showCollectionSelectionDialog(
-          customBackgrounds.SOURCES.CHROME_BACKGROUNDS);
-    } else {
-      customBackgrounds.handleError(coll_errors);
-    }
+    customBackgrounds.loadChromeBackgrounds();
+    $('ntp-collection-loader').onload = function() {
+      editDialog.close();
+      if (typeof coll != 'undefined' && coll.length > 0) {
+        customBackgrounds.showCollectionSelectionDialog(
+            customBackgrounds.SOURCES.CHROME_BACKGROUNDS);
+      } else {
+        customBackgrounds.handleError(coll_errors);
+      }
+    };
   };
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick =
       defaultWallpapersInteraction;
@@ -641,14 +657,24 @@ customBackgrounds.initCustomBackgrounds = function() {
 
   // Interactions with the Google Photos option.
   var googlePhotosInteraction = function(event) {
-    editDialog.close();
-    if (typeof albums != 'undefined' && !albums_errors.auth_error &&
-        !albums.net_error && !albums.service_error) {
-      customBackgrounds.showCollectionSelectionDialog(
-          customBackgrounds.SOURCES.GOOGLE_PHOTOS);
-    } else {
-      customBackgrounds.handleError(albums_errors);
-    }
+    customBackgrounds.loadGooglePhotosAlbums();
+    $('ntp-album-loader').onload = function() {
+      if (typeof albums != 'undefined' && !albums_errors.auth_error &&
+          !albums.net_error && !albums.service_error) {
+        editDialog.close();
+        customBackgrounds.showCollectionSelectionDialog(
+            customBackgrounds.SOURCES.GOOGLE_PHOTOS);
+      } else {
+        // If an auth error occurs leave the dialog open and redirect the
+        // user to sign-in again. Then they can return to the same place in
+        // the customization flow.
+        if (!albums_errors.auth_error) {
+          editDialog.close();
+        }
+
+        customBackgrounds.handleError(albums_errors);
+      }
+    };
   };
   $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onclick =
       googlePhotosInteraction;
