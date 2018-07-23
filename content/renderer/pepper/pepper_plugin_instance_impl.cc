@@ -2656,8 +2656,8 @@ void PepperPluginInstanceImpl::NumberOfFindResultsChanged(
   if (find_identifier_ == -1)
     return;
   if (render_frame_) {
-    render_frame_->ReportFindInPageMatchCount(find_identifier_, total,
-                                              PP_ToBool(final_result));
+    render_frame_->GetWebFrame()->ReportFindInPageMatchCount(
+        find_identifier_, total, PP_ToBool(final_result));
   }
 }
 
@@ -2665,9 +2665,9 @@ void PepperPluginInstanceImpl::SelectedFindResultChanged(PP_Instance instance,
                                                          int32_t index) {
   if (find_identifier_ == -1)
     return;
-  if (render_frame_) {
-    render_frame_->ReportFindInPageSelection(find_identifier_, index + 1,
-                                             blink::WebRect());
+  if (render_frame_ && render_frame_->GetWebFrame()) {
+    render_frame_->GetWebFrame()->ReportFindInPageSelection(
+        find_identifier_, index + 1, blink::WebRect(), false /* final_update*/);
   }
 }
 

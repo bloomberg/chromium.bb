@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -68,8 +69,8 @@ void FindInPage::RequestFind(int identifier,
                              const WebFindOptions& options) {
   // Send "no results" if this frame has no visible content.
   if (!frame_->HasVisibleContent() && !options.force) {
-    frame_->Client()->ReportFindInPageMatchCount(identifier, 0 /* count */,
-                                                 true /* finalUpdate */);
+    frame_->ReportFindInPageMatchCount(identifier, 0 /* count */,
+                                       true /* finalUpdate */);
     return;
   }
 
@@ -87,8 +88,8 @@ void FindInPage::RequestFind(int identifier,
   if (result && !options.find_next) {
     // Indicate that at least one match has been found. 1 here means
     // possibly more matches could be coming.
-    frame_->Client()->ReportFindInPageMatchCount(identifier, 1 /* count */,
-                                                 false /* finalUpdate */);
+    frame_->ReportFindInPageMatchCount(identifier, 1 /* count */,
+                                       false /* final_update */);
   }
 
   // There are three cases in which scoping is needed:
@@ -306,6 +307,26 @@ void FindInPage::Dispose() {
 
 void FindInPage::ContextDestroyed(ExecutionContext* context) {
   binding_.Close();
+}
+
+void WebLocalFrameImpl::ReportFindInPageMatchCount(int request_id,
+                                                   int count,
+                                                   bool final_update) {
+  if (!Client())
+    return;
+  Client()->SendFindReply(request_id, count, -1 /* active_match_ordinal */,
+                          WebRect(), final_update);
+}
+
+void WebLocalFrameImpl::ReportFindInPageSelection(
+    int request_id,
+    int active_match_ordinal,
+    const blink::WebRect& selection_rect,
+    bool final_update) {
+  if (!Client())
+    return;
+  Client()->SendFindReply(request_id, -1 /* match_count */,
+                          active_match_ordinal, selection_rect, final_update);
 }
 
 }  // namespace blink

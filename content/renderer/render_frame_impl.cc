@@ -5152,24 +5152,6 @@ void RenderFrameImpl::DidChangeScrollOffset() {
     observer.DidChangeScrollOffset();
 }
 
-void RenderFrameImpl::ReportFindInPageMatchCount(int request_id,
-                                                 int count,
-                                                 bool final_update) {
-  // -1 here means don't update the active match ordinal.
-  int active_match_ordinal = count ? -1 : 0;
-
-  SendFindReply(request_id, count, active_match_ordinal, gfx::Rect(),
-                final_update);
-}
-
-void RenderFrameImpl::ReportFindInPageSelection(
-    int request_id,
-    int active_match_ordinal,
-    const blink::WebRect& selection_rect) {
-  SendFindReply(request_id, -1 /* match_count */, active_match_ordinal,
-                selection_rect, false /* final_status_update */);
-}
-
 blink::WebPushClient* RenderFrameImpl::PushClient() {
   if (!push_messaging_client_)
     push_messaging_client_ = new PushMessagingClient(this);
@@ -6313,8 +6295,7 @@ void RenderFrameImpl::OnFind(int request_id,
     } else if (!plugin->StartFind(WebString::FromUTF16(search_text),
                                   options.match_case, request_id)) {
       // Send "no results".
-      SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
-                    gfx::Rect(), true /* final_status_update */);
+      frame_->ReportFindInPageMatchCount(request_id, 0, true);
     }
     return;
   }
@@ -7202,11 +7183,8 @@ void RenderFrameImpl::SendFindReply(int request_id,
 
   GetRenderWidget()->ConvertViewportToWindow(&converted_rect);
 
-  Send(new FrameHostMsg_Find_Reply(routing_id_,
-                                   request_id,
-                                   match_count,
-                                   converted_rect,
-                                   ordinal,
+  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, match_count,
+                                   converted_rect, ordinal,
                                    final_status_update));
 }
 

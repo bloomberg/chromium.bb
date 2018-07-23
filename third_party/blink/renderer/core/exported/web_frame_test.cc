@@ -5089,16 +5089,17 @@ class FindUpdateWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
   ~FindUpdateWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
-  void ReportFindInPageMatchCount(int, int count, bool final_update) override {
-    count_ = count;
-    if (final_update)
+  void SendFindReply(int request_id,
+                     int match_count,
+                     int ordinal,
+                     const WebRect& selection_rect,
+                     bool final_status_update) override {
+    if (match_count != -1)
+      count_ = match_count;
+    if (ordinal != -1)
+      active_index_ = ordinal;
+    if (final_status_update)
       find_results_are_ready_ = true;
-  }
-
-  void ReportFindInPageSelection(int,
-                                 int active_match_ordinal,
-                                 const WebRect&) override {
-    active_index_ = active_match_ordinal;
   }
 
   bool FindResultsAreReady() const { return find_results_are_ready_; }
