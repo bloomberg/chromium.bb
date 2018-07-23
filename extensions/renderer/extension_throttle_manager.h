@@ -76,7 +76,8 @@ class ExtensionThrottleManager {
   // Registers a new entry in this service and overrides the existing entry (if
   // any) for the URL. The service will hold a reference to the entry.
   // It is only used by unit tests.
-  void OverrideEntryForTests(const GURL& url, ExtensionThrottleEntry* entry);
+  void OverrideEntryForTests(const GURL& url,
+                             std::unique_ptr<ExtensionThrottleEntry> entry);
 
   // Sets whether to ignore net::LOAD_MAYBE_USER_GESTURE of the request for
   // testing. Otherwise, requests will not be throttled when they may have been
@@ -95,17 +96,10 @@ class ExtensionThrottleManager {
   // transformation.
   std::string GetIdFromUrl(const GURL& url) const;
 
-  // TODO(xunjieli): Remove this method and replace with
-  // ShouldRejectRequest(request) and UpdateWithResponse(request, status_code),
-  // which will also allow ExtensionThrottleEntry to no longer be reference
-  // counted, and ExtensionThrottleEntryInterface to be removed.
-
   // Must be called for every request, returns the URL request throttler entry
   // associated with the URL. The caller must inform this entry of some events.
-  // Please refer to extension_throttle_entry_interface.h for further
-  // informations.
-  scoped_refptr<ExtensionThrottleEntryInterface> RegisterRequestUrl(
-      const GURL& url);
+  // Please refer to extension_throttle_entry.h for further information.
+  ExtensionThrottleEntry* RegisterRequestUrl(const GURL& url);
 
   // Method that does the actual work of garbage collecting.
   void GarbageCollectEntries();
@@ -126,19 +120,14 @@ class ExtensionThrottleManager {
   // kRequestBetweenCollecting constant.
   void GarbageCollectEntriesIfNecessary();
 
-  // From each URL we generate an ID composed of the scheme, host, port and path
-  // that allows us to uniquely map an entry to it.
-  typedef std::map<std::string, scoped_refptr<ExtensionThrottleEntry>>
-      UrlEntryMap;
-
   // Maximum number of entries that we are willing to collect in our map.
   static const unsigned int kMaximumNumberOfEntries;
   // Number of requests that will be made between garbage collection.
   static const unsigned int kRequestsBetweenCollecting;
 
-  // Map that contains a list of URL ID and their matching
-  // ExtensionThrottleEntry.
-  UrlEntryMap url_entries_;
+  // Map that contains a list of URL ID (composed of the scheme, host, port and
+  // path) and their matching ExtensionThrottleEntry.
+  std::map<std::string, std::unique_ptr<ExtensionThrottleEntry>> url_entries_;
 
   // This keeps track of how many requests have been made. Used with
   // GarbageCollectEntries.
@@ -149,7 +138,7 @@ class ExtensionThrottleManager {
 
   bool ignore_user_gesture_load_flag_for_tests_;
 
-  // This is NULL when it is not set for tests.
+  // This is null when it is not set for tests.
   std::unique_ptr<net::BackoffEntry::Policy> backoff_policy_for_tests_;
 
   // Used to synchronize all public methods.

@@ -113,7 +113,6 @@ jumbo_source_set("renderer") {
     "extension_port.h",
     "extension_throttle_entry.cc",
     "extension_throttle_entry.h",
-    "extension_throttle_entry_interface.h",
     "extension_throttle_manager.cc",
     "extension_throttle_manager.h",
     "extension_url_loader_throttle.cc",

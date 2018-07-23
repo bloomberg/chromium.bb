@@ -25,7 +25,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
-#include "extensions/renderer/extension_throttle_manager.h"
+#include "extensions/renderer/extension_throttle_entry.h"
 #include "extensions/renderer/extension_throttle_test_support.h"
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -287,9 +287,11 @@ class Server : public DiscreteTimeSimulation::Actor {
 // Mock throttler entry used by Requester class.
 class MockExtensionThrottleEntry : public ExtensionThrottleEntry {
  public:
-  explicit MockExtensionThrottleEntry(ExtensionThrottleManager* manager)
-      : ExtensionThrottleEntry(manager, std::string()),
+  MockExtensionThrottleEntry()
+      : ExtensionThrottleEntry(std::string()),
         backoff_entry_(&backoff_policy_, &fake_clock_) {}
+
+  ~MockExtensionThrottleEntry() override {}
 
   const BackoffEntry* GetBackoffEntry() const override {
     return &backoff_entry_;
@@ -302,9 +304,6 @@ class MockExtensionThrottleEntry : public ExtensionThrottleEntry {
   void SetFakeNow(const TimeTicks& fake_time) {
     fake_clock_.set_now(fake_time);
   }
-
- protected:
-  ~MockExtensionThrottleEntry() override {}
 
  private:
   mutable TestTickClock fake_clock_;
@@ -377,11 +376,11 @@ class RequesterResults {
 // requests a specific resource.
 class Requester : public DiscreteTimeSimulation::Actor {
  public:
-  Requester(MockExtensionThrottleEntry* throttler_entry,
+  Requester(std::unique_ptr<MockExtensionThrottleEntry> throttler_entry,
             const TimeDelta& time_between_requests,
             Server* server,
             RequesterResults* results)
-      : throttler_entry_(throttler_entry),
+      : throttler_entry_(std::move(throttler_entry)),
         time_between_requests_(time_between_requests),
         last_attempt_was_failure_(false),
         server_(server),
@@ -454,7 +453,7 @@ class Requester : public DiscreteTimeSimulation::Actor {
   TimeDelta last_downtime_duration() const { return last_downtime_duration_; }
 
  private:
-  scoped_refptr<MockExtensionThrottleEntry> throttler_entry_;
+  std::unique_ptr<MockExtensionThrottleEntry> throttler_entry_;
   const TimeDelta time_between_requests_;
   TimeDelta request_jitter_;
   TimeTicks time_of_last_attempt_;
@@ -474,33 +473,30 @@ void SimulateAttack(Server* server,
   const size_t kNumAttackers = 50;
   const size_t kNumClients = 50;
   DiscreteTimeSimulation simulation;
-  ExtensionThrottleManager manager;
   std::vector<std::unique_ptr<Requester>> requesters;
   for (size_t i = 0; i < kNumAttackers; ++i) {
     // Use a tiny time_between_requests so the attackers will ping the
     // server at every tick of the simulation.
-    scoped_refptr<MockExtensionThrottleEntry> throttler_entry(
-        new MockExtensionThrottleEntry(&manager));
+    auto throttler_entry = std::make_unique<MockExtensionThrottleEntry>();
     if (!enable_throttling)
       throttler_entry->DisableBackoffThrottling();
 
     Requester* attacker =
-        new Requester(throttler_entry.get(), TimeDelta::FromMilliseconds(1),
-                      server, attacker_results);
+        new Requester(std::move(throttler_entry),
+                      TimeDelta::FromMilliseconds(1), server, attacker_results);
     attacker->SetStartupJitter(TimeDelta::FromSeconds(120));
     requesters.push_back(base::WrapUnique(attacker));
     simulation.AddActor(attacker);
   }
   for (size_t i = 0; i < kNumClients; ++i) {
     // Normal clients only make requests every 2 minutes, plus/minus 1 minute.
-    scoped_refptr<MockExtensionThrottleEntry> throttler_entry(
-        new MockExtensionThrottleEntry(&manager));
+    auto throttler_entry = std::make_unique<MockExtensionThrottleEntry>();
     if (!enable_throttling)
       throttler_entry->DisableBackoffThrottling();
 
     Requester* client =
-        new Requester(throttler_entry.get(), TimeDelta::FromMinutes(2), server,
-                      client_results);
+        new Requester(std::move(throttler_entry), TimeDelta::FromMinutes(2),
+                      server, client_results);
     client->SetStartupJitter(TimeDelta::FromSeconds(120));
     client->SetRequestJitter(TimeDelta::FromMinutes(1));
     requesters.push_back(base::WrapUnique(client));
@@ -572,14 +568,12 @@ double SimulateDowntime(const TimeDelta& duration,
   Server server(std::numeric_limits<int>::max(), 1.0);
   server.SetDowntime(start_downtime, duration);
 
-  ExtensionThrottleManager manager;
-  scoped_refptr<MockExtensionThrottleEntry> throttler_entry(
-      new MockExtensionThrottleEntry(&manager));
+  auto throttler_entry = std::make_unique<MockExtensionThrottleEntry>();
   if (!enable_throttling)
     throttler_entry->DisableBackoffThrottling();
 
-  Requester requester(throttler_entry.get(), average_client_interval, &server,
-                      NULL);
+  Requester requester(std::move(throttler_entry), average_client_interval,
+                      &server, NULL);
   requester.SetStartupJitter(duration / 3);
   requester.SetRequestJitter(average_client_interval);
 
