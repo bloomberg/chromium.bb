@@ -111,7 +111,10 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
   // https://crbug.com/863817
   CGLContextObj current_context = CGLGetCurrentContext();
   if (!current_context) {
-    LOG(ERROR) << "No context current!";
+    // TODO(ccameron): ImageTransportSurfaceOverlayMac assumes that it is only
+    // ever created with a GLContextCGL. This is no longer the case for layout
+    // tests, and possibly in other situations.
+    // https://crbug.com/866520
     return;
   }
 
