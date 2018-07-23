@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_metrics.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -35,12 +36,17 @@ class CastDialogView : public views::BubbleDialogDelegateView,
                        public CastDialogController::Observer,
                        public ui::SimpleMenuModel::Delegate {
  public:
-  // Instantiates and shows the singleton dialog. The dialog must not be
-  // currently shown.
-  static void ShowDialog(views::View* anchor_view,
-                         CastDialogController* controller,
-                         Browser* browser,
-                         const base::Time& start_time);
+  // Shows the singleton dialog anchored to the Cast toolbar icon. Requires that
+  // BrowserActionsContainer exists for |browser|.
+  static void ShowDialogWithToolbarAction(CastDialogController* controller,
+                                          Browser* browser,
+                                          const base::Time& start_time);
+
+  // Shows the singleton dialog anchored to the top-center of the browser
+  // window.
+  static void ShowDialogTopCentered(CastDialogController* controller,
+                                    Browser* browser,
+                                    const base::Time& start_time);
 
   // No-op if the dialog is currently not shown.
   static void HideDialog();
@@ -98,7 +104,19 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   }
 
  private:
+  friend class CastDialogViewTest;
+  FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, ShowAndHideDialog);
+
+  // Instantiates and shows the singleton dialog. The dialog must not be
+  // currently shown.
+  static void ShowDialog(views::View* anchor_view,
+                         views::BubbleBorder::Arrow anchor_position,
+                         CastDialogController* controller,
+                         Browser* browser,
+                         const base::Time& start_time);
+
   CastDialogView(views::View* anchor_view,
+                 views::BubbleBorder::Arrow anchor_position,
                  CastDialogController* controller,
                  Browser* browser,
                  const base::Time& start_time);

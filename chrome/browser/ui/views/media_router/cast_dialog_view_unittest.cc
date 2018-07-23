@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -102,7 +103,8 @@ class CastDialogViewTest : public ChromeViewsTestBase {
             WithArg<0>(Invoke([this](CastDialogController::Observer* observer) {
               dialog_ = static_cast<CastDialogView*>(observer);
             })));
-    CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_,
+    CastDialogView::ShowDialog(anchor_widget_->GetContentsView(),
+                               views::BubbleBorder::TOP_RIGHT, &controller_,
                                nullptr, base::Time::Now());
 
     dialog_->OnModelUpdated(model);
@@ -149,7 +151,8 @@ TEST_F(CastDialogViewTest, MAYBE_ShowAndHideDialog) {
   EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
 
   EXPECT_CALL(controller_, AddObserver(_));
-  CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_,
+  CastDialogView::ShowDialog(anchor_widget_->GetContentsView(),
+                             views::BubbleBorder::TOP_RIGHT, &controller_,
                              nullptr, base::Time::Now());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CastDialogView::IsShowing());

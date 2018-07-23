@@ -13,9 +13,14 @@
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +28,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
@@ -54,16 +60,25 @@ bool SupportsDesktopSource(const UIMediaSink& sink) {
 }  // namespace
 
 // static
-void CastDialogView::ShowDialog(views::View* anchor_view,
-                                CastDialogController* controller,
-                                Browser* browser,
-                                const base::Time& start_time) {
-  DCHECK(!instance_);
-  DCHECK(!start_time.is_null());
-  instance_ = new CastDialogView(anchor_view, controller, browser, start_time);
-  views::Widget* widget =
-      views::BubbleDialogDelegateView::CreateBubble(instance_);
-  widget->Show();
+void CastDialogView::ShowDialogWithToolbarAction(
+    CastDialogController* controller,
+    Browser* browser,
+    const base::Time& start_time) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  DCHECK(browser_view->toolbar()->browser_actions());
+  views::View* action_view =
+      browser_view->toolbar()->browser_actions()->GetViewForId(
+          ComponentToolbarActionsFactory::kMediaRouterActionId);
+  ShowDialog(action_view, views::BubbleBorder::TOP_RIGHT, controller, browser,
+             start_time);
+}
+
+// static
+void CastDialogView::ShowDialogTopCentered(CastDialogController* controller,
+                                           Browser* browser,
+                                           const base::Time& start_time) {
+  ShowDialog(BrowserView::GetBrowserViewForBrowser(browser)->top_container(),
+             views::BubbleBorder::TOP_CENTER, controller, browser, start_time);
 }
 
 // static
@@ -205,11 +220,27 @@ void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
   metrics_.OnCastModeSelected();
 }
 
+// static
+void CastDialogView::ShowDialog(views::View* anchor_view,
+                                views::BubbleBorder::Arrow anchor_position,
+                                CastDialogController* controller,
+                                Browser* browser,
+                                const base::Time& start_time) {
+  DCHECK(!instance_);
+  DCHECK(!start_time.is_null());
+  instance_ = new CastDialogView(anchor_view, anchor_position, controller,
+                                 browser, start_time);
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(instance_);
+  widget->Show();
+}
+
 CastDialogView::CastDialogView(views::View* anchor_view,
+                               views::BubbleBorder::Arrow anchor_position,
                                CastDialogController* controller,
                                Browser* browser,
                                const base::Time& start_time)
-    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : BubbleDialogDelegateView(anchor_view, anchor_position),
       selected_source_(kTabSource),
       controller_(controller),
       browser_(browser),
