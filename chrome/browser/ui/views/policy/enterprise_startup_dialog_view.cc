@@ -10,6 +10,7 @@
 #include "base/i18n/message_formatter.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
@@ -27,6 +28,11 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_client_view.h"
+
+#if defined(OS_MACOSX)
+#include "base/message_loop/message_loop_current.h"
+#include "chrome/browser/ui/views/policy/enterprise_startup_dialog_mac_util.h"
+#endif
 
 namespace policy {
 namespace {
@@ -59,10 +65,18 @@ views::Label* CreateText(const base::string16& message) {
 
 EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
-    : callback_(std::move(callback)), can_show_browser_window_(false) {
+    : callback_(std::move(callback)),
+      can_show_browser_window_(false),
+      weak_factory_(this) {
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
+#if defined(OS_MACOSX)
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&EnterpriseStartupDialogView::StartModalDialog,
+                                weak_factory_.GetWeakPtr()));
+#endif
 }
+
 EnterpriseStartupDialogView::~EnterpriseStartupDialogView() {}
 
 void EnterpriseStartupDialogView::DisplayLaunchingInformationWithThrobber(
@@ -106,12 +120,32 @@ void EnterpriseStartupDialogView::RemoveWidgetObserver(
   GetWidget()->RemoveObserver(observer);
 }
 
+void EnterpriseStartupDialogView::StartModalDialog() {
+#if defined(OS_MACOSX)
+  base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
+  StartModal(GetWidget()->GetNativeWindow());
+#endif
+}
+
+void EnterpriseStartupDialogView::RunDialogCallback(bool was_accepted) {
+#if defined(OS_MACOSX)
+  // On mac, we need to stop the modal message loop before returning the result
+  // to the caller who controls its own run loop.
+  StopModal();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), was_accepted,
+                                can_show_browser_window_));
+#else
+  std::move(callback_).Run(was_accepted, can_show_browser_window_);
+#endif
+}
+
 bool EnterpriseStartupDialogView::Accept() {
-  std::move(callback_).Run(true, can_show_browser_window_);
+  RunDialogCallback(true);
   return true;
 }
 bool EnterpriseStartupDialogView::Cancel() {
-  std::move(callback_).Run(false, can_show_browser_window_);
+  RunDialogCallback(false);
   return true;
 }
 

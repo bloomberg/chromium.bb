@@ -3502,6 +3502,8 @@ split_static_library("ui") {
       ]
       if (is_mac) {
         sources += [
+          "views/policy/enterprise_startup_dialog_mac_util.h",
+          "views/policy/enterprise_startup_dialog_mac_util.mm",
           "views/relaunch_notification/get_app_menu_anchor_point.h",
           "views/relaunch_notification/get_app_menu_anchor_point.mm",
         ]

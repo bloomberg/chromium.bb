@@ -33,6 +33,13 @@ class EnterpriseStartupDialogView : public views::DialogDelegateView {
   void RemoveWidgetObserver(views::WidgetObserver* observer);
 
  private:
+  // Run the dialog modally for MacOSX.
+  void StartModalDialog();
+
+  // Call the dialog callback. |was_accepted| is true if the dialog is confirmed
+  // by user. Otherwise it's false.
+  void RunDialogCallback(bool was_accepted);
+
   // override views::DialogDelegateView
   bool Accept() override;
   bool Cancel() override;
@@ -54,6 +61,8 @@ class EnterpriseStartupDialogView : public views::DialogDelegateView {
 
   EnterpriseStartupDialog::DialogResultCallback callback_;
   bool can_show_browser_window_;
+
+  base::WeakPtrFactory<EnterpriseStartupDialogView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseStartupDialogView);
 };
