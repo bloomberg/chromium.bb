@@ -16,7 +16,6 @@
 -SSLUITest.TestBadHTTPSDownload/0
 -SSLUITest.TestBadHTTPSDownload/1
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
--WebstoreInstallerBrowserTest.SimultaneousInstall
 -WebViewTest.WebViewInBackgroundPage
 
 # A large number of Cloud Print files use URLFetchers.
