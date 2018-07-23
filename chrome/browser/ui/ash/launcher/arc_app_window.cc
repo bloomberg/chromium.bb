@@ -82,7 +82,7 @@ void ArcAppWindow::SetDefaultAppIcon() {
   if (!app_icon_) {
     app_icon_ = std::make_unique<ArcAppIcon>(
         profile_, app_shelf_id_.ToString(),
-        app_list::AppListConfig::instance().grid_icon_dimension(), this);
+        app_list::AppListConfig::instance().arc_icon_dimension(), this);
   }
   // Apply default image now and in case icon is updated then OnIconUpdated()
   // will be called additionally.

@@ -34,7 +34,8 @@ AppListConfig::AppListConfig()
       preferred_rows_(5),
       page_spacing_(40),
       expand_arrow_tile_height_(60),
-      folder_bubble_radius_(23) {
+      folder_bubble_radius_(23),
+      arc_icon_dimension_(48) {
   if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;

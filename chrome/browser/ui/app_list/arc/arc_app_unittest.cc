@@ -410,7 +410,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   // Validates that provided image is acceptable as ARC app icon.
   void ValidateIcon(const gfx::ImageSkia& image) {
     const int icon_dimension =
-        app_list::AppListConfig::instance().grid_icon_dimension();
+        app_list::AppListConfig::instance().arc_icon_dimension();
     EXPECT_EQ(icon_dimension, image.width());
     EXPECT_EQ(icon_dimension, image.height());
 

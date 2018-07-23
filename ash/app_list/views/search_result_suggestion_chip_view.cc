@@ -31,24 +31,25 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
     : view_delegate_(view_delegate), weak_ptr_factory_(this) {}
 
 SearchResultSuggestionChipView::~SearchResultSuggestionChipView() {
-  DiscardItem();
+  SetSearchResult(nullptr);
 }
 
 void SearchResultSuggestionChipView::SetSearchResult(SearchResult* item) {
-  // Replace old item with new item.
-  DiscardItem();
-
-  if (!item)
+  if (item == item_)
     return;
+
+  // Replace old item with new item.
+  if (item_)
+    item_->RemoveObserver(this);
   item_ = item;
+  if (item_)
+    item_->AddObserver(this);
 
-  item_->AddObserver(this);
+  UpdateSuggestionChipView();
+}
 
-  app_list::SuggestionChipView::Params params;
-  params.text = item->title();
-  params.icon = item->icon();
-  suggestion_chip_view_ = new SuggestionChipView(params, /* listener */ this);
-  AddChildView(suggestion_chip_view_);
+void SearchResultSuggestionChipView::OnMetadataChanged() {
+  UpdateSuggestionChipView();
 }
 
 void SearchResultSuggestionChipView::OnResultDestroying() {
@@ -83,14 +84,21 @@ gfx::Size SearchResultSuggestionChipView::CalculatePreferredSize() const {
   return suggestion_chip_view_->GetPreferredSize();
 }
 
-void SearchResultSuggestionChipView::DiscardItem() {
-  delete suggestion_chip_view_;
-  suggestion_chip_view_ = nullptr;
+void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
+  if (!item_)
+    return;
 
-  if (item_)
-    item_->RemoveObserver(this);
+  if (suggestion_chip_view_) {
+    suggestion_chip_view_->SetIcon(item_->icon());
+    suggestion_chip_view_->SetText(item_->title());
+    return;
+  }
 
-  item_ = nullptr;
+  app_list::SuggestionChipView::Params params;
+  params.text = item_->title();
+  params.icon = item_->icon();
+  suggestion_chip_view_ = new SuggestionChipView(params, /* listener */ this);
+  AddChildView(suggestion_chip_view_);
 }
 
 }  // namespace app_list
