@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.shell;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.FrameLayout;
@@ -17,11 +18,23 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 class CastWebContentsView {
-    public static ScopeFactory<WebContents> onLayout(
+    public static ScopeFactory<WebContents> onLayoutActivity(
+            Activity activity, FrameLayout layout, int backgroundColor) {
+        layout.setBackgroundColor(backgroundColor);
+        WindowAndroid window = new ActivityWindowAndroid(activity);
+        return onLayoutInternal(activity, layout, window, backgroundColor);
+    }
+
+    public static ScopeFactory<WebContents> onLayoutFragment(
             Context context, FrameLayout layout, int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
+        WindowAndroid window = new WindowAndroid(context);
+        return onLayoutInternal(context, layout, window, backgroundColor);
+    }
+
+    private static ScopeFactory<WebContents> onLayoutInternal(
+            Context context, FrameLayout layout, WindowAndroid window, int backgroundColor) {
         return (WebContents webContents) -> {
-            WindowAndroid window = new ActivityWindowAndroid(context);
             ContentViewRenderView contentViewRenderView = new ContentViewRenderView(context) {
                 @Override
                 protected void onReadyToRender() {
