@@ -1610,6 +1610,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncAsName", IDS_SETTINGS_PEOPLE_SYNC_AS_NAME},
     {"syncingTo", IDS_SETTINGS_PEOPLE_SYNCING_TO_ACCOUNT},
     {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+    {"signInAgain", IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON},
     {"syncNotWorking", IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING},
     {"syncPaused", IDS_SETTINGS_PEOPLE_SYNC_PAUSED},
     {"syncSignInPromptWithAccount",
