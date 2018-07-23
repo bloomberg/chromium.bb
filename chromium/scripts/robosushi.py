@@ -17,6 +17,7 @@ import getopt
 import os
 import sys
 
+import robo_branch
 from robo_lib import log
 import robo_lib
 import robo_build
@@ -27,7 +28,7 @@ def main(argv):
   robo_configuration.chdir_to_ffmpeg_home();
 
   parsed, remaining = getopt.getopt(argv, "",
-          ["setup", "test", "build", "all"])
+          ["setup", "test", "build", "auto-merge", "auto-merge-test"])
 
   for opt, arg in parsed:
     if opt == "--setup":
@@ -38,14 +39,44 @@ def main(argv):
       robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
       robo_build.RunTests(robo_configuration)
     elif opt == "--build":
+      # Unconditionally build all the configs and import them.
       robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
-      # TODO: run check_merge.py
-      # TODO: run find_patches.py
-    elif opt == "--all":
-      robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
+    elif opt == "--auto-merge" or opt == "--auto-merge-test":
+      # Start a branch (if needed), merge (if needed), and try to verify it.
+      # TODO: Verify that the working directory is clean.
+      robo_branch.CreateAndCheckoutDatedSushiBranchIfNeeded(robo_configuration)
+      robo_branch.MergeUpstreamToSushiBranchIfNeeded(robo_configuration)
+      # We want to push the merge and make the local branch track it, so that
+      # future 'git cl upload's don't try to review the merge commit, and spam
+      # the ffmpeg committers.
+      robo_branch.PushToOriginWithoutReviewAndTrack(robo_configuration)
+
+      # Try to get everything to build.
+      # auto-merge-test is just to make this quicker while i'm developing it
+      # TODO: Make it skip these if they're already done.
+      if opt == "--auto-merge-test":
+        robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
+      else:
+        robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
+      robo_branch.HandleAutorename(robo_configuration)
+      robo_branch.AddAndCommit(robo_configuration, "GN Configuration")
+      robo_branch.CheckMerge(robo_configuration)
+      robo_branch.WritePatchesReadme(robo_configuration)
+      robo_branch.AddAndCommit(robo_configuration, "Chromium patches file")
       robo_build.RunTests(robo_configuration)
-      robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
-      # TODO: run some sanity checks to see if this might be okay to auto-roll.
+
+      # TODO: Start a fake deps roll.  To do this, we would:
+      # Create new remote branch from the current remote sushi branch.
+      # Create and check out a new local branch at the current local branch.
+      # Make the new local branch track the new remote branch.
+      # Push to origin/new remote branch.
+      # Start a fake deps roll CL that runs the *san bots.
+      # Switch back to original local branch.
+      # For extra points, include a pointer to the fake deps roll CL in the
+      # local branch, so that when it's pushed for review, it'll point the
+      # reviewer at it.
+
+      # TODO: git cl upload for review.
     else:
       raise Exception("Unknown option '%s'" % opt);
 

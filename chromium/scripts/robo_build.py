@@ -77,9 +77,7 @@ def BuildAndImportFFmpegConfigForHost(robo_configuration):
   Args:
     robo_configuration: RoboConfiguration.
   """
-  # TODO: optimize this out if we've done it already -- it's only needed if the
-  # ffmpeg build config changes.  If you just change ffmpeg source files, then
-  # just re-build chrome and it'll rebuild the library.
+
   ConfigureAndBuildFFmpeg(robo_configuration,
           robo_configuration.host_operating_system(),
           robo_configuration.host_architecture())
