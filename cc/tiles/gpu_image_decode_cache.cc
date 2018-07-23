@@ -1526,14 +1526,20 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
                                               image_data->needs_mips);
     size_t size = image_entry.SerializedSize();
     void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
-    // TODO(piman): handle error (failed to allocate/map shm)
-    DCHECK(data);
-    bool succeeded = image_entry.Serialize(
-        base::make_span(reinterpret_cast<uint8_t*>(data), size));
-    DCHECK(succeeded);
-    context_->ContextSupport()->UnmapAndCreateTransferCacheEntry(
-        image_entry.UnsafeType(), image_entry.Id());
-    image_data->upload.SetTransferCacheId(image_entry.Id());
+    if (data) {
+      bool succeeded = image_entry.Serialize(
+          base::make_span(reinterpret_cast<uint8_t*>(data), size));
+      DCHECK(succeeded);
+      context_->ContextSupport()->UnmapAndCreateTransferCacheEntry(
+          image_entry.UnsafeType(), image_entry.Id());
+      image_data->upload.SetTransferCacheId(image_entry.Id());
+    } else {
+      // Transfer cache entry can fail due to a lost gpu context or failure
+      // to allocate shared memory.  Handle this gracefully.  Mark this
+      // image as "decode failed" so that we do not try to handle it again.
+      // If this was a lost context, we'll recreate this image decode cache.
+      image_data->decode.decode_failure = true;
+    }
 
     return;
   }
