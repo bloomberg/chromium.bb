@@ -66,6 +66,10 @@
 #include "extensions/common/features/feature_session_type.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
 using base::ASCIIToUTF16;
 
 namespace {
@@ -173,12 +177,19 @@ class ProfileManagerTest : public testing::Test {
                           const std::string& name,
                           bool is_supervised,
                           MockObserver* mock_observer) {
+    std::string supervised_user_id;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    if (is_supervised)
+      supervised_user_id = supervised_users::kChildAccountSUID;
+#else
+    DCHECK(!is_supervised);
+#endif
     manager->CreateProfileAsync(temp_dir_.GetPath().AppendASCII(name),
                                 base::Bind(&MockObserver::OnProfileCreated,
                                            base::Unretained(mock_observer)),
                                 base::UTF8ToUTF16(name),
                                 profiles::GetDefaultAvatarIconUrl(0),
-                                is_supervised ? "Dummy ID" : std::string());
+                                supervised_user_id);
   }
 
   // Helper function to add a profile with |profile_name| to |profile_manager|'s
@@ -510,31 +521,37 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 }
 
 TEST_F(ProfileManagerTest, CreateProfileAsyncCheckOmitted) {
-  std::string name = "0 Supervised Profile";
-
   MockObserver mock_observer;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   EXPECT_CALL(mock_observer, OnProfileCreated(
       testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
+#else
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), NotFail()))
+      .Times(testing::AtLeast(1));
+#endif
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 
-  CreateProfileAsync(profile_manager, name, true, &mock_observer);
-  content::RunAllTasksUntilIdle();
-
-  ASSERT_EQ(1u, storage.GetNumberOfProfiles());
-  // Supervised profiles should start out omitted from the profile list.
-  EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0]->IsOmitted());
-
-  name = "1 Regular Profile";
+  std::string name = "0 Regular Profile";
   CreateProfileAsync(profile_manager, name, false, &mock_observer);
   content::RunAllTasksUntilIdle();
 
-  ASSERT_EQ(2u, storage.GetNumberOfProfiles());
+  ASSERT_EQ(1u, storage.GetNumberOfProfiles());
   // Non-supervised profiles should be included in the profile list.
-  EXPECT_FALSE(storage.GetAllProfilesAttributesSortedByName()[1]->IsOmitted());
+  EXPECT_FALSE(storage.GetAllProfilesAttributesSortedByName()[0]->IsOmitted());
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  name = "1 Supervised Profile";
+  CreateProfileAsync(profile_manager, name, true, &mock_observer);
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_EQ(2u, storage.GetNumberOfProfiles());
+  // Supervised profiles should start out omitted from the profile list.
+  EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[1]->IsOmitted());
+#endif
 }
 
 TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
@@ -543,16 +560,19 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
       profile_manager->GetProfileAttributesStorage();
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   const base::FilePath supervised_path =
       temp_dir_.GetPath().AppendASCII("Supervised");
   TestingProfile* supervised_profile =
       new TestingProfile(supervised_path, nullptr);
-  supervised_profile->GetPrefs()->SetString(prefs::kSupervisedUserId, "An ID");
+  supervised_profile->GetPrefs()->SetString(
+      prefs::kSupervisedUserId, supervised_users::kChildAccountSUID);
 
   // RegisterTestingProfile adds the profile to the cache and takes ownership.
   profile_manager->RegisterTestingProfile(supervised_profile, true, false);
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
   EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0]->IsOmitted());
+#endif
 
   const base::FilePath nonsupervised_path =
       temp_dir_.GetPath().AppendASCII("Non-Supervised");
@@ -560,10 +580,16 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
       new TestingProfile(nonsupervised_path, nullptr);
   profile_manager->RegisterTestingProfile(nonsupervised_profile, true, false);
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
+#else
+  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+#endif
   ProfileAttributesEntry* entry;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(supervised_path, &entry));
   EXPECT_TRUE(entry->IsOmitted());
+#endif
 
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(nonsupervised_path, &entry));
   EXPECT_FALSE(entry->IsOmitted());

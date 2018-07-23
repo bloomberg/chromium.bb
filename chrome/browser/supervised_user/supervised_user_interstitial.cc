@@ -352,8 +352,10 @@ void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
           << (success ? " successfully" : " unsuccessfully");
   std::string jsFunc =
       base::StringPrintf("setRequestStatus(%s);", success ? "true" : "false");
-  interstitial_page_->GetMainFrame()->ExecuteJavaScript(
-      base::ASCIIToUTF16(jsFunc));
+  if (interstitial_page_->GetMainFrame()) {
+    interstitial_page_->GetMainFrame()->ExecuteJavaScript(
+        base::ASCIIToUTF16(jsFunc));
+  }
 }
 
 bool SupervisedUserInterstitial::ShouldProceed() {

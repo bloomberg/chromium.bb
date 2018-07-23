@@ -27,13 +27,24 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace {
 
 class SupervisedUserServiceTestSupervised : public InProcessBrowserTest {
  public:
   // content::BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId,
+                                    supervised_users::kChildAccountSUID);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        "supervised_user@locally-managed.localhost");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+#endif
   }
 };
 
@@ -67,9 +78,9 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
   Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
   EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict),
-            safe_search_util::YOUTUBE_RESTRICT_MODERATE);
+            safe_search_util::YOUTUBE_RESTRICT_OFF);
   EXPECT_FALSE(
       prefs->IsUserModifiablePreference(prefs::kForceGoogleSafeSearch));
   EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kForceYouTubeRestrict));

@@ -76,6 +76,16 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
        !it.IsAtEnd(); it.Advance()) {
     base::DictionaryValue* info = NULL;
     cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
+    !defined(OS_CHROMEOS)
+    std::string supervised_user_id;
+    info->GetString(kSupervisedUserId, &supervised_user_id);
+    // Silently ignore legacy supervised user profiles.
+    if (!supervised_user_id.empty() &&
+        supervised_user_id != supervised_users::kChildAccountSUID) {
+      continue;
+    }
+#endif
     base::string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
@@ -115,6 +125,14 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
                                          size_t icon_index,
                                          const std::string& supervised_user_id,
                                          const AccountId& account_id) {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
+    !defined(OS_CHROMEOS)
+  // Silently ignore legacy supervised user profiles.
+  if (!supervised_user_id.empty() &&
+      supervised_user_id != supervised_users::kChildAccountSUID) {
+    return;
+  }
+#endif
   std::string key = CacheKeyFromProfilePath(profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();

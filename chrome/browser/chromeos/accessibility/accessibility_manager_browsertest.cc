@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -651,7 +652,15 @@ class AccessibilityManagerUserTypeTest : public AccessibilityManagerTest,
           user_manager::GuestAccountId().GetUserEmail());
     } else if (GetParam() ==
                AccountId::FromUserEmail(kTestSupervisedUserName)) {
-      command_line->AppendSwitchASCII(::switches::kSupervisedUserId, "asdf");
+      command_line->AppendSwitchASCII(::switches::kSupervisedUserId,
+                                      supervised_users::kChildAccountSUID);
+#if defined(OS_CHROMEOS)
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kLoginUser,
+          "supervised_user@locally-managed.localhost");
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                      "hash");
+#endif
     }
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
   }

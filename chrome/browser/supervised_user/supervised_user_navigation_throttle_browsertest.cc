@@ -32,6 +32,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using content::NavigationController;
 using content::WebContents;
 
@@ -107,7 +111,13 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
 
 void SupervisedUserNavigationThrottleTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
+  command_line->AppendSwitchASCII(switches::kSupervisedUserId,
+                                  supervised_users::kChildAccountSUID);
+#if defined(OS_CHROMEOS)
+  command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                  "supervised_user@locally-managed.localhost");
+  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+#endif
 }
 
 INSTANTIATE_TEST_CASE_P(,

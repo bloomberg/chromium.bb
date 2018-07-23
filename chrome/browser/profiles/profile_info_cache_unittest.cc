@@ -36,6 +36,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using content::BrowserThread;
@@ -137,7 +141,11 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     const SkBitmap* icon = rb.GetImageNamed(
         profiles::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
-    std::string supervised_user_id = i == 3 ? "TEST_ID" : "";
+    std::string supervised_user_id = "";
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    if (i == 3)
+      supervised_user_id = supervised_users::kChildAccountSUID;
+#endif
 
     GetCache()->AddProfileToCache(profile_path, profile_name, std::string(),
                                   base::string16(), i, supervised_user_id,
@@ -438,15 +446,18 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
     gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 TEST_F(ProfileInfoCacheTest, SetSupervisedUserId) {
   GetCache()->AddProfileToCache(GetProfilePath("test"), ASCIIToUTF16("Test"),
                                 std::string(), base::string16(), 0,
                                 std::string(), EmptyAccountId());
   EXPECT_FALSE(GetCache()->ProfileIsSupervisedAtIndex(0));
 
-  GetCache()->SetSupervisedUserIdOfProfileAtIndex(0, "TEST_ID");
+  GetCache()->SetSupervisedUserIdOfProfileAtIndex(
+      0, supervised_users::kChildAccountSUID);
   EXPECT_TRUE(GetCache()->ProfileIsSupervisedAtIndex(0));
-  EXPECT_EQ("TEST_ID", GetCache()->GetSupervisedUserIdOfProfileAtIndex(0));
+  EXPECT_EQ(supervised_users::kChildAccountSUID,
+            GetCache()->GetSupervisedUserIdOfProfileAtIndex(0));
 
   ResetCache();
   EXPECT_TRUE(GetCache()->ProfileIsSupervisedAtIndex(0));
@@ -455,6 +466,7 @@ TEST_F(ProfileInfoCacheTest, SetSupervisedUserId) {
   EXPECT_FALSE(GetCache()->ProfileIsSupervisedAtIndex(0));
   EXPECT_EQ("", GetCache()->GetSupervisedUserIdOfProfileAtIndex(0));
 }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   base::string16 profile_name = ASCIIToUTF16("name_1");
@@ -477,17 +489,20 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(0)));
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 TEST_F(ProfileInfoCacheTest, CreateSupervisedTestingProfile) {
   testing_profile_manager_.CreateTestingProfile("default");
   base::string16 supervised_user_name = ASCIIToUTF16("Supervised User");
   testing_profile_manager_.CreateTestingProfile(
       "test1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-      supervised_user_name, 0, "TEST_ID", TestingProfile::TestingFactories());
+      supervised_user_name, 0, supervised_users::kChildAccountSUID,
+      TestingProfile::TestingFactories());
   for (size_t i = 0; i < GetCache()->GetNumberOfProfiles(); i++) {
     bool is_supervised =
         GetCache()->GetNameOfProfileAtIndex(i) == supervised_user_name;
     EXPECT_EQ(is_supervised, GetCache()->ProfileIsSupervisedAtIndex(i));
-    std::string supervised_user_id = is_supervised ? "TEST_ID" : "";
+    std::string supervised_user_id =
+        is_supervised ? supervised_users::kChildAccountSUID : "";
     EXPECT_EQ(supervised_user_id,
               GetCache()->GetSupervisedUserIdOfProfileAtIndex(i));
   }
@@ -497,6 +512,7 @@ TEST_F(ProfileInfoCacheTest, CreateSupervisedTestingProfile) {
   // we still have a FILE thread.
   TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 }
+#endif
 
 TEST_F(ProfileInfoCacheTest, AddStubProfile) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());

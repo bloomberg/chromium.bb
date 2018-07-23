@@ -94,8 +94,8 @@ class InterstitialPage {
   // DidAttachInterstitialPage or DidDetachInterstitialPage notifications.
   virtual WebContents* GetWebContents() const = 0;
 
-  // Gets the RenderFrameHost associated with
-  // the interstitial page's main frame.
+  // Gets the RenderFrameHost associated with the interstitial page's main
+  // frame. May return nullptr if the interstitial is already hidden.
   virtual RenderFrameHost* GetMainFrame() const = 0;
 
   virtual InterstitialPageDelegate* GetDelegateForTesting() = 0;
