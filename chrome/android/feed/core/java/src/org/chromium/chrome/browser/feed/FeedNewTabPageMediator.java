@@ -6,7 +6,12 @@ package org.chromium.chrome.browser.feed;
 
 import android.content.res.Resources;
 
+import com.google.android.libraries.feed.api.stream.ScrollListener;
+import com.google.android.libraries.feed.api.stream.Stream;
+
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPageLayout;
+import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
@@ -16,17 +21,20 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
  * A mediator for the {@link FeedNewTabPage} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedNewTabPageMediator {
+class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
     private final FeedNewTabPage mCoordinator;
+    private final SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
 
+    private ScrollListener mStreamScrollListener;
     private SectionHeader mSectionHeader;
 
     /**
      * @param feedNewTabPage The {@link FeedNewTabPage} that interacts with this class.
      */
-    FeedNewTabPageMediator(FeedNewTabPage feedNewTabPage) {
+    FeedNewTabPageMediator(FeedNewTabPage feedNewTabPage, SnapScrollHelper snapScrollHelper) {
         mCoordinator = feedNewTabPage;
+        mSnapScrollHelper = snapScrollHelper;
         initializeProperties();
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();
@@ -36,6 +44,7 @@ class FeedNewTabPageMediator {
 
     /** Clears any dependencies. */
     void destroy() {
+        mCoordinator.getStream().removeScrollListener(mStreamScrollListener);
         mPrefChangeRegistrar.destroy();
     }
 
@@ -44,6 +53,25 @@ class FeedNewTabPageMediator {
      * TODO(huayinz): Introduce a Model for these properties.
      */
     private void initializeProperties() {
+        // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
+        // position that are due to layout changes after e.g. device rotation. This contrasts with
+        // regular scrolling, which is observed through an OnScrollListener.
+        mCoordinator.getView().addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    mSnapScrollHelper.handleScroll();
+                });
+
+        mStreamScrollListener = new ScrollListener() {
+            @Override
+            public void onScrollStateChanged(int state) {}
+
+            @Override
+            public void onScrolled(int dx, int dy) {
+                mSnapScrollHelper.handleScroll();
+            }
+        };
+        mCoordinator.getStream().addScrollListener(mStreamScrollListener);
+
         Resources res = mCoordinator.getSectionHeaderView().getResources();
         mSectionHeader =
                 new SectionHeader(res.getString(R.string.ntp_article_suggestions_section_header),
@@ -71,5 +99,43 @@ class FeedNewTabPageMediator {
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
         mCoordinator.getSectionHeaderView().updateIconDrawable();
+    }
+
+    // ScrollDelegate interface.
+
+    @Override
+    public boolean isScrollViewInitialized() {
+        Stream stream = mCoordinator.getStream();
+        // During startup the view may not be fully initialized, so we check to see if some basic
+        // view properties (height of the RecyclerView) are sane.
+        return stream != null && stream.getView().getHeight() > 0;
+    }
+
+    @Override
+    public int getVerticalScrollOffset() {
+        // This method returns a valid vertical scroll offset only when the first header view in the
+        // Stream is visible. In all other cases, this returns 0.
+        if (!isScrollViewInitialized()) return 0;
+
+        int firstChildTop = mCoordinator.getStream().getChildTopAt(0);
+        return firstChildTop != Stream.POSITION_NOT_KNOWN ? -firstChildTop : 0;
+    }
+
+    @Override
+    public boolean isChildVisibleAtPosition(int position) {
+        return isScrollViewInitialized()
+                && mCoordinator.getStream().isChildAtPositionVisible(position);
+    }
+
+    @Override
+    public void snapScroll() {
+        if (!isScrollViewInitialized()) return;
+
+        int initialScroll = getVerticalScrollOffset();
+        int scrollTo = mSnapScrollHelper.calculateSnapPosition(initialScroll);
+
+        // Calculating the snap position should be idempotent.
+        assert scrollTo == mSnapScrollHelper.calculateSnapPosition(scrollTo);
+        mCoordinator.getStream().smoothScrollBy(0, scrollTo - initialScroll);
     }
 }
