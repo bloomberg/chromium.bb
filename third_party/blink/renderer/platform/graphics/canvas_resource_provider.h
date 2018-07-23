@@ -179,7 +179,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   std::unique_ptr<cc::SkiaPaintCanvas> canvas_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
   std::unique_ptr<SkCanvas> xform_canvas_;
-  SkFilterQuality filter_quality_;
+  SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   const cc::PaintImage::Id snapshot_paint_image_id_;
   cc::PaintImage::ContentId snapshot_paint_image_content_id_ =

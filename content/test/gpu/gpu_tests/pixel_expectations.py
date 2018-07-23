@@ -45,6 +45,10 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
+    # Tests crashing on marshmallow bot
+    self.Fail('Pixel_CanvasLowLatency2D', ['android'], bug=865957)
+    self.Fail('Pixel_CanvasUnacceleratedLowLatency2D', ['android'], bug=865957)
+
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
