@@ -70,9 +70,10 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
                              TargetRegistry* registry);
   virtual void DetachSession(DevToolsSession* session);
 
-  virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
-                                       const std::string& message,
-                                       base::DictionaryValue* parsed_message);
+  virtual bool DispatchProtocolMessage(
+      DevToolsAgentHostClient* client,
+      const std::string& message,
+      std::unique_ptr<base::DictionaryValue> parsed_message);
 
   void NotifyCreated();
   void NotifyNavigated();

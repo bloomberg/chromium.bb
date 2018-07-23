@@ -43,8 +43,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   void SetRenderer(int process_host_id, RenderFrameHostImpl* frame_host);
 
   void AttachToAgent(const blink::mojom::DevToolsAgentAssociatedPtr& agent);
-  void DispatchProtocolMessage(const std::string& message,
-                               base::DictionaryValue* parsed_message);
+  void DispatchProtocolMessage(
+      const std::string& message,
+      std::unique_ptr<base::DictionaryValue> parsed_message);
   void SuspendSendingMessagesToAgent();
   void ResumeSendingMessagesToAgent();
 

@@ -24,20 +24,28 @@ void TargetRegistry::DetachSubtargetSession(const std::string& session_id) {
   sessions_.erase(session_id);
 }
 
-bool TargetRegistry::DispatchMessageOnAgentHost(
-    const std::string& message,
+bool TargetRegistry::CanDispatchMessageOnAgentHost(
     base::DictionaryValue* parsed_message) {
+  return parsed_message->FindKeyOfType("sessionId",
+                                       base::DictionaryValue::Type::STRING);
+}
+
+void TargetRegistry::DispatchMessageOnAgentHost(
+    const std::string& message,
+    std::unique_ptr<base::DictionaryValue> parsed_message) {
   std::string session_id;
-  if (!parsed_message->GetString("sessionId", &session_id))
-    return false;
+  bool result = parsed_message->GetString("sessionId", &session_id);
+  DCHECK(result);
+
   auto it = sessions_.find(session_id);
   if (it == sessions_.end()) {
     LOG(ERROR) << "Unknown session " << session_id;
-    return true;
+    return;
   }
   scoped_refptr<DevToolsAgentHostImpl> agent_host = it->second.first;
   DevToolsAgentHostClient* client = it->second.second;
-  return agent_host->DispatchProtocolMessage(client, message, parsed_message);
+  agent_host->DispatchProtocolMessage(client, message,
+                                      std::move(parsed_message));
 }
 
 void TargetRegistry::SendMessageToClient(const std::string& session_id,

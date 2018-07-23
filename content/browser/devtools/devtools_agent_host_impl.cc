@@ -231,20 +231,18 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
     const std::string& message) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-  if (value && !value->is_dict())
-    value.reset();
-  return DispatchProtocolMessage(
-      client, message, static_cast<base::DictionaryValue*>(value.get()));
+  return DispatchProtocolMessage(client, message,
+                                 base::DictionaryValue::From(std::move(value)));
 }
 
 bool DevToolsAgentHostImpl::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
     const std::string& message,
-    base::DictionaryValue* parsed_message) {
+    std::unique_ptr<base::DictionaryValue> parsed_message) {
   DevToolsSession* session = SessionByClient(client);
   if (!session)
     return false;
-  session->DispatchProtocolMessage(message, parsed_message);
+  session->DispatchProtocolMessage(message, std::move(parsed_message));
   return true;
 }
 
