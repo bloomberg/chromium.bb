@@ -4,12 +4,11 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_package_installer_notification.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_installer_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
@@ -31,10 +30,7 @@ CrostiniPackageInstallerNotification::CrostiniPackageInstallerNotification(
       profile_(profile),
       weak_ptr_factory_(this) {
   message_center::RichNotificationData rich_notification_data;
-  // TODO(timloh): This is probably not the right icon...
-  rich_notification_data.small_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_LOGO_CROSTINI_DEFAULT);
+  rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
   rich_notification_data.never_timeout = true;
   rich_notification_data.accent_color =
       message_center::kSystemNotificationColorNormal;
