@@ -89,8 +89,16 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
                                            max_texture_size,
                                            max_texture_bytes)) {
   DCHECK(serialize_cb_);
-  canvas_ = SkCreateColorSpaceXformCanvas(&text_blob_canvas_,
-                                          sk_ref_sp<SkColorSpace>(color_space));
+  if (color_space->isSRGB()) {
+    // Colorspace converting every paint is not free.  Only images have a
+    // non-srgb colorspace and this serializer does not handle images.
+    // Therefore, it's correct to just ignore the conversion for srgb.
+    canvas_ = &text_blob_canvas_;
+  } else {
+    color_canvas_ = SkCreateColorSpaceXformCanvas(
+        &text_blob_canvas_, sk_ref_sp<SkColorSpace>(color_space));
+    canvas_ = color_canvas_.get();
+  }
 }
 
 PaintOpBufferSerializer::~PaintOpBufferSerializer() = default;
@@ -107,7 +115,7 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
   // save / final restore. SerializeBuffer will create its own SerializeOptions
   // and PlaybackParams based on the post-preamble canvas.
   PaintOp::SerializeOptions options = MakeSerializeOptions();
-  PlaybackParams params = MakeParams(canvas_.get());
+  PlaybackParams params = MakeParams(canvas_);
 
   Save(options, params);
   SerializePreamble(preamble, options, params);
@@ -129,7 +137,7 @@ void PaintOpBufferSerializer::Serialize(
   DCHECK(canvas_->getTotalMatrix().isIdentity());
 
   PaintOp::SerializeOptions options = MakeSerializeOptions();
-  PlaybackParams params = MakeParams(canvas_.get());
+  PlaybackParams params = MakeParams(canvas_);
 
   // TODO(khushalsagar): remove this clip rect if it's not needed.
   if (!playback_rect.IsEmpty()) {
@@ -272,7 +280,7 @@ void PaintOpBufferSerializer::SerializeBuffer(
     const std::vector<size_t>* offsets) {
   DCHECK(buffer);
   PaintOp::SerializeOptions options = MakeSerializeOptions();
-  PlaybackParams params = MakeParams(canvas_.get());
+  PlaybackParams params = MakeParams(canvas_);
 
   for (PaintOpBuffer::PlaybackFoldingIterator iter(buffer, offsets); iter;
        ++iter) {
@@ -281,7 +289,7 @@ void PaintOpBufferSerializer::SerializeBuffer(
     // Skip ops outside the current clip if they have images. This saves
     // performing an unnecessary expensive decode.
     const bool skip_op = PaintOp::OpHasDiscardableImages(op) &&
-                         PaintOp::QuickRejectDraw(op, canvas_.get());
+                         PaintOp::QuickRejectDraw(op, canvas_);
     if (skip_op)
       continue;
 
@@ -352,9 +360,9 @@ bool PaintOpBufferSerializer::SerializeOp(
 
   if (op->IsPaintOpWithFlags() && options.flags_to_serialize) {
     static_cast<const PaintOpWithFlags*>(op)->RasterWithFlags(
-        canvas_.get(), options.flags_to_serialize, params);
+        canvas_, options.flags_to_serialize, params);
   } else {
-    op->Raster(canvas_.get(), params);
+    op->Raster(canvas_, params);
   }
   return true;
 }
@@ -378,8 +386,8 @@ void PaintOpBufferSerializer::RestoreToCount(
 
 PaintOp::SerializeOptions PaintOpBufferSerializer::MakeSerializeOptions() {
   return PaintOp::SerializeOptions(
-      image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
+      image_provider_, transfer_cache_, canvas_, strike_server_, color_space_,
+      can_use_lcd_text_, context_supports_distance_field_text_,
       max_texture_size_, max_texture_bytes_, canvas_->getTotalMatrix());
 }
 
