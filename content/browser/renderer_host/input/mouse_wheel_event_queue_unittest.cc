@@ -15,6 +15,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -621,4 +622,29 @@ TEST_F(MouseWheelEventQueueTest, WheelScrollingWasLatchedHistogramCheck) {
     histogram_tester.ExpectBucketCount(latching_histogram_name, 1, 1);
 }
 
+#if defined(OS_MACOSX)
+TEST_F(MouseWheelEventQueueTest, DoNotSwapXYForShiftScroll) {
+  // Send an event with shift modifier, zero value for delta X, and no direction
+  // for |rails_mode|. Do not swap the scroll direction.
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 0.0, 1.0, WebInputEvent::kShiftKey, false,
+                 WebMouseWheelEvent::kPhaseBegan,
+                 WebMouseWheelEvent::kPhaseNone, WebInputEvent::kRailsModeFree);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_TRUE(event_in_flight());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Receive an ACK for the mouse wheel event.
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(event_in_flight());
+  EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_EQ(0U, sent_gesture_event(1)->data.scroll_update.delta_x);
+  EXPECT_EQ(1U, sent_gesture_event(1)->data.scroll_update.delta_y);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+}
+#endif
 }  // namespace content

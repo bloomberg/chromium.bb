@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
@@ -126,6 +127,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         event_sent_for_gesture_ack_->event.PositionInScreen());
     scroll_update.resending_plugin_id = -1;
 
+#if !defined(OS_MACOSX)
     // Swap X & Y if Shift is down and when there is no horizontal movement.
     if ((event_sent_for_gesture_ack_->event.GetModifiers() &
          WebInputEvent::kShiftKey) != 0 &&
@@ -134,7 +136,9 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
           event_sent_for_gesture_ack_->event.delta_y;
       scroll_update.data.scroll_update.delta_y =
           event_sent_for_gesture_ack_->event.delta_x;
-    } else {
+    } else
+#endif  // OS_MACOSX
+    {
       scroll_update.data.scroll_update.delta_x =
           event_sent_for_gesture_ack_->event.delta_x;
       scroll_update.data.scroll_update.delta_y =
