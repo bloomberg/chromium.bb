@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
+#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -243,6 +244,17 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
   EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
 }
 
+// Tests the keyboard shortcut viewer, which is an out-of-process mojo app.
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
+  EnableChromeVox();
+  keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+
+  // Focus should move to the search field and ChromeVox should speak it.
+  while ("Search for keyboard shortcuts" !=
+         speech_monitor_.GetNextUtterance()) {
+  }
+}
+
 //
 // Spoken feedback tests in both a logged in browser window and guest mode.
 //
@@ -325,11 +337,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
-  // TODO(newcomer): reimplement this test once the AppListFocus changes are
-  // complete (http://crbug.com/784942).
-  return;
-
+// TODO(newcomer): reimplement this test once the AppListFocus changes are
+// complete (http://crbug.com/784942).
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_NavigateAppLauncher) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
