@@ -101,6 +101,9 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
 
   void OnRedirectionCollectionReady();
 
+  // WebContentsObserver implementation:
+  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
+
  protected:
   friend class ThreatDetailsFactoryImpl;
   friend class TestThreatDetailsFactory;
@@ -259,6 +262,10 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
 
   // Whether the |done_callback_| has been invoked.
   bool is_all_done_;
+
+  // The set of RenderFrameHosts that have pending requests and haven't been
+  // deleted.
+  std::set<content::RenderFrameHost*> pending_render_frame_hosts_;
 
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HistoryServiceUrls);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HttpsResourceSanitization);
