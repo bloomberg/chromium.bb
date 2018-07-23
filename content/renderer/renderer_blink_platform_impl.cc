@@ -1072,16 +1072,6 @@ blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
   return blink_interface_provider_.get();
 }
 
-void RendererBlinkPlatformImpl::StartListening(
-    blink::WebPlatformEventType type,
-    blink::WebPlatformEventListener* listener) {
-
-}
-
-void RendererBlinkPlatformImpl::StopListening(
-    blink::WebPlatformEventType type) {
-}
-
 //------------------------------------------------------------------------------
 
 blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {

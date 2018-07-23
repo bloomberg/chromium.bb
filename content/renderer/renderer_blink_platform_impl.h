@@ -187,9 +187,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
   service_manager::Connector* GetConnector() override;
   blink::InterfaceProvider* GetInterfaceProvider() override;
-  void StartListening(blink::WebPlatformEventType,
-                      blink::WebPlatformEventListener*) override;
-  void StopListening(blink::WebPlatformEventType) override;
   blink::WebThread* CurrentThread() override;
   blink::BlameContext* GetTopLevelBlameContext() override;
   void RecordRappor(const char* metric,
@@ -247,10 +244,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
-
-  // TODO(crbug.com/850997): Remove when Device*EventPump classes are
-  // moved to blink
-  void StopDeviceSensorEventPump(blink::WebPlatformEventType type);
 
   // Ensure that the WebDatabaseHost has been initialized.
   void InitializeWebDatabaseHostIfNeeded();

@@ -101,7 +101,6 @@ class WebCanvasCaptureHandler;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
-class WebPlatformEventListener;
 class WebFileSystem;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
@@ -630,18 +629,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual InterfaceProvider* GetInterfaceProvider();
 
   virtual const char* GetBrowserServiceName() const { return ""; }
-
-  // Platform events -----------------------------------------------------
-  // Device Orientation, Device Motion, Battery, Gamepad.
-
-  // Request the platform to start listening to the events of the specified
-  // type and notify the given listener (if not null) when there is an update.
-  virtual void StartListening(WebPlatformEventType type,
-                              WebPlatformEventListener* listener) {}
-
-  // Request the platform to stop listening to the specified event and no
-  // longer notify the listener, if any.
-  virtual void StopListening(WebPlatformEventType type) {}
 
   // This method converts from the supplied DOM code enum to the
   // embedder's DOM code value for the key pressed. |dom_code| values are
