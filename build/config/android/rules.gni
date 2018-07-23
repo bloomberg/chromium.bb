@@ -1527,7 +1527,6 @@ if (enable_java_templates) {
         args = [
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
-          "--classpath=@FileArg($_rebased_build_config:deps_info:proguard_all_extra_jars)",
         ]
         if (defined(invoker.proguard_config_exclusions)) {
           _rebased_proguard_config_exclusions =
@@ -2317,7 +2316,11 @@ if (enable_java_templates) {
                                "secondary_abi_loadable_modules",
                                "uncompress_shared_libraries",
                              ])
-      type = "android_apk"
+      if (_is_bundle_module) {
+        type = "android_app_bundle_module"
+      } else {
+        type = "android_apk"
+      }
       main_target_name = _template_name
       supports_android = true
       requires_android = true
@@ -2327,15 +2330,17 @@ if (enable_java_templates) {
       final_jar_path = _jar_path
       dex_path = _lib_dex_path
       final_dex_path = _final_dex_path
-      apk_path = _final_apk_path
 
       if (_is_bundle_module) {
         proto_resources_path = _packaged_resources_path
       }
 
-      incremental_allowed = _incremental_allowed
-      incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
-      incremental_install_json_path = _incremental_install_json_path
+      if (!_is_bundle_module) {
+        apk_path = _final_apk_path
+        incremental_allowed = _incremental_allowed
+        incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
+        incremental_install_json_path = _incremental_install_json_path
+      }
 
       proguard_enabled = _proguard_enabled
       if (_proguard_enabled) {
@@ -2401,7 +2406,6 @@ if (enable_java_templates) {
         args = [
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
-          "--classpath=@FileArg($_rebased_build_config:deps_info:proguard_all_extra_jars)",
         ]
         if (defined(invoker.proguard_config_exclusions)) {
           _rebased_proguard_config_exclusions =
@@ -3662,6 +3666,19 @@ if (enable_java_templates) {
       _all_modules += invoker.extra_modules
     }
 
+    # Make build config, which is required for synchronized proguarding.
+    _module_targets = []
+    foreach(_module, _all_modules) {
+      _module_targets += [ _module.module_target ]
+    }
+    _build_config = "$target_gen_dir/${target_name}.build_config"
+    _build_config_target = "${target_name}__build_config"
+    write_build_config(_build_config_target) {
+      type = "android_app_bundle"
+      possible_config_deps = _module_targets
+      build_config = _build_config
+    }
+
     # Generate one module .zip file per APK.
     _all_create_module_targets = []
     _all_module_zip_paths = []
@@ -3760,7 +3777,7 @@ if (enable_java_templates) {
       outputs = [
         _bundle_path,
       ]
-      deps = _all_create_module_targets
+      deps = _all_create_module_targets + [ ":$_build_config_target" ]
       args = [
         "--out-bundle=$_rebased_bundle_path",
         "--module-zips=$_all_rebased_module_zip_paths",
