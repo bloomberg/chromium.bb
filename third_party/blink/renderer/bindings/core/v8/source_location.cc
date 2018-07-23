@@ -89,7 +89,7 @@ std::unique_ptr<SourceLocation> SourceLocation::FromMessage(
 
   int script_id = message->GetScriptOrigin().ScriptID()->Value();
   if (!stack.IsEmpty() && stack->GetFrameCount() > 0) {
-    int top_script_id = stack->GetFrame(0)->GetScriptId();
+    int top_script_id = stack->GetFrame(isolate, 0)->GetScriptId();
     if (top_script_id == script_id)
       script_id = 0;
   }

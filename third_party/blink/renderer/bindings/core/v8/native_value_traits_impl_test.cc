@@ -145,7 +145,9 @@ TEST(NativeValueTraitsImplTest, IDLRecord) {
     EXPECT_TRUE(
         V8String(scope.GetIsolate(), "bogus!")
             ->Equals(
-                v8_exception->ToString(scope.GetContext()).ToLocalChecked()));
+                scope.GetContext(),
+                v8_exception->ToString(scope.GetContext()).ToLocalChecked())
+            .ToChecked());
   }
   {
     v8::Local<v8::Object> v8_object = v8::Object::New(scope.GetIsolate());

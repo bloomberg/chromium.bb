@@ -29,28 +29,31 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
     return ReferrerScriptInfo();
   }
 
-  v8::Local<v8::Primitive> base_url_value = host_defined_options->Get(kBaseURL);
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::Local<v8::Primitive> base_url_value =
+      host_defined_options->Get(isolate, kBaseURL);
   String base_url_string =
       ToCoreStringWithNullCheck(v8::Local<v8::String>::Cast(base_url_value));
   KURL base_url = base_url_string.IsEmpty() ? KURL() : KURL(base_url_string);
   DCHECK(base_url.IsNull() || base_url.IsValid());
 
   v8::Local<v8::Primitive> credentials_mode_value =
-      host_defined_options->Get(kCredentialsMode);
+      host_defined_options->Get(isolate, kCredentialsMode);
   auto credentials_mode = static_cast<network::mojom::FetchCredentialsMode>(
       credentials_mode_value->IntegerValue(context).ToChecked());
 
-  v8::Local<v8::Primitive> nonce_value = host_defined_options->Get(kNonce);
+  v8::Local<v8::Primitive> nonce_value =
+      host_defined_options->Get(isolate, kNonce);
   String nonce =
       ToCoreStringWithNullCheck(v8::Local<v8::String>::Cast(nonce_value));
 
   v8::Local<v8::Primitive> parser_state_value =
-      host_defined_options->Get(kParserState);
+      host_defined_options->Get(isolate, kParserState);
   ParserDisposition parser_state = static_cast<ParserDisposition>(
       parser_state_value->IntegerValue(context).ToChecked());
 
   v8::Local<v8::Primitive> referrer_policy_value =
-      host_defined_options->Get(kReferrerPolicy);
+      host_defined_options->Get(isolate, kReferrerPolicy);
   ReferrerPolicy referrer_policy = static_cast<ReferrerPolicy>(
       referrer_policy_value->IntegerValue(context).ToChecked());
 
@@ -68,25 +71,27 @@ v8::Local<v8::PrimitiveArray> ReferrerScriptInfo::ToV8HostDefinedOptions(
 
   v8::Local<v8::Primitive> base_url_value =
       V8String(isolate, base_url_.GetString());
-  host_defined_options->Set(HostDefinedOptionsIndex::kBaseURL, base_url_value);
+  host_defined_options->Set(isolate, HostDefinedOptionsIndex::kBaseURL,
+                            base_url_value);
 
   v8::Local<v8::Primitive> credentials_mode_value =
       v8::Integer::NewFromUnsigned(isolate,
                                    static_cast<uint32_t>(credentials_mode_));
-  host_defined_options->Set(HostDefinedOptionsIndex::kCredentialsMode,
+  host_defined_options->Set(isolate, HostDefinedOptionsIndex::kCredentialsMode,
                             credentials_mode_value);
 
   v8::Local<v8::Primitive> nonce_value = V8String(isolate, nonce_);
-  host_defined_options->Set(HostDefinedOptionsIndex::kNonce, nonce_value);
+  host_defined_options->Set(isolate, HostDefinedOptionsIndex::kNonce,
+                            nonce_value);
 
   v8::Local<v8::Primitive> parser_state_value = v8::Integer::NewFromUnsigned(
       isolate, static_cast<uint32_t>(parser_state_));
-  host_defined_options->Set(HostDefinedOptionsIndex::kParserState,
+  host_defined_options->Set(isolate, HostDefinedOptionsIndex::kParserState,
                             parser_state_value);
 
   v8::Local<v8::Primitive> referrer_policy_value = v8::Integer::NewFromUnsigned(
       isolate, static_cast<uint32_t>(referrer_policy_));
-  host_defined_options->Set(HostDefinedOptionsIndex::kReferrerPolicy,
+  host_defined_options->Set(isolate, HostDefinedOptionsIndex::kReferrerPolicy,
                             referrer_policy_value);
 
   return host_defined_options;

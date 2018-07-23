@@ -114,7 +114,8 @@ TEST(ScriptWrappableMarkingVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
   v8::Local<v8::Value> wrapper =
       ToV8(object, scope.GetContext()->Global(), isolate);
   EXPECT_TRUE(wrapper->IsObject());
-  v8::Local<v8::Object> wrapper_object = wrapper->ToObject();
+  v8::Local<v8::Object> wrapper_object =
+      wrapper->ToObject(scope.GetContext()).ToLocalChecked();
   // V8 collects wrappers with unmodified maps (as they can be recreated
   // without loosing any data if needed). We need to create some property on
   // wrapper so V8 will not see it as unmodified.
