@@ -4,6 +4,12 @@
 
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <utility>
+
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -104,6 +110,31 @@ bool IsValidBookmark(const sync_pb::BookmarkSpecifics& specifics,
   return true;
 }
 
+// Recursive method to traverse a forest created by ReorderUpdates() to to
+// emit updates in top-down order. |ordered_updates| must not be null because
+// traversed updates are appended to |*ordered_updates|.
+void TraverseAndAppendChildren(
+    const base::StringPiece& node_id,
+    const std::unordered_map<base::StringPiece,
+                             const syncer::UpdateResponseData*,
+                             base::StringPieceHash>& id_to_updates,
+    const std::unordered_map<base::StringPiece,
+                             std::vector<base::StringPiece>,
+                             base::StringPieceHash>& node_to_children,
+    std::vector<const syncer::UpdateResponseData*>* ordered_updates) {
+  // If no children to traverse, we are done.
+  if (node_to_children.count(node_id) == 0) {
+    return;
+  }
+  // Recurse over all children.
+  for (const base::StringPiece& child : node_to_children.at(node_id)) {
+    DCHECK_NE(id_to_updates.count(child), 0U);
+    ordered_updates->push_back(id_to_updates.at(child));
+    TraverseAndAppendChildren(child, id_to_updates, node_to_children,
+                              ordered_updates);
+  }
+}
+
 }  // namespace
 
 BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
@@ -116,7 +147,7 @@ BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
 
 void BookmarkRemoteUpdatesHandler::Process(
     const syncer::UpdateResponseDataList& updates) {
-  for (const syncer::UpdateResponseData* update : ReorderUpdates(updates)) {
+  for (const syncer::UpdateResponseData* update : ReorderUpdates(&updates)) {
     const syncer::EntityData& update_entity = update->entity.value();
     // TODO(crbug.com/516866): Check |update_entity| for sanity.
     // 1. Has bookmark specifics or no specifics in case of delete.
@@ -143,49 +174,86 @@ void BookmarkRemoteUpdatesHandler::Process(
 // static
 std::vector<const syncer::UpdateResponseData*>
 BookmarkRemoteUpdatesHandler::ReorderUpdatesForTest(
-    const syncer::UpdateResponseDataList& updates) {
+    const syncer::UpdateResponseDataList* updates) {
   return ReorderUpdates(updates);
 }
 
 // static
 std::vector<const syncer::UpdateResponseData*>
 BookmarkRemoteUpdatesHandler::ReorderUpdates(
-    const syncer::UpdateResponseDataList& updates) {
-  // TODO(crbug.com/516866): This is a very simple (hacky) reordering algorithm
-  // that assumes no folders exist except the top level permanent ones. This
-  // should be fixed before enabling USS for bookmarks.
-  std::vector<const syncer::UpdateResponseData*> ordered_updates;
-  for (const syncer::UpdateResponseData& update : updates) {
+    const syncer::UpdateResponseDataList* updates) {
+  // This method sorts the remote updates according to the following rules:
+  // 1. Creations and updates come before deletions.
+  // 2. Parent creation/update should come before child creation/update.
+  // 3. No need to further order deletions. Parent deletions can happen before
+  //    child deletions. This is safe because all updates (e.g. moves) should
+  //    have been processed already.
+
+  // The algorithm works by constructing a forest of all non-deletion updates
+  // and then traverses each tree in the forest recursively: Forest
+  // Construction:
+  // 1. Iterate over all updates and construct the |parent_to_children| map and
+  //    collect all parents in |roots|.
+  // 2. Iterate over all updates again and drop any parent that has a
+  //    coressponding update. What's left in |roots| are the roots of the
+  //    forest.
+  // 3. Start at each root in |roots|, emit the update and recurse over its
+  //    children.
+
+  std::unordered_map<base::StringPiece, const syncer::UpdateResponseData*,
+                     base::StringPieceHash>
+      id_to_updates;
+  std::set<base::StringPiece> roots;
+  std::unordered_map<base::StringPiece, std::vector<base::StringPiece>,
+                     base::StringPieceHash>
+      parent_to_children;
+
+  // Add only non-deletions to |id_to_updates|.
+  for (const syncer::UpdateResponseData& update : *updates) {
     const syncer::EntityData& update_entity = update.entity.value();
+    // Ignore updates to root nodes.
     if (update_entity.parent_id == "0") {
       continue;
     }
-    if (update_entity.parent_id == kBookmarksRootId) {
-      ordered_updates.push_back(&update);
-    }
-  }
-  for (const syncer::UpdateResponseData& update : updates) {
-    const syncer::EntityData& update_entity = update.entity.value();
-    // Deletions should come last.
     if (update_entity.is_deleted()) {
       continue;
     }
-    if (update_entity.parent_id != "0" &&
-        update_entity.parent_id != kBookmarksRootId) {
-      ordered_updates.push_back(&update);
+    id_to_updates[update_entity.id] = &update;
+  }
+  // Iterate over |id_to_updates| and construct |roots| and
+  // |parent_to_children|.
+  for (const std::pair<base::StringPiece, const syncer::UpdateResponseData*>&
+           pair : id_to_updates) {
+    const syncer::EntityData& update_entity = pair.second->entity.value();
+    parent_to_children[update_entity.parent_id].push_back(update_entity.id);
+    // If this entity's parent has no pending update, add it to |roots|.
+    if (id_to_updates.count(update_entity.parent_id) == 0) {
+      roots.insert(update_entity.parent_id);
     }
   }
-  // Now add deletions.
-  for (const syncer::UpdateResponseData& update : updates) {
+  // |roots| contains only root of all trees in the forest all of which are
+  // ready to be processed because none has a pending update.
+  std::vector<const syncer::UpdateResponseData*> ordered_updates;
+  for (const base::StringPiece& root : roots) {
+    TraverseAndAppendChildren(root, id_to_updates, parent_to_children,
+                              &ordered_updates);
+  }
+
+  int root_node_updates_count = 0;
+  // Add deletions.
+  for (const syncer::UpdateResponseData& update : *updates) {
     const syncer::EntityData& update_entity = update.entity.value();
-    if (!update_entity.is_deleted()) {
+    // Ignore updates to root nodes.
+    if (update_entity.parent_id == "0") {
+      root_node_updates_count++;
       continue;
     }
-    if (update_entity.parent_id != "0" &&
-        update_entity.parent_id != kBookmarksRootId) {
+    if (update_entity.is_deleted()) {
       ordered_updates.push_back(&update);
     }
   }
+  // All non root updates should have been included in |ordered_updates|.
+  DCHECK_EQ(updates->size(), ordered_updates.size() + root_node_updates_count);
   return ordered_updates;
 }
 
@@ -302,8 +370,10 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteDelete(
 
   // Handle corner cases first.
   if (tracked_entity == nullptr) {
-    // Local entity doesn't exist and update is tombstone.
-    DLOG(WARNING) << "Received remote delete for a non-existing item.";
+    // Process deletion only if the entity is still tracked. It could have
+    // been recursively deleted already with an earlier deletion of its
+    // parent.
+    DVLOG(1) << "Received remote delete for a non-existing item.";
     return;
   }
 
@@ -313,15 +383,23 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteDelete(
   if (bookmark_model_->is_permanent_node(node)) {
     return;
   }
-  // TODO(crbug.com/516866): Allow deletions of non-empty direcoties if makes
-  // sense, and recursively delete children.
-  if (node->child_count() > 0) {
-    DLOG(WARNING) << "Trying to delete a non-empty folder.";
-    return;
-  }
-
+  // Remove the entities of |node| and its children.
+  RemoveEntityAndChildrenFromTracker(node);
+  // Remove the node and its children from the model.
   bookmark_model_->Remove(node);
-  bookmark_tracker_->Remove(update_entity.id);
+}
+
+void BookmarkRemoteUpdatesHandler::RemoveEntityAndChildrenFromTracker(
+    const bookmarks::BookmarkNode* node) {
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(node);
+  DCHECK(entity);
+  bookmark_tracker_->Remove(entity->metadata()->server_id());
+
+  for (int i = 0; i < node->child_count(); ++i) {
+    const bookmarks::BookmarkNode* child = node->GetChild(i);
+    RemoveEntityAndChildrenFromTracker(child);
+  }
 }
 
 const bookmarks::BookmarkNode* BookmarkRemoteUpdatesHandler::GetParentNode(
