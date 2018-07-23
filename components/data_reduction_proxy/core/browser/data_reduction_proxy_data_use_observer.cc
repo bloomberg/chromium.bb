@@ -142,41 +142,6 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
 
 void DataReductionProxyDataUseObserver::OnPageDidFinishLoad(
     data_use_measurement::DataUse* data_use) {
-  // This is good place to update data savings based on the overall page
-  // load. If we waited until the |OnPageLoadConcluded| callback, we would miss
-  // cases where the page loaded but the user doesn't navigate away before
-  // Android kills chrome.
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  previews::PreviewsUserData* previews_user_data =
-      reinterpret_cast<previews::PreviewsUserData*>(
-          data_use->GetUserData(kDataUsePreviewsUserDataKey));
-  if (previews_user_data) {
-    // Report estimated data savings for NOSCRIPT if applicable.
-    if (previews_user_data->committed_previews_type() ==
-        previews::PreviewsType::NOSCRIPT) {
-      int inflation_percent =
-          previews::params::NoScriptPreviewsInflationPercent();
-      int inflation_bytes = previews::params::NoScriptPreviewsInflationBytes();
-      if (previews_user_data->data_savings_inflation_percent() != 0) {
-        // Use specific inflation percent rather than default.
-        inflation_percent =
-            previews_user_data->data_savings_inflation_percent();
-        inflation_bytes = 0;
-      }
-      int total_inflated_bytes =
-          (data_use->total_bytes_received() * inflation_percent) / 100 +
-          inflation_bytes;
-      // Report for overall usage.
-      DCHECK(data_use->url().SchemeIs(url::kHttpsScheme));
-      data_reduction_proxy_io_data_->UpdateContentLengths(
-          0, total_inflated_bytes, data_reduction_proxy_io_data_->IsEnabled(),
-          HTTPS, std::string(), true,
-          data_use_measurement::DataUseUserData::OTHER, 0);
-      // Report for host usage.
-      data_reduction_proxy_io_data_->UpdateDataUseForHost(
-          0, total_inflated_bytes, data_use->url().HostNoBrackets());
-    }
-  }
 }
 
 const void*

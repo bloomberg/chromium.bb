@@ -7,12 +7,19 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_user_data.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 
 namespace previews {
 
@@ -70,10 +77,15 @@ NoScriptPreviewPageLoadMetricsObserver::OnCommit(
 
   previews::PreviewsType preview_type =
       previews::GetMainFramePreviewsType(nav_data->previews_state());
-  if (preview_type == previews::PreviewsType::NOSCRIPT)
-    return CONTINUE_OBSERVING;
+  if (preview_type != previews::PreviewsType::NOSCRIPT)
+    return STOP_OBSERVING;
 
-  return STOP_OBSERVING;
+  data_savings_inflation_percent_ =
+      nav_data->previews_user_data()->data_savings_inflation_percent();
+
+  browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
+
+  return CONTINUE_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -89,6 +101,27 @@ NoScriptPreviewPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     RecordTimingMetrics(timing, info);
   }
   return STOP_OBSERVING;
+}
+
+void NoScriptPreviewPageLoadMetricsObserver::OnLoadEventStart(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  // TODO(dougarnett): Determine if a different event makes more sense.
+  // https://crbug.com/864720
+  int64_t inflation_bytes = 0;
+  if (data_savings_inflation_percent_ == 0) {
+    data_savings_inflation_percent_ =
+        previews::params::NoScriptPreviewsInflationPercent();
+    inflation_bytes = previews::params::NoScriptPreviewsInflationBytes();
+  }
+
+  int64_t total_saved_bytes =
+      (total_network_bytes_ * data_savings_inflation_percent_) / 100 +
+      inflation_bytes;
+
+  DCHECK(info.url.SchemeIs(url::kHttpsScheme));
+
+  WriteToSavings(info.url, total_saved_bytes);
 }
 
 void NoScriptPreviewPageLoadMetricsObserver::OnLoadedResource(
@@ -143,6 +176,34 @@ void NoScriptPreviewPageLoadMetricsObserver::RecordTimingMetrics(
                         timing.parse_timing->parse_stop.value() -
                             timing.parse_timing->parse_start.value());
   }
+}
+
+void NoScriptPreviewPageLoadMetricsObserver::OnDataUseObserved(
+    int64_t received_data_length,
+    int64_t data_reduction_proxy_bytes_saved) {
+  total_network_bytes_ += received_data_length;
+}
+
+void NoScriptPreviewPageLoadMetricsObserver::WriteToSavings(
+    const GURL& url,
+    int64_t bytes_saved) {
+  DCHECK(url.SchemeIs(url::kHttpsScheme));
+
+  data_reduction_proxy::DataReductionProxySettings*
+      data_reduction_proxy_settings =
+          DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+              browser_context_);
+
+  bool data_saver_enabled =
+      data_reduction_proxy_settings->IsDataReductionProxyEnabled();
+
+  data_reduction_proxy_settings->data_reduction_proxy_service()
+      ->UpdateContentLengths(0, bytes_saved, data_saver_enabled,
+                             data_reduction_proxy::HTTPS, "text/html", true,
+                             data_use_measurement::DataUseUserData::OTHER, 0);
+
+  data_reduction_proxy_settings->data_reduction_proxy_service()
+      ->UpdateDataUseForHost(0, bytes_saved, url.HostNoBrackets());
 }
 
 }  // namespace previews
