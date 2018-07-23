@@ -69,12 +69,18 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* BeginImplFrameStateToString(BeginImplFrameState state);
 
+  // The scheduler uses a deadline to wait for main thread updates before
+  // submitting a compositor frame. BeginImplFrameDeadlineMode specifies when
+  // the deadline should run.
   enum class BeginImplFrameDeadlineMode {
-    NONE,
-    IMMEDIATE,
-    REGULAR,
-    LATE,
-    BLOCKED,
+    NONE,  // No deadline should be scheduled e.g. for synchronous compositor.
+    IMMEDIATE,  // Deadline should be scheduled to run immediately.
+    REGULAR,  // Deadline should be scheduled to run at the deadline provided by
+              // in the BeginFrameArgs.
+    LATE,  // Deadline should be scheduled run when the next frame is expected
+           // to arrive.
+    BLOCKED,  // Deadline should be blocked indefinitely until the next frame
+              // arrives.
   };
   static const char* BeginImplFrameDeadlineModeToString(
       BeginImplFrameDeadlineMode mode);
@@ -168,6 +174,8 @@ class CC_EXPORT SchedulerStateMachine {
   BeginImplFrameState begin_impl_frame_state() const {
     return begin_impl_frame_state_;
   }
+
+  // Returns BeginImplFrameDeadlineMode computed based on current state.
   BeginImplFrameDeadlineMode CurrentBeginImplFrameDeadlineMode() const;
 
   // If the main thread didn't manage to produce a new frame in time for the
@@ -320,12 +328,19 @@ class CC_EXPORT SchedulerStateMachine {
   bool BeginFrameNeededForVideo() const;
   bool ProactiveBeginFrameWanted() const;
 
+  // Indicates if we should post the deadline to draw immediately. This is true
+  // when we aren't expecting a commit or activation, or we're prioritizing
+  // active tree draw (see ImplLatencyTakesPriority()).
+  bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
+
+  // Indicates if we shouldn't schedule a deadline. Used to defer drawing until
+  // the entire pipeline is flushed and active tree is ready to draw for
+  // headless.
+  bool ShouldBlockDeadlineIndefinitely() const;
+
   bool ShouldPerformImplSideInvalidation() const;
   bool CouldCreatePendingTree() const;
   bool ShouldDeferInvalidatingForMainFrame() const;
-
-  bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
-  bool ShouldBlockDeadlineIndefinitely() const;
 
   bool ShouldAbortCurrentFrame() const;
 

@@ -511,6 +511,9 @@ class SchedulerTest : public testing::Test {
     if (scheduler_->begin_frame_source() ==
         fake_external_begin_frame_source_.get()) {
       EXPECT_TRUE(scheduler_->begin_frames_expected());
+      // Run the deadline first if we're inside the previous frame.
+      if (client_->IsInsideBeginImplFrame())
+        task_runner_->RunPendingTasks();
       SendNextBeginFrame(animate_only);
     } else {
       task_runner_->RunTasksWhile(client_->FrameHasNotAdvancedCallback());
@@ -3678,10 +3681,11 @@ TEST_F(SchedulerTest, BeginFrameAckForBeginFrameBeforeLastDeadline) {
   client_->Reset();
 
   // Send the next BeginFrame before the previous one's deadline was executed.
-  // This should trigger the previous BeginFrame's deadline synchronously,
-  // during which tiles will be prepared. As a result of that, no further
-  // BeginFrames will be needed, and the new BeginFrame should be dropped.
+  // This should post the previous BeginFrame's deadline, during which tiles
+  // will be prepared. As a result of that, no further BeginFrames will be
+  // needed, and the new BeginFrame should be dropped.
   viz::BeginFrameArgs args = SendNextBeginFrame();
+  task_runner_->RunPendingTasks();  // Run posted deadline.
   EXPECT_ACTIONS("ScheduledActionPrepareTiles", "RemoveObserver(this)");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->begin_frames_expected());
@@ -3748,6 +3752,7 @@ TEST_F(SchedulerTest, BeginFrameAckForLateMissedBeginFrame) {
   task_runner_->AdvanceMockTickClock(viz::BeginFrameArgs::DefaultInterval());
   EXPECT_GT(task_runner_->NowTicks(), args.deadline);
   fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  task_runner_->RunPendingTasks();
 
   EXPECT_NO_ACTION();
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
