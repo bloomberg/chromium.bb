@@ -38,6 +38,22 @@ namespace url_formatter {
 typedef uint32_t FormatUrlType;
 typedef uint32_t FormatUrlTypes;
 
+// The result of an IDN to Unicode conversion.
+struct IDNConversionResult {
+  // The result of the conversion. If the input is a safe-to-display IDN encoded
+  // as punycode, this will be its unicode representation. Otherwise, it'll be
+  // the same as input.
+  base::string16 result;
+  // True if the hostname of the input has an IDN component, even if the result
+  // wasn't converted.
+  bool has_idn_component = false;
+  // The top domain that the hostname of the input is visually similar to. Is
+  // empty if the input didn't match any top domain.
+  // E.g. IDNToUnicodeWithDetails("googlé.com") will fill |result| with
+  // "xn--googl-fsa.com" and |matching_top_domain| with "google.com".
+  std::string matching_top_domain;
+};
+
 // Nothing is ommitted.
 extern const FormatUrlType kFormatUrlOmitNothing;
 
@@ -152,6 +168,9 @@ void AppendFormattedHost(const GURL& url, base::string16* output);
 // The input should be the canonicalized ASCII host name from GURL. This
 // function does NOT accept UTF-8!
 base::string16 IDNToUnicode(base::StringPiece host);
+
+// Same as IDNToUnicode, but returns more details.
+IDNConversionResult IDNToUnicodeWithDetails(base::StringPiece host);
 
 // If |text| starts with "www." it is removed, otherwise |text| is returned
 // unmodified.

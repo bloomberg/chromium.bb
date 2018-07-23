@@ -1009,6 +1009,12 @@ const char kIconNtpName[] = "Large icons on the New Tab page";
 const char kIconNtpDescription[] =
     "Enable the experimental New Tab page using large icons.";
 
+const char kIdnNavigationSuggestionsName[] =
+    "Navigation suggestions for internationalized domain names";
+const char kIdnNavigationSuggestionsDescription[] =
+    "Enable navigation suggestions for internationalized domain names that are "
+    "visually similar to popular domains.";
+
 const char kIgnoreGpuBlacklistName[] = "Override software rendering list";
 const char kIgnoreGpuBlacklistDescription[] =
     "Overrides the built-in software rendering list and enables "

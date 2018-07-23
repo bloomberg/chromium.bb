@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -22,7 +23,7 @@ AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
 }
 
 // static
-void AlternateNavInfoBarDelegate::Create(
+void AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
     content::WebContents* web_contents,
     const base::string16& text,
     const AutocompleteMatch& match,
@@ -30,24 +31,43 @@ void AlternateNavInfoBarDelegate::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(AlternateNavInfoBarDelegate::CreateInfoBar(
-      std::unique_ptr<AlternateNavInfoBarDelegate>(
-          new AlternateNavInfoBarDelegate(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-              text, match, search_url))));
+      base::WrapUnique(new AlternateNavInfoBarDelegate(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
+          std::make_unique<AutocompleteMatch>(match), match.destination_url,
+          search_url))));
+}
+
+// static
+void AlternateNavInfoBarDelegate::CreateForIDNNavigation(
+    content::WebContents* web_contents,
+    const base::string16& text,
+    const GURL& destination_url,
+    const GURL& original_url) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(AlternateNavInfoBarDelegate::CreateInfoBar(
+      base::WrapUnique(new AlternateNavInfoBarDelegate(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
+          nullptr, destination_url, original_url))));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     Profile* profile,
     const base::string16& text,
-    const AutocompleteMatch& match,
-    const GURL& search_url)
+    std::unique_ptr<AutocompleteMatch> match,
+    const GURL& destination_url,
+    const GURL& original_url)
     : infobars::InfoBarDelegate(),
       profile_(profile),
       text_(text),
-      match_(match),
-      search_url_(search_url) {
-  DCHECK(match_.destination_url.is_valid());
-  DCHECK(search_url_.is_valid());
+      match_(std::move(match)),
+      destination_url_(destination_url),
+      original_url_(original_url) {
+  if (match_)
+    DCHECK_EQ(destination_url_, match_->destination_url);
+
+  DCHECK(destination_url_.is_valid());
+  DCHECK(original_url_.is_valid());
 }
 
 // AlternateNavInfoBarDelegate::CreateInfoBar() is implemented in
@@ -61,37 +81,44 @@ base::string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
 }
 
 base::string16 AlternateNavInfoBarDelegate::GetLinkText() const {
-  return base::UTF8ToUTF16(match_.destination_url.spec());
+  return base::UTF8ToUTF16(destination_url_.spec());
 }
 
 GURL AlternateNavInfoBarDelegate::GetLinkURL() const {
-  return match_.destination_url;
+  return destination_url_;
 }
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  // Tell the shortcuts backend to remove the shortcut it added for the original
-  // search and instead add one reflecting this navigation.
-  scoped_refptr<ShortcutsBackend> shortcuts_backend(
-      ShortcutsBackendFactory::GetForProfile(profile_));
-  if (shortcuts_backend.get()) {  // May be NULL in incognito.
-    shortcuts_backend->DeleteShortcutsWithURL(search_url_);
-    shortcuts_backend->AddOrUpdateShortcut(text_, match_);
-  }
-
-  // Tell the history system to remove any saved search term for the search.
   history::HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::IMPLICIT_ACCESS);
-  if (history_service)
-    history_service->DeleteKeywordSearchTermForURL(search_url_);
+
+  if (match_) {
+    // If there is an autocomplete match, this is an omnibox navigation. Tell
+    // the shortcuts backend to remove the shortcut it added for the
+    // original search and instead add one reflecting this navigation.
+    scoped_refptr<ShortcutsBackend> shortcuts_backend(
+        ShortcutsBackendFactory::GetForProfile(profile_));
+    if (shortcuts_backend.get()) {  // May be NULL in incognito.
+      shortcuts_backend->DeleteShortcutsWithURL(original_url_);
+      shortcuts_backend->AddOrUpdateShortcut(text_, *match_);
+    }
+
+    // Tell the history system to remove any saved search term for the search.
+    if (history_service)
+      history_service->DeleteKeywordSearchTermForURL(original_url_);
+  } else {
+    // This is an IDN navigation suggestion. Remove the current entry.
+    if (history_service)
+      history_service->DeleteURL(original_url_);
+  }
 
   // Pretend the user typed this URL, so that navigating to it will be the
   // default action when it's typed again in the future.
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(match_.destination_url, content::Referrer(),
-                             disposition, ui::PAGE_TRANSITION_TYPED,
-                             false));
+      content::OpenURLParams(destination_url_, content::Referrer(), disposition,
+                             ui::PAGE_TRANSITION_TYPED, false));
 
   // We should always close, even if the navigation did not occur within this
   // WebContents.

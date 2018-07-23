@@ -1431,6 +1431,8 @@ jumbo_split_static_library("ui") {
       "omnibox/chrome_omnibox_navigation_observer.h",
       "omnibox/clipboard_utils.cc",
       "omnibox/clipboard_utils.h",
+      "omnibox/idn_navigation_observer.cc",
+      "omnibox/idn_navigation_observer.h",
       "omnibox/omnibox_theme.cc",
       "omnibox/omnibox_theme.h",
       "page_action/page_action_icon_container.h",

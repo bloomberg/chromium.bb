@@ -630,6 +630,9 @@ extern const char kHtmlBasedUsernameDetectorDescription[];
 extern const char kIconNtpName[];
 extern const char kIconNtpDescription[];
 
+extern const char kIdnNavigationSuggestionsName[];
+extern const char kIdnNavigationSuggestionsDescription[];
+
 extern const char kIgnoreGpuBlacklistName[];
 extern const char kIgnoreGpuBlacklistDescription[];
 
