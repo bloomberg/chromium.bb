@@ -135,20 +135,6 @@ mr.ProviderManager = class extends mr.Module {
     this.sinkAvailabilityMap_ = new Map();
 
     /**
-     * Whether mDNS is currently enabled.
-     * @private {boolean}
-     */
-    this.mdnsEnabled_ = window.navigator.userAgent.indexOf('Windows') == -1;
-
-    /**
-     * Functions that should be executed when |mdnsEnabled_| goes from |false|
-     * to
-     * |true|.
-     * @private {!Array<function()>}
-     */
-    this.mdnsEnabledCallbacks_ = [];
-
-    /**
      * Names of components that have requested to keep the extension alive.
      * @private {!Array<string>}
      */
@@ -608,11 +594,7 @@ mr.ProviderManager = class extends mr.Module {
    * @override
    */
   enableMdnsDiscovery() {
-    this.mdnsEnabled_ = true;
-    this.mdnsEnabledCallbacks_.forEach(callback => {
-      callback();
-    });
-    this.mdnsEnabledCallbacks_.length = 0;
+
   }
 
   /**
@@ -728,8 +710,7 @@ mr.ProviderManager = class extends mr.Module {
         Array.from(
             this.routeIdToProvider_,
             ([routeId, provider]) => [routeId, provider.getName()]),
-        Array.from(this.sinkAvailabilityMap_), this.mdnsEnabled_,
-        this.lastUsedMirrorService_)];
+        Array.from(this.sinkAvailabilityMap_), this.lastUsedMirrorService_)];
   }
 
   /**
@@ -749,9 +730,6 @@ mr.ProviderManager = class extends mr.Module {
       }
       this.sinkAvailabilityMap_ = new Map(savedData.sinkAvailabilityMap);
       this.lastUsedMirrorService_ = savedData.lastUsedMirrorService || null;
-      if (savedData.mdnsEnabled) {
-        this.enableMdnsDiscovery();
-      }
     }
   }
 
@@ -1007,27 +985,6 @@ mr.ProviderManager = class extends mr.Module {
   /**
    * @override
    */
-  registerMdnsDiscoveryEnabledCallback(callback) {
-    if (this.mdnsEnabled_) {
-      callback();
-      return;
-    }
-    if (this.mdnsEnabledCallbacks_.indexOf(callback) != -1) {
-      return;
-    }
-    this.mdnsEnabledCallbacks_.push(callback);
-  }
-
-  /**
-   * @override
-   */
-  isMdnsDiscoveryEnabled() {
-    return this.mdnsEnabled_;
-  }
-
-  /**
-   * @override
-   */
   requestKeepAlive(componentId, keepAlive) {
     const index = this.keepAliveComponents_.indexOf(componentId);
     const componentKeepAlive = (index >= 0);
@@ -1201,7 +1158,6 @@ mr.ProviderManager = class extends mr.Module {
         providerManager.startObservingMediaRoutes;
     obj['stopObservingMediaRoutes'] = providerManager.stopObservingMediaRoutes;
     obj['detachRoute'] = providerManager.detachRoute;
-    obj['enableMdnsDiscovery'] = providerManager.enableMdnsDiscovery;
     obj['searchSinks'] = providerManager.searchSinks;
     obj['provideSinks'] = providerManager.provideSinks;
     obj['updateMediaSinks'] = providerManager.updateMediaSinks;
@@ -1246,12 +1202,11 @@ mr.ProviderManager.PersistentData_ = class {
    * @param {!Array<string>} routeQueries
    * @param {!Array<!Array>} routeIdToProviderName
    * @param {!Array<!Array>} sinkAvailabilityMap
-   * @param {boolean} mdnsEnabled
    * @param {?mr.mirror.ServiceName} lastUsedMirrorService
    */
   constructor(
       providerNames, sinkQueries, routeQueries, routeIdToProviderName,
-      sinkAvailabilityMap, mdnsEnabled, lastUsedMirrorService) {
+      sinkAvailabilityMap, lastUsedMirrorService) {
     /**
      * @type {!Array<string>}
      */
@@ -1278,11 +1233,6 @@ mr.ProviderManager.PersistentData_ = class {
      * @type {!Array<!Array>}
      */
     this.sinkAvailabilityMap = sinkAvailabilityMap;
-
-    /**
-     * @type {boolean}
-     */
-    this.mdnsEnabled = mdnsEnabled;
 
     /**
      * @type {?mr.mirror.ServiceName}

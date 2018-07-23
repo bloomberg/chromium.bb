@@ -706,31 +706,6 @@ describe('Tests ProviderManager', function() {
       expect(providerManager.sinkAvailabilityMap_.get(mockProvider1Name))
           .toEqual(mr.SinkAvailability.AVAILABLE);
     });
-
-    it('ProviderManager calls mDNS callbacks if mDNS enabled', function() {
-      let callbackRuns = 0;
-      const callback = function() {
-        ++callbackRuns;
-      };
-      providerManager.mdnsEnabled_ = true;
-
-      // Data is saved to localStorage.
-      mr.PersistentDataManager.onSuspend_();
-
-      // Prevent immediate callback so we are sure it runs in loadSavedData
-      providerManager.mdnsEnabled_ = false;
-      providerManager.registerMdnsDiscoveryEnabledCallback(callback);
-      expect(callbackRuns).toBe(0);
-
-      // Make PersistentDataManager forget providerManager, so it can be
-      // registered again.
-      mr.PersistentDataManager.dataInstances_.clear();
-
-      // Load data back to providerManager.
-      mockProvider1.getAvailableSinks.and.returnValue(mr.SinkList.EMPTY);
-      mr.PersistentDataManager.register(providerManager);
-      expect(callbackRuns).toBe(1);
-    });
   });
 
   describe('Test onRouteRemoved', function() {
@@ -866,42 +841,6 @@ describe('Tests ProviderManager', function() {
         mockProvider2, mr.SinkAvailability.UNAVAILABLE);
     expect(mockMediaRouterService.onSinkAvailabilityUpdated)
         .toHaveBeenCalledWith(mr.SinkAvailability.UNAVAILABLE);
-  });
-
-  it('Test mDNS callbacks wait until mDNS is enabled', function() {
-    providerManager.mdnsEnabled_ = true;
-    let callbackRuns = 0;
-    const callback = function() {
-      ++callbackRuns;
-    };
-    providerManager.registerMdnsDiscoveryEnabledCallback(callback);
-    // Execute immediately when mDNS discovery is enabled.
-    expect(callbackRuns).toBe(1);
-
-    callbackRuns = 0;
-    providerManager.mdnsEnabled_ = false;
-    providerManager.registerMdnsDiscoveryEnabledCallback(callback);
-    // Defer execution until mDNS discovery is enabled.
-    expect(callbackRuns).toBe(0);
-    providerManager.enableMdnsDiscovery();
-    expect(callbackRuns).toBe(1);
-  });
-
-  it('Test mDNS callback registration disallows duplicates', function() {
-    providerManager.mdnsEnabled_ = true;
-    let callbackRuns = 0;
-    const callback = function() {
-      ++callbackRuns;
-    };
-
-    providerManager.mdnsEnabled_ = false;
-    providerManager.registerMdnsDiscoveryEnabledCallback(callback);
-    providerManager.registerMdnsDiscoveryEnabledCallback(callback);
-    // Defer execution until mDNS discovery is enabled and ensure only called
-    // once.
-    expect(callbackRuns).toBe(0);
-    providerManager.enableMdnsDiscovery();
-    expect(callbackRuns).toBe(1);
   });
 
   describe('searchSinks', function() {

@@ -194,16 +194,6 @@ mr.ProviderManagerCallbacks = class {
       opt_streamStartedCallback) {}
 
   /**
-   * Register a callback with the provider manager that will either be executed
-   * immediately if mDNS discovery is currently enabled or saved to be executed
-   * when mDNS discovery becomes enabled. This should allow duplicate calls to
-   * be
-   * made with the same function address but only call the function once.
-   * @param {function()} callback Callback that depends on mDNS discovery.
-   */
-  registerMdnsDiscoveryEnabledCallback(callback) {}
-
-  /**
    * Called by a component with |keepAlive| set to true when it requires the
    * extension to be kept alive. When a component no longer requires the
    * extension
@@ -215,9 +205,4 @@ mr.ProviderManagerCallbacks = class {
    * @param {boolean} keepAlive
    */
   requestKeepAlive(componentId, keepAlive) {}
-
-  /**
-   * @return {boolean} Whether mDNS discovery is currently enabled.
-   */
-  isMdnsDiscoveryEnabled() {}
 };
