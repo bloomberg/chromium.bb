@@ -1459,7 +1459,7 @@ def GeneralTemplates(site_config, ge_build_config):
       hw_tests=[],
       hw_tests_override=None,
       dev_installer_prebuilts=False,
-      upload_hw_test_artifacts=True,
+      upload_hw_test_artifacts=False,
       upload_symbols=False,
       useflags=append_useflags(['chromeless_tty']),
       signer_tests=False,
