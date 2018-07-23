@@ -4,15 +4,19 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.StrictMode;
 import android.preference.PreferenceFragment;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.XmlRes;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.ActionMenuView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -69,5 +73,30 @@ public class PreferenceUtils {
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.default_icon_color),
                 PorterDuff.Mode.SRC_IN);
         return icon;
+    }
+
+    /**
+     * A helper that is used to set the visibility of the overflow menu view in a given activity.
+     *
+     * @param activity The Activity containing the action bar with the menu.
+     * @param visibility The new visibility of the overflow menu view.
+     * @return True if the visibility could be set, false otherwise (e.g. because no menu exists).
+     */
+    public static boolean setOverflowMenuVisibility(@Nullable Activity activity, int visibility) {
+        if (activity == null) return false;
+        ViewGroup actionBar = activity.findViewById(org.chromium.chrome.R.id.action_bar);
+        int i = actionBar.getChildCount();
+        ActionMenuView menuView = null;
+        while (i-- > 0) {
+            if (actionBar.getChildAt(i) instanceof ActionMenuView) {
+                menuView = (ActionMenuView) actionBar.getChildAt(i);
+                break;
+            }
+        }
+        if (menuView == null) return false;
+        View overflowButton = menuView.getChildAt(menuView.getChildCount() - 1);
+        if (overflowButton == null) return false;
+        overflowButton.setVisibility(visibility);
+        return true;
     }
 }
