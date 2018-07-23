@@ -72,18 +72,6 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
   if (!visible())
     return;
 
-  if (!layer())
-    SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-
-  // When using focus rings are visible we should hide the separator instantly
-  // when the IconLabelBubbleView is focused. Otherwise we should follow the
-  // inkdrop.
-  if (views::PlatformStyle::kPreferFocusRings && owner_->is_focused()) {
-    layer()->SetOpacity(0.0f);
-    return;
-  }
-
   views::InkDrop* ink_drop = owner_->GetInkDrop();
   DCHECK(ink_drop);
 
@@ -99,6 +87,10 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
     opacity = 1.0f;
     duration = kFadeInDurationMs;
   }
+
+  if (!layer())
+    SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 
   if (disable_animation_for_test_) {
     layer()->SetOpacity(opacity);
@@ -383,18 +375,6 @@ bool IconLabelBubbleView::ShouldUpdateInkDropOnClickCanceled() const {
 void IconLabelBubbleView::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
   OnActivate(event);
-}
-
-void IconLabelBubbleView::OnFocus() {
-  is_focused_ = true;
-  separator_view_->UpdateOpacity();
-  Button::OnFocus();
-}
-
-void IconLabelBubbleView::OnBlur() {
-  is_focused_ = false;
-  separator_view_->UpdateOpacity();
-  Button::OnBlur();
 }
 
 void IconLabelBubbleView::OnWidgetDestroying(views::Widget* widget) {

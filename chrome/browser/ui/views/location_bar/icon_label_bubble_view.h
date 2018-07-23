@@ -87,8 +87,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   void OnBubbleCreated(views::Widget* bubble_widget);
 
-  bool is_focused() const { return is_focused_; }
-
  protected:
   static constexpr int kOpenTimeMS = 150;
 
@@ -156,8 +154,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldUpdateInkDropOnClickCanceled() const override;
   void NotifyClick(const ui::Event& event) override;
-  void OnFocus() override;
-  void OnBlur() override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -192,7 +188,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   views::Label* label_;
   views::InkDropContainerView* ink_drop_container_;
   SeparatorView* separator_view_;
-  bool is_focused_ = false;
 
   // The padding of the element that will be displayed after |this|. This value
   // is relevant for calculating the amount of space to reserve after the
