@@ -8,8 +8,8 @@
 
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/fido/fido_ble_connection.h"
-#include "device/fido/fido_ble_frames.h"
+#include "device/fido/ble/fido_ble_connection.h"
+#include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 

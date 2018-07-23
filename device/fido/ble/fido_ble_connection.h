@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_BLE_CONNECTION_H_
-#define DEVICE_FIDO_FIDO_BLE_CONNECTION_H_
+#ifndef DEVICE_FIDO_BLE_FIDO_BLE_CONNECTION_H_
+#define DEVICE_FIDO_BLE_FIDO_BLE_CONNECTION_H_
 
 #include <stdint.h>
 
@@ -162,4 +162,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_BLE_CONNECTION_H_
+#endif  // DEVICE_FIDO_BLE_FIDO_BLE_CONNECTION_H_

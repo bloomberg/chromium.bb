@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_BLE_DISCOVERY_BASE_H_
-#define DEVICE_FIDO_FIDO_BLE_DISCOVERY_BASE_H_
+#ifndef DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_BASE_H_
+#define DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_BASE_H_
 
 #include <memory>
 
@@ -53,4 +53,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_BLE_DISCOVERY_BASE_H_
+#endif  // DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_BASE_H_

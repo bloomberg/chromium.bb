@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_MOCK_FIDO_BLE_CONNECTION_H_
-#define DEVICE_FIDO_MOCK_FIDO_BLE_CONNECTION_H_
+#ifndef DEVICE_FIDO_BLE_MOCK_FIDO_BLE_CONNECTION_H_
+#define DEVICE_FIDO_BLE_MOCK_FIDO_BLE_CONNECTION_H_
 
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "device/fido/fido_ble_connection.h"
+#include "device/fido/ble/fido_ble_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {

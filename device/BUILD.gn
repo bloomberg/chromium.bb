@@ -64,12 +64,12 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "bluetooth/uribeacon/uri_encoder_unittest.cc",
+    "fido/ble/fido_ble_connection_unittest.cc",
+    "fido/ble/fido_ble_device_unittest.cc",
+    "fido/ble/fido_ble_frames_unittest.cc",
     "fido/ctap_request_unittest.cc",
     "fido/ctap_response_unittest.cc",
     "fido/fake_fido_discovery_unittest.cc",
-    "fido/fido_ble_connection_unittest.cc",
-    "fido/fido_ble_device_unittest.cc",
-    "fido/fido_ble_frames_unittest.cc",
     "fido/fido_cable_device_unittest.cc",
     "fido/fido_cable_discovery_unittest.cc",
     "fido/fido_cable_handshake_handler_unittest.cc",
@@ -253,7 +253,7 @@ test("device_unittests") {
       ]
     } else {
       # BLE discovery: works on Linux.
-      sources += [ "fido/fido_ble_discovery_unittest.cc" ]
+      sources += [ "fido/ble/fido_ble_discovery_unittest.cc" ]
     }
   }
 

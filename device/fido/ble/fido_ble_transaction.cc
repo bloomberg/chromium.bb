@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_ble_transaction.h"
+#include "device/fido/ble/fido_ble_transaction.h"
 
 #include <utility>
 
-#include "device/fido/fido_ble_connection.h"
+#include "device/fido/ble/fido_ble_connection.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {

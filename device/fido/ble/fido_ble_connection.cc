@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_ble_connection.h"
+#include "device/fido/ble/fido_ble_connection.h"
 
 #include <utility>
 
@@ -16,7 +16,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/fido/fido_ble_uuids.h"
+#include "device/fido/ble/fido_ble_uuids.h"
 
 namespace device {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_BLE_TRANSACTION_H_
-#define DEVICE_FIDO_FIDO_BLE_TRANSACTION_H_
+#ifndef DEVICE_FIDO_BLE_FIDO_BLE_TRANSACTION_H_
+#define DEVICE_FIDO_BLE_FIDO_BLE_TRANSACTION_H_
 
 #include <memory>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "device/fido/fido_ble_frames.h"
+#include "device/fido/ble/fido_ble_frames.h"
 
 namespace device {
 
@@ -61,4 +61,4 @@ class FidoBleTransaction {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_BLE_TRANSACTION_H_
+#endif  // DEVICE_FIDO_BLE_FIDO_BLE_TRANSACTION_H_
