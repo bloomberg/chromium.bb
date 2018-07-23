@@ -3728,11 +3728,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
-      'terra-release': {
+      'peach_pit-release': {
           'useflags': append_useflags(['cfi']),
       },
 
-      'caroline-release': {
+      'kevin-release': {
           'useflags': append_useflags(['cfi']),
       },
 
