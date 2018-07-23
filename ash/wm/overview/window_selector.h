@@ -108,17 +108,24 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   WindowGrid* GetGridWithRootWindow(aura::Window* root_window);
 
   // Add |window| to the grid in |grid_list_| with the same root window. Does
-  // nothing if the grid already contains |window|. This may be called in two
-  // scenarioes: 1) when a item in split view mode was previously snapped but
-  // should now be returned to the window grid (e.g. split view divider dragged
-  // to either edge, or a window is snapped to a postion that already has a
-  // snapped window); 2) when a window (not from overview) is dragged while
-  // overview is open and the window is dropped on the new selector item, the
-  // dragged window is then added to the overview.
-  void AddItem(aura::Window* window);
+  // nothing if the grid already contains |window|. And if |reposition| is true,
+  // re-position all windows in the target window grid. This may be called in
+  // two scenarioes: 1) when a item in split view mode was previously snapped
+  // but should now be returned to the window grid (e.g. split view divider
+  // dragged to either edge, or a window is snapped to a postion that already
+  // has a snapped window); 2) when a window (not from overview) is dragged
+  // while overview is open and the window is dropped on the new selector item,
+  // the dragged window is then added to the overview.
+  void AddItem(aura::Window* window, bool reposition);
 
-  // Removes the window selector item from the overview window grid.
-  void RemoveWindowSelectorItem(WindowSelectorItem* item);
+  // Removes the window selector item from the overview window grid. And if
+  // |reposition| is true, re-position all windows in the target window grid.
+  // This may be called in two scenarioes: 1) when a user drags an overview item
+  // to snap to one side of the screen, the item should be removed from the
+  // overview grid; 2) when a window (not from overview) ends its dragging while
+  // overview is open, the new selector item should be removed. Note in both
+  // cases, the windows in the window grid do not need to be repositioned.
+  void RemoveWindowSelectorItem(WindowSelectorItem* item, bool reposition);
 
   void InitiateDrag(WindowSelectorItem* item,
                     const gfx::Point& location_in_screen);

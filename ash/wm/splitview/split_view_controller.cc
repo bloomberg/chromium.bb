@@ -1391,9 +1391,11 @@ void SplitViewController::RemoveWindowFromOverviewIfApplicable(
   overview_window_item_bounds_map_[window] = item->target_bounds();
 
   // Remove it from the grid. The transform will be reset later after the
-  // window is snapped.
+  // window is snapped. Note the remaining windows in overview don't need to be
+  // repositioned in this case as they have been positioned to the right place
+  // during dragging.
   item->RestoreWindow(/*reset_transform=*/false);
-  window_selector->RemoveWindowSelectorItem(item);
+  window_selector->RemoveWindowSelectorItem(item, /*reposition=*/false);
 }
 
 aura::Window* SplitViewController::GetSnappedWindowAt(
@@ -1412,7 +1414,7 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window) {
   if (!window || !Shell::Get()->window_selector_controller()->IsSelecting())
     return;
   Shell::Get()->window_selector_controller()->window_selector()->AddItem(
-      window);
+      window, /*reposition=*/true);
 }
 
 void SplitViewController::StartOverview() {
