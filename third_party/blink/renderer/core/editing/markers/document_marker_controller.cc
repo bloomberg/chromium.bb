@@ -129,27 +129,14 @@ Member<DocumentMarkerList>& DocumentMarkerController::ListForType(
 }
 
 bool DocumentMarkerController::PossiblyHasMarkers(
-    DocumentMarker::MarkerType type) {
+    DocumentMarker::MarkerType type) const {
   return PossiblyHasMarkers(DocumentMarker::MarkerTypes(type));
 }
 
 inline bool DocumentMarkerController::PossiblyHasMarkers(
-    DocumentMarker::MarkerTypes types) {
-  if (markers_.IsEmpty()) {
-    // It's possible for markers_ to become empty through garbage collection if
-    // all its Nodes are GC'ed since we only hold weak references, in which case
-    // possibly_existing_marker_types_ isn't reset to 0 as it is in the other
-    // codepaths that remove from markers_. Therefore, we check for this case
-    // here.
-
-    // Alternatively, we could handle this case at the time the Node is GC'ed,
-    // but that operation is more performance-sensitive than anywhere
-    // PossiblyHasMarkers() is used.
-    possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
-    SetContext(nullptr);
-    return false;
-  }
-
+    DocumentMarker::MarkerTypes types) const {
+  DCHECK(!markers_.IsEmpty() ||
+         possibly_existing_marker_types_ == DocumentMarker::MarkerTypes(0));
   return possibly_existing_marker_types_.Intersects(types);
 }
 
@@ -662,7 +649,17 @@ void DocumentMarkerController::InvalidateRectsForAllTextMatchMarkers() {
   }
 }
 
+void DocumentMarkerController::DidProcessMarkerMap(Visitor* visitor) {
+  if (markers_.IsEmpty())
+    Clear();
+}
+
 void DocumentMarkerController::Trace(blink::Visitor* visitor) {
+  // Note: To make |DidProcessMarkerMap()| called after weak members callback
+  // of |markers_|, we should register it before tracing |markers_|.
+  visitor->template RegisterWeakMembers<
+      DocumentMarkerController, &DocumentMarkerController::DidProcessMarkerMap>(
+      this);
   visitor->Trace(markers_);
   visitor->Trace(document_);
   SynchronousMutationObserver::Trace(visitor);

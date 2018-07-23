@@ -152,14 +152,17 @@ class CORE_EXPORT DocumentMarkerController final
   using MarkerMap = HeapHashMap<WeakMember<const Node>, Member<MarkerLists>>;
   static Member<DocumentMarkerList>& ListForType(MarkerLists*,
                                                  DocumentMarker::MarkerType);
-  bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
-  bool PossiblyHasMarkers(DocumentMarker::MarkerType);
+  bool PossiblyHasMarkers(DocumentMarker::MarkerTypes) const;
+  bool PossiblyHasMarkers(DocumentMarker::MarkerType) const;
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
   void RemoveMarkersInternal(const Node&,
                              unsigned start_offset,
                              int length,
                              DocumentMarker::MarkerTypes);
+
+  // Called after weak processing of |markers_| is done.
+  void DidProcessMarkerMap(Visitor* visitor);
 
   MarkerMap markers_;
   // Provide a quick way to determine whether a particular marker type is absent
