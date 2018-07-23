@@ -39,6 +39,7 @@ public class WebApkInfo extends WebappInfo {
     private static final String TAG = "WebApkInfo";
 
     private Icon mBadgeIcon;
+    private Icon mSplashIcon;
     private String mApkPackageName;
     private int mShellApkVersion;
     private String mManifestUrl;
@@ -145,9 +146,12 @@ public class WebApkInfo extends WebappInfo {
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         Bitmap badgeIcon = decodeBitmapFromDrawable(res, badgeIconId);
 
+        int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);
+        Bitmap splashIcon = decodeBitmapFromDrawable(res, splashIconId);
+
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
-                new Icon(primaryIcon), new Icon(badgeIcon), name, shortName, displayMode,
-                orientation, source, themeColor, backgroundColor, webApkPackageName,
+                new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon), name, shortName,
+                displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
                 shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap,
                 forceNavigation);
     }
@@ -160,6 +164,7 @@ public class WebApkInfo extends WebappInfo {
      * @param scope                   Scope for the WebAPK.
      * @param primaryIcon             Primary icon to show for the WebAPK.
      * @param badgeIcon               Badge icon to use for notifications.
+     * @param splashIcon              Splash icon to use for the splash screen.
      * @param name                    Name of the WebAPK.
      * @param shortName               The short name of the WebAPK.
      * @param displayMode             Display mode of the WebAPK.
@@ -179,9 +184,9 @@ public class WebApkInfo extends WebappInfo {
      *                                WebAPK is already open.
      */
     public static WebApkInfo create(String id, String url, String scope, Icon primaryIcon,
-            Icon badgeIcon, String name, String shortName, @WebDisplayMode int displayMode,
-            int orientation, int source, long themeColor, long backgroundColor,
-            String webApkPackageName, int shellApkVersion, String manifestUrl,
+            Icon badgeIcon, Icon splashIcon, String name, String shortName,
+            @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
+            long backgroundColor, String webApkPackageName, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap,
             boolean forceNavigation) {
         if (id == null || url == null || manifestStartUrl == null || webApkPackageName == null) {
@@ -198,21 +203,23 @@ public class WebApkInfo extends WebappInfo {
             scope = ShortcutHelper.getScopeFromUrl(manifestStartUrl);
         }
 
-        return new WebApkInfo(id, url, scope, primaryIcon, badgeIcon, name, shortName, displayMode,
-                orientation, source, themeColor, backgroundColor, webApkPackageName,
+        return new WebApkInfo(id, url, scope, primaryIcon, badgeIcon, splashIcon, name, shortName,
+                displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
                 shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap,
                 forceNavigation);
     }
 
     protected WebApkInfo(String id, String url, String scope, Icon primaryIcon, Icon badgeIcon,
-            String name, String shortName, @WebDisplayMode int displayMode, int orientation,
-            int source, long themeColor, long backgroundColor, String webApkPackageName,
-            int shellApkVersion, String manifestUrl, String manifestStartUrl,
-            Map<String, String> iconUrlToMurmur2HashMap, boolean forceNavigation) {
+            Icon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
+            int orientation, int source, long themeColor, long backgroundColor,
+            String webApkPackageName, int shellApkVersion, String manifestUrl,
+            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap,
+            boolean forceNavigation) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
                 themeColor, backgroundColor, null /* splash_screen_url */,
                 false /* isIconGenerated */, forceNavigation);
         mBadgeIcon = badgeIcon;
+        mSplashIcon = splashIcon;
         mApkPackageName = webApkPackageName;
         mShellApkVersion = shellApkVersion;
         mManifestUrl = manifestUrl;
@@ -227,6 +234,13 @@ public class WebApkInfo extends WebappInfo {
      */
     public Bitmap badgeIcon() {
         return (mBadgeIcon == null) ? null : mBadgeIcon.decoded();
+    }
+
+    /**
+     * Returns the splash icon in Bitmap form.
+     */
+    public Bitmap splashIcon() {
+        return (mSplashIcon == null) ? null : mSplashIcon.decoded();
     }
 
     @Override
