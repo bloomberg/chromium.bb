@@ -17,6 +17,7 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "notification_google.icon",
     "notification_image.icon",
     "notification_installed.icon",
+    "notification_linux.icon",
     "notification_mobile_data.icon",
     "notification_mobile_data_off.icon",
     "notification_multi_device_setup.icon",
