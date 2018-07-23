@@ -80,7 +80,7 @@
     <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled,
         unifiedConsentEnabled, syncStatus.syncSystemEnabled,
         syncStatus.signinAllowed)]]">
-      <settings-sync-account-control always-show-promo
+      <settings-sync-account-control embedded-in-subpage
           sync-status="[[syncStatus]]"
           promo-label-with-account="$i18n{peopleSignInPrompt}"
           promo-label-with-no-account="$i18n{peopleSignInPrompt}"

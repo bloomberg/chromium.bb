@@ -58,7 +58,7 @@ Polymer({
 
     // This property should be set by the parent only and should not change
     // after the element is created.
-    alwaysShowPromo: {
+    embeddedInSubpage: {
       type: Boolean,
       reflectToAttribute: true,
     },
@@ -123,7 +123,7 @@ Polymer({
 
   /** @private */
   onSignedInChanged_: function() {
-    if (this.alwaysShowPromo) {
+    if (this.embeddedInSubpage) {
       this.showingPromo = true;
       return;
     }
@@ -249,6 +249,24 @@ Polymer({
       return this.getErrorLabel_(syncErrorLabel, authErrorLabel);
 
     return accountName;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowTurnOffButton_: function() {
+    return !!this.syncStatus.signedIn && !this.embeddedInSubpage;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSigninAgainButton_: function() {
+    return !!this.syncStatus.signedIn && this.embeddedInSubpage &&
+        !!this.syncStatus.hasError &&
+        this.syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE;
   },
 
   /**

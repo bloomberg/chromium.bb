@@ -130,10 +130,6 @@
       :host([showing-promo]) #promo-separator {
         @apply --promo-separator;
       }
-
-      :host([always-show-promo]) #turn-off {
-        display: none;
-      }
     </style>
     <div id="banner" hidden="[[syncStatus.signedIn]]"></div>
     <div class="settings-box first two-line" id="promo-header"
@@ -193,16 +189,24 @@
           </button>
         </paper-icon-button-light>
         <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
-        <paper-button class="action-button" on-click="onSyncButtonTap_"
-            hidden="[[syncStatus.signedIn]]"
+        <paper-button id="sync-button" class="action-button"
+            hidden="[[syncStatus.signedIn]]" on-click="onSyncButtonTap_"
             disabled="[[syncStatus.setupInProgress]]">
           [[getSubstituteLabel_(
               '$i18nPolymer{syncAsName}', shownAccount_.givenName)]]
         </paper-button>
-        <paper-button class="secondary-button" on-click="onTurnOffButtonTap_"
-            hidden="[[!syncStatus.signedIn]]" id="turn-off"
+        <paper-button id="turn-off" class="secondary-button"
+            hidden="[[!shouldShowTurnOffButton_(syncStatus.signedIn)]]"
+            on-click="onTurnOffButtonTap_"
             disabled="[[syncStatus.setupInProgress]]">
           $i18n{turnOffSync}
+        </paper-button>
+        <paper-button id="sync-paused-button" class="action-button"
+            hidden="[[!shouldShowSigninAgainButton_(
+                syncStatus.signedIn, syncStatus.hasError,
+                syncStatus.statusAction)]]"
+            on-click="onSigninTap_" disabled="[[syncStatus.setupInProgress]]">
+          $i18n{signInAgain}
         </paper-button>
       </div>
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
