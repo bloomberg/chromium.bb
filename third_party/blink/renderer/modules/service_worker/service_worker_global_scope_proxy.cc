@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/headers.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
@@ -88,30 +87,10 @@
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-
-namespace {
-
-void SetContentSecurityPolicyAndReferrerPolicyOnMainThread(
-    WebEmbeddedWorkerImpl* embedded_worker,
-    ContentSecurityPolicyResponseHeaders csp_headers,
-    String referrer_policy,
-    WaitableEvent* waitable_event) {
-  DCHECK(IsMainThread());
-  ContentSecurityPolicy* content_security_policy =
-      ContentSecurityPolicy::Create();
-  content_security_policy->DidReceiveHeaders(csp_headers);
-  embedded_worker->SetContentSecurityPolicyAndReferrerPolicy(
-      content_security_policy, std::move(referrer_policy));
-  waitable_event->Signal();
-}
-
-}  // namespace
 
 ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
     WebEmbeddedWorkerImpl& embedded_worker,
@@ -599,27 +578,9 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
       WorkerGlobalScope()->ScriptController()->GetContext());
 }
 
-void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
-    const ContentSecurityPolicyResponseHeaders& csp_headers_on_worker_thread,
-    const String& referrer_policy_on_worker_thread) {
-  // Post a task to the main thread to set CSP and ReferrerPolicy on the shadow
-  // page.
-  DCHECK(embedded_worker_);
-  WaitableEvent waitable_event;
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalWorker),
-      FROM_HERE,
-      CrossThreadBind(&SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
-                      CrossThreadUnretained(embedded_worker_),
-                      csp_headers_on_worker_thread,
-                      referrer_policy_on_worker_thread,
-                      CrossThreadUnretained(&waitable_event)));
+void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
   Client().WorkerScriptLoaded();
-
-  // Wait for the task to complete before returning. This ensures that worker
-  // script evaluation can't start and issue any fetches until CSP and
-  // ReferrerPolicy are set.
-  waitable_event.Wait();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(

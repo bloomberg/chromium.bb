@@ -96,9 +96,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   ContentSecurityPolicy* GetContentSecurityPolicy() {
     return content_security_policy_.Get();
   }
-  ContentSecurityPolicy* ReleaseContentSecurityPolicy() {
-    return content_security_policy_.Release();
-  }
 
   const String& GetReferrerPolicy() const { return referrer_policy_; }
 

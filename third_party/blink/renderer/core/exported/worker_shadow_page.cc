@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
@@ -64,16 +63,6 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
       SharedBuffer::Create(content.data(), content.length()));
   main_frame_->GetFrame()->Loader().CommitNavigation(FrameLoadRequest(
       nullptr, ResourceRequest(script_url), SubstituteData(buffer)));
-}
-
-void WorkerShadowPage::SetContentSecurityPolicyAndReferrerPolicy(
-    ContentSecurityPolicy* content_security_policy,
-    String referrer_policy) {
-  DCHECK(IsMainThread());
-  content_security_policy->SetOverrideURLForSelf(GetDocument()->Url());
-  GetDocument()->InitContentSecurityPolicy(content_security_policy);
-  if (!referrer_policy.IsNull())
-    GetDocument()->ParseAndSetReferrerPolicy(referrer_policy);
 }
 
 void WorkerShadowPage::DidFinishDocumentLoad() {

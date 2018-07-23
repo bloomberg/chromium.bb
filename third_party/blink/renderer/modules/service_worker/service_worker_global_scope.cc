@@ -159,10 +159,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
         script_data.CreateOriginTrialTokens();
     OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
 
-    // This may block until CSP and referrer policy are set on the main
-    // thread.
-    ReportingProxy().DidLoadInstalledScript(
-        content_security_policy_raw_headers.value(), referrer_policy);
+    ReportingProxy().DidLoadInstalledScript();
   }
 
   WorkerGlobalScope::EvaluateClassicScript(script_url, source_code,
