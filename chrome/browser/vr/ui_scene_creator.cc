@@ -2935,7 +2935,7 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             return std::tuple<bool, bool, bool>(
                 model->web_vr_enabled() && model->web_vr.presenting_web_vr() &&
                     model->web_vr.has_received_permissions,
-                model->controller.app_button_long_pressed,
+                model->menu_button_long_pressed,
                 model->web_vr.showing_hosted_ui);
           },
           base::Unretained(model_)),

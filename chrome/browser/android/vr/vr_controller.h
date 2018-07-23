@@ -53,7 +53,7 @@ class VrController : public PlatformController {
   // Called once per frame to update controller state.
   void UpdateState(const gfx::Transform& head_pose);
 
-  std::unique_ptr<InputEventList> DetectGestures();
+  InputEventList DetectGestures();
 
   gfx::Quaternion Orientation() const;
   gfx::Point3F Position() const;

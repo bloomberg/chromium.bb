@@ -343,9 +343,9 @@ void VrController::UpdateState(const gfx::Transform& head_pose) {
       gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
 }
 
-std::unique_ptr<InputEventList> VrController::DetectGestures() {
+InputEventList VrController::DetectGestures() {
   if (controller_state_->GetConnectionState() != gvr::kControllerConnected) {
-    return std::make_unique<InputEventList>();
+    return {};
   }
 
   return gesture_detector_->DetectGestures(*this, base::TimeTicks::Now());

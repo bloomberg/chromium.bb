@@ -25,9 +25,8 @@ class VR_EXPORT GestureDetector {
   GestureDetector();
   virtual ~GestureDetector();
 
-  std::unique_ptr<InputEventList> DetectGestures(
-      const PlatformController& controller,
-      base::TimeTicks current_timestamp);
+  InputEventList DetectGestures(const PlatformController& controller,
+                                base::TimeTicks current_timestamp);
 
  private:
   enum GestureDetectorStateLabel {
@@ -52,6 +51,10 @@ class VR_EXPORT GestureDetector {
     // Displacement of the touch point from the previews to the current touch
     gfx::Vector2dF displacement;
   };
+
+  void DetectMenuButtonGestures(InputEventList* event_list,
+                                const PlatformController& controller,
+                                base::TimeTicks current_timestamp);
 
   std::unique_ptr<InputEvent> GetGestureFromTouchInfo(
       const TouchPoint& touch_point);
@@ -94,6 +97,10 @@ class VR_EXPORT GestureDetector {
   bool last_touching_state_ = false;
 
   bool touch_position_changed_;
+
+  base::TimeTicks menu_button_down_timestamp_;
+  bool menu_button_pressed_ = false;
+  bool menu_button_long_pressed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GestureDetector);
 };

@@ -257,9 +257,6 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_G:
         recentered_ = true;
         break;
-      case ui::DomCode::US_X:
-        ui_->OnAppButtonClicked();
-        break;
       case ui::DomCode::US_T:
         touching_touchpad_ = !touching_touchpad_;
         break;
@@ -324,10 +321,12 @@ void VrTestContext::HandleInput(ui::Event* event) {
 
   const ui::MouseEvent* mouse_event = event->AsMouseEvent();
 
-  if (mouse_event->IsMiddleMouseButton()) {
-    if (mouse_event->type() == ui::ET_MOUSE_RELEASED) {
-      ui_->OnAppButtonClicked();
-    }
+  if (mouse_event->IsMiddleMouseButton() &&
+      mouse_event->type() == ui::ET_MOUSE_RELEASED) {
+    InputEventList list;
+    list.push_back(
+        std::make_unique<InputEvent>(InputEvent::kMenuButtonClicked));
+    input_event_lists_.push(std::move(list));
   }
 
   // TODO(cjgrant): Figure out why, quite regularly, mouse click events do not
@@ -421,9 +420,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
     input_event_lists_.push(InputEventList());
   }
   ReticleModel reticle_model;
-  ui_instance_->input_manager()->HandleInput(current_time, render_info,
-                                             controller_model, &reticle_model,
-                                             &input_event_lists_.front());
+  ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
+                   &input_event_lists_.front());
   input_event_lists_.pop();
 
   // Now that we have accurate hit information, we use this to construct a

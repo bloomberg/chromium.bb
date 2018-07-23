@@ -56,6 +56,7 @@ struct VR_UI_EXPORT Model {
   bool needs_keyboard_update = false;
   bool overflow_menu_enabled = false;
   bool standalone_vr_device = false;
+  bool menu_button_long_pressed = false;
   std::vector<TabModel> regular_tabs;
   std::vector<TabModel> incognito_tabs;
   bool incognito_tabs_view_selected = false;

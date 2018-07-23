@@ -33,6 +33,11 @@ constexpr float kSlopVertical = 0.165f;
 // Horizontal distance from the border to the center of slop.
 constexpr float kSlopHorizontal = 0.15f;
 
+// Exceeding pressing the appbutton for longer than this threshold will result
+// in a long press.
+constexpr base::TimeDelta kLongPressThreshold =
+    base::TimeDelta::FromMilliseconds(900);
+
 struct TouchPoint {
   gfx::Vector2dF position;
   base::TimeTicks timestamp;
@@ -45,7 +50,7 @@ GestureDetector::GestureDetector() {
 }
 GestureDetector::~GestureDetector() = default;
 
-std::unique_ptr<InputEventList> GestureDetector::DetectGestures(
+InputEventList GestureDetector::DetectGestures(
     const PlatformController& controller,
     base::TimeTicks current_timestamp) {
   touch_position_changed_ = UpdateCurrentTouchPoint(controller);
@@ -59,7 +64,8 @@ std::unique_ptr<InputEventList> GestureDetector::DetectGestures(
   last_touching_state_ = is_touching_trackpad_;
   is_touching_trackpad_ = controller.IsTouchingTrackpad();
 
-  auto gesture_list = std::make_unique<InputEventList>();
+  InputEventList gesture_list;
+  DetectMenuButtonGestures(&gesture_list, controller, current_timestamp);
   auto gesture = GetGestureFromTouchInfo(touch_point);
 
   if (!gesture)
@@ -69,9 +75,39 @@ std::unique_ptr<InputEventList> GestureDetector::DetectGestures(
     Reset();
 
   if (gesture->type() != InputEvent::kTypeUndefined)
-    gesture_list->push_back(std::move(gesture));
+    gesture_list.push_back(std::move(gesture));
 
   return gesture_list;
+}
+
+void GestureDetector::DetectMenuButtonGestures(
+    InputEventList* event_list,
+    const PlatformController& controller,
+    base::TimeTicks current_timestamp) {
+  std::unique_ptr<InputEvent> event;
+  if (!menu_button_pressed_ &&
+      controller.IsButtonDown(PlatformController::kButtonMenu)) {
+    menu_button_pressed_ = true;
+    menu_button_down_timestamp_ = current_timestamp;
+    menu_button_long_pressed_ = false;
+  }
+  if (menu_button_pressed_ &&
+      !controller.IsButtonDown(PlatformController::kButtonMenu)) {
+    event = std::make_unique<InputEvent>(
+        menu_button_long_pressed_ ? InputEvent::kMenuButtonLongPressEnd
+                                  : InputEvent::kMenuButtonClicked);
+    menu_button_pressed_ = false;
+  }
+  if (!menu_button_long_pressed_ &&
+      controller.IsButtonDown(PlatformController::kButtonMenu) &&
+      current_timestamp - menu_button_down_timestamp_ > kLongPressThreshold) {
+    menu_button_long_pressed_ = true;
+    event = std::make_unique<InputEvent>(InputEvent::kMenuButtonLongPressStart);
+  }
+  if (event) {
+    event->set_time_stamp(current_timestamp);
+    event_list->push_back(std::move(event));
+  }
 }
 
 std::unique_ptr<InputEvent> GestureDetector::GetGestureFromTouchInfo(

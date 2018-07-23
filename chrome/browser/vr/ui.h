@@ -142,9 +142,6 @@ class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
       unsigned int ui_texture_id) override;
 
   void OnPause() override;
-  void OnAppButtonClicked() override;
-  void OnAppButtonSwipePerformed(
-      PlatformController::SwipeDirection direction) override;
   void OnControllerUpdated(const ControllerModel& controller_model,
                            const ReticleModel& reticle_model) override;
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
@@ -152,7 +149,6 @@ class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
   void OnWebVrTimedOut() override;
   void OnWebVrTimeoutImminent() override;
   bool IsControllerVisible() const override;
-  bool IsAppButtonLongPressed() const override;
   bool SkipsRedrawWhenNotDirty() const override;
   void OnSwapContents(int new_content_id) override;
   void OnContentBoundsChanged(int width, int height) override;
@@ -186,6 +182,8 @@ class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
                    ReticleModel* reticle_model,
                    InputEventList* input_event_list) override;
 
+  void HandleMenuButtonEvents(InputEventList* input_event_list) override;
+
   FovRectangle GetMinimalFov(const gfx::Transform& view_matrix,
                              const std::vector<const UiElement*>& elements,
                              const FovRectangle& fov_recommended,
@@ -200,6 +198,7 @@ class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
   void OnKeyboardHidden() override;
 
  private:
+  void OnMenuButtonClicked();
   void OnSpeechRecognitionEnded();
   void InitializeModel(const UiInitialState& ui_initial_state);
   UiBrowserInterface* browser_;

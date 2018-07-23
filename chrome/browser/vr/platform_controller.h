@@ -29,14 +29,6 @@ class PlatformController {
     kButtonTypeNumber
   };
 
-  enum SwipeDirection {
-    kSwipeDirectionNone,
-    kSwipeDirectionLeft,
-    kSwipeDirectionRight,
-    kSwipeDirectionUp,
-    kSwipeDirectionDown,
-  };
-
   enum Handedness {
     kRightHanded,
     kLeftHanded,

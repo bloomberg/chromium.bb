@@ -63,9 +63,6 @@ class UiInterface : public BrowserUiInterface {
       UiElementRenderer::TextureLocation content_overlay_location,
       unsigned int ui_texture_id) = 0;
   virtual void OnPause() = 0;
-  virtual void OnAppButtonClicked() = 0;
-  virtual void OnAppButtonSwipePerformed(
-      PlatformController::SwipeDirection direction) = 0;
   virtual void OnControllerUpdated(const ControllerModel& controller_model,
                                    const ReticleModel& reticle_model) = 0;
   virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
@@ -73,7 +70,6 @@ class UiInterface : public BrowserUiInterface {
   virtual void OnWebVrTimedOut() = 0;
   virtual void OnWebVrTimeoutImminent() = 0;
   virtual bool IsControllerVisible() const = 0;
-  virtual bool IsAppButtonLongPressed() const = 0;
   virtual bool SkipsRedrawWhenNotDirty() const = 0;
   virtual void OnSwapContents(int new_content_id) = 0;
   virtual void OnContentBoundsChanged(int width, int height) = 0;
@@ -102,6 +98,7 @@ class UiInterface : public BrowserUiInterface {
                            const ControllerModel& controller_model,
                            ReticleModel* reticle_model,
                            InputEventList* input_event_list) = 0;
+  virtual void HandleMenuButtonEvents(InputEventList* input_event_list) = 0;
   virtual void RequestFocus(int element_id) = 0;
   virtual void RequestUnfocus(int element_id) = 0;
 

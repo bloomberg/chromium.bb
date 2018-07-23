@@ -376,8 +376,8 @@ void Ui::OnPause() {
   input_manager_->OnPause();
 }
 
-void Ui::OnAppButtonClicked() {
-  // App button clicks should be a no-op when browsing mode is disabled.
+void Ui::OnMenuButtonClicked() {
+  // Menu button clicks should be a no-op when browsing mode is disabled.
   if (model_->browsing_disabled)
     return;
 
@@ -396,7 +396,7 @@ void Ui::OnAppButtonClicked() {
     return;
   }
 
-  // App button click exits the WebVR presentation and fullscreen.
+  // Menu button click exits the WebVR presentation and fullscreen.
   browser_->ExitPresent();
   browser_->ExitFullscreen();
 
@@ -411,9 +411,6 @@ void Ui::OnAppButtonClicked() {
       break;
   }
 }
-
-void Ui::OnAppButtonSwipePerformed(
-    PlatformController::SwipeDirection direction) {}
 
 void Ui::OnControllerUpdated(const ControllerModel& controller_model,
                              const ReticleModel& reticle_model) {
@@ -453,10 +450,6 @@ void Ui::OnContentBoundsChanged(int width, int height) {
 bool Ui::IsControllerVisible() const {
   UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
   return controller_group && controller_group->GetTargetOpacity() > 0.0f;
-}
-
-bool Ui::IsAppButtonLongPressed() const {
-  return model_->controller.app_button_long_pressed;
 }
 
 bool Ui::SkipsRedrawWhenNotDirty() const {
@@ -677,8 +670,37 @@ void Ui::HandleInput(base::TimeTicks current_time,
                      const ControllerModel& controller_model,
                      ReticleModel* reticle_model,
                      InputEventList* input_event_list) {
+  HandleMenuButtonEvents(input_event_list);
   input_manager_->HandleInput(current_time, render_info, controller_model,
                               reticle_model, input_event_list);
+}
+
+void Ui::HandleMenuButtonEvents(InputEventList* input_event_list) {
+  InputEventList::iterator it = input_event_list->begin();
+  while (it != input_event_list->end()) {
+    if (InputEvent::IsMenuButtonEventType((*it)->type())) {
+      switch ((*it)->type()) {
+        case InputEvent::kMenuButtonClicked:
+          // Post a task, rather than calling directly, to avoid modifying UI
+          // state in the midst of frame rendering.
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::BindOnce(&Ui::OnMenuButtonClicked, base::Unretained(this)));
+          break;
+        case InputEvent::kMenuButtonLongPressStart:
+          model_->menu_button_long_pressed = true;
+          break;
+        case InputEvent::kMenuButtonLongPressEnd:
+          model_->menu_button_long_pressed = false;
+          break;
+        default:
+          NOTREACHED();
+      }
+      it = input_event_list->erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 Ui::FovRectangle Ui::GetMinimalFov(
