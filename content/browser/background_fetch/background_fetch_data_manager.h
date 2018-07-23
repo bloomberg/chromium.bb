@@ -36,6 +36,7 @@ namespace content {
 
 class BackgroundFetchDataManagerObserver;
 class BackgroundFetchRequestInfo;
+class BackgroundFetchRequestMatchParams;
 struct BackgroundFetchSettledFetch;
 class BrowserContext;
 class CacheStorageManager;
@@ -122,11 +123,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const std::string& title,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
-  // Reads all settled fetches for the given |registration_id|. Both the Request
-  // and Response objects will be initialised based on the stored data. Will
-  // invoke the |callback| when the list of fetches has been compiled.
+  // Reads the settled fetches for the given |registration_id| based on
+  // |match_params|. Both the Request and Response objects will be initialised
+  // based on the stored data. Will invoke the |callback| when the list of
+  // fetches has been compiled.
   void GetSettledFetchesForRegistration(
       const BackgroundFetchRegistrationId& registration_id,
+      std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
       SettledFetchesCallback callback);
 
   // Marks that the backgroundfetched/backgroundfetchfail/backgroundfetchabort
