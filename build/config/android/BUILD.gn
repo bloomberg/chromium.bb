@@ -81,12 +81,6 @@ config("compiler") {
         rebase_path("$android_ndk_root/sysroot/usr/include/$abi_target",
                     root_build_dir),
     "-D__ANDROID_API__=$compile_api_level",
-
-    # Temporary workaround for third party dependencies requiring this to be
-    # defined.
-    # TODO(crbug.com/771171): Remove this once the third party deps have been
-    # fixed to be compatible with newer NDK versions
-    "-D__NDK_FPABI__=",
   ]
   ldflags += [ "--target=$abi_target" ]
 
