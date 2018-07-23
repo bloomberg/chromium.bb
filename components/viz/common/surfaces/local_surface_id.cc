@@ -23,10 +23,6 @@ std::ostream& operator<<(std::ostream& out,
   return out << local_surface_id.ToString();
 }
 
-bool LocalSurfaceId::IsSameOrNewerThan(const LocalSurfaceId& other) const {
-  return IsNewerThan(other) || *this == other;
-}
-
 bool LocalSurfaceId::IsNewerThan(const LocalSurfaceId& other) const {
   // Sequence numbers can wrap around so look at their difference instead of
   // their absolute values.
@@ -36,6 +32,10 @@ bool LocalSurfaceId::IsNewerThan(const LocalSurfaceId& other) const {
           (1u << 31)) &&
          (child_sequence_number_ != other.child_sequence_number_ ||
           parent_sequence_number_ != other.parent_sequence_number_);
+}
+
+bool LocalSurfaceId::IsSameOrNewerThan(const LocalSurfaceId& other) const {
+  return IsNewerThan(other) || *this == other;
 }
 
 }  // namespace viz

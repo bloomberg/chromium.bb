@@ -215,6 +215,7 @@ viz_source_set("unit_tests") {
     "surfaces/local_surface_id_unittest.cc",
     "surfaces/parent_local_surface_id_allocator_unittest.cc",
     "surfaces/scoped_surface_id_allocator_unittest.cc",
+    "surfaces/surface_range_unittest.cc",
     "yuv_readback_unittest.cc",
   ]
 

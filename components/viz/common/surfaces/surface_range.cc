@@ -31,6 +31,12 @@ bool SurfaceRange::operator<(const SurfaceRange& other) const {
   return std::tie(end_, start_) < std::tie(other.end(), other.start());
 }
 
+bool SurfaceRange::IsInRangeExclusive(const SurfaceId& surface_id) const {
+  if (!start_)
+    return end_.IsNewerThan(surface_id);
+  return surface_id.IsNewerThan(*start_) && end_.IsNewerThan(surface_id);
+}
+
 bool SurfaceRange::IsValid() const {
   if (!end_.is_valid())
     return false;
