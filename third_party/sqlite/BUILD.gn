@@ -56,6 +56,13 @@ config("chromium_sqlite3_compile_options") {
     # TODO(pwnall): Upstream the ability to use this define.
     "SQLITE_MMAP_READ_ONLY=1",
 
+    # Needed by the SQL MemoryDumpProvider.
+    #
+    # Setting this to 1 is needed to collect the information reported by
+    # sqlite3_status64(SQLITE_STATUS_MEMORY_USED). Without this setting, the API
+    # still exists, but does not work as promised.
+    "SQLITE_DEFAULT_MEMSTATUS=1",
+
     # By default SQLite pre-allocates 100 pages of pcache data, which will not
     # be released until the handle is closed.  This is contrary to Chromium's
     # memory-usage goals.

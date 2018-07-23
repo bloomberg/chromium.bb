@@ -24,10 +24,10 @@ SqlMemoryDumpProvider::~SqlMemoryDumpProvider() = default;
 bool SqlMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  int memory_used = 0;
-  int memory_high_water = 0;
-  int status = sqlite3_status(SQLITE_STATUS_MEMORY_USED, &memory_used,
-                              &memory_high_water, 1 /*resetFlag */);
+  sqlite3_int64 memory_used = 0;
+  sqlite3_int64 memory_high_water = 0;
+  int status = sqlite3_status64(SQLITE_STATUS_MEMORY_USED, &memory_used,
+                                &memory_high_water, /* resetFlag= */ 1);
   if (status != SQLITE_OK)
     return false;
 
@@ -40,10 +40,10 @@ bool SqlMemoryDumpProvider::OnMemoryDump(
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   memory_high_water);
 
-  int dummy_high_water = -1;
-  int malloc_count = -1;
-  status = sqlite3_status(SQLITE_STATUS_MALLOC_COUNT, &malloc_count,
-                          &dummy_high_water, 0 /* resetFlag */);
+  sqlite3_int64 dummy_high_water = -1;
+  sqlite3_int64 malloc_count = -1;
+  status = sqlite3_status64(SQLITE_STATUS_MALLOC_COUNT, &malloc_count,
+                            &dummy_high_water, /* resetFlag= */ 0);
   if (status == SQLITE_OK) {
     dump->AddScalar("malloc_count",
                     base::trace_event::MemoryAllocatorDump::kUnitsObjects,
