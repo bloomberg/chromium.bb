@@ -240,12 +240,13 @@ paper-listbox {
   }
   --cr-input-error-display: none;
   --cr-input-input: {
-    -webkit-padding-start: 0;
     background-color: white;
     border-bottom: 1px solid var(--paper-grey-800);
-    padding-bottom: 2px;
-    padding-top: 2px;
   }
+  --cr-input-padding-end: 0;
+  --cr-input-padding-start: 0;
+  --cr-input-padding-bottom: 2px;
+  --cr-input-padding-top: 2px;
   -webkit-margin-end: 31px;
   align-self: center;
   flex-grow: 1;
