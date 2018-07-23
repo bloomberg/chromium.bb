@@ -9,12 +9,12 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browser_sync/profile_sync_service_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::AnyNumber;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -23,8 +23,8 @@ namespace {
 
 class MockObserver : public SyncStartupTracker::Observer {
  public:
-  MOCK_METHOD0(SyncStartupCompleted, void(void));
-  MOCK_METHOD0(SyncStartupFailed, void(void));
+  MOCK_METHOD0(SyncStartupCompleted, void());
+  MOCK_METHOD0(SyncStartupFailed, void());
 };
 
 class SyncStartupTrackerTest : public testing::Test {
@@ -38,12 +38,7 @@ class SyncStartupTrackerTest : public testing::Test {
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildMockProfileSyncService));
 
-    // Make gmock not spam the output with information about these uninteresting
-    // calls.
-    EXPECT_CALL(*mock_pss_, AddObserver(_)).Times(AnyNumber());
-    EXPECT_CALL(*mock_pss_, RemoveObserver(_)).Times(AnyNumber());
-    EXPECT_CALL(*mock_pss_, GetAuthError()).
-        WillRepeatedly(ReturnRef(no_error_));
+    ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(no_error_));
     ON_CALL(*mock_pss_, GetRegisteredDataTypes())
         .WillByDefault(Return(syncer::ModelTypeSet()));
     mock_pss_->Initialize();
@@ -52,26 +47,25 @@ class SyncStartupTrackerTest : public testing::Test {
   void TearDown() override { profile_.reset(); }
 
   void SetupNonInitializedPSS() {
-    EXPECT_CALL(*mock_pss_, GetAuthError())
-        .WillRepeatedly(ReturnRef(no_error_));
-    EXPECT_CALL(*mock_pss_, GetDisableReasons())
-        .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
-    EXPECT_CALL(*mock_pss_, GetState())
-        .WillRepeatedly(Return(syncer::SyncService::State::INITIALIZING));
+    ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(no_error_));
+    ON_CALL(*mock_pss_, GetDisableReasons())
+        .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
+    ON_CALL(*mock_pss_, GetState())
+        .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  GoogleServiceAuthError no_error_;
+  const GoogleServiceAuthError no_error_;
   std::unique_ptr<TestingProfile> profile_;
   browser_sync::ProfileSyncServiceMock* mock_pss_;
   MockObserver observer_;
 };
 
 TEST_F(SyncStartupTrackerTest, SyncAlreadyInitialized) {
-  EXPECT_CALL(*mock_pss_, GetDisableReasons())
-      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
-  EXPECT_CALL(*mock_pss_, GetState())
-      .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
   EXPECT_CALL(observer_, SyncStartupCompleted());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -79,11 +73,10 @@ TEST_F(SyncStartupTrackerTest, SyncAlreadyInitialized) {
 TEST_F(SyncStartupTrackerTest, SyncNotSignedIn) {
   // Make sure that we get a SyncStartupFailed() callback if sync is not logged
   // in.
-  EXPECT_CALL(*mock_pss_, GetDisableReasons())
-      .WillRepeatedly(
-          Return(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
-  EXPECT_CALL(*mock_pss_, GetState())
-      .WillRepeatedly(Return(syncer::SyncService::State::DISABLED));
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::DISABLED));
   EXPECT_CALL(observer_, SyncStartupFailed());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -91,13 +84,13 @@ TEST_F(SyncStartupTrackerTest, SyncNotSignedIn) {
 TEST_F(SyncStartupTrackerTest, SyncAuthError) {
   // Make sure that we get a SyncStartupFailed() callback if sync gets an auth
   // error.
-  EXPECT_CALL(*mock_pss_, GetDisableReasons())
-      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
-  EXPECT_CALL(*mock_pss_, GetState())
-      .WillRepeatedly(Return(syncer::SyncService::State::INITIALIZING));
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
+  ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error));
   EXPECT_CALL(observer_, SyncStartupFailed());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -110,8 +103,8 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedInitialization) {
   SyncStartupTracker tracker(profile_.get(), &observer_);
   Mock::VerifyAndClearExpectations(&observer_);
   // Now, mark the PSS as initialized.
-  EXPECT_CALL(*mock_pss_, GetState())
-      .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
   EXPECT_CALL(observer_, SyncStartupCompleted());
   tracker.OnStateChanged(mock_pss_);
 }
@@ -126,13 +119,13 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
   Mock::VerifyAndClearExpectations(mock_pss_);
 
   // Now, mark the PSS as having an auth error.
-  EXPECT_CALL(*mock_pss_, GetDisableReasons())
-      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
-  EXPECT_CALL(*mock_pss_, GetState())
-      .WillRepeatedly(Return(syncer::SyncService::State::INITIALIZING));
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
+  ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error));
   EXPECT_CALL(observer_, SyncStartupFailed());
   tracker.OnStateChanged(mock_pss_);
 }
@@ -147,11 +140,11 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedUnrecoverableError) {
   Mock::VerifyAndClearExpectations(mock_pss_);
 
   // Now, mark the PSS as having an unrecoverable error.
-  EXPECT_CALL(*mock_pss_, GetDisableReasons())
-      .WillRepeatedly(
+  ON_CALL(*mock_pss_, GetDisableReasons())
+      .WillByDefault(
           Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));
-  EXPECT_CALL(*mock_pss_, GetState())
-      .WillRepeatedly(Return(syncer::SyncService::State::DISABLED));
+  ON_CALL(*mock_pss_, GetState())
+      .WillByDefault(Return(syncer::SyncService::State::DISABLED));
   EXPECT_CALL(observer_, SyncStartupFailed());
   tracker.OnStateChanged(mock_pss_);
 }
