@@ -12,7 +12,7 @@
 
 namespace {
 const NSTimeInterval kAnimationDuration = 0.75;
-const CGFloat kTabMotionDamping = 0.7;
+const CGFloat kTabMotionDamping = 0.75;
 const CGFloat kTabFadeInRelativeDuration = 0.4;
 const CGFloat kBackgroundFadeRelativeDuration = 0.33;
 const CGFloat kCornerRoundingRelativeDuration = 0.33;
