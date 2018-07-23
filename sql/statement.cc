@@ -122,18 +122,13 @@ void Statement::Reset(bool clear_bound_vars) {
 }
 
 bool Statement::Succeeded() const {
-  if (!is_valid())
-    return false;
-
-  return succeeded_;
+  return is_valid() && succeeded_;
 }
 
 bool Statement::BindNull(int col) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(sqlite3_bind_null(ref_->stmt(), col + 1));
+  return is_valid() && CheckOk(sqlite3_bind_null(ref_->stmt(), col + 1));
 }
 
 bool Statement::BindBool(int col, bool val) {
@@ -142,47 +137,35 @@ bool Statement::BindBool(int col, bool val) {
 
 bool Statement::BindInt(int col, int val) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(sqlite3_bind_int(ref_->stmt(), col + 1, val));
+  return is_valid() && CheckOk(sqlite3_bind_int(ref_->stmt(), col + 1, val));
 }
 
 bool Statement::BindInt64(int col, int64_t val) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(sqlite3_bind_int64(ref_->stmt(), col + 1, val));
+  return is_valid() && CheckOk(sqlite3_bind_int64(ref_->stmt(), col + 1, val));
 }
 
 bool Statement::BindDouble(int col, double val) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(sqlite3_bind_double(ref_->stmt(), col + 1, val));
+  return is_valid() && CheckOk(sqlite3_bind_double(ref_->stmt(), col + 1, val));
 }
 
 bool Statement::BindCString(int col, const char* val) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(
-      sqlite3_bind_text(ref_->stmt(), col + 1, val, -1, SQLITE_TRANSIENT));
+  return is_valid() && CheckOk(sqlite3_bind_text(ref_->stmt(), col + 1, val, -1,
+                                                 SQLITE_TRANSIENT));
 }
 
 bool Statement::BindString(int col, const std::string& val) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(sqlite3_bind_text(ref_->stmt(),
-                                   col + 1,
-                                   val.data(),
-                                   val.size(),
-                                   SQLITE_TRANSIENT));
+  return is_valid() &&
+         CheckOk(sqlite3_bind_text(ref_->stmt(), col + 1, val.data(),
+                                   val.size(), SQLITE_TRANSIENT));
 }
 
 bool Statement::BindString16(int col, const base::string16& value) {
@@ -191,53 +174,47 @@ bool Statement::BindString16(int col, const base::string16& value) {
 
 bool Statement::BindBlob(int col, const void* val, int val_len) {
   DCHECK(!stepped_);
-  if (!is_valid())
-    return false;
 
-  return CheckOk(
-      sqlite3_bind_blob(ref_->stmt(), col + 1, val, val_len, SQLITE_TRANSIENT));
+  return is_valid() && CheckOk(sqlite3_bind_blob(ref_->stmt(), col + 1, val,
+                                                 val_len, SQLITE_TRANSIENT));
 }
 
 int Statement::ColumnCount() const {
   if (!is_valid())
     return 0;
-
   return sqlite3_column_count(ref_->stmt());
 }
 
-ColType Statement::ColumnType(int col) const {
-  // Verify that our enum matches sqlite's values.
-  static_assert(COLUMN_TYPE_INTEGER == SQLITE_INTEGER, "integer no match");
-  static_assert(COLUMN_TYPE_FLOAT == SQLITE_FLOAT, "float no match");
-  static_assert(COLUMN_TYPE_TEXT == SQLITE_TEXT, "integer no match");
-  static_assert(COLUMN_TYPE_BLOB == SQLITE_BLOB, "blob no match");
-  static_assert(COLUMN_TYPE_NULL == SQLITE_NULL, "null no match");
+// Verify that our enum matches sqlite's values.
+static_assert(COLUMN_TYPE_INTEGER == SQLITE_INTEGER, "integer no match");
+static_assert(COLUMN_TYPE_FLOAT == SQLITE_FLOAT, "float no match");
+static_assert(COLUMN_TYPE_TEXT == SQLITE_TEXT, "integer no match");
+static_assert(COLUMN_TYPE_BLOB == SQLITE_BLOB, "blob no match");
+static_assert(COLUMN_TYPE_NULL == SQLITE_NULL, "null no match");
 
+ColType Statement::ColumnType(int col) const {
   return static_cast<ColType>(sqlite3_column_type(ref_->stmt(), col));
 }
 
 bool Statement::ColumnBool(int col) const {
-  return !!ColumnInt(col);
+  return static_cast<bool>(ColumnInt(col));
 }
 
 int Statement::ColumnInt(int col) const {
   if (!CheckValid())
     return 0;
-
   return sqlite3_column_int(ref_->stmt(), col);
 }
 
 int64_t Statement::ColumnInt64(int col) const {
   if (!CheckValid())
     return 0;
-
   return sqlite3_column_int64(ref_->stmt(), col);
 }
 
 double Statement::ColumnDouble(int col) const {
   if (!CheckValid())
     return 0;
-
   return sqlite3_column_double(ref_->stmt(), col);
 }
 
@@ -266,7 +243,6 @@ base::string16 Statement::ColumnString16(int col) const {
 int Statement::ColumnByteLength(int col) const {
   if (!CheckValid())
     return 0;
-
   return sqlite3_column_bytes(ref_->stmt(), col);
 }
 
@@ -333,8 +309,7 @@ bool Statement::CheckOk(int err) const {
   // Binding to a non-existent variable is evidence of a serious error.
   // TODO(gbillock,shess): make this invalidate the statement so it
   // can't wreak havoc.
-  if (err == SQLITE_RANGE)
-    DLOG(DCHECK) << "Bind value out of range";
+  DCHECK_NE(err, SQLITE_RANGE) << "Bind value out of range";
   return err == SQLITE_OK;
 }
 
