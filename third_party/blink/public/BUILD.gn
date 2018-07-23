@@ -893,6 +893,10 @@ group("generate_mojo_bindings") {
     ":media_devices_mojo_bindings_blink__generator",
     ":mojo_bindings__generator",
     ":mojo_bindings_blink__generator",
+    "mojom:mojom_core__generator",
+    "mojom:mojom_core_blink__generator",
+    "mojom:mojom_platform__generator",
+    "mojom:mojom_platform_blink__generator",
   ]
 }
 
