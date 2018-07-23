@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
@@ -132,13 +133,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
   }
 #endif
 
-  MakeTypicalCall(
-      base::StringPrintf("testCaptureFromMediaElement(\"%s\", %d, %d, %d);",
-                         GetParam().filename.c_str(),
-                         GetParam().has_video,
-                         GetParam().has_audio,
-                         GetParam().use_audio_tag),
-      kVideoAudioHtmlFile);
+  MakeTypicalCall(JsReplace("testCaptureFromMediaElement($1, $2, $3, $4)",
+                            GetParam().filename, GetParam().has_video,
+                            GetParam().has_audio, GetParam().use_audio_tag),
+                  kVideoAudioHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,

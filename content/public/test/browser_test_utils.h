@@ -14,6 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -370,6 +371,101 @@ bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
 bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
+
+// JsLiteralHelper is a helper class that determines what types are legal to
+// pass to StringifyJsLiteral. Legal types include int, string, StringPiece,
+// char*, bool, double, GURL, url::Origin, and base::Value&&.
+template <typename T>
+struct JsLiteralHelper {
+  // This generic version enables passing any type from which base::Value can be
+  // instantiated. This covers int, string, double, bool, base::Value&&, etc.
+  template <typename U>
+  static base::Value Convert(U&& arg) {
+    return base::Value(std::forward<U>(arg));
+  }
+};
+
+// Specialization allowing GURL to be passed to StringifyJsLiteral.
+template <>
+struct JsLiteralHelper<GURL> {
+  static base::Value Convert(const GURL& url) {
+    return base::Value(url.spec());
+  }
+};
+
+// Specialization allowing url::Origin to be passed to StringifyJsLiteral.
+template <>
+struct JsLiteralHelper<url::Origin> {
+  static base::Value Convert(const url::Origin& url) {
+    return base::Value(url.Serialize());
+  }
+};
+
+// Convert a value to a corresponding JS literal.
+//
+// |value| can be any type explicitly convertible to base::Value
+// (including int/string/StringPiece/char*/double/bool), or any type that
+// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
+// string literals.
+template <typename T>
+std::string StringifyJsLiteral(T&& value) {
+  using ValueType = std::remove_cv_t<std::remove_reference_t<T>>;
+  base::Value value_as_base_value =
+      JsLiteralHelper<ValueType>::Convert(std::forward<T>(value));
+  std::string value_as_json;
+  CHECK(base::JSONWriter::Write(value_as_base_value, &value_as_json));
+  return value_as_json;
+}
+
+// Base case for StringifyJsLiterals() variadic template (see below).
+inline void StringifyJsLiterals(std::vector<std::string>* list) {}
+
+// Call StringifyJsLiteral() on an arbitrary mix of values, appending the
+// results to |list|. |first| and |rest...| can have any type accepted by
+// StringifyJsLiteral.
+template <typename T, typename... Args>
+void StringifyJsLiterals(std::vector<std::string>* list,
+                         T&& first,
+                         Args&&... rest) {
+  list->push_back(StringifyJsLiteral(std::forward<T>(first)));
+  StringifyJsLiterals(list, std::forward<Args>(rest)...);
+}
+
+// Replaces $1, $2, $3, etc in |script_template| with JS literal values
+// constructed from |args|, similar to base::ReplaceStringPlaceholders.
+//
+// Unlike StringPrintf or manual concatenation, this version will properly
+// escape string content, even if it contains slashes or quotation marks.
+//
+// Each |arg| can be any type explicitly convertible to base::Value
+// (including int/string/StringPiece/char*/double/bool), or any type that
+// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
+// string literals. |args| can be a mix of different types.
+//
+// Example 1:
+//
+//   GURL page_url("http://example.com");
+//   EXPECT_TRUE(ExecuteScript(
+//       shell(), JsReplace("window.open($1, '_blank');", page_url)));
+//
+// $1 is replaced with a double-quoted JS string literal: "http://example.com".
+// Note that quotes around $1 are not required.
+//
+// Example 2:
+//
+//   bool forced_reload = true;
+//   EXPECT_TRUE(ExecuteScript(
+//       shell(), JsReplace("window.location.reload($1);", forced_reload)));
+//
+// This becomes "window.location.reload(true);" -- because bool values are
+// supported by base::Value. Numbers, lists, and dicts also work.
+template <typename... Args>
+std::string JsReplace(base::StringPiece script_template, Args&&... args) {
+  std::vector<std::string> replacements;
+  StringifyJsLiterals(&replacements, std::forward<Args>(args)...);
+  return base::ReplaceStringPlaceholders(script_template, replacements,
+                                         nullptr);
+}
 
 // Same as above but the script executed without user gesture.
 bool ExecuteScriptWithoutUserGestureAndExtractDouble(

@@ -688,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SubframeOpenerSetForNewWindow) {
   ShellAddedObserver new_shell_observer;
   GURL popup_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   EXPECT_TRUE(ExecuteScript(root->child_at(0),
-                            "window.open('" + popup_url.spec() + "');"));
+                            JsReplace("window.open($1);", popup_url)));
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
   WaitForLoadStop(new_contents);
