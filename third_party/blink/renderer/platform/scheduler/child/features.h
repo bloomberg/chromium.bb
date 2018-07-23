@@ -100,6 +100,12 @@ const base::Feature kBestEffortPriorityForAdFrame{
 const base::Feature kUseResourceFetchPriority{
     "BlinkSchedulerResourceFetchPriority", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables setting the priority of cross-origin task queues to
+// low priority.
+const base::Feature kLowPriorityForCrossOrigin{
+    "BlinkSchedulerLowPriorityForCrossOrigin",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a chosen experiments only during the load use case.
 const base::Feature kExperimentOnlyWhenLoading{
     "BlinkSchedulerExperimentOnlyWhenLoading",

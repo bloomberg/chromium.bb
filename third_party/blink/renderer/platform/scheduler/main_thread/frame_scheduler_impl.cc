@@ -857,6 +857,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
         IsAdFrame()) {
       return TaskQueue::QueuePriority::kBestEffortPriority;
     }
+
+    if (main_thread_scheduler_->scheduling_settings()
+            .low_priority_cross_origin &&
+        IsCrossOrigin()) {
+      return TaskQueue::QueuePriority::kLowPriority;
+    }
   }
 
   return task_queue->queue_type() ==
