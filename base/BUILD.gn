@@ -162,7 +162,6 @@ jumbo_component("base") {
     "allocator/allocator_shim.h",
     "allocator/malloc_zone_functions_mac.cc",
     "allocator/malloc_zone_functions_mac.h",
-    "android/android_hardware_buffer_abi.h",
     "android/android_hardware_buffer_compat.cc",
     "android/android_hardware_buffer_compat.h",
     "android/android_image_reader_abi.h",
