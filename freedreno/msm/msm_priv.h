@@ -101,4 +101,30 @@ static inline void get_abs_timeout(struct drm_msm_timespec *tv, uint64_t ns)
 	tv->tv_nsec = t.tv_nsec + ns - (s * 1000000000);
 }
 
+/*
+ * Stupid/simple growable array implementation:
+ */
+
+static inline void *
+grow(void *ptr, uint32_t nr, uint32_t *max, uint32_t sz)
+{
+	if ((nr + 1) > *max) {
+		if ((*max * 2) < (nr + 1))
+			*max = nr + 5;
+		else
+			*max = *max * 2;
+		ptr = realloc(ptr, *max * sz);
+	}
+	return ptr;
+}
+
+#define DECLARE_ARRAY(type, name) \
+	unsigned nr_ ## name, max_ ## name; \
+	type * name;
+
+#define APPEND(x, name) ({ \
+	(x)->name = grow((x)->name, (x)->nr_ ## name, &(x)->max_ ## name, sizeof((x)->name[0])); \
+	(x)->nr_ ## name ++; \
+})
+
 #endif /* MSM_PRIV_H_ */
