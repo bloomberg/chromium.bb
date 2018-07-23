@@ -913,19 +913,15 @@ bool NGLineBreaker::ComputeOpenTagResult(
       (style.HasBorder() || style.HasPadding() ||
        (style.HasMargin() && item_result->has_edge))) {
     bool is_flipped_lines = style.IsFlippedLinesWritingMode();
-    NGLineBoxStrut borders = NGLineBoxStrut(
+    item_result->borders = NGLineBoxStrut(
         ComputeBorders(constraint_space, style), is_flipped_lines);
     item_result->padding = NGLineBoxStrut(
         ComputePadding(constraint_space, style), is_flipped_lines);
-    item_result->borders_paddings_line_over =
-        borders.line_over + item_result->padding.line_over;
-    item_result->borders_paddings_line_under =
-        borders.line_under + item_result->padding.line_under;
     if (item_result->has_edge) {
       item_result->margins = NGLineBoxStrut(
           ComputeMarginsForSelf(constraint_space, style), is_flipped_lines);
       item_result->inline_size = item_result->margins.inline_start +
-                                 borders.inline_start +
+                                 item_result->borders.inline_start +
                                  item_result->padding.inline_start;
       return true;
     }
@@ -962,18 +958,16 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item) {
   if (item_result->has_edge) {
     DCHECK(item.Style());
     const ComputedStyle& style = *item.Style();
-    bool is_flipped_lines = style.IsFlippedLinesWritingMode();
-    item_result->margins = NGLineBoxStrut(
-        ComputeMarginsForSelf(constraint_space_, style), is_flipped_lines);
+    NGBoxStrut margins = ComputeMarginsForSelf(constraint_space_, style);
     NGBoxStrut borders = ComputeBorders(constraint_space_, style);
     NGBoxStrut paddings = ComputePadding(constraint_space_, style);
-    item_result->inline_size = item_result->margins.inline_end +
-                               borders.inline_end + paddings.inline_end;
+    item_result->inline_size =
+        margins.inline_end + borders.inline_end + paddings.inline_end;
     position_ += item_result->inline_size;
 
     if (!item_result->should_create_line_box &&
         (item_result->inline_size ||
-         (item_result->margins.inline_end && !in_line_height_quirks_mode_)))
+         (margins.inline_end && !in_line_height_quirks_mode_)))
       item_result->should_create_line_box = true;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());

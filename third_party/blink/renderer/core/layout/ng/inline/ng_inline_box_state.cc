@@ -119,10 +119,9 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
         box.metrics = box.text_metrics = NGLineHeightMetrics();
       if (box.needs_box_fragment) {
         // Existing box states are wrapped before they were closed, and hence
-        // they do not have start edges.
-        box.has_start_edge = false;
-        box.margin_inline_start = LayoutUnit();
-        box.margin_border_padding_inline_start = LayoutUnit();
+        // they do not have start edges, unless 'box-decoration-break: clone'.
+        box.has_start_edge =
+            box.style->BoxDecorationBreak() == EBoxDecorationBreak::kClone;
       }
       DCHECK(box.pending_descendants.IsEmpty());
     }
@@ -155,18 +154,11 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 
   // Compute box properties regardless of needs_box_fragment since close tag may
   // also set needs_box_fragment.
-  box->padding = item_result.padding;
   box->has_start_edge = item_result.has_edge;
-  if (box->has_start_edge) {
-    box->margin_inline_start = item_result.margins.inline_start;
-    // The open tag item has the start margin+border+padding in |inline_size|.
-    box->margin_border_padding_inline_start = item_result.inline_size;
-  } else {
-    DCHECK_EQ(item_result.margins.inline_start, LayoutUnit());
-    DCHECK_EQ(item_result.inline_size, LayoutUnit());
-  }
-  box->border_padding_line_over = item_result.borders_paddings_line_over;
-  box->border_padding_line_under = item_result.borders_paddings_line_under;
+  box->margin_inline_start = item_result.margins.inline_start;
+  box->margin_inline_end = item_result.margins.inline_end;
+  box->borders = item_result.borders;
+  box->padding = item_result.padding;
   return box;
 }
 
@@ -183,7 +175,10 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
     NGLineBoxFragmentBuilder::ChildList* line_box,
     NGInlineBoxState* box,
-    FontBaseline baseline_type) {
+    FontBaseline baseline_type,
+    bool has_end_edge) {
+  DCHECK_EQ(box, &stack_.back());
+  box->has_end_edge = has_end_edge;
   EndBoxState(box, line_box, baseline_type);
   // TODO(kojii): When the algorithm restarts from a break token, the stack may
   // underflow. We need either synthesize a missing box state, or push all
@@ -197,6 +192,9 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
     FontBaseline baseline_type) {
   for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
     NGInlineBoxState* box = &(*it);
+    if (!box->has_end_edge && box->needs_box_fragment &&
+        box->style->BoxDecorationBreak() == EBoxDecorationBreak::kClone)
+      box->has_end_edge = true;
     EndBoxState(box, line_box, baseline_type);
   }
 }
@@ -233,28 +231,14 @@ void NGInlineBoxState::SetNeedsBoxFragment() {
   needs_box_fragment = true;
 }
 
-void NGInlineBoxState::SetLineRightForBoxFragment(
-    const NGInlineItem& item,
-    const NGInlineItemResult& item_result) {
-  DCHECK(needs_box_fragment);
-  has_end_edge = item_result.has_edge;
-  if (has_end_edge) {
-    margin_inline_end = item_result.margins.inline_end;
-    // The close tag item has the end margin+border+padding in |inline_size|.
-    margin_border_padding_inline_end = item_result.inline_size;
-  } else {
-    DCHECK_EQ(item_result.margins.inline_end, LayoutUnit());
-    DCHECK_EQ(item_result.inline_size, LayoutUnit());
-  }
-}
-
 bool NGInlineBoxState::ParentNeedsBoxFragment(
     const NGInlineBoxState& parent) const {
   if (!parent.item)
     return false;
   // Below are the known cases where parent rect may not equal the union of
   // its child rects.
-  if (margin_inline_start || margin_inline_end)
+  if ((has_start_edge && margin_inline_start) ||
+      (has_end_edge && margin_inline_end))
     return true;
   // Inline box height is determined by font metrics, which can be different
   // from the height of its child atomic inline.
@@ -284,11 +268,12 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
 
   // Extend the block direction of the box by borders and paddings. Inline
   // direction is already included into positions in NGLineBreaker.
-  NGLogicalOffset offset(LayoutUnit(),
-                         -metrics.ascent - box->border_padding_line_over);
-  NGLogicalSize size(LayoutUnit(), metrics.LineHeight() +
-                                       box->border_padding_line_over +
-                                       box->border_padding_line_under);
+  NGLogicalOffset offset(
+      LayoutUnit(),
+      -metrics.ascent - (box->borders.line_over + box->padding.line_over));
+  NGLogicalSize size(
+      LayoutUnit(),
+      metrics.LineHeight() + box->borders.BlockSum() + box->padding.BlockSum());
 
   unsigned fragment_end = line_box->size();
   DCHECK(box->item);
@@ -299,14 +284,16 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   if (box->has_start_edge) {
     box_data.has_line_left_edge = true;
     box_data.margin_line_left = box->margin_inline_start;
-    box_data.margin_border_padding_line_left =
-        box->margin_border_padding_inline_start;
+    box_data.margin_border_padding_line_left = box->margin_inline_start +
+                                               box->borders.inline_start +
+                                               box->padding.inline_start;
   }
   if (box->has_end_edge) {
     box_data.has_line_right_edge = true;
     box_data.margin_line_right = box->margin_inline_end;
-    box_data.margin_border_padding_line_right =
-        box->margin_border_padding_inline_end;
+    box_data.margin_border_padding_line_right = box->margin_inline_end +
+                                                box->borders.inline_end +
+                                                box->padding.inline_end;
   }
   if (IsRtl(style.Direction())) {
     std::swap(box_data.has_line_left_edge, box_data.has_line_right_edge);

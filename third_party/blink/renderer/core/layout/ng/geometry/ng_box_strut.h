@@ -108,6 +108,7 @@ struct CORE_EXPORT NGLineBoxStrut {
   NGLineBoxStrut(const NGBoxStrut&, bool is_flipped_lines);
 
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
+  LayoutUnit BlockSum() const { return line_over + line_under; }
 
   LayoutUnit inline_start;
   LayoutUnit inline_end;
