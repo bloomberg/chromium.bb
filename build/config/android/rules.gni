@@ -1868,6 +1868,8 @@ if (enable_java_templates) {
   #         and enable_relocation_packing do not apply
   #     Use this instead of shared_libraries when you are going to load the library
   #     conditionally, and only when shared_libraries doesn't work for you.
+  #   secondary_abi_loadable_modules: This is the loadable_modules analog to
+  #     secondary_abi_shared_libraries.
   #   shared_libraries: List shared_library targets to bundle. If these
   #     libraries depend on other shared_library targets, those dependencies will
   #     also be included in the apk (e.g. for is_component_build).
@@ -1888,8 +1890,6 @@ if (enable_java_templates) {
   #   requires_sdk_api_level_23: If defined and true, the apk is intended for
   #     installation only on Android M or later. In these releases the system
   #     linker does relocation unpacking, so we can enable it unconditionally.
-  #   secondary_native_libs (deprecated): The path of native libraries for secondary
-  #     app abi.
   #   aapt_locale_whitelist: If set, all locales not in this list will be
   #     stripped from resources.arsc.
   #   exclude_xxxhdpi: Causes all drawable-xxxhdpi images to be excluded
@@ -2088,7 +2088,7 @@ if (enable_java_templates) {
       }
     } else {
       # Must exist for instrumentation_test_apk() to depend on.
-      group("${_template_name}__secondary_abi_runtime_deps") {
+      group("${_template_name}__secondary_abi__runtime_deps") {
       }
     }
 
@@ -2312,8 +2312,9 @@ if (enable_java_templates) {
                                "classpath_deps",
                                "emma_never_instrument",
                                "java_files",
-                               "no_build_hooks",
                                "javac_args",
+                               "no_build_hooks",
+                               "secondary_abi_loadable_modules",
                                "uncompress_shared_libraries",
                              ])
       type = "android_apk"
@@ -2521,7 +2522,6 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "public_deps",
-                                 "secondary_native_libs",
                                  "shared_resources",
                                  "uncompress_shared_libraries",
                                  "write_asset_list",
@@ -2816,9 +2816,9 @@ if (enable_java_templates) {
                                "proguard_enabled",
                                "proguard_jar_path",
                                "requires_sdk_api_level_23",
+                               "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
-                               "secondary_native_libs",
                                "shared_libraries",
                                "shared_resources",
                                "shared_resources_whitelist_target",
@@ -2894,9 +2894,9 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "requires_sdk_api_level_23",
+                               "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
-                               "secondary_native_libs",
                                "shared_libraries",
                                "shared_resources",
                                "shared_resources_whitelist_target",
@@ -3086,14 +3086,14 @@ if (enable_java_templates) {
       # symbolization can be done.
       deps = [
         ":${_apk_target_name}__runtime_deps",
-        ":${_apk_target_name}__secondary_abi_runtime_deps",
+        ":${_apk_target_name}__secondary_abi__runtime_deps",
       ]
       if (defined(invoker.apk_under_test)) {
         _under_test_label =
             get_label_info(invoker.apk_under_test, "label_no_toolchain")
         deps += [
           "${_under_test_label}__runtime_deps",
-          "${_under_test_label}__secondary_abi_runtime_deps",
+          "${_under_test_label}__secondary_abi__runtime_deps",
         ]
       }
     }
@@ -3181,7 +3181,7 @@ if (enable_java_templates) {
       shared_libraries = [ invoker.shared_library ]
       deps += [
         ":${target_name}__runtime_deps",
-        ":${target_name}__secondary_abi_runtime_deps",
+        ":${target_name}__secondary_abi__runtime_deps",
         "//base:base_java",
         "//testing/android/reporter:reporter_java",
       ]

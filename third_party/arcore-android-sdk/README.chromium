@@ -26,4 +26,7 @@ The LICENSE file is taken from
  * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
 
 Changes:
+2018-07-19 - Updated BUILD.gn to support secondary abi (the previous change for
+             arm64 support turned out to be insufficient) and removed the unused
+             libarcore_sdk target.
 2018-05-04 - Updated BUILD.gn to work properly for arm64.
