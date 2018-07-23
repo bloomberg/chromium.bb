@@ -4,8 +4,6 @@
 
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 
-#include <GLES2/gl2.h>
-
 namespace gpu {
 namespace gles2 {
 

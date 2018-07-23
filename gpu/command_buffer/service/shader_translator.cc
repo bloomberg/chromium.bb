@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/shader_translator.h"
 
-#include <GLES2/gl2.h>
 #include <stddef.h>
 #include <string.h>
 #include <algorithm>
@@ -15,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
