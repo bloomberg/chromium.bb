@@ -4,7 +4,7 @@
 
 import("//ios/web/js_compile.gni")
 
-source_set("manualfill") {
+source_set("manual_fill") {
   sources = [
     "keyboard_accessory_view.h",
     "keyboard_accessory_view.mm",

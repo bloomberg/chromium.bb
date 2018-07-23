@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_MANUALFILL_MANUALFILL_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_MANUALFILL_MANUALFILL_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_AUTOFILL_MANUAL_FILL_MANUAL_FILL_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_AUTOFILL_MANUAL_FILL_MANUAL_FILL_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-namespace manualfill {
+namespace manual_fill {
 
 // Searches for the first responder in the passed view hierarchy.
 //
@@ -16,7 +16,7 @@ namespace manualfill {
 // @return The first responder or `nil` if it wasn't found.
 UIView* GetFirstResponderSubview(UIView* view);
 
-}  // namespace manualfill
+}  // namespace manual_fill
 
 // Protocol to pass any user choice in a picker to be filled.
 @protocol ManualFillContentDelegate<NSObject>
@@ -31,7 +31,7 @@ UIView* GetFirstResponderSubview(UIView* view);
 
 // View Controller with the common logic for managing the manual fill views. As
 // well as sending user input to the web view. Meant to be subclassed.
-@interface ManualfillViewController
+@interface ManualFillViewController
     : UIViewController<ManualFillContentDelegate>
 
 // The web view to test the prototype.
@@ -54,4 +54,4 @@ UIView* GetFirstResponderSubview(UIView* view);
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_MANUALFILL_MANUALFILL_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_AUTOFILL_MANUAL_FILL_MANUAL_FILL_VIEW_CONTROLLER_H_

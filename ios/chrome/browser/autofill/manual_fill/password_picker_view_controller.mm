@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/manualfill/password_picker_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/password_picker_view_controller.h"
 
-#import "ios/chrome/browser/autofill/manualfill/manualfill_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/manual_fill_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

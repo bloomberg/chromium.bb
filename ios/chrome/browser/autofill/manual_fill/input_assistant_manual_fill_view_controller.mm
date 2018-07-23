@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/manualfill/input_assistant_manualfill_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/input_assistant_manual_fill_view_controller.h"
 
 #import <WebKit/WebKit.h>
 
-#import "ios/chrome/browser/autofill/manualfill/password_picker_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/password_picker_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -102,7 +102,7 @@
           representativeItem:itemChoose];
 
   UITextInputAssistantItem* item =
-      [manualfill::GetFirstResponderSubview(self.view) inputAssistantItem];
+      [manual_fill::GetFirstResponderSubview(self.view) inputAssistantItem];
   item.leadingBarButtonGroups = @[ group ];
 }
 
@@ -111,7 +111,7 @@
 // @param sender The item requesting the pop over, used for positioning.
 - (void)presentPopOverForSender:(UIBarButtonItem*)sender {
   [self updateActiveFieldID];
-  self.lastFirstResponder = manualfill::GetFirstResponderSubview(self.view);
+  self.lastFirstResponder = manual_fill::GetFirstResponderSubview(self.view);
 
   // TODO:(javierrobles) Test this on iOS 10.
   // TODO:(javierrobles) Support / dismiss on rotation.

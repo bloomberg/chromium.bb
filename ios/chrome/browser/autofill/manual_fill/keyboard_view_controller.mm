@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/manualfill/manualfill_keyboard_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/keyboard_view_controller.h"
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/autofill/manualfill/password_picker_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/manualfill/keyboard_background_view.h"
+#import "ios/chrome/browser/autofill/manual_fill/password_picker_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_background_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +23,7 @@ namespace {
 //         found.
 UIView* GetKeyboardAccessoryView() {
   for (UIWindow* window in [[UIApplication sharedApplication] windows]) {
-    UIView* firstResponder = manualfill::GetFirstResponderSubview(window);
+    UIView* firstResponder = manual_fill::GetFirstResponderSubview(window);
     if (firstResponder) {
       return firstResponder.inputAccessoryView;
     }
@@ -33,7 +33,7 @@ UIView* GetKeyboardAccessoryView() {
 
 }  // namespace
 
-@interface ManualfillKeyboardViewController ()
+@interface ManualFillKeyboardViewController ()
 
 // A strong reference to `inputAccessoryView` used in this class to jump
 // between the web view fields.
@@ -66,7 +66,7 @@ UIView* GetKeyboardAccessoryView() {
 
 @end
 
-@implementation ManualfillKeyboardViewController
+@implementation ManualFillKeyboardViewController
 @synthesize lastAccessoryInputView = _lastAccessoryInputView;
 @synthesize shouldShowManualFillView = _shouldShowManualFillView;
 @synthesize manualFillView = _manualFillView;
@@ -152,7 +152,7 @@ UIView* GetKeyboardAccessoryView() {
 
 - (void)handleKeyboardDidShowNotification:(NSNotification*)notification {
   // Update the first responder and it's accessory view.
-  self.lastFirstResponder = manualfill::GetFirstResponderSubview(self.view);
+  self.lastFirstResponder = manual_fill::GetFirstResponderSubview(self.view);
   // This is needed to keep a strong reference to the input accessory view.
   self.lastAccessoryInputView = self.lastFirstResponder.inputAccessoryView;
 

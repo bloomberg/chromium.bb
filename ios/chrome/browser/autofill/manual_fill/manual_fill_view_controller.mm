@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/manualfill/manualfill_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/manual_fill_view_controller.h"
 
 #import <WebKit/WebKit.h>
 
@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-namespace manualfill {
+namespace manual_fill {
 
 UIView* GetFirstResponderSubview(UIView* view) {
   if ([view isFirstResponder])
@@ -27,7 +27,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return nil;
 }
 
-}  // namespace manualfill
+}  // namespace manual_fill
 
 @interface ManualfillViewController ()
 
@@ -71,7 +71,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 - (void)updateActiveFieldID {
   __weak __typeof(self) weakSelf = self;
-  NSString* javaScriptQuery = @"__gCrWeb.manualfill.activeElementId()";
+  NSString* javaScriptQuery = @"__gCrWeb.manualFill.activeElementId()";
   [self.webView evaluateJavaScript:javaScriptQuery
                  completionHandler:^(id result, NSError* error) {
                    NSLog(@"result: %@", [result description]);
@@ -83,7 +83,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 - (void)fillLastSelectedFieldWithString:(NSString*)string {
   NSString* javaScriptQuery =
       [NSString stringWithFormat:
-                    @"__gCrWeb.manualfill.setValueForElementId(\"%@\", \"%@\")",
+                    @"__gCrWeb.manualFill.setValueForElementId(\"%@\", \"%@\")",
                     string, self.activeFieldID];
   [self.webView evaluateJavaScript:javaScriptQuery completionHandler:nil];
 }
@@ -116,7 +116,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 - (NSString*)earlyJSStringMainFrame {
   NSArray* filenames = @[
     @"main_frame_web_bundle", @"chrome_bundle_main_frame",
-    @"manualfill_controller"
+    @"manual_fill_controller"
   ];
   return [self joinedJSFilesWithFilenames:filenames];
 }

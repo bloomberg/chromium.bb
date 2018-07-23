@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/manualfill_accessory_provider.h"
+#import "ios/chrome/browser/autofill/manual_fill_accessory_provider.h"
 
 #include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_features.h"
-#import "ios/chrome/browser/ui/autofill/manualfill/keyboard_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_accessory_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface ManualfillAccessoryProvider ()
+@interface ManualFillAccessoryProvider ()
 
 // The default accesory view to return in the update block.
 @property(nonatomic, readonly) KeyboardAccessoryView* accessoryView;
@@ -24,7 +24,7 @@
 
 @end
 
-@implementation ManualfillAccessoryProvider
+@implementation ManualFillAccessoryProvider
 
 @synthesize accessoryViewDelegate = _accessoryViewDelegate;
 @synthesize accessoryView = _accessoryView;
@@ -37,9 +37,9 @@
             accessoryViewUpdateBlock:
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
   DCHECK(accessoryViewUpdateBlock);
-  BOOL isManualfillEnabled =
+  BOOL isManualFillEnabled =
       base::FeatureList::IsEnabled(autofill::features::kAutofillManualFallback);
-  if (!isManualfillEnabled) {
+  if (!isManualFillEnabled) {
     accessoryViewUpdateBlock(nil, self);
     return;
   }
