@@ -235,9 +235,6 @@ class KEYBOARD_EXPORT KeyboardController
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
 
-  // For access to SetContainerBounds.
-  friend class KeyboardLayoutManager;
-
   // For access to NotifyKeyboardConfigChanged
   friend bool keyboard::UpdateKeyboardConfig(
       const keyboard::KeyboardConfig& config);
