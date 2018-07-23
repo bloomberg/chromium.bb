@@ -103,6 +103,10 @@ cast_test_group("cast_tests") {
     ]
   }
 
+  if (is_android && is_cast_using_cma_backend) {
+    tests += [ "//chromecast/media/cma/backend/android:cast_android_cma_backend_unittests" ]
+  }
+
   if (!is_android) {
     tests += [
       ":cast_shell_browsertests",

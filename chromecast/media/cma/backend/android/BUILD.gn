@@ -5,6 +5,7 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chromecast/chromecast.gni")
+import("//testing/test.gni")
 
 cast_source_set("cast_media_android") {
   sources = [
@@ -20,6 +21,8 @@ cast_source_set("cast_media_android") {
     "media_codec_support_cast_audio.cc",
     "media_pipeline_backend_android.cc",
     "media_pipeline_backend_android.h",
+    "volume_cache.cc",
+    "volume_cache.h",
     "volume_control_android.cc",
     "volume_control_android.h",
   ]
@@ -72,5 +75,25 @@ android_library("audio_track_java") {
     "//chromecast/public:volume_control_enums_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_v13_java",
+  ]
+}
+
+test("cast_android_cma_backend_unittests") {
+  deps = [
+    ":unit_tests",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "volume_cache_test.cc",
+  ]
+
+  deps = [
+    ":cast_media_android",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//testing/gtest",
   ]
 }
