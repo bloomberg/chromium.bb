@@ -667,7 +667,6 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
 }
 #endif
 
-TextRunHarfBuzz::CommonParams::CommonParams() = default;
 TextRunHarfBuzz::CommonParams::CommonParams(const Font& template_font)
     : font(template_font) {}
 TextRunHarfBuzz::CommonParams::~CommonParams() = default;
@@ -676,33 +675,62 @@ TextRunHarfBuzz::CommonParams::CommonParams(
 TextRunHarfBuzz::CommonParams& TextRunHarfBuzz::CommonParams::operator=(
     const TextRunHarfBuzz::CommonParams& other) = default;
 
-void TextRunHarfBuzz::CommonParams::ComputeFontSizeAndBaselineOffset(
-    const Font& primary_font) {
+bool TextRunHarfBuzz::CommonParams::operator==(
+    const CommonParams& other) const {
+  // Empirically, |script| and |weight| are the highest entropy members.
+  return script == other.script && weight == other.weight &&
+         skia_face == other.skia_face && render_params == other.render_params &&
+         font_size == other.font_size &&
+         baseline_offset == other.baseline_offset &&
+         baseline_type == other.baseline_type && italic == other.italic &&
+         strike == other.strike && underline == other.underline &&
+         heavy_underline == other.heavy_underline && is_rtl == other.is_rtl &&
+         level == other.level;
+}
+
+void TextRunHarfBuzz::CommonParams::
+    ComputeRenderParamsFontSizeAndBaselineOffset() {
+  render_params = font.GetFontRenderParams();
   if (font_size == 0)
-    font_size = primary_font.GetFontSize();
+    font_size = font.GetFontSize();
   baseline_offset = 0;
   if (baseline_type != NORMAL_BASELINE) {
     // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
     // Proportions from 5/9 to 5/7 all look pretty good.
     const float ratio = 5.0f / 9.0f;
-    font_size = ToRoundedInt(primary_font.GetFontSize() * ratio);
+    font_size = ToRoundedInt(font.GetFontSize() * ratio);
     switch (baseline_type) {
       case SUPERSCRIPT:
-        baseline_offset =
-            primary_font.GetCapHeight() - primary_font.GetHeight();
+        baseline_offset = font.GetCapHeight() - font.GetHeight();
         break;
       case SUPERIOR:
-        baseline_offset = ToRoundedInt(primary_font.GetCapHeight() * ratio) -
-                          primary_font.GetCapHeight();
+        baseline_offset =
+            ToRoundedInt(font.GetCapHeight() * ratio) - font.GetCapHeight();
         break;
       case SUBSCRIPT:
-        baseline_offset = primary_font.GetHeight() - primary_font.GetBaseline();
+        baseline_offset = font.GetHeight() - font.GetBaseline();
         break;
       case INFERIOR:  // Fall through.
       default:
         break;
     }
   }
+}
+
+size_t TextRunHarfBuzz::CommonParams::Hash::operator()(
+    const CommonParams& key) const {
+  // In practice, |font|, |skia_face|, |render_params|, and |baseline_offset|
+  // have not yet been set when this is called.
+  return static_cast<size_t>(key.italic) << 0 ^
+         static_cast<size_t>(key.strike) << 1 ^
+         static_cast<size_t>(key.underline) << 2 ^
+         static_cast<size_t>(key.heavy_underline) << 3 ^
+         static_cast<size_t>(key.is_rtl) << 4 ^
+         static_cast<size_t>(key.weight) << 8 ^
+         static_cast<size_t>(key.font_size) << 12 ^
+         static_cast<size_t>(key.baseline_type) << 16 ^
+         static_cast<size_t>(key.level) << 20 ^
+         static_cast<size_t>(key.script) << 24;
 }
 
 bool TextRunHarfBuzz::CommonParams::SetFontAndRenderParams(
@@ -902,6 +930,20 @@ SkScalar TextRunHarfBuzz::GetGlyphWidthForCharRange(
               ? SkFloatToScalar(shape.width)
               : shape.positions[glyph_range.end()].x()) -
          shape.positions[glyph_range.start()].x();
+}
+
+void TextRunHarfBuzz::UpdateCommonParamsAndShape(
+    const CommonParams& new_common_params,
+    const ShapeOutput& new_shape) {
+  if (new_shape.missing_glyph_count < shape.missing_glyph_count) {
+    common = new_common_params;
+    shape = new_shape;
+    // Note that |new_shape.glyph_to_char| is indexed from the beginning of
+    // |range|, while |shape.glyph_to_char| is indexed from the beginning of
+    // its embedding text.
+    for (size_t i = 0; i < shape.glyph_to_char.size(); ++i)
+      shape.glyph_to_char[i] += range.start();
+  }
 }
 
 TextRunList::TextRunList() : width_(0.0f) {}
@@ -1474,11 +1516,8 @@ void RenderTextHarfBuzz::EnsureLayout() {
     const base::string16& display_text = GetDisplayText();
     display_run_list_.reset(new internal::TextRunList);
 
-    if (!display_text.empty()) {
-      TRACE_EVENT0("ui", "RenderTextHarfBuzz:EnsureLayout1");
-      ItemizeTextToRuns(display_text, display_run_list_.get());
-      ShapeRunList(display_text, display_run_list_.get());
-    }
+    if (!display_text.empty())
+      ItemizeAndShapeText(display_text, display_run_list_.get());
     update_display_run_list_ = false;
     std::vector<internal::Line> empty_lines;
     set_lines(&empty_lines);
@@ -1612,10 +1651,30 @@ SelectionModel RenderTextHarfBuzz::LastSelectionModelInsideRun(
   return SelectionModel(position, CURSOR_FORWARD);
 }
 
+void RenderTextHarfBuzz::ItemizeAndShapeText(const base::string16& text,
+                                             internal::TextRunList* run_list) {
+  CommonizedRunsMap commonized_run_map;
+  ItemizeTextToRuns(text, run_list, &commonized_run_map);
+
+  for (auto iter = commonized_run_map.begin(); iter != commonized_run_map.end();
+       ++iter) {
+    internal::TextRunHarfBuzz::CommonParams common_params = iter->first;
+    common_params.ComputeRenderParamsFontSizeAndBaselineOffset();
+    ShapeRuns(text, common_params, std::move(iter->second));
+  }
+
+  run_list->InitIndexMap();
+  run_list->ComputePrecedingRunWidths();
+}
+
 void RenderTextHarfBuzz::ItemizeTextToRuns(
     const base::string16& text,
-    internal::TextRunList* run_list_out) {
+    internal::TextRunList* out_run_list,
+    CommonizedRunsMap* out_commonized_run_map) {
+  TRACE_EVENT1("ui", "RenderTextHarfBuzz::ItemizeTextToRuns", "text_length",
+               text.length());
   DCHECK_NE(0U, text.length());
+  const Font& primary_font = font_list().GetPrimaryFont();
 
   // If ICU fails to itemize the text, we create a run that spans the entire
   // text. This is needed because leaving the runs set empty causes some clients
@@ -1635,8 +1694,9 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range = Range(0, text.length());
-    run_list_out->Add(std::move(run));
-    run_list_out->InitIndexMap();
+    internal::TextRunHarfBuzz::CommonParams common_params(primary_font);
+    (*out_commonized_run_map)[common_params].push_back(run.get());
+    out_run_list->Add(std::move(run));
     return;
   }
 
@@ -1655,8 +1715,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
 
   for (size_t run_break = 0; run_break < text.length();) {
     Range run_range;
-    internal::TextRunHarfBuzz::CommonParams common_params(
-        font_list().GetPrimaryFont());
+    internal::TextRunHarfBuzz::CommonParams common_params(primary_font);
     run_range.set_start(run_break);
     common_params.italic = style.style(ITALIC);
     common_params.baseline_type = style.baseline();
@@ -1699,32 +1758,21 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
 
     auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
+    (*out_commonized_run_map)[common_params].push_back(run.get());
     run->range = run_range;
-    run->common = common_params;
-    run_list_out->Add(std::move(run));
+    out_run_list->Add(std::move(run));
   }
 
   // Undo the temporarily applied composition underlines and selection colors.
   UndoCompositionAndSelectionStyles();
-
-  run_list_out->InitIndexMap();
 }
 
-void RenderTextHarfBuzz::ShapeRunList(const base::string16& text,
-                                      internal::TextRunList* run_list) {
-  for (const auto& run : run_list->runs()) {
-    const Font& primary_font = font_list().GetPrimaryFont();
-    internal::TextRunHarfBuzz::CommonParams common_params = run->common;
-    common_params.ComputeFontSizeAndBaselineOffset(primary_font);
-    ShapeRun(text, common_params, run.get());
-  }
-  run_list->ComputePrecedingRunWidths();
-}
-
-void RenderTextHarfBuzz::ShapeRun(
+void RenderTextHarfBuzz::ShapeRuns(
     const base::string16& text,
     const internal::TextRunHarfBuzz::CommonParams& common_params,
-    internal::TextRunHarfBuzz* run) {
+    std::vector<internal::TextRunHarfBuzz*> runs) {
+  TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRuns", "run_count", runs.size());
+
   const Font& primary_font = font_list().GetPrimaryFont();
   Font best_font(primary_font);
 
@@ -1732,9 +1780,9 @@ void RenderTextHarfBuzz::ShapeRun(
     internal::TextRunHarfBuzz::CommonParams test_common_params = common_params;
     if (test_common_params.SetFontAndRenderParams(font,
                                                   font.GetFontRenderParams())) {
-      ShapeRunWithFont(text, test_common_params, run);
+      ShapeRunsWithFont(text, test_common_params, &runs);
     }
-    if (run->shape.missing_glyph_count == 0)
+    if (runs.empty())
       return;
   }
 
@@ -1742,16 +1790,16 @@ void RenderTextHarfBuzz::ShapeRun(
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   Font fallback_font(primary_font);
-  const base::char16* run_text = &(text[run->range.start()]);
-  if (GetFallbackFont(primary_font, run_text, run->range.length(),
+  const base::char16* run_text = &(text[runs.front()->range.start()]);
+  if (GetFallbackFont(primary_font, run_text, runs.front()->range.length(),
                       &fallback_font)) {
     preferred_fallback_family = fallback_font.GetFontName();
     internal::TextRunHarfBuzz::CommonParams test_common_params = common_params;
     if (test_common_params.SetFontAndRenderParams(
             fallback_font, fallback_font.GetFontRenderParams())) {
-      ShapeRunWithFont(text, test_common_params, run);
+      ShapeRunsWithFont(text, test_common_params, &runs);
     }
-    if (run->shape.missing_glyph_count == 0)
+    if (runs.empty())
       return;
   }
 #endif
@@ -1804,55 +1852,64 @@ void RenderTextHarfBuzz::ShapeRun(
     internal::TextRunHarfBuzz::CommonParams test_common_params = common_params;
     if (test_common_params.SetFontAndRenderParams(font,
                                                   fallback_render_params)) {
-      ShapeRunWithFont(text, test_common_params, run);
+      ShapeRunsWithFont(text, test_common_params, &runs);
     }
-    if (run->shape.missing_glyph_count == 0)
+    if (runs.empty())
       return;
   }
 
-  if (run->shape.missing_glyph_count == std::numeric_limits<size_t>::max()) {
-    run->shape.glyph_count = 0;
-    run->shape.width = 0.0f;
+  for (internal::TextRunHarfBuzz*& run : runs) {
+    if (run->shape.missing_glyph_count == std::numeric_limits<size_t>::max()) {
+      run->shape.glyph_count = 0;
+      run->shape.width = 0.0f;
+    }
   }
 }
 
-void RenderTextHarfBuzz::ShapeRunWithFont(
+void RenderTextHarfBuzz::ShapeRunsWithFont(
     const base::string16& text,
     const internal::TextRunHarfBuzz::CommonParams& common_params,
-    internal::TextRunHarfBuzz* run) {
-  const internal::ShapeRunWithFontInput in(
-      text, common_params, run->range, obscured(), glyph_width_for_test_,
-      glyph_spacing(), subpixel_rendering_suppressed());
-  internal::TextRunHarfBuzz::ShapeOutput out;
-
+    std::vector<internal::TextRunHarfBuzz*>* in_out_runs) {
   // ShapeRunWithFont can be extremely slow, so use cached results if possible.
   // Only do this on the UI thread, to avoid synchronization overhead (and
   // because almost all calls are on the UI thread. Also avoid caching long
   // strings, to avoid blowing up the cache size.
   constexpr size_t kMaxRunLengthToCache = 25;
-  if (base::MessageLoopCurrentForUI::IsSet() &&
-      run->range.length() <= kMaxRunLengthToCache) {
-    static base::NoDestructor<internal::ShapeRunCache> cache;
-    auto found = cache.get()->Get(in);
-    if (found == cache.get()->end()) {
-      internal::ShapeRunWithFont(in, &out);
-      cache.get()->Put(in, out);
-    } else {
-      out = found->second;
-    }
-  } else {
-    internal::ShapeRunWithFont(in, &out);
-  }
+  static base::NoDestructor<internal::ShapeRunCache> cache;
 
-  if (out.missing_glyph_count < run->shape.missing_glyph_count) {
-    run->common = common_params;
-    run->shape = out;
-    // Note that |out.glyph_to_char| is indexed from the beginning of
-    // |run->range|, while |run->shape.glyph_to_char| is indexed from
-    // the beginning of |text|.
-    for (size_t i = 0; i < run->shape.glyph_to_char.size(); ++i)
-      run->shape.glyph_to_char[i] += run->range.start();
+  std::vector<internal::TextRunHarfBuzz*> runs_with_missing_glyphs;
+  for (internal::TextRunHarfBuzz*& run : *in_out_runs) {
+    // First do a cache lookup.
+    bool can_use_cache = base::MessageLoopCurrentForUI::IsSet() &&
+                         run->range.length() <= kMaxRunLengthToCache;
+    bool found_in_cache = false;
+    const internal::ShapeRunWithFontInput cache_key(
+        text, common_params, run->range, obscured(), glyph_width_for_test_,
+        glyph_spacing(), subpixel_rendering_suppressed());
+    if (can_use_cache) {
+      auto found = cache.get()->Get(cache_key);
+      if (found != cache.get()->end()) {
+        run->UpdateCommonParamsAndShape(common_params, found->second);
+        found_in_cache = true;
+      }
+    }
+
+    // If that fails, compute the shape of the run, and add the result to the
+    // cache.
+    // TODO(ccameron): Coalesce calls to ShapeRunsWithFont when possible.
+    if (!found_in_cache) {
+      internal::TextRunHarfBuzz::ShapeOutput output;
+      ShapeRunWithFont(cache_key, &output);
+      run->UpdateCommonParamsAndShape(common_params, output);
+      if (can_use_cache)
+        cache.get()->Put(cache_key, output);
+    }
+
+    // Check to see if we still have missing glyphs.
+    if (run->shape.missing_glyph_count)
+      runs_with_missing_glyphs.push_back(run);
   }
+  in_out_runs->swap(runs_with_missing_glyphs);
 }
 
 void RenderTextHarfBuzz::EnsureLayoutRunList() {
@@ -1860,11 +1917,8 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
     layout_run_list_.Reset();
 
     const base::string16& text = layout_text();
-    if (!text.empty()) {
-      TRACE_EVENT0("ui", "RenderTextHarfBuzz:EnsureLayoutRunList");
-      ItemizeTextToRuns(text, &layout_run_list_);
-      ShapeRunList(text, &layout_run_list_);
-    }
+    if (!text.empty())
+      ItemizeAndShapeText(text, &layout_run_list_);
 
     display_run_list_.reset();
     update_display_text_ = true;
