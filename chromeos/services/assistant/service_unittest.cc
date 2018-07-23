@@ -155,6 +155,7 @@ class FakeDeviceActions : mojom::DeviceActions {
  private:
   // mojom::DeviceActions:
   void SetWifiEnabled(bool enabled) override {}
+  void SetBluetoothEnabled(bool enabled) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 

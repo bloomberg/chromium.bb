@@ -380,32 +380,44 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
           weak_factory_.GetWeakPtr(), speech_level));
 }
 
+void HandleOnOffChange(api::client_op::ModifySettingArgs modify_setting_args,
+                       std::function<void(bool)> on_off_handler) {
+  switch (modify_setting_args.change()) {
+    case api::client_op::ModifySettingArgs_Change_ON:
+      on_off_handler(true);
+      return;
+    case api::client_op::ModifySettingArgs_Change_OFF:
+      on_off_handler(false);
+      return;
+
+    case api::client_op::ModifySettingArgs_Change_TOGGLE:
+    case api::client_op::ModifySettingArgs_Change_INCREASE:
+    case api::client_op::ModifySettingArgs_Change_DECREASE:
+    case api::client_op::ModifySettingArgs_Change_SET:
+    case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
+      break;
+  }
+  DLOG(ERROR) << "Unsupported change operation: "
+              << modify_setting_args.change() << " for setting "
+              << modify_setting_args.setting_id();
+}
+
 void AssistantManagerServiceImpl::OnModifySettingsAction(
     const std::string& modify_setting_args_proto) {
   api::client_op::ModifySettingArgs modify_setting_args;
   modify_setting_args.ParseFromString(modify_setting_args_proto);
   DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
 
-  // TODO(rcui): Add support for bluetooth, etc.
   if (modify_setting_args.setting_id() == kWiFiDeviceSettingId) {
-    switch (modify_setting_args.change()) {
-      case api::client_op::ModifySettingArgs_Change_ON:
-        service_->device_actions()->SetWifiEnabled(true);
-        return;
-      case api::client_op::ModifySettingArgs_Change_OFF:
-        service_->device_actions()->SetWifiEnabled(false);
-        return;
+    HandleOnOffChange(modify_setting_args, [this](bool enabled) {
+      this->service_->device_actions()->SetWifiEnabled(enabled);
+    });
+  }
 
-      case api::client_op::ModifySettingArgs_Change_TOGGLE:
-      case api::client_op::ModifySettingArgs_Change_INCREASE:
-      case api::client_op::ModifySettingArgs_Change_DECREASE:
-      case api::client_op::ModifySettingArgs_Change_SET:
-      case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
-        break;
-    }
-    DLOG(ERROR) << "Unsupported change operation: "
-                << modify_setting_args.change() << " for setting "
-                << modify_setting_args.setting_id();
+  if (modify_setting_args.setting_id() == kBluetoothDeviceSettingId) {
+    HandleOnOffChange(modify_setting_args, [this](bool enabled) {
+      this->service_->device_actions()->SetBluetoothEnabled(enabled);
+    });
   }
 }
 
