@@ -52,7 +52,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
       ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
       BrowserCompositorMacClient* client,
       bool render_widget_host_is_hidden,
-      bool ns_view_attached_to_window,
       const display::Display& initial_display,
       const viz::FrameSinkId& frame_sink_id);
   ~BrowserCompositorMac() override;
@@ -105,6 +104,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // NSView while its contents may be visible on-screen, even if the RWHImpl is
   // hidden (e.g, because it is occluded by another window).
   void SetNSViewAttachedToWindow(bool attached);
+
+  // Specify if the ui::Layer should be visible or not.
+  void SetViewVisible(bool visible);
 
   // Sets or clears the parent ui::Layer and updates state to reflect that
   // we are now using the ui::Compositor from |parent_ui_layer| (if non-nullptr)

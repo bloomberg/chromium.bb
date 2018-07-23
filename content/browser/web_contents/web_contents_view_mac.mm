@@ -370,8 +370,10 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
     view->SetDelegate(rw_delegate.get());
   }
   view->SetAllowPauseForResizeOrRepaint(!allow_other_views_);
-  if (parent_ui_layer_)
-    view->SetParentUiLayer(parent_ui_layer_);
+
+  // Add the RenderWidgetHostView to the ui::Layer heirarchy.
+  child_views_.push_back(view->GetWeakPtr());
+  SetParentUiLayer(parent_ui_layer_);
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want
@@ -448,11 +450,16 @@ void WebContentsViewMac::CloseTab() {
 }
 
 void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
-  parent_ui_layer_ = parent_ui_layer;
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      web_contents_->GetRenderWidgetHostView());
-  if (view)
-    view->SetParentUiLayer(parent_ui_layer);
+  // Remove any child NSViews that have been destroyed.
+  for (auto iter = child_views_.begin(); iter != child_views_.end();) {
+    auto iter_next = iter;
+    iter_next++;
+    if (*iter)
+      (*iter)->SetParentUiLayer(parent_ui_layer);
+    else
+      child_views_.erase(iter);
+    iter = iter_next;
+  }
 }
 
 }  // namespace content
