@@ -92,6 +92,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
   switch (type) {
     case TaskType::kJavascriptTimer:
     case TaskType::kPostedMessage:
+    case TaskType::kWorkerAnimation:
       return TaskQueueWithTaskType::Create(throttleable_task_queue_, type);
     case TaskType::kDeprecatedNone:
     case TaskType::kDOMManipulation:

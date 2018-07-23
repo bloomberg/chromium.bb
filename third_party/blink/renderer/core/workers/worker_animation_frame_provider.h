@@ -62,6 +62,10 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   // not hold strong references.
   Vector<UntracedMember<OffscreenCanvas>> offscreen_canvases_;
   bool in_begin_frame_;
+
+  Member<ExecutionContext> context_;
+
+  base::WeakPtrFactory<WorkerAnimationFrameProvider> weak_factory_;
 };
 
 }  // namespace blink
