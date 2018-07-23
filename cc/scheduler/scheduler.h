@@ -193,6 +193,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history_;
 
+  // What the latest deadline was, and when it was scheduled.
   SchedulerStateMachine::BeginImplFrameDeadlineMode
       begin_impl_frame_deadline_mode_ =
           SchedulerStateMachine::BeginImplFrameDeadlineMode::NONE;
@@ -202,9 +203,18 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   BeginFrameTracker begin_impl_frame_tracker_;
   viz::BeginFrameArgs begin_main_frame_args_;
 
-  base::Closure begin_impl_frame_deadline_closure_;
-  base::CancelableClosure begin_impl_frame_deadline_task_;
-  base::CancelableClosure missed_begin_frame_task_;
+  // Task posted for the deadline or drawing phase of the scheduler. This task
+  // can be rescheduled e.g. when the condition for the deadline is met, it is
+  // scheduled to run immediately.
+  // NOTE: Scheduler weak ptrs are not necessary if CancelableCallback is used.
+  base::CancelableOnceClosure begin_impl_frame_deadline_task_;
+
+  // This is used for queueing begin frames while scheduler is waiting for
+  // previous frame's deadline, or if it's inside ProcessScheduledActions().
+  // Only one such task is posted at any time, but the args are updated as we
+  // get new begin frames.
+  viz::BeginFrameArgs pending_begin_frame_args_;
+  base::CancelableOnceClosure pending_begin_frame_task_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_ = false;
@@ -215,11 +225,32 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   bool stopped_ = false;
 
  private:
+  // Posts the deadline task if needed by checking
+  // SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode(). This only
+  // happens when the scheduler is processing a begin frame
+  // (BeginImplFrameState::INSIDE_BEGIN_FRAME).
   void ScheduleBeginImplFrameDeadline();
-  void ScheduleBeginImplFrameDeadlineIfNeeded();
+
+  // Starts or stops begin frames as needed by checking
+  // SchedulerStateMachine::BeginFrameNeeded(). This only happens when the
+  // scheduler is not processing a begin frame (BeginImplFrameState::IDLE).
+  void StartOrStopBeginFrames();
+
+  // This will only post a task if the args are valid and there's no existing
+  // task. That implies that we're still expecting begin frames. If begin frames
+  // aren't needed this will be a nop. This only happens when the scheduler is
+  // not processing a begin frame (BeginImplFrameState::IDLE).
+  void PostPendingBeginFrameTask();
+
+  // Use |pending_begin_frame_args_| to begin a new frame like it was received
+  // in OnBeginFrameDerivedImpl().
+  void HandlePendingBeginFrame();
+
+  // Used to drop the pending begin frame before we go idle.
+  void CancelPendingBeginFrameTask();
+
   void BeginImplFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
-  void SetupNextBeginFrameIfNeeded();
   void DrawIfPossible();
   void DrawForced();
   void ProcessScheduledActions();
@@ -235,6 +266,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
       base::TimeTicks now) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
+
   void BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const viz::BeginFrameArgs& args);
   void BeginImplFrame(const viz::BeginFrameArgs& args, base::TimeTicks now);
@@ -249,8 +281,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
   }
-
-  base::WeakPtrFactory<Scheduler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };
