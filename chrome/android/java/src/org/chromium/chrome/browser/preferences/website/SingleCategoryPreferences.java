@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import static org.chromium.chrome.browser.preferences.SearchUtils.handleSearchNavigation;
+
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Build;
@@ -15,9 +17,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.SearchView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.Formatter;
@@ -29,7 +29,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -51,6 +50,7 @@ import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.ProtectedContentResetCredentialConfirmDialogFragment;
+import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.widget.Toast;
@@ -80,14 +80,14 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
     // The view to show when the list is empty.
     private TextView mEmptyView;
-    // The view for searching the list of items.
-    private SearchView mSearchView;
+    // The item for searching the list of items.
+    private MenuItem mSearchItem;
     // The clear button displayed in the Storage view.
     private Button mClearButton;
     // The Site Settings Category we are showing.
     private SiteSettingsCategory mCategory;
     // If not blank, represents a substring to use to search for site names.
-    private String mSearch = "";
+    private String mSearch;
     // Whether to group by allowed/blocked list.
     private boolean mGroupByAllowBlock;
     // Whether the Blocked list should be shown expanded.
@@ -327,26 +327,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
         menu.clear();
         inflater.inflate(R.menu.website_preferences_menu, menu);
 
-        MenuItem searchItem = menu.findItem(R.id.search);
-        mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        mSearchView.setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN);
-        SearchView.OnQueryTextListener queryTextListener =
-                new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String query) {
-                        if (query.equals(mSearch)) return true;
-
-                        mSearch = query;
-                        getInfoForOrigins();
-                        return true;
-                    }
-                };
-        mSearchView.setOnQueryTextListener(queryTextListener);
+        mSearchItem = menu.findItem(R.id.search);
+        SearchUtils.initializeSearchView(mSearchItem, mSearch, (query) -> {
+            mSearch = query;
+            getInfoForOrigins();
+        });
 
         if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
             // Add a menu item to reset protected media identifier device credentials.
@@ -380,6 +365,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     getActivity(), getString(helpContextResId), Profile.getLastUsedProfile(), null);
             return true;
         }
+        if (handleSearchNavigation(item, mSearchItem, mSearch)) {
+            mSearch = null;
+            getInfoForOrigins();
+            return true;
+        }
         return false;
     }
 
@@ -392,11 +382,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return false;
         }
 
-        if (!mSearch.isEmpty()) {
+        if (mSearch != null) {
             // Clear out any lingering searches, so that the full list is shown
             // when coming back to this page.
-            mSearch = "";
-            mSearchView.setQuery("", false);
+            mSearch = null;
+            SearchUtils.getSearchView(mSearchItem).setQuery("", false);
         }
 
         if (preference instanceof WebsitePreference) {
@@ -605,7 +595,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         // Find origins matching the current search.
         for (Website site : sites) {
-            if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
+            if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
                 websites.add(new WebsitePreference(getActivity(), site, mCategory));
             }
         }
