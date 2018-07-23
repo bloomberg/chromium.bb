@@ -237,4 +237,53 @@ tests:
   - - ",abc-abc."
     - "ABC-ABC"
 
+# test numericmodechars and midnumericmodechars
     
+table: |
+  display , 6
+  display # 3456
+  display ; 56
+  display - 36
+  display . 46
+  punctuation - 36
+  punctuation . 46
+  include tables/latinLetterDef6Dots.uti
+  include tables/digits6Dots.uti
+  include tables/litdigits6Dots.uti
+  include tables/braille-patterns.cti
+  capsletter 6
+  numsign 3456
+  nocontractsign 56
+  numericnocontchars abcdefghij
+  numericmodechars .
+  midnumericmodechars -
+
+tests:
+  - - "-1 .1"
+    - "-#a #.a"
+  - - "123-456 123.456"
+    - "#abc-def #abc.def"
+  - - "-123-456-789 .123.456.789"
+    - "-#abc-def-ghi #.abc.def.ghi"
+  - - "-123-abc .123.abc"
+    - "-#abc-;abc #.abc.;abc"
+  - - "-123-Abc .123.Abc"
+    - "-#abc-,abc #.abc.,abc"
+  - - "abc-123 abc.123"
+    - "abc-#abc abc#.abc"
+    # was this really intended?
+
+flags: {testmode: backward}
+tests:
+  - - "-#a #.a .#a"
+    - "-1 .1 .1" # should work even if . is before #
+  - - "#abc-def #abc.def"
+    - "123-456 123.456"
+  - - "-#abc-def-ghi #.abc.def.ghi"
+    - "-123-456-789 .123.456.789"
+  - - "-#abc-;abc #.abc.;abc"
+    - "-123-abc .123.abc"
+  - - "-#abc-,abc #.abc.,abc"
+    - "-123-Abc .123.Abc"
+  - - "abc-#abc abc#.abc abc.#abc"
+    - "abc-123 abc.123 abc.123"
