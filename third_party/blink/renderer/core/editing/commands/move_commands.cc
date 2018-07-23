@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/move_commands.h"
 
+#include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
