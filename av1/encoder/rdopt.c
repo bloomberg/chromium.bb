@@ -9994,9 +9994,9 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
 }
 
 static int inter_mode_search_order_independent_skip(
-    const AV1_COMP *cpi, const MACROBLOCK *x, BLOCK_SIZE bsize, int mode_index,
-    int mi_row, int mi_col, uint32_t *mode_skip_mask,
-    uint16_t *ref_frame_skip_mask) {
+    const AV1_COMP *cpi, const PICK_MODE_CONTEXT *ctx, const MACROBLOCK *x,
+    BLOCK_SIZE bsize, int mode_index, int mi_row, int mi_col,
+    uint32_t *mode_skip_mask, uint16_t *ref_frame_skip_mask) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
@@ -10005,6 +10005,12 @@ static int inter_mode_search_order_independent_skip(
   const unsigned char segment_id = mbmi->segment_id;
   const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
   const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+
+  if (block_size_wide[bsize] != block_size_high[bsize]) {
+    if (ctx->skip_ref_frame_mask & (1 << ref_frame[0])) return 1;
+    if (ref_frame[1] > 0 && (ctx->skip_ref_frame_mask & (1 << ref_frame[1])))
+      return 1;
+  }
 
   if (cpi->sf.mode_pruning_based_on_two_pass_partition_search &&
       !x->cb_partition_scan) {
@@ -10406,7 +10412,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index,
+    if (inter_mode_search_order_independent_skip(cpi, ctx, x, bsize, mode_index,
                                                  mi_row, mi_col, mode_skip_mask,
                                                  ref_frame_skip_mask))
       continue;

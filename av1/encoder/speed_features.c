@@ -198,6 +198,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
+    sf->prune_ref_frame_for_rect_partitions =
+        !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
   }
 
   if (speed >= 2) {
@@ -415,6 +417,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->selective_ref_frame = 0;
   sf->less_rectangular_check = 0;
   sf->use_square_partition_only_threshold = BLOCK_128X128;
+  sf->prune_ref_frame_for_rect_partitions = 0;
   sf->auto_min_max_partition_size = NOT_IN_USE;
   sf->rd_auto_partition_min_limit = BLOCK_4X4;
   sf->default_max_partition_size = BLOCK_LARGEST;
