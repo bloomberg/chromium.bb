@@ -528,7 +528,8 @@ void WebRtcTestBase::GenerateAndCloneCertificate(
 
 void WebRtcTestBase::VerifyStatsGeneratedCallback(
     content::WebContents* tab) const {
-  EXPECT_EQ("ok-got-stats", ExecuteJavascript("verifyStatsGenerated()", tab));
+  EXPECT_EQ("ok-got-stats",
+            ExecuteJavascript("verifyLegacyStatsGenerated()", tab));
 }
 
 std::vector<std::string> WebRtcTestBase::VerifyStatsGeneratedPromise(

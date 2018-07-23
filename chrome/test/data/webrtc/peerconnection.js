@@ -431,12 +431,13 @@ function hasSeenCryptoInSdp() {
 }
 
 /**
- * Verifies that the legacy |RTCPeerConnection.getStats| returns stats and
- * verifies that each stats member is a string.
+ * Verifies that the legacy |RTCPeerConnection.getStats| returns stats, that
+ * each stats member is a string, and that each stats member is on the
+ * whitelist.
  *
  * Returns ok-got-stats on success.
  */
-function verifyStatsGenerated() {
+function verifyLegacyStatsGenerated() {
   peerConnection_().getStats(
     function(response) {
       var reports = response.result();
@@ -448,6 +449,14 @@ function verifyStatsGenerated() {
           var statValue = reports[i].stat(statNames[j]);
           if (typeof statValue != 'string')
             throw failTest('A stat was returned that is not a string.');
+          if (!isWhitelistedLegacyStat(statNames[j])) {
+            throw failTest(
+                '"' + statNames[j] + '" is not a whitelisted stat. Exposing ' +
+                'new metrics in the legacy getStats() API is not allowed. ' +
+                'Please follow the standardization process: ' +
+                'https://docs.google.com/document/d/1q1CJVUqJ6YW9NNRc0tENkLNn' +
+                'y8AHrKZfqjy3SL89zjc/edit?usp=sharing');
+          }
         }
       }
       if (numStats === 0)
@@ -598,4 +607,154 @@ function parseJson_(json) {
     failTest('Failed to parse JSON: ' + jsonWithEscapedLineBreaks + ', got ' +
              exception);
   }
+}
+
+/**
+ * The legacy stats API is non-standard. It should be deprecated and removed.
+ * New stats are not allowed. To add new metrics, follow the standardization
+ * process, and only add it to the promise-based getStats() API. See:
+ * https://docs.google.com/document/d/1q1CJVUqJ6YW9NNRc0tENkLNny8AHrKZfqjy3SL89zjc/edit?usp=sharing
+ * @private
+ */
+function isWhitelistedLegacyStat(stat) {
+  const whitelist = new Set([
+      "aecDivergentFilterFraction",
+      "audioOutputLevel",
+      "audioInputLevel",
+      "bytesSent",
+      "concealedSamples",
+      "concealmentEvents",
+      "packetsSent",
+      "bytesReceived",
+      "label",
+      "packetsReceived",
+      "packetsLost",
+      "protocol",
+      "totalSamplesReceived",
+      "transportId",
+      "selectedCandidatePairId",
+      "ssrc",
+      "state",
+      "datachannelid",
+      "framesDecoded",
+      "framesEncoded",
+      "jitterBufferDelay",
+      "codecImplementationName",
+      "mediaType",
+      "qpSum",
+      "googAccelerateRate",
+      "googActiveConnection",
+      "googActualEncBitrate",
+      "googAvailableReceiveBandwidth",
+      "googAvailableSendBandwidth",
+      "googAvgEncodeMs",
+      "googBucketDelay",
+      "googBandwidthLimitedResolution",
+      "requestsSent",
+      "consentRequestsSent",
+      "responsesSent",
+      "requestsReceived",
+      "responsesReceived",
+      "stunKeepaliveRequestsSent",
+      "stunKeepaliveResponsesReceived",
+      "stunKeepaliveRttTotal",
+      "stunKeepaliveRttSquaredTotal",
+      "ipAddress",
+      "networkType",
+      "portNumber",
+      "priority",
+      "transport",
+      "candidateType",
+      "googChannelId",
+      "googCodecName",
+      "googComponent",
+      "googContentName",
+      "googContentType",
+      "googCpuLimitedResolution",
+      "googDecodingCTSG",
+      "googDecodingCTN",
+      "googDecodingMuted",
+      "googDecodingNormal",
+      "googDecodingPLC",
+      "googDecodingCNG",
+      "googDecodingPLCCNG",
+      "googDerBase64",
+      "dtlsCipher",
+      "googEchoCancellationEchoDelayMedian",
+      "googEchoCancellationEchoDelayStdDev",
+      "googEchoCancellationReturnLoss",
+      "googEchoCancellationReturnLossEnhancement",
+      "googEncodeUsagePercent",
+      "googExpandRate",
+      "googFingerprint",
+      "googFingerprintAlgorithm",
+      "googFirsReceived",
+      "googFirsSent",
+      "googFrameHeightInput",
+      "googFrameHeightReceived",
+      "googFrameHeightSent",
+      "googFrameRateReceived",
+      "googFrameRateDecoded",
+      "googFrameRateOutput",
+      "googDecodeMs",
+      "googMaxDecodeMs",
+      "googCurrentDelayMs",
+      "googTargetDelayMs",
+      "googJitterBufferMs",
+      "googMinPlayoutDelayMs",
+      "googRenderDelayMs",
+      "googCaptureStartNtpTimeMs",
+      "googFrameRateInput",
+      "googFrameRateSent",
+      "googFrameWidthInput",
+      "googFrameWidthReceived",
+      "googFrameWidthSent",
+      "googHasEnteredLowResolution",
+      "hugeFramesSent",
+      "googInitiator",
+      "googInterframeDelayMax",
+      "googIssuerId",
+      "googJitterReceived",
+      "googLocalAddress",
+      "localCandidateId",
+      "googLocalCandidateType",
+      "localCertificateId",
+      "googAdaptationChanges",
+      "googNacksReceived",
+      "googNacksSent",
+      "googPreemptiveExpandRate",
+      "googPlisReceived",
+      "googPlisSent",
+      "googPreferredJitterBufferMs",
+      "googReadable",
+      "googRemoteAddress",
+      "remoteCandidateId",
+      "googRemoteCandidateType",
+      "remoteCertificateId",
+      "googResidualEchoLikelihood",
+      "googResidualEchoLikelihoodRecentMax",
+      "googAnaBitrateActionCounter",
+      "googAnaChannelActionCounter",
+      "googAnaDtxActionCounter",
+      "googAnaFecActionCounter",
+      "googAnaFrameLengthIncreaseCounter",
+      "googAnaFrameLengthDecreaseCounter",
+      "googAnaUplinkPacketLossFraction",
+      "googRetransmitBitrate",
+      "googRtt",
+      "googSecondaryDecodedRate",
+      "googSecondaryDiscardedRate",
+      "packetsDiscardedOnSend",
+      "googSpeechExpandRate",
+      "srtpCipher",
+      "googTargetEncBitrate",
+      "totalAudioEnergy",
+      "totalSamplesDuration",
+      "googTransmitBitrate",
+      "googTransportType",
+      "googTrackId",
+      "googTimingFrameInfo",
+      "googTypingNoiseState",
+      "googWritable" ]);
+  return whitelist.has(stat);
 }
