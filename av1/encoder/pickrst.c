@@ -1266,6 +1266,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   // problem, as these elements are ignored later, but in order to quiet
   // Valgrind's warnings we initialise the array below.
   memset(rusi, 0, sizeof(*rusi) * ntiles[0]);
+  cpi->td.mb.rdmult = cpi->rd.RDMULT;
 
   RestSearchCtxt rsc;
   const int plane_start = AOM_PLANE_Y;
