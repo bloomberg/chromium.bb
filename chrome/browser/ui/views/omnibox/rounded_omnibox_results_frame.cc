@@ -29,6 +29,35 @@ namespace {
 // Value from the spec controlling appearance of the shadow.
 constexpr int kElevation = 16;
 
+#if !defined(USE_AURA)
+
+struct WidgetEventPair {
+  views::Widget* widget;
+  ui::MouseEvent event;
+};
+
+WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
+                                        const ui::MouseEvent* this_event) {
+  views::Widget* this_widget = this_view->GetWidget();
+  views::Widget* parent_widget =
+      this_widget->GetTopLevelWidgetForNativeView(this_widget->GetNativeView());
+  DCHECK_NE(this_widget, parent_widget);
+  if (!parent_widget)
+    return {nullptr, *this_event};
+
+  gfx::Point event_location = this_event->location();
+  views::View::ConvertPointToScreen(this_view, &event_location);
+  views::View::ConvertPointFromScreen(parent_widget->GetRootView(),
+                                      &event_location);
+
+  ui::MouseEvent parent_event(*this_event);
+  parent_event.set_location(event_location);
+
+  return {parent_widget, parent_event};
+}
+
+#endif  // !USE_AURA
+
 // View at the top of the frame which paints transparent pixels to make a hole
 // so that the location bar shows through.
 class TopBackgroundView : public views::View {
@@ -46,40 +75,27 @@ class TopBackgroundView : public views::View {
   // done with an event targeter set up in
   // RoundedOmniboxResultsFrame::AddedToWidget(), below.
  private:
-  struct OmniboxWidgetEventPair {
-    views::Widget* widget;
-    ui::MouseEvent event;
-  };
-
-  OmniboxWidgetEventPair GetOmniboxWidgetAndEvent(const ui::MouseEvent* event) {
-    views::Widget* omnibox_widget = GetWidget()->GetTopLevelWidgetForNativeView(
-        GetWidget()->GetNativeView());
-    DCHECK_NE(GetWidget(), omnibox_widget);
-
-    gfx::Point event_location = event->location();
-    views::View::ConvertPointToScreen(this, &event_location);
-    views::View::ConvertPointFromScreen(omnibox_widget->GetRootView(),
-                                        &event_location);
-
-    ui::MouseEvent omnibox_event(*event);
-    omnibox_event.set_location(event_location);
-
-    return {omnibox_widget, omnibox_event};
+  // Note that mouse moved events can be dispatched through OnMouseEvent, but
+  // RootView directly calls OnMouseMoved as well, so override OnMouseMoved as
+  // well to catch 'em all.
+  void OnMouseMoved(const ui::MouseEvent& event) override {
+    auto pair = GetParentWidgetAndEvent(this, &event);
+    pair.widget->OnMouseEvent(&pair.event);
   }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
-    auto pair = GetOmniboxWidgetAndEvent(event);
+    auto pair = GetParentWidgetAndEvent(this, event);
     pair.widget->OnMouseEvent(&pair.event);
   }
 
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
-    auto pair = GetOmniboxWidgetAndEvent(&event);
+    auto pair = GetParentWidgetAndEvent(this, &event);
     views::View* omnibox_view =
         pair.widget->GetRootView()->GetEventHandlerForPoint(
             pair.event.location());
     return omnibox_view->GetCursor(pair.event);
   }
-#endif  // !AURA
+#endif  // !USE_AURA
 };
 
 // Insets used to position |contents_| within |contents_host_|.
@@ -200,5 +216,26 @@ void RoundedOmniboxResultsFrame::AddedToWidget() {
   auto results_targeter = std::make_unique<aura::WindowTargeter>();
   results_targeter->SetInsets(GetInsets() + GetContentInsets());
   GetWidget()->GetNativeWindow()->SetEventTargeter(std::move(results_targeter));
-#endif
+#endif  // USE_AURA
 }
+
+// Note that these two functions are only called for the shadow area, as both
+// the omnibox proper and the results list have their own mouse handling.
+#if !defined(USE_AURA)
+
+// Note that mouse moved events can be dispatched through OnMouseEvent, but
+// RootView directly calls OnMouseMoved as well, so override OnMouseMoved as
+// well to catch 'em all.
+void RoundedOmniboxResultsFrame::OnMouseMoved(const ui::MouseEvent& event) {
+  auto pair = GetParentWidgetAndEvent(this, &event);
+  if (pair.widget)
+    pair.widget->OnMouseEvent(&pair.event);
+}
+
+void RoundedOmniboxResultsFrame::OnMouseEvent(ui::MouseEvent* event) {
+  auto pair = GetParentWidgetAndEvent(this, event);
+  if (pair.widget)
+    pair.widget->OnMouseEvent(&pair.event);
+}
+
+#endif  // !USE_AURA

@@ -36,6 +36,10 @@ class RoundedOmniboxResultsFrame : public views::View {
   const char* GetClassName() const override;
   void Layout() override;
   void AddedToWidget() override;
+#if !defined(USE_AURA)
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+#endif  // !USE_AURA
 
  private:
   std::unique_ptr<ui::LayerOwner> contents_mask_;
