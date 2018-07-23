@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/mac/ns_scroller_imp_details.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/scroll/web_scrollbar_theme_client.h"
 
 typedef id ScrollbarPainter;
 
@@ -37,18 +38,14 @@ namespace blink {
 
 class Pattern;
 
-class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
+class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme,
+                                          public WebScrollbarThemeClient {
  public:
+  ScrollbarThemeMac();
   ~ScrollbarThemeMac() override;
 
   void RegisterScrollbar(Scrollbar&) override;
   void UnregisterScrollbar(Scrollbar&) override;
-  void PreferencesChanged(float initial_button_delay,
-                          float autoscroll_button_delay,
-                          NSScrollerStyle preferred_scroller_style,
-                          bool redraw,
-                          WebScrollbarButtonsPlacement,
-                          bool jump_on_track_click);
 
   bool SupportsControlTints() const override { return true; }
 
@@ -96,6 +93,8 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   }
 
   float ThumbOpacity(const Scrollbar&) const override;
+
+  void PreferencesChanged() override;
 
   static NSScrollerStyle RecommendedScrollerStyle();
   static void SetJumpOnTrackClick(bool);

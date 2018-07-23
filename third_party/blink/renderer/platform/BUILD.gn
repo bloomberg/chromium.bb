@@ -1284,6 +1284,7 @@ jumbo_component("platform") {
     "scroll/smooth_scroll_sequencer.h",
     "scroll/web_scroll_into_view_params.cc",
     "scroll/web_scrollbar_theme.mm",
+    "scroll/web_scrollbar_theme_client.h",
     "serialized_resource.h",
     "shared_buffer.cc",
     "shared_buffer.h",

@@ -27,6 +27,7 @@
 
 #include <Carbon/Carbon.h>
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -103,11 +104,6 @@ static ScrollbarSet& GetScrollbarSet() {
   return set;
 }
 
-static float g_initial_button_delay = 0.5f;
-static float g_autoscroll_button_delay = 0.05f;
-static NSScrollerStyle g_preferred_scroller_style = NSScrollerStyleLegacy;
-static bool g_jump_on_track_click = false;
-
 typedef PersistentHeapHashMap<WeakMember<Scrollbar>,
                               RetainPtr<BlinkScrollbarObserver>>
     ScrollbarPainterMap;
@@ -124,6 +120,10 @@ static bool SupportsExpandedScrollbars() {
       [NSClassFromString(@"NSScrollerImp")
           instancesRespondToSelector:@selector(setExpanded:)];
   return global_supports_expanded_scrollbars;
+}
+
+ScrollbarThemeMac::ScrollbarThemeMac() {
+  WebScrollbarTheme::RegisterClient(*this);
 }
 
 ScrollbarTheme& ScrollbarTheme::NativeTheme() {
@@ -144,37 +144,19 @@ bool ScrollbarThemeMac::ShouldCenterOnThumb(const Scrollbar& scrollbar,
                                             const WebMouseEvent& event) {
   bool alt_key_pressed = event.GetModifiers() & WebInputEvent::kAltKey;
   return (event.button == WebPointerProperties::Button::kLeft) &&
-         (g_jump_on_track_click != alt_key_pressed);
+         (WebScrollbarTheme::JumpOnTrackClick() != alt_key_pressed);
 }
 
-ScrollbarThemeMac::~ScrollbarThemeMac() {}
-
-void ScrollbarThemeMac::PreferencesChanged(
-    float initial_button_delay,
-    float autoscroll_button_delay,
-    NSScrollerStyle preferred_scroller_style,
-    bool redraw,
-    WebScrollbarButtonsPlacement button_placement,
-    bool jump_on_track_click) {
-  UpdateButtonPlacement(button_placement);
-  g_initial_button_delay = initial_button_delay;
-  g_autoscroll_button_delay = autoscroll_button_delay;
-  g_preferred_scroller_style = preferred_scroller_style;
-  g_jump_on_track_click = jump_on_track_click;
-  if (redraw && !GetScrollbarSet().IsEmpty()) {
-    for (const auto& scrollbar : GetScrollbarSet()) {
-      scrollbar->StyleChanged();
-      scrollbar->SetNeedsPaintInvalidation(kAllParts);
-    }
-  }
+ScrollbarThemeMac::~ScrollbarThemeMac() {
+  WebScrollbarTheme::UnregisterClient(*this);
 }
 
 TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
-  return TimeDelta::FromSecondsD(g_initial_button_delay);
+  return TimeDelta::FromSecondsD(WebScrollbarTheme::InitialButtonDelay());
 }
 
 TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() {
-  return TimeDelta::FromSecondsD(g_autoscroll_button_delay);
+  return TimeDelta::FromSecondsD(WebScrollbarTheme::AutoscrollButtonDelay());
 }
 
 bool ScrollbarThemeMac::ShouldDragDocumentInsteadOfThumb(
@@ -419,11 +401,19 @@ float ScrollbarThemeMac::ThumbOpacity(const Scrollbar& scrollbar) const {
   return [scrollbar_painter knobAlpha];
 }
 
+void ScrollbarThemeMac::PreferencesChanged() {
+  for (const auto& scrollbar : GetScrollbarSet()) {
+    scrollbar->StyleChanged();
+    scrollbar->SetNeedsPaintInvalidation(kAllParts);
+  }
+}
+
 // static
 NSScrollerStyle ScrollbarThemeMac::RecommendedScrollerStyle() {
   if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled())
     return NSScrollerStyleOverlay;
-  return g_preferred_scroller_style;
+  return static_cast<NSScrollerStyle>(
+      WebScrollbarTheme::PreferredScrollerStyle());
 }
 
 }  // namespace blink
