@@ -386,7 +386,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 }
 
 - (void)fakeOmniboxTapped:(id)sender {
-  [self shiftTilesUp];
+  if (IsUIRefreshPhase1Enabled()) {
+    [self shiftTilesUp];
+  } else {
+    [self.dispatcher focusFakebox];
+  }
 }
 
 // If Google is not the default search engine, hide the logo, doodle and
@@ -446,7 +450,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (void)shiftTilesUp {
   void (^completionBlock)() = ^{
-    [self.dispatcher focusFakebox];
+    if (IsUIRefreshPhase1Enabled()) {
+      [self.dispatcher focusFakebox];
+    }
     if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
         (!IsUIRefreshPhase1Enabled() &&
          !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
@@ -502,7 +508,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   self.omniboxFocused = YES;
 
-  if (![self.delegate isScrolledToTop])
+  if (!IsUIRefreshPhase1Enabled() || ![self.delegate isScrolledToTop])
     [self shiftTilesUp];
 }
 
