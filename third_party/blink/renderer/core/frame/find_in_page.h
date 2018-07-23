@@ -56,8 +56,9 @@ class CORE_EXPORT FindInPage final
 
   // mojom::blink::FindInPage overrides
 
-  void ActivateNearestFindResult(const WebFloatPoint&,
-                                 ActivateNearestFindResultCallback) final;
+  void SetClient(mojom::blink::FindInPageClientPtr) final;
+
+  void ActivateNearestFindResult(int request_id, const WebFloatPoint&) final;
 
   // Stops the current find-in-page, following the given |action|
   void StopFinding(mojom::StopFindAction action) final;
@@ -107,6 +108,8 @@ class CORE_EXPORT FindInPage final
   WebPluginContainer* plugin_find_handler_;
 
   const Member<WebLocalFrameImpl> frame_;
+
+  mojom::blink::FindInPageClientPtr client_;
 
   mojo::AssociatedBinding<mojom::blink::FindInPage> binding_;
 

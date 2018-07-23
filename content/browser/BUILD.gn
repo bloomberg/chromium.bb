@@ -789,6 +789,8 @@ jumbo_source_set("browser") {
     "fileapi/file_system_url_loader_factory.h",
     "fileapi/fileapi_message_filter.cc",
     "fileapi/fileapi_message_filter.h",
+    "find_in_page_client.cc",
+    "find_in_page_client.h",
     "find_request_manager.cc",
     "find_request_manager.h",
     "font_list_async.cc",
