@@ -694,11 +694,12 @@ static INLINE __m128i highbd_comp_mask_pred_line_sse2(const __m128i s0,
   return comp;
 }
 
-void aom_highbd_comp_mask_pred_sse2(uint16_t *comp_pred, const uint8_t *pred8,
+void aom_highbd_comp_mask_pred_sse2(uint8_t *comp_pred8, const uint8_t *pred8,
                                     int width, int height, const uint8_t *ref8,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask) {
   int i = 0;
+  uint16_t *comp_pred = CONVERT_TO_SHORTPTR(comp_pred8);
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
   const uint16_t *src0 = invert_mask ? pred : ref;

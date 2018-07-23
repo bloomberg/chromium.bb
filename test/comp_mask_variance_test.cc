@@ -276,7 +276,7 @@ INSTANTIATE_TEST_CASE_P(
 
 #endif  // ifndef aom_comp_mask_pred
 
-typedef void (*highbd_comp_mask_pred_func)(uint16_t *comp_pred,
+typedef void (*highbd_comp_mask_pred_func)(uint8_t *comp_pred8,
                                            const uint8_t *pred8, int width,
                                            int height, const uint8_t *ref8,
                                            int ref_stride, const uint8_t *mask,
@@ -362,11 +362,11 @@ void AV1HighbdCompMaskVarianceTest::RunCheckOutput(
   for (int wedge_index = 0; wedge_index < wedge_types; ++wedge_index) {
     const uint8_t *mask = av1_get_contiguous_soft_mask(wedge_index, 1, bsize);
 
-    aom_highbd_comp_mask_pred_c(comp_pred1_, CONVERT_TO_BYTEPTR(pred_), w, h,
-                                CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w,
-                                inv);
+    aom_highbd_comp_mask_pred_c(
+        CONVERT_TO_BYTEPTR(comp_pred1_), CONVERT_TO_BYTEPTR(pred_), w, h,
+        CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv);
 
-    test_impl(comp_pred2_, CONVERT_TO_BYTEPTR(pred_), w, h,
+    test_impl(CONVERT_TO_BYTEPTR(comp_pred2_), CONVERT_TO_BYTEPTR(pred_), w, h,
               CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv);
 
     ASSERT_EQ(CheckResult(w, h), true)
@@ -402,7 +402,7 @@ void AV1HighbdCompMaskVarianceTest::RunSpeedTest(
     aom_usec_timer_start(&timer);
     highbd_comp_mask_pred_func func = funcs[i];
     for (int j = 0; j < num_loops; ++j) {
-      func(comp_pred1_, CONVERT_TO_BYTEPTR(pred_), w, h,
+      func(CONVERT_TO_BYTEPTR(comp_pred1_), CONVERT_TO_BYTEPTR(pred_), w, h,
            CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, 0);
     }
     aom_usec_timer_mark(&timer);
@@ -482,15 +482,17 @@ void AV1HighbdCompMaskUpVarianceTest::RunCheckOutput(
 
         aom_highbd_comp_mask_pred = aom_highbd_comp_mask_pred_c;  // ref
         aom_highbd_comp_mask_upsampled_pred(
-            NULL, NULL, 0, 0, NULL, comp_pred1_, CONVERT_TO_BYTEPTR(pred_), w,
-            h, subx, suby, CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv,
-            bd_, subpel_search);
+            NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred1_),
+            CONVERT_TO_BYTEPTR(pred_), w, h, subx, suby,
+            CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv, bd_,
+            subpel_search);
 
         aom_highbd_comp_mask_pred = test_impl;  // test
         aom_highbd_comp_mask_upsampled_pred(
-            NULL, NULL, 0, 0, NULL, comp_pred2_, CONVERT_TO_BYTEPTR(pred_), w,
-            h, subx, suby, CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv,
-            bd_, subpel_search);
+            NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred2_),
+            CONVERT_TO_BYTEPTR(pred_), w, h, subx, suby,
+            CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, inv, bd_,
+            subpel_search);
         ASSERT_EQ(CheckResult(w, h), true)
             << " wedge " << wedge_index << " inv " << inv << "sub (" << subx
             << "," << suby << ")";
@@ -529,9 +531,9 @@ void AV1HighbdCompMaskUpVarianceTest::RunSpeedTest(
     int subpel_search = 2;  // set to 1 to test 4-tap filter.
     for (int j = 0; j < num_loops; ++j) {
       aom_highbd_comp_mask_upsampled_pred(
-          NULL, NULL, 0, 0, NULL, comp_pred1_, CONVERT_TO_BYTEPTR(pred_), w, h,
-          subx, suby, CONVERT_TO_BYTEPTR(ref_), MAX_SB_SIZE, mask, w, 0, bd_,
-          subpel_search);
+          NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(comp_pred1_),
+          CONVERT_TO_BYTEPTR(pred_), w, h, subx, suby, CONVERT_TO_BYTEPTR(ref_),
+          MAX_SB_SIZE, mask, w, 0, bd_, subpel_search);
     }
     aom_usec_timer_mark(&timer);
     double time = static_cast<double>(aom_usec_timer_elapsed(&timer));

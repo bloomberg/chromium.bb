@@ -38,14 +38,9 @@ typedef void (*jntcompavgupsampled_func)(
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
     int ref_stride, const JNT_COMP_PARAMS *jcp_param, int subpel_search);
 
-typedef void (*highbdjntcompavg_func)(uint16_t *comp_pred, const uint8_t *pred8,
-                                      int width, int height,
-                                      const uint8_t *ref8, int ref_stride,
-                                      const JNT_COMP_PARAMS *jcp_param);
-
 typedef void (*highbdjntcompavgupsampled_func)(
     MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
-    const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
+    const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
     int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param,
     int subpel_search);
@@ -55,7 +50,7 @@ typedef ::testing::tuple<jntcompavg_func, BLOCK_SIZE> JNTCOMPAVGParam;
 typedef ::testing::tuple<jntcompavgupsampled_func, BLOCK_SIZE>
     JNTCOMPAVGUPSAMPLEDParam;
 
-typedef ::testing::tuple<int, highbdjntcompavg_func, BLOCK_SIZE>
+typedef ::testing::tuple<int, jntcompavg_func, BLOCK_SIZE>
     HighbdJNTCOMPAVGParam;
 
 typedef ::testing::tuple<int, highbdjntcompavgupsampled_func, BLOCK_SIZE>
@@ -74,7 +69,8 @@ typedef ::testing::tuple<int, highbdjntcompavgupsampled_func, BLOCK_SIZE>
 }
 
 ::testing::internal::ParamGenerator<HighbdJNTCOMPAVGParam> BuildParams(
-    highbdjntcompavg_func filter) {
+    jntcompavg_func filter, int is_hbd) {
+  (void)is_hbd;
   return ::testing::Combine(::testing::Range(8, 13, 2),
                             ::testing::Values(filter),
                             ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
@@ -324,7 +320,7 @@ class AV1HighBDJNTCOMPAVGTest
   void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
-  void RunCheckOutput(highbdjntcompavg_func test_impl) {
+  void RunCheckOutput(jntcompavg_func test_impl) {
     const int w = kMaxSize, h = kMaxSize;
     const int block_idx = GET_PARAM(2);
     const int bd = GET_PARAM(0);
@@ -352,13 +348,14 @@ class AV1HighBDJNTCOMPAVGTest
         const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
         const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
         aom_highbd_jnt_comp_avg_pred_c(
-            output, CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c, in_w,
-            in_h, CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c, in_w,
+            CONVERT_TO_BYTEPTR(output),
+            CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c, in_w, in_h,
+            CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c, in_w,
             &jnt_comp_params);
-        test_impl(output2, CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c,
-                  in_w, in_h,
-                  CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c, in_w,
-                  &jnt_comp_params);
+        test_impl(CONVERT_TO_BYTEPTR(output2),
+                  CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c, in_w,
+                  in_h, CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c,
+                  in_w, &jnt_comp_params);
 
         for (int i = 0; i < in_h; ++i) {
           for (int j = 0; j < in_w; ++j) {
@@ -372,7 +369,7 @@ class AV1HighBDJNTCOMPAVGTest
       }
     }
   }
-  void RunSpeedTest(highbdjntcompavg_func test_impl) {
+  void RunSpeedTest(jntcompavg_func test_impl) {
     const int w = kMaxSize, h = kMaxSize;
     const int block_idx = GET_PARAM(2);
     const int bd = GET_PARAM(0);
@@ -400,9 +397,9 @@ class AV1HighBDJNTCOMPAVGTest
     aom_usec_timer_start(&timer);
 
     for (int i = 0; i < num_loops; ++i)
-      aom_highbd_jnt_comp_avg_pred_c(output, CONVERT_TO_BYTEPTR(pred8), in_w,
-                                     in_h, CONVERT_TO_BYTEPTR(ref8), in_w,
-                                     &jnt_comp_params);
+      aom_highbd_jnt_comp_avg_pred_c(
+          CONVERT_TO_BYTEPTR(output), CONVERT_TO_BYTEPTR(pred8), in_w, in_h,
+          CONVERT_TO_BYTEPTR(ref8), in_w, &jnt_comp_params);
 
     aom_usec_timer_mark(&timer);
     const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
@@ -413,8 +410,8 @@ class AV1HighBDJNTCOMPAVGTest
     aom_usec_timer_start(&timer1);
 
     for (int i = 0; i < num_loops; ++i)
-      test_impl(output2, CONVERT_TO_BYTEPTR(pred8), in_w, in_h,
-                CONVERT_TO_BYTEPTR(ref8), in_w, &jnt_comp_params);
+      test_impl(CONVERT_TO_BYTEPTR(output2), CONVERT_TO_BYTEPTR(pred8), in_w,
+                in_h, CONVERT_TO_BYTEPTR(ref8), in_w, &jnt_comp_params);
 
     aom_usec_timer_mark(&timer1);
     const int elapsed_time1 = static_cast<int>(aom_usec_timer_elapsed(&timer1));
@@ -466,12 +463,12 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
               const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
 
               aom_highbd_jnt_comp_avg_upsampled_pred_c(
-                  NULL, NULL, 0, 0, NULL, output,
+                  NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(output),
                   CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c, in_w,
                   in_h, sub_x_q3, sub_y_q3,
                   CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c, in_w, bd,
                   &jnt_comp_params, subpel_search);
-              test_impl(NULL, NULL, 0, 0, NULL, output2,
+              test_impl(NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(output2),
                         CONVERT_TO_BYTEPTR(pred8) + offset_r * w + offset_c,
                         in_w, in_h, sub_x_q3, sub_y_q3,
                         CONVERT_TO_BYTEPTR(ref8) + offset_r * w + offset_c,
@@ -525,9 +522,9 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
     int subpel_search = 2;  // set to 1 to test 4-tap filter.
     for (int i = 0; i < num_loops; ++i)
       aom_highbd_jnt_comp_avg_upsampled_pred_c(
-          NULL, NULL, 0, 0, NULL, output, CONVERT_TO_BYTEPTR(pred8), in_w, in_h,
-          sub_x_q3, sub_y_q3, CONVERT_TO_BYTEPTR(ref8), in_w, bd,
-          &jnt_comp_params, subpel_search);
+          NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(output),
+          CONVERT_TO_BYTEPTR(pred8), in_w, in_h, sub_x_q3, sub_y_q3,
+          CONVERT_TO_BYTEPTR(ref8), in_w, bd, &jnt_comp_params, subpel_search);
 
     aom_usec_timer_mark(&timer);
     const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
@@ -538,9 +535,10 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
     aom_usec_timer_start(&timer1);
 
     for (int i = 0; i < num_loops; ++i)
-      test_impl(NULL, NULL, 0, 0, NULL, output2, CONVERT_TO_BYTEPTR(pred8),
-                in_w, in_h, sub_x_q3, sub_y_q3, CONVERT_TO_BYTEPTR(ref8), in_w,
-                bd, &jnt_comp_params, subpel_search);
+      test_impl(NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(output2),
+                CONVERT_TO_BYTEPTR(pred8), in_w, in_h, sub_x_q3, sub_y_q3,
+                CONVERT_TO_BYTEPTR(ref8), in_w, bd, &jnt_comp_params,
+                subpel_search);
 
     aom_usec_timer_mark(&timer1);
     const int elapsed_time1 = static_cast<int>(aom_usec_timer_elapsed(&timer1));
