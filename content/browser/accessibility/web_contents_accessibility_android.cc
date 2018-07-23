@@ -1189,7 +1189,7 @@ WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
   gfx::Rect object_bounds = node->GetPageBoundsRect();
   int coords[4 * len];
   for (int i = 0; i < len; i++) {
-    gfx::Rect char_bounds = node->GetPageBoundsForRange(start + i, 1);
+    gfx::Rect char_bounds = node->GetPageBoundsForRange(start + i, 1, false);
     if (char_bounds.IsEmpty())
       char_bounds = object_bounds;
     coords[4 * i + 0] = char_bounds.x();
