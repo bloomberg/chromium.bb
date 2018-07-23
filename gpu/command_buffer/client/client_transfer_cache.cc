@@ -29,6 +29,9 @@ void ClientTransferCache::UnmapAndCreateEntry(uint32_t type, uint32_t id) {
   base::AutoLock hold(lock_);
   ClientDiscardableHandle::Id discardable_handle_id =
       discardable_manager_.CreateHandle(client_->command_buffer());
+  if (discardable_handle_id.is_null())
+    return;
+
   ClientDiscardableHandle handle =
       discardable_manager_.GetHandle(discardable_handle_id);
 
