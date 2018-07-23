@@ -46,7 +46,6 @@
 
 namespace blink {
 
-class ContentSecurityPolicy;
 class ServiceWorkerInstalledScriptsManager;
 class WorkerClassicScriptLoader;
 class WorkerInspectorProxy;
@@ -75,13 +74,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   void PostMessageToPageInspector(int session_id, const WTF::String&);
-
-  // Applies the specified CSP and referrer policy to the worker, so that
-  // fetches initiated by the worker (other than for the main worker script
-  // itself) are affected by these policies. This must be called before starting
-  // script execution on the worker thread.
-  void SetContentSecurityPolicyAndReferrerPolicy(ContentSecurityPolicy*,
-                                                 String referrer_policy);
 
   // WorkerShadowPage::Client overrides.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(

@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -74,15 +73,8 @@ class CORE_EXPORT WorkerReportingProxy {
   // Invoked when the worker's main script is loaded on
   // WorkerThread::InitializeOnWorkerThread(). Only invoked when the script was
   // loaded on the worker thread, i.e., via InstalledScriptsManager rather than
-  // via ResourceLoader. ContentSecurityPolicy and ReferrerPolicy are read from
-  // the response header of the main script.
-  // This may block until CSP/ReferrerPolicy are set on the main thread
-  // since they are required for script evaluation, which happens soon after
-  // this function is called.
-  // Called before WillEvaluateClassicScript().
-  virtual void DidLoadInstalledScript(
-      const ContentSecurityPolicyResponseHeaders&,
-      const String& referrer_policy_on_worker_thread) {}
+  // via ResourceLoader. Called before WillEvaluateClassicScript().
+  virtual void DidLoadInstalledScript() {}
 
   // Invoked when the main classic script is about to be evaluated.
   virtual void WillEvaluateClassicScript(size_t script_size,

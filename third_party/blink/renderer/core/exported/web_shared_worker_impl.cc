@@ -318,7 +318,7 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
                                     std::move(web_worker_fetch_context));
 
   ContentSecurityPolicy* content_security_policy =
-      main_script_loader_->ReleaseContentSecurityPolicy();
+      main_script_loader_->GetContentSecurityPolicy();
   ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
   if (!main_script_loader_->GetReferrerPolicy().IsNull()) {
     SecurityPolicy::ReferrerPolicyFromHeaderValue(
