@@ -43270,6 +43270,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Request Failed"/>
 </enum>
 
+<enum name="SigninRequestHeaderOperation">
+  <int value="0" label="Header Added"/>
+  <int value="1" label="Header Removed"/>
+</enum>
+
 <enum name="SigninSignoutProfile">
   <int value="0" label="Preference changed">
     The preference or policy controlling if signin is valid has changed.
