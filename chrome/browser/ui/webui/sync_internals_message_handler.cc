@@ -292,7 +292,7 @@ void SyncInternalsMessageHandler::HandleRequestStop(
   if (!service)
     return;
 
-  service->RequestStop(SyncService::KEEP_DATA);
+  service->RequestStop(SyncService::CLEAR_DATA);
 }
 
 void SyncInternalsMessageHandler::HandleTriggerRefresh(
