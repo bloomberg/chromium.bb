@@ -30,44 +30,6 @@
 namespace chromecast {
 namespace media {
 
-namespace {
-
-#if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
-float VolumeToDbFSByContentType(AudioContentType type, float volume) {
-  return Java_VolumeMap_volumeToDbFs(base::android::AttachCurrentThread(),
-                                     static_cast<int>(type), volume);
-}
-
-float DbFSToVolumeByContentType(AudioContentType type, float db) {
-  return Java_VolumeMap_dbFsToVolume(base::android::AttachCurrentThread(),
-                                     static_cast<int>(type), db);
-}
-
-#else  // Dummy versions.
-float VolumeToDbFSByContentType(AudioContentType type, float volume) {
-  return 1.0f;
-}
-
-float DbFSToVolumeByContentType(AudioContentType type, float db) {
-  return 100;
-}
-#endif
-
-// For the user of the VolumeControl, all volume values are in the volume table
-// domain of kMedia (MUSIC). For volume types other than media, VolumeControl
-// converts them internally into their proper volume table domains.
-float MapIntoDifferentVolumeTableDomain(AudioContentType from_type,
-                                        AudioContentType to_type,
-                                        float level) {
-  if (from_type == to_type) {
-    return level;
-  }
-  float from_db = VolumeToDbFSByContentType(from_type, level);
-  return DbFSToVolumeByContentType(to_type, from_db);
-}
-
-}  // namespace
-
 VolumeControlAndroid& GetVolumeControl() {
   static base::NoDestructor<VolumeControlAndroid> volume_control;
   return *volume_control;
@@ -154,7 +116,7 @@ void VolumeControlAndroid::SetOutputLimit(AudioContentType type, float limit) {
 
   // The input limit is in the kMedia (MUSIC) volume table domain.
   limit = std::max(0.0f, std::min(limit, 1.0f));
-  float limit_db = VolumeToDbFSByContentType(AudioContentType::kMedia, limit);
+  float limit_db = VolumeToDbFSCached(AudioContentType::kMedia, limit);
   AudioSinkManager::Get()->SetOutputLimitDb(type, limit_db);
 }
 
@@ -180,19 +142,43 @@ void VolumeControlAndroid::OnMuteChange(
                      base::Unretained(this), (AudioContentType)type, muted));
 }
 
+#if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
+
+int VolumeControlAndroid::GetMaxVolumeIndex(AudioContentType type) {
+  return Java_VolumeMap_getMaxVolumeIndex(base::android::AttachCurrentThread(),
+                                          static_cast<int>(type));
+}
+
+float VolumeControlAndroid::VolumeToDbFS(AudioContentType type, float volume) {
+  return Java_VolumeMap_volumeToDbFs(base::android::AttachCurrentThread(),
+                                     static_cast<int>(type), volume);
+}
+
+#else  // Dummies:
+
+int VolumeControlAndroid::GetMaxVolumeIndex(AudioContentType type) {
+  return 1;
+}
+
+float VolumeControlAndroid::VolumeToDbFS(AudioContentType type, float volume) {
+  return 1.0f;
+}
+
+#endif
+
 void VolumeControlAndroid::InitializeOnThread() {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
 
-  for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
-                    AudioContentType::kCommunication}) {
-#if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
-    Java_VolumeMap_dumpVolumeTables(base::android::AttachCurrentThread(),
-                                    static_cast<int>(type));
-#endif
+  for (auto type :
+       {AudioContentType::kMedia, AudioContentType::kAlarm,
+        AudioContentType::kCommunication, AudioContentType::kOther}) {
+    std::unique_ptr<VolumeCache> vc(new VolumeCache(type, this));
+    volume_cache_.emplace(type, std::move(vc));
+
     volumes_[type] =
         Java_VolumeControl_getVolume(base::android::AttachCurrentThread(),
                                      j_volume_control_, static_cast<int>(type));
-    float volume_db = VolumeToDbFSByContentType(type, volumes_[type]);
+    float volume_db = VolumeToDbFSCached(type, volumes_[type]);
     AudioSinkManager::Get()->SetTypeVolumeDb(type, volume_db);
     muted_[type] =
         Java_VolumeControl_isMuted(base::android::AttachCurrentThread(),
@@ -226,7 +212,7 @@ void VolumeControlAndroid::SetVolumeOnThread(AudioContentType type,
     volumes_[type] = level;
   }
 
-  float level_db = VolumeToDbFSByContentType(type, level);
+  float level_db = VolumeToDbFSCached(type, level);
   LOG(INFO) << __func__ << ": level=" << level << " (" << level_db << ")";
   // Provide the type volume to the sink manager so it can properly calculate
   // the limiter multiplier. The volume is *not* applied by the sink though.
@@ -305,6 +291,27 @@ void VolumeControlAndroid::ReportMuteChangeOnThread(AudioContentType type,
   SetMutedOnThread(type, muted, true /* from_android */);
 }
 
+float VolumeControlAndroid::MapIntoDifferentVolumeTableDomain(
+    AudioContentType from_type,
+    AudioContentType to_type,
+    float level) {
+  if (from_type == to_type) {
+    return level;
+  }
+  float from_db = VolumeToDbFSCached(from_type, level);
+  return DbFSToVolumeCached(to_type, from_db);
+}
+
+float VolumeControlAndroid::VolumeToDbFSCached(AudioContentType type,
+                                               float vol_level) {
+  return volume_cache_[type]->VolumeToDbFS(vol_level);
+}
+
+float VolumeControlAndroid::DbFSToVolumeCached(AudioContentType type,
+                                               float db) {
+  return volume_cache_[type]->DbFSToVolume(db);
+}
+
 //
 // Implementation of VolumeControl as defined in public/volume_control.h
 //
@@ -357,13 +364,14 @@ void VolumeControl::SetOutputLimit(AudioContentType type, float limit) {
 // static
 float VolumeControl::VolumeToDbFS(float volume) {
   // The volume value is the kMedia (MUSIC) volume table domain.
-  return VolumeToDbFSByContentType(AudioContentType::kMedia, volume);
+  return GetVolumeControl().VolumeToDbFSCached(AudioContentType::kMedia,
+                                               volume);
 }
 
 // static
 float VolumeControl::DbFSToVolume(float db) {
   // The db value is the kMedia (MUSIC) volume table domain.
-  return DbFSToVolumeByContentType(AudioContentType::kMedia, db);
+  return GetVolumeControl().DbFSToVolumeCached(AudioContentType::kMedia, db);
 }
 
 }  // namespace media

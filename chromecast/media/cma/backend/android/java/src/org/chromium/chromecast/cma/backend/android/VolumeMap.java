@@ -89,12 +89,18 @@ public final class VolumeMap {
         return db;
     }
 
+    /** Return the max volume index for the given cast type. */
+    @CalledByNative
+    static int getMaxVolumeIndex(int castType) {
+        int streamType = getStreamType(castType);
+        return MAX_VOLUME_INDEX.get(streamType);
+    }
+
     /**
      * Logs the dB value at each discrete Android volume index for the given cast type.
      * Note that this is not identical to the volume table, which may contain a different number
      * of points and at different levels.
      */
-    @CalledByNative
     static void dumpVolumeTables(int castType) {
         int streamType = getStreamType(castType);
         int maxIndex = MAX_VOLUME_INDEX.get(streamType);
@@ -117,7 +123,6 @@ public final class VolumeMap {
         return getStreamVolumeDB(streamType, volumeIndex);
     }
 
-    @CalledByNative
     /**
      * Returns the volume level for the given dB value using the volume table for the given type.
      */
