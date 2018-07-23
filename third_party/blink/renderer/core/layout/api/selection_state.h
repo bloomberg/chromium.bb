@@ -10,24 +10,31 @@
 
 namespace blink {
 
+// Each LayoutObject has a SelectionState and it represents how the
+// LayoutObject is selected. This enum is used to paint/invalidate selection
+// highlight for the LayoutObject.
 enum class SelectionState {
-  // LayoutObject is not selected.
+  // The LayoutObject is not selected.
   kNone,
-  // LayoutObject is the start of a selection run and doesn't have children.
+  // kStart, kInside, kEnd and kStartAndEnd represent the LayoutObject
+  // is somehow selected to paint and either LayoutText or LayoutReplaced.
+  // The start of a selection.
   kStart,
-  // LayoutObject is fully encompassed by a selection run and
-  // doesn't have children.
+  // Inside a selection.
   kInside,
-  // LayoutObject is the end of a selection run and doesn't have children.
+  // The end of a selection.
   kEnd,
-  // LayoutObject contains an entire selection run and doesn't have children.
+  // The LayoutObject contains an entire selection.
   kStartAndEnd,
-  // LayoutObject has at least one LayoutObject child which SelectionState is
-  // kStart, kInside, kEnd or kStartAndEnd.
-  // This property is used to invalidate LayoutObject for ::selection style
-  // change. See LayoutObject::InvalidatePaintForSelection().
+  // The LayoutObject has at least one LayoutObject child which SelectionState
+  // is not KNone.
+  // This property is used to invalidate LayoutObject.
   kContain
 };
+
+inline bool IsSelected(const SelectionState state) {
+  return state != SelectionState::kNone && state != SelectionState::kContain;
+}
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const SelectionState);
 

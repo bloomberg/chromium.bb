@@ -34,60 +34,6 @@ class LayoutObject;
 class NGPaintFragment;
 class FrameSelection;
 struct LayoutSelectionStatus;
-// This class represents a selection range in layout tree for painting and
-// paint invalidation.
-// The current selection to be painted is represented as 2 pairs of
-// (LayoutObject, offset).
-// 2 LayoutObjects are only valid for |Text| node without 'transform' or
-// 'first-letter'.
-// TODO(editing-dev): Clarify the meaning of "offset".
-// editing/ passes them as offsets in the DOM tree but layout uses them as
-// offset in the layout tree. This doesn't work in the cases of
-// CSS first-letter or character transform. See crbug.com/17528.
-class SelectionPaintRange {
-  DISALLOW_NEW();
-
- public:
-  class Iterator
-      : public std::iterator<std::input_iterator_tag, LayoutObject*> {
-   public:
-    explicit Iterator(const SelectionPaintRange*);
-    Iterator(const Iterator&) = default;
-    bool operator==(const Iterator& other) const {
-      return current_ == other.current_;
-    }
-    bool operator!=(const Iterator& other) const { return !operator==(other); }
-    Iterator& operator++();
-    LayoutObject* operator*() const;
-
-   private:
-    LayoutObject* current_;
-    const LayoutObject* stop_;
-  };
-  Iterator begin() const { return Iterator(this); };
-  Iterator end() const { return Iterator(nullptr); };
-
-  SelectionPaintRange() = default;
-  SelectionPaintRange(LayoutObject* start_layout_object,
-                      base::Optional<unsigned> start_offset,
-                      LayoutObject* end_layout_object,
-                      base::Optional<unsigned> end_offset);
-
-  bool operator==(const SelectionPaintRange& other) const;
-
-  LayoutObject* StartLayoutObject() const;
-  base::Optional<unsigned> StartOffset() const;
-  LayoutObject* EndLayoutObject() const;
-  base::Optional<unsigned> EndOffset() const;
-
-  bool IsNull() const { return !start_layout_object_; }
-
- private:
-  LayoutObject* start_layout_object_ = nullptr;
-  base::Optional<unsigned> start_offset_ = base::nullopt;
-  LayoutObject* end_layout_object_ = nullptr;
-  base::Optional<unsigned> end_offset_ = base::nullopt;
-};
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
@@ -102,6 +48,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   IntRect AbsoluteSelectionBounds();
   void InvalidatePaintForSelection();
 
+  // TODO(yoichio): Remove this function since this doesn't do anything.
   void ClearSelection();
   base::Optional<unsigned> SelectionStart() const;
   base::Optional<unsigned> SelectionEnd() const;
@@ -116,8 +63,19 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   Member<FrameSelection> frame_selection_;
   bool has_pending_selection_ : 1;
-
-  SelectionPaintRange paint_range_;
+  // Each offset represents text offsets on selection edge if it is text.
+  // For example, suppose we select "f^oo<br><img>|",
+  // |start_offset_| is 1 and |end_offset_| is nullopt.
+  // Each of them is only valid for a |Text| node without 'transform' or
+  // 'first-letter'.
+  // TODO(editing-dev): Clarify the meaning of "offset".
+  // editing/ passes them as offsets in the DOM tree but layout uses them as
+  // offset in the layout tree. This doesn't work in the cases of
+  // character transform. See crbug.com/17528.
+  base::Optional<unsigned> start_offset_;
+  base::Optional<unsigned> end_offset_;
+  // This is true if at least one LayoutObject has a valid SelectionState.
+  bool has_selection_;
 };
 
 void CORE_EXPORT PrintLayoutObjectForSelection(std::ostream&, LayoutObject*);
