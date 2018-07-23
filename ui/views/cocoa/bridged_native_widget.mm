@@ -903,12 +903,6 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
                                                            : SK_ColorWHITE);
   layer()->SetFillsBoundsOpaquely(!translucent);
 
-  // Don't block waiting for the initial frame of transparent windows. This
-  // allows us to avoid blocking on the UI thread e.g, while typing in the
-  // omnibox.
-  // https://crbug.com/712268
-  ca_transaction_sync_suppressed_ = translucent;
-
   // Use the regular window background for window modal sheets. The layer() will
   // still paint over most of it, but the native -[NSApp beginSheet:] animation
   // blocks the UI thread, so there's no way to invalidate the shadow to match
@@ -917,12 +911,16 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   // native shape is what's most appropriate for displaying sheets on Mac.
   if (translucent && !native_widget_mac_->IsWindowModalSheet()) {
     [window_ setOpaque:NO];
-    // For Mac OS versions earlier than Yosemite, the Window server isn't able
-    // to generate a window shadow from the composited CALayer. To get around
-    // this, let the window background remain opaque and clip the window
-    // boundary in drawRect method of BridgedContentView. See crbug.com/543671.
-    if (base::mac::IsAtLeastOS10_10())
-      [window_ setBackgroundColor:[NSColor clearColor]];
+    [window_ setBackgroundColor:[NSColor clearColor]];
+
+    // Don't block waiting for the initial frame of completely transparent
+    // windows. This allows us to avoid blocking on the UI thread e.g, while
+    // typing in the omnibox. Note window modal sheets _must_ wait: there is no
+    // way for a frame to arrive during AppKit's sheet animation.
+    // https://crbug.com/712268
+    ca_transaction_sync_suppressed_ = true;
+  } else {
+    DCHECK(!ca_transaction_sync_suppressed_);
   }
 
   UpdateLayerProperties();
