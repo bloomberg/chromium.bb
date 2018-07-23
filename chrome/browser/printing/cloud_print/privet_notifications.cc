@@ -337,10 +337,10 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
     StartLister();
   } else if (*enable_privet_notification_member_) {
     ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
-    traffic_detector_ =
-        new PrivetTrafficDetector(
-            net::ADDRESS_FAMILY_IPV4,
-            base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
+    traffic_detector_ = base::MakeRefCounted<PrivetTrafficDetector>(
+        net::ADDRESS_FAMILY_IPV4, profile_,
+        base::BindRepeating(&PrivetNotificationService::StartLister,
+                            AsWeakPtr()));
     traffic_detector_->Start();
   } else {
     device_lister_.reset();

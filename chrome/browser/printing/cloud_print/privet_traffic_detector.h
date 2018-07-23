@@ -12,12 +12,13 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_connection_tracker.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 
-namespace net {
-class DatagramServerSocket;
-class IOBufferWithSize;
+namespace content {
+class BrowserContext;
 }
 
 namespace cloud_print {
@@ -30,9 +31,11 @@ class PrivetTrafficDetector
     : public base::RefCountedThreadSafe<
           PrivetTrafficDetector,
           content::BrowserThread::DeleteOnIOThread>,
-      private content::NetworkConnectionTracker::NetworkConnectionObserver {
+      private content::NetworkConnectionTracker::NetworkConnectionObserver,
+      public network::mojom::UDPSocketReceiver {
  public:
   PrivetTrafficDetector(net::AddressFamily address_family,
+                        content::BrowserContext* profile,
                         const base::Closure& on_traffic_detected);
 
   void Start();
@@ -44,26 +47,48 @@ class PrivetTrafficDetector
   friend class base::DeleteHelper<PrivetTrafficDetector>;
   ~PrivetTrafficDetector() override;
 
+  void HandleConnectionChanged(network::mojom::ConnectionType type);
+
+  void StartOnIOThread();
+  void ScheduleRestart();
+  void Restart(const net::NetworkInterfaceList& networks);
+  void Bind();
+  void CreateUDPSocketOnUIThread(
+      network::mojom::UDPSocketRequest request,
+      network::mojom::UDPSocketReceiverPtr receiver_ptr);
+  void OnBindComplete(net::IPEndPoint multicast_addr,
+                      int rv,
+                      const base::Optional<net::IPEndPoint>& ip_address);
+  bool IsSourceAcceptable() const;
+  bool IsPrivetPacket(base::span<const uint8_t> data) const;
+  void OnJoinGroupComplete(int rv);
+  void ResetConnection();
+
   // content::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  void HandleConnectionChanged(network::mojom::ConnectionType type);
-  void ScheduleRestart();
-  void Restart(const net::NetworkInterfaceList& networks);
-  int Bind();
-  bool IsSourceAcceptable() const;
-  bool IsPrivetPacket(int rv) const;
-  int DoLoop(int rv);
+  // network::mojom::UDPSocketReceiver implementation
+  void OnReceived(int32_t result,
+                  const base::Optional<net::IPEndPoint>& src_addr,
+                  base::Optional<base::span<const uint8_t>> data) override;
 
   base::Closure on_traffic_detected_;
   scoped_refptr<base::TaskRunner> callback_runner_;
   net::NetworkInterfaceList networks_;
   net::AddressFamily address_family_;
   net::IPEndPoint recv_addr_;
-  std::unique_ptr<net::DatagramServerSocket> socket_;
-  scoped_refptr<net::IOBufferWithSize> io_buffer_;
   base::Time start_time_;
   int restart_attempts_;
+
+  // Only accessed on the IO thread
+
+  network::mojom::UDPSocketPtr socket_;
+  // Implementation of socket receiver callback
+  mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
+
+  // Only accessed on the UI thread
+
+  content::BrowserContext* const profile_;
 
   base::WeakPtrFactory<PrivetTrafficDetector> weak_ptr_factory_;
 
