@@ -1010,8 +1010,9 @@ class MockReportingService : public net::ReportingService {
   }
 
   void RemoveAllBrowsingData(int data_type_mask) override {
-    RemoveBrowsingData(data_type_mask,
-                       base::RepeatingCallback<bool(const GURL&)>());
+    ++remove_all_calls_;
+    last_data_type_mask_ = data_type_mask;
+    last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
   }
 
   int GetUploadDepth(const net::URLRequest& request) override {
@@ -1026,6 +1027,7 @@ class MockReportingService : public net::ReportingService {
   }
 
   int remove_calls() const { return remove_calls_; }
+  int remove_all_calls() const { return remove_all_calls_; }
   int last_data_type_mask() const { return last_data_type_mask_; }
   const base::RepeatingCallback<bool(const GURL&)>& last_origin_filter() const {
     return last_origin_filter_;
@@ -1033,6 +1035,7 @@ class MockReportingService : public net::ReportingService {
 
  private:
   int remove_calls_ = 0;
+  int remove_all_calls_ = 0;
   int last_data_type_mask_ = 0;
   base::RepeatingCallback<bool(const GURL&)> last_origin_filter_;
 
@@ -1059,16 +1062,7 @@ class ClearReportingCacheTester {
     request_context->set_reporting_service(old_service_);
   }
 
-  void GetMockInfo(
-      int* remove_calls_out,
-      int* last_data_type_mask_out,
-      base::RepeatingCallback<bool(const GURL&)>* last_origin_filter_out) {
-    DCHECK_NE(nullptr, service_.get());
-
-    *remove_calls_out = service_->remove_calls();
-    *last_data_type_mask_out = service_->last_data_type_mask();
-    *last_origin_filter_out = service_->last_origin_filter();
-  }
+  const MockReportingService& mock() { return *service_; }
 
  private:
   TestingProfile* profile_;
@@ -1099,17 +1093,19 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
   }
 
   void RemoveAllBrowsingData() override {
-    ++remove_calls_;
+    ++remove_all_calls_;
     last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
   }
 
   int remove_calls() const { return remove_calls_; }
+  int remove_all_calls() const { return remove_all_calls_; }
   const base::RepeatingCallback<bool(const GURL&)>& last_origin_filter() const {
     return last_origin_filter_;
   }
 
  private:
   int remove_calls_ = 0;
+  int remove_all_calls_ = 0;
   base::RepeatingCallback<bool(const GURL&)> last_origin_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockNetworkErrorLoggingService);
@@ -1135,14 +1131,7 @@ class ClearNetworkErrorLoggingTester {
     request_context->set_network_error_logging_service(nullptr);
   }
 
-  void GetMockInfo(
-      int* remove_calls_out,
-      base::RepeatingCallback<bool(const GURL&)>* last_origin_filter_out) {
-    DCHECK_NE(nullptr, service_.get());
-
-    *remove_calls_out = service_->remove_calls();
-    *last_origin_filter_out = service_->last_origin_filter();
-  }
+  const MockNetworkErrorLoggingService& mock() { return *service_; };
 
  private:
   TestingProfile* profile_;
@@ -2780,16 +2769,12 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache) {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, true);
 
-  int remove_count;
-  int data_type_mask;
-  base::RepeatingCallback<bool(const GURL&)> origin_filter;
-  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
-
-  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(0, tester.mock().remove_calls());
+  EXPECT_EQ(1, tester.mock().remove_all_calls());
   EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
-            data_type_mask);
-  EXPECT_TRUE(ProbablySameFilters(BrowsingDataFilterBuilder::BuildNoopFilter(),
-                                  origin_filter));
+            tester.mock().last_data_type_mask());
+  EXPECT_TRUE(ProbablySameFilters(base::RepeatingCallback<bool(const GURL&)>(),
+                                  tester.mock().last_origin_filter()));
 }
 
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as
@@ -2806,16 +2791,12 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, builder->Copy());
 
-  int remove_count;
-  int data_type_mask;
-  base::RepeatingCallback<bool(const GURL&)> origin_filter;
-  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
-
-  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(1, tester.mock().remove_calls());
+  EXPECT_EQ(0, tester.mock().remove_all_calls());
   EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
-            data_type_mask);
-  EXPECT_TRUE(
-      ProbablySameFilters(builder->BuildGeneralFilter(), origin_filter));
+            tester.mock().last_data_type_mask());
+  EXPECT_TRUE(ProbablySameFilters(builder->BuildGeneralFilter(),
+                                  tester.mock().last_origin_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, NetworkErrorLogging_NoDelegate) {
@@ -2837,13 +2818,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, NetworkErrorLogging_History) {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, true);
 
-  int remove_count;
-  base::RepeatingCallback<bool(const GURL&)> origin_filter;
-  tester.GetMockInfo(&remove_count, &origin_filter);
-
-  EXPECT_EQ(1, remove_count);
-  EXPECT_TRUE(ProbablySameFilters(BrowsingDataFilterBuilder::BuildNoopFilter(),
-                                  origin_filter));
+  EXPECT_EQ(0, tester.mock().remove_calls());
+  EXPECT_EQ(1, tester.mock().remove_all_calls());
+  EXPECT_TRUE(ProbablySameFilters(base::RepeatingCallback<bool(const GURL&)>(),
+                                  tester.mock().last_origin_filter()));
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

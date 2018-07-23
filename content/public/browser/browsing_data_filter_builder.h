@@ -69,7 +69,7 @@ class CONTENT_EXPORT BrowsingDataFilterBuilder {
   // Builds a filter that can be used with the network service. This uses a Mojo
   // struct rather than a predicate function (as used by the rest of the filters
   // built by this class) because we need to be able to pass the filter to the
-  // network service via IPC.
+  // network service via IPC. Returns nullptr if |IsEmptyBlacklist()| is true.
   virtual network::mojom::ClearDataFilterPtr BuildNetworkServiceFilter()
       const = 0;
 
