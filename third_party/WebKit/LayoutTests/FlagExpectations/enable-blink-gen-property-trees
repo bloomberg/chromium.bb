@@ -407,9 +407,6 @@ Bug(none) fast/clip/overflow-border-radius-composited.html [ Failure ]
 # Something wrong with vertical-rl scrollbars
 crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
 
-# Something with the pattern is wrong. Needs investigation.
-crbug.com/853947 fast/canvas/synchronous-create-pattern.html [ Failure ]
-
 # Composited multicolumn paints differently.
 crbug.com/854192 fast/multicol/composited-layer-nested.html [ Failure ]
 crbug.com/854192 fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
