@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -41,6 +42,7 @@ class VaapiPictureNativePixmap : public VaapiPicture {
   // VaapiPicture implementation.
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
   bool AllowOverlay() const override;
+  VASurfaceID va_surface_id() const override;
 
   unsigned BufferFormatToInternalFormat(gfx::BufferFormat format) const;
 
