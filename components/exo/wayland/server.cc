@@ -1801,7 +1801,7 @@ void xdg_toplevel_v6_set_title(wl_client* client,
 void xdg_toplevel_v6_set_app_id(wl_client* client,
                                 wl_resource* resource,
                                 const char* app_id) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<WaylandToplevel>(resource)->SetApplicationId(app_id);
 }
 
 void xdg_toplevel_v6_show_window_menu(wl_client* client,
