@@ -48,6 +48,9 @@ const char kUmaNoActiveFrame[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.NoActiveFrame";
 const char kUmaUsingFallbackSurface[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.UsingFallbackSurface";
+const char kUmaManhattanDistanceToPrimary[] =
+    "Compositing.SurfaceAggregator.LatestInFlightSurface."
+    "ManhattanDistanceToPrimary";
 
 void MoveMatchingRequests(
     RenderPassId render_pass_id,
@@ -217,25 +220,33 @@ void SurfaceAggregator::HandleSurfaceQuad(
                                    dest_pass);
     return;
   }
-
-  Surface* fallback_surface = manager_->GetLatestInFlightSurface(
+  Surface* latest_surface = manager_->GetLatestInFlightSurface(
       primary_surface_id, *surface_quad->surface_range.start());
+
+  if (latest_surface &&
+      primary_surface_id.frame_sink_id() ==
+          latest_surface->surface_id().frame_sink_id() &&
+      primary_surface_id.local_surface_id().embed_token() ==
+          latest_surface->surface_id().local_surface_id().embed_token()) {
+    UMA_HISTOGRAM_COUNTS_100(
+        kUmaManhattanDistanceToPrimary,
+        latest_surface->surface_id().ManhattanDistanceTo(primary_surface_id));
+  }
 
   // If the fallback is specified and missing then that's an error. Report the
   // error to console, and log the UMA.
-  if (!fallback_surface || !fallback_surface->HasActiveFrame()) {
+  if (!latest_surface || !latest_surface->HasActiveFrame()) {
     ReportMissingFallbackSurface(*surface_quad->surface_range.start(),
-                                 fallback_surface);
+                                 latest_surface);
     EmitDefaultBackgroundColorQuad(surface_quad, target_transform, clip_rect,
                                    dest_pass);
     return;
   }
 
   if (!surface_quad->stretch_content_to_fill_bounds) {
-    const CompositorFrame& fallback_frame = fallback_surface->GetActiveFrame();
+    const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
 
-    gfx::Rect fallback_rect(
-        fallback_surface->GetActiveFrame().size_in_pixels());
+    gfx::Rect fallback_rect(latest_surface->GetActiveFrame().size_in_pixels());
 
     float scale_ratio =
         parent_device_scale_factor / fallback_frame.device_scale_factor();
@@ -251,7 +262,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
   ++uma_stats_.using_fallback_surface;
 
-  EmitSurfaceContent(fallback_surface, parent_device_scale_factor,
+  EmitSurfaceContent(latest_surface, parent_device_scale_factor,
                      surface_quad->shared_quad_state, surface_quad->rect,
                      surface_quad->visible_rect, target_transform, clip_rect,
                      surface_quad->stretch_content_to_fill_bounds, dest_pass,
