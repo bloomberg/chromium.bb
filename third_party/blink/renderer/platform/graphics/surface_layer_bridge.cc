@@ -78,8 +78,8 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
 
   current_surface_id_ = surface_info.id();
 
-  surface_layer_->SetPrimarySurfaceId(surface_info.id(),
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer_->SetPrimarySurfaceId(
+      surface_info.id(), cc::DeadlinePolicy::UseSpecifiedDeadline(0u));
   surface_layer_->SetFallbackSurfaceId(surface_info.id());
 
   if (observer_) {
