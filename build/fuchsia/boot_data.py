@@ -114,6 +114,9 @@ def ConfigureDataFVM(output_dir, output_type):
                sparse/compressed FVM file."""
 
   logging.debug('Building /data partition FVM file.')
+  # minfs expects absolute paths(bug:
+  #   https://fuchsia.atlassian.net/browse/ZX-2397)
+  output_dir = os.path.abspath(output_dir)
   with tempfile.NamedTemporaryFile() as data_file:
     # Build up the minfs partition data and install keys into it.
     ssh_config, ssh_data = _ProvisionSSH(output_dir)
