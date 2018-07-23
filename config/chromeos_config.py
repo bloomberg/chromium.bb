@@ -1086,6 +1086,7 @@ def GeneralTemplates(site_config, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       profile='fuzzer',
       chrome_sdk=False,
+      sync_chrome=False,
       # Run fuzzer builder specific stages.
       builder_class_name='fuzzer_builders.FuzzerBuilder',
       # Need larger rootfs since fuzzing also enables asan.
