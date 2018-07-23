@@ -30,9 +30,18 @@ namespace content {
 
 namespace {
 
-net::RedirectInfo CreateRedirectInfo(const GURL& new_url) {
+net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
+                                     const GURL& outer_request_url) {
   net::RedirectInfo redirect_info;
-  redirect_info.new_url = new_url;
+  if (outer_request_url.has_ref()) {
+    // Propagate ref fragment from the outer request URL.
+    url::Replacements<char> replacements;
+    base::StringPiece ref = outer_request_url.ref_piece();
+    replacements.SetRef(ref.data(), url::Component(0, ref.length()));
+    redirect_info.new_url = new_url.ReplaceComponents(replacements);
+  } else {
+    redirect_info.new_url = new_url;
+  }
   redirect_info.new_method = "GET";
   redirect_info.status_code = 302;
   redirect_info.new_site_for_cookies = redirect_info.new_url;
@@ -92,7 +101,8 @@ SignedExchangeLoader::SignedExchangeLoader(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
-    : outer_response_timing_info_(
+    : outer_request_url_(outer_request_url),
+      outer_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(outer_response)),
       outer_response_(outer_response),
       forwarding_client_(std::move(forwarding_client)),
@@ -107,6 +117,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       request_context_getter_(std::move(request_context_getter)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
+  DCHECK(outer_request_url_.is_valid());
 
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#privacy-considerations
   // This can be difficult to determine when the exchange is being loaded from
@@ -288,7 +299,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   // TODO(https://crbug.com/803774): Handle no-GET request_method as a error.
   DCHECK(outer_response_timing_info_);
   forwarding_client_->OnReceiveRedirect(
-      CreateRedirectInfo(request_url),
+      CreateRedirectInfo(request_url, outer_request_url_),
       std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
   forwarding_client_.reset();
 

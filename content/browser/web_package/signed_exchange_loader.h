@@ -107,6 +107,8 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
 
   void FinishReadingBody(int result);
 
+  const GURL outer_request_url_;
+
   // This timing info is used to create a dummy redirect response.
   std::unique_ptr<const ResponseTimingInfo> outer_response_timing_info_;
 
