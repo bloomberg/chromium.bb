@@ -88,11 +88,13 @@ class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
 
 SearchResultTileItemView::SearchResultTileItemView(
     AppListViewDelegate* view_delegate,
-    PaginationModel* pagination_model)
+    PaginationModel* pagination_model,
+    bool show_in_apps_page)
     : view_delegate_(view_delegate),
       pagination_model_(pagination_model),
       is_play_store_app_search_enabled_(
           features::IsPlayStoreAppSearchEnabled()),
+      show_in_apps_page_(show_in_apps_page),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -181,12 +183,11 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetPrice(item_->formatted_price());
 
   const gfx::FontList& font = AppListConfig::instance().app_title_font();
-  if (IsSuggestedAppTile()) {
+  if (IsSuggestedAppTileShownInAppPage()) {
     title_->SetFontList(font);
     title_->SetLineHeight(font.GetHeight());
     title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
   } else {
-    DCHECK_EQ(ash::SearchResultDisplayType::kTile, item_->display_type());
     // Set solid color background to avoid broken text. See crbug.com/746563.
     if (rating_) {
       rating_->SetBackground(
@@ -203,7 +204,8 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
 
   title_->SetMaxLines(2);
   title_->SetMultiLine(
-      item_->display_type() == ash::SearchResultDisplayType::kTile &&
+      (item_->display_type() == ash::SearchResultDisplayType::kTile ||
+       (IsSuggestedAppTile() && !show_in_apps_page_)) &&
       item_->result_type() == ash::SearchResultType::kInstalledApp);
 
   // If the new icon is null, it's being decoded asynchronously. Not updating it
@@ -280,7 +282,7 @@ void SearchResultTileItemView::OnFocus() {
       view_delegate_->GetModel()->state() == ash::AppListState::kStateApps) {
     // Go back to first page when app in suggestions container is focused.
     pagination_model_->SelectPage(0, false);
-  } else if (!IsSuggestedAppTile()) {
+  } else {
     ScrollRectToVisible(GetLocalBounds());
   }
   SetBackgroundHighlighted(true);
@@ -305,14 +307,13 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  if (IsSuggestedAppTile()) {
+  if (IsSuggestedAppTileShownInAppPage()) {
     rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
     flags.setColor(kGridSelectedColor);
     canvas->DrawRoundRect(gfx::RectF(rect),
                           AppListConfig::instance().grid_focus_corner_radius(),
                           flags);
   } else {
-    DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
     const int kLeftRightPadding = (rect.width() - kIconSelectedSize) / 2;
     rect.Inset(kLeftRightPadding, 0);
     rect.set_height(kIconSelectedSize);
@@ -492,6 +493,10 @@ bool SearchResultTileItemView::IsSuggestedAppTile() const {
          item_->display_type() == ash::SearchResultDisplayType::kRecommendation;
 }
 
+bool SearchResultTileItemView::IsSuggestedAppTileShownInAppPage() const {
+  return IsSuggestedAppTile() && show_in_apps_page_;
+}
+
 void SearchResultTileItemView::LogAppLaunch() const {
   // Only log the app launch if the class is being used as a suggested app.
   if (!IsSuggestedAppTile())
@@ -515,13 +520,12 @@ void SearchResultTileItemView::Layout() {
   if (rect.IsEmpty() || !item_)
     return;
 
-  if (IsSuggestedAppTile()) {
+  if (IsSuggestedAppTileShownInAppPage()) {
     icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
         rect, icon_->GetImage().size()));
     title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
         rect, title_->GetPreferredSize()));
   } else {
-    DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
     rect.Inset(0, kSearchTileTopPadding, 0, 0);
     icon_->SetBoundsRect(rect);
 
@@ -582,12 +586,11 @@ gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
   if (!item_)
     return gfx::Size();
 
-  if (IsSuggestedAppTile()) {
+  if (IsSuggestedAppTileShownInAppPage()) {
     return gfx::Size(AppListConfig::instance().grid_tile_width(),
                      AppListConfig::instance().grid_tile_height());
   }
 
-  DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
   return gfx::Size(kSearchTileWidth, kSearchTileHeight);
 }
 

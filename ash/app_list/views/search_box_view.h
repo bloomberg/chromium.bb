@@ -49,7 +49,10 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void SetupBackButton() override;
 
   // Overridden from views::View:
-  void OnKeyEvent(ui::KeyEvent* evetn) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+
+  // Overridden from views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Updates the search box's background corner radius and color based on the
   // state of AppListModel.
@@ -70,6 +73,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Updates the opacity of the searchbox.
   void UpdateOpacity();
+
+  // Shows Zero State suggestions.
+  void ShowZeroStateSuggestions();
 
   // Called when the wallpaper colors change.
   void OnWallpaperColorsChanged();

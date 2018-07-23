@@ -4124,6 +4124,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-continue-reading", flag_descriptions::kEnableContinueReadingName,
      flag_descriptions::kEnableContinueReadingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list::features::kEnableContinueReading)},
+    {"enable-zero-state-suggestions",
+     flag_descriptions::kEnableZeroStateSuggestionsName,
+     flag_descriptions::kEnableZeroStateSuggestionsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list::features::kEnableZeroStateSuggestions)},
 #endif  // OS_CHROMEOS
 
     {"enable-bloated-renderer-detection",

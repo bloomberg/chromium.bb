@@ -168,10 +168,28 @@ void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   base::string16 raw_query = search_model_->search_box()->text();
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
-  bool should_show_search = !query.empty();
+  bool should_show_search =
+      features::IsZeroStateSuggestionsEnabled()
+          ? search_box_view_->is_search_box_active() || !query.empty()
+          : !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
 
   delegate_->StartSearch(raw_query);
+}
+
+void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
+  if (!features::IsZeroStateSuggestionsEnabled())
+    return;
+
+  // Show zero state suggestions when search box is activated with an empty
+  // query.
+  if (search_box_view_->is_search_box_active()) {
+    base::string16 raw_query = search_model_->search_box()->text();
+    base::string16 query;
+    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+    if (query.empty())
+      search_box_view_->ShowZeroStateSuggestions();
+  }
 }
 
 void AppListMainView::BackButtonPressed() {

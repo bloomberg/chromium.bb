@@ -67,7 +67,8 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     }
 
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-        view_delegate, nullptr /* pagination model */);
+        view_delegate, nullptr /* pagination model */,
+        false /* show_in_apps_page */);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
@@ -91,10 +92,18 @@ SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
 }
 
 int SearchResultTileItemListView::DoUpdate() {
+  base::string16 raw_query = search_box_->text();
+  base::string16 query;
+  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+
+  SearchResult::DisplayType display_type =
+      features::IsZeroStateSuggestionsEnabled()
+          ? (query.empty() ? ash::SearchResultDisplayType::kRecommendation
+                           : ash::SearchResultDisplayType::kTile)
+          : ash::SearchResultDisplayType::kTile;
   std::vector<SearchResult*> display_results =
-      SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kTile,
-          kMaxNumSearchResultTiles);
+      SearchModel::FilterSearchResultsByDisplayType(results(), display_type,
+                                                    kMaxNumSearchResultTiles);
 
   SearchResult::ResultType previous_type = ash::SearchResultType::kUnknown;
 

@@ -3420,6 +3420,12 @@ extern const char kEnableContinueReadingDescription[] =
     "seamlessly continue reading a web page when they switch devices from "
     "phones or tablets to Chromebooks.";
 
+extern const char kEnableZeroStateSuggestionsName[] =
+    "Enable Zero State Suggetions";
+extern const char kEnableZeroStateSuggestionsDescription[] =
+    "Enable Zero State Suggestions feature in Launcher, which will show "
+    "suggetions when launcher search box is active with an empty query";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
