@@ -101,6 +101,9 @@ class ExtensionActionRunner : public content::WebContentsObserver,
                                         const base::Closure& callback) {
     return RequestScriptInjection(extension, run_location, callback);
   }
+  void ClearInjectionsForTesting(const Extension& extension) {
+    pending_scripts_.erase(extension.id());
+  }
 #endif  // defined(UNIT_TEST)
 
  private:
