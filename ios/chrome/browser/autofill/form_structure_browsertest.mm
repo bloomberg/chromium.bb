@@ -84,12 +84,6 @@ const std::vector<base::FilePath> GetTestFiles() {
   return files;
 }
 
-const std::set<std::string>& GetFailingTestNames() {
-  static std::set<std::string>* failing_test_names =
-      new std::set<std::string>{};
-  return *failing_test_names;
-}
-
 }  // namespace
 
 // Test fixture for verifying Autofill heuristics. Each input is an HTML
@@ -209,8 +203,23 @@ std::string FormStructureBrowserTest::FormStructuresToString(
   return forms_string;
 }
 
-// Crashes on iPhone 6 Plus.  https://crbug.com/857488
-TEST_P(FormStructureBrowserTest, DISABLED_DataDrivenHeuristics) {
+namespace {
+
+// To disable a data driven test, please add the name of the test file
+// (i.e., "NNN_some_site.html") as a literal to the initializer_list given
+// to the failing_test_names constructor.
+const std::set<std::string>& GetFailingTestNames() {
+  static std::set<std::string>* failing_test_names =
+      new std::set<std::string>{};
+  return *failing_test_names;
+}
+
+}  // namespace
+
+// If disabling a test, prefer to add the name names of the specific test cases
+// to GetFailingTestNames(), directly above, instead of renaming the test to
+// DISABLED_DataDrivenHeuristics.
+TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
   bool is_expected_to_pass =
       !base::ContainsKey(GetFailingTestNames(), GetParam().BaseName().value());
   RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(),

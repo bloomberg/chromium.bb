@@ -297,6 +297,10 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/input/145_hal-india.com.html",
     "//components/test/data/autofill/heuristics/input/146_checkout_store.scholastic.com.html",
     "//components/test/data/autofill/heuristics/input/147_panera.custhelp.com_app_ask.html",
+    "//components/test/data/autofill/heuristics/input/148_payment_dickblick.com.html",
+    "//components/test/data/autofill/heuristics/input/149_checkout_qvc.com_non_hidden.html",
+    "//components/test/data/autofill/heuristics/input/150_checkout_venus.com_search_field.html",
+    "//components/test/data/autofill/heuristics/input/151_ticketmaster.com.html",
     "//components/test/data/autofill/heuristics/output/000_i18n_de.out",
     "//components/test/data/autofill/heuristics/output/001_i18n_de2.out",
     "//components/test/data/autofill/heuristics/output/002_i18n_en.out",
@@ -445,6 +449,10 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/output/145_hal-india.com.out",
     "//components/test/data/autofill/heuristics/output/146_checkout_store.scholastic.com.out",
     "//components/test/data/autofill/heuristics/output/147_panera.custhelp.com_app_ask.out",
+    "//components/test/data/autofill/heuristics/output/148_payment_dickblick.com.out",
+    "//components/test/data/autofill/heuristics/output/149_checkout_qvc.com_non_hidden.out",
+    "//components/test/data/autofill/heuristics/output/150_checkout_venus.com_search_field.out",
+    "//components/test/data/autofill/heuristics/output/151_ticketmaster.com.out",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +
