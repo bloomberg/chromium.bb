@@ -292,8 +292,13 @@ class InputRouterImplTest : public testing::Test {
                !gesture.data.fling_start.velocity_x &&
                !gesture.data.fling_start.velocity_y) {
       // Ensure non-zero touchscreen fling velocities, as the router will
-      // validate against such.
-      gesture.data.fling_start.velocity_x = 5.f;
+      // validate against such. The velocity should be large enough to make
+      // sure that the fling is still active while sending the GFC.
+      gesture.data.fling_start.velocity_x = 500.f;
+    } else if (gesture.GetType() == WebInputEvent::kGestureFlingCancel) {
+      // Set prevent boosting to make sure that the GFC cancels the active
+      // fling.
+      gesture.data.fling_cancel.prevent_boosting = true;
     }
 
     input_router_->SendGestureEvent(GestureEventWithLatencyInfo(gesture));

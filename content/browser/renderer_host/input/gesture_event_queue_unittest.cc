@@ -213,6 +213,9 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   bool FlingInProgress() { return queue()->fling_in_progress_; }
+  bool FlingCancellationIsDeferred() {
+    return queue()->FlingCancellationIsDeferred();
+  }
 
   bool WillIgnoreNextACK() {
     return queue()->ignore_next_ack_;
@@ -1100,7 +1103,9 @@ TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
 // suppressed when tap suppression is enabled.
 TEST_F(GestureEventQueueTest, TapGetsSuppressedAfterTapDownCancellsFling) {
   SetUpForTapSuppression(400);
-  SimulateGestureFlingStartEvent(0, -10, blink::kWebGestureDeviceTouchscreen);
+  // The velocity of the event must be large enough to make sure that the fling
+  // is still active when the tap down happens.
+  SimulateGestureFlingStartEvent(0, -1000, blink::kWebGestureDeviceTouchscreen);
   EXPECT_TRUE(FlingInProgress());
   // The fling start event is not sent to the renderer.
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
@@ -1111,7 +1116,7 @@ TEST_F(GestureEventQueueTest, TapGetsSuppressedAfterTapDownCancellsFling) {
   // fling cancel event is not sent to the renderer.
   SimulateGestureEvent(WebInputEvent::kGestureFlingCancel,
                        blink::kWebGestureDeviceTouchscreen);
-  EXPECT_FALSE(FlingInProgress());
+  EXPECT_TRUE(FlingCancellationIsDeferred());
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(0U, GestureEventQueueSize());
   RunUntilIdle();

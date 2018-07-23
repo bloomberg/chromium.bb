@@ -16,12 +16,23 @@ using blink::WebInputEvent;
 using blink::WebGestureEvent;
 
 namespace {
+constexpr base::TimeDelta kFrameDelta =
+    base::TimeDelta::FromSecondsD(1.0 / 60.0);
+
 // Maximum time between a fling event's timestamp and the first |Progress| call
 // for the fling curve to use the fling timestamp as the initial animation time.
 // Two frames allows a minor delay between event creation and the first
 // progress.
 constexpr base::TimeDelta kMaxMicrosecondsFromFlingTimestampToFirstProgress =
-    base::TimeDelta::FromMicroseconds(33333);
+    base::TimeDelta::FromSecondsD(2.0 / 60.0);
+
+// Since the progress fling is called in ProcessGestureFlingStart right after
+// processing the GFS, it is possible to have a very small delta for the first
+// event. Don't send an event with deltas smaller than the
+// |kMinInertialScrollDelta| since the renderer ignores it and the fling gets
+// cancelled in FlingController::OnGestureEventAck due to an inertial GSU with
+// ack ignored.
+const float kMinInertialScrollDelta = 0.1f;
 
 const char* kFlingTraceName = "FlingController::HandlingGestureFling";
 }  // namespace
@@ -177,7 +188,7 @@ void FlingController::ProcessGestureFlingStart(
       current_fling_parameters_.velocity,
       current_fling_parameters_.source_device,
       current_fling_parameters_.modifiers);
-  ScheduleFlingProgress();
+  ProgressFling(base::TimeTicks::Now());
 }
 
 void FlingController::ScheduleFlingProgress() {
@@ -206,16 +217,34 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
   }
 
   if (!has_fling_animation_started_) {
-    // Guard against invalid, future or sufficiently stale start times, as there
-    // are no guarantees fling event and progress timestamps are compatible.
-    if (current_fling_parameters_.start_time.is_null() ||
-        current_time <= current_fling_parameters_.start_time ||
-        current_time >= current_fling_parameters_.start_time +
-                            kMaxMicrosecondsFromFlingTimestampToFirstProgress) {
+    // Guard against invalid as there are no guarantees fling event and progress
+    // timestamps are compatible.
+    if (current_fling_parameters_.start_time.is_null()) {
       current_fling_parameters_.start_time = current_time;
       ScheduleFlingProgress();
       return;
     }
+
+    // If the first time that progressFling is called is more than two frames
+    // later than the fling start time, delay the fling start time to one frame
+    // prior to the current time. This makes sure that at least one progress
+    // event is sent while the fling is active even when the fling duration is
+    // short (samll velocity) and the time delta between its timestamp and its
+    // processing time is big (e.g. When a GFS gets bubbled from an oopif).
+    if (current_time >= current_fling_parameters_.start_time +
+                            kMaxMicrosecondsFromFlingTimestampToFirstProgress) {
+      current_fling_parameters_.start_time = current_time - kFrameDelta;
+    }
+  }
+
+  // ProgressFling is called inside FlingScheduler::OnAnimationStep. Sometimes
+  // the first OnAnimationStep call has the time of the last frame before
+  // AddAnimationObserver call rather than time of the first frame after
+  // AddAnimationObserver call. Do not advance the fling when current_time is
+  // less than the GFS event timestamp.
+  if (current_time <= current_fling_parameters_.start_time) {
+    ScheduleFlingProgress();
+    return;
   }
 
   gfx::Vector2dF delta_to_scroll;
@@ -223,7 +252,8 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
       (current_time - current_fling_parameters_.start_time).InSecondsF(),
       current_fling_parameters_.velocity, delta_to_scroll);
   if (fling_is_active) {
-    if (delta_to_scroll != gfx::Vector2d()) {
+    if (std::abs(delta_to_scroll.x()) > kMinInertialScrollDelta ||
+        std::abs(delta_to_scroll.y()) > kMinInertialScrollDelta) {
       GenerateAndSendFlingProgressEvents(delta_to_scroll);
       has_fling_animation_started_ = true;
     }
