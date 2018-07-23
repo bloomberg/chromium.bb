@@ -32,15 +32,15 @@ namespace {
 
 // Amount of space reserved for the separator that appears after the icon or
 // label.
-constexpr int kSeparatorWidth = 1;
+constexpr int kIconLabelBubbleSeparatorWidth = 1;
 
 // Amount of space on either side of the separator that appears after the icon
 // or label.
-constexpr int kSpaceBesideSeparator = 8;
+constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
 
 // The length of the separator's fade animation. These values are empirical.
-constexpr int kFadeInDurationMs = 250;
-constexpr int kFadeOutDurationMs = 175;
+constexpr int kIconLabelBubbleFadeInDurationMs = 250;
+constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 
 }  // namespace
 
@@ -79,13 +79,13 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
   // separator should fade out.
   views::InkDropState state = ink_drop->GetTargetInkDropState();
   float opacity = 0.0f;
-  float duration = kFadeOutDurationMs;
+  float duration = kIconLabelBubbleFadeOutDurationMs;
   if (!ink_drop->IsHighlightFadingInOrVisible() &&
       (state == views::InkDropState::HIDDEN ||
        state == views::InkDropState::ACTION_TRIGGERED ||
        state == views::InkDropState::DEACTIVATED)) {
     opacity = 1.0f;
-    duration = kFadeInDurationMs;
+    duration = kIconLabelBubbleFadeInDurationMs;
   }
 
   if (!layer())
@@ -437,13 +437,14 @@ int IconLabelBubbleView::GetInternalSpacing() const {
 
 int IconLabelBubbleView::GetPrefixedSeparatorWidth() const {
   return ShouldShowSeparator() || ShouldShowExtraEndSpace()
-             ? kSeparatorWidth + kSpaceBesideSeparator
+             ? kIconLabelBubbleSeparatorWidth +
+                   kIconLabelBubbleSpaceBesideSeparator
              : 0;
 }
 
 int IconLabelBubbleView::GetEndPadding() const {
   if (ShouldShowSeparator())
-    return kSpaceBesideSeparator;
+    return kIconLabelBubbleSpaceBesideSeparator;
   return GetInsets().right();
 }
 
