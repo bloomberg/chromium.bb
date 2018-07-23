@@ -52,7 +52,8 @@ DiceAction GetDiceActionFromHeader(const std::string& value) {
 
 DiceHeaderHelper::DiceHeaderHelper(bool signed_in_with_auth_error,
                                    AccountConsistencyMethod account_consistency)
-    : signed_in_with_auth_error_(signed_in_with_auth_error),
+    : SigninHeaderHelper("Dice"),
+      signed_in_with_auth_error_(signed_in_with_auth_error),
       account_consistency_(account_consistency) {}
 
 // static
