@@ -1451,6 +1451,9 @@ extern const char kHomePageButtonDescription[];
 extern const char kHomepageTileName[];
 extern const char kHomepageTileDescription[];
 
+extern const char kIncognitoStringsName[];
+extern const char kIncognitoStringsDescription[];
+
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 

@@ -4135,6 +4135,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
 
+#if defined(OS_ANDROID)
+    {"incognito-strings", flag_descriptions::kIncognitoStringsName,
+     flag_descriptions::kIncognitoStringsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kIncognitoStrings)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
