@@ -303,6 +303,45 @@ bool BadAMDVulkanDriverVersion(GPUInfo* gpu_info) {
   return false;
 }
 
+bool BadVulkanDllVersion(GPUInfo* gpu_info) {
+  std::unique_ptr<FileVersionInfoWin> file_version_info(
+      static_cast<FileVersionInfoWin*>(
+          FileVersionInfoWin::CreateFileVersionInfo(
+              base::FilePath(FILE_PATH_LITERAL("vulkan-1.dll")))));
+
+  if (!file_version_info)
+    return false;
+
+  const VS_FIXEDFILEINFO* fixed_file_info =
+      static_cast<FileVersionInfoWin*>(file_version_info.get())
+          ->fixed_file_info();
+  const int major = HIWORD(fixed_file_info->dwFileVersionMS);
+  const int minor = LOWORD(fixed_file_info->dwFileVersionMS);
+  const int build_1 = HIWORD(fixed_file_info->dwFileVersionLS);
+  const int build_2 = LOWORD(fixed_file_info->dwFileVersionLS);
+
+  // From the logs, most vulkan-1.dll crashs are from the following versions.
+  // As of 7/23/2018.
+  // 0.0.0.0 -  # of crashes: 6556
+  // 1.0.26.0 - # of crashes: 5890
+  // 1.0.33.0 - # of crashes: 12271
+  // 1.0.42.0 - # of crashes: 35749
+  // 1.0.42.1 - # of crashes: 68214
+  // 1.0.51.0 - # of crashes: 5152
+  // The GPU could be from any vendors, but only some certain models would
+  // crash. For those that don't crash, they usually return failures upon GPU
+  // vulkan support querying even though the GPU drivers can support it.
+  if ((major == 0 && minor == 0 && build_1 == 0 && build_2 == 0) ||
+      (major == 1 && minor == 0 && build_1 == 26 && build_2 == 0) ||
+      (major == 1 && minor == 0 && build_1 == 33 && build_2 == 0) ||
+      (major == 1 && minor == 0 && build_1 == 42 && build_2 == 0) ||
+      (major == 1 && minor == 0 && build_1 == 42 && build_2 == 1) ||
+      (major == 1 && minor == 0 && build_1 == 51 && build_2 == 0)) {
+    return true;
+  }
+  return false;
+}
+
 bool InitVulkan(base::NativeLibrary* vulkan_library,
                 PFN_vkGetInstanceProcAddr* vkGetInstanceProcAddr,
                 PFN_vkCreateInstance* vkCreateInstance) {
@@ -370,10 +409,15 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   gpu_info->supports_vulkan = false;
   gpu_info->vulkan_version = 0;
 
-  // Skip if the system has an older AMD Vulkan driver amdvlk64.dll which
-  // crashes when vkCreateInstance() gets called. This bug is fixed in the
-  // latest driver.
+  // Skip if the system has an older AMD Vulkan driver amdvlk64.dll or
+  // amdvlk32.dll which crashes when vkCreateInstance() id called. This bug has
+  // been fixed in the latest AMD driver.
   if (BadAMDVulkanDriverVersion(gpu_info)) {
+    return;
+  }
+
+  // Some early versions of vulkan-1.dll might crash
+  if (BadVulkanDllVersion(gpu_info)) {
     return;
   }
 
