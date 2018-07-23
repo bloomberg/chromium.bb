@@ -459,6 +459,9 @@ extern const char kEnablePWAFullCodeCacheDescription[];
 extern const char kEnableSyncUserConsentSeparateTypeName[];
 extern const char kEnableSyncUserConsentSeparateTypeDescription[];
 
+extern const char kEnableSyncUSSBookmarksName[];
+extern const char kEnableSyncUSSBookmarksDescription[];
+
 extern const char kEnableSyncUSSSessionsName[];
 extern const char kEnableSyncUSSSessionsDescription[];
 

@@ -4130,6 +4130,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBloatedRendererDetectionName,
      flag_descriptions::kEnableBloatedRendererDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBloatedRendererDetection)},
+    {"enable-sync-uss-bookmarks",
+     flag_descriptions::kEnableSyncUSSBookmarksName,
+     flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
