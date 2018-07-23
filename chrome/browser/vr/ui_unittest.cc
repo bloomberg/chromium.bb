@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -514,15 +515,19 @@ TEST_F(UiTest, WebInputEditingTriggersUnsupportedMode) {
   EXPECT_TRUE(scene_->GetUiElementByName(kExitPrompt)->IsVisible());
 }
 
-TEST_F(UiTest, ExitWebInputEditingOnAppButtonClick) {
+TEST_F(UiTest, ExitWebInputEditingOnMenuButtonClick) {
   CreateScene(kNotInWebVr);
   EXPECT_FALSE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
   ui_->ShowSoftInput(true);
   OnBeginFrame();
   EXPECT_TRUE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
-  ui_->OnAppButtonClicked();
+  InputEventList events;
+  events.push_back(
+      std::make_unique<InputEvent>(InputEvent::kMenuButtonClicked));
+  ui_->HandleMenuButtonEvents(&events);
+  base::RunLoop().RunUntilIdle();
   OnBeginFrame();
-  // Clicking app button should hide the keyboard.
+  // Clicking menu button should hide the keyboard.
   EXPECT_FALSE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
 }
 
@@ -610,7 +615,7 @@ TEST_F(UiTest, UiUpdatesForWebVR) {
 
 // This test verifies that we ignore the WebVR frame when we're not expecting
 // WebVR presentation. You can get an unexpected frame when for example, the
-// user hits the app button to exit WebVR mode, but the site continues to pump
+// user hits the menu button to exit WebVR mode, but the site continues to pump
 // frames. If the frame is not ignored, our UI will think we're in WebVR mode.
 TEST_F(UiTest, WebVrFramesIgnoredWhenUnexpected) {
   CreateScene(kInWebVr);
@@ -998,14 +1003,18 @@ TEST_F(UiTest, CloseButtonColorBindings) {
   }
 }
 
-TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
+TEST_F(UiTest, ExitPresentAndFullscreenOnMenuButtonClick) {
   CreateScene(kNotInWebVr);
   ui_->SetWebVrMode(true);
-  // Clicking app button should trigger to exit presentation.
+  // Clicking menu button should trigger to exit presentation.
   EXPECT_CALL(*browser_, ExitPresent());
   // And also trigger exit fullscreen.
   EXPECT_CALL(*browser_, ExitFullscreen());
-  ui_->OnAppButtonClicked();
+  InputEventList events;
+  events.push_back(
+      std::make_unique<InputEvent>(InputEvent::kMenuButtonClicked));
+  ui_->HandleMenuButtonEvents(&events);
+  base::RunLoop().RunUntilIdle();
 }
 
 
@@ -1284,10 +1293,10 @@ TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
-// Ensures that permissions appear on long press, and that when the app button
+// Ensures that permissions appear on long press, and that when the menu button
 // is released that we do not show the exclusive screen toast. Distinguishing
 // these cases requires knowledge of the previous state.
-TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
+TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
   CreateScene(kInWebVr);
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
@@ -1298,16 +1307,25 @@ TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
   RunForSeconds(8);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   model_->capturing_state.audio_capture_enabled = true;
-  model_->controller.app_button_long_pressed = true;
+  EXPECT_FALSE(model_->menu_button_long_pressed);
+  InputEventList events;
+  events.push_back(
+      std::make_unique<InputEvent>(InputEvent::kMenuButtonLongPressStart));
+  ui_->HandleMenuButtonEvents(&events);
   OnBeginFrame();
+  EXPECT_TRUE(model_->menu_button_long_pressed);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   EXPECT_TRUE(IsVisible(kWebVrAudioCaptureIndicator));
   RunForSeconds(8);
-  EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
-  model_->controller.app_button_long_pressed = true;
   OnBeginFrame();
+  EXPECT_TRUE(model_->menu_button_long_pressed);
+  EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
   EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
+  events.push_back(
+      std::make_unique<InputEvent>(InputEvent::kMenuButtonLongPressEnd));
+  ui_->HandleMenuButtonEvents(&events);
+  EXPECT_FALSE(model_->menu_button_long_pressed);
 }
 
 TEST_F(UiTest, MenuItems) {

@@ -30,6 +30,12 @@ class VR_UI_EXPORT InputEvent {
     kScrollEnd,
     kScrollTypeLast = kScrollEnd,
 
+    kMenuButtonClicked,
+    kMenuButtonTypeFirst = kMenuButtonClicked,
+    kMenuButtonLongPressStart,
+    kMenuButtonLongPressEnd,
+    kMenuButtonTypeLast = kMenuButtonLongPressEnd,
+
     kNumVrInputEventTypes
   };
 
@@ -54,6 +60,10 @@ class VR_UI_EXPORT InputEvent {
 
   static bool IsScrollEventType(InputEvent::Type type) {
     return kScrollTypeFirst <= type && type <= kScrollTypeLast;
+  }
+
+  static bool IsMenuButtonEventType(InputEvent::Type type) {
+    return kMenuButtonTypeFirst <= type && type <= kMenuButtonTypeLast;
   }
 
   struct {

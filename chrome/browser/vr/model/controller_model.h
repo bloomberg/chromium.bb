@@ -34,7 +34,6 @@ struct VR_EXPORT ControllerModel {
   float opacity = 1.0f;
   bool resting_in_viewport = false;
   bool recentered = false;
-  bool app_button_long_pressed = false;
   PlatformController::Handedness handedness = PlatformController::kRightHanded;
   base::TimeTicks last_orientation_timestamp;
   base::TimeTicks last_touch_timestamp;

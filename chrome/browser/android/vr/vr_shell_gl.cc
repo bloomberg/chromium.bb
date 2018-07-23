@@ -96,15 +96,6 @@ constexpr int kWebXrFrameCount = 3;
 // as used for estimating prediction times.
 constexpr unsigned kWebVRSlidingAverageSize = 5;
 
-// Criteria for considering holding the app button in combination with
-// controller movement as a gesture.
-constexpr float kMinAppButtonGestureAngleRad = 0.25;
-
-// Exceeding pressing the appbutton for longer than this threshold will result
-// in a long press.
-constexpr base::TimeDelta kLongPressThreshold =
-    base::TimeDelta::FromMilliseconds(900);
-
 // Timeout for checking for the WebVR rendering GL fence. If the timeout is
 // reached, yield to let other tasks execute before rechecking.
 constexpr base::TimeDelta kWebVRFenceCheckTimeout =
@@ -1240,7 +1231,12 @@ void VrShellGl::UpdateController(const RenderInfo& render_info,
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(laser_origin, render_info, current_time);
+  if (ShouldDrawWebVr()) {
+    auto gestures = controller_->DetectGestures();
+    ui_->HandleMenuButtonEvents(&gestures);
+  } else {
+    HandleControllerInput(laser_origin, render_info, current_time);
+  }
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
@@ -1270,16 +1266,9 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   gfx::Vector3dF controller_direction = ergo_neutral_pose;
   mat.TransformVector(&controller_direction);
 
-  HandleControllerAppButtonActivity(controller_direction);
-
-  if (ShouldDrawWebVr() && !ShouldSendGesturesToWebVr()) {
-    return;
-  }
-
   ControllerModel controller_model;
   controller_->GetTransform(&controller_model.transform);
-  std::unique_ptr<InputEventList> input_event_list =
-      controller_->DetectGestures();
+  auto input_event_list = controller_->DetectGestures();
   controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
   DCHECK(!(controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
            controller_->ButtonDownHappened(gvr::kControllerButtonClick)))
@@ -1303,7 +1292,6 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.touching_touchpad = controller_->IsTouchingTrackpad();
   controller_model.touchpad_touch_position =
       controller_->GetPositionInTrackpad();
-  controller_model.app_button_long_pressed = app_button_long_pressed_;
   controller_model.last_orientation_timestamp =
       controller_->GetLastOrientationTimestamp();
   controller_model.last_touch_timestamp = controller_->GetLastTouchTimestamp();
@@ -1330,7 +1318,7 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
 
   ReticleModel reticle_model;
   ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
-                   input_event_list.get());
+                   &input_event_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 
@@ -1344,61 +1332,6 @@ void VrShellGl::SendImmediateExitRequestIfNecessary() {
         controller_->ButtonDownHappened(buttons[i])) {
       browser_->ForceExitVr();
     }
-  }
-}
-
-void VrShellGl::HandleControllerAppButtonActivity(
-    const gfx::Vector3dF& controller_direction) {
-  // Note that button up/down state is transient, so ButtonDownHappened only
-  // returns true for a single frame (and we're guaranteed not to miss it).
-  if (controller_->ButtonDownHappened(
-          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-    controller_start_direction_ = controller_direction;
-    app_button_down_time_ = base::TimeTicks::Now();
-    app_button_long_pressed_ = false;
-  }
-
-  if (controller_->ButtonUpHappened(
-          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-    // A gesture is a movement of the controller while holding the App button.
-    // If the angle of the movement is within a threshold, the action is
-    // considered a regular click
-    // TODO(asimjour1): We need to refactor the gesture recognition outside of
-    // VrShellGl.
-    PlatformController::SwipeDirection direction =
-        PlatformController::kSwipeDirectionNone;
-    gfx::Vector3dF a = controller_start_direction_;
-    gfx::Vector3dF b = controller_direction;
-    a.set_y(0);
-    b.set_y(0);
-    if (a.LengthSquared() * b.LengthSquared() > 0.0) {
-      float gesture_xz_angle =
-          acos(gfx::DotProduct(a, b) / a.Length() / b.Length());
-      if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
-        direction = gesture_xz_angle < 0
-                        ? PlatformController::kSwipeDirectionLeft
-                        : PlatformController::kSwipeDirectionRight;
-        // Post a task, rather than calling the UI directly, so as not to modify
-        // UI state in the midst of frame rendering.
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindRepeating(&UiInterface::OnAppButtonSwipePerformed,
-                                base::Unretained(ui_.get()), direction));
-      }
-    }
-    if (direction == PlatformController::kSwipeDirectionNone &&
-        !app_button_long_pressed_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindRepeating(&UiInterface::OnAppButtonClicked,
-                                         base::Unretained(ui_.get())));
-    }
-  }
-
-  if (!app_button_long_pressed_ &&
-      controller_->ButtonState(
-          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP) &&
-      (base::TimeTicks::Now() - app_button_down_time_) > kLongPressThreshold) {
-    app_button_long_pressed_ = true;
   }
 }
 
@@ -2017,10 +1950,6 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
 
 bool VrShellGl::ShouldDrawWebVr() {
   return web_vr_mode_ && ui_->ShouldRenderWebVr() && webvr_frames_received_ > 0;
-}
-
-bool VrShellGl::ShouldSendGesturesToWebVr() {
-  return ui_->IsAppButtonLongPressed() != app_button_long_pressed_;
 }
 
 void VrShellGl::DrawWebVr() {
