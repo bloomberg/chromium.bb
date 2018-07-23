@@ -268,10 +268,10 @@ void RemoveWhitelistedEntries(
         return module_list_filter.IsWhitelisted(
             base::StringPiece(
                 reinterpret_cast<const char*>(&module.basename_hash[0]),
-                sizeof(module.basename_hash)),
+                base::size(module.basename_hash)),
             base::StringPiece(
                 reinterpret_cast<const char*>(&module.code_id_hash[0]),
-                sizeof(module.code_id_hash)));
+                base::size(module.code_id_hash)));
       });
 }
 
