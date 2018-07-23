@@ -4,6 +4,10 @@
 
 #include "ash/login/ui/login_expanded_public_account_view.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_bubble.h"
@@ -14,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -53,7 +58,7 @@ constexpr SkColor kArrowButtonColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 
 constexpr int kDropDownIconSizeDp = 16;
 constexpr int kArrowButtonSizeDp = 40;
-constexpr int kAdvancedViewButtonWidthDp = 132;
+constexpr int kAdvancedViewButtonWidthDp = 174;
 constexpr int kAdvancedViewButtonHeightDp = 16;
 constexpr int kSelectionBoxWidthDp = 178;
 constexpr int kSelectionBoxHeightDp = 28;
@@ -68,6 +73,10 @@ constexpr int kTopSpacingForUserViewDp = 62;
 
 constexpr int kNonEmptyWidth = 1;
 constexpr int kNonEmptyHeight = 1;
+
+constexpr char kMonitoringWarningClassName[] = "MonitoringWarning";
+constexpr int kSpacingBetweenMonitoringWarningIconAndLabelDp = 8;
+constexpr int kMonitoringWarningIconSizeDp = 20;
 
 views::Label* CreateLabel(const base::string16& text, SkColor color) {
   auto* label = new views::Label(text);
@@ -173,6 +182,36 @@ class SelectionButtonView : public LoginButton {
   DISALLOW_COPY_AND_ASSIGN(SelectionButtonView);
 };
 
+// Container for the device monitoring warning.  Contains the warning icon on
+// the left side, and text on the right side.
+class MonitoringWarningView : public NonAccessibleView {
+ public:
+  MonitoringWarningView() : NonAccessibleView(kMonitoringWarningClassName) {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal, gfx::Insets(),
+        kSpacingBetweenMonitoringWarningIconAndLabelDp));
+
+    views::ImageView* image = new views::ImageView();
+    image->SetImage(gfx::CreateVectorIcon(
+        vector_icons::kWarningIcon, kMonitoringWarningIconSizeDp, SK_ColorRED));
+    image->SetPreferredSize(
+        gfx::Size(kMonitoringWarningIconSizeDp, kMonitoringWarningIconSizeDp));
+    AddChildView(image);
+
+    const base::string16 label_text = l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
+    views::Label* label = CreateLabel(label_text, SK_ColorWHITE);
+    label->SetMultiLine(true);
+    label->SetLineHeight(kTextLineHeightDp);
+    AddChildView(label);
+  }
+
+  ~MonitoringWarningView() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MonitoringWarningView);
+};
+
 // Implements the right part of the expanded public session view.
 class RightPaneView : public NonAccessibleView,
                       public views::ButtonListener,
@@ -192,12 +231,8 @@ class RightPaneView : public NonAccessibleView,
         views::BoxLayout::kVertical, gfx::Insets(), kSpacingBetweenLabelsDp));
     AddChildView(labels_view_);
 
-    views::Label* top_label =
-        CreateLabel(l10n_util::GetStringUTF16(
-                        IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING),
-                    SK_ColorWHITE);
-    top_label->SetMultiLine(true);
-    top_label->SetLineHeight(kTextLineHeightDp);
+    auto* top_container = new MonitoringWarningView();
+    labels_view_->AddChildView(top_container);
 
     const base::string16 link = l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE);
     size_t offset;
@@ -217,8 +252,6 @@ class RightPaneView : public NonAccessibleView,
     bottom_label->AddStyleRange(gfx::Range(offset, offset + link.length()),
                                 link_style);
     bottom_label->set_auto_color_readability_enabled(false);
-
-    labels_view_->AddChildView(top_label);
     labels_view_->AddChildView(bottom_label);
 
     // Create button to show/hide advanced view.
