@@ -92,6 +92,10 @@ ResourceError::ResourceError(
   InitializeDescription();
 }
 
+ResourceError::ResourceError(const KURL& url,
+                             const network::CORSErrorStatus& cors_error_status)
+    : ResourceError(net::ERR_FAILED, url, cors_error_status) {}
+
 ResourceError::ResourceError(const WebURLError& error)
     : error_code_(error.reason()),
       extended_error_code_(error.extended_reason()),

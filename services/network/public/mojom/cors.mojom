@@ -37,6 +37,9 @@ enum CORSError {
   // header.
   kInvalidAllowCredentials,
 
+  // The scheme is not for CORS.
+  kCORSDisabledScheme,
+
   // Preflight:
   // Failed to check HTTP response ok status in a CORS-preflight response.
   kPreflightInvalidStatus,

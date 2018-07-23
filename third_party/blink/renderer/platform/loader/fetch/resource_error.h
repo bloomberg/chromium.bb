@@ -64,6 +64,8 @@ class PLATFORM_EXPORT ResourceError final {
   ResourceError(int error_code,
                 const KURL& failing_url,
                 base::Optional<network::CORSErrorStatus>);
+  ResourceError(const KURL& failing_url,
+                const network::CORSErrorStatus& status);
   ResourceError(const WebURLError&);
 
   // Makes a deep copy. Useful for when you need to use a ResourceError on

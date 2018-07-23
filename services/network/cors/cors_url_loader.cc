@@ -352,6 +352,13 @@ void CORSURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
 }
 
 void CORSURLLoader::StartRequest() {
+  if (fetch_cors_flag_ && !base::ContainsValue(url::GetCORSEnabledSchemes(),
+                                               request_.url.scheme())) {
+    HandleComplete(URLLoaderCompletionStatus(
+        CORSErrorStatus(mojom::CORSError::kCORSDisabledScheme)));
+    return;
+  }
+
   // If the CORS flag is set, |httpRequest|’s method is neither `GET` nor
   // `HEAD`, or |httpRequest|’s mode is "websocket", then append
   // `Origin`/the result of serializing a request origin with |httpRequest|, to

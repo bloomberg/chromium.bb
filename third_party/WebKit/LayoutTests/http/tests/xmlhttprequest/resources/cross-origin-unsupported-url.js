@@ -1,58 +1,47 @@
-if (self.importScripts)
-    importScripts("/js-test-resources/js-test.js");
+if (self.importScripts) {
+    importScripts('/resources/testharness.js');
+}
 
-self.jsTestIsAsync = true;
-
-description("Test cross-origin XHRs to CORS-unsupported protocol schemes in the URL.");
-
-var xhr;
-var errorEvent;
-function issueRequest(url, contentType)
-{
-    xhr = new XMLHttpRequest();
-    // async = false
+function testSync(url, contentType) {
+  test((t) => {
+    const xhr = new XMLHttpRequest();
     xhr.open('POST', url, false);
-    xhr.onerror = () => testFailed("onerror callback should not be called.");
-    // Assumed a Content-Type that turns it into a non-simple CORS request.
-    if (contentType)
-        xhr.setRequestHeader('Content-Type', contentType);
-    try {
-        xhr.send();
-    } catch(e) {
-        errorEvent = e;
-        shouldBeEqualToString("errorEvent.name", "NetworkError");
+    xhr.onerror = t.unreached_func('onerror');
+    if (contentType) {
+      xhr.setRequestHeader('Content-Type', contentType);
     }
-
-    xhr = new XMLHttpRequest();
-    // async = true
-    xhr.open('POST', url, true);
-    xhr.onerror = function (a) {
-        errorEvent = a;
-        shouldBeEqualToString("errorEvent.type", "error");
-        setTimeout(runTest, 0);
-    };
-    // Assumed a Content-Type that turns it into a non-simple CORS request.
-    if (contentType)
-        xhr.setRequestHeader('Content-Type', contentType);
-
-    shouldNotThrow('xhr.send()');
+    assert_throws('NetworkError', () => xhr.send());
+  }, `sync test for url=${url}, contentType=${contentType}`);
 }
 
-var withContentType = true;
-var tests = [ 'ftp://127.0.0.1',
-              'localhost:8080/',
-              'tel:1234' ];
-
-function runTest()
-{
-    if (!tests.length && withContentType) {
-        finishJSTest();
-        return;
-    }
-    withContentType = !withContentType;
-    if (!withContentType)
-        issueRequest(tests[0]);
-    else
-        issueRequest(tests.shift(), 'application/json');
+function testAsync(url, contentType) {
+  promise_test((t) => {
+    return new Promise(resolve => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.onerror = t.step_func((e) => {
+        assert_equals(e.type, 'error');
+        resolve();
+      });
+      if (contentType) {
+        xhr.setRequestHeader('Content-Type', contentType);
+      }
+      xhr.send();
+    });
+  }, `async test for url=${url}, contentType=${contentType}`);
 }
-runTest();
+
+const urls = [
+  'mailto:foo@bar.com',
+  'localhost:8080/',
+  'tel:1234',
+];
+
+for (const url of urls) {
+  testSync(url);
+  testSync(url, 'application/json');
+  testAsync(url);
+  testAsync(url, 'application/json');
+}
+
+done();
