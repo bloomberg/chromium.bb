@@ -5,10 +5,9 @@ Request Intercepted: redirect1.php
   responseErrorReason: undefined
   responseStatusCode: undefined
   responseHeaders: <None>
+Continuing a request to http://127.0.0.1:8000/inspector-protocol/resources/redirect1.php
   responseBody:
     Error<Can only get response body on requests captured after headers received.>
-Continuing redirect1.php request.
-
 Request Intercepted: redirect1.php
   responseErrorReason: undefined
   responseStatusCode: 307
@@ -24,10 +23,16 @@ Request Intercepted: redirect1.php
     Pragma: no-cache
     Server: <Masked>
   redirectUrl: redirect2.php
+Continuing a request to http://127.0.0.1:8000/inspector-protocol/resources/redirect1.php
   responseBody:
     Error<Can only get response body on requests captured after headers received.>
-Continuing redirect1.php and allow to redirect to redirect2.php.
-
+Request Intercepted: redirect2.php
+  responseErrorReason: undefined
+  responseStatusCode: undefined
+  responseHeaders: <None>
+Continuing a request to http://127.0.0.1:8000/inspector-protocol/resources/redirect2.php
+  responseBody:
+    Error<Can only get response body on requests captured after headers received.>
 Request Intercepted: redirect2.php
   responseErrorReason: undefined
   responseStatusCode: 307
@@ -43,25 +48,16 @@ Request Intercepted: redirect2.php
     Pragma: no-cache
     Server: <Masked>
   redirectUrl: final.html
+Continuing a request to http://127.0.0.1:8000/inspector-protocol/resources/redirect2.php
   responseBody:
     Error<Can only get response body on requests captured after headers received.>
-Continuing redriect2.php and allow to redirect to final.html.
-
 Request Intercepted: final.html
   responseErrorReason: undefined
-  responseStatusCode: 200
-  responseHeaders:
-    Accept-Ranges: bytes
-    Connection: Keep-Alive
-    Content-Length: 56
-    Content-Type: text/html
-    Date: <Masked>
-    ETag: <Masked>
-    Keep-Alive: <Masked>
-    Last-Modified: <Masked>
-    Server: <Masked>
+  responseStatusCode: undefined
+  responseHeaders: <None>
+Continuing a request to http://127.0.0.1:8000/inspector-protocol/resources/final.html
   responseBody:
-<html><body>This is the final destination.</body></html>
+    Error<Can only get response body on requests captured after headers received.>
 Modifying final.html's response after we receive response.
 Modifying request with new body.
 

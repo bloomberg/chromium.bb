@@ -20,30 +20,17 @@
 
   session.evaluate(`fetch('${testRunner.url('../resources/redirect1.php')}')`);
 
-  // Should be redirect1.php as request.
-  var interceptionEvent = await waitForInterceptionEvent();
-  await logInterceptionEvent(interceptionEvent);
-  testRunner.log('Continuing redirect1.php request.');
-  testRunner.log('');
-  session.protocol.Network.continueInterceptedRequest({interceptionId: interceptionEvent.params.interceptionId});
+  await waitForInterceptionEventAndContinue("/redirect1.php");
+  await waitForInterceptionEventAndContinue("/redirect1.php");
 
-  // Should be redirect1.php as redirect going to redirect2.php.
-  interceptionEvent = await waitForInterceptionEvent();
-  await logInterceptionEvent(interceptionEvent);
-  testRunner.log('Continuing redirect1.php and allow to redirect to redirect2.php.');
-  testRunner.log('');
-  session.protocol.Network.continueInterceptedRequest({interceptionId: interceptionEvent.params.interceptionId});
 
   // Should be redirect2.php as redirecting to final.html.
-  interceptionEvent = await waitForInterceptionEvent();
-  await logInterceptionEvent(interceptionEvent);
-  testRunner.log('Continuing redriect2.php and allow to redirect to final.html.');
-  testRunner.log('');
-  session.protocol.Network.continueInterceptedRequest({interceptionId: interceptionEvent.params.interceptionId});
+  await waitForInterceptionEventAndContinue("/redirect2.php");
+  await waitForInterceptionEventAndContinue("/redirect2.php");
 
-  // Should be final.html as response.
-  interceptionEvent = await waitForInterceptionEvent();
-  await logInterceptionEvent(interceptionEvent);
+  // Should be final.html as request.
+  await waitForInterceptionEventAndContinue("/final.html");
+  const interceptionEvent = await waitForInterceptionEvent("/final.html");
   testRunner.log('Modifying final.html\'s response after we receive response.');
   var body = '<html>\n<body>This content was rewritten!</body>\n</html>';
   var dummyHeaders = [
@@ -91,14 +78,24 @@
     });
   }
 
-  function waitForInterceptionEvent() {
-    return new Promise(resolve => {
-      session.protocol.Network.onRequestIntercepted(onInterception);
-      function onInterception(event) {
-        session.protocol.Network.removeEventListener(onInterception);
-        resolve(event);
-      }
-    });
+  async function waitForInterceptionEvent(expectedUrlSuffix) {
+    const event = await session.protocol.Network.onceRequestIntercepted();
+    const url = event.params.request.url;
+    if (!url.endsWith(expectedUrlSuffix)) {
+      testRunner.log(`FAIL: expected url ending with "${expectedUrlSuffix}", got "${url}"`);
+      testRunner.completeTest();
+      return null;
+    }
+    return event;
+  }
+
+  async function waitForInterceptionEventAndContinue(expectedUrlSuffix) {
+    const event = await waitForInterceptionEvent(expectedUrlSuffix);
+    if (!event)
+      return;
+    logInterceptionEvent(event);
+    testRunner.log(`Continuing a request to ${event.params.request.url}`);
+    session.protocol.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId});
   }
 
   function waitForResponseReceivedEvent(fileName) {

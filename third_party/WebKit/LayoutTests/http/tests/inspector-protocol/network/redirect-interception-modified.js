@@ -10,6 +10,7 @@
     'redirect1.pl': event => helper.allowRequest(event),
     'redirect2.pl': event => helper.allowRequest(event),
     'redirect3.pl': event => helper.modifyRequest(event, {url: 'alternative.js'}),
+    'alternative.js': event => helper.allowRequest(event)
   };
 
   await helper.startInterceptionTest(requestInterceptedDict, 1);
