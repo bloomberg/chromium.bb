@@ -110,8 +110,8 @@ class HTMLParserScriptRunner final
   // PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
 
-  void ExecutePendingScriptAndDispatchEvent(PendingScript*,
-                                            ScriptStreamer::Type);
+  void ExecutePendingParserBlockingScriptAndDispatchEvent();
+  void ExecutePendingDeferredScriptAndDispatchEvent(PendingScript*);
   void ExecuteParsingBlockingScripts();
 
   void RequestParsingBlockingScript(ScriptLoader*);
