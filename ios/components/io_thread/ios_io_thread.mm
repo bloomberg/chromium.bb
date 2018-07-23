@@ -36,6 +36,7 @@
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
+#include "net/base/logging_network_change_observer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
@@ -102,65 +103,6 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
 
   return global_host_resolver;
 }
-
-class IOSIOThread::LoggingNetworkChangeObserver
-    : public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
- public:
-  // |net_log| must remain valid throughout our lifetime.
-  explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
-      : net_log_(net_log) {
-    net::NetworkChangeNotifier::AddIPAddressObserver(this);
-    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  }
-
-  ~LoggingNetworkChangeObserver() override {
-    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  }
-
-  // NetworkChangeNotifier::IPAddressObserver implementation.
-  void OnIPAddressChanged() override {
-    VLOG(1) << "Observed a change to the network IP addresses";
-
-    net_log_->AddGlobalEntry(
-        net::NetLogEventType::NETWORK_IP_ADDRESSES_CHANGED);
-  }
-
-  // NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override {
-    std::string type_as_string =
-        net::NetworkChangeNotifier::ConnectionTypeToString(type);
-
-    VLOG(1) << "Observed a change to network connectivity state "
-            << type_as_string;
-
-    net_log_->AddGlobalEntry(
-        net::NetLogEventType::NETWORK_CONNECTIVITY_CHANGED,
-        net::NetLog::StringCallback("new_connection_type", &type_as_string));
-  }
-
-  // NetworkChangeNotifier::NetworkChangeObserver implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override {
-    std::string type_as_string =
-        net::NetworkChangeNotifier::ConnectionTypeToString(type);
-
-    VLOG(1) << "Observed a network change to state " << type_as_string;
-
-    net_log_->AddGlobalEntry(
-        net::NetLogEventType::NETWORK_CHANGED,
-        net::NetLog::StringCallback("new_connection_type", &type_as_string));
-  }
-
- private:
-  net::NetLog* net_log_;
-  DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
-};
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
@@ -298,7 +240,8 @@ void IOSIOThread::Init() {
   // Add an observer that will emit network change events to the ChromeNetLog.
   // Assuming NetworkChangeNotifier dispatches in FIFO order, we should be
   // logging the network change before other IO thread consumers respond to it.
-  network_change_observer_.reset(new LoggingNetworkChangeObserver(net_log_));
+  network_change_observer_ =
+      std::make_unique<net::LoggingNetworkChangeObserver>(net_log_);
 
   globals_->system_network_delegate = CreateSystemNetworkDelegate();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
