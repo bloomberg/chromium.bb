@@ -521,7 +521,10 @@ void ServiceWorkerProviderHost::AssociateRegistration(
     bool notify_controllerchange) {
   CHECK(IsContextSecureForServiceWorker());
   DCHECK(IsProviderForClient());
-  DCHECK(CanAssociateRegistration(registration));
+  DCHECK(registration);
+  DCHECK(!associated_registration_);
+  DCHECK(allow_association_);
+
   associated_registration_ = registration;
   AddMatchingRegistration(registration);
   SetControllerVersionAttribute(registration->active_version(),
@@ -670,17 +673,6 @@ ServiceWorkerProviderHost::GetOrCreateServiceWorkerObjectHost(
   return service_worker_object_hosts_[version_id]->AsWeakPtr();
 }
 
-bool ServiceWorkerProviderHost::CanAssociateRegistration(
-    ServiceWorkerRegistration* registration) {
-  if (!context_)
-    return false;
-  if (running_hosted_version_.get())
-    return false;
-  if (!registration || associated_registration_.get() || !allow_association_)
-    return false;
-  return true;
-}
-
 void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     blink::TransferableMessage message) {
@@ -712,10 +704,17 @@ void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
 void ServiceWorkerProviderHost::ClaimedByRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration->active_version());
+  // TODO(falken): This should just early return, or DCHECK. claim() should have
+  // no effect on a page that's already using the registration.
   if (registration == associated_registration_) {
     SetControllerVersionAttribute(registration->active_version(),
                                   true /* notify_controllerchange */);
-  } else if (allow_association_) {
+    return;
+  }
+
+  // TODO(crbug.com/866353): It shouldn't be necesary to check
+  // |allow_association_|. See the comment for SetAllowAssociation().
+  if (allow_association_) {
     DisassociateRegistration();
     AssociateRegistration(registration, true /* notify_controllerchange */);
   }
