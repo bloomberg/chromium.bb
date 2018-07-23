@@ -283,39 +283,52 @@ class HeadlessProtocolCompositorBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// BeginFrameControl is not supported on MacOS yet, see: https://cs.chromium.org
+// chromium/src/headless/lib/browser/protocol/target_handler.cc?
+// rcl=5811aa08e60ba5ac7622f029163213cfbdb682f7&l=32
+#if defined(OS_MACOSX)
+#define HEADLESS_PROTOCOL_COMPOSITOR_TEST(TEST_NAME, SCRIPT_NAME) \
+  IN_PROC_BROWSER_TEST_F(HeadlessProtocolCompositorBrowserTest,   \
+                         DISABLED_##TEST_NAME) {                  \
+    test_folder_ = "/protocol/";                                  \
+    script_name_ = SCRIPT_NAME;                                   \
+    RunTest();                                                    \
+  }
+#else
 #define HEADLESS_PROTOCOL_COMPOSITOR_TEST(TEST_NAME, SCRIPT_NAME)            \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolCompositorBrowserTest, TEST_NAME) { \
     test_folder_ = "/protocol/";                                             \
     script_name_ = SCRIPT_NAME;                                              \
     RunTest();                                                               \
   }
-
-// BeginFrameControl is not supported on MacOS yet, see: https://cs.chromium.org
-// chromium/src/headless/lib/browser/protocol/target_handler.cc?
-// rcl=5811aa08e60ba5ac7622f029163213cfbdb682f7&l=32
-#if defined(OS_MACOSX)
-#define MAYBE_CompositorBasicRaf DISABLED_CompositorBasicRaf
-#define MAYBE_CompositorImageAnimation DISABLED_CompositorImageAnimation
-#define MAYBE_CompositorCssAnimation DISABLED_CompositorCssAnimation
-#define MAYBE_VirtualTimeControllerTest DISABLED_VirtualTimeControllerTest
-#else
-#define MAYBE_CompositorBasicRaf CompositorBasicRaf
-#define MAYBE_CompositorImageAnimation CompositorImageAnimation
-#define MAYBE_CompositorCssAnimation CompositorCssAnimation
-#define MAYBE_VirtualTimeControllerTest VirtualTimeControllerTest
 #endif
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorBasicRaf,
+
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(CompositorBasicRaf,
                                   "emulation/compositor-basic-raf.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
-    MAYBE_CompositorImageAnimation,
+    CompositorImageAnimation,
     "emulation/compositor-image-animation-test.js");
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorCssAnimation,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(CompositorCssAnimation,
                                   "emulation/compositor-css-animation-test.js");
-HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeControllerTest,
-                       "helpers/virtual-time-controller-test.js");
-#undef MAYBE_CompositorBasicRaf
-#undef MAYBE_CompositorImageAnimation
-#undef MAYBE_CompositorCssAnimation
-#undef MAYBE_VirtualTimeControllerTest
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(VirtualTimeControllerTest,
+                                  "helpers/virtual-time-controller-test.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererHelloWorld,
+                                  "sanity/renderer-hello-world.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererOverrideTitleJsEnabled,
+    "sanity/renderer-override-title-js-enabled.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererOverrideTitleJsDisabled,
+    "sanity/renderer-override-title-js-disabled.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererJavaScriptConsoleErrors,
+    "sanity/renderer-javascript-console-errors.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererDelayedCompletion,
+                                  "sanity/renderer-delayed-completion.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererClientRedirectChain,
+                                  "sanity/renderer-client-redirect-chain.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererClientRedirectChainNoJs,
+    "sanity/renderer-client-redirect-chain-no-js.js");
 
 }  // namespace headless
