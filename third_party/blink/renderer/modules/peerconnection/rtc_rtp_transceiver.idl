@@ -17,6 +17,6 @@ interface RTCRtpTransceiver {
     [SameObject] readonly attribute RTCRtpSender sender;
     [SameObject] readonly attribute RTCRtpReceiver receiver;
     readonly attribute boolean stopped;
-    [RaisesException=Setter] attribute RTCRtpTransceiverDirection direction;
+    [Measure, RaisesException=Setter] attribute RTCRtpTransceiverDirection direction;
     readonly attribute RTCRtpTransceiverDirection? currentDirection;
 };

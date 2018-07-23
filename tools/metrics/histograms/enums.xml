@@ -19422,6 +19422,10 @@ Called by update_net_error_codes.py.-->
   <int value="2509" label="PopupOpenWhileFileChooserOpened"/>
   <int value="2510" label="CookieStoreAPI"/>
   <int value="2511" label="FeaturePolicyJSAPI"/>
+  <int value="2512" label="V8RTCPeerConnection_GetTransceivers_Method"/>
+  <int value="2513" label="V8RTCPeerConnection_AddTransceiver_Method"/>
+  <int value="2514" label="V8RTCRtpTransceiver_Direction_AttributeGetter"/>
+  <int value="2515" label="V8RTCRtpTransceiver_Direction_AttributeSetter"/>
 </enum>
 
 <enum name="FeedbackSource">
