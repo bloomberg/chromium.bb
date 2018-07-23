@@ -750,6 +750,8 @@ RenderWidgetHostView* InterstitialPageImpl::GetView() {
 }
 
 RenderFrameHost* InterstitialPageImpl::GetMainFrame() const {
+  if (!render_view_host_)
+    return nullptr;
   return render_view_host_->GetMainFrame();
 }
 

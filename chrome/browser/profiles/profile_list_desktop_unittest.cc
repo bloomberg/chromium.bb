@@ -262,36 +262,4 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
   EXPECT_EQ(ASCIIToUTF16("Test 3"), item3.name);
 }
 
-TEST_F(ProfileListDesktopTest, SyncState) {
-  // If multiprofile mode is not enabled then the menu is never shown.
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  manager()->CreateTestingProfile("Test 1");
-
-  // Add a managed user profile.
-  ProfileAttributesStorage* storage = manager()->profile_attributes_storage();
-  base::FilePath path = manager()->profiles_dir().AppendASCII("p2");
-  storage->AddProfile(path, ASCIIToUTF16("Test 2"), std::string(),
-                      base::string16(), 0u, "TEST_ID", EmptyAccountId());
-
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(storage->GetProfileAttributesWithPath(path, &entry));
-  entry->SetIsOmitted(false);
-
-  AvatarMenu* menu = GetAvatarMenu();
-  menu->RebuildMenu();
-  EXPECT_EQ(2u, menu->GetNumberOfItems());
-
-  // Now check that the username of a supervised user shows the supervised
-  // user avatar label instead.
-  base::string16 supervised_user_label =
-      l10n_util::GetStringUTF16(IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL);
-  const AvatarMenu::Item& item1 = menu->GetItemAt(0u);
-  EXPECT_NE(item1.username, supervised_user_label);
-
-  const AvatarMenu::Item& item2 = menu->GetItemAt(1u);
-  EXPECT_EQ(item2.username, supervised_user_label);
-}
-
 }  // namespace

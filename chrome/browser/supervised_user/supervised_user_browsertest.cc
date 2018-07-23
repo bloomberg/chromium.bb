@@ -47,6 +47,10 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -186,7 +190,14 @@ class SupervisedUserTest : public InProcessBrowserTest,
                                         "MAP *.new-example.com " + host_port +
                                         "," + "MAP *.a.com " + host_port);
 
-    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId,
+                                    supervised_users::kChildAccountSUID);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        "supervised_user@locally-managed.localhost");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+#endif
   }
 
   // Acts like a synchronous call to history's QueryHistory. Modified from

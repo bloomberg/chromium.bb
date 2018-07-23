@@ -351,24 +351,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, EmptyCrx) {
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
-class ExtensionWebstorePrivateApiTestSupervised
-    : public ExtensionWebstorePrivateApiTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionWebstorePrivateApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "not_empty");
-  }
-};
-
-// Tests that extension installation is blocked for supervised users.
-// Note: This will have to be updated if we enable SU-initiated installs.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestSupervised,
-                       InstallBlocked) {
-  ASSERT_TRUE(
-      RunInstallTest("begin_install_fail_supervised.html", "extension.crx"));
-}
-
 class ExtensionWebstorePrivateApiTestChild
     : public ExtensionWebstorePrivateApiTest {
  public:

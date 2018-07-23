@@ -28,6 +28,14 @@
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using content::WebContents;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
@@ -174,13 +182,21 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   EXPECT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 class WebstoreStartupInstallerSupervisedUsersTest
     : public WebstoreStartupInstallerTest {
  public:
   // InProcessBrowserTest overrides:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId,
+                                    supervised_users::kChildAccountSUID);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        "supervised_user@locally-managed.localhost");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+#endif
   }
 };
 
@@ -198,6 +214,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerSupervisedUsersTest,
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // The unpack failure test needs to use a different install .crx, which is
 // specified via a command-line flag, so it needs its own test subclass.
