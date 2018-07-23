@@ -80,8 +80,11 @@ class CONTENT_EXPORT DOMStorageDatabase {
 
   enum SchemaVersion {
     INVALID,
-    V1,
-    V2
+
+    // V1 is deprecated.
+
+    // 2011-07-15 - https://bugs.webkit.org/show_bug.cgi?id=58762
+    V2,
   };
 
   // Open the database at file_path_ if it exists already and creates it if
@@ -104,12 +107,6 @@ class CONTENT_EXPORT DOMStorageDatabase {
   // the file from disk and attempt to create a new database from
   // scratch.
   bool DeleteFileAndRecreate();
-
-  // Version 1 -> 2 migrates the value column in the ItemTable from a TEXT
-  // to a BLOB. Exisitng data is preserved on success. Returns false if the
-  // upgrade failed. If true is returned, the database is guaranteed to be at
-  // version 2.
-  bool UpgradeVersion1To2();
 
   void Close();
   bool IsOpen() const { return db_.get() ? db_->is_open() : false; }

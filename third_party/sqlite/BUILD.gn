@@ -91,6 +91,9 @@ config("chromium_sqlite3_compile_options") {
     # Chromium calls sqlite3_reset() correctly to reset prepared statements.
     "SQLITE_OMIT_AUTORESET",
 
+    # Chrome does not use sqlite3_column_decltype().
+    "SQLITE_OMIT_DECLTYPE",
+
     # Chromium does not use sqlite3_{get,free}_table().
     "SQLITE_OMIT_GET_TABLE",
 

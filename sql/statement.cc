@@ -216,22 +216,6 @@ ColType Statement::ColumnType(int col) const {
   return static_cast<ColType>(sqlite3_column_type(ref_->stmt(), col));
 }
 
-ColType Statement::DeclaredColumnType(int col) const {
-  std::string column_type = base::ToLowerASCII(
-      sqlite3_column_decltype(ref_->stmt(), col));
-
-  if (column_type == "integer")
-    return COLUMN_TYPE_INTEGER;
-  else if (column_type == "float")
-    return COLUMN_TYPE_FLOAT;
-  else if (column_type == "text")
-    return COLUMN_TYPE_TEXT;
-  else if (column_type == "blob")
-    return COLUMN_TYPE_BLOB;
-
-  return COLUMN_TYPE_NULL;
-}
-
 bool Statement::ColumnBool(int col) const {
   return !!ColumnInt(col);
 }
