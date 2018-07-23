@@ -99,6 +99,10 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // Whether the search box is active.
   bool is_search_box_active() const { return is_search_box_active_; }
 
+  void set_show_close_button_when_active(bool show_button) {
+    show_close_button_when_active_ = show_button;
+  }
+
   void OnOnSearchBoxFocusedChanged();
 
   // Whether the trimmed query in the search box is empty.
@@ -194,6 +198,8 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   // Whether the search box is active.
   bool is_search_box_active_ = false;
+  // Whether to show close button if the search box is active.
+  bool show_close_button_when_active_ = false;
   // Whether tablet mode is active.
   bool is_tablet_mode_ = false;
   // The current background color.

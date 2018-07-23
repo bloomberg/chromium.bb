@@ -165,7 +165,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Changes the app list state depending on the current |app_list_state_| and
   // whether the search box is empty.
-  void SetStateFromSearchBoxView(bool search_box_is_empty);
+  void SetStateFromSearchBoxView(bool search_box_is_empty,
+                                 bool triggered_by_contents_change);
 
   // Updates y position and opacity of app list.
   void UpdateYPositionAndOpacity(int y_position_in_screen,

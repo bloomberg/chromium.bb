@@ -20,6 +20,7 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
@@ -81,6 +82,8 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
       app_list_view_(app_list_view),
       weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
+  if (features::IsZeroStateSuggestionsEnabled())
+    set_show_close_button_when_active(true);
 }
 
 SearchBoxView::~SearchBoxView() {
@@ -89,7 +92,8 @@ SearchBoxView::~SearchBoxView() {
 
 void SearchBoxView::ClearSearch() {
   search_box::SearchBoxViewBase::ClearSearch();
-  app_list_view_->SetStateFromSearchBoxView(true);
+  app_list_view_->SetStateFromSearchBoxView(
+      true, false /*triggered_by_contents_change*/);
 }
 
 views::View* SearchBoxView::GetSelectedViewInContentsView() {
@@ -288,6 +292,11 @@ void SearchBoxView::UpdateOpacity() {
       should_restore_opacity ? 1.0f : opacity);
 }
 
+void SearchBoxView::ShowZeroStateSuggestions() {
+  base::string16 empty_query;
+  ContentsChanged(search_box(), empty_query);
+}
+
 void SearchBoxView::GetWallpaperProminentColors(
     AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
   view_delegate_->GetWallpaperProminentColors(std::move(callback));
@@ -315,7 +324,8 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
   search_box::SearchBoxViewBase::ContentsChanged(sender, new_contents);
-  app_list_view_->SetStateFromSearchBoxView(IsSearchBoxTrimmedQueryEmpty());
+  app_list_view_->SetStateFromSearchBoxView(
+      IsSearchBoxTrimmedQueryEmpty(), true /*triggered_by_contents_change*/);
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
@@ -353,6 +363,18 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
         (&mouse_event)->AsMouseWheelEvent()->offset().y(), ui::ET_MOUSEWHEEL);
   }
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
+}
+
+void SearchBoxView::ButtonPressed(views::Button* sender,
+                                  const ui::Event& event) {
+  search_box::SearchBoxViewBase::ButtonPressed(sender, event);
+
+  if (!features::IsZeroStateSuggestionsEnabled())
+    return;
+
+  if (close_button() && sender == close_button()) {
+    SetSearchBoxActive(false);
+  }
 }
 
 void SearchBoxView::HintTextChanged() {

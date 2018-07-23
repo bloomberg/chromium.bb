@@ -50,6 +50,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableNewStyleLauncher;
 // when they switch from phones or tablets to Chromebook.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableContinueReading;
 
+// Enables the feature to display zero state suggestions.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
@@ -59,6 +62,7 @@ bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();
 bool ASH_PUBLIC_EXPORT IsNewStyleLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsContinueReadingEnabled();
+bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
 

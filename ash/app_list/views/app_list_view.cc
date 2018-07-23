@@ -1277,26 +1277,51 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
   app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
 
-void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {
+void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,
+                                            bool triggered_by_contents_change) {
   switch (app_list_state_) {
     case AppListViewState::PEEKING:
-      if (!search_box_is_empty)
-        SetState(AppListViewState::HALF);
+      if (features::IsZeroStateSuggestionsEnabled()) {
+        if (!search_box_is_empty || search_box_view()->is_search_box_active())
+          SetState(AppListViewState::HALF);
+      } else {
+        if (!search_box_is_empty)
+          SetState(AppListViewState::HALF);
+      }
       break;
     case AppListViewState::HALF:
-      if (search_box_is_empty)
-        SetState(AppListViewState::PEEKING);
+      if (features::IsZeroStateSuggestionsEnabled()) {
+        if (search_box_is_empty && !triggered_by_contents_change)
+          SetState(AppListViewState::PEEKING);
+      } else {
+        if (search_box_is_empty)
+          SetState(AppListViewState::PEEKING);
+      }
       break;
     case AppListViewState::FULLSCREEN_SEARCH:
-      if (search_box_is_empty) {
-        SetState(AppListViewState::FULLSCREEN_ALL_APPS);
-        app_list_main_view()->contents_view()->SetActiveState(
-            ash::AppListState::kStateApps);
+      if (features::IsZeroStateSuggestionsEnabled()) {
+        if (search_box_is_empty && !triggered_by_contents_change) {
+          SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+          app_list_main_view()->contents_view()->SetActiveState(
+              ash::AppListState::kStateApps);
+        }
+      } else {
+        if (search_box_is_empty) {
+          SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+          app_list_main_view()->contents_view()->SetActiveState(
+              ash::AppListState::kStateApps);
+        }
       }
       break;
     case AppListViewState::FULLSCREEN_ALL_APPS:
-      if (!search_box_is_empty)
-        SetState(AppListViewState::FULLSCREEN_SEARCH);
+      if (features::IsZeroStateSuggestionsEnabled()) {
+        if (!search_box_is_empty ||
+            (search_box_is_empty && triggered_by_contents_change))
+          SetState(AppListViewState::FULLSCREEN_SEARCH);
+      } else {
+        if (!search_box_is_empty)
+          SetState(AppListViewState::FULLSCREEN_SEARCH);
+      }
       break;
     case AppListViewState::CLOSED:
       NOTREACHED();

@@ -270,6 +270,7 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active) {
 
   UpdateSearchBoxBorder();
   UpdateKeyboardVisibility();
+  UpdateCloseButtonVisisbility();
 
   NotifyActiveChanged();
 
@@ -394,7 +395,9 @@ void SearchBoxViewBase::SetSearchBoxColor(SkColor color) {
 void SearchBoxViewBase::UpdateCloseButtonVisisbility() {
   if (!close_button_)
     return;
-  bool should_show_close_button_ = !search_box_->text().empty();
+  bool should_show_close_button_ =
+      !search_box_->text().empty() ||
+      (show_close_button_when_active_ && is_search_box_active_);
   if (close_button_->visible() == should_show_close_button_)
     return;
   close_button_->SetVisible(should_show_close_button_);

@@ -34,7 +34,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
       public AppListMenuModelAdapter::Delegate {
  public:
   SearchResultTileItemView(AppListViewDelegate* view_delegate,
-                           PaginationModel* pagination_model);
+                           PaginationModel* pagination_model,
+                           bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
   SearchResult* result() { return item_; }
@@ -88,6 +89,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   // Whether the tile view is a suggested app.
   bool IsSuggestedAppTile() const;
+  // Whether the tile view is a suggested app and shown in apps page ui.
+  bool IsSuggestedAppTileShownInAppPage() const;
 
   // Records an app being launched.
   void LogAppLaunch() const;
@@ -117,6 +120,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
   const bool is_play_store_app_search_enabled_;
+  const bool show_in_apps_page_;  // True if shown in app list's apps page.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
