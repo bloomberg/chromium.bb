@@ -5131,12 +5131,13 @@ static void fetch_tx_rd_info(int n4, const MB_RD_INFO *const tx_rd_info,
 static int find_tx_size_rd_info(TXB_RD_RECORD *cur_record,
                                 const uint32_t hash) {
   // Linear search through the circular buffer to find matching hash.
-  int index;
-  for (int i = cur_record->num - 1; i >= 0; i--) {
-    index = (cur_record->index_start + i) % TX_SIZE_RD_RECORD_BUFFER_LEN;
-    if (cur_record->hash_vals[index] == hash) return index;
+  for (int i = cur_record->index_start - 1; i >= 0; i--) {
+    if (cur_record->hash_vals[i] == hash) return i;
   }
-
+  for (int i = cur_record->num - 1; i >= cur_record->index_start; i--) {
+    if (cur_record->hash_vals[i] == hash) return i;
+  }
+  int index;
   // If not found - add new RD info into the buffer and return its index
   if (cur_record->num < TX_SIZE_RD_RECORD_BUFFER_LEN) {
     index = (cur_record->index_start + cur_record->num) %
