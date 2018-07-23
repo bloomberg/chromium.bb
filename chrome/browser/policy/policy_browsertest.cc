@@ -5933,16 +5933,24 @@ class PromotionalTabsEnabledPolicyTest
 
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override {
+    // Set policies before the browser starts up.
+    PolicyMap policies;
+
+    // Suppress the first-run dialog by disabling metrics reporting.
+    policies.Set(key::kMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(false), nullptr);
+
+    // Apply the policy setting under test.
     if (GetParam() != BooleanPolicy::kNotConfigured) {
-      // Set the policy now before the browser starts up.
-      PolicyMap policies;
       policies.Set(
           key::kPromotionalTabsEnabled, POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           std::make_unique<base::Value>(GetParam() == BooleanPolicy::kTrue),
           nullptr);
-      UpdateProviderPolicy(policies);
     }
+
+    UpdateProviderPolicy(policies);
     PolicyTest::CreatedBrowserMainParts(browser_main_parts);
   }
 
@@ -5950,13 +5958,7 @@ class PromotionalTabsEnabledPolicyTest
   DISALLOW_COPY_AND_ASSIGN(PromotionalTabsEnabledPolicyTest);
 };
 
-#if defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
-// Passes then times out on official Linux builds; https://crbug.com/856995.
-#define MAYBE_RunTest DISABLED_RunTest
-#else
-#define MAYBE_RunTest RunTest
-#endif
-IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, MAYBE_RunTest) {
+IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_GE(tab_strip->count(), 1);
   const auto& url = tab_strip->GetWebContentsAt(0)->GetURL();
