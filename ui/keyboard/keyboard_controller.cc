@@ -297,11 +297,6 @@ void KeyboardController::SetKeyboardWindowBounds(const gfx::Rect& new_bounds) {
     animator->StopAnimating();
 
   GetKeyboardWindow()->SetBounds(new_bounds);
-
-  // We need to send out this notification only if keyboard is visible since
-  // the keyboard window is resized even if keyboard is hidden.
-  if (IsKeyboardVisible())
-    NotifyKeyboardBoundsChanging(new_bounds);
 }
 
 void KeyboardController::NotifyKeyboardWindowLoaded() {
@@ -519,10 +514,15 @@ void KeyboardController::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  if (!window->IsRootWindow() || !ui_->HasKeyboardWindow())
+  if (!GetKeyboardWindow())
     return;
 
-  container_behavior_->SetCanonicalBounds(GetKeyboardWindow(), new_bounds);
+  // |window| could be the root window (for detecting screen rotations) or the
+  // keyboard window (for detecting keyboard bounds changes).
+  if (window == GetRootWindow())
+    container_behavior_->SetCanonicalBounds(GetKeyboardWindow(), new_bounds);
+  else if (window == GetKeyboardWindow())
+    NotifyKeyboardBoundsChanging(new_bounds);
 }
 
 void KeyboardController::Reload() {
@@ -619,6 +619,7 @@ void KeyboardController::PopulateKeyboardContent(
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
     aura::Window* keyboard_window = ui_->GetKeyboardWindow();
     keyboard_window->AddPreTargetHandler(&event_filter_);
+    keyboard_window->AddObserver(this);
     parent_container_->AddChild(keyboard_window);
   }
 
