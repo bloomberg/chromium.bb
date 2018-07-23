@@ -139,25 +139,18 @@ class LayoutSelectionTest : public EditingTestBase {
     ostream << "'" << text.data().Utf8().data() << "'";
   }
 
-  void PrintSelectionInfo(std::ostream& ostream, LayoutObject* layout_object) {
+  void PrintSelectionInfo(std::ostream& ostream, const Node& node) {
+    if (const Text* text = ToTextOrNull(node))
+      PrintText(ostream, *text);
+    else if (const Element* element = ToElementOrNull(node))
+      ostream << element->tagName().Utf8().data();
+    else
+      ostream << node;
+
+    LayoutObject* layout_object = node.GetLayoutObject();
     if (!layout_object) {
-      ostream << "<null>";
+      ostream << ", <null LayoutObject> ";
       return;
-    }
-    if (const LayoutTextFragment* fragment =
-            ToLayoutTextFragmentOrNull(*layout_object)) {
-      // TODO(yoichio): Treat LayoutQuote which may generate LayoutTextFragment
-      // that's neither first-letter nor remaining text.
-      if (fragment->IsRemainingTextLayoutObject())
-        ostream << "remaining part of ";
-      else
-        ostream << "first-letter of ";
-      PrintText(ostream, *fragment->AssociatedTextNode());
-    } else {
-      if (Text* text = ToTextOrNull(layout_object->GetNode()))
-        PrintText(ostream, *text);
-      else
-        ostream << layout_object->GetNode();
     }
     ostream << ", " << layout_object->GetSelectionState()
             << (layout_object->ShouldInvalidateSelection()
@@ -169,7 +162,7 @@ class LayoutSelectionTest : public EditingTestBase {
                             const Node& node,
                             size_t depth) {
     ostream << RepeatString("  ", depth).Utf8().data();
-    PrintSelectionInfo(ostream, node.GetLayoutObject());
+    PrintSelectionInfo(ostream, node);
     if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
       ostream << std::endl << RepeatString("  ", depth + 1).Utf8().data();
       ostream << "#shadow-root";
@@ -415,7 +408,7 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectCrossingShadowBoundary) {
   TEST_NEXT("Foo", kInside, ShouldInvalidate);
   TEST_NEXT(IsLayoutOf("SPAN"), kNone, NotInvalidate);
   TEST_NEXT("bar1", kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutOf("SPAN"), kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
   TEST_NEXT("bar2", kEnd, ShouldInvalidate);
   TEST_CHECK();
 }
@@ -438,7 +431,7 @@ TEST_F(LayoutSelectionTest,
   TEST_NEXT("div1", kNone, NotInvalidate);
   TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("foo", kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kStartAndEnd, ShouldInvalidate);
   TEST_NEXT("baz", kNone, NotInvalidate);
   TEST_CHECK();
@@ -488,8 +481,8 @@ TEST_F(LayoutSelectionTest, FirstLetter) {
           .Build());
   Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
   TEST_NEXT(IsLayoutTextFragmentOf("f"), kStart, ShouldInvalidate);
   TEST_NEXT(IsLayoutTextFragmentOf("oo"), kEnd, ShouldInvalidate);
   TEST_CHECK();
@@ -509,7 +502,8 @@ TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
   TEST_NEXT("baz", kEnd, ShouldInvalidate);
   TEST_CHECK();
 
-  Selection().ClearLayoutSelection();
+  Selection().Clear();
+  Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT("foo", kNone, ShouldInvalidate);
@@ -594,7 +588,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_CHECK();
   EXPECT_EQ(1u, Selection().LayoutSelectionStart());
@@ -605,7 +599,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, NotInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, NotInvalidate);
   TEST_CHECK();
 
@@ -620,7 +614,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, NotInvalidate);
   TEST_CHECK();
   EXPECT_EQ(2u, Selection().LayoutSelectionStart());
@@ -635,7 +629,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_CHECK();
   EXPECT_EQ(1u, Selection().LayoutSelectionStart());
@@ -646,7 +640,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, NotInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, NotInvalidate);
   TEST_CHECK();
 
@@ -661,7 +655,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, NotInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_CHECK();
   EXPECT_EQ(1u, Selection().LayoutSelectionStart());
@@ -768,7 +762,8 @@ TEST_F(LayoutSelectionTest, ClearSelection) {
   TEST_NEXT("foo", kStartAndEnd, NotInvalidate);
   TEST_CHECK();
 
-  Selection().ClearLayoutSelection();
+  Selection().Clear();
+  Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
@@ -785,7 +780,7 @@ TEST_F(LayoutSelectionTest, SVG) {
   Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kContain, NotInvalidate);
   // LayoutSVGText should be invalidate though it is kContain.
   TEST_NEXT(IsSVGText, kContain, ShouldInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
@@ -796,7 +791,7 @@ TEST_F(LayoutSelectionTest, SVG) {
   UpdateAllLifecyclePhases();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kContain, NotInvalidate);
   TEST_NEXT(IsSVGText, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, NotInvalidate);
   TEST_CHECK();
@@ -809,7 +804,7 @@ TEST_F(LayoutSelectionTest, SVG) {
   Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kContain, NotInvalidate);
   TEST_NEXT(IsSVGText, kContain, ShouldInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_CHECK();
@@ -825,10 +820,10 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
   Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kContain, NotInvalidate);
   // LayoutSVGText should be invalidated.
   TEST_NEXT(IsSVGText, kContain, ShouldInvalidate);
-  TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGTSpan, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_CHECK();
   EXPECT_EQ(2u, Selection().LayoutSelectionStart());
@@ -837,9 +832,9 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
   UpdateAllLifecyclePhases();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kContain, NotInvalidate);
   TEST_NEXT(IsSVGText, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGTSpan, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, NotInvalidate);
   TEST_CHECK();
 
@@ -851,9 +846,9 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
   Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kContain, NotInvalidate);
   TEST_NEXT(IsSVGText, kContain, ShouldInvalidate);
-  TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGTSpan, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_CHECK();
   EXPECT_EQ(2u, Selection().LayoutSelectionStart());
@@ -877,7 +872,7 @@ TEST_F(LayoutSelectionTest, Ruby) {
   Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
-  TEST_NEXT(IsRuby, kNone, NotInvalidate);
+  TEST_NEXT(IsRuby, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
   TEST_NEXT(IsRubyText, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
@@ -886,23 +881,154 @@ TEST_F(LayoutSelectionTest, Ruby) {
   UpdateAllLifecyclePhases();
   TEST_RESET();
   TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
-  TEST_NEXT(IsRuby, kNone, NotInvalidate);
+  TEST_NEXT(IsRuby, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, NotInvalidate);
   TEST_NEXT(IsRubyText, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, NotInvalidate);
   TEST_CHECK();
 
-  Selection().ClearLayoutSelection();
+  Selection().Clear();
+  Selection().CommitAppearanceIfNeeded();
   TEST_RESET();
   TEST_NEXT(IsLayoutOf("BODY"), kNone, NotInvalidate);
   TEST_NEXT(IsRuby, kNone, NotInvalidate);
   TEST_NEXT("foo", kNone, ShouldInvalidate);
-  // TODO(yoichio): These 2 should be kNone.
-  // TEST_NEXT(IsRubyText, kNone, NotInvalidate);
-  // TEST_NEXT("bar", kNone, ShouldInvalidate);
-  TEST_NEXT(IsRubyText, kContain, NotInvalidate);
+  TEST_NEXT(IsRubyText, kNone, NotInvalidate);
+  TEST_NEXT("bar", kNone, ShouldInvalidate);
+  TEST_CHECK();
+}
+
+TEST_F(LayoutSelectionTest, ClearByRemoveNode) {
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("^foo<span>bar</span>baz|"));
+  Selection().CommitAppearanceIfNeeded();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("bar", kInside, ShouldInvalidate);
+  TEST_NEXT("baz", kEnd, ShouldInvalidate);
+  TEST_CHECK();
+
+  Node* baz = GetDocument().body()->lastChild();
+  baz->remove();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("bar", kInside, ShouldInvalidate);
+  TEST_CHECK();
+
+  UpdateAllLifecyclePhases();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, NotInvalidate);
   TEST_CHECK();
+}
+
+TEST_F(LayoutSelectionTest, ClearByRemoveLayoutObject) {
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("^foo<span>bar</span><span>baz</span>|"));
+  Selection().CommitAppearanceIfNeeded();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("bar", kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("baz", kEnd, ShouldInvalidate);
+  TEST_CHECK();
+
+  Element* span_baz = ToElement(GetDocument().body()->lastChild());
+  span_baz->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("bar", kInside, ShouldInvalidate);
+  TEST_CHECK();
+
+  UpdateAllLifecyclePhases();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT("foo", kStart, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("bar", kEnd, NotInvalidate);
+  TEST_CHECK();
+}
+
+TEST_F(LayoutSelectionTest, ClearBySlotChange) {
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("<div>"
+                             "<template data-mode=open>"
+                             "^Foo<slot name=s1></slot>|"
+                             "</template>"
+                             "baz<span slot=s1>bar</span>"
+                             "</div>"));
+  Selection().CommitAppearanceIfNeeded();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("DIV"), kContain, NotInvalidate);
+  TEST_NEXT("Foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
+  TEST_CHECK();
+
+  Element* slot =
+      GetDocument().body()->firstChild()->GetShadowRoot()->QuerySelector(
+          "slot");
+  slot->setAttribute("name", "s2");
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("DIV"), kContain, NotInvalidate);
+  TEST_NEXT("Foo", kStart, ShouldInvalidate);
+  TEST_CHECK();
+
+  UpdateAllLifecyclePhases();
+  TEST_RESET();
+  TEST_NEXT(IsLayoutOf("BODY"), kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("DIV"), kContain, NotInvalidate);
+  TEST_NEXT("Foo", kStartAndEnd, NotInvalidate);
+  TEST_CHECK();
+}
+
+TEST_F(LayoutSelectionTest, MoveNode) {
+  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
+      "<div id='div1'></div><div id='div2'>^foo<b>ba|r</b></div>"));
+  Selection().CommitAppearanceIfNeeded();
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  DIV, None, NotInvalidate \n"
+      "  DIV, Contain, NotInvalidate \n"
+      "    'foo', Start, ShouldInvalidate \n"
+      "    B, Contain, NotInvalidate \n"
+      "      'bar', End, ShouldInvalidate ",
+      DumpSelectionInfo());
+  Node* div1 = GetDocument().QuerySelector("#div1");
+  Node* div2 = GetDocument().QuerySelector("#div2");
+  div1->appendChild(div2);
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  DIV, None, NotInvalidate \n"
+      "    DIV, <null LayoutObject> \n"
+      "      'foo', <null LayoutObject> \n"
+      "      B, <null LayoutObject> \n"
+      "        'bar', <null LayoutObject> ",
+      DumpSelectionInfo());
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(
+      "BODY, None, NotInvalidate \n"
+      "  DIV, None, NotInvalidate \n"
+      "    DIV, None, NotInvalidate \n"
+      "      'foo', None, NotInvalidate \n"
+      "      B, None, NotInvalidate \n"
+      "        'bar', None, NotInvalidate ",
+      DumpSelectionInfo());
 }
 
 static const NGPaintFragment* FindNGPaintFragmentInternal(
@@ -986,7 +1112,7 @@ TEST_F(NGLayoutSelectionTest, SelectOnOneText) {
   TEST_RESET();
   TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("foo", kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutOf("SPAN"), kContain, NotInvalidate);
   TEST_NEXT("bar", kStartAndEnd, ShouldInvalidate);
   TEST_CHECK();
 

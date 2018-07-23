@@ -108,7 +108,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   // want it to run right up to the edges of surrounding content.
   bool draw_selection_tint =
       local_paint_info.phase == PaintPhase::kForeground &&
-      layout_replaced_.GetSelectionState() != SelectionState::kNone &&
+      IsSelected(layout_replaced_.GetSelectionState()) &&
       !local_paint_info.IsPrinting();
   if (draw_selection_tint && !DrawingRecorder::UseCachedDrawingIfPossible(
                                  local_paint_info.context, layout_replaced_,

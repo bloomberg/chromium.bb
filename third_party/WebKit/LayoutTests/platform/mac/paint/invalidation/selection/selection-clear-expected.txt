@@ -68,14 +68,6 @@
     {
       "object": "RootInlineBox",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "selection"
     }
   ]
 }
