@@ -441,6 +441,8 @@ void AppsContainerView::SetShowState(ShowState show_state,
     case SHOW_APPS:
       folder_background_view_->SetVisible(false);
       apps_grid_view_->ResetForShowApps();
+      if (is_new_style_launcher_enabled_)
+        UpdateSuggestionChips();
       if (show_apps_with_animation)
         app_list_folder_view_->ScheduleShowHideAnimation(false, false);
       else

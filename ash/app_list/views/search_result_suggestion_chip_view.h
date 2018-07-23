@@ -28,6 +28,7 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   void SetSearchResult(SearchResult* item);
 
   // SearchResultObserver:
+  void OnMetadataChanged() override;
   void OnResultDestroying() override;
 
   // views::ButtonListener:
@@ -39,8 +40,8 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  // Remove the search result item.
-  void DiscardItem();
+  // Updates the suggestion chip view's title and icon.
+  void UpdateSuggestionChipView();
 
   AppListViewDelegate* const view_delegate_;  // Owned by AppListView.
 

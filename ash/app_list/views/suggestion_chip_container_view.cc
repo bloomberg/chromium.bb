@@ -65,6 +65,7 @@ int SuggestionChipContainerView::DoUpdate() {
     suggestion_chip_views.emplace_back(chip);
   }
 
+  Layout();
   return num_results();
 }
 

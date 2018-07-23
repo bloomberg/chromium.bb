@@ -195,6 +195,10 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetVisible(true);
 }
 
+void SuggestionChipView::SetText(const base::string16& text) {
+  text_view_->SetText(text);
+}
+
 const base::string16& SuggestionChipView::GetText() const {
   return text_view_->text();
 }

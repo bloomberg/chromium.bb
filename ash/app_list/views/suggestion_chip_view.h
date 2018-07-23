@@ -58,6 +58,7 @@ class APP_LIST_EXPORT SuggestionChipView : public views::Button {
 
   void SetIcon(const gfx::ImageSkia& icon);
 
+  void SetText(const base::string16& text);
   const base::string16& GetText() const;
 
  private:
