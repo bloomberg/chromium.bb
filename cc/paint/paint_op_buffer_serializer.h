@@ -110,7 +110,8 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   size_t max_texture_bytes_;
 
   SkTextBlobCacheDiffCanvas text_blob_canvas_;
-  std::unique_ptr<SkCanvas> canvas_;
+  std::unique_ptr<SkCanvas> color_canvas_;
+  SkCanvas* canvas_ = nullptr;
   bool valid_ = true;
 };
 
