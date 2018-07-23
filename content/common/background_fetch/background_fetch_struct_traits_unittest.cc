@@ -20,7 +20,7 @@ namespace content {
 
 namespace {
 
-// Creates a new IconDefinition object for the given arguments.
+// Creates a new ImageResource object for the given arguments.
 blink::Manifest::ImageResource CreateIcon(const std::string& src,
                                           std::vector<gfx::Size> sizes,
                                           const std::string& type) {
@@ -71,7 +71,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
   EXPECT_EQ(roundtrip_registration.download_total, registration.download_total);
 }
 
-TEST(BackgroundFetchStructTraitsTest, IconDefinitionRoundtrip) {
+TEST(BackgroundFetchStructTraitsTest, ImageResourceRoundtrip) {
   blink::Manifest::ImageResource icon =
       CreateIcon("my_icon.png", {{256, 256}}, "image/png");
 

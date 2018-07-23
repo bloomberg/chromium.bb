@@ -5,9 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_IMAGE_RESOURCE_TYPE_CONVERTERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_IMAGE_RESOURCE_TYPE_CONVERTERS_H_
 
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
-#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+
+namespace blink {
+
+class ManifestImageResource;
+MODULES_EXPORT Manifest::ImageResource ConvertManifestImageResource(
+    const ManifestImageResource& image_resource);
+
+}  // namespace blink
 
 namespace mojo {
 

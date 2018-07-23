@@ -74,8 +74,8 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
     return icon;
   }
 
-  int PickRightIcon(HeapVector<ManifestImageResource> icons,
-                    const WebSize& ideal_display_size) {
+  KURL PickRightIcon(HeapVector<ManifestImageResource> icons,
+                     const WebSize& ideal_display_size) {
     loader_->icons_ = std::move(icons);
     return loader_->PickBestIconForDisplay(GetContext(), ideal_display_size);
   }
@@ -85,6 +85,7 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
     icon.setSrc(url.GetString());
     icon.setType("image/png");
     icon.setSizes("500x500");
+    icon.setPurpose("ANY");
     HeapVector<ManifestImageResource> icons(1, icon);
     loader_->icons_ = std::move(icons);
     loader_->DidGetIconDisplaySizeIfSoLoadIcon(
@@ -123,8 +124,8 @@ TEST_F(BackgroundFetchIconLoaderTest, PickRightIconTest) {
   icons.push_back(icon1);
   icons.push_back(icon2);
 
-  int index = PickRightIcon(std::move(icons), WebSize(50, 50));
-  EXPECT_EQ(index, 1);
+  KURL best_icon = PickRightIcon(std::move(icons), WebSize(50, 50));
+  EXPECT_EQ(best_icon, KURL(kBackgroundFetchImageLoaderIcon48x48));
 }
 
 TEST_F(BackgroundFetchIconLoaderTest, PickRightIconGivenAnyTest) {
@@ -140,8 +141,8 @@ TEST_F(BackgroundFetchIconLoaderTest, PickRightIconGivenAnyTest) {
   icons.push_back(icon1);
   icons.push_back(icon2);
 
-  int index = PickRightIcon(std::move(icons), WebSize(50, 50));
-  EXPECT_EQ(index, 2);
+  KURL best_icon = PickRightIcon(std::move(icons), WebSize(50, 50));
+  EXPECT_EQ(best_icon, KURL(kBackgroundFetchImageLoaderIcon));
 }
 
 TEST_F(BackgroundFetchIconLoaderTest, PickRightIconWithTieBreakTest) {
@@ -157,8 +158,8 @@ TEST_F(BackgroundFetchIconLoaderTest, PickRightIconWithTieBreakTest) {
   icons.push_back(icon0);
   icons.push_back(icon1);
   icons.push_back(icon2);
-  int index = PickRightIcon(std::move(icons), WebSize(50, 50));
-  EXPECT_EQ(index, 2);
+  KURL best_icon = PickRightIcon(std::move(icons), WebSize(50, 50));
+  EXPECT_EQ(best_icon, KURL(kBackgroundFetchImageLoaderIcon3000x2000));
 }
 
 }  // namespace blink
