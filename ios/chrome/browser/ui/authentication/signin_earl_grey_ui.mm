@@ -9,6 +9,7 @@
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -41,9 +42,11 @@ using chrome_test_util::SettingsDoneButton;
                                             kIdentityPickerViewIdentifier)]
         performAction:grey_tap()];
     [[EarlGrey
-        selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(
-                                                identity.userEmail),
-                                            grey_sufficientlyVisible(), nil)]
+        selectElementWithMatcher:grey_allOf(
+                                     grey_accessibilityID(identity.userEmail),
+                                     grey_kindOfClass(
+                                         [IdentityChooserCell class]),
+                                     grey_sufficientlyVisible(), nil)]
         performAction:grey_tap()];
   } else {
     [self selectIdentityWithEmail:identity.userEmail];

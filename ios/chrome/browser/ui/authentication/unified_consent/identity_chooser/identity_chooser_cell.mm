@@ -73,4 +73,9 @@ const CGFloat kCheckmarkMagin = 26.;
   }
 }
 
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.accessibilityIdentifier = nil;
+}
+
 @end
