@@ -720,11 +720,7 @@ TEST_F(KeyboardControllerAnimationTest,
   keyboard_window()->SetBounds(gfx::Rect());
 }
 
-// TODO(https://crbug.com/849995): This is testing KeyboardLayoutManager /
-// ContainerFullWidthBehavior. Put this test there.
 TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
-  root_window()->SetLayoutManager(new KeyboardLayoutManager(&controller()));
-
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
 
   SetFocus(&input_client);
