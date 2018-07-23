@@ -27,8 +27,7 @@ constexpr char kSortKeyNoFederationSymbol = '-';
 
 }  // namespace
 
-std::string CreateSortKey(const autofill::PasswordForm& form,
-                          PasswordEntryType entry_type) {
+std::string CreateSortKey(const autofill::PasswordForm& form) {
   std::string shown_origin;
   GURL link_url;
   std::tie(shown_origin, link_url) = GetShownOriginAndLinkUrl(form);
@@ -61,7 +60,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
   key += is_android_uri ? facet_uri.canonical_spec()
                         : SplitByDotAndReverse(shown_origin);
 
-  if (entry_type == PasswordEntryType::SAVED) {
+  if (!form.blacklisted_by_user) {
     key += kSortKeyPartsSeparator + base::UTF16ToUTF8(form.username_value) +
            kSortKeyPartsSeparator + base::UTF16ToUTF8(form.password_value);
 
@@ -78,13 +77,12 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
 
 void SortEntriesAndHideDuplicates(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
-    DuplicatesMap* duplicates,
-    PasswordEntryType entry_type) {
+    DuplicatesMap* duplicates) {
   std::vector<std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>>
       keys_to_forms;
   keys_to_forms.reserve(list->size());
   for (auto& form : *list) {
-    std::string key = CreateSortKey(*form, entry_type);
+    std::string key = CreateSortKey(*form);
     keys_to_forms.emplace_back(std::move(key), std::move(form));
   }
 

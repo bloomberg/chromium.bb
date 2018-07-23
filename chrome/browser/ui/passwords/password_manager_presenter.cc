@@ -50,9 +50,8 @@ namespace {
 // from |duplicates|.
 void RemoveDuplicates(const autofill::PasswordForm& form,
                       password_manager::DuplicatesMap* duplicates,
-                      PasswordStore* store,
-                      password_manager::PasswordEntryType entry_type) {
-  std::string key = password_manager::CreateSortKey(form, entry_type);
+                      PasswordStore* store) {
+  std::string key = password_manager::CreateSortKey(form);
   std::pair<password_manager::DuplicatesMap::iterator,
             password_manager::DuplicatesMap::iterator>
       dups = duplicates->equal_range(key);
@@ -193,8 +192,7 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
     return;
 
   const autofill::PasswordForm& password_entry = *password_list_[index];
-  RemoveDuplicates(password_entry, &password_duplicates_, store,
-                   password_manager::PasswordEntryType::SAVED);
+  RemoveDuplicates(password_entry, &password_duplicates_, store);
   RemoveLogin(password_entry);
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
@@ -215,7 +213,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   const autofill::PasswordForm& password_exception_entry =
       *password_exception_list_[index];
   RemoveDuplicates(password_exception_entry, &password_exception_duplicates_,
-                   store, password_manager::PasswordEntryType::BLACKLISTED);
+                   store);
   RemoveLogin(password_exception_entry);
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemovePasswordException"));
@@ -346,9 +344,8 @@ void PasswordManagerPresenter::PasswordListPopulater::Populate() {
 void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   page_->password_list_ = std::move(results);
-  password_manager::SortEntriesAndHideDuplicates(
-      &page_->password_list_, &page_->password_duplicates_,
-      password_manager::PasswordEntryType::SAVED);
+  password_manager::SortEntriesAndHideDuplicates(&page_->password_list_,
+                                                 &page_->password_duplicates_);
   page_->SetPasswordList();
 }
 
@@ -372,7 +369,6 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::
         std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   page_->password_exception_list_ = std::move(results);
   password_manager::SortEntriesAndHideDuplicates(
-      &page_->password_exception_list_, &page_->password_exception_duplicates_,
-      password_manager::PasswordEntryType::BLACKLISTED);
+      &page_->password_exception_list_, &page_->password_exception_duplicates_);
   page_->SetPasswordExceptionList();
 }
