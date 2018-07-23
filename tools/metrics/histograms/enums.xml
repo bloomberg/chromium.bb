@@ -43667,6 +43667,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="SNIPPET_FETCH_NO_NEW_SUGGESTIONS"/>
   <int value="24" label="MISSING_FILES_NO_SD_CARD"/>
   <int value="25" label="OFFLINE_INDICATOR"/>
+  <int value="26" label="FEED_NTP_STREAM"/>
 </enum>
 
 <enum name="SnippetOpenMethod">
