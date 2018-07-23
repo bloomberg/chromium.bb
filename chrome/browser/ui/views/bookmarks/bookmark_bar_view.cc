@@ -123,32 +123,33 @@ using views::MenuButton;
 using views::View;
 
 // Maximum size of buttons on the bookmark bar.
-static const int kMaxButtonWidth = 150;
+static const int kBookmarkBarMaxButtonWidth = 150;
 
 // Margins around the content.
-static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
-                                          // toolbar above serve as the margin.
-static const int kBottomMargin = 4;
-static const int kHorizontalMargin = 8;
+// When attached, we use 0 and let the
+// toolbar above serve as the margin.
+static const int kBookmarkBarDetachedTopMargin = 1;
+static const int kBookmarkBarBottomMargin = 4;
+static const int kBookmarkBarHorizontalMargin = 8;
 
 // Padding between buttons.
 static const int kBookmarkBarButtonPadding = 8;
 
 // Width of the drop indicator.
-static const int kDropIndicatorWidth = 2;
+static const int kBookmarkBarDropIndicatorWidth = 2;
 
 // Distance between the bottom of the bar and the separator.
-static const int kSeparatorMargin = 1;
+static const int kBookmarkBarSeparatorMargin = 1;
 
 // Width of the separator between the recently bookmarked button and the
 // overflow indicator.
-static const int kSeparatorWidth = 9;
+static const int kBookmarkBarSeparatorWidth = 9;
 
 // Left-padding for the instructional text.
-static const int kInstructionsPadding = 6;
+static const int kBookmarkBarInstructionsPadding = 6;
 
 // Tag for the 'Apps Shortcut' button.
-static const int kAppsShortcutButtonTag = 2;
+static const int kBookmarkBarAppsShortcutButtonTag = 2;
 
 namespace {
 
@@ -605,7 +606,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
   gfx::Size CalculatePreferredSize() const override {
     // We get the full height of the bookmark bar, so that the height returned
     // here doesn't matter.
-    return gfx::Size(kSeparatorWidth, 1);
+    return gfx::Size(kBookmarkBarSeparatorWidth, 1);
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -906,7 +907,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   // button, by which one can access all the Bookmark Bar items, and the "Other
   // Bookmarks" folder, along with appropriate margins and button padding.
   // It should also contain the Managed Bookmarks folder, if it is visible.
-  int width = kHorizontalMargin;
+  int width = kBookmarkBarHorizontalMargin;
 
   int height = GetPreferredHeight();
   if (IsDetached()) {
@@ -944,18 +945,19 @@ void BookmarkBarView::Layout() {
   if (!model_)
     return;
 
-  int x = kHorizontalMargin;
-  int top_margin = IsDetached() ? kDetachedTopMargin : 0;
+  int x = kBookmarkBarHorizontalMargin;
+  int top_margin = IsDetached() ? kBookmarkBarDetachedTopMargin : 0;
   int y = top_margin;
-  int width = View::width() - 2 * kHorizontalMargin;
+  int width = View::width() - 2 * kBookmarkBarHorizontalMargin;
   int preferred_height = GetPreferredHeight();
-  int height = preferred_height - kBottomMargin;
-  int separator_margin = kSeparatorMargin;
+  int height = preferred_height - kBookmarkBarBottomMargin;
+  int separator_margin = kBookmarkBarSeparatorMargin;
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
     y += (View::height() - preferred_height) / 2;
-    separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
+    separator_margin -=
+        static_cast<int>(kBookmarkBarSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
     // when animating in/out, as shrinking its height instead looks weird.  This
@@ -971,7 +973,7 @@ void BookmarkBarView::Layout() {
   gfx::Size apps_page_shortcut_pref = apps_page_shortcut_->visible() ?
       apps_page_shortcut_->GetPreferredSize() : gfx::Size();
 
-  int max_x = kHorizontalMargin + width - overflow_pref.width() -
+  int max_x = kBookmarkBarHorizontalMargin + width - overflow_pref.width() -
               bookmarks_separator_pref.width();
   if (other_bookmarks_button_->visible())
     max_x -= other_bookmarks_pref.width() + kBookmarkBarButtonPadding;
@@ -999,10 +1001,8 @@ void BookmarkBarView::Layout() {
   if (show_instructions) {
     gfx::Size pref = instructions_->GetPreferredSize();
     instructions_->SetBounds(
-        x + kInstructionsPadding, y,
-        std::min(static_cast<int>(pref.width()),
-                 max_x - x),
-        height);
+        x + kBookmarkBarInstructionsPadding, y,
+        std::min(static_cast<int>(pref.width()), max_x - x), height);
   } else {
     bool last_visible = x < max_x;
     int button_count = GetBookmarkButtonCount();
@@ -1044,11 +1044,9 @@ void BookmarkBarView::Layout() {
 
   // Separator.
   if (bookmarks_separator_view_->visible()) {
-    bookmarks_separator_view_->SetBounds(x,
-                                         y - top_margin,
-                                         bookmarks_separator_pref.width(),
-                                         height + top_margin + kBottomMargin -
-                                         separator_margin);
+    bookmarks_separator_view_->SetBounds(
+        x, y - top_margin, bookmarks_separator_pref.width(),
+        height + top_margin + kBookmarkBarBottomMargin - separator_margin);
 
     x += bookmarks_separator_pref.width();
   }
@@ -1092,7 +1090,7 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
     int h = height();
     if (index == GetBookmarkButtonCount()) {
       if (index == 0) {
-        x = kHorizontalMargin;
+        x = kBookmarkBarHorizontalMargin;
       } else {
         x = GetBookmarkButton(index - 1)->x() +
             GetBookmarkButton(index - 1)->width();
@@ -1107,8 +1105,9 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
 
     // Since the drop indicator is painted directly onto the canvas, we must
     // make sure it is painted in the right location if the locale is RTL.
-    gfx::Rect indicator_bounds = GetMirroredRect(
-        gfx::Rect(x - kDropIndicatorWidth / 2, y, kDropIndicatorWidth, h));
+    gfx::Rect indicator_bounds =
+        GetMirroredRect(gfx::Rect(x - kBookmarkBarDropIndicatorWidth / 2, y,
+                                  kBookmarkBarDropIndicatorWidth, h));
 
     ui::PaintRecorder recorder(paint_info.context(), size());
     // TODO(sky/glen): make me pretty!
@@ -1544,7 +1543,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   WindowOpenDisposition disposition_from_event_flags =
       ui::DispositionFromEventFlags(event.flags());
 
-  if (sender->tag() == kAppsShortcutButtonTag) {
+  if (sender->tag() == kBookmarkBarAppsShortcutButtonTag) {
     OpenURLParams params(GURL(chrome::kChromeUIAppsURL),
                          Referrer(),
                          disposition_from_event_flags,
@@ -1756,7 +1755,7 @@ views::LabelButton* BookmarkBarView::CreateAppsPageShortcutButton() {
   button->SetImage(views::Button::STATE_NORMAL,
                    *GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
   button->set_context_menu_controller(this);
-  button->set_tag(kAppsShortcutButtonTag);
+  button->set_tag(kBookmarkBarAppsShortcutButtonTag);
   return button;
 }
 
@@ -1810,7 +1809,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
 
     button->SetImage(views::Button::STATE_NORMAL, favicon);
   }
-  button->SetMaxSize(gfx::Size(kMaxButtonWidth, 0));
+  button->SetMaxSize(gfx::Size(kBookmarkBarMaxButtonWidth, 0));
 }
 
 bool BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
