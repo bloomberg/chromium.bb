@@ -32,16 +32,6 @@ ExtensionThrottleManager::ExtensionThrottleManager()
 
 ExtensionThrottleManager::~ExtensionThrottleManager() {
   base::AutoLock auto_lock(lock_);
-  // Since the manager object might conceivably go away before the
-  // entries, detach the entries' back-pointer to the manager.
-  UrlEntryMap::iterator i = url_entries_.begin();
-  while (i != url_entries_.end()) {
-    if (i->second.get() != NULL) {
-      i->second->DetachManager();
-    }
-    ++i;
-  }
-
   // Delete all entries.
   url_entries_.clear();
 }
@@ -54,8 +44,8 @@ ExtensionThrottleManager::MaybeCreateURLLoaderThrottle(
   return std::make_unique<ExtensionURLLoaderThrottle>(this);
 }
 
-scoped_refptr<ExtensionThrottleEntryInterface>
-ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
+ExtensionThrottleEntry* ExtensionThrottleManager::RegisterRequestUrl(
+    const GURL& url) {
   // Internal function, no locking.
 
   // Normalize the url.
@@ -64,26 +54,25 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
   // Periodically garbage collect old entries.
   GarbageCollectEntriesIfNecessary();
 
-  // Find the entry in the map or create a new NULL entry.
-  scoped_refptr<ExtensionThrottleEntry>& entry = url_entries_[url_id];
+  // Find the entry in the map or create a new null entry.
+  std::unique_ptr<ExtensionThrottleEntry>& entry = url_entries_[url_id];
 
   // If the entry exists but could be garbage collected at this point, we
   // start with a fresh entry so that we possibly back off a bit less
   // aggressively (i.e. this resets the error count when the entry's URL
   // hasn't been requested in long enough).
-  if (entry.get() && entry->IsEntryOutdated()) {
-    entry = NULL;
-  }
+  if (entry && entry->IsEntryOutdated())
+    entry.reset();
 
   // Create the entry if needed.
-  if (entry.get() == NULL) {
+  if (!entry) {
     if (backoff_policy_for_tests_) {
-      entry = new ExtensionThrottleEntry(
-          this, url_id, backoff_policy_for_tests_.get(),
-          ignore_user_gesture_load_flag_for_tests_);
+      entry.reset(
+          new ExtensionThrottleEntry(url_id, backoff_policy_for_tests_.get(),
+                                     ignore_user_gesture_load_flag_for_tests_));
     } else {
-      entry = new ExtensionThrottleEntry(
-          this, url_id, ignore_user_gesture_load_flag_for_tests_);
+      entry.reset(new ExtensionThrottleEntry(
+          url_id, ignore_user_gesture_load_flag_for_tests_));
     }
 
     // We only disable back-off throttling on an entry that we have
@@ -92,12 +81,12 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
     if (net::IsLocalhost(url)) {
       // TODO(joi): Once sliding window is separate from back-off throttling,
       // we can simply return a dummy implementation of
-      // ExtensionThrottleEntryInterface here that never blocks anything.
+      // ExtensionThrottleEntry here that never blocks anything.
       entry->DisableBackoffThrottling();
     }
   }
 
-  return entry;
+  return entry.get();
 }
 
 bool ExtensionThrottleManager::ShouldRejectRequest(const GURL& request_url,
@@ -114,7 +103,7 @@ bool ExtensionThrottleManager::ShouldRejectRedirect(
   {
     base::AutoLock auto_lock(lock_);
     const std::string url_id = GetIdFromUrl(request_url);
-    scoped_refptr<ExtensionThrottleEntry>& entry = url_entries_[url_id];
+    ExtensionThrottleEntry* entry = url_entries_[url_id].get();
     DCHECK(entry);
     entry->UpdateWithResponse(redirect_info.status_code);
   }
@@ -127,7 +116,7 @@ void ExtensionThrottleManager::WillProcessResponse(
   if (response_head.network_accessed) {
     base::AutoLock auto_lock(lock_);
     const std::string url_id = GetIdFromUrl(response_url);
-    scoped_refptr<ExtensionThrottleEntry>& entry = url_entries_[url_id];
+    ExtensionThrottleEntry* entry = url_entries_[url_id].get();
     DCHECK(entry);
     entry->UpdateWithResponse(response_head.headers->response_code());
   }
@@ -141,7 +130,7 @@ void ExtensionThrottleManager::SetBackoffPolicyForTests(
 
 void ExtensionThrottleManager::OverrideEntryForTests(
     const GURL& url,
-    ExtensionThrottleEntry* entry) {
+    std::unique_ptr<ExtensionThrottleEntry> entry) {
   base::AutoLock auto_lock(lock_);
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
@@ -149,7 +138,7 @@ void ExtensionThrottleManager::OverrideEntryForTests(
   // Periodically garbage collect old entries.
   GarbageCollectEntriesIfNecessary();
 
-  url_entries_[url_id] = entry;
+  url_entries_[url_id] = std::move(entry);
 }
 
 void ExtensionThrottleManager::EraseEntryForTests(const GURL& url) {
@@ -200,14 +189,9 @@ void ExtensionThrottleManager::GarbageCollectEntriesIfNecessary() {
 }
 
 void ExtensionThrottleManager::GarbageCollectEntries() {
-  UrlEntryMap::iterator i = url_entries_.begin();
-  while (i != url_entries_.end()) {
-    if ((i->second)->IsEntryOutdated()) {
-      url_entries_.erase(i++);
-    } else {
-      ++i;
-    }
-  }
+  base::EraseIf(url_entries_, [](const auto& entry) {
+    return entry.second->IsEntryOutdated();
+  });
 
   // In case something broke we want to make sure not to grow indefinitely.
   while (url_entries_.size() > kMaximumNumberOfEntries) {

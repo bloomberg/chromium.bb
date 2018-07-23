@@ -24,16 +24,15 @@ namespace {
 
 class MockExtensionThrottleEntry : public ExtensionThrottleEntry {
  public:
-  explicit MockExtensionThrottleEntry(ExtensionThrottleManager* manager)
-      : ExtensionThrottleEntry(manager, std::string()),
+  MockExtensionThrottleEntry()
+      : ExtensionThrottleEntry(std::string()),
         backoff_entry_(&backoff_policy_, &fake_clock_) {
     InitPolicy();
   }
-  MockExtensionThrottleEntry(ExtensionThrottleManager* manager,
-                             const TimeTicks& exponential_backoff_release_time,
+  MockExtensionThrottleEntry(const TimeTicks& exponential_backoff_release_time,
                              const TimeTicks& sliding_window_release_time,
                              const TimeTicks& fake_now)
-      : ExtensionThrottleEntry(manager, std::string()),
+      : ExtensionThrottleEntry(std::string()),
         fake_clock_(fake_now),
         backoff_entry_(&backoff_policy_, &fake_clock_) {
     InitPolicy();
@@ -41,6 +40,8 @@ class MockExtensionThrottleEntry : public ExtensionThrottleEntry {
     set_exponential_backoff_release_time(exponential_backoff_release_time);
     set_sliding_window_release_time(sliding_window_release_time);
   }
+
+  ~MockExtensionThrottleEntry() override {}
 
   void InitPolicy() {
     // Some tests become flaky if we have jitter.
@@ -85,9 +86,6 @@ class MockExtensionThrottleEntry : public ExtensionThrottleEntry {
     ExtensionThrottleEntry::set_sliding_window_release_time(release_time);
   }
 
- protected:
-  ~MockExtensionThrottleEntry() override {}
-
  private:
   mutable TestTickClock fake_clock_;
   BackoffEntry backoff_entry_;
@@ -101,8 +99,7 @@ class MockExtensionThrottleManager : public ExtensionThrottleManager {
     return ExtensionThrottleManager::GetIdFromUrl(url);
   }
 
-  scoped_refptr<ExtensionThrottleEntryInterface> RegisterRequestUrl(
-      const GURL& url) {
+  ExtensionThrottleEntry* RegisterRequestUrl(const GURL& url) {
     return ExtensionThrottleManager::RegisterRequestUrl(url);
   }
 
@@ -122,9 +119,9 @@ class MockExtensionThrottleManager : public ExtensionThrottleManager {
     std::string fake_url_string("http://www.fakeurl.com/");
     fake_url_string.append(base::IntToString(create_entry_index_++));
     GURL fake_url(fake_url_string);
-    OverrideEntryForTests(
-        fake_url, new MockExtensionThrottleEntry(this, time, TimeTicks::Now(),
-                                                 TimeTicks::Now()));
+    OverrideEntryForTests(fake_url,
+                          std::make_unique<MockExtensionThrottleEntry>(
+                              time, TimeTicks::Now(), TimeTicks::Now()));
   }
 
  private:
@@ -165,12 +162,12 @@ class ExtensionThrottleEntryTest : public testing::Test {
 
   TimeTicks now_;
   MockExtensionThrottleManager manager_;  // Dummy object, not used.
-  scoped_refptr<MockExtensionThrottleEntry> entry_;
+  std::unique_ptr<MockExtensionThrottleEntry> entry_;
 };
 
 void ExtensionThrottleEntryTest::SetUp() {
   now_ = TimeTicks::Now();
-  entry_ = new MockExtensionThrottleEntry(&manager_);
+  entry_.reset(new MockExtensionThrottleEntry());
   entry_->ResetToBlank(now_);
 }
 
@@ -365,7 +362,7 @@ TEST(ExtensionThrottleManagerTest, IsHostBeingRegistered) {
 TEST(ExtensionThrottleManagerTest, LocalHostOptedOut) {
   MockExtensionThrottleManager manager;
   // A localhost entry should always be opted out.
-  scoped_refptr<ExtensionThrottleEntryInterface> localhost_entry =
+  ExtensionThrottleEntry* localhost_entry =
       manager.RegisterRequestUrl(GURL("http://localhost/hello"));
   EXPECT_FALSE(localhost_entry->ShouldRejectRequest(net::LOAD_NORMAL));
   for (int i = 0; i < 10; ++i) {
@@ -384,7 +381,7 @@ TEST(ExtensionThrottleManagerTest, LocalHostOptedOut) {
 TEST(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
   for (int i = 0; i < 2; ++i) {
     MockExtensionThrottleManager manager;
-    scoped_refptr<ExtensionThrottleEntryInterface> entry_before =
+    ExtensionThrottleEntry* entry_before =
         manager.RegisterRequestUrl(GURL("http://www.example.com/"));
     for (int j = 0; j < 10; ++j) {
       entry_before->UpdateWithResponse(503);
@@ -402,7 +399,7 @@ TEST(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
         FAIL();
     }
 
-    scoped_refptr<ExtensionThrottleEntryInterface> entry_after =
+    ExtensionThrottleEntry* entry_after =
         manager.RegisterRequestUrl(GURL("http://www.example.com/"));
     EXPECT_FALSE(entry_after->ShouldRejectRequest(net::LOAD_NORMAL));
   }

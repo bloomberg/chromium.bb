@@ -13,7 +13,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "extensions/renderer/extension_throttle_manager.h"
 #include "net/base/load_flags.h"
 
 namespace extensions {
@@ -44,13 +43,10 @@ const double ExtensionThrottleEntry::kDefaultJitterFactor = 0.4;
 const int ExtensionThrottleEntry::kDefaultMaximumBackoffMs = 15 * 60 * 1000;
 const int ExtensionThrottleEntry::kDefaultEntryLifetimeMs = 2 * 60 * 1000;
 
-ExtensionThrottleEntry::ExtensionThrottleEntry(
-    ExtensionThrottleManager* manager,
-    const std::string& url_id)
-    : ExtensionThrottleEntry(manager, url_id, false) {}
+ExtensionThrottleEntry::ExtensionThrottleEntry(const std::string& url_id)
+    : ExtensionThrottleEntry(url_id, false) {}
 
 ExtensionThrottleEntry::ExtensionThrottleEntry(
-    ExtensionThrottleManager* manager,
     const std::string& url_id,
     bool ignore_user_gesture_load_flag_for_tests)
     : sliding_window_period_(
@@ -58,16 +54,13 @@ ExtensionThrottleEntry::ExtensionThrottleEntry(
       max_send_threshold_(kDefaultMaxSendThreshold),
       is_backoff_disabled_(false),
       backoff_entry_(&backoff_policy_),
-      manager_(manager),
       url_id_(url_id),
       ignore_user_gesture_load_flag_for_tests_(
           ignore_user_gesture_load_flag_for_tests) {
-  DCHECK(manager_);
   Initialize();
 }
 
 ExtensionThrottleEntry::ExtensionThrottleEntry(
-    ExtensionThrottleManager* manager,
     const std::string& url_id,
     const net::BackoffEntry::Policy* backoff_policy,
     bool ignore_user_gesture_load_flag_for_tests)
@@ -76,7 +69,6 @@ ExtensionThrottleEntry::ExtensionThrottleEntry(
       max_send_threshold_(kDefaultMaxSendThreshold),
       is_backoff_disabled_(false),
       backoff_entry_(&backoff_policy_),
-      manager_(manager),
       url_id_(url_id),
       ignore_user_gesture_load_flag_for_tests_(
           ignore_user_gesture_load_flag_for_tests) {
@@ -85,29 +77,12 @@ ExtensionThrottleEntry::ExtensionThrottleEntry(
   DCHECK_GE(backoff_policy->jitter_factor, 0.0);
   DCHECK_LT(backoff_policy->jitter_factor, 1.0);
   DCHECK_GE(backoff_policy->maximum_backoff_ms, 0);
-  DCHECK(manager_);
 
   Initialize();
   backoff_policy_ = *backoff_policy;
 }
 
 bool ExtensionThrottleEntry::IsEntryOutdated() const {
-  // This function is called by the ExtensionThrottleManager to determine
-  // whether entries should be discarded from its url_entries_ map.  We
-  // want to ensure that it does not remove entries from the map while there
-  // are clients (objects other than the manager) holding references to
-  // the entry, otherwise separate clients could end up holding separate
-  // entries for a request to the same URL, which is undesirable.  Therefore,
-  // if an entry has more than one reference (the map will always hold one),
-  // it should not be considered outdated.
-  //
-  // We considered whether to make ExtensionThrottleEntry objects
-  // non-refcounted, but since any means of knowing whether they are
-  // currently in use by others than the manager would be more or less
-  // equivalent to a refcount, we kept them refcounted.
-  if (!HasOneRef())
-    return false;
-
   // If there are send events in the sliding window period, we still need this
   // entry.
   if (!send_log_.empty() &&
@@ -120,10 +95,6 @@ bool ExtensionThrottleEntry::IsEntryOutdated() const {
 
 void ExtensionThrottleEntry::DisableBackoffThrottling() {
   is_backoff_disabled_ = true;
-}
-
-void ExtensionThrottleEntry::DetachManager() {
-  manager_ = NULL;
 }
 
 bool ExtensionThrottleEntry::ShouldRejectRequest(int request_load_flags) const {

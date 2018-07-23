@@ -12,12 +12,9 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "extensions/renderer/extension_throttle_entry_interface.h"
 #include "net/base/backoff_entry.h"
 
 namespace extensions {
-
-class ExtensionThrottleManager;
 
 // ExtensionThrottleEntry represents an entry of ExtensionThrottleManager.
 // It analyzes requests of a specific URL over some period of time, in order to
@@ -30,7 +27,7 @@ class ExtensionThrottleManager;
 // destination and provide guidance (to the application level only) on whether
 // too many requests have been sent and when a good time to send the next one
 // would be. This is never used to deny requests at the network level.
-class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
+class ExtensionThrottleEntry {
  public:
   // Sliding window period.
   static const int kDefaultSlidingWindowPeriodMs;
@@ -57,23 +54,22 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   // Time after which the entry is considered outdated.
   static const int kDefaultEntryLifetimeMs;
 
-  // The manager object's lifetime must enclose the lifetime of this object.
-  ExtensionThrottleEntry(ExtensionThrottleManager* manager,
-                         const std::string& url_id);
+  // |url_id| is a unique entry ID.
+  explicit ExtensionThrottleEntry(const std::string& url_id);
 
   // Same as above, but exposes the option to ignore
   // net::LOAD_MAYBE_USER_GESTURE flag of the request.
-  ExtensionThrottleEntry(ExtensionThrottleManager* manager,
-                         const std::string& url_id,
+  ExtensionThrottleEntry(const std::string& url_id,
                          bool ignore_user_gesture_load_flag_for_tests);
 
   // The life span of instances created with this constructor is set to
   // infinite, and the number of initial errors to ignore is set to 0.
   // It is only used by unit tests.
-  ExtensionThrottleEntry(ExtensionThrottleManager* manager,
-                         const std::string& url_id,
+  ExtensionThrottleEntry(const std::string& url_id,
                          const net::BackoffEntry::Policy* backoff_policy,
                          bool ignore_user_gesture_load_flag_for_tests);
+
+  virtual ~ExtensionThrottleEntry();
 
   // Used by the manager, returns true if the entry needs to be garbage
   // collected.
@@ -82,21 +78,47 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   // Causes this entry to never reject requests due to back-off.
   void DisableBackoffThrottling();
 
-  // Causes this entry to NULL its manager pointer.
-  void DetachManager();
+  // Returns true when we have encountered server errors and are doing
+  // exponential back-off, unless |request_load_flags| indicates the
+  // request is likely to be user-initiated, or the NetworkDelegate returns
+  // false for |CanThrottleRequest(request)|.
+  //
+  // URLRequestHttpJob checks this method prior to every request; it
+  // cancels requests if this method returns true.
+  //
+  // Note: See load_flags.h for more detail on |request_load_flags|.
+  bool ShouldRejectRequest(int request_load_flags) const;
 
-  // Implementation of ExtensionThrottleEntryInterface.
-  bool ShouldRejectRequest(int request_load_flags) const override;
+  // Calculates a recommended sending time for the next request and reserves it.
+  // The sending time is not earlier than the current exponential back-off
+  // release time or |earliest_time|. Moreover, the previous results of
+  // the method are taken into account, in order to make sure they are spread
+  // properly over time.
+  // Returns the recommended delay before sending the next request, in
+  // milliseconds. The return value is always positive or 0.
+  // Although it is not mandatory, respecting the value returned by this method
+  // is helpful to avoid traffic overload.
   int64_t ReserveSendingTimeForNextRequest(
-      const base::TimeTicks& earliest_time) override;
-  base::TimeTicks GetExponentialBackoffReleaseTime() const override;
-  void UpdateWithResponse(int status_code) override;
-  void ReceivedContentWasMalformed(int response_code) override;
-  const std::string& GetURLIdForDebugging() const override;
+      const base::TimeTicks& earliest_time);
+
+  // Returns the time after which requests are allowed.
+  base::TimeTicks GetExponentialBackoffReleaseTime() const;
+
+  // This method needs to be called each time a response is received.
+  void UpdateWithResponse(int status_code);
+
+  // Lets higher-level modules, that know how to parse particular response
+  // bodies, notify of receiving malformed content for the given URL. This will
+  // be handled by the throttler as if an HTTP 503 response had been received to
+  // the request, i.e. it will count as a failure, unless the HTTP response code
+  // indicated is already one of those that will be counted as an error.
+  void ReceivedContentWasMalformed(int response_code);
+
+  // Get the URL ID associated with this entry. Should only be used for
+  // debugging purpose.
+  const std::string& GetURLIdForDebugging() const;
 
  protected:
-  ~ExtensionThrottleEntry() override;
-
   void Initialize();
 
   // Returns true if the given response code is considered a success for
@@ -148,11 +170,8 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   // Access it through GetBackoffEntry() to allow a unit test seam.
   net::BackoffEntry backoff_entry_;
 
-  // Weak back-reference to the manager object managing us.
-  ExtensionThrottleManager* manager_;
-
   // Canonicalized URL string that this entry is for; used for logging only.
-  std::string url_id_;
+  const std::string url_id_;
 
   bool ignore_user_gesture_load_flag_for_tests_;
 
