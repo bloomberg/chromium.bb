@@ -24,7 +24,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/gtest_util.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -1757,33 +1756,6 @@ TEST_P(MessageLoopTypedTest, NestableTasksAllowedManually) {
           },
           Unretained(&run_loop)));
   run_loop.Run();
-}
-
-#if defined(OS_MACOSX)
-// This metric is a bit broken on Mac OS because CFRunLoop doesn't
-// deterministically invoke MessageLoop::DoIdleWork(). This being a temporary
-// diagnosis metric, we let this fly and simply not test it on Mac.
-#define MAYBE_MetricsOnlyFromUILoops DISABLED_MetricsOnlyFromUILoops
-#else
-#define MAYBE_MetricsOnlyFromUILoops MetricsOnlyFromUILoops
-#endif
-
-TEST_P(MessageLoopTypedTest, MAYBE_MetricsOnlyFromUILoops) {
-  MessageLoop loop(GetMessageLoopType());
-
-  const bool histograms_expected = GetMessageLoopType() == MessageLoop::TYPE_UI;
-
-  HistogramTester histogram_tester;
-
-  // Loop that goes idle with one pending task.
-  RunLoop run_loop;
-  loop.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                                      TimeDelta::FromMilliseconds(1));
-  run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(
-      "MessageLoop.DelayedTaskQueueForUI.PendingTasksCountOnIdle",
-      histograms_expected ? 1 : 0);
 }
 
 INSTANTIATE_TEST_CASE_P(
