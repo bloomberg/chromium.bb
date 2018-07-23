@@ -701,22 +701,11 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Find-in-page notifications ------------------------------------------
 
-  // Notifies how many matches have been found in this frame so far, for a
-  // given identifier.  |finalUpdate| specifies whether this is the last
-  // update for this frame.
-  virtual void ReportFindInPageMatchCount(int identifier,
-                                          int count,
-                                          bool final_update) {}
-
-  // Notifies what tick-mark rect is currently selected.   The given
-  // identifier lets the client know which request this message belongs
-  // to, so that it can choose to ignore the message if it has moved on
-  // to other things.  The selection rect is expected to have coordinates
-  // relative to the top left corner of the web page area and represent
-  // where on the screen the selection rect is currently located.
-  virtual void ReportFindInPageSelection(int identifier,
-                                         int active_match_ordinal,
-                                         const WebRect& selection) {}
+  virtual void SendFindReply(int request_id,
+                             int match_count,
+                             int ordinal,
+                             const WebRect& selection_rect,
+                             bool final_status_update) {}
 
   // MediaStream -----------------------------------------------------
 

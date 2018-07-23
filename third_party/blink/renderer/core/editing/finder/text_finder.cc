@@ -600,20 +600,17 @@ void TextFinder::IncreaseMatchCount(int identifier, int count) {
   total_match_count_ += count;
 
   // Update the UI with the latest findings.
-  if (OwnerFrame().Client()) {
-    OwnerFrame().Client()->ReportFindInPageMatchCount(
-        identifier, total_match_count_, !frame_scoping_ || !total_match_count_);
-  }
+  OwnerFrame().ReportFindInPageMatchCount(
+      identifier, total_match_count_, !frame_scoping_ || !total_match_count_);
 }
 
 void TextFinder::ReportFindInPageSelection(const WebRect& selection_rect,
                                            int active_match_ordinal,
                                            int identifier) {
   // Update the UI with the latest selection rect.
-  if (OwnerFrame().Client()) {
-    OwnerFrame().Client()->ReportFindInPageSelection(
-        identifier, active_match_ordinal, selection_rect);
-  }
+  OwnerFrame().ReportFindInPageSelection(identifier, active_match_ordinal,
+                                         selection_rect,
+                                         false /* final_update */);
   // Update accessibility too, so if the user commits to this query
   // we can move accessibility focus to this result.
   ReportFindInPageResultToAccessibility(identifier);

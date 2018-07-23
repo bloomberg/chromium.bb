@@ -708,12 +708,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidChangeScrollOffset() override;
-  void ReportFindInPageMatchCount(int request_id,
-                                  int count,
-                                  bool final_update) override;
-  void ReportFindInPageSelection(int request_id,
-                                 int active_match_ordinal,
-                                 const blink::WebRect& sel) override;
   blink::WebPushClient* PushClient() override;
   blink::WebRelatedAppsFetcher* GetRelatedAppsFetcher() override;
   void WillStartUsingPeerConnectionHandler(
@@ -1220,7 +1214,7 @@ class CONTENT_EXPORT RenderFrameImpl
                      int match_count,
                      int ordinal,
                      const blink::WebRect& selection_rect,
-                     bool final_status_update);
+                     bool final_status_update) override;
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
