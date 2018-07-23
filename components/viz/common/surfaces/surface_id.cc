@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_range.h"
 
 #include "base/strings/stringprintf.h"
 
@@ -16,6 +17,12 @@ std::string SurfaceId::ToString() const {
 
 std::ostream& operator<<(std::ostream& out, const SurfaceId& surface_id) {
   return out << surface_id.ToString();
+}
+
+bool SurfaceId::IsNewerThan(const SurfaceId& other) const {
+  if (frame_sink_id_ != other.frame_sink_id())
+    return false;
+  return local_surface_id_.IsNewerThan(other.local_surface_id());
 }
 
 }  // namespace viz
