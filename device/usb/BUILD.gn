@@ -81,6 +81,9 @@ static_library("usb") {
 
   if (is_win || is_mac) {
     sources += [
+      "scoped_libusb_device_handle.cc",
+      "scoped_libusb_device_handle.h",
+      "scoped_libusb_device_ref.cc",
       "scoped_libusb_device_ref.h",
       "usb_context.cc",
       "usb_context.h",

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "device/usb/scoped_libusb_device_handle.h"
 #include "device/usb/usb_device_handle.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -34,10 +35,8 @@ struct EndpointMapValue {
   const UsbEndpointDescriptor* endpoint;
 };
 
-class UsbContext;
 class UsbDeviceImpl;
 
-typedef libusb_device_handle* PlatformUsbDeviceHandle;
 typedef libusb_iso_packet_descriptor* PlatformUsbIsoPacketDescriptor;
 typedef libusb_transfer* PlatformUsbTransferHandle;
 
@@ -90,14 +89,13 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   // This constructor is called by UsbDeviceImpl.
   UsbDeviceHandleImpl(
-      scoped_refptr<UsbContext> context,
       scoped_refptr<UsbDeviceImpl> device,
-      PlatformUsbDeviceHandle handle,
+      ScopedLibusbDeviceHandle handle,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   ~UsbDeviceHandleImpl() override;
 
-  PlatformUsbDeviceHandle handle() const { return handle_; }
+  libusb_device_handle* handle() const { return handle_.get(); }
 
  private:
   class InterfaceClaimer;
@@ -174,7 +172,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   scoped_refptr<UsbDeviceImpl> device_;
 
-  PlatformUsbDeviceHandle handle_;
+  ScopedLibusbDeviceHandle handle_;
 
   typedef std::map<int, scoped_refptr<InterfaceClaimer>> ClaimedInterfaceMap;
   ClaimedInterfaceMap claimed_interfaces_;
@@ -185,10 +183,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // A map from endpoints to EndpointMapValue
   typedef std::map<int, EndpointMapValue> EndpointMap;
   EndpointMap endpoint_map_;
-
-  // Retain the UsbContext so that the platform context will not be destroyed
-  // before this handle.
-  scoped_refptr<UsbContext> context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

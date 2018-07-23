@@ -122,6 +122,10 @@ class UsbServiceImpl :
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
 #endif  // OS_WIN
 
+  // This WeakPtr is used to safely post hotplug events back to the thread this
+  // object lives on.
+  base::WeakPtr<UsbServiceImpl> weak_self_;
+
   base::WeakPtrFactory<UsbServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceImpl);
