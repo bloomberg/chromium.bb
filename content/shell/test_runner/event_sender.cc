@@ -353,7 +353,7 @@ int GetKeyModifiers(const std::vector<std::string>& modifier_names) {
 int GetKeyModifiersFromV8(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   std::vector<std::string> modifier_names;
   if (value->IsString()) {
-    modifier_names.push_back(gin::V8ToString(value));
+    modifier_names.push_back(gin::V8ToString(isolate, value));
   } else if (value->IsArray()) {
     gin::Converter<std::vector<std::string>>::FromV8(isolate, value,
                                                      &modifier_names);
@@ -383,9 +383,10 @@ WebMouseWheelEvent::Phase GetMouseWheelEventPhase(
 }
 
 WebMouseWheelEvent::Phase GetMouseWheelEventPhaseFromV8(
+    v8::Isolate* isolate,
     v8::Local<v8::Value> value) {
   if (value->IsString())
-    return GetMouseWheelEventPhase(gin::V8ToString(value));
+    return GetMouseWheelEventPhase(gin::V8ToString(isolate, value));
   return WebMouseWheelEvent::kPhaseNone;
 }
 
@@ -2575,7 +2576,7 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
           if (!args->PeekNext().IsEmpty()) {
             v8::Local<v8::Value> phase_value;
             args->GetNext(&phase_value);
-            phase = GetMouseWheelEventPhaseFromV8(phase_value);
+            phase = GetMouseWheelEventPhaseFromV8(args->isolate(), phase_value);
           }
         }
       }

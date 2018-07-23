@@ -305,7 +305,7 @@ void EventBindings::AttachUnmanagedEvent(
   v8::HandleScope handle_scope(isolate);
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsString());
-  std::string event_name = gin::V8ToString(args[0]);
+  std::string event_name = gin::V8ToString(isolate, args[0]);
   EventBookkeeper::Get()->AddUnmanagedEvent(context(), event_name);
 }
 
@@ -315,7 +315,7 @@ void EventBindings::DetachUnmanagedEvent(
   v8::HandleScope handle_scope(isolate);
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsString());
-  std::string event_name = gin::V8ToString(args[0]);
+  std::string event_name = gin::V8ToString(isolate, args[0]);
   EventBookkeeper::Get()->RemoveUnmanagedEvent(context(), event_name);
 }
 

@@ -276,7 +276,7 @@ void APIRequestHandler::CompleteRequestImpl(int request_id,
     v8::Local<v8::Message> v8_message = try_catch.Message();
     base::Optional<std::string> message;
     if (!v8_message.IsEmpty())
-      message = gin::V8ToString(v8_message->Get());
+      message = gin::V8ToString(isolate, v8_message->Get());
     exception_handler_->HandleException(context, "Error handling response",
                                         &try_catch);
   }

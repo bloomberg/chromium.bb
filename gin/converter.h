@@ -258,7 +258,8 @@ bool ConvertFromV8(v8::Isolate* isolate, v8::Local<v8::Value> input,
   return Converter<T>::FromV8(isolate, input, result);
 }
 
-GIN_EXPORT std::string V8ToString(v8::Local<v8::Value> value);
+GIN_EXPORT std::string V8ToString(v8::Isolate* isolate,
+                                  v8::Local<v8::Value> value);
 
 }  // namespace gin
 

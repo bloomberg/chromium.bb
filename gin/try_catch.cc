@@ -38,8 +38,8 @@ std::string TryCatch::GetStackTrace() {
 
   std::stringstream ss;
   v8::Local<v8::Message> message = try_catch_.Message();
-  ss << V8ToString(message->Get()) << std::endl
-     << V8ToString(GetSourceLine(isolate_, message)) << std::endl;
+  ss << V8ToString(isolate_, message->Get()) << std::endl
+     << V8ToString(isolate_, GetSourceLine(isolate_, message)) << std::endl;
 
   v8::Local<v8::StackTrace> trace = message->GetStackTrace();
   if (trace.IsEmpty())
@@ -47,12 +47,10 @@ std::string TryCatch::GetStackTrace() {
 
   int len = trace->GetFrameCount();
   for (int i = 0; i < len; ++i) {
-    v8::Local<v8::StackFrame> frame = trace->GetFrame(i);
-    ss << V8ToString(frame->GetScriptName()) << ":"
-       << frame->GetLineNumber() << ":"
-       << frame->GetColumn() << ": "
-       << V8ToString(frame->GetFunctionName())
-       << std::endl;
+    v8::Local<v8::StackFrame> frame = trace->GetFrame(isolate_, i);
+    ss << V8ToString(isolate_, frame->GetScriptName()) << ":"
+       << frame->GetLineNumber() << ":" << frame->GetColumn() << ": "
+       << V8ToString(isolate_, frame->GetFunctionName()) << std::endl;
   }
   return ss.str();
 }

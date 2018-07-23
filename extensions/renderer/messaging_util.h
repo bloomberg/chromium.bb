@@ -41,6 +41,7 @@ std::unique_ptr<Message> MessageFromV8(v8::Local<v8::Context> context,
                                        std::string* error);
 // Same as above, but expects a serialized JSON string instead of a value.
 std::unique_ptr<Message> MessageFromJSONString(
+    v8::Isolate* isolate,
     v8::Local<v8::String> json,
     std::string* error,
     blink::WebLocalFrame* web_frame = nullptr);

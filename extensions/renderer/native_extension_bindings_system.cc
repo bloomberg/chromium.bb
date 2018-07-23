@@ -687,7 +687,7 @@ void NativeExtensionBindingsSystem::GetInternalAPI(
     return;
   }
 
-  std::string api_name = gin::V8ToString(info[0]);
+  std::string api_name = gin::V8ToString(isolate, info[0]);
   const Feature* feature = FeatureProvider::GetAPIFeature(api_name);
   ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
   if (!feature ||

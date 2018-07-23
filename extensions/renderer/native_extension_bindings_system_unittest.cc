@@ -476,7 +476,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   ASSERT_FALSE(app_binding_keys.IsEmpty());
   ASSERT_TRUE(app_binding_keys->IsString());
   EXPECT_EQ("[\"runtime\",\"window\"]",
-            gin::V8ToString(app_binding_keys));
+            gin::V8ToString(isolate(), app_binding_keys));
 
   const char kUseAppRuntime[] =
       "(function() {\n"
@@ -938,10 +938,14 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
 
   // The extension only has access to networkingPrivate, so networking.onc
   // (and chrome.networking in general) should be undefined.
-  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
-                          context, "typeof chrome.networkingPrivate")));
-  EXPECT_EQ("undefined", gin::V8ToString(V8ValueFromScriptSource(
-                             context, "typeof chrome.networking")));
+  EXPECT_EQ("object",
+            gin::V8ToString(isolate(),
+                            V8ValueFromScriptSource(
+                                context, "typeof chrome.networkingPrivate")));
+  EXPECT_EQ(
+      "undefined",
+      gin::V8ToString(isolate(), V8ValueFromScriptSource(
+                                     context, "typeof chrome.networking")));
 }
 
 // Tests that a context having access to the source for an aliased API does not
@@ -964,10 +968,14 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
 
   // The extension only has access to networking.onc, so networkingPrivate
   // should be undefined.
-  EXPECT_EQ("undefined", gin::V8ToString(V8ValueFromScriptSource(
-                             context, "typeof chrome.networkingPrivate")));
-  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
-                          context, "typeof chrome.networking.onc")));
+  EXPECT_EQ("undefined",
+            gin::V8ToString(isolate(),
+                            V8ValueFromScriptSource(
+                                context, "typeof chrome.networkingPrivate")));
+  EXPECT_EQ(
+      "object",
+      gin::V8ToString(isolate(), V8ValueFromScriptSource(
+                                     context, "typeof chrome.networking.onc")));
 }
 
 // Test that if an extension has access to both an alias and an alias source,
@@ -989,10 +997,14 @@ TEST_F(NativeExtensionBindingsSystemUnittest, AliasedAPIsAreDifferentObjects) {
   bindings_system()->UpdateBindingsForContext(script_context);
 
   // Both APIs should be defined, since the extension has access to each.
-  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
-                          context, "typeof chrome.networkingPrivate")));
-  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
-                          context, "typeof chrome.networking.onc")));
+  EXPECT_EQ("object",
+            gin::V8ToString(isolate(),
+                            V8ValueFromScriptSource(
+                                context, "typeof chrome.networkingPrivate")));
+  EXPECT_EQ(
+      "object",
+      gin::V8ToString(isolate(), V8ValueFromScriptSource(
+                                     context, "typeof chrome.networking.onc")));
 
   // The APIs should not be equal.
   bool equal = true;
@@ -1024,7 +1036,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, CanOverwriteAPIs) {
   v8::Local<v8::Value> property =
       V8ValueFromScriptSource(context, "chrome.runtime");
   EXPECT_TRUE(property->IsString());
-  EXPECT_EQ("bar", gin::V8ToString(property));
+  EXPECT_EQ("bar", gin::V8ToString(isolate(), property));
 }
 
 // Tests that script can delete an API property.

@@ -75,15 +75,16 @@ std::unique_ptr<Message> MessageFromV8(v8::Local<v8::Context> context,
     return nullptr;
   }
 
-  return MessageFromJSONString(stringified, error_out);
+  return MessageFromJSONString(isolate, stringified, error_out);
 }
 
 std::unique_ptr<Message> MessageFromJSONString(
+    v8::Isolate* isolate,
     v8::Local<v8::String> json,
     std::string* error_out,
     blink::WebLocalFrame* web_frame) {
   std::string message;
-  message = gin::V8ToString(json);
+  message = gin::V8ToString(isolate, json);
   // JSON.stringify can fail to produce a string value in one of two ways: it
   // can throw an exception (as with unserializable objects), or it can return
   // `undefined` (as with e.g. passing a function). If JSON.stringify returns
@@ -159,7 +160,7 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
 
     if (!v8_channel_name->IsUndefined()) {
       DCHECK(v8_channel_name->IsString());
-      options.channel_name = gin::V8ToString(v8_channel_name);
+      options.channel_name = gin::V8ToString(isolate, v8_channel_name);
     }
   }
 
@@ -221,7 +222,7 @@ bool GetTargetExtensionId(ScriptContext* script_context,
     DCHECK(crx_file::id_util::IdIsValid(target_id));
   } else {
     DCHECK(v8_target_id->IsString());
-    target_id = gin::V8ToString(v8_target_id);
+    target_id = gin::V8ToString(script_context->isolate(), v8_target_id);
     // NOTE(devlin): JS bindings only validate that the extension id is present,
     // rather than validating its content. This seems better. Let's see how this
     // goes.

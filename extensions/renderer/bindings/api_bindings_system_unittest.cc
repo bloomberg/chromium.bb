@@ -320,7 +320,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
       return result;
     }
     std::string argument;
-    EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
+    EXPECT_EQ("foo", gin::V8ToString(context->GetIsolate(), arguments->at(0)));
     if (!arguments->at(1)->IsFunction()) {
       EXPECT_TRUE(arguments->at(1)->IsFunction());
       return result;

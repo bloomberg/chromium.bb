@@ -74,7 +74,7 @@ void DispatchEvent(const v8::FunctionCallbackInfo<v8::Value>& info) {
   APIEventPerContextData* data =
       APIEventPerContextData::GetFrom(context, kDontCreateIfMissing);
   DCHECK(data);
-  std::string event_name = gin::V8ToString(info.Data());
+  std::string event_name = gin::V8ToString(isolate, info.Data());
   auto iter = data->emitters.find(event_name);
   if (iter == data->emitters.end())
     return;

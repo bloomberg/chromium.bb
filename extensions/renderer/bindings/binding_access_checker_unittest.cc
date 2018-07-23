@@ -49,7 +49,7 @@ TEST_F(BindingAccessCheckerTest, TestHasAccessOrThrowError) {
     EXPECT_FALSE(checker.HasAccessOrThrowError(context, "unavailable"));
     ASSERT_TRUE(try_catch.HasCaught());
     EXPECT_EQ("Uncaught Error: 'unavailable' is not available in this context.",
-              gin::V8ToString(try_catch.Message()->Get()));
+              gin::V8ToString(isolate(), try_catch.Message()->Get()));
   }
 }
 

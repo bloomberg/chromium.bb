@@ -121,11 +121,12 @@ void MessagingBindings::PostMessage(
 
   ExtensionPort& port = *iter->second;
 
+  v8::Isolate* isolate = args.GetIsolate();
   std::string error;
   std::unique_ptr<Message> message = messaging_util::MessageFromJSONString(
-      args[1].As<v8::String>(), &error, context()->web_frame());
+      isolate, args[1].As<v8::String>(), &error, context()->web_frame());
   if (!message) {
-    args.GetReturnValue().Set(gin::StringToV8(args.GetIsolate(), error));
+    args.GetReturnValue().Set(gin::StringToV8(isolate, error));
     return;
   }
 

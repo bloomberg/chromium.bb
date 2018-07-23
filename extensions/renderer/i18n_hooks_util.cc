@@ -184,7 +184,7 @@ v8::Local<v8::Value> GetI18nMessage(const std::string& message_name,
     }
   } else if (v8_substitutions->IsString()) {
     // chrome.i18n.getMessage("message_name", "one param");
-    substitutions.push_back(gin::V8ToString(v8_substitutions));
+    substitutions.push_back(gin::V8ToString(isolate, v8_substitutions));
   }
   // TODO(devlin): We currently just ignore any non-string, non-array values
   // for substitutions, but the type is documented as 'any'. We should either

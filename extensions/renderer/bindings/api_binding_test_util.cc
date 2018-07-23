@@ -32,7 +32,8 @@ bool RunFunctionImpl(v8::Local<v8::Function> function,
   v8::MaybeLocal<v8::Value> maybe_result =
       function->Call(context, receiver, argc, argv);
   if (try_catch.HasCaught()) {
-    *out_error = gin::V8ToString(try_catch.Message()->Get());
+    *out_error =
+        gin::V8ToString(context->GetIsolate(), try_catch.Message()->Get());
     return false;
   }
   v8::Local<v8::Value> result;

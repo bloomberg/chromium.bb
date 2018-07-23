@@ -209,7 +209,7 @@ TEST_F(WrappableTest, MethodInvocationErrorsOnUnnamedObject) {
     func->Call(v8::Undefined(isolate), arraysize(argv), argv);
     if (!try_catch.HasCaught())
       return std::string();
-    return V8ToString(try_catch.Message()->Get());
+    return V8ToString(isolate, try_catch.Message()->Get());
   };
 
   EXPECT_EQ(std::string(), get_error(member_method, v8_object));
@@ -264,7 +264,7 @@ TEST_F(WrappableTest, MethodInvocationErrorsOnNamedObject) {
     func->Call(v8::Undefined(isolate), arraysize(argv), argv);
     if (!try_catch.HasCaught())
       return std::string();
-    return V8ToString(try_catch.Message()->Get());
+    return V8ToString(isolate, try_catch.Message()->Get());
   };
 
   EXPECT_EQ(std::string(), get_error(member_method, v8_object));
