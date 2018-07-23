@@ -5,7 +5,9 @@
 #include "chrome/browser/page_load_metrics/observers/noscript_preview_page_load_metrics_observer.h"
 
 #include <stdint.h>
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
@@ -19,6 +21,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_user_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/navigation_simulator.h"
@@ -29,6 +32,22 @@ namespace previews {
 namespace {
 
 const char kDefaultTestUrl[] = "https://www.google.com";
+
+class TestNoScriptPreviewPageLoadMetricsObserver
+    : public NoScriptPreviewPageLoadMetricsObserver {
+ public:
+  TestNoScriptPreviewPageLoadMetricsObserver(
+      base::OnceCallback<void(const GURL&, int64_t)> bytes_callback)
+      : bytes_callback_(std::move(bytes_callback)) {}
+  ~TestNoScriptPreviewPageLoadMetricsObserver() override {}
+
+  void WriteToSavings(const GURL& url, int64_t bytes_savings) override {
+    std::move(bytes_callback_).Run(url, bytes_savings);
+  }
+
+ private:
+  base::OnceCallback<void(const GURL&, int64_t)> bytes_callback_;
+};
 
 class NoScriptPreviewPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
@@ -64,6 +83,10 @@ class NoScriptPreviewPageLoadMetricsObserverTest
     navigation_simulator->Start();
     auto chrome_navigation_data = std::make_unique<ChromeNavigationData>();
     chrome_navigation_data->set_previews_state(previews_state);
+
+    auto data = std::make_unique<previews::PreviewsUserData>(1);
+    chrome_navigation_data->set_previews_user_data(std::move(data));
+
     content::WebContentsTester::For(web_contents())
         ->SetNavigationData(navigation_simulator->GetNavigationHandle(),
                             std::move(chrome_navigation_data));
@@ -124,13 +147,24 @@ class NoScriptPreviewPageLoadMetricsObserverTest
     }
   }
 
+  void WriteToSavings(const GURL& url, int64_t bytes_savings) {
+    savings_url_ = url;
+    bytes_savings_ = bytes_savings;
+  }
+
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        std::make_unique<NoScriptPreviewPageLoadMetricsObserver>());
+        std::make_unique<TestNoScriptPreviewPageLoadMetricsObserver>(
+            base::BindOnce(
+                &NoScriptPreviewPageLoadMetricsObserverTest::WriteToSavings,
+                base::Unretained(this))));
   }
 
   page_load_metrics::mojom::PageLoadTiming timing_;
+
+  GURL savings_url_;
+  int64_t bytes_savings_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoScriptPreviewPageLoadMetricsObserverTest);
@@ -212,6 +246,35 @@ TEST_F(NoScriptPreviewPageLoadMetricsObserverTest, NoScriptPreviewSeen) {
   ValidateTimingHistograms(true /* is_using_noscript */);
   ValidateDataHistograms(2 /* network_resources */,
                          25 * 1024 /* network_bytes */);
+}
+
+TEST_F(NoScriptPreviewPageLoadMetricsObserverTest, DataSavings) {
+  int inflation = 50;
+  int constant_savings = 120;
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  std::map<std::string, std::string> parameters = {
+      {"NoScriptInflationPercent", base::IntToString(inflation)},
+      {"NoScriptInflationBytes", base::IntToString(constant_savings)}};
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      previews::features::kNoScriptPreviews, parameters);
+
+  ResetTest();
+
+  int64_t data_use = 0;
+  NavigateAndCommitWithPreviewsState(content::NOSCRIPT_ON);
+  SimulatePageLoadDataUseUpdate({5 * 1024, 0});
+  data_use += (5 * 1024);
+
+  SimulatePageLoadDataUseUpdate({20 * 1024, 13});
+  data_use += (20 * 1024);
+
+  SimulateTimingUpdate(timing_);
+
+  int64_t expected_savings = (data_use * inflation) / 100 + constant_savings;
+
+  EXPECT_EQ(GURL(kDefaultTestUrl), savings_url_);
+  EXPECT_EQ(expected_savings, bytes_savings_);
 }
 
 }  // namespace

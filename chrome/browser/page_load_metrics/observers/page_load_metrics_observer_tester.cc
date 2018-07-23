@@ -97,6 +97,13 @@ void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
     mock_timer->Fire();
 }
 
+void PageLoadMetricsObserverTester::SimulatePageLoadDataUseUpdate(
+    const mojom::PageLoadDataUse& data_use) {
+  observer_->OnTimingUpdated(web_contents()->GetMainFrame(),
+                             mojom::PageLoadTiming(), mojom::PageLoadMetadata(),
+                             mojom::PageLoadFeatures(), data_use);
+}
+
 void PageLoadMetricsObserverTester::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info) {
   SimulateLoadedResource(info, content::GlobalRequestID());

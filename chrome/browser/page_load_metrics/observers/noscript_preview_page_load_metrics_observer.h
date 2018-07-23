@@ -50,6 +50,15 @@ class NoScriptPreviewPageLoadMetricsObserver
                             extra_request_complete_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLoadEventStart(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnDataUseObserved(int64_t received_data_length,
+                         int64_t data_reduction_proxy_bytes_saved) override;
+
+ protected:
+  // Virtual for testing. Writes the savings to the data saver feature.
+  virtual void WriteToSavings(const GURL& url, int64_t byte_savings);
 
  private:
   void RecordTimingMetrics(
@@ -58,6 +67,16 @@ class NoScriptPreviewPageLoadMetricsObserver
 
   // Records UMA of page size when the observer is about to be deleted.
   void RecordPageSizeUMA() const;
+
+  content::BrowserContext* browser_context_;
+
+  // The total number of bytes from OnDataUseObserved().
+  int64_t total_network_bytes_ = 0;
+
+  // The percent of bytes used by load event that should be considered savings.
+  // This is often larger than 100 as it corresponds to bytes that were not
+  // downloaded.
+  int data_savings_inflation_percent_ = 0;
 
   int64_t num_network_resources_ = 0;
   int64_t network_bytes_ = 0;

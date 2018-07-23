@@ -439,6 +439,9 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     return;
   }
 
+  // Report data usage before new timing and metadata for messages that have
+  // both updates.
+  client_->UpdateDataUse(new_data_use);
   if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(new_metadata);
     UpdateMainFrameTiming(new_timing);
@@ -447,7 +450,6 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateSubFrameTiming(render_frame_host, new_timing);
   }
   client_->UpdateFeaturesUsage(new_features);
-  client_->UpdateDataUse(new_data_use);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
