@@ -125,10 +125,6 @@ void CORSURLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  DCHECK(!to_be_removed_request_headers.has_value());
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
   if (!network_loader_ || !is_waiting_follow_redirect_call_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
@@ -141,6 +137,13 @@ void CORSURLLoader::FollowRedirect(
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
   }
+
+  if (to_be_removed_request_headers) {
+    for (const auto& name : *to_be_removed_request_headers)
+      request_.headers.RemoveHeader(name);
+  }
+  if (modified_request_headers)
+    request_.headers.MergeFrom(*modified_request_headers);
 
   request_.url = redirect_info_.new_url;
   request_.method = redirect_info_.new_method;
@@ -161,7 +164,8 @@ void CORSURLLoader::FollowRedirect(
   // in net/url_request/redirect_util.cc).
   if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
       !fetch_cors_flag_) {
-    network_loader_->FollowRedirect(base::nullopt, base::nullopt);
+    network_loader_->FollowRedirect(to_be_removed_request_headers,
+                                    modified_request_headers);
     return;
   }
   DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCORS);
