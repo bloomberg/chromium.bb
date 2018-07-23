@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/os/disk_util_types.h"
@@ -26,6 +28,9 @@ class FilePath;
 namespace chrome_cleaner {
 
 class LayeredServiceProviderAPI;
+
+typedef base::OnceCallback<bool(const base::FilePath&)>
+    ReportingWhiteListCallback;
 
 // Return the full path of the relative path |input_path| when expanded to the
 // 64 bits program files path. Return an empty path when not running on 64 bits
@@ -92,13 +97,20 @@ void ExpandWow64Path(const base::FilePath& path, base::FilePath* expanded_path);
 base::string16 FileInformationToString(
     const internal::FileInformation& file_information);
 
+// Returns true if the given |path| refers to an executable which is
+// whitelisted so that its details should not be reported.
+bool IsExecutableOnDefaultReportingWhiteList(const base::FilePath& file_path);
+
 // Retrieve the detailed information for the executable |file_path| and append
-// the fields to |file_information|. If the executable is |white_listed|,
-// |file_information| stay unchanged.
+// the fields to |file_information|. If the executable is |white_listed|
+// according to the given |white_list_callback|, |file_information| stays
+// unchanged.
 bool RetrieveDetailedFileInformation(
     const base::FilePath& file_path,
     internal::FileInformation* file_information,
-    bool* white_listed);
+    bool* white_listed,
+    ReportingWhiteListCallback white_list_callback =
+        base::BindOnce(&IsExecutableOnDefaultReportingWhiteList));
 
 // Retrieve the file information path, dates and size into |file_information|.
 bool RetrieveBasicFileInformation(const base::FilePath& file_path,
