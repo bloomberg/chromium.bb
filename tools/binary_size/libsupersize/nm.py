@@ -2,12 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs nm on every .o file that comprises an ELF (plus some analysis).
-
-The design of this file is entirely to work around Python's lack of concurrency.
+"""Runs nm on specified .a and .o file, plus some analysis.
 
 CollectAliasesByAddress():
-  Runs "nm" on the elf to collect all symbol names. This reveals symbol names of
+  Runs nm on the elf to collect all symbol names. This reveals symbol names of
   identical-code-folded functions.
 
 CollectAliasesByAddressAsync():
@@ -20,7 +18,6 @@ RunNmOnIntermediates():
 """
 
 import collections
-import os
 import subprocess
 
 import concurrent
@@ -146,7 +143,7 @@ def _ParseOneObjectFileNmOutput(lines):
         string_addresses.append(line[:space_idx].lstrip('0') or '0')
       elif _IsRelevantObjectFileName(mangled_name):
         symbol_names.add(mangled_name)
-  return string_addresses, symbol_names
+  return symbol_names, string_addresses
 
 
 # This is a target for BulkForkAndCall().
@@ -176,14 +173,14 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
     assert not is_archive
     path = target[0]
 
-  string_addresses_by_path = {}
   symbol_names_by_path = {}
+  string_addresses_by_path = {}
   while path:
     if is_archive:
       # E.g. foo/bar.a(baz.o)
       path = '%s(%s)' % (target, path)
 
-    string_addresses, mangled_symbol_names = _ParseOneObjectFileNmOutput(lines)
+    mangled_symbol_names, string_addresses = _ParseOneObjectFileNmOutput(lines)
     symbol_names_by_path[path] = mangled_symbol_names
     if string_addresses:
       string_addresses_by_path[path] = string_addresses

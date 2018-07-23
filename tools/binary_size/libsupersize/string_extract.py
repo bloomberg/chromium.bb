@@ -10,7 +10,7 @@ LookupElfRodataInfo():
 ReadFileChunks():
   Reads raw data from a file, given a list of ranges in the file.
 
-ResolveStringPieces():
+ResolveStringPiecesIndirect():
   BulkForkAndCall() target: Given {path: [string addresses]} and
   [raw_string_data for each string_section]:
   - Reads {path: [src_strings]}.
@@ -46,17 +46,17 @@ def LookupElfRodataInfo(elf_path, tool_prefix):
   raise AssertionError('No .rodata for command: ' + repr(args))
 
 
-def ReadFileChunks(path, positions):
-  """Returns a list of strings corresponding to |positions|.
+def ReadFileChunks(path, section_ranges):
+  """Returns a list of raw data from |path|, specified by |section_ranges|.
 
   Args:
-    positions: List of (offset, size).
+    section_ranges: List of (offset, size).
   """
   ret = []
-  if not positions:
+  if not section_ranges:
     return ret
   with open(path, 'rb') as f:
-    for offset, size in positions:
+    for offset, size in section_ranges:
       f.seek(offset)
       ret.append(f.read(size))
   return ret
@@ -190,9 +190,59 @@ def _IterStringLiterals(path, addresses, obj_sections):
       yield section_data[prev_offset:]
 
 
+def _AnnotateStringData(string_data, path_value_gen):
+  """Annotates each |string_data| section data with paths and ranges.
+
+  Args:
+    string_data: [raw_string_data for each string_section] from an ELF file.
+    path_value_gen: A generator of (path, value) pairs, where |path|
+      is the path to an object file and |value| is a string to annotate.
+
+  Returns:
+    [{path: [string_ranges]} for each string_section].
+  """
+  ret = [collections.defaultdict(list) for _ in string_data]
+
+  # Brute-force search ** merge strings sections in |string_data| for string
+  # values from |path_value_gen|. This is by far the slowest part of
+  # AnalyzeStringLiterals().
+  # TODO(agrieve): Pre-process |string_data| into a dict of literal->address (at
+  # least for ASCII strings).
+  for path, value in path_value_gen:
+    first_match = -1
+    first_match_dict = None
+    for target_dict, data in itertools.izip(ret, string_data):
+      # Set offset so that it will be 0 when len(value) is added to it below.
+      offset = -len(value)
+      while True:
+        offset = data.find(value, offset + len(value))
+        if offset == -1:
+          break
+        # Preferring exact matches (those following \0) over substring matches
+        # significantly increases accuracy (although shows that linker isn't
+        # being optimal).
+        if offset == 0 or data[offset - 1] == '\0':
+          break
+        if first_match == -1:
+          first_match = offset
+          first_match_dict = target_dict
+      if offset != -1:
+        break
+    if offset == -1:
+      # Exact match not found, so take suffix match if it exists.
+      offset = first_match
+      target_dict = first_match_dict
+    # Missing strings happen when optimization make them unused.
+    if offset != -1:
+      # Encode tuple as a string for easier mashalling.
+      target_dict[path].append(str(offset) + ':' + str(len(value)))
+
+  return ret
+
+
 # This is a target for BulkForkAndCall().
-def ResolveStringPieces(encoded_string_addresses_by_path, string_data,
-                        tool_prefix, output_directory):
+def ResolveStringPiecesIndirect(encoded_string_addresses_by_path, string_data,
+                                tool_prefix, output_directory):
   string_addresses_by_path = concurrent.DecodeDictOfLists(
       encoded_string_addresses_by_path)
   # Assign |target| as archive path, or a list of object paths.
@@ -208,42 +258,11 @@ def ResolveStringPieces(encoded_string_addresses_by_path, string_data,
   string_sections_by_path = _ReadStringSections(
       target, output_directory, section_positions_by_path)
 
-  # list of elf_positions_by_path.
-  ret = [collections.defaultdict(list) for _ in string_data]
-  # Brute-force search of strings within ** merge strings sections.
-  # This is by far the slowest part of AnalyzeStringLiterals().
-  # TODO(agrieve): Pre-process string_data into a dict of literal->address (at
-  #     least for ascii strings).
-  for path, object_addresses in string_addresses_by_path.iteritems():
-    for value in _IterStringLiterals(
-        path, object_addresses, string_sections_by_path.get(path)):
-      first_match = -1
-      first_match_dict = None
-      for target_dict, data in itertools.izip(ret, string_data):
-        # Set offset so that it will be 0 when len(value) is added to it below.
-        offset = -len(value)
-        while True:
-          offset = data.find(value, offset + len(value))
-          if offset == -1:
-            break
-          # Preferring exact matches (those following \0) over substring matches
-          # significantly increases accuracy (although shows that linker isn't
-          # being optimal).
-          if offset == 0 or data[offset - 1] == '\0':
-            break
-          if first_match == -1:
-            first_match = offset
-            first_match_dict = target_dict
-        if offset != -1:
-          break
-      if offset == -1:
-        # Exact match not found, so take suffix match if it exists.
-        offset = first_match
-        target_dict = first_match_dict
-      # Missing strings happen when optimization make them unused.
-      if offset != -1:
-        # Encode tuple as a string for easier mashalling.
-        target_dict[path].append(
-            str(offset) + ':' + str(len(value)))
+  def GeneratePathAndValues():
+    for path, object_addresses in string_addresses_by_path.iteritems():
+      for value in _IterStringLiterals(
+          path, object_addresses, string_sections_by_path.get(path)):
+        yield path, value
 
+  ret = _AnnotateStringData(string_data, GeneratePathAndValues())
   return [concurrent.EncodeDictOfLists(x) for x in ret]
