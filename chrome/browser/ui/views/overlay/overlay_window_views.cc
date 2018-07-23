@@ -493,6 +493,22 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
+void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->type() != ui::ET_KEY_RELEASED)
+    return;
+
+  if (event->key_code() == ui::VKEY_RETURN ||
+      event->key_code() == ui::VKEY_SPACE) {
+    if (play_pause_controls_view_->HasFocus()) {
+      TogglePlayPause();
+    } else if (close_controls_view_->HasFocus()) {
+      controller_->Close(true /* should_pause_video */);
+    }
+
+    event->SetHandled();
+  }
+}
+
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
