@@ -265,7 +265,6 @@ IDBObjectStore* IDBDatabase::createObjectStore(
     bool auto_increment,
     ExceptionState& exception_state) {
   IDB_TRACE("IDBDatabase::createObjectStore");
-  RecordApiCallsHistogram(kIDBCreateObjectStoreCall);
 
   if (!version_change_transaction_) {
     exception_state.ThrowDOMException(
@@ -331,7 +330,6 @@ IDBObjectStore* IDBDatabase::createObjectStore(
 void IDBDatabase::deleteObjectStore(const String& name,
                                     ExceptionState& exception_state) {
   IDB_TRACE("IDBDatabase::deleteObjectStore");
-  RecordApiCallsHistogram(kIDBDeleteObjectStoreCall);
   if (!version_change_transaction_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -371,7 +369,6 @@ IDBTransaction* IDBDatabase::transaction(
     const String& mode_string,
     ExceptionState& exception_state) {
   IDB_TRACE("IDBDatabase::transaction");
-  RecordApiCallsHistogram(kIDBTransactionCall);
 
   HashSet<String> scope;
   if (store_names.IsString()) {
@@ -596,13 +593,6 @@ const AtomicString& IDBDatabase::InterfaceName() const {
 
 ExecutionContext* IDBDatabase::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
-}
-
-void IDBDatabase::RecordApiCallsHistogram(IndexedDatabaseMethods method) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, api_calls_histogram,
-      ("WebCore.IndexedDB.FrontEndAPICalls", kIDBMethodsMax));
-  api_calls_histogram.Count(method);
 }
 
 STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError,

@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_histograms.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_object_store.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_object_store_parameters.h"
@@ -170,8 +169,6 @@ class MODULES_EXPORT IDBDatabase final
   static const char kTransactionInactiveErrorMessage[];
   static const char kTransactionReadOnlyErrorMessage[];
   static const char kDatabaseClosedErrorMessage[];
-
-  static void RecordApiCallsHistogram(IndexedDatabaseMethods);
 
  protected:
   // EventTarget

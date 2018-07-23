@@ -120,7 +120,6 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                                            ExceptionState& exception_state) {
   IDB_TRACE1("IDBFactory::open", "name", name.Utf8());
   IDBRequest::AsyncTraceState metrics("IDBFactory::open");
-  IDBDatabase::RecordApiCallsHistogram(kIDBOpenCall);
   DCHECK(version >= 1 || version == IDBDatabaseMetadata::kNoVersion);
   if (!IsContextValid(ExecutionContext::From(script_state)))
     return nullptr;
@@ -190,7 +189,6 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     bool force_close) {
   IDB_TRACE1("IDBFactory::deleteDatabase", "name", name.Utf8());
   IDBRequest::AsyncTraceState metrics("IDBFactory::deleteDatabase");
-  IDBDatabase::RecordApiCallsHistogram(kIDBDeleteDatabaseCall);
   if (!IsContextValid(ExecutionContext::From(script_state)))
     return nullptr;
   if (!ExecutionContext::From(script_state)
