@@ -1727,9 +1727,6 @@ crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progr
 crbug.com/520736 [ Win7 ] virtual/video-surface-layer/media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 crbug.com/865839 external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
-crbug.com/865839 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
-crbug.com/865839 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
-crbug.com/865839 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
 
 crbug.com/841922 [ Linux Win Mac ] virtual/video-surface-layer/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 
