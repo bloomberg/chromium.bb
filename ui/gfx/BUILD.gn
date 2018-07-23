@@ -68,6 +68,7 @@ jumbo_component("gfx") {
     "font.cc",
     "font.h",
     "font_fallback.h",
+    "font_fallback_android.cc",
     "font_fallback_linux.cc",
     "font_fallback_linux.h",
     "font_fallback_mac.mm",
@@ -139,7 +140,6 @@ jumbo_component("gfx") {
     "path_x11.cc",
     "path_x11.h",
     "platform_font.h",
-    "platform_font_android.cc",
     "platform_font_ios.h",
     "platform_font_ios.mm",
     "platform_font_linux.cc",
@@ -170,7 +170,6 @@ jumbo_component("gfx") {
     "text_elider.h",
     "text_utils.cc",
     "text_utils.h",
-    "text_utils_android.cc",
     "text_utils_ios.mm",
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
@@ -203,7 +202,6 @@ jumbo_component("gfx") {
       "blit.h",
       "canvas.cc",
       "canvas.h",
-      "canvas_notimplemented.cc",
       "canvas_paint_mac.h",
       "canvas_paint_mac.mm",
       "canvas_skia.cc",
@@ -261,7 +259,7 @@ jumbo_component("gfx") {
   ]
 
   # Text rendering conditions (complicated so separated out).
-  if (use_aura || is_mac || (is_android && enable_vr) || is_fuchsia) {
+  if (use_aura || is_mac || is_android || is_fuchsia) {
     # Mac doesn't use RenderTextHarfBuzz by default yet.
     sources += [
       "harfbuzz_font_skia.cc",
@@ -283,11 +281,7 @@ jumbo_component("gfx") {
     # We don't support RenderText on these platforms.
   }
 
-  if (is_android && enable_vr) {
-    sources -= [
-      "platform_font_android.cc",
-      "text_utils_android.cc",
-    ]
+  if (is_android) {
     set_sources_assignment_filter([])
     sources += [
       "platform_font_linux.cc",
@@ -308,17 +302,6 @@ jumbo_component("gfx") {
 
   # Android.
   if (is_android) {
-    if (enable_vr) {
-      sources -= [ "canvas_notimplemented.cc" ]
-      sources += [ "font_fallback_android.cc" ]
-    } else {
-      sources -= [
-        "canvas_skia.cc",
-        "path.cc",
-        "selection_model.cc",
-      ]
-    }
-
     if (!is_debug) {
       configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_max" ]
@@ -329,8 +312,6 @@ jumbo_component("gfx") {
       "android",
       "jnigraphics",
     ]
-  } else if (!is_ios) {
-    sources -= [ "canvas_notimplemented.cc" ]
   }
 
   if (!is_ios) {
