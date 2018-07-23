@@ -182,12 +182,17 @@ config("sqlite_warnings") {
 # Naming the library "sqlite3" can cause conflicts with the system library.
 component("chromium_sqlite3") {
   visibility = [ ":*" ]
+
+  public = [
+    "sqlite3.h",
+    "src/src/recover.h",
+  ]
+
   sources = [
     "amalgamation/config.h",
     "amalgamation/sqlite3.c",
     "amalgamation/sqlite3.h",
     "src/src/recover.c",
-    "src/src/recover.h",
     "src/src/recover_varint.c",
   ]
 

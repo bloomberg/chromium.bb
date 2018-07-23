@@ -237,6 +237,7 @@ source_set("unit_tests") {
     "//sql",
     "//sql:test_support",
     "//testing/gtest",
+    "//third_party/sqlite",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//url",

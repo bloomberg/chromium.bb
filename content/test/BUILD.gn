@@ -1862,6 +1862,7 @@ test("content_unittests") {
     "//third_party/metrics_proto",
     "//third_party/opus",
     "//third_party/re2",
+    "//third_party/sqlite",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/api:rtc_stats_api",
     "//third_party/webrtc/api/video:video_frame",

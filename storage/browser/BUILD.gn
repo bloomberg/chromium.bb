@@ -311,6 +311,7 @@ source_set("unittests") {
     "//sql:test_support",
     "//testing/gtest",
     "//third_party/leveldatabase",
+    "//third_party/sqlite",
   ]
 }
 

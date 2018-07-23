@@ -178,6 +178,7 @@ jumbo_source_set("browser") {
     "//third_party/icu",
     "//third_party/libyuv",
     "//third_party/re2",
+    "//third_party/sqlite",
     "//third_party/webrtc/media:rtc_media_base",
     "//third_party/webrtc/modules/desktop_capture:primitives",
     "//third_party/webrtc/rtc_base:rtc_base",
