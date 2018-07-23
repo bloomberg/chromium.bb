@@ -48,6 +48,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
   void OnLoaderCreated(std::unique_ptr<mojom::URLLoader> loader);
   void DestroyURLLoader(mojom::URLLoader* loader);
 
+  // Clears the bindings for this factory, but does not touch any in-progress
+  // URLLoaders.
+  void ClearBindings();
+
  private:
   // Implements mojom::URLLoaderFactory.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
