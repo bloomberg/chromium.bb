@@ -32,6 +32,10 @@ class Field(object):
 
     self.name = name
 
+  def __eq__(self, other):
+    return (type(self) == type(other) and
+            self.__dict__ == other.__dict__)
+
   def validate_value(self, metric_name, value):
     if not isinstance(value, self.allowed_python_types):
       raise errors.MonitoringInvalidFieldTypeError(
@@ -118,7 +122,14 @@ class Metric(object):
         any(not isinstance(x, Field) for x in field_spec)):
       raise errors.MetricDefinitionError(
           'Metric constructor takes a list of Fields, or None')
-    if len(field_spec) > 7:
+    if len(field_spec) > 12:
+      # Monarch imposes a limit of a cardinality of 5000 for a single metric
+      # (see http://shortn/_WBupjZf2of).
+      # If a user set 12 fields, and each of those is just a boolean field
+      # with two possible values, the _lower limit_ on the cardinality of
+      # that metric is 2^12, or 4096.
+      # Note that since a combination of 5 built-in fields is fixed, we do
+      # not need to count them.
       raise errors.MonitoringTooManyFieldsError(self._name, field_spec)
 
     self._start_time = None
@@ -128,6 +139,10 @@ class Metric(object):
     self._units = units
 
     interface.register(self)
+
+  def __eq__(self, other):
+    return (type(self) == type(other)
+            and self.__dict__ == other.__dict__)
 
   @property
   def field_spec(self):
@@ -348,9 +363,9 @@ class CounterMetric(NumericMetric):
 
   def __init__(self, name, description, field_spec, start_time=None,
                units=None):
+    self._start_time = start_time
     super(CounterMetric, self).__init__(
         name, description, field_spec, units=units)
-    self._start_time = start_time
 
   def _populate_value(self, data, value):
     data.int64_value = value
@@ -395,9 +410,9 @@ class CumulativeMetric(NumericMetric):
 
   def __init__(self, name, description, field_spec, start_time=None,
                units=None):
+    self._start_time = start_time
     super(CumulativeMetric, self).__init__(
         name, description, field_spec, units=units)
-    self._start_time = start_time
 
   def _populate_value(self, data, value):
     data.double_value = value
@@ -442,8 +457,6 @@ class _DistributionMetricBase(Metric):
 
   def __init__(self, name, description, field_spec, is_cumulative=True,
                bucketer=None, start_time=None, units=None):
-    super(_DistributionMetricBase, self).__init__(
-        name, description, field_spec, units=units)
     self._start_time = start_time
 
     if bucketer is None:
@@ -451,6 +464,8 @@ class _DistributionMetricBase(Metric):
 
     self._is_cumulative = is_cumulative
     self.bucketer = bucketer
+    super(_DistributionMetricBase, self).__init__(
+        name, description, field_spec, units=units)
 
   def _populate_value(self, metric, value):
     pb = metric.distribution_value

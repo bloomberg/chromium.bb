@@ -12,7 +12,6 @@ from infra_libs.event_mon.config import setup_monitoring
 
 from infra_libs.event_mon.monitoring import BUILD_EVENT_TYPES, BUILD_RESULTS
 from infra_libs.event_mon.monitoring import EVENT_TYPES, TIMESTAMP_KINDS
-from infra_libs.event_mon.monitoring import GOMA_ERROR_TYPES
 from infra_libs.event_mon.monitoring import Event
 from infra_libs.event_mon.monitoring import get_build_event
 from infra_libs.event_mon.monitoring import send_build_event

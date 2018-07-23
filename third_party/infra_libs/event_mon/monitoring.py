@@ -7,7 +7,6 @@ import logging
 from google.protobuf.message import DecodeError
 from infra_libs.event_mon.protos.chrome_infra_log_pb2 import (
   ChromeInfraEvent, ServiceEvent, BuildEvent)
-from infra_libs.event_mon.protos.goma_stats_pb2 import GomaStats
 from infra_libs.event_mon.protos.log_request_lite_pb2 import LogRequestLite
 from infra_libs.event_mon import config, router
 
@@ -18,8 +17,6 @@ BUILD_EVENT_TYPES = ('SCHEDULER', 'BUILD', 'STEP')
 BUILD_RESULTS = ('UNKNOWN', 'SUCCESS', 'FAILURE', 'INFRA_FAILURE',
                  'WARNING', 'SKIPPED', 'RETRY')
 TIMESTAMP_KINDS = ('UNKNOWN', 'POINT', 'BEGIN', 'END')
-GOMA_ERROR_TYPES = ('GOMA_ERROR_OK', 'GOMA_ERROR_UNKNOWN', 'GOMA_ERROR_CRASHED',
-                    'GOMA_ERROR_LOG_FATAL')
 
 # Maximum size of stack trace sent in an event, in characters.
 STACK_TRACE_MAX_SIZE = 1000
@@ -263,12 +260,10 @@ def get_build_event(event_type,
                     timestamp_kind=None,
                     event_timestamp=None,
                     service_name=None,
-                    goma_stats=None,
-                    goma_error=None,
-                    goma_crash_report_id=None,
                     patch_url=None,
                     bbucket_id=None,
                     category=None,
+                    fail_type=None,
                     head_revision_git_hash=None):
   """Compute a ChromeInfraEvent filled with a BuildEvent.
 
@@ -349,6 +344,21 @@ def get_build_event(event_type,
       'git_cl_try': BuildEvent.CATEGORY_GIT_CL_TRY,
     }.get(category.lower(), BuildEvent.CATEGORY_UNKNOWN)
 
+  if fail_type:
+    try:
+      event.build_event.fail_type = BuildEvent.FailType.Value({
+        'INFRA_FAILURE': 'FAIL_TYPE_INFRA',
+        'COMPILE_FAILURE': 'FAIL_TYPE_COMPILE',
+        'TEST_FAILURE': 'FAIL_TYPE_TEST',
+        'INVALID_TEST_RESULTS': 'FAIL_TYPE_INVALID',
+        'PATCH_FAILURE': 'FAIL_TYPE_PATCH',
+      }.get(fail_type, 'FAIL_TYPE_UNKNOWN'))
+    except ValueError:  # pragma: no cover
+      # This is not likely to happen because we hard-code correct values in the
+      # dict above, but we still keep this exception handler here to make sure
+      # that we don't bring down the master.
+      event.build_event.fail_type = BuildEvent.FAIL_TYPE_UNKNOWN
+
   if head_revision_git_hash:
     event.build_event.head_revision.git_hash = head_revision_git_hash
 
@@ -409,24 +419,6 @@ def get_build_event(event_type,
     for s in extra_result_strings:
       event.build_event.extra_result_code.append(s)
 
-  if goma_stats:
-    if isinstance(goma_stats, GomaStats):
-      event.build_event.goma_stats.MergeFrom(goma_stats)
-    else:
-      logging.error('expected goma_stats to be an instance of GomaStats, '
-                    'got %s', type(goma_stats))
-  if goma_error:
-    if goma_stats:
-      logging.error('Only one of goma_error and goma_stats can be provided. '
-                    'Got %s and %s.', goma_error, goma_stats)
-    event.build_event.goma_error = BuildEvent.GomaErrorType.Value(goma_error)
-    if goma_crash_report_id:
-      event.build_event.goma_crash_report_id = goma_crash_report_id
-      if goma_error != 'GOMA_ERROR_CRASHED':
-        logging.error('A crash report id (%s) was provided for GomaErrorType '
-                      '(%s).  This is only accepted for GOMA_ERROR_CRASHED '
-                      'type.', goma_crash_report_id, goma_error)
-
   return event_wrapper
 
 
@@ -442,12 +434,10 @@ def send_build_event(event_type,
                      extra_result_code=None,
                      timestamp_kind=None,
                      event_timestamp=None,
-                     goma_stats=None,
-                     goma_error=None,
-                     goma_crash_report_id=None,
                      patch_url=None,
                      bbucket_id=None,
                      category=None,
+                     fail_type=None,
                      head_revision_git_hash=None):
   """Send a ChromeInfraEvent filled with a BuildEvent
 
@@ -472,12 +462,10 @@ def send_build_event(event_type,
       (listed in infra_libs.event_mon.monitoring.BUILD_RESULTS)
     extra_result_code (string or list of): arbitrary strings intended to provide
       more fine-grained information about the result.
-    goma_stats (goma_stats_pb2.GomaStats): statistics output by the Goma proxy.
-    goma_error (string): goma error type defined as GomaErrorType.
-    goma_crash_report_id (string): id of goma crash report.
     patch_url (string): URL of the patch that triggered build
     bbucket_id (long): Buildbucket ID of the build.
     category (string): Build category, e.g. cq or git_cl_try.
+    fail_type (string): Failure type for failed builds, e.g. 'FAIL_TYPE_COMPILE'
     head_revision_git_hash (string): Revision fetched from the Git repository.
 
   Returns:
@@ -495,12 +483,10 @@ def send_build_event(event_type,
                          extra_result_code=extra_result_code,
                          timestamp_kind=timestamp_kind,
                          event_timestamp=event_timestamp,
-                         goma_stats=goma_stats,
-                         goma_error=goma_error,
-                         goma_crash_report_id=goma_crash_report_id,
                          patch_url=patch_url,
                          bbucket_id=bbucket_id,
                          category=category,
+                         fail_type=fail_type,
                          head_revision_git_hash=head_revision_git_hash).send()
 
 

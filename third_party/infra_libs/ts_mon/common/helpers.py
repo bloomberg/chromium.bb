@@ -88,6 +88,17 @@ class ScopedMeasureTime(object):
     with ScopedMeasureTime(mymetric, field='response_code') as sd:
       sd.set_status(404)  # This custom status now won't be overwritten
                           # even if exception is raised later.
+
+  To annotate the duration with some other fields, use extra_fields_values:
+
+    mymetric = CumulativeDistributionMetric(
+      'xxx/durations', 'duration of xxx op'
+      [StringField('status'),
+       StringField('type')],
+      bucketer=ts_mon.GeometricBucketer(10**0.04),
+      units=ts_mon.MetricsDataUnits.SECONDS)
+    with ScopedMeasureTime(mymetric, extra_fields_values={'type': 'normal'}):
+      DoStuff()
   """
 
   _UNITS_PER_SECOND = {
@@ -98,7 +109,8 @@ class ScopedMeasureTime(object):
   }
 
   def __init__(self, metric, field='status', success_value='success',
-               failure_value='failure', time_fn=time.time):
+               failure_value='failure', extra_fields_values=(),
+               time_fn=time.time):
     assert isinstance(metric, metrics.CumulativeDistributionMetric)
     assert sum(1 for spec in metric.field_spec if spec.name == field) == 1, (
         'typo in field name `%s`?' % field)
@@ -107,18 +119,20 @@ class ScopedMeasureTime(object):
         (metric.units, self._UNITS_PER_SECOND.keys()))
 
     self._metric = metric
+    self._field_values = dict(extra_fields_values)
+    assert field not in self._field_values
+    self._field_values[field] = None
     self._field = field
     self._units_per_second = self._UNITS_PER_SECOND[metric.units]
     self._success_value = success_value
     self._failure_value = failure_value
-    self._status = None
     self._start_timestamp = None
     self._time_fn = time_fn
 
   def set_status(self, status):
     assert self._start_timestamp is not None, (
         'set_status must be called only inside with statement')
-    self._status = status
+    self._field_values[self._field] = status
 
   def set_failure(self):
     return self.set_status(self._failure_value)
@@ -131,10 +145,11 @@ class ScopedMeasureTime(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     elapsed_seconds = self._time_fn() - self._start_timestamp
-    if self._status is None:
+    if self._field_values[self._field] is None:
       if exc_type is None:
-        self._status = self._success_value
+        self._field_values[self._field] = self._success_value
       else:
-        self._status = self._failure_value
+        self._field_values[self._field] = self._failure_value
+
     self._metric.add(elapsed_seconds * self._units_per_second,
-                     {self._field: self._status})
+                     self._field_values)
