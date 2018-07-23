@@ -4,6 +4,11 @@ include_rules = [
   "+content/public/renderer",
 
   "+gin",
+  "+net/base/backoff_entry.h",
+
+  # For net::LOAD_MAYBE_USER_GESTURE. Will be removed as
+  # per crbug.com/516495
+  "+net/base/load_flags.h",
 
   "+third_party/skia/include/core",
   "+third_party/cld_3",
@@ -30,5 +35,9 @@ specific_include_rules = {
     # TODO(devlin): Ideally, we'd remove these (or move the tests into
     # //chrome). See https://crbug.com/773004.
     "+chrome/test/base/chrome_render_view_test.h",
+  ],
+  "extension_throttle_manager.cc": [
+    # For net::IsLocalhost.
+    "+net/base/url_util.h",
   ],
 }

@@ -113,7 +113,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -869,16 +868,6 @@ extensions::InfoMap* ProfileIOData::GetExtensionInfoMap() const {
 #endif
 }
 
-extensions::ExtensionThrottleManager*
-ProfileIOData::GetExtensionThrottleManager() const {
-  DCHECK(initialized_) << "ExtensionSystem not initialized";
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return extension_throttle_manager_.get();
-#else
-  return nullptr;
-#endif
-}
-
 content_settings::CookieSettings* ProfileIOData::GetCookieSettings() const {
   // Allow either Init() or SetCookieSettingsForTesting() to initialize.
   DCHECK(initialized_ || cookie_settings_.get());
@@ -1065,11 +1054,6 @@ void ProfileIOData::Init(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       chrome_network_delegate->set_extension_info_map(
           profile_params_->extension_info_map.get());
-      if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableExtensionsHttpThrottling)) {
-        extension_throttle_manager_.reset(
-            new extensions::ExtensionThrottleManager());
-      }
 #endif
 
       chrome_network_delegate->set_profile(profile_params_->profile);

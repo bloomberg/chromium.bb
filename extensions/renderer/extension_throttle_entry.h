@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_H_
-#define EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_H_
+#ifndef EXTENSIONS_RENDERER_EXTENSION_THROTTLE_ENTRY_H_
+#define EXTENSIONS_RENDERER_EXTENSION_THROTTLE_ENTRY_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "extensions/browser/extension_throttle_entry_interface.h"
+#include "extensions/renderer/extension_throttle_entry_interface.h"
 #include "net/base/backoff_entry.h"
 
 namespace extensions {
@@ -86,7 +86,7 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   void DetachManager();
 
   // Implementation of ExtensionThrottleEntryInterface.
-  bool ShouldRejectRequest(const net::URLRequest& request) const override;
+  bool ShouldRejectRequest(int request_load_flags) const override;
   int64_t ReserveSendingTimeForNextRequest(
       const base::TimeTicks& earliest_time) override;
   base::TimeTicks GetExponentialBackoffReleaseTime() const override;
@@ -161,4 +161,4 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_H_
+#endif  // EXTENSIONS_RENDERER_EXTENSION_THROTTLE_ENTRY_H_

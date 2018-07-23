@@ -2,15 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-  if (message.type == "xhr") {
+/**
+ * Returns a promise that resolves to whether the request was successfully
+ * made. This will throw an error if the request finishes with any status
+ * other than 503.
+ * @return {Promise<bool>}
+ */
+function canMakeRequest(url) {
+  return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest();
-    xhr.open(message.method, message.url);
-    // This header will be enough to avoid serving the XHR from blink's
-    // MemoryCache (which the test requires), but should have no other effect.
-    xhr.setRequestHeader("X-Bust-Blink-MemoryCache", Math.random());
+    xhr.onload = function() {
+      if (this.status == 503)
+        resolve(true);
+      else
+        reject('Unexpected status: ' + this.status);
+    };
+    xhr.onerror = function() {
+      resolve(false);
+    };
+    xhr.open('GET', url, /*async=*/true);
     xhr.send();
+  });
+}
+
+async function runTest(url, requestsToMake, expectedFailRequestNum) {
+  for (let i = 1; i <= requestsToMake; i += 1) {
+    try {
+      const madeRequest = await canMakeRequest(url);
+      const expectSuccess = i < expectedFailRequestNum;
+      chrome.test.assertEq(expectSuccess, madeRequest);
+    } catch (e) {
+      chrome.test.notifyFail('Error: ' + e.message);
+    }
+  }
+  chrome.test.notifyPass('test passed');
+}
+
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.type == 'xhr') {
+    runTest(message.url, message.requestsToMake,
+            message.expectedFailRequestNum);
   } else {
-    console.error("Unknown message: " + JSON.stringify(message));
+    console.error('Unknown message: ' + JSON.stringify(message));
   }
 });

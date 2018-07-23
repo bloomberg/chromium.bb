@@ -97,8 +97,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/user_script_listener.h"
-#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
-#include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/user_script.h"
@@ -519,15 +517,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
                                                     resource_type);
   if (wait_for_extensions_init_throttle)
     throttles->push_back(base::WrapUnique(wait_for_extensions_init_throttle));
-
-  extensions::ExtensionThrottleManager* extension_throttle_manager =
-      io_data->GetExtensionThrottleManager();
-  if (extension_throttle_manager) {
-    std::unique_ptr<content::ResourceThrottle> extension_throttle =
-        extension_throttle_manager->MaybeCreateThrottle(request);
-    if (extension_throttle)
-      throttles->push_back(std::move(extension_throttle));
-  }
 #endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);

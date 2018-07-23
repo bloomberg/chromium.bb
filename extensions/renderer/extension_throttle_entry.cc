@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/extension_throttle_entry.h"
+#include "extensions/renderer/extension_throttle_entry.h"
 
+#include <algorithm>
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "extensions/browser/extension_throttle_manager.h"
+#include "extensions/renderer/extension_throttle_manager.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 
 namespace extensions {
 
@@ -47,8 +47,7 @@ const int ExtensionThrottleEntry::kDefaultEntryLifetimeMs = 2 * 60 * 1000;
 ExtensionThrottleEntry::ExtensionThrottleEntry(
     ExtensionThrottleManager* manager,
     const std::string& url_id)
-    : ExtensionThrottleEntry(manager, url_id, false) {
-}
+    : ExtensionThrottleEntry(manager, url_id, false) {}
 
 ExtensionThrottleEntry::ExtensionThrottleEntry(
     ExtensionThrottleManager* manager,
@@ -127,11 +126,11 @@ void ExtensionThrottleEntry::DetachManager() {
   manager_ = NULL;
 }
 
-bool ExtensionThrottleEntry::ShouldRejectRequest(
-    const net::URLRequest& request) const {
+bool ExtensionThrottleEntry::ShouldRejectRequest(int request_load_flags) const {
   bool reject_request = false;
-  if (!is_backoff_disabled_ && (ignore_user_gesture_load_flag_for_tests_ ||
-                                !ExplicitUserRequest(request.load_flags())) &&
+  if (!is_backoff_disabled_ &&
+      (ignore_user_gesture_load_flag_for_tests_ ||
+       !ExplicitUserRequest(request_load_flags)) &&
       GetBackoffEntry()->ShouldRejectRequest()) {
     reject_request = true;
   }
@@ -209,8 +208,7 @@ const std::string& ExtensionThrottleEntry::GetURLIdForDebugging() const {
   return url_id_;
 }
 
-ExtensionThrottleEntry::~ExtensionThrottleEntry() {
-}
+ExtensionThrottleEntry::~ExtensionThrottleEntry() {}
 
 void ExtensionThrottleEntry::Initialize() {
   sliding_window_release_time_ = base::TimeTicks::Now();

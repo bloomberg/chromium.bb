@@ -2052,9 +2052,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,
+      extensions::switches::kDisableExtensionsHttpThrottling,
       extensions::switches::kEnableEmbeddedExtensionOptions,
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,
+      extensions::switches::kSetExtensionThrottleTestParams,  // For tests only.
       extensions::switches::kWhitelistedExtensionID,
 #endif
       switches::kAllowInsecureLocalhost,

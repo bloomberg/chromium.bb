@@ -2233,6 +2233,8 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
     double max_bandwidth_mbps) {
   bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
   WebNetworkStateNotifier::SetOnLine(online);
+  if (url_loader_throttle_provider_)
+    url_loader_throttle_provider_->SetOnline(online);
   for (auto& observer : observers_)
     observer.NetworkStateChanged(online);
   WebNetworkStateNotifier::SetWebConnection(

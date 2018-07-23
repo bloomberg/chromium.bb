@@ -25,21 +25,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
-#include "extensions/browser/extension_throttle_manager.h"
-#include "extensions/browser/extension_throttle_test_support.h"
-#include "net/base/request_priority.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_test_util.h"
+#include "extensions/renderer/extension_throttle_manager.h"
+#include "extensions/renderer/extension_throttle_test_support.h"
+#include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
 using net::BackoffEntry;
-using net::TestURLRequestContext;
-using net::URLRequest;
-using net::URLRequestContext;
 
 namespace extensions {
 namespace {
@@ -131,11 +124,7 @@ class Server : public DiscreteTimeSimulation::Actor {
         num_overloaded_ticks_remaining_(0),
         num_current_tick_queries_(0),
         num_overloaded_ticks_(0),
-        max_experienced_queries_per_tick_(0),
-        mock_request_(context_.CreateRequest(GURL(),
-                                             net::DEFAULT_PRIORITY,
-                                             nullptr,
-                                             TRAFFIC_ANNOTATION_FOR_TESTS)) {}
+        max_experienced_queries_per_tick_(0) {}
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
     start_downtime_ = start_time;
@@ -195,8 +184,6 @@ class Server : public DiscreteTimeSimulation::Actor {
   int max_experienced_queries_per_tick() const {
     return max_experienced_queries_per_tick_;
   }
-
-  const URLRequest& mock_request() const { return *mock_request_; }
 
   std::string VisualizeASCII(int terminal_width) {
     // Account for | characters we place at left of graph.
@@ -282,8 +269,6 @@ class Server : public DiscreteTimeSimulation::Actor {
     return output;
   }
 
-  const URLRequestContext& context() const { return context_; }
-
  private:
   TimeTicks now_;
   TimeTicks start_downtime_;  // Can be 0 to say "no downtime".
@@ -295,9 +280,6 @@ class Server : public DiscreteTimeSimulation::Actor {
   int num_overloaded_ticks_;
   int max_experienced_queries_per_tick_;
   std::vector<int> requests_per_tick_;
-
-  TestURLRequestContext context_;
-  std::unique_ptr<URLRequest> mock_request_;
 
   DISALLOW_COPY_AND_ASSIGN(Server);
 };
@@ -426,7 +408,7 @@ class Requester : public DiscreteTimeSimulation::Actor {
 
     if (throttler_entry_->ImplGetTimeNow() - time_of_last_attempt_ >
         effective_delay) {
-      if (!throttler_entry_->ShouldRejectRequest(server_->mock_request())) {
+      if (!throttler_entry_->ShouldRejectRequest(net::LOAD_NORMAL)) {
         int status_code = server_->HandleRequest();
         throttler_entry_->UpdateWithResponse(status_code);
 

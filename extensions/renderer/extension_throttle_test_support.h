@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_EXTENSION_THROTTLE_TEST_SUPPORT_H_
-#define EXTENSIONS_BROWSER_EXTENSION_THROTTLE_TEST_SUPPORT_H_
+#ifndef EXTENSIONS_RENDERER_EXTENSION_THROTTLE_TEST_SUPPORT_H_
+#define EXTENSIONS_RENDERER_EXTENSION_THROTTLE_TEST_SUPPORT_H_
 
 #include <string>
 
@@ -30,4 +30,4 @@ class TestTickClock : public base::TickClock {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_EXTENSION_THROTTLE_TEST_SUPPORT_H_
+#endif  // EXTENSIONS_RENDERER_EXTENSION_THROTTLE_TEST_SUPPORT_H_

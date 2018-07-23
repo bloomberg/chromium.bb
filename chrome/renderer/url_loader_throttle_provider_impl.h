@@ -6,11 +6,17 @@
 #define CHROME_RENDERER_URL_LOADER_THROTTLE_PROVIDER_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/threading/thread_checker.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/subresource_filter/content/common/ad_delay_throttle.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
+#include "extensions/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/renderer/extension_throttle_manager.h"
+#endif
 
 class ChromeContentRendererClient;
 
@@ -31,6 +37,7 @@ class URLLoaderThrottleProviderImpl
       int render_frame_id,
       const blink::WebURLRequest& request,
       content::ResourceType resource_type) override;
+  void SetOnline(bool is_online) override;
 
  private:
   // This copy constructor works in conjunction with Clone(), not intended for
@@ -45,6 +52,11 @@ class URLLoaderThrottleProviderImpl
 
   safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
   safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  std::unique_ptr<extensions::ExtensionThrottleManager>
+      extension_throttle_manager_;
+#endif
 
   THREAD_CHECKER(thread_checker_);
 

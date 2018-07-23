@@ -220,11 +220,6 @@ const char kDisableExtensionsExcept[] = "disable-extensions-except";
 const char kDisableExtensionsFileAccessCheck[] =
     "disable-extensions-file-access-check";
 
-// Disable the net::URLRequestThrottlerManager functionality for
-// requests originating from extensions.
-const char kDisableExtensionsHttpThrottling[] =
-    "disable-extensions-http-throttling";
-
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
 

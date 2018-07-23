@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/extension_throttle_test_support.h"
+#include "extensions/renderer/extension_throttle_test_support.h"
 
 namespace extensions {
 

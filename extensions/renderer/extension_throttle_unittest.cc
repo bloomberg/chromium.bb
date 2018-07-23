@@ -5,32 +5,18 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "extensions/browser/extension_throttle_entry.h"
-#include "extensions/browser/extension_throttle_manager.h"
-#include "extensions/browser/extension_throttle_test_support.h"
+#include "extensions/renderer/extension_throttle_entry.h"
+#include "extensions/renderer/extension_throttle_manager.h"
+#include "extensions/renderer/extension_throttle_test_support.h"
 #include "net/base/load_flags.h"
-#include "net/base/request_priority.h"
-#include "net/base/test_completion_callback.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
 using net::BackoffEntry;
-using net::NetworkChangeNotifier;
-using net::TestNetworkDelegate;
-using net::TestURLRequestContext;
-using net::URLRequest;
-using net::URLRequestContext;
 
 namespace extensions {
 
@@ -111,12 +97,18 @@ class MockExtensionThrottleManager : public ExtensionThrottleManager {
  public:
   MockExtensionThrottleManager() : create_entry_index_(0) {}
 
-  // Method to process the URL using ExtensionThrottleManager protected
-  // method.
-  std::string DoGetUrlIdFromUrl(const GURL& url) { return GetIdFromUrl(url); }
+  std::string GetIdFromUrl(const GURL& url) const {
+    return ExtensionThrottleManager::GetIdFromUrl(url);
+  }
 
-  // Method to use the garbage collecting method of ExtensionThrottleManager.
-  void DoGarbageCollectEntries() { GarbageCollectEntries(); }
+  scoped_refptr<ExtensionThrottleEntryInterface> RegisterRequestUrl(
+      const GURL& url) {
+    return ExtensionThrottleManager::RegisterRequestUrl(url);
+  }
+
+  void GarbageCollectEntries() {
+    ExtensionThrottleManager::GarbageCollectEntries();
+  }
 
   // Returns the number of entries in the map.
   int GetNumberOfEntries() const { return GetNumberOfEntriesForTests(); }
@@ -167,26 +159,16 @@ struct GurlAndString {
 
 class ExtensionThrottleEntryTest : public testing::Test {
  protected:
-  ExtensionThrottleEntryTest()
-      : request_(context_.CreateRequest(GURL(),
-                                        net::DEFAULT_PRIORITY,
-                                        nullptr,
-                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {}
+  ExtensionThrottleEntryTest() = default;
 
   void SetUp() override;
 
   TimeTicks now_;
   MockExtensionThrottleManager manager_;  // Dummy object, not used.
   scoped_refptr<MockExtensionThrottleEntry> entry_;
-  base::MessageLoopForIO message_loop_;
-
-  TestURLRequestContext context_;
-  std::unique_ptr<URLRequest> request_;
 };
 
 void ExtensionThrottleEntryTest::SetUp() {
-  request_->SetLoadFlags(0);
-
   now_ = TimeTicks::Now();
   entry_ = new MockExtensionThrottleEntry(&manager_);
   entry_->ResetToBlank(now_);
@@ -196,25 +178,24 @@ TEST_F(ExtensionThrottleEntryTest, CanThrottleRequest) {
   entry_->set_exponential_backoff_release_time(entry_->ImplGetTimeNow() +
                                                TimeDelta::FromMilliseconds(1));
 
-  EXPECT_TRUE(entry_->ShouldRejectRequest(*request_));
+  EXPECT_TRUE(entry_->ShouldRejectRequest(net::LOAD_NORMAL));
 }
 
 TEST_F(ExtensionThrottleEntryTest, InterfaceDuringExponentialBackoff) {
   entry_->set_exponential_backoff_release_time(entry_->ImplGetTimeNow() +
                                                TimeDelta::FromMilliseconds(1));
-  EXPECT_TRUE(entry_->ShouldRejectRequest(*request_));
+  EXPECT_TRUE(entry_->ShouldRejectRequest(net::LOAD_NORMAL));
 
   // Also end-to-end test the load flags exceptions.
-  request_->SetLoadFlags(net::LOAD_MAYBE_USER_GESTURE);
-  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_));
+  EXPECT_FALSE(entry_->ShouldRejectRequest(net::LOAD_MAYBE_USER_GESTURE));
 }
 
 TEST_F(ExtensionThrottleEntryTest, InterfaceNotDuringExponentialBackoff) {
   entry_->set_exponential_backoff_release_time(entry_->ImplGetTimeNow());
-  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_));
+  EXPECT_FALSE(entry_->ShouldRejectRequest(net::LOAD_NORMAL));
   entry_->set_exponential_backoff_release_time(entry_->ImplGetTimeNow() -
                                                TimeDelta::FromMilliseconds(1));
-  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_));
+  EXPECT_FALSE(entry_->ShouldRejectRequest(net::LOAD_NORMAL));
 }
 
 TEST_F(ExtensionThrottleEntryTest, InterfaceUpdateFailure) {
@@ -324,23 +305,7 @@ TEST_F(ExtensionThrottleEntryTest, ExplicitUserRequest) {
       ~net::LOAD_MAYBE_USER_GESTURE));
 }
 
-class ExtensionThrottleManagerTest : public testing::Test {
- protected:
-  ExtensionThrottleManagerTest()
-      : request_(context_.CreateRequest(GURL(),
-                                        net::DEFAULT_PRIORITY,
-                                        nullptr,
-                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {}
-
-  void SetUp() override { request_->SetLoadFlags(0); }
-
-  base::MessageLoopForIO message_loop_;
-  // context_ must be declared before request_.
-  TestURLRequestContext context_;
-  std::unique_ptr<URLRequest> request_;
-};
-
-TEST_F(ExtensionThrottleManagerTest, IsUrlStandardised) {
+TEST(ExtensionThrottleManagerTest, IsUrlStandardised) {
   MockExtensionThrottleManager manager;
   GurlAndString test_values[] = {
       GurlAndString(GURL("http://www.example.com"),
@@ -362,30 +327,30 @@ TEST_F(ExtensionThrottleManagerTest, IsUrlStandardised) {
                     std::string("http://www.example.com:1234/"), __LINE__)};
 
   for (unsigned int i = 0; i < base::size(test_values); ++i) {
-    std::string temp = manager.DoGetUrlIdFromUrl(test_values[i].url);
-    EXPECT_EQ(temp, test_values[i].result) << "Test case #" << i << " line "
-                                           << test_values[i].line << " failed";
+    std::string temp = manager.GetIdFromUrl(test_values[i].url);
+    EXPECT_EQ(temp, test_values[i].result)
+        << "Test case #" << i << " line " << test_values[i].line << " failed";
   }
 }
 
-TEST_F(ExtensionThrottleManagerTest, AreEntriesBeingCollected) {
+TEST(ExtensionThrottleManagerTest, AreEntriesBeingCollected) {
   MockExtensionThrottleManager manager;
 
   manager.CreateEntry(true);  // true = Entry is outdated.
   manager.CreateEntry(true);
   manager.CreateEntry(true);
-  manager.DoGarbageCollectEntries();
+  manager.GarbageCollectEntries();
   EXPECT_EQ(0, manager.GetNumberOfEntries());
 
   manager.CreateEntry(false);
   manager.CreateEntry(false);
   manager.CreateEntry(false);
   manager.CreateEntry(true);
-  manager.DoGarbageCollectEntries();
+  manager.GarbageCollectEntries();
   EXPECT_EQ(3, manager.GetNumberOfEntries());
 }
 
-TEST_F(ExtensionThrottleManagerTest, IsHostBeingRegistered) {
+TEST(ExtensionThrottleManagerTest, IsHostBeingRegistered) {
   MockExtensionThrottleManager manager;
 
   manager.RegisterRequestUrl(GURL("http://www.example.com/"));
@@ -397,16 +362,16 @@ TEST_F(ExtensionThrottleManagerTest, IsHostBeingRegistered) {
   EXPECT_EQ(3, manager.GetNumberOfEntries());
 }
 
-TEST_F(ExtensionThrottleManagerTest, LocalHostOptedOut) {
+TEST(ExtensionThrottleManagerTest, LocalHostOptedOut) {
   MockExtensionThrottleManager manager;
   // A localhost entry should always be opted out.
   scoped_refptr<ExtensionThrottleEntryInterface> localhost_entry =
       manager.RegisterRequestUrl(GURL("http://localhost/hello"));
-  EXPECT_FALSE(localhost_entry->ShouldRejectRequest((*request_)));
+  EXPECT_FALSE(localhost_entry->ShouldRejectRequest(net::LOAD_NORMAL));
   for (int i = 0; i < 10; ++i) {
     localhost_entry->UpdateWithResponse(503);
   }
-  EXPECT_FALSE(localhost_entry->ShouldRejectRequest((*request_)));
+  EXPECT_FALSE(localhost_entry->ShouldRejectRequest(net::LOAD_NORMAL));
 
   // We're not mocking out GetTimeNow() in this scenario
   // so add a 100 ms buffer to avoid flakiness (that should always
@@ -416,7 +381,7 @@ TEST_F(ExtensionThrottleManagerTest, LocalHostOptedOut) {
             localhost_entry->GetExponentialBackoffReleaseTime());
 }
 
-TEST_F(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
+TEST(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
   for (int i = 0; i < 2; ++i) {
     MockExtensionThrottleManager manager;
     scoped_refptr<ExtensionThrottleEntryInterface> entry_before =
@@ -424,14 +389,14 @@ TEST_F(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
     for (int j = 0; j < 10; ++j) {
       entry_before->UpdateWithResponse(503);
     }
-    EXPECT_TRUE(entry_before->ShouldRejectRequest(*request_));
+    EXPECT_TRUE(entry_before->ShouldRejectRequest(net::LOAD_NORMAL));
 
     switch (i) {
       case 0:
-        manager.OnNetworkChanged(NetworkChangeNotifier::CONNECTION_UNKNOWN);
+        manager.SetOnline(/*is_online=*/true);
         break;
       case 1:
-        manager.OnNetworkChanged(NetworkChangeNotifier::CONNECTION_NONE);
+        manager.SetOnline(/*is_online=*/false);
         break;
       default:
         FAIL();
@@ -439,7 +404,7 @@ TEST_F(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
 
     scoped_refptr<ExtensionThrottleEntryInterface> entry_after =
         manager.RegisterRequestUrl(GURL("http://www.example.com/"));
-    EXPECT_FALSE(entry_after->ShouldRejectRequest(*request_));
+    EXPECT_FALSE(entry_after->ShouldRejectRequest(net::LOAD_NORMAL));
   }
 }
 
