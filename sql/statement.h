@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "sql/connection.h"
 #include "sql/sql_export.h"
@@ -186,7 +187,7 @@ class SQL_EXPORT Statement {
   bool RunWithoutTimers();
 
   // The actual sqlite statement. This may be unique to us, or it may be cached
-  // by the connection, which is why it's refcounted. This pointer is
+  // by the connection, which is why it's ref-counted. This pointer is
   // guaranteed non-null.
   scoped_refptr<Connection::StatementRef> ref_;
 
