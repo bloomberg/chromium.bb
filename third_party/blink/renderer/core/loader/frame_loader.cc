@@ -770,19 +770,21 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
 
   FrameLoadRequest request(passed_request);
-  request.GetResourceRequest().SetHasUserGesture(
-      Frame::HasTransientUserActivation(frame_));
+  ResourceRequest& resource_request = request.GetResourceRequest();
+  const KURL& url = resource_request.Url();
+  Document* origin_document = request.OriginDocument();
+
+  resource_request.SetHasUserGesture(Frame::HasTransientUserActivation(frame_));
 
   if (!PrepareRequestForThisFrame(request))
     return;
 
   // Form submissions appear to need their special-case of finding the target at
   // schedule rather than at fire.
-  Frame* target_frame = request.Form()
-                            ? nullptr
-                            : frame_->FindFrameForNavigation(
-                                  AtomicString(request.FrameName()), *frame_,
-                                  request.GetResourceRequest().Url());
+  Frame* target_frame =
+      request.Form() ? nullptr
+                     : frame_->FindFrameForNavigation(
+                           AtomicString(request.FrameName()), *frame_, url);
 
   // Downloads and navigations which specifically target a *new* frame
   // (e.g. because of a ctrl-click) should ignore the target.
@@ -808,11 +810,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   if (!target_frame && !request.FrameName().IsEmpty()) {
     if (policy == kNavigationPolicyDownload) {
-      Client()->DownloadURL(request.GetResourceRequest(),
+      Client()->DownloadURL(resource_request,
                             DownloadCrossOriginRedirects::kFollow);
       return;  // Navigation/download will be handled by the client.
     } else if (should_navigate_target_frame) {
-      request.GetResourceRequest().SetFrameType(
+      resource_request.SetFrameType(
           network::mojom::RequestContextFrameType::kAuxiliary);
       CreateWindowForRequest(request, *frame_);
       return;  // Navigation will be handled by the new frame/window.
@@ -826,37 +828,135 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
-  const KURL& url = request.GetResourceRequest().Url();
   if (frame_load_type == WebFrameLoadType::kStandard)
     frame_load_type = DetermineFrameLoadType(request);
 
   bool same_document_navigation =
       policy == kNavigationPolicyCurrentTab &&
-      ShouldPerformFragmentNavigation(request.Form(),
-                                      request.GetResourceRequest().HttpMethod(),
-                                      frame_load_type, url);
+      ShouldPerformFragmentNavigation(
+          request.Form(), resource_request.HttpMethod(), frame_load_type, url);
 
   // Perform same document navigation.
   if (same_document_navigation) {
     CommitSameDocumentNavigation(
-        request.GetResourceRequest().Url(), frame_load_type, nullptr,
-        request.ClientRedirect(), request.OriginDocument(),
+        url, frame_load_type, nullptr, request.ClientRedirect(),
+        origin_document,
         request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent);
     return;
   }
 
-  StartLoad(request, frame_load_type, policy, nullptr,
-            true /* check_with_client */, nullptr /* extra_data */,
-            WebNavigationTimings());
+  WebNavigationType navigation_type = DetermineNavigationType(
+      frame_load_type, resource_request.HttpBody() || request.Form(),
+      request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent);
+  resource_request.SetRequestContext(
+      DetermineRequestContextFromNavigationType(navigation_type));
+  resource_request.SetFrameType(
+      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
+                            : network::mojom::RequestContextFrameType::kNested);
+
+  if (origin_document && origin_document->GetContentSecurityPolicy()
+                             ->ExperimentalFeaturesEnabled()) {
+    WebContentSecurityPolicyList initiator_csp =
+        origin_document->GetContentSecurityPolicy()
+            ->ExposeForNavigationalChecks();
+    resource_request.SetInitiatorCSP(initiator_csp);
+  }
+
+  // Record the latest requiredCSP value that will be used when sending this
+  // request.
+  RecordLatestRequiredCSP();
+
+  // TODO(arthursonzogni): 'frame-src' check is disabled on the
+  // renderer side, but is enforced on the browser side.
+  // See http://crbug.com/692595 for understanding why it
+  // can't be enforced on both sides instead.
+
+  // 'form-action' check in the frame that is navigating is disabled on the
+  // renderer side, but is enforced on the browser side instead.
+  // N.B. check in the frame that initiates the navigation stills occurs in
+  // blink and is not enforced on the browser-side.
+  // TODO(arthursonzogni) The 'form-action' check should be fully disabled
+  // in blink, except when the form submission doesn't trigger a navigation
+  // (i.e. javascript urls). Please see https://crbug.com/701749.
+
+  // Report-only CSP headers are checked in browser.
+  ModifyRequestForCSP(resource_request, origin_document);
+
+  DCHECK(Client()->HasWebView());
+  // Check for non-escaped new lines in the url.
+  if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
+    Deprecation::CountDeprecation(
+        frame_, WebFeature::kCanRequestURLHTTPContainingNewline);
+    if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
+      return;
+  }
+
+  policy = Client()->DecidePolicyForNavigation(
+      resource_request, origin_document, nullptr /* document_loader */,
+      navigation_type, policy,
+      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
+      request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
+      request.TriggeringEventInfo(), request.Form(),
+      request.ShouldCheckMainWorldContentSecurityPolicy(),
+      request.GetBlobURLToken());
+
+  // 'beforeunload' can be fired above, which can detach this frame from inside
+  // the event handler.
+  if (!frame_->GetPage())
+    return;
+
+  if (policy == kNavigationPolicyIgnore) {
+    CHECK(resource_request.CheckForBrowserSideNavigation());
+    return;
+  }
+  DCHECK(policy == kNavigationPolicyCurrentTab ||
+         policy == kNavigationPolicyHandledByClient ||
+         policy == kNavigationPolicyHandledByClientForInitialHistory);
+
+  if (!CancelProvisionalLoaderForNewNavigation(policy))
+    return;
+
+  provisional_document_loader_ = CreateDocumentLoader(
+      resource_request, request, frame_load_type, navigation_type,
+      nullptr /* extra_data */, WebNavigationTimings());
+
+  if (request.Form())
+    Client()->DispatchWillSubmitForm(request.Form());
+
+  provisional_document_loader_->AppendRedirect(
+      provisional_document_loader_->Url());
+  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+
+  // TODO(ananta):
+  // We should get rid of the dependency on the DocumentLoader in consumers of
+  // the DidStartProvisionalLoad() notification.
+  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
+                                            resource_request);
+  DCHECK(provisional_document_loader_);
+
+  // TODO(dgozman): there is still a possibility of
+  // |kNavigationPolicyCurrentTab| when starting a navigation. Perhaps, we can
+  // just call CommitNavigation in this case instead, maybe from client side?
+  if (policy == kNavigationPolicyCurrentTab) {
+    provisional_document_loader_->StartLoading();
+    // This should happen after the request is sent, so that the state
+    // the inspector stored in the matching frameScheduledClientNavigation()
+    // is available while sending the request.
+    probe::frameClearedScheduledClientNavigation(frame_);
+  } else {
+    DCHECK(policy == kNavigationPolicyHandledByClient);
+    probe::frameScheduledClientNavigation(frame_);
+  }
 
   // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
   // the check that the pages are equal, because consumption should not be
   // shared across pages.
-  const Document* origin_document = request.OriginDocument();
   if (frame_->IsMainFrame() && origin_document &&
       frame_->GetPage() == origin_document->GetPage()) {
     Frame::ConsumeTransientUserActivation(frame_);
   }
+
+  TakeObjectSnapshot();
 }
 
 void FrameLoader::CommitNavigation(
@@ -871,6 +971,7 @@ void FrameLoader::CommitNavigation(
   CHECK(passed_request.TriggeringEventInfo() ==
         WebTriggeringEventInfo::kNotFromEvent);
   DCHECK(frame_->GetDocument());
+  DCHECK(Client()->HasWebView());
 
   if (in_stop_all_loaders_ || !frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
@@ -886,13 +987,13 @@ void FrameLoader::CommitNavigation(
 
   // TODO(dgozman): figure out the better place for this check
   // to cancel lazy load both on start and commit. Perhaps
-  // CreateDocumentLoader() is a good one.
+  // CancelProvisionalLoaderForNewNavigation() is a good one.
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
   FrameLoadRequest request(passed_request);
-  request.GetResourceRequest().SetHasUserGesture(
-      Frame::HasTransientUserActivation(frame_));
+  ResourceRequest& resource_request = request.GetResourceRequest();
+  resource_request.SetHasUserGesture(Frame::HasTransientUserActivation(frame_));
 
   if (frame_load_type == WebFrameLoadType::kStandard)
     frame_load_type = DetermineFrameLoadType(request);
@@ -905,9 +1006,45 @@ void FrameLoader::CommitNavigation(
   //   "cross-document" navigation, while it's actually same-document
   //   with regards to the last commit.
   // In this rare case, we intentionally proceed as cross-document.
-  StartLoad(request, frame_load_type, kNavigationPolicyCurrentTab, history_item,
-            false /* check_with_client */, std::move(extra_data),
-            navigation_timings);
+
+  RecordLatestRequiredCSP();
+
+  if (!CancelProvisionalLoaderForNewNavigation(kNavigationPolicyCurrentTab))
+    return;
+
+  // TODO(dgozman): navigation type should probably be passed by the caller.
+  // It seems incorrect to pass |false| for |have_event| and then use
+  // determined navigation type to update resource request.
+  WebNavigationType navigation_type = DetermineNavigationType(
+      frame_load_type, resource_request.HttpBody(), false /* have_event */);
+  // TODO(dgozman): should these fields be propagated from StartNavigation
+  // and/or set by the caller instead?
+  resource_request.SetRequestContext(
+      DetermineRequestContextFromNavigationType(navigation_type));
+  resource_request.SetFrameType(
+      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
+                            : network::mojom::RequestContextFrameType::kNested);
+
+  // TODO(dgozman): get rid of provisional document loader and most of the code
+  // below. We should probably call DocumentLoader::CommitNavigation directly.
+  provisional_document_loader_ = CreateDocumentLoader(
+      resource_request, request, frame_load_type, navigation_type,
+      std::move(extra_data), navigation_timings);
+  provisional_document_loader_->AppendRedirect(
+      provisional_document_loader_->Url());
+  if (IsBackForwardLoadType(frame_load_type)) {
+    DCHECK(history_item);
+    provisional_document_loader_->SetItemForHistoryNavigation(history_item);
+  }
+
+  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
+                                            resource_request);
+
+  provisional_document_loader_->StartLoading();
+  probe::frameClearedScheduledClientNavigation(frame_);
+
+  TakeObjectSnapshot();
 }
 
 mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
@@ -1336,54 +1473,6 @@ bool FrameLoader::ShouldClose(bool is_reload) {
   return should_close;
 }
 
-NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
-    const ResourceRequest& request,
-    Document* origin_document,
-    const SubstituteData& substitute_data,
-    DocumentLoader* loader,
-    ContentSecurityPolicyDisposition
-        should_check_main_world_content_security_policy,
-    WebNavigationType type,
-    NavigationPolicy policy,
-    WebFrameLoadType frame_load_type,
-    bool is_client_redirect,
-    WebTriggeringEventInfo triggering_event_info,
-    HTMLFormElement* form,
-    mojom::blink::BlobURLTokenPtr blob_url_token,
-    bool check_with_client) {
-  // Don't ask if we already have the data.
-  if (substitute_data.IsValid())
-    return kNavigationPolicyCurrentTab;
-
-  // Check for non-escaped new lines in the url.
-  if (request.Url().PotentiallyDanglingMarkup() &&
-      request.Url().ProtocolIsInHTTPFamily()) {
-    Deprecation::CountDeprecation(
-        frame_, WebFeature::kCanRequestURLHTTPContainingNewline);
-    if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
-      return kNavigationPolicyIgnore;
-  }
-
-  if (!check_with_client) {
-    DCHECK_EQ(kNavigationPolicyCurrentTab, policy);
-    return policy;
-  }
-
-  bool replaces_current_history_item =
-      frame_load_type == WebFrameLoadType::kReplaceCurrentItem;
-  policy = Client()->DecidePolicyForNavigation(
-      request, origin_document, loader, type, policy,
-      replaces_current_history_item, is_client_redirect, triggering_event_info,
-      form, should_check_main_world_content_security_policy,
-      std::move(blob_url_token));
-  DCHECK(policy == kNavigationPolicyCurrentTab ||
-         policy == kNavigationPolicyIgnore ||
-         policy == kNavigationPolicyHandledByClient ||
-         policy == kNavigationPolicyHandledByClientForInitialHistory)
-      << policy;
-  return policy;
-}
-
 void FrameLoader::ClientDroppedNavigation() {
   if (!provisional_document_loader_ || provisional_document_loader_->DidStart())
     return;
@@ -1400,116 +1489,6 @@ void FrameLoader::ClientDroppedNavigation() {
     // Forcibly instantiate WindowProxy.
     frame_->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
   }
-}
-
-void FrameLoader::StartLoad(
-    FrameLoadRequest& frame_load_request,
-    WebFrameLoadType type,
-    NavigationPolicy navigation_policy,
-    HistoryItem* history_item,
-    bool check_with_client,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    const WebNavigationTimings& navigation_timings) {
-  DCHECK(Client()->HasWebView());
-  ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
-  WebNavigationType navigation_type = DetermineNavigationType(
-      type, resource_request.HttpBody() || frame_load_request.Form(),
-      frame_load_request.TriggeringEventInfo() !=
-          WebTriggeringEventInfo::kNotFromEvent);
-  resource_request.SetRequestContext(
-      DetermineRequestContextFromNavigationType(navigation_type));
-  resource_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
-
-  Document* origin_document = frame_load_request.OriginDocument();
-  if (origin_document && origin_document->GetContentSecurityPolicy()
-                             ->ExperimentalFeaturesEnabled()) {
-    WebContentSecurityPolicyList initiator_csp =
-        origin_document->GetContentSecurityPolicy()
-            ->ExposeForNavigationalChecks();
-    resource_request.SetInitiatorCSP(initiator_csp);
-  }
-
-  // Record the latest requiredCSP value that will be used when sending this
-  // request.
-  RecordLatestRequiredCSP();
-
-  // TODO(arthursonzogni): 'frame-src' check is disabled on the
-  // renderer side, but is enforced on the browser side.
-  // See http://crbug.com/692595 for understanding why it
-  // can't be enforced on both sides instead.
-
-  // 'form-action' check in the frame that is navigating is disabled on the
-  // renderer side, but is enforced on the browser side instead.
-  // N.B. check in the frame that initiates the navigation stills occurs in
-  // blink and is not enforced on the browser-side.
-  // TODO(arthursonzogni) The 'form-action' check should be fully disabled
-  // in blink, except when the form submission doesn't trigger a navigation
-  // (i.e. javascript urls). Please see https://crbug.com/701749.
-
-  // Report-only CSP headers are checked in browser.
-  ModifyRequestForCSP(resource_request, origin_document);
-
-  navigation_policy = ShouldContinueForNavigationPolicy(
-      resource_request, origin_document, frame_load_request.GetSubstituteData(),
-      nullptr, frame_load_request.ShouldCheckMainWorldContentSecurityPolicy(),
-      navigation_type, navigation_policy, type,
-      frame_load_request.ClientRedirect() ==
-          ClientRedirectPolicy::kClientRedirect,
-      frame_load_request.TriggeringEventInfo(), frame_load_request.Form(),
-      frame_load_request.GetBlobURLToken(), check_with_client);
-
-  // 'beforeunload' can be fired above, which can detach this frame from inside
-  // the event handler.
-  if (!frame_->GetPage())
-    return;
-
-  if (navigation_policy == kNavigationPolicyIgnore) {
-    // This could only happen from StartNavigation, which must not clear
-    // CheckForBrowserSideNavigation bit.
-    CHECK(resource_request.CheckForBrowserSideNavigation());
-    return;
-  }
-
-  if (!CancelProvisionalLoaderForNewNavigation(navigation_policy))
-    return;
-
-  provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, frame_load_request, type, navigation_type,
-      std::move(extra_data), navigation_timings);
-
-  if (frame_load_request.Form())
-    Client()->DispatchWillSubmitForm(frame_load_request.Form());
-
-  provisional_document_loader_->AppendRedirect(
-      provisional_document_loader_->Url());
-
-  if (IsBackForwardLoadType(type)) {
-    DCHECK(history_item);
-    provisional_document_loader_->SetItemForHistoryNavigation(history_item);
-  }
-
-  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-
-  // TODO(ananta):
-  // We should get rid of the dependency on the DocumentLoader in consumers of
-  // the DidStartProvisionalLoad() notification.
-  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request);
-  DCHECK(provisional_document_loader_);
-
-  if (navigation_policy == kNavigationPolicyCurrentTab) {
-    provisional_document_loader_->StartLoading();
-    // This should happen after the request is sent, so that the state
-    // the inspector stored in the matching frameScheduledClientNavigation()
-    // is available while sending the request.
-    probe::frameClearedScheduledClientNavigation(frame_);
-  } else {
-    probe::frameScheduledClientNavigation(frame_);
-  }
-
-  TakeObjectSnapshot();
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(

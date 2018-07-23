@@ -65,7 +65,6 @@ namespace blink {
 class Document;
 class DocumentLoader;
 class ExecutionContext;
-class HTMLFormElement;
 class LocalFrame;
 class Frame;
 class LocalFrameClient;
@@ -209,23 +208,6 @@ class CORE_EXPORT FrameLoader final {
   void SaveScrollState();
   void RestoreScrollPositionAndViewState();
 
-  // The navigation should only be continued immediately in this frame if this
-  // returns NavigationPolicyCurrentTab.
-  NavigationPolicy ShouldContinueForNavigationPolicy(
-      const ResourceRequest&,
-      Document* origin_document,
-      const SubstituteData&,
-      DocumentLoader*,
-      ContentSecurityPolicyDisposition,
-      WebNavigationType,
-      NavigationPolicy,
-      WebFrameLoadType,
-      bool is_client_redirect,
-      WebTriggeringEventInfo,
-      HTMLFormElement*,
-      mojom::blink::BlobURLTokenPtr,
-      bool check_with_client);
-
   // Note: When a PlzNavigtate navigation is handled by the client, we will
   // have created a dummy provisional DocumentLoader, so this will return true
   // while the client handles the navigation.
@@ -256,14 +238,6 @@ class CORE_EXPORT FrameLoader final {
 
   // Returns whether we should continue with new navigation.
   bool CancelProvisionalLoaderForNewNavigation(NavigationPolicy);
-
-  void StartLoad(FrameLoadRequest&,
-                 WebFrameLoadType,
-                 NavigationPolicy,
-                 HistoryItem*,
-                 bool check_with_client,
-                 std::unique_ptr<WebDocumentLoader::ExtraData>,
-                 const WebNavigationTimings&);
 
   void ClearInitialScrollState();
 
