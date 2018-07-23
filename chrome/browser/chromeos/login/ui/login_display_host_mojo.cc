@@ -259,8 +259,18 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
       GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
     LoadWallpaper(*prefilled_account);
   } else {
-    if (GetOobeUI()->current_screen() != OobeScreen::SCREEN_GAIA_SIGNIN)
+    // Two criteria here:
+    // 1) If we have started a wizard other than Gaia signin (signified by the
+    // current_screen() changing), we need to reload the Gaia screen, otherwise
+    // dialog_->Show() will show the wrong screen. 2) While login is being
+    // loaded in, the current_screen is UNKNOWN. During this time, the
+    // GaiaScreenView is initialized, after which ShowGaiaAsync() is called to
+    // load up the Gaia screen. If we try to ShowGaiaAsync() before this
+    // initialization is complete, the Gaia screen UI can crash and get stuck.
+    if (GetOobeUI()->current_screen() != OobeScreen::SCREEN_GAIA_SIGNIN &&
+        GetOobeUI()->current_screen() != OobeScreen::SCREEN_UNKNOWN) {
       GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    }
     LoadSigninWallpaper();
   }
 
