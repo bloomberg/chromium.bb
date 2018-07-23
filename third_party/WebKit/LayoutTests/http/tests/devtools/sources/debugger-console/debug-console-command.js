@@ -50,18 +50,18 @@
     }
   ]);
 
-  function setBreakpointAndRun(next, functionName, runCmd) {
-    ConsoleTestRunner.evaluateInConsole('debug(' + functionName + ')');
+  async function setBreakpointAndRun(next, functionName, runCmd) {
+    await ConsoleTestRunner.evaluateInConsolePromise('debug(' + functionName + ')');
 
     TestRunner.addResult('Breakpoint added.');
-    ConsoleTestRunner.evaluateInConsole('setTimeout(function() { ' + runCmd + ' }, 0)');
+    await ConsoleTestRunner.evaluateInConsolePromise('setTimeout(function() { ' + runCmd + ' }, 20)');
     TestRunner.addResult('Set timer for test function.');
     SourcesTestRunner.waitUntilPaused(didPause);
 
-    function didPause(callFrames, reason) {
+    async function didPause(callFrames, reason) {
       TestRunner.addResult('Script execution paused.');
       SourcesTestRunner.captureStackTrace(callFrames);
-      ConsoleTestRunner.evaluateInConsole('undebug(' + functionName + ')');
+      await ConsoleTestRunner.evaluateInConsolePromise('undebug(' + functionName + ')');
       TestRunner.addResult('Breakpoint removed.');
       TestRunner.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);
       SourcesTestRunner.resumeExecution(didResume);

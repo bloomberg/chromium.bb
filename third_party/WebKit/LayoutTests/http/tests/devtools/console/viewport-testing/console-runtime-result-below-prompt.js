@@ -32,10 +32,10 @@
 
     async function testNoOpForLongText(next) {
       TestRunner.addResult('Setting max length for evaluation to 0');
-      const originalMaxLength = Console.ConsolePrompt._MaxLengthForEvaluation;
-      Console.ConsolePrompt._MaxLengthForEvaluation = 0;
+      const originalMaxLength = ObjectUI.JavaScriptREPL._MaxLengthForEvaluation;
+      ObjectUI.JavaScriptREPL._MaxLengthForEvaluation = 0;
       await checkExpression(`1 + 2`);
-      Console.ConsolePrompt._MaxLengthForEvaluation = originalMaxLength;
+      ObjectUI.JavaScriptREPL._MaxLengthForEvaluation = originalMaxLength;
 
       next();
     },
