@@ -37,7 +37,8 @@
           invalid="[[isWordInvalid_(newWordValue_)]]"
           error-message="[[isWordInvalid_(newWordValue_,
               '$i18nPolymer{addDictionaryWordDuplicateError}',
-              '$i18nPolymer{addDictionaryWordLengthError}')]]">
+              '$i18nPolymer{addDictionaryWordLengthError}')]]"
+          spellcheck="false">
         <paper-button class="secondary-button" on-click="onAddWordTap_"
             disabled="[[disableAddButton_(newWordValue_)]]" id="addWord"
             slot="suffix">
