@@ -121,6 +121,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
+#include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1907,15 +1908,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose2) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-#if defined(OS_MACOSX) || (defined(OS_WIN) && !defined(NDEBUG))
+#if (defined(OS_WIN) && !defined(NDEBUG))
 // Times out on windows (dbg). https://crbug.com/753691.
-// Also times out on macOS (can be made to pass by lowering kPaintMsgTimeoutMS
-// in RenderWidgetHostImpl).
 #define MAYBE_WindowOpenClose3 DISABLED_WindowOpenClose3
 #else
 #define MAYBE_WindowOpenClose3 WindowOpenClose3
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose3) {
+#if defined(OS_MACOSX)
+  // Ensure that tests don't wait for frames that will never come.
+  ui::CATransactionCoordinator::Get().DisableForTesting();
+#endif
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
