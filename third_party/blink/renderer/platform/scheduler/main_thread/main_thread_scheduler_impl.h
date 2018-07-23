@@ -104,6 +104,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool low_priority_ad_frame;
     bool best_effort_ad_frame;
 
+    // Origin type priority experiment (crbug.com/856158).
+    bool low_priority_cross_origin;
+
     // Use resource fetch priority for resource loading tasks
     // (crbug.com/860545).
     bool use_resource_fetch_priority;

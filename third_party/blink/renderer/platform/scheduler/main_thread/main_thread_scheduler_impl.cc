@@ -685,6 +685,9 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   best_effort_ad_frame =
       base::FeatureList::IsEnabled(kBestEffortPriorityForAdFrame);
 
+  low_priority_cross_origin =
+      base::FeatureList::IsEnabled(kLowPriorityForCrossOrigin);
+
   use_resource_fetch_priority =
       base::FeatureList::IsEnabled(kUseResourceFetchPriority);
 
