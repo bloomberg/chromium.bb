@@ -4344,8 +4344,6 @@ crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autopla
 # Sheriff 2018-02-26
 crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
-crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
-crbug.com/816766 [ Mac ] virtual/user-activation-v2/fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
 # Sheriff 2018-03-02
@@ -4627,9 +4625,6 @@ crbug.com/818324 [ Linux Mac Win7 ] external/wpt/content-security-policy/embedde
 # S13N Sheriff 2018-7-11
 crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]
 
-# Sheriff 2018-7-12
-crbug.com/863067 [ Win10 ] virtual/user-activation-v2/fast/dom/Window/window-focus-self.html [ Failure Pass ]
-
 # Sheriff 2018-7-13
 crbug.com/863599 [ Linux Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
@@ -4638,7 +4633,6 @@ crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.htm
 crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Timeout Pass ]
 
 # Sheriff 2018-07-18
-crbug.com/863067 [ Win10 ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
 
 crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
