@@ -317,9 +317,7 @@ base::ScopedCFTypeRef<CFURLRef> CFURLRefForPath(const base::FilePath& path){
 
 // If a database file is marked to be excluded from Time Machine, verify that
 // journal files are also excluded.
-// TODO(shess): Disabled because CSBackupSetItemExcluded() does not work on the
-// bots, though it's fine on dev machines.  See <http://crbug.com/410350>.
-TEST_F(SQLiteFeaturesTest, DISABLED_TimeMachine) {
+TEST_F(SQLiteFeaturesTest, TimeMachine) {
   ASSERT_TRUE(db().Execute("CREATE TABLE t (id INTEGER PRIMARY KEY)"));
   db().Close();
 
