@@ -4,7 +4,6 @@
 
 #include "chrome/chrome_cleaner/os/disk_util.h"
 
-#include <softpub.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -133,22 +132,6 @@ void CollectMatchingPathsRecursive(
     CollectMatchingPathsRecursive(root_path.Append(component), components,
                                   component_index + 1, matches);
   }
-}
-
-// Return whether an executable is whitelisted. On success, |file_information|
-// receives the file version information. |file_information| is not modified by
-// this function but cannot be const because of the accessors prototype in base.
-bool IsExecutableWhiteListed(FileVersionInfo* file_information) {
-  DCHECK(file_information);
-  bool white_listed = false;
-  base::string16 company_name = file_information->company_name();
-  for (const base::string16& white_listed_name : company_white_list) {
-    if (company_name.compare(white_listed_name) == 0) {
-      white_listed = true;
-      break;
-    }
-  }
-  return white_listed;
 }
 
 void AppendFileInformationField(const wchar_t* field_name,
@@ -520,10 +503,28 @@ base::string16 FileInformationToString(
   return content;
 }
 
+bool IsExecutableOnDefaultReportingWhiteList(const base::FilePath& file_path) {
+  std::unique_ptr<FileVersionInfo> file_information(
+      FileVersionInfo::CreateFileVersionInfo(file_path));
+  if (!file_information)
+    return false;
+
+  bool white_listed = false;
+  base::string16 company_name = file_information->company_name();
+  for (const base::string16& white_listed_name : company_white_list) {
+    if (company_name.compare(white_listed_name) == 0) {
+      white_listed = true;
+      break;
+    }
+  }
+  return white_listed;
+}
+
 bool RetrieveDetailedFileInformation(
     const base::FilePath& file_path,
     internal::FileInformation* file_information,
-    bool* white_listed) {
+    bool* white_listed,
+    ReportingWhiteListCallback white_list_callback) {
   DCHECK(file_information);
   DCHECK(white_listed);
 
@@ -531,9 +532,7 @@ bool RetrieveDetailedFileInformation(
   if (!TryToExpandPath(file_path, &expanded_path))
     return false;
 
-  std::unique_ptr<FileVersionInfo> version(
-      FileVersionInfo::CreateFileVersionInfo(expanded_path));
-  if (version.get() && IsExecutableWhiteListed(version.get())) {
+  if (std::move(white_list_callback).Run(file_path)) {
     *white_listed = true;
     return false;
   }
@@ -550,7 +549,9 @@ bool RetrieveDetailedFileInformation(
   }
 
   // Set the executable version information, when available.
-  if (version.get()) {
+  std::unique_ptr<FileVersionInfo> version(
+      FileVersionInfo::CreateFileVersionInfo(expanded_path));
+  if (version) {
     file_information->company_name = version->company_name();
     file_information->company_short_name = version->company_short_name();
     file_information->product_name = version->product_name();
