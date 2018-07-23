@@ -2837,11 +2837,11 @@ TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
   wm::ActivateWindow(window1.get());
 
   // Dragging is only allowed in tablet mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
   WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
   EXPECT_TRUE(HasMaskForItem(item1));
@@ -2858,14 +2858,14 @@ TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
   generator->PressLeftButton();
   EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
-  // Drag to origin and then back to the start to avoid activating the window or
-  // entering splitview. Verify that the mask is invisible on both items during
-  // animation.
-  generator->MoveMouseTo(gfx::Point());
+  // Drag to horizontally and then back to the start to avoid activating the
+  // window, drag to close or entering splitview. Verify that the mask is
+  // invisible on both items during animation.
+  generator->MoveMouseTo(gfx::Point(0, start_drag.y()));
   generator->MoveMouseTo(start_drag);
   generator->ReleaseLeftButton();
   EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
@@ -2876,7 +2876,7 @@ TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
   // Verify that the mask is visble again after animation is finished.
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
@@ -3182,10 +3182,14 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
   // to |end_location|. This should be used over
   // DragWindowTo(WindowSelectorItem*, gfx::Point) when testing snapping a
   // window, but the windows centerpoint may be inside a snap region, thus the
-  // window will not snapped.
+  // window will not snapped. This function is mostly used to test splitview so
+  // |long_press| is default to true. Set |long_press| to false if we do not
+  // want to long press after every press, which enables dragging vertically to
+  // close an item.
   void DragWindowTo(WindowSelectorItem* item,
                     const gfx::Point& end_location,
-                    SelectorItemLocation location) {
+                    SelectorItemLocation location,
+                    bool long_press = true) {
     // Start drag in the middle of the seletor item.
     gfx::Point start_location;
     switch (location) {
@@ -3209,6 +3213,8 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
         break;
     }
     window_selector()->InitiateDrag(item, start_location);
+    if (long_press)
+      window_selector()->StartSplitViewDragMode(start_location);
     window_selector()->Drag(item, end_location);
     window_selector()->CompleteDrag(item, end_location);
   }
@@ -3216,7 +3222,7 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
   // Drags a window selector item |item| from its center point to
   // |end_location|.
   void DragWindowTo(WindowSelectorItem* item, const gfx::Point& end_location) {
-    DragWindowTo(item, end_location, SelectorItemLocation::CENTER);
+    DragWindowTo(item, end_location, SelectorItemLocation::CENTER, true);
   }
 
   // Creates a window which cannot be snapped by splitview.
@@ -3859,18 +3865,20 @@ TEST_F(SplitViewWindowSelectorTest, PreviewAreaVisibility) {
   WindowSelectorItem* selector_item =
       GetWindowItemForWindow(grid_index, window.get());
   const gfx::Point start_location(selector_item->target_bounds().CenterPoint());
+  // Drag horizontally to avoid activating drag to close.
+  const int y = start_location.y();
   window_selector()->InitiateDrag(selector_item, start_location);
   EXPECT_FALSE(IsPreviewAreaShowing());
-  window_selector()->Drag(selector_item, gfx::Point(edge_inset + 1, 1));
+  window_selector()->Drag(selector_item, gfx::Point(edge_inset + 1, y));
   EXPECT_FALSE(IsPreviewAreaShowing());
-  window_selector()->Drag(selector_item, gfx::Point(edge_inset, 1));
+  window_selector()->Drag(selector_item, gfx::Point(edge_inset, y));
   EXPECT_TRUE(IsPreviewAreaShowing());
 
   window_selector()->Drag(selector_item,
-                          gfx::Point(screen_width - edge_inset - 2, 1));
+                          gfx::Point(screen_width - edge_inset - 2, y));
   EXPECT_FALSE(IsPreviewAreaShowing());
   window_selector()->Drag(selector_item,
-                          gfx::Point(screen_width - edge_inset - 1, 1));
+                          gfx::Point(screen_width - edge_inset - 1, y));
   EXPECT_TRUE(IsPreviewAreaShowing());
 
   // Drag back to |start_location| before compeleting the drag, otherwise
@@ -3935,16 +3943,20 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsState) {
   window_selector()->ResetDraggedWindowGesture();
 
   // Verify the indicator is visible once the item starts moving, and becomes a
-  // preview area once we reach the left edge of the screen.
+  // preview area once we reach the left edge of the screen. Drag horizontal to
+  // avoid activating drag to close.
+  const int y_position = start_location.y();
   window_selector()->InitiateDrag(selector_item, start_location);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
-  window_selector()->Drag(selector_item, gfx::Point(edge_inset + 1, 0));
+  window_selector()->Drag(selector_item,
+                          gfx::Point(edge_inset + 1, y_position));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
-  window_selector()->Drag(selector_item, gfx::Point(edge_inset, 0));
+  window_selector()->Drag(selector_item, gfx::Point(edge_inset, y_position));
   EXPECT_EQ(IndicatorState::kPreviewAreaLeft, indicator_state());
 
   // Snap window to the left.
-  window_selector()->CompleteDrag(selector_item, gfx::Point(edge_inset, 0));
+  window_selector()->CompleteDrag(selector_item,
+                                  gfx::Point(edge_inset, y_position));
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
   ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
@@ -3955,7 +3967,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsState) {
   start_location = selector_item->target_bounds().CenterPoint();
   window_selector()->InitiateDrag(selector_item, start_location);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
-  window_selector()->Drag(selector_item, gfx::Point(screen_width - 1, 0));
+  window_selector()->Drag(selector_item,
+                          gfx::Point(screen_width - 1, y_position));
   EXPECT_EQ(IndicatorState::kPreviewAreaRight, indicator_state());
   window_selector()->CompleteDrag(selector_item, start_location);
 }
@@ -4056,7 +4069,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsWidgetReparenting) {
       GetWindowItemForWindow(0, primary_screen_window.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  window_selector()->Drag(selector_item, gfx::Point(100, 100));
+  window_selector()->Drag(selector_item, gfx::Point(100, start_location.y()));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[0], window_selector()
                                  ->split_view_drag_indicators()
@@ -4075,7 +4088,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsWidgetReparenting) {
   selector_item = GetWindowItemForWindow(1, secondary_screen_window.get());
   start_location = gfx::Point(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  window_selector()->Drag(selector_item, gfx::Point(800, 200));
+  window_selector()->Drag(selector_item, gfx::Point(800, start_location.y()));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[1], window_selector()
                                  ->split_view_drag_indicators()
