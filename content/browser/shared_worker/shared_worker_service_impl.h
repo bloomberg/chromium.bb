@@ -27,6 +27,8 @@ class MessagePortChannel;
 }
 
 namespace content {
+
+class ChromeAppCacheService;
 class SharedWorkerInstance;
 class SharedWorkerHost;
 class StoragePartition;
@@ -36,7 +38,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
  public:
   SharedWorkerServiceImpl(
       StoragePartition* storage_partition,
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      scoped_refptr<ChromeAppCacheService> appcache_service);
   ~SharedWorkerServiceImpl() override;
 
   // SharedWorkerService implementation.
@@ -95,6 +98,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // |storage_partition_| owns |this|.
   StoragePartition* const storage_partition_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
 
   base::WeakPtrFactory<SharedWorkerServiceImpl> weak_factory_;
 
