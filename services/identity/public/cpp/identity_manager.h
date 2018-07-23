@@ -30,7 +30,7 @@ class UserSessionManager;
 
 // Necessary to declare this class as a friend.
 namespace file_manager {
-class MultiProfileFileManagerBrowserTest;
+class MultiProfileFilesAppBrowserTest;
 }
 
 // Necessary to declare these classes as friends.
@@ -185,7 +185,7 @@ class IdentityManager : public SigninManagerBase::Observer,
                                        const std::string& email);
   friend MultiProfileDownloadNotificationTest;
   friend ProfileSyncServiceHarness;
-  friend file_manager::MultiProfileFileManagerBrowserTest;
+  friend file_manager::MultiProfileFilesAppBrowserTest;
 
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend ArcSupportHostTest;
