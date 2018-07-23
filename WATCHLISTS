@@ -87,6 +87,9 @@
     'android_webview': {
       'filepath': 'android_webview/',
     },
+    'animation_worklet': {
+      'filepath': 'third_party/blink/renderer/modules/animationworklet/',
+    },
     'app_list': {
       'filepath': 'ash/app_list'\
                   '|chrome/browser/ui/app_list'\
@@ -623,6 +626,9 @@
     'cc': {
       'filepath': 'cc/'\
                   '|components/viz/'
+    },
+    'cc-animation': {
+      'filepath': 'cc/animation/'
     },
     'cc-contexts': {
       'filepath': 'components/viz/common/gpu'
@@ -1708,6 +1714,8 @@
                              'gayane+watch@chromium.org'],
     'android_webapk': ['dominickn+watch-webapk@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
+    'animation_worklet': ['yigu@chromium.org',
+                          'majidvp@chromium.org'],
     'app_list': ['tfarina@chromium.org'],
     'app_shortcuts': ['loyso+watch@chromium.org',
                       'mgiuca+watch@chromium.org',
@@ -1960,6 +1968,8 @@
                      'mfoltz+watch@chromium.org',
                      'ryanchung+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
+    'cc-animation': ['yigu@chromium.org',
+                     'majidvp@chromium.org'],
     'cc-contexts': ['danakj+watch@chromium.org'],
     'cc-display': ['danakj+watch@chromium.org'],
     'cc-paint': ['danakj+watch@chromium.org'],
