@@ -688,23 +688,8 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
 }
 
 network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
-  if (!network_context_.is_bound() || network_context_.encountered_error()) {
-    network_context_ = GetContentClient()->browser()->CreateNetworkContext(
-        browser_context_, is_in_memory_, relative_partition_path_);
-    if (!network_context_) {
-      // TODO(mmenke): Remove once https://crbug.com/827928 is fixed.
-      CHECK(url_request_context_);
-
-      DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-      DCHECK(!network_context_owner_);
-      network_context_owner_ = std::make_unique<NetworkContextOwner>();
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&NetworkContextOwner::Initialize,
-                         base::Unretained(network_context_owner_.get()),
-                         MakeRequest(&network_context_), url_request_context_));
-    }
-  }
+  if (!network_context_.is_bound())
+    InitNetworkContext();
   return network_context_.get();
 }
 
@@ -1236,6 +1221,26 @@ void StoragePartitionImpl::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   GetContentClient()->browser()->GetQuotaSettings(browser_context_, this,
                                                   std::move(callback));
+}
+
+void StoragePartitionImpl::InitNetworkContext() {
+  network_context_ = GetContentClient()->browser()->CreateNetworkContext(
+      browser_context_, is_in_memory_, relative_partition_path_);
+  if (!network_context_) {
+    // TODO(mmenke): Remove once https://crbug.com/827928 is fixed.
+    CHECK(url_request_context_);
+
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(!network_context_owner_);
+    network_context_owner_ = std::make_unique<NetworkContextOwner>();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&NetworkContextOwner::Initialize,
+                       base::Unretained(network_context_owner_.get()),
+                       MakeRequest(&network_context_), url_request_context_));
+  }
+  network_context_.set_connection_error_handler(base::BindOnce(
+      &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
 }
 
 network::mojom::URLLoaderFactory*

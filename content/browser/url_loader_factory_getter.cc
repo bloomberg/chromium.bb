@@ -111,13 +111,18 @@ URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo::CreateFactory() {
 
 // -----------------------------------------------------------------------------
 
-URLLoaderFactoryGetter::URLLoaderFactoryGetter() {}
+URLLoaderFactoryGetter::URLLoaderFactoryGetter() : weak_factory_(this) {}
 
 void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   DCHECK(partition);
-  DCHECK(!pending_network_factory_request_.is_pending());
-
   partition_ = partition;
+  Reinitialize();
+}
+
+void URLLoaderFactoryGetter::Reinitialize() {
+  if (!partition_)
+    return;
+  DCHECK(!pending_network_factory_request_.is_pending());
   network::mojom::URLLoaderFactoryPtr network_factory;
   pending_network_factory_request_ = MakeRequest(&network_factory);
 
@@ -128,7 +133,8 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread, this,
+      base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
+                     weak_factory_.GetWeakPtr(),
                      network_factory.PassInterface()));
 }
 
@@ -166,14 +172,16 @@ URLLoaderFactoryGetter::GetURLLoaderFactory() {
   if (test_factory_)
     return test_factory_;
 
-  if (!network_factory_.is_bound() || network_factory_.encountered_error()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
-            this, mojo::MakeRequest(&network_factory_)));
-  }
+  if (!network_factory_.is_bound())
+    HandleURLLoaderFactoryConnectionError();
   return network_factory_.get();
+}
+
+void URLLoaderFactoryGetter::HandleURLLoaderFactoryConnectionError() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&URLLoaderFactoryGetter::Reinitialize, this));
 }
 
 void URLLoaderFactoryGetter::CloneNetworkFactory(
@@ -201,18 +209,18 @@ void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
 void URLLoaderFactoryGetter::FlushNetworkInterfaceOnIOThreadForTesting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
-  BrowserThread::PostTaskAndReply(
+  BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting,
-                     this),
-      run_loop.QuitClosure());
+                     this, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
-void URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting() {
+void URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting(
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (network_factory_)
-    network_factory_.FlushForTesting();
+    network_factory_.FlushAsyncForTesting(std::move(callback));
 }
 
 URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
@@ -220,6 +228,9 @@ URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
 void URLLoaderFactoryGetter::InitializeOnIOThread(
     network::mojom::URLLoaderFactoryPtrInfo network_factory) {
   network_factory_.Bind(std::move(network_factory));
+  network_factory_.set_connection_error_handler(base::BindOnce(
+      &URLLoaderFactoryGetter::HandleURLLoaderFactoryConnectionError,
+      weak_factory_.GetWeakPtr()));
 }
 
 void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(

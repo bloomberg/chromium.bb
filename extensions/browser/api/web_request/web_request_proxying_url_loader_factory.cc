@@ -337,16 +337,15 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
   }
 
   info_->AddResponseInfoFromResourceResponse(current_response_);
+  auto continuation =
+      base::BindRepeating(&InProgressRequest::OnAuthRequestHandled,
+                          weak_factory_.GetWeakPtr(), base::Passed(&callback));
 
   auth_credentials_.emplace();
   net::NetworkDelegate::AuthRequiredResponse response =
       ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
           factory_->browser_context_, factory_->info_map_, &info_.value(),
-          *auth_info,
-          base::BindRepeating(&InProgressRequest::OnAuthRequestHandled,
-                              weak_factory_.GetWeakPtr(),
-                              base::Passed(&callback)),
-          &auth_credentials_.value());
+          *auth_info, continuation, &auth_credentials_.value());
 
   // At least one extension has a blocking handler for this request, so we'll
   // just wait for them to finish. |OnAuthRequestHandled()| will be invoked
@@ -357,10 +356,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
   // We're not touching this auth request. Let the default browser behavior
   // proceed.
   DCHECK_EQ(response, net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), base::nullopt,
-                     false /* should_cancel */));
+  continuation.Run(response);
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::

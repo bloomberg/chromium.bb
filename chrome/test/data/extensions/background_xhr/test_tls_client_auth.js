@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(davidben): When URLSearchParams is stable and implemented, switch this
-// (and a lot of other test code) to it. https://crbug.com/303152
-var url = decodeURIComponent(/url=([^&]*)/.exec(location.search)[1]);
+var url = new URL(location.href).searchParams.get('url');
 var filter = {urls: [url], types: ["xmlhttprequest"]};
 
 chrome.webRequest.onCompleted.addListener(function(details) {
@@ -19,5 +17,3 @@ chrome.webRequest.onErrorOccurred.addListener(function(details) {
 
   chrome.test.notifyPass();
 }, filter);
-
-chrome.runtime.sendMessage({type: "xhr", method: "GET", url: url});

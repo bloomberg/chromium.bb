@@ -208,17 +208,10 @@
 -ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
+# Needs synchronization to wait until after URLLoaderFactories are rebound.
+-DevToolsFrontendInWebRequestApiTest.HiddenRequests
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
-
-# WebRequest implementation needs to handle extension
-# installation/uninstallation events.
-# http://crbug.com/857577
--BackgroundXhrTest.HttpAuth
--BackgroundXhrTest.TlsClientAuth
-
-# http://crbug.com/853733
--DeclarativeNetRequestBrowserTest.PageAllowingAPI_BrowserRequests/0
 
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
