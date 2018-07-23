@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/shared_worker/mock_shared_worker.h"
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
@@ -34,7 +35,9 @@ class SharedWorkerHostTest : public testing::Test {
  public:
   SharedWorkerHostTest()
       : mock_render_process_host_(&browser_context_),
-        service_(&storage_partition_, nullptr /* service_worker_context */) {
+        service_(&storage_partition_,
+                 nullptr /* service_worker_context */,
+                 nullptr /* appcache_service */) {
     storage_partition_.set_network_context(&network_context_);
   }
 

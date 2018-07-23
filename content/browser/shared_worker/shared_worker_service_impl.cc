@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/task_scheduler/post_task.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
@@ -147,12 +148,18 @@ void CreateScriptLoaderOnIO(
 
 SharedWorkerServiceImpl::SharedWorkerServiceImpl(
     StoragePartition* storage_partition,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<ChromeAppCacheService> appcache_service)
     : storage_partition_(storage_partition),
       service_worker_context_(std::move(service_worker_context)),
-      weak_factory_(this) {}
+      appcache_service_(std::move(appcache_service)),
+      weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
-SharedWorkerServiceImpl::~SharedWorkerServiceImpl() {}
+SharedWorkerServiceImpl::~SharedWorkerServiceImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 bool SharedWorkerServiceImpl::TerminateWorker(
     const GURL& url,
@@ -304,6 +311,10 @@ void SharedWorkerServiceImpl::CreateWorker(
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_renderer =
         CreateFactoryBundle(process_id, storage_partition,
                             constructor_uses_file_url);
+
+    // TODO(nhiroki): Create an instance of AppCacheNavigationHandle from
+    // |appcache_service_| and pass its core() to the IO thread in order to set
+    // up an interceptor for AppCache.
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
