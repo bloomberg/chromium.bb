@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -48,6 +49,23 @@ void AccessibilityTreeFormatter::FormatAccessibilityTree(
     const base::DictionaryValue& dict,
     base::string16* contents) {
   RecursiveFormatAccessibilityTree(dict, contents);
+}
+
+base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
+    BrowserAccessibilityManager* ax_mgr,
+    bool internal) {
+  std::unique_ptr<AccessibilityTreeFormatter> formatter;
+  if (internal)
+    formatter.reset(new AccessibilityTreeFormatterBlink());
+  else
+    formatter.reset(Create());
+  base::string16 accessibility_contents_utf16;
+  std::vector<Filter> filters;
+  filters.push_back(Filter(base::ASCIIToUTF16("*"), Filter::ALLOW));
+  formatter->SetFilters(filters);
+  formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
+                                     &accessibility_contents_utf16);
+  return accessibility_contents_utf16;
 }
 
 std::unique_ptr<base::DictionaryValue>

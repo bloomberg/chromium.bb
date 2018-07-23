@@ -44,6 +44,10 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   void EnableAccessibility() override;
   void DisableAccessibility() override;
+  bool IsRendererAccessibilityEnabled() override;
+  ui::AXMode GetAccessibilityMode() const override;
+  void AddAccessibilityModeFlags(ui::AXMode mode) override;
+  void RemoveAccessibilityModeFlags(ui::AXMode mode) override;
   void ResetAccessibilityMode() override;
   void OnScreenReaderDetected() override;
   bool IsAccessibleBrowser() override;
@@ -53,16 +57,6 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   // AXModeObserver
   void OnAXModeAdded(ui::AXMode mode) override;
-
-  ui::AXMode accessibility_mode() const { return accessibility_mode_; };
-
-  // Adds the given accessibility mode flags to the current accessibility
-  // mode bitmap.
-  void AddAccessibilityModeFlags(ui::AXMode mode);
-
-  // Remove the given accessibility mode flags from the current accessibility
-  // mode bitmap.
-  void RemoveAccessibilityModeFlags(ui::AXMode mode);
 
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because

@@ -24,8 +24,8 @@ found in the LICENSE file.
     <div class="column">
       <h2>Global accessibility mode:</h2>
 
-      <div class="checkbox_row">
-        <span class="checkbox_wrapper">
+      <div class="checkbox-row">
+        <span class="checkbox-wrapper">
           <input type="checkbox" id="native"
                  aria-describedby="native_secondary">
         </span>
@@ -38,8 +38,8 @@ found in the LICENSE file.
         specific to this platform.
       </div>
 
-      <div class="checkbox_row">
-        <span class="checkbox_wrapper">
+      <div class="checkbox-row">
+        <span class="checkbox-wrapper">
           <input type="checkbox" id="web"
                  aria-describedby="web_secondary">
         </span>
@@ -51,8 +51,8 @@ found in the LICENSE file.
         Accessibility support is enabled for web content.
       </div>
 
-      <div class="checkbox_row">
-        <span class="checkbox_wrapper">
+      <div class="checkbox-row">
+        <span class="checkbox-wrapper">
           <input type="checkbox" id="text"
                  aria-describedby="text_secondary">
         </span>
@@ -65,8 +65,8 @@ found in the LICENSE file.
         box of arbitrary character ranges.
       </div>
 
-      <div class="checkbox_row">
-        <span class="checkbox_wrapper">
+      <div class="checkbox-row">
+        <span class="checkbox-wrapper">
           <input type="checkbox" id="screenreader"
                  aria-describedby="screenreader_secondary">
         </span>
@@ -79,8 +79,8 @@ found in the LICENSE file.
         screen readers.
       </div>
 
-      <div class="checkbox_row">
-        <span class="checkbox_wrapper">
+      <div class="checkbox-row">
+        <span class="checkbox-wrapper">
           <input type="checkbox" id="html"
                  aria-describedby="html_secondary">
         </span>
@@ -94,8 +94,8 @@ found in the LICENSE file.
 
       <h2>Options:</h2>
 
-      <div class="checkbox_row">
-        <span class="checkbox_wrapper">
+      <div class="checkbox-row">
+        <span class="checkbox-wrapper">
           <input type="checkbox" id="internal"
                  aria-describedby="internal_secondary">
         </span>
@@ -128,16 +128,21 @@ found in the LICENSE file.
 
   <!--
   <div id="global" class="row">Global accessibility mode:
-    <a is="action-link" role="button" id="toggle_global" aria-labelledby="global"></a>
+    <a is="action-link" role="button" id="toggle_global"
+       aria-labelledby="global"></a>
   </div>
 
-  <div id="internal" class="row">Show internal accessibility tree instead of native:
-    <a is="action-link" role="button" id="toggle_internal" aria-labelledby="internal"></a>
+  <div id="internal" class="row">
+    Show internal accessibility tree instead of native:
+    <a is="action-link" role="button" id="toggle_internal"
+       aria-labelledby="internal"></a>
   </div>
 -->
   <h2>Chrome Native UI:</h2>
   <div id="native_ui">
-    <a is="action-link" tabindex="0" role="button" id="showNativeUI">show accessibility tree</a>
+    <a is="action-link" tabindex="0" role="button" id="showNativeUI">
+      show accessibility tree
+    </a>
   </div>
 
   <h2>Pages:</h2>

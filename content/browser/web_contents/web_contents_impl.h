@@ -229,9 +229,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     return screen_orientation_provider_.get();
   }
 
-  // Broadcasts the mode change to all frames.
-  void SetAccessibilityMode(ui::AXMode mode);
-
   // Adds the given accessibility mode to the current accessibility mode
   // bitmap.
   void AddAccessibilityMode(ui::AXMode mode);
@@ -519,10 +516,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   WebContents* GetAsWebContents() override;
   bool IsNeverVisible() override;
   ui::AXMode GetAccessibilityMode() const override;
+  // Broadcasts the mode change to all frames.
+  void SetAccessibilityMode(ui::AXMode mode) override;
   void AccessibilityEventReceived(
       const AXEventNotificationDetails& details) override;
   void AccessibilityLocationChangesReceived(
       const std::vector<AXLocationChangeNotificationDetails>& details) override;
+  base::string16 DumpAccessibilityTree(bool internal) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;

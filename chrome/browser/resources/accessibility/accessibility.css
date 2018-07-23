@@ -40,21 +40,21 @@ p {
   flex-basis: 50%;
 }
 
-.checkbox_row {
-  display: flex;
+.checkbox-row {
   align-items: center;
+  display: flex;
 }
 
-.checkbox_wrapper {
-  width: 32px;
+.checkbox-wrapper {
+  flex-grow: 0;
   margin: 0 0 2px 0;
   padding: 0;
-  flex-grow: 0;
+  width: 32px;
 }
 
 .secondary {
-  margin: 0 0 12px 32px;
   color: #696969;
+  margin: 0 0 12px 32px;
 }
 
 a {
@@ -62,15 +62,15 @@ a {
 }
 
 label {
+  flex-grow: 1;
   margin: 0 0 2px 0;
   padding: 0;
-  flex-grow: 1;
 }
 
 label.disabled {
   color: #696969;
 }
 
-label input[type="checkbox"] {
+label input[type='checkbox'] {
   margin-right: 6px;
 }

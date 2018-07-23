@@ -5,7 +5,6 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_ui.h"
 #include "content/browser/appcache/appcache_internals_ui.h"
 #include "content/browser/gpu/gpu_internals_ui.h"
 #include "content/browser/histograms_internals_ui.h"
@@ -38,7 +37,6 @@ WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       url.host_piece() == kChromeUIIndexedDBInternalsHost ||
       url.host_piece() == kChromeUIMediaInternalsHost ||
       url.host_piece() == kChromeUIServiceWorkerInternalsHost ||
-      url.host_piece() == kChromeUIAccessibilityHost ||
       url.host_piece() == kChromeUIAppCacheInternalsHost ||
       url.host_piece() == kChromeUINetworkErrorsListingHost ||
       url.host_piece() == kChromeUIProcessInternalsHost) {
@@ -74,8 +72,6 @@ ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     return std::make_unique<IndexedDBInternalsUI>(web_ui);
   if (url.host_piece() == kChromeUIMediaInternalsHost)
     return std::make_unique<MediaInternalsUI>(web_ui);
-  if (url.host_piece() == kChromeUIAccessibilityHost)
-    return std::make_unique<AccessibilityUI>(web_ui);
   if (url.host_piece() == kChromeUIServiceWorkerInternalsHost)
     return std::make_unique<ServiceWorkerInternalsUI>(web_ui);
   if (url.host_piece() == kChromeUINetworkErrorsListingHost)

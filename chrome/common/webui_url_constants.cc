@@ -18,6 +18,7 @@ namespace chrome {
 
 const char kChromeUIAboutHost[] = "about";
 const char kChromeUIAboutURL[] = "chrome://about/";
+const char kChromeUIAccessibilityHost[] = "accessibility";
 const char kChromeUIAppLauncherPageHost[] = "apps";
 const char kChromeUIAppListStartPageURL[] = "chrome://app-list/";
 const char kChromeUIAppsURL[] = "chrome://apps/";
@@ -307,6 +308,7 @@ const char kExtensionConfigureCommandsSubPage[] = "configureCommands";
 // These hosts will also be suggested by BuiltinProvider.
 const char* const kChromeHostURLs[] = {
     kChromeUIAboutHost,
+    kChromeUIAccessibilityHost,
     kChromeUIBluetoothInternalsHost,
     kChromeUIChromeURLsHost,
     kChromeUIComponentsHost,
@@ -348,7 +350,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIUsbInternalsHost,
     kChromeUIUserActionsHost,
     kChromeUIVersionHost,
-    content::kChromeUIAccessibilityHost,
     content::kChromeUIAppCacheInternalsHost,
     content::kChromeUIBlobInternalsHost,
     content::kChromeUIDinoHost,

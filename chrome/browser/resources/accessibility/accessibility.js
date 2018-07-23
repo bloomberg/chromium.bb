@@ -15,15 +15,13 @@ cr.define('accessibility', function() {
     kHTML: 1 << 4,
 
     get kAXModeWebContentsOnly() {
-      return AXMode.kWebContents |
-        AXMode.kInlineTextBoxes | AXMode.kScreenReader |
-        AXMode.kHTML;
+      return AXMode.kWebContents | AXMode.kInlineTextBoxes |
+          AXMode.kScreenReader | AXMode.kHTML;
     },
 
     get kAXModeComplete() {
       return AXMode.kNativeAPIs | AXMode.kWebContents |
-        AXMode.kInlineTextBoxes | AXMode.kScreenReader |
-        AXMode.kHTML;
+          AXMode.kInlineTextBoxes | AXMode.kScreenReader | AXMode.kHTML;
     }
   };
 
@@ -39,14 +37,16 @@ cr.define('accessibility', function() {
   }
 
   function toggleAccessibility(data, element, mode) {
-    chrome.send('toggleAccessibility',
-                [String(data.processId), String(data.routeId), mode]);
+    chrome.send(
+        'toggleAccessibility',
+        [String(data.processId), String(data.routeId), mode]);
     document.location.reload();
   }
 
   function requestWebContentsTree(data, element) {
-    chrome.send('requestWebContentsTree',
-                [String(data.processId), String(data.routeId)]);
+    chrome.send(
+        'requestWebContentsTree',
+        [String(data.processId), String(data.routeId)]);
   }
 
   function initialize() {
@@ -69,7 +69,7 @@ cr.define('accessibility', function() {
 
     var showNativeUI = $('showNativeUI');
     showNativeUI.addEventListener('click', function() {
-      chrome.send('requestNativeUITree', []);
+      chrome.send('requestNativeUITree');
     });
   }
 
@@ -115,12 +115,11 @@ cr.define('accessibility', function() {
       siteInfo.appendChild(formatValue(data, properties[j]));
     row.appendChild(siteInfo);
 
-    row.appendChild(createModeElement(AXMode.kNativeAPIs, data))
-    row.appendChild(createModeElement(AXMode.kWebContents, data))
-    row.appendChild(createModeElement(AXMode.kInlineTextBoxes,
-      data))
-    row.appendChild(createModeElement(AXMode.kScreenReader, data))
-    row.appendChild(createModeElement(AXMode.kHTML, data))
+    row.appendChild(createModeElement(AXMode.kNativeAPIs, data));
+    row.appendChild(createModeElement(AXMode.kWebContents, data));
+    row.appendChild(createModeElement(AXMode.kInlineTextBoxes, data));
+    row.appendChild(createModeElement(AXMode.kScreenReader, data));
+    row.appendChild(createModeElement(AXMode.kHTML, data));
 
     row.appendChild(document.createTextNode(' | '));
 
@@ -128,8 +127,7 @@ cr.define('accessibility', function() {
       row.appendChild(createShowAccessibilityTreeElement(data, row, true));
       row.appendChild(createHideAccessibilityTreeElement(row.id));
       row.appendChild(createAccessibilityTreeElement(data));
-    }
-    else {
+    } else {
       row.appendChild(createShowAccessibilityTreeElement(data, row, false));
       if ('error' in data)
         row.appendChild(createErrorMessageElement(data, row));
@@ -143,7 +141,7 @@ cr.define('accessibility', function() {
       var faviconElement = document.createElement('img');
       if (value)
         faviconElement.src = value;
-      faviconElement.alt = "";
+      faviconElement.alt = '';
       return faviconElement;
     }
 
@@ -160,17 +158,17 @@ cr.define('accessibility', function() {
   function getNameForAccessibilityMode(mode) {
     switch (mode) {
       case AXMode.kNativeAPIs:
-        return "native"
+        return 'native';
       case AXMode.kWebContents:
-        return "web"
+        return 'web';
       case AXMode.kInlineTextBoxes:
-        return "inline text"
+        return 'inline text';
       case AXMode.kScreenReader:
-        return "screen reader"
+        return 'screen reader';
       case AXMode.kHTML:
-        return "html"
+        return 'html';
     }
-    return "unknown"
+    return 'unknown';
   }
 
   function createModeElement(mode, data) {
@@ -179,10 +177,10 @@ cr.define('accessibility', function() {
     link.setAttribute('role', 'button');
 
     var stateText = ((currentMode & mode) != 0) ? 'true' : 'false';
-    link.textContent = getNameForAccessibilityMode(mode) + ": " + stateText;
+    link.textContent = getNameForAccessibilityMode(mode) + ': ' + stateText;
     link.setAttribute('aria-pressed', stateText);
-    link.addEventListener('click',
-                          toggleAccessibility.bind(this, data, link, mode));
+    link.addEventListener(
+        'click', toggleAccessibility.bind(this, data, link, mode));
     return link;
   }
 
@@ -194,8 +192,8 @@ cr.define('accessibility', function() {
     else
       link.textContent = 'show accessibility tree';
     link.id = row.id + ':showTree';
-    link.addEventListener('click',
-                          requestWebContentsTree.bind(this, data, link));
+    link.addEventListener(
+        'click', requestWebContentsTree.bind(this, data, link));
     return link;
   }
 
@@ -203,15 +201,14 @@ cr.define('accessibility', function() {
     var link = document.createElement('a', 'action-link');
     link.setAttribute('role', 'button');
     link.textContent = 'hide accessibility tree';
-    link.addEventListener('click',
-                          function() {
-        $(id + ':showTree').textContent = 'show accessibility tree';
-        var existingTreeElements = $(id).getElementsByTagName('pre');
-        for (var i = 0; i < existingTreeElements.length; i++)
-          $(id).removeChild(existingTreeElements[i]);
-        var row = $(id);
-        while (row.lastChild != $(id + ':showTree'))
-          row.removeChild(row.lastChild);
+    link.addEventListener('click', function() {
+      $(id + ':showTree').textContent = 'show accessibility tree';
+      var existingTreeElements = $(id).getElementsByTagName('pre');
+      for (var i = 0; i < existingTreeElements.length; i++)
+        $(id).removeChild(existingTreeElements[i]);
+      var row = $(id);
+      while (row.lastChild != $(id + ':showTree'))
+        row.removeChild(row.lastChild);
     });
     return link;
   }
@@ -221,13 +218,13 @@ cr.define('accessibility', function() {
     var errorMessage = data.error;
     errorMessageElement.innerHTML = errorMessage + '&nbsp;';
     var closeLink = document.createElement('a');
-    closeLink.href='#';
+    closeLink.href = '#';
     closeLink.textContent = '[close]';
     closeLink.addEventListener('click', function() {
-        var parentElement = errorMessageElement.parentElement;
-        parentElement.removeChild(errorMessageElement);
-        if (parentElement.childElementCount == 0)
-          parentElement.parentElement.removeChild(parentElement);
+      var parentElement = errorMessageElement.parentElement;
+      parentElement.removeChild(errorMessageElement);
+      if (parentElement.childElementCount == 0)
+        parentElement.parentElement.removeChild(parentElement);
     });
     errorMessageElement.appendChild(closeLink);
     return errorMessageElement;

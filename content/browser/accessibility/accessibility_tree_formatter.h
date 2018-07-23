@@ -99,6 +99,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                base::string16* contents);
 
+  static base::string16 DumpAccessibilityTreeFromManager(
+      BrowserAccessibilityManager* ax_mgr,
+      bool internal);
+
   // Set regular expression filters that apply to each component of every
   // line before it's output.
   void SetFilters(const std::vector<Filter>& filters);
