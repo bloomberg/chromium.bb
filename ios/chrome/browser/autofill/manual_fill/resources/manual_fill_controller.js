@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('__crWeb.manualfill');
+goog.provide('__crWeb.manualFill');
 
 /* Beginning of anonymous object. */
 (function() {
@@ -11,15 +11,15 @@ goog.provide('__crWeb.manualfill');
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected.
  */
-__gCrWeb.manualfill = {};
-__gCrWeb['manualfill'] = __gCrWeb.manualfill;
+__gCrWeb.manualFill = {};
+__gCrWeb['manualFill'] = __gCrWeb.manualFill;
 
 /**
  * Returns the identifier to be used with `setValueForElementId`.
  *
  * @return {string} The id of the active element.
  */
-__gCrWeb.manualfill.activeElementId = function() {
+__gCrWeb.manualFill.activeElementId = function() {
   var activeElementId = document.activeElement.id;
   return activeElementId;
 };
@@ -31,7 +31,7 @@ __gCrWeb.manualfill.activeElementId = function() {
  * @param {string} identifier The identifier of the element, found with
  *                 `activeElementId`.
  */
-__gCrWeb.manualfill.setValueForElementId = function(value, identifier) {
+__gCrWeb.manualFill.setValueForElementId = function(value, identifier) {
   if (!identifier) {
     return
   }

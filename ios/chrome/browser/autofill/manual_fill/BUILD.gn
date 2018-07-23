@@ -4,7 +4,7 @@
 
 import("//ios/web/js_compile.gni")
 
-source_set("manualfill") {
+source_set("manual_fill") {
   sources = [
     "accessory_provider.h",
     "accessory_provider.mm",
@@ -12,7 +12,7 @@ source_set("manualfill") {
   deps = [
     "//base",
     "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/ui/autofill/manualfill",
+    "//ios/chrome/browser/ui/autofill/manual_fill",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
