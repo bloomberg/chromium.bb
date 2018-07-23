@@ -1455,4 +1455,21 @@ TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
+TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      body, div { display: contents }
+      div::before { display: contents; content: "" }
+    </style>
+    <div id=inner></div>
+  )HTML");
+
+  GetDocument().documentElement()->CreateV0ShadowRootForTesting();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().body()->EnsureComputedStyle();
+  GetDocument().getElementById("inner")->SetInlineStyleProperty(
+      CSSPropertyColor, "blue");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink
