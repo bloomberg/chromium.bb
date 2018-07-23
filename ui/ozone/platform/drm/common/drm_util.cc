@@ -422,17 +422,9 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const display::DisplayConnectionType type = GetDisplayType(info->connector());
   const bool is_aspect_preserving_scaling =
       IsAspectPreserving(fd, info->connector());
-  bool has_color_correction_matrix =
+  const bool has_color_correction_matrix =
       HasColorCorrectionMatrix(fd, info->crtc()) ||
       HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
-  // On i915, some external monitors seem to have washed out colors when a CTM
-  // is set (even if it's the identity) for some resolutions. Claim external
-  // monitors don't support CTM.
-  if (IsDrmModuleName(fd, "i915") &&
-      type != display::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-    has_color_correction_matrix = false;
-  }
-
   // On rk3399 we can set a color correction matrix that will be applied in
   // linear space. https://crbug.com/839020 to track if it will be possible to
   // disable the per-plane degamma/gamma.
