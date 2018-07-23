@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_HID_MESSAGE_H_
-#define DEVICE_FIDO_FIDO_HID_MESSAGE_H_
+#ifndef DEVICE_FIDO_HID_FIDO_HID_MESSAGE_H_
+#define DEVICE_FIDO_HID_FIDO_HID_MESSAGE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_hid_packet.h"
+#include "device/fido/hid/fido_hid_packet.h"
 
 namespace device {
 
@@ -72,4 +72,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_HID_MESSAGE_H_
+#endif  // DEVICE_FIDO_HID_FIDO_HID_MESSAGE_H_

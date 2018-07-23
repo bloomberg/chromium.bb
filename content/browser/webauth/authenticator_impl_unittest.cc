@@ -26,7 +26,7 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/base/features.h"
-#include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/scoped_virtual_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"

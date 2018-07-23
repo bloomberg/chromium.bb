@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/hid/fake_hid_impl_for_testing.h"
 
 #include <utility>
 

@@ -13,7 +13,7 @@
 
 // HID is not supported on Android.
 #if !defined(OS_ANDROID)
-#include "device/fido/fido_hid_discovery.h"
+#include "device/fido/hid/fido_hid_discovery.h"
 #endif  // !defined(OS_ANDROID)
 
 namespace device {

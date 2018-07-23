@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_hid_device.h"
+#include "device/fido/hid/fido_hid_device.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/random.h"
-#include "device/fido/fido_hid_message.h"
+#include "device/fido/hid/fido_hid_message.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {

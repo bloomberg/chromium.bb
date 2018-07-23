@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_HID_DISCOVERY_H_
-#define DEVICE_FIDO_FIDO_HID_DISCOVERY_H_
+#ifndef DEVICE_FIDO_HID_FIDO_HID_DISCOVERY_H_
+#define DEVICE_FIDO_HID_FIDO_HID_DISCOVERY_H_
 
 #include <memory>
 #include <vector>
@@ -53,4 +53,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDiscovery
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_HID_DISCOVERY_H_
+#endif  // DEVICE_FIDO_HID_FIDO_HID_DISCOVERY_H_

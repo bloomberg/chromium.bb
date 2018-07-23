@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_HID_PACKET_H_
-#define DEVICE_FIDO_FIDO_HID_PACKET_H_
+#ifndef DEVICE_FIDO_HID_FIDO_HID_PACKET_H_
+#define DEVICE_FIDO_HID_FIDO_HID_PACKET_H_
 
 #include <stddef.h>
 #include <stdint.h>

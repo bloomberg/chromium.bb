@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_HID_DEVICE_H_
-#define DEVICE_FIDO_FIDO_HID_DEVICE_H_
+#ifndef DEVICE_FIDO_HID_FIDO_HID_DEVICE_H_
+#define DEVICE_FIDO_HID_FIDO_HID_DEVICE_H_
 
 #include <string>
 #include <utility>
@@ -120,4 +120,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_HID_DEVICE_H_
+#endif  // DEVICE_FIDO_HID_FIDO_HID_DEVICE_H_
