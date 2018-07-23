@@ -55,7 +55,7 @@ bool IsTokenCharacter(Mode mode, UChar c) {
 
 HeaderFieldTokenizer::HeaderFieldTokenizer(const String& header_field)
     : index_(0u), input_(header_field) {
-  SkipSpaces();
+  SkipOptionalWhitespace();
 }
 
 HeaderFieldTokenizer::HeaderFieldTokenizer(HeaderFieldTokenizer&&) = default;
@@ -63,12 +63,13 @@ HeaderFieldTokenizer::HeaderFieldTokenizer(HeaderFieldTokenizer&&) = default;
 bool HeaderFieldTokenizer::Consume(char c) {
   // TODO(cvazac) change this to use LChar
   DCHECK_NE(c, ' ');
+  DCHECK_NE(c, '\t');
 
   if (IsConsumed() || input_[index_] != c)
     return false;
 
   ++index_;
-  SkipSpaces();
+  SkipOptionalWhitespace();
   return true;
 }
 
@@ -82,7 +83,7 @@ bool HeaderFieldTokenizer::ConsumeQuotedString(String& output) {
     if (input_[index_] == '"') {
       output = builder.ToString();
       ++index_;
-      SkipSpaces();
+      SkipOptionalWhitespace();
       return true;
     }
     if (input_[index_] == '\\') {
@@ -107,7 +108,7 @@ bool HeaderFieldTokenizer::ConsumeToken(Mode mode, StringView& output) {
     return false;
 
   output = StringView(input_, start, index_ - start);
-  SkipSpaces();
+  SkipOptionalWhitespace();
   return true;
 }
 
@@ -126,10 +127,8 @@ bool HeaderFieldTokenizer::ConsumeTokenOrQuotedString(Mode mode,
   return true;
 }
 
-void HeaderFieldTokenizer::SkipSpaces() {
-  // TODO(cvazac) skip tabs, per:
-  // https://tools.ietf.org/html/rfc7230#section-3.2.3
-  while (!IsConsumed() && input_[index_] == ' ')
+void HeaderFieldTokenizer::SkipOptionalWhitespace() {
+  while (!IsConsumed() && (input_[index_] == ' ' || input_[index_] == '\t'))
     ++index_;
 }
 

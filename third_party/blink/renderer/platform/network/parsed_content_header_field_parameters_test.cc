@@ -35,21 +35,32 @@ void CheckValidity(bool expected,
 TEST(ParsedContentHeaderFieldParametersTest, Validity) {
   CheckValidity(true, "");
   CheckValidity(true, "  ");
+  CheckValidity(true, "\t");
   CheckValidity(true, "  ;p1=v1");
+  CheckValidity(true, "\t;p1=v1");
   CheckValidity(true, ";  p1=v1");
+  CheckValidity(true, ";\tp1=v1");
   CheckValidity(true, ";p1=v1  ");
+  CheckValidity(true, ";p1=v1\t");
   CheckValidity(true, ";p1 = v1");
+  CheckValidity(true, ";p1\t=\tv1");
+  CheckValidity(true, ";  p1  =  v1  ");
+  CheckValidity(true, ";\tp1\t=\tv1\t");
   CheckValidity(true, ";z=\"ttx&r=z;;\\u\\\"kd==\"");
   CheckValidity(true, "; z=\"\xff\"");
 
   CheckValidity(false, "\r");
   CheckValidity(false, "\n");
   CheckValidity(false, " p1=v1");
+  CheckValidity(false, "\tp1=v1");
   CheckValidity(false, ";p1=v1;");
   CheckValidity(false, ";");
   CheckValidity(false, ";  ");
+  CheckValidity(false, ";\t");
   CheckValidity(false, "; p1");
+  CheckValidity(false, ";\tp1");
   CheckValidity(false, "; p1;");
+  CheckValidity(false, ";\tp1;");
   CheckValidity(false, ";\"xx");
   CheckValidity(false, ";\"xx=y");
   CheckValidity(false, "; \"z\"=u");
