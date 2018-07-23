@@ -23,8 +23,6 @@ DEPOT_TOOLS = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(DEPOT_TOOLS, 'metrics.cfg')
 UPLOAD_SCRIPT = os.path.join(DEPOT_TOOLS, 'upload_metrics.py')
 
-APP_URL = 'https://cit-cli-metrics.appspot.com'
-
 DISABLE_METRICS_COLLECTION = os.environ.get('DEPOT_TOOLS_METRICS') == '0'
 DEFAULT_COUNTDOWN = 10
 
@@ -55,7 +53,7 @@ class _Config(object):
       # check if we can reach the page. An external developer would get access
       # denied.
       try:
-        req = urllib2.urlopen(APP_URL + '/should-upload')
+        req = urllib2.urlopen(metrics_utils.APP_URL + '/should-upload')
         self._config['is-googler'] = req.getcode() == 200
       except (urllib2.URLError, urllib2.HTTPError):
         self._config['is-googler'] = False

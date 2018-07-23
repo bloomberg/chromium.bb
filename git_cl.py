@@ -55,6 +55,7 @@ import gerrit_util
 import git_cache
 import git_common
 import git_footers
+import metrics
 import owners
 import owners_finder
 import presubmit_support
@@ -4068,6 +4069,7 @@ class _GitCookiesChecker(object):
     return found
 
 
+@metrics.collector.collect_metrics('git cl creds-check')
 def CMDcreds_check(parser, args):
   """Checks credentials and suggests changes."""
   _, _ = parser.parse_args(args)
@@ -4090,6 +4092,7 @@ def CMDcreds_check(parser, args):
 
 
 @subcommand.usage('[repo root containing codereview.settings]')
+@metrics.collector.collect_metrics('git cl config')
 def CMDconfig(parser, args):
   """Edits configuration for this tree."""
 
@@ -4125,6 +4128,7 @@ def CMDconfig(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl baseurl')
 def CMDbaseurl(parser, args):
   """Gets or sets base-url for this branch."""
   branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
@@ -4315,6 +4319,7 @@ def upload_branch_deps(cl, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl archive')
 def CMDarchive(parser, args):
   """Archives and deletes branches associated with closed changelists."""
   parser.add_option(
@@ -4396,6 +4401,7 @@ def CMDarchive(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl status')
 def CMDstatus(parser, args):
   """Show status of changelists.
 
@@ -4529,6 +4535,7 @@ def write_json(path, contents):
 
 
 @subcommand.usage('[issue_number]')
+@metrics.collector.collect_metrics('git cl issue')
 def CMDissue(parser, args):
   """Sets or displays the current code review issue number.
 
@@ -4584,6 +4591,7 @@ def CMDissue(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl comments')
 def CMDcomments(parser, args):
   """Shows or posts review comments for any changelist."""
   parser.add_option('-a', '--add-comment', dest='comment',
@@ -4649,6 +4657,7 @@ def CMDcomments(parser, args):
 
 
 @subcommand.usage('[codereview url or issue id]')
+@metrics.collector.collect_metrics('git cl description')
 def CMDdescription(parser, args):
   """Brings up the editor for the current CL's description."""
   parser.add_option('-d', '--display', action='store_true',
@@ -4733,6 +4742,7 @@ def CreateDescriptionFromLog(args):
   return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
 
 
+@metrics.collector.collect_metrics('git cl lint')
 def CMDlint(parser, args):
   """Runs cpplint on the current changelist."""
   parser.add_option('--filter', action='append', metavar='-x,+y',
@@ -4788,6 +4798,7 @@ def CMDlint(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl presubmit')
 def CMDpresubmit(parser, args):
   """Runs presubmit tests on the current changelist."""
   parser.add_option('-u', '--upload', action='store_true',
@@ -4932,6 +4943,7 @@ def cleanup_list(l):
 
 
 @subcommand.usage('[flags]')
+@metrics.collector.collect_metrics('git cl upload')
 def CMDupload(parser, args):
   """Uploads the current changelist to codereview.
 
@@ -5060,6 +5072,7 @@ def CMDupload(parser, args):
 
 
 @subcommand.usage('--description=<description file>')
+@metrics.collector.collect_metrics('git cl split')
 def CMDsplit(parser, args):
   """Splits a branch into smaller branches and uploads CLs.
 
@@ -5090,6 +5103,7 @@ def CMDsplit(parser, args):
 
 
 @subcommand.usage('DEPRECATED')
+@metrics.collector.collect_metrics('git cl commit')
 def CMDdcommit(parser, args):
   """DEPRECATED: Used to commit the current changelist via git-svn."""
   message = ('git-cl no longer supports committing to SVN repositories via '
@@ -5104,6 +5118,7 @@ CHERRY_PICK_BRANCH = 'git-cl-cherry-pick'
 
 
 @subcommand.usage('[upstream branch to apply against]')
+@metrics.collector.collect_metrics('git cl land')
 def CMDland(parser, args):
   """Commits the current changelist via git.
 
@@ -5233,6 +5248,7 @@ def IsFatalPushFailure(push_stdout):
 
 
 @subcommand.usage('<patch url or issue id or issue url>')
+@metrics.collector.collect_metrics('git cl patch')
 def CMDpatch(parser, args):
   """Patches in a code review."""
   parser.add_option('-b', dest='newbranch',
@@ -5363,6 +5379,7 @@ def GetTreeStatusReason():
   return status['message']
 
 
+@metrics.collector.collect_metrics('git cl tree')
 def CMDtree(parser, args):
   """Shows the status of the tree."""
   _, args = parser.parse_args(args)
@@ -5379,6 +5396,7 @@ def CMDtree(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl try')
 def CMDtry(parser, args):
   """Triggers try jobs using either BuildBucket or CQ dry run."""
   group = optparse.OptionGroup(parser, 'Try job options')
@@ -5492,6 +5510,7 @@ def CMDtry(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl try-results')
 def CMDtry_results(parser, args):
   """Prints info about try jobs associated with current CL."""
   group = optparse.OptionGroup(parser, 'Try job results options')
@@ -5554,6 +5573,7 @@ def CMDtry_results(parser, args):
 
 
 @subcommand.usage('[new upstream branch]')
+@metrics.collector.collect_metrics('git cl upstream')
 def CMDupstream(parser, args):
   """Prints or sets the name of the upstream branch, if any."""
   _, args = parser.parse_args(args)
@@ -5575,6 +5595,7 @@ def CMDupstream(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl web')
 def CMDweb(parser, args):
   """Opens the current CL in the web browser."""
   _, args = parser.parse_args(args)
@@ -5590,6 +5611,7 @@ def CMDweb(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl set-commit')
 def CMDset_commit(parser, args):
   """Sets the commit bit to trigger the Commit Queue."""
   parser.add_option('-d', '--dry-run', action='store_true',
@@ -5620,6 +5642,7 @@ def CMDset_commit(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl set-close')
 def CMDset_close(parser, args):
   """Closes the issue."""
   _add_codereview_issue_select_options(parser)
@@ -5638,6 +5661,7 @@ def CMDset_close(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl diff')
 def CMDdiff(parser, args):
   """Shows differences between local tree and last upload."""
   parser.add_option(
@@ -5676,6 +5700,7 @@ def CMDdiff(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('git cl owners')
 def CMDowners(parser, args):
   """Finds potential owners for reviewing."""
   parser.add_option(
@@ -5747,6 +5772,7 @@ def MatchingFileType(file_name, extensions):
 
 
 @subcommand.usage('[files or directories to diff]')
+@metrics.collector.collect_metrics('git cl format')
 def CMDformat(parser, args):
   """Runs auto-formatting tools (clang-format etc.) on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java']
@@ -5939,6 +5965,7 @@ def GetDirtyMetricsDirs(diff_files):
 
 
 @subcommand.usage('<codereview url or issue id>')
+@metrics.collector.collect_metrics('git cl checkout')
 def CMDcheckout(parser, args):
   """Checks out a branch associated with a given Rietveld or Gerrit issue."""
   _, args = parser.parse_args(args)
@@ -6002,8 +6029,20 @@ class OptionParser(optparse.OptionParser):
         '-v', '--verbose', action='count', default=0,
         help='Use 2 times for more debugging info')
 
-  def parse_args(self, args=None, values=None):
-    options, args = optparse.OptionParser.parse_args(self, args, values)
+  def parse_args(self, args=None, _values=None):
+    # Create an optparse.Values object that will store only the actual passed
+    # options, without the defaults.
+    actual_options = optparse.Values()
+    _, args = optparse.OptionParser.parse_args(self, args, actual_options)
+    # Create an optparse.Values object with the default options.
+    options = optparse.Values(self.get_default_values().__dict__)
+    # Update it with the options passed by the user.
+    options._update_careful(actual_options.__dict__)
+    # Store the options passed by the user in an _actual_options attribute.
+    # We store only the keys, and not the values, since the values can contain
+    # arbitrary information, which might be PII.
+    metrics.collector.add('arguments', actual_options.__dict__.keys())
+
     levels = [logging.WARNING, logging.INFO, logging.DEBUG]
     logging.basicConfig(
         level=levels[min(options.verbose, len(levels) - 1)],
