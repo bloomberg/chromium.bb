@@ -55,13 +55,6 @@ DomDistillerService::DomDistillerService(
 DomDistillerService::~DomDistillerService() {
 }
 
-syncer::SyncableService* DomDistillerService::GetSyncableService() const {
-  if (!store_) {
-    return nullptr;
-  }
-  return store_->GetSyncableService();
-}
-
 std::unique_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage(
     const gfx::Size& render_view_size) {
   return distiller_page_factory_->CreateDistillerPage(render_view_size);

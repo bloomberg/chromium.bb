@@ -250,13 +250,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::GROUP_UI, ui_thread_));
   }
 
-  // Article sync is disabled by default.  Register only if explicitly enabled.
-  if (dom_distiller::IsEnableSyncArticlesSet()) {
-    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::ARTICLES, error_callback, sync_client_, syncer::GROUP_UI,
-        ui_thread_));
-  }
-
 #if defined(OS_CHROMEOS)
   if (!disabled_types.Has(syncer::PRINTERS)) {
     controllers.push_back(std::make_unique<ModelTypeController>(

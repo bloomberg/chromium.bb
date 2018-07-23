@@ -122,7 +122,7 @@ void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
       case ::syncer::DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS: \
         PER_DATA_TYPE_MACRO("ManagedUserSharedSetting");         \
         break;                                                   \
-      case ::syncer::ARTICLES:                                   \
+      case ::syncer::DEPRECATED_ARTICLES:                        \
         PER_DATA_TYPE_MACRO("Article");                          \
         break;                                                   \
       case ::syncer::APP_LIST:                                   \

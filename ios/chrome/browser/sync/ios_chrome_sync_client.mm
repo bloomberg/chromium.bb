@@ -305,7 +305,7 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return favicons ? favicons->AsWeakPtr()
                       : base::WeakPtr<syncer::SyncableService>();
     }
-    case syncer::ARTICLES: {
+    case syncer::DEPRECATED_ARTICLES: {
       // DomDistillerService is used in iOS ReadingList. The distilled articles
       // are saved separately and must not be synced.
       // Add a not reached to avoid having ARTICLES sync be enabled silently.

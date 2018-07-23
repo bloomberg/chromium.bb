@@ -29,7 +29,6 @@ class DirectoryCommitContributionTest : public ::testing::Test {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     CreateTypeRoot(&trans, dir(), PREFERENCES);
     CreateTypeRoot(&trans, dir(), EXTENSIONS);
-    CreateTypeRoot(&trans, dir(), ARTICLES);
     CreateTypeRoot(&trans, dir(), BOOKMARKS);
   }
 

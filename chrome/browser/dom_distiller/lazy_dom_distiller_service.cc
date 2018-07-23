@@ -43,10 +43,6 @@ void LazyDomDistillerService::Observe(
   delete this;
 }
 
-syncer::SyncableService* LazyDomDistillerService::GetSyncableService() const {
-  return instance()->GetSyncableService();
-}
-
 bool LazyDomDistillerService::HasEntry(const std::string& entry_id) {
   return instance()->HasEntry(entry_id);
 }

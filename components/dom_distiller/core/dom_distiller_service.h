@@ -18,10 +18,6 @@
 
 class GURL;
 
-namespace syncer {
-class SyncableService;
-}
-
 namespace dom_distiller {
 
 class DistilledArticleProto;
@@ -41,8 +37,6 @@ class DomDistillerServiceInterface {
  public:
   typedef base::Callback<void(bool)> ArticleAvailableCallback;
   virtual ~DomDistillerServiceInterface() {}
-
-  virtual syncer::SyncableService* GetSyncableService() const = 0;
 
   // Distill the article at |url| and add the resulting entry to the DOM
   // distiller list. |article_cb| is always invoked, and the bool argument to it
@@ -123,7 +117,6 @@ class DomDistillerService : public DomDistillerServiceInterface {
   ~DomDistillerService() override;
 
   // DomDistillerServiceInterface implementation.
-  syncer::SyncableService* GetSyncableService() const override;
   const std::string AddToList(
       const GURL& url,
       std::unique_ptr<DistillerPage> distiller_page,

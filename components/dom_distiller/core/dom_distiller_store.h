@@ -35,9 +35,6 @@ class DomDistillerStoreInterface {
  public:
   virtual ~DomDistillerStoreInterface() {}
 
-  // Gets the syncable service for this store or null if it is not synced.
-  virtual syncer::SyncableService* GetSyncableService() = 0;
-
   virtual bool AddEntry(const ArticleEntry& entry) = 0;
   // Returns false if |entry| is not present or |entry| was not updated.
   virtual bool UpdateEntry(const ArticleEntry& entry) = 0;
@@ -72,8 +69,7 @@ class DomDistillerStoreInterface {
 // 4. send messages (possibly handled asynchronously) containing changes_applied
 // to the other (i.e. non-source) two models.
 // TODO(cjhopman): Support deleting entries.
-class DomDistillerStore : public syncer::SyncableService,
-                          public DomDistillerStoreInterface {
+class DomDistillerStore : public DomDistillerStoreInterface {
  public:
   typedef std::vector<ArticleEntry> EntryVector;
 
@@ -93,9 +89,6 @@ class DomDistillerStore : public syncer::SyncableService,
 
   ~DomDistillerStore() override;
 
-  // DomDistillerStoreInterface implementation.
-  syncer::SyncableService* GetSyncableService() override;
-
   bool AddEntry(const ArticleEntry& entry) override;
   bool UpdateEntry(const ArticleEntry& entry) override;
   bool RemoveEntry(const ArticleEntry& entry) override;
@@ -106,18 +99,6 @@ class DomDistillerStore : public syncer::SyncableService,
 
   void AddObserver(DomDistillerObserver* observer) override;
   void RemoveObserver(DomDistillerObserver* observer) override;
-
-  // syncer::SyncableService implementation.
-  syncer::SyncMergeResult MergeDataAndStartSyncing(
-      syncer::ModelType type,
-      const syncer::SyncDataList& initial_sync_data,
-      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
-  void StopSyncing(syncer::ModelType type) override;
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
-  syncer::SyncError ProcessSyncChanges(
-      const base::Location& from_here,
-      const syncer::SyncChangeList& change_list) override;
 
  private:
   void OnDatabaseInit(bool success);
@@ -139,8 +120,6 @@ class DomDistillerStore : public syncer::SyncableService,
                                 syncer::SyncChangeList* changes_to_apply,
                                 syncer::SyncChangeList* changes_missing);
 
-  bool ApplyChangesToSync(const base::Location& from_here,
-                          const syncer::SyncChangeList& change_list);
   bool ApplyChangesToDatabase(const syncer::SyncChangeList& change_list);
 
   // Applies the changes to |model_|. If the model returns an error, disables
