@@ -64,6 +64,11 @@ interface BackgroundFetchUpdateEvent : BackgroundFetchSettledEvent
     attribute @@toStringTag
     method constructor
     method updateUI
+interface BackgroundFetchedEvent : BackgroundFetchEvent
+    attribute @@toStringTag
+    getter fetches
+    method constructor
+    method updateUI
 interface BarcodeDetector
     attribute @@toStringTag
     method constructor
