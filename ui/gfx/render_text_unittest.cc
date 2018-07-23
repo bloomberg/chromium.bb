@@ -4004,6 +4004,13 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji) {
   EXPECT_EQ(ToString16Vec({"x", "😁", "y", "✨"}), GetRunListStrings());
   // U+1F601 is represented as a surrogate pair in UTF-16.
   EXPECT_EQ("[0][1->2][3][4]", GetRunListStructureString());
+
+  // Ensure non-latin 「foo」 brackets around Emoji correctly break runs.
+  render_text->SetText(UTF8ToUTF16("「🦋」「"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"「", "🦋", "」「"}), GetRunListStrings());
+  // Note 🦋 is a surrogate pair [1->2].
+  EXPECT_EQ("[0][1->2][3->4]", GetRunListStructureString());
 }
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
