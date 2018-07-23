@@ -80,7 +80,6 @@
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
-#include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -1379,17 +1378,6 @@ void ChromeContentRendererClient::InitSpellCheck() {
 }
 #endif
 
-// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
-// default (https://crbug.com/825740).
-std::unique_ptr<blink::WebSocketHandshakeThrottle>
-ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
-  InitSafeBrowsingIfNecessary();
-  // This is called only for Shared Worker and Service Worker that don't have a
-  // real frame, so we specify MSG_ROUTING_NONE here.
-  return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
-      safe_browsing_.get(), MSG_ROUTING_NONE);
-}
-
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<WebSocketHandshakeThrottleProviderImpl>();
@@ -1676,15 +1664,6 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
 std::unique_ptr<base::TaskScheduler::InitParams>
 ChromeContentRendererClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::GetTaskSchedulerInitParamsForRenderer();
-}
-
-// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
-// default (https://crbug.com/825740).
-void ChromeContentRendererClient::InitSafeBrowsingIfNecessary() {
-  if (safe_browsing_)
-    return;
-  RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName, &safe_browsing_);
 }
 
 bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(

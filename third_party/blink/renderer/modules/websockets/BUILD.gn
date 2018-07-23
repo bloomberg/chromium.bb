@@ -24,7 +24,5 @@ blink_modules_sources("websockets") {
     "websocket_handle_client.h",
     "websocket_handle_impl.cc",
     "websocket_handle_impl.h",
-    "worker_websocket_channel.cc",
-    "worker_websocket_channel.h",
   ]
 }

@@ -169,13 +169,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // the content layer will provide an engine.
   virtual blink::WebThemeEngine* OverrideThemeEngine();
 
-  // Allows the embedder to provide a WebSocketHandshakeThrottle. If it returns
-  // NULL then none will be used.
-  // TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
-  // default (https://crbug.com/825740).
-  virtual std::unique_ptr<blink::WebSocketHandshakeThrottle>
-  CreateWebSocketHandshakeThrottle();
-
   // Allows the embedder to provide a WebSocketHandshakeThrottleProvider. If it
   // returns NULL then none will be used.
   virtual std::unique_ptr<WebSocketHandshakeThrottleProvider>

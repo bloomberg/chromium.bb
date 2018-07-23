@@ -2621,12 +2621,9 @@ crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.worker.html [ Pass Timeout ]
 
 # Websockets
-crbug.com/803358 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
-crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/cookies/006.html?wss [ Failure ]
-crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
@@ -2865,9 +2862,7 @@ crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
-crbug.com/626703 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
-crbug.com/626703 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-breaks-001.html [ Failure ]
@@ -4513,7 +4508,6 @@ crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
 
 # Sheriff 2018-06-07
 crbug.com/850349 external/wpt/css/css-animations/CSSAnimation-getComputedTiming.tentative.html [ Pass Failure ]
-crbug.com/520739 virtual/off-main-thread-websocket/http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
 crbug.com/850395 virtual/gpu/fast/canvas/canvas-filter-stroke-paint-pattern.html [ Pass Failure ]
 crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure ]
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure ]

@@ -248,11 +248,6 @@ std::unique_ptr<WebCanvasCaptureHandler> Platform::CreateCanvasCaptureHandler(
   return nullptr;
 }
 
-std::unique_ptr<WebSocketHandshakeThrottle>
-Platform::CreateWebSocketHandshakeThrottle() {
-  return nullptr;
-}
-
 std::unique_ptr<WebImageCaptureFrameGrabber>
 Platform::CreateImageCaptureFrameGrabber() {
   return nullptr;

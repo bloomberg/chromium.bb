@@ -32,14 +32,9 @@
 
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
-#include "third_party/blink/renderer/modules/websockets/worker_websocket_channel.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -47,20 +42,8 @@ WebSocketChannel* WebSocketChannel::Create(ExecutionContext* context,
                                            WebSocketChannelClient* client) {
   DCHECK(context);
   DCHECK(client);
-
-  std::unique_ptr<SourceLocation> location = SourceLocation::Capture(context);
-
-  // When the off-main-thread WebSocket flag is enabled, web workers use
-  // WebSocketChannelImpl as opposed to WorkerWebSocketChannel. See
-  // https://crbug.com/825740
-  if (context->IsDocument() ||
-      RuntimeEnabledFeatures::OffMainThreadWebSocketEnabled()) {
-    return WebSocketChannelImpl::Create(context, client, std::move(location));
-  }
-
-  WorkerGlobalScope* worker_global_scope = ToWorkerGlobalScope(context);
-  return WorkerWebSocketChannel::Create(*worker_global_scope, client,
-                                        std::move(location));
+  return WebSocketChannelImpl::Create(context, client,
+                                      SourceLocation::Capture(context));
 }
 
 }  // namespace blink

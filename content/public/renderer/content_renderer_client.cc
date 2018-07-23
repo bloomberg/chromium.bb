@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_speech_synthesizer.h"
-#include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
@@ -65,11 +64,6 @@ ContentRendererClient::OverrideCreateMIDIAccessor(
 }
 
 blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
-  return nullptr;
-}
-
-std::unique_ptr<blink::WebSocketHandshakeThrottle>
-ContentRendererClient::CreateWebSocketHandshakeThrottle() {
   return nullptr;
 }
 
