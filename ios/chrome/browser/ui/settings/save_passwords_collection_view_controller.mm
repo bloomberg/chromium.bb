@@ -525,12 +525,10 @@ initWithActivityItems:(NSArray*)activityItems
       savedForms_.push_back(std::move(form));
   }
 
+  password_manager::SortEntriesAndHideDuplicates(&savedForms_,
+                                                 &savedPasswordDuplicates_);
   password_manager::SortEntriesAndHideDuplicates(
-      &savedForms_, &savedPasswordDuplicates_,
-      password_manager::PasswordEntryType::SAVED);
-  password_manager::SortEntriesAndHideDuplicates(
-      &blacklistedForms_, &blacklistedPasswordDuplicates_,
-      password_manager::PasswordEntryType::BLACKLISTED);
+      &blacklistedForms_, &blacklistedPasswordDuplicates_);
 
   [self updateEditButton];
   [self reloadData];
@@ -709,15 +707,12 @@ initWithActivityItems:(NSArray*)activityItems
     auto& forms = blacklisted ? blacklistedForms_ : savedForms_;
     auto& duplicates =
         blacklisted ? blacklistedPasswordDuplicates_ : savedPasswordDuplicates_;
-    password_manager::PasswordEntryType entryType =
-        blacklisted ? password_manager::PasswordEntryType::BLACKLISTED
-                    : password_manager::PasswordEntryType::SAVED;
 
     DCHECK_LT(formIndex, forms.size());
     auto formIterator = forms.begin() + formIndex;
 
     std::unique_ptr<autofill::PasswordForm> form = std::move(*formIterator);
-    std::string key = password_manager::CreateSortKey(*form, entryType);
+    std::string key = password_manager::CreateSortKey(*form);
     auto duplicatesRange = duplicates.equal_range(key);
     for (auto iterator = duplicatesRange.first;
          iterator != duplicatesRange.second; ++iterator) {
@@ -800,11 +795,7 @@ initWithActivityItems:(NSArray*)activityItems
   password_manager::DuplicatesMap& duplicates =
       form.blacklisted_by_user ? blacklistedPasswordDuplicates_
                                : savedPasswordDuplicates_;
-  password_manager::PasswordEntryType entryType =
-      form.blacklisted_by_user
-          ? password_manager::PasswordEntryType::BLACKLISTED
-          : password_manager::PasswordEntryType::SAVED;
-  std::string key = password_manager::CreateSortKey(form, entryType);
+  std::string key = password_manager::CreateSortKey(form);
   auto duplicatesRange = duplicates.equal_range(key);
   for (auto iterator = duplicatesRange.first;
        iterator != duplicatesRange.second; ++iterator) {
