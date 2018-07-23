@@ -463,7 +463,8 @@ def GeneralTemplates(site_config):
       # Need larger rootfs since fuzzing also enables asan.
       disk_layout='2gb-rootfs',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-asan',
-      images=['base'],
+      images=[],
+      image_test=None,
       packages=['virtual/target-fuzzers'],
   )
 
@@ -2979,6 +2980,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -2992,6 +2994,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing coverage testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-coverage',
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -3005,6 +3008,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for msan fuzzing testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-msan',
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -3033,6 +3037,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-ubsan',
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
