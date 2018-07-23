@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_REMOTE_UPDATES_HANDLER_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_REMOTE_UPDATES_HANDLER_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -17,7 +19,8 @@ class BookmarkNode;
 
 namespace sync_bookmarks {
 
-// Responsible for processing remote updates received from the sync server.
+// Responsible for processing one batch of remote updates received from the sync
+// server.
 class BookmarkRemoteUpdatesHandler {
  public:
   // |bookmark_model| and |bookmark_tracker| must not be null and most outlive
@@ -30,7 +33,7 @@ class BookmarkRemoteUpdatesHandler {
 
   // Public for testing.
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdatesForTest(
-      const syncer::UpdateResponseDataList& updates);
+      const syncer::UpdateResponseDataList* updates);
 
  private:
   // Reorders incoming updates such that parent creation is before child
@@ -38,7 +41,7 @@ class BookmarkRemoteUpdatesHandler {
   // come last. The returned pointers point to the elements in the original
   // |updates|.
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdates(
-      const syncer::UpdateResponseDataList& updates);
+      const syncer::UpdateResponseDataList* updates);
 
   // Given a remote update entity, it returns the parent bookmark node of the
   // corresponding node. It returns null if the parent node cannot be found.
@@ -69,6 +72,10 @@ class BookmarkRemoteUpdatesHandler {
   // (this code runs on the UI thread).
   void ProcessRemoteDelete(const syncer::EntityData& update_entity,
                            const SyncedBookmarkTracker::Entity* tracked_entity);
+
+  // Recursively removes the entities corresponding to |node| and its children
+  // from |bookmark_tracker_|.
+  void RemoveEntityAndChildrenFromTracker(const bookmarks::BookmarkNode* node);
 
   // Associates the permanent bookmark folders with the corresponding server
   // side ids and registers the association in |bookmark_tracker_|.

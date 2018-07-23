@@ -97,6 +97,35 @@ TEST(SyncedBookmarkTrackerTest, ShouldReturnNullForDisassociatedNodes) {
   EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
 }
 
+TEST(SyncedBookmarkTrackerTest, ShouldBuildBookmarkModelMetadata) {
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  const std::string kSyncId = "SYNC_ID";
+  const std::string kTitle = "Title";
+  const GURL kUrl("http://www.foo.com");
+  const int64_t kId = 1;
+  const int64_t kServerVersion = 1000;
+  const base::Time kCreationTime(base::Time::Now() -
+                                 base::TimeDelta::FromSeconds(1));
+  const syncer::UniquePosition unique_position =
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix());
+  const sync_pb::EntitySpecifics specifics =
+      GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
+
+  bookmarks::BookmarkNode node(kId, kUrl);
+  tracker.Add(kSyncId, &node, kServerVersion, kCreationTime,
+              unique_position.ToProto(), specifics);
+
+  sync_pb::BookmarkModelMetadata bookmark_model_metadata =
+      tracker.BuildBookmarkModelMetadata();
+
+  ASSERT_THAT(bookmark_model_metadata.bookmarks_metadata().size(), Eq(1));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(0).metadata().server_id(),
+      Eq(kSyncId));
+}
+
 TEST(SyncedBookmarkTrackerTest,
      ShouldRequireCommitRequestWhenSequenceNumberIsIncremented) {
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),

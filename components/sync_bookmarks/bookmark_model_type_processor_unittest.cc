@@ -101,6 +101,11 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   for (BookmarkInfo bookmark : bookmarks) {
     updates.push_back(CreateUpdateData(bookmark));
   }
+  // TODO(crbug.com/516866): Remove after a proper positioning for remote
+  // updates is implemented. Reversing the updates because the sorting algorithm
+  // isn't stable. This is OK for now because once proper positioning is
+  // implemented, the siblings update requests order would be irrelvant.
+  std::reverse(updates.begin(), updates.end());
   processor->OnUpdateReceived(CreateDummyModelTypeState(), updates);
   AssertState(processor, bookmarks);
 }
@@ -312,82 +317,6 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
   EXPECT_THAT(bookmarkbar->GetChild(0)->child_count(), Eq(1));
   EXPECT_THAT(bookmarkbar->GetChild(0)->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(kTitle3)));
-}
-
-TEST_F(BookmarkModelTypeProcessorTest, ShouldEncodeSyncMetadata) {
-  const std::string kNodeId1 = "node_id1";
-  const std::string kTitle1 = "title1";
-  const std::string kUrl1 = "http://www.url1.com";
-
-  const std::string kNodeId2 = "node_id2";
-  const std::string kTitle2 = "title2";
-  const std::string kUrl2 = "http://www.url2.com";
-
-  std::vector<BookmarkInfo> bookmarks = {
-      {kNodeId1, kTitle1, kUrl1, kBookmarkBarId, /*server_tag=*/std::string()},
-      {kNodeId2, kTitle2, kUrl2, kBookmarkBarId,
-       /*server_tag=*/std::string()}};
-
-  InitWithSyncedBookmarks(bookmarks, processor());
-
-  // Make sure original bookmark exists.
-  const bookmarks::BookmarkNode* bookmark_bar =
-      bookmark_model()->bookmark_bar_node();
-  const bookmarks::BookmarkNode* bookmark_node1 = bookmark_bar->GetChild(0);
-  const bookmarks::BookmarkNode* bookmark_node2 = bookmark_bar->GetChild(1);
-  ASSERT_THAT(bookmark_node1, NotNull());
-  ASSERT_THAT(bookmark_node2, NotNull());
-
-  std::string metadata_str = processor()->EncodeSyncMetadata();
-  sync_pb::BookmarkModelMetadata model_metadata;
-  EXPECT_TRUE(model_metadata.ParseFromString(metadata_str));
-  // There should be 3 entries now, one for the bookmark bar, and the other 2
-  // nodes.
-  ASSERT_THAT(model_metadata.bookmarks_metadata().size(), Eq(3));
-
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(0).id(),
-              Eq(bookmark_bar->id()));
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(0).metadata().server_id(),
-              Eq(kBookmarkBarId));
-  EXPECT_THAT(
-      model_metadata.bookmarks_metadata().Get(0).metadata().is_deleted(),
-      Eq(false));
-
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).id(),
-              Eq(bookmark_node1->id()));
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).metadata().server_id(),
-              Eq(kNodeId1));
-  EXPECT_THAT(
-      model_metadata.bookmarks_metadata().Get(1).metadata().is_deleted(),
-      Eq(false));
-
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(2).id(),
-              Eq(bookmark_node2->id()));
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(2).metadata().server_id(),
-              Eq(kNodeId2));
-  EXPECT_THAT(
-      model_metadata.bookmarks_metadata().Get(2).metadata().is_deleted(),
-      Eq(false));
-
-  // Process a remote delete for the first node.
-  syncer::UpdateResponseDataList updates;
-  updates.push_back(CreateTombstone(kNodeId1));
-
-  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
-
-  metadata_str = processor()->EncodeSyncMetadata();
-  model_metadata.ParseFromString(metadata_str);
-  // There should be 3 entries now, one for the bookmark bar, and the remaning
-  // bookmark node.
-  ASSERT_THAT(model_metadata.bookmarks_metadata().size(), Eq(2));
-
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).id(),
-              Eq(bookmark_node2->id()));
-  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).metadata().server_id(),
-              Eq(kNodeId2));
-  EXPECT_THAT(
-      model_metadata.bookmarks_metadata().Get(1).metadata().is_deleted(),
-      Eq(false));
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
