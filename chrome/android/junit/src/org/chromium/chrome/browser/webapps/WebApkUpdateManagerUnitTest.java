@@ -253,7 +253,7 @@ public class WebApkUpdateManagerUnitTest {
         final String kPackageName = "org.random.webapk";
         return WebApkInfo.create(getWebApkId(kPackageName), "", manifestData.scopeUrl,
                 new WebApkInfo.Icon(manifestData.primaryIcon),
-                new WebApkInfo.Icon(manifestData.badgeIcon), manifestData.name,
+                new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor, kPackageName, -1,
                 WEB_MANIFEST_URL, manifestData.startUrl, manifestData.iconUrlToMurmur2HashMap,

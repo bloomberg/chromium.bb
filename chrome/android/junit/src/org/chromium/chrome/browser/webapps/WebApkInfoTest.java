@@ -148,6 +148,7 @@ public class WebApkInfoTest {
 
         Assert.assertEquals(null, info.icon());
         Assert.assertEquals(null, info.badgeIcon());
+        Assert.assertEquals(null, info.splashIcon());
     }
 
     /**

@@ -96,6 +96,11 @@ class WebappSplashScreenController extends EmptyTabObserver {
                         ? WebappUma.SplashScreenColorStatus.CUSTOM
                         : WebappUma.SplashScreenColorStatus.DEFAULT);
 
+        if (activityType == WebappActivity.ActivityType.WEBAPK) {
+            initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
+            return;
+        }
+
         WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
         if (storage == null) {
