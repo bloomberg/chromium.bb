@@ -19,9 +19,19 @@ template("fuzzable_proto_library") {
       generate_python = false
     }
 
-    # Use a component for the build target with target_name. That way we can
-    # also force dependencies to build using protobuf_full.
-    component(target_name) {
+    # Inspired by proto_library.gni's handling of
+    # component_build_force_source_set.
+    if (defined(component_build_force_source_set) &&
+        component_build_force_source_set && is_component_build) {
+      link_target_type = "source_set"
+    } else {
+      link_target_type = "static_library"
+    }
+
+    # Use a static_library for the build target with target_name or
+    # source_set. That way we can also force dependencies to build using
+    # protobuf_full.
+    target(link_target_type, target_name) {
       public_deps = [
         ":proto_library_" + target_name,
         "//third_party/libprotobuf-mutator:protobuf_full",
