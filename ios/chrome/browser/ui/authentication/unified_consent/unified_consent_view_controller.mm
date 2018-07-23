@@ -171,6 +171,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
   self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrollView.accessibilityIdentifier = kUnifiedConsentScrollViewIdentifier;
+  self.scrollView.alwaysBounceVertical = YES;
   if (@available(iOS 11, *)) {
     // The observed behavior was buggy. When the view appears on the screen,
     // the scrollvie was not scrolled all the way to the top. Adjusting the

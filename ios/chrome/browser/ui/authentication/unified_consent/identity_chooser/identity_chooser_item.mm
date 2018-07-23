@@ -35,6 +35,7 @@
     title = subtitle;
     subtitle = nil;
   }
+  cell.accessibilityIdentifier = self.email;
   [cell configureCellWithTitle:title
                       subtitle:subtitle
                          image:self.avatar
