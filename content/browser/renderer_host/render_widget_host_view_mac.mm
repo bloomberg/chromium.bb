@@ -171,9 +171,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                                        ? AllocateFrameSinkIdForGuestViewHack()
                                        : host()->GetFrameSinkId();
 
-  browser_compositor_.reset(
-      new BrowserCompositorMac(this, this, host()->is_hidden(),
-                               [cocoa_view() window], display_, frame_sink_id));
+  browser_compositor_.reset(new BrowserCompositorMac(
+      this, this, host()->is_hidden(), display_, frame_sink_id));
+  DCHECK(![cocoa_view() window]);
 
   if (!is_guest_view_hack_)
     host()->SetView(this);
@@ -220,7 +220,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
-  if (!display_only_using_parent_ui_layer_) {
+  if (parent_ui_layer && !display_only_using_parent_ui_layer_) {
     // The first time that we display using a parent ui::Layer, permanently
     // switch from drawing using Cocoa to only drawing using ui::Views. Erase
     // the existing content being drawn by Cocoa (which may have been set due
@@ -380,6 +380,7 @@ void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
 void RenderWidgetHostViewMac::Show() {
   is_visible_ = true;
   ns_view_bridge_->SetVisible(is_visible_);
+  browser_compositor_->SetViewVisible(is_visible_);
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
   WasUnOccluded();
@@ -388,6 +389,7 @@ void RenderWidgetHostViewMac::Show() {
 void RenderWidgetHostViewMac::Hide() {
   is_visible_ = false;
   ns_view_bridge_->SetVisible(is_visible_);
+  browser_compositor_->SetViewVisible(is_visible_);
   host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }

@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -166,6 +167,13 @@ class WebContentsViewMac : public WebContentsView,
 
   // Whether to allow other views.
   bool allow_other_views_;
+
+  // This contains all RenderWidgetHostViewMacs that have been added as child
+  // NSViews to this NSView. Note that this list may contain RWHVMacs besides
+  // just |web_contents_->GetRenderWidgetHostView()|. The only time that the
+  // RWHVMac's NSView is removed from the WCVMac's NSView is when it is
+  // destroyed.
+  std::list<base::WeakPtr<RenderWidgetHostViewBase>> child_views_;
 
   ui::Layer* parent_ui_layer_ = nullptr;
 

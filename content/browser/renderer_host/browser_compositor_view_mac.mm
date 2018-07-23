@@ -47,7 +47,6 @@ BrowserCompositorMac::BrowserCompositorMac(
     ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
     BrowserCompositorMacClient* client,
     bool render_widget_host_is_hidden,
-    bool ns_view_attached_to_window,
     const display::Display& initial_display,
     const viz::FrameSinkId& frame_sink_id)
     : client_(client),
@@ -66,7 +65,7 @@ BrowserCompositorMac::BrowserCompositorMac(
       true /* should_register_frame_sink_id */));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
-  SetNSViewAttachedToWindow(ns_view_attached_to_window);
+  SetNSViewAttachedToWindow(false);
 }
 
 BrowserCompositorMac::~BrowserCompositorMac() {
@@ -213,6 +212,10 @@ void BrowserCompositorMac::SetRenderWidgetHostIsHidden(bool hidden) {
 void BrowserCompositorMac::SetNSViewAttachedToWindow(bool attached) {
   ns_view_attached_to_window_ = attached;
   UpdateState();
+}
+
+void BrowserCompositorMac::SetViewVisible(bool visible) {
+  root_layer_->SetVisible(visible);
 }
 
 void BrowserCompositorMac::UpdateState() {
