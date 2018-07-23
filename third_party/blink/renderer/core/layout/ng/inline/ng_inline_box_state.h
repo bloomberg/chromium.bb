@@ -57,14 +57,10 @@ struct NGInlineBoxState {
   // is set.
   bool has_start_edge = false;
   bool has_end_edge = false;
-  NGLineBoxStrut padding;
-  // |CreateBoxFragment()| needs margin, border+padding, and the sum of them.
   LayoutUnit margin_inline_start;
   LayoutUnit margin_inline_end;
-  LayoutUnit margin_border_padding_inline_start;
-  LayoutUnit margin_border_padding_inline_end;
-  LayoutUnit border_padding_line_over;
-  LayoutUnit border_padding_line_under;
+  NGLineBoxStrut borders;
+  NGLineBoxStrut padding;
 
   Vector<NGPendingPositions> pending_descendants;
   bool include_used_fonts = false;
@@ -88,8 +84,6 @@ struct NGInlineBoxState {
 
   // Create a box fragment for this box.
   void SetNeedsBoxFragment();
-  void SetLineRightForBoxFragment(const NGInlineItem&,
-                                  const NGInlineItemResult&);
 
   // In certain circumstances, the parent's rects is not a simple union of its
   // children fragments' rects, e.g., when children have margin. In such cases,
@@ -126,7 +120,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // Pop a box state stack.
   NGInlineBoxState* OnCloseTag(NGLineBoxFragmentBuilder::ChildList*,
                                NGInlineBoxState*,
-                               FontBaseline);
+                               FontBaseline,
+                               bool has_end_edge = true);
 
   // Compute all the pending positioning at the end of a line.
   void OnEndPlaceItems(NGLineBoxFragmentBuilder::ChildList*, FontBaseline);

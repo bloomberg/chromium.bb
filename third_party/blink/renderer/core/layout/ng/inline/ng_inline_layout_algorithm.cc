@@ -231,12 +231,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       if (!box->needs_box_fragment && item_result.inline_size)
         box->SetNeedsBoxFragment();
-      if (box->needs_box_fragment) {
-        box->SetLineRightForBoxFragment(item, item_result);
-        if (quirks_mode_)
-          box->EnsureTextMetrics(*item.Style(), baseline_type_);
-      }
-      box = box_states_->OnCloseTag(&line_box_, box, baseline_type_);
+      if (quirks_mode_ && box->needs_box_fragment)
+        box->EnsureTextMetrics(*item.Style(), baseline_type_);
+      box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
+                                    item.HasEndEdge());
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, *line_info);
     } else if (item.Type() == NGInlineItem::kListMarker) {
