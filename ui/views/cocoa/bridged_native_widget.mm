@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -21,6 +22,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -527,7 +529,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
 
   // For non-sheet modal types, use the constrained window animations to make
   // the window appear.
-  if (GetAnimate() && native_widget_mac_->GetWidget()->IsModal()) {
+  if (ShouldRunCustomAnimationFor(Widget::ANIMATE_SHOW)) {
     show_animation_.reset(
         [[ModalShowAnimationWithLayer alloc] initWithBridgedNativeWidget:this]);
 
@@ -992,14 +994,29 @@ void BridgedNativeWidget::ReparentNativeView(NSView* native_view,
   }
 }
 
-bool BridgedNativeWidget::GetAnimate() const {
-  return [window_ animationBehavior] != NSWindowAnimationBehaviorNone;
-}
-
-void BridgedNativeWidget::SetAnimate(bool animate) {
+void BridgedNativeWidget::SetAnimationEnabled(bool animate) {
   [window_
       setAnimationBehavior:(animate ? NSWindowAnimationBehaviorDocumentWindow
                                     : NSWindowAnimationBehaviorNone)];
+}
+
+bool BridgedNativeWidget::ShouldRunCustomAnimationFor(
+    Widget::VisibilityTransition transition) const {
+  // The logic around this needs to change if new transition types are set.
+  // E.g. it would be nice to distinguish "hide" from "close". Mac currently
+  // treats "hide" only as "close". Hide (e.g. Cmd+h) should not animate on Mac.
+  constexpr int kSupported =
+      Widget::ANIMATE_SHOW | Widget::ANIMATE_HIDE | Widget::ANIMATE_NONE;
+  DCHECK_EQ(0, transitions_to_animate_ & ~kSupported);
+
+  // Custom animations are only used for tab-modals. Note this also checks the
+  // native animation property. Clearing that will also disable custom
+  // animations to ensure that the views::Widget API behaves consistently.
+  return (transitions_to_animate_ & transition) &&
+         native_widget_mac_->GetWidget()->IsModal() &&
+         [window_ animationBehavior] != NSWindowAnimationBehaviorNone &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableModalAnimations);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
