@@ -45,7 +45,7 @@ OffscreenCanvas::~OffscreenCanvas() = default;
 
 void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
                              const SkIRect& damage_rect) {
-  if (!HasPlaceholderCanvas())
+  if (!HasPlaceholderCanvas() || !canvas_resource)
     return;
 
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
