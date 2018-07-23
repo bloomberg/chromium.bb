@@ -72,8 +72,12 @@ bool LoadArCoreSdk() {
 
   sdk_handle = dlopen("libarcore_sdk_c_minimal.so", RTLD_GLOBAL | RTLD_NOW);
   if (!sdk_handle) {
-    DLOG(ERROR) << "could not open libarcore_sdk_c_minimal.so";
+    char* error_string = nullptr;
+    error_string = dlerror();
+    LOG(ERROR) << "Could not open libarcore_sdk_c_minimal.so: " << error_string;
     return false;
+  } else {
+    VLOG(2) << "Opened shim shared library.";
   }
 
   // TODO(vollick): check SDK version.

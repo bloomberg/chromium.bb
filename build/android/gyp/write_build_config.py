@@ -828,6 +828,11 @@ def main(argv):
   parser.add_option('--secondary-abi-shared-libraries-runtime-deps',
                     help='Path to file containing runtime deps for secondary '
                          'abi shared libraries.')
+  parser.add_option('--secondary-native-libs',
+                    action='append',
+                    help='GYP-list of native libraries for secondary '
+                         'android-abi. Can be specified multiple times.',
+                    default=[])
   parser.add_option('--uncompress-shared-libraries', default=False,
                     action='store_true',
                     help='Whether to store native libraries uncompressed')
@@ -1323,6 +1328,9 @@ def main(argv):
           secondary_abi_runtime_deps_files)
       secondary_abi_java_libraries_list = _CreateJavaLibrariesList(
           secondary_abi_library_paths)
+
+    for gyp_list in options.secondary_native_libs:
+      secondary_abi_library_paths.extend(build_utils.ParseGnList(gyp_list))
 
     extra_shared_libraries = build_utils.ParseGnList(
         options.extra_shared_libraries)

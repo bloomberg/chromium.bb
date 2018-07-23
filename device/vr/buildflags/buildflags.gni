@@ -37,10 +37,10 @@ declare_args() {
   # we are limiting to canary and dev until binary size issues are resolved.
   # TODO(crbug.com/836524): once we've refactored AR code out from vr
   # directories, we can stop requiring |enable_vr| here.
-  package_arcore =
-      enable_vr && is_android && !is_chromecast && current_cpu == "arm" &&
-      (android_channel == "default" || android_channel == "canary" ||
-       android_channel == "dev")
+  package_arcore = enable_vr && is_android && !is_chromecast &&
+                   (current_cpu == "arm" || current_cpu == "arm64") &&
+                   (android_channel == "default" ||
+                    android_channel == "canary" || android_channel == "dev")
 
   # TODO(crbug.com/841389): We should eventually have a single flag for
   # enabling arcore, but we currently don't support ARCore in 64bit, and we do

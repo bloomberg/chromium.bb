@@ -306,6 +306,13 @@ template("write_build_config") {
       ]
     }
 
+    if (defined(invoker.secondary_abi_loadable_modules) &&
+        invoker.secondary_abi_loadable_modules != []) {
+      _rebased_modules =
+          rebase_path(invoker.secondary_abi_loadable_modules, root_build_dir)
+      args += [ "--secondary-native-libs=$_rebased_modules" ]
+    }
+
     if (defined(invoker.uncompress_shared_libraries) &&
         invoker.uncompress_shared_libraries) {
       args += [ "--uncompress-shared-libraries" ]
@@ -2084,7 +2091,7 @@ if (enable_java_templates) {
   #   native_libs_filearg: @FileArg() of additionally native libraries.
   #   secondary_abi_native_libs: (optional) List of native libraries for
   #     secondary ABI.
-  #   secondary_abi_native_libs_filearg: (optiona). @FileArg() of additional
+  #   secondary_abi_native_libs_filearg: (optional). @FileArg() of additional
   #     secondary ABI native libs.
   #   write_asset_list: Adds an extra file to the assets, which contains a list of
   #     all other asset files.
@@ -2198,8 +2205,8 @@ if (enable_java_templates) {
         args += [ "--android-abi=$android_app_abi" ]
       }
       if (defined(invoker.secondary_abi_native_libs_filearg) ||
-          (defined(invoker.secondary_native_libs) &&
-           invoker.secondary_native_libs != []) ||
+          (defined(invoker.secondary_abi_loadable_modules) &&
+           invoker.secondary_abi_loadable_modules != []) ||
           _secondary_native_lib_placeholders != []) {
         assert(defined(android_app_secondary_abi))
         args += [ "--secondary-android-abi=$android_app_secondary_abi" ]
@@ -2218,14 +2225,8 @@ if (enable_java_templates) {
         args += [ "--secondary-native-lib-placeholders=$_secondary_native_lib_placeholders" ]
       }
 
-      # TODO (michaelbai): Remove the secondary_native_libs variable.
       if (defined(invoker.secondary_abi_native_libs_filearg)) {
         args += [ "--secondary-native-libs=${invoker.secondary_abi_native_libs_filearg}" ]
-      } else if (defined(invoker.secondary_native_libs) &&
-                 invoker.secondary_native_libs != []) {
-        inputs += invoker.secondary_native_libs
-        _secondary_native_libs = rebase_path(invoker.secondary_native_libs)
-        args += [ "--secondary-native-libs=$_secondary_native_libs" ]
       }
 
       if (defined(invoker.uncompress_shared_libraries) &&
@@ -2262,7 +2263,8 @@ if (enable_java_templates) {
       _native_libs = invoker.native_libs
     }
     _native_libs_even_when_incremental = []
-    if (defined(invoker.native_libs_even_when_incremental)) {
+    if (defined(invoker.native_libs_even_when_incremental) &&
+        invoker.native_libs_even_when_incremental != []) {
       _native_libs_even_when_incremental =
           invoker.native_libs_even_when_incremental
     }
@@ -2285,7 +2287,7 @@ if (enable_java_templates) {
                                "packaged_resources_path",
                                "secondary_native_lib_placeholders",
                                "secondary_abi_native_libs_filearg",
-                               "secondary_native_libs",
+                               "secondary_abi_loadable_modules",
                                "uncompress_shared_libraries",
                                "write_asset_list",
                              ])
@@ -2366,7 +2368,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "assets_build_config",
-                                 "secondary_native_libs",
+                                 "secondary_abi_loadable_modules",
                                  "uncompress_shared_libraries",
                                ])
         if (!defined(uncompress_shared_libraries)) {
@@ -2947,6 +2949,7 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_output_jar_path",
+                               "secondary_abi_loadable_modules",
                                "type",
                              ])
       if (type == "android_apk") {
