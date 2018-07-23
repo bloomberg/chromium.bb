@@ -249,14 +249,14 @@ var tests = [
 
   function testBeforeUnloadNoDialog() {
     checkStreamDetails('testBeforeUnloadNoDialog.csv', false);
-    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
-    chrome.test.succeed();
+    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(
+        false, chrome.test.succeed);
   },
 
   function testBeforeUnloadShowDialog() {
     checkStreamDetails('testBeforeUnloadShowDialog.csv', false);
-    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
-    chrome.test.succeed();
+    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(
+        true, chrome.test.succeed);
   },
 ];
 

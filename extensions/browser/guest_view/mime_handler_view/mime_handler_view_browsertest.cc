@@ -232,8 +232,12 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, TargetBlankAnchor) {
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_NoDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadNoDialog.csv"));
-  content::PrepContentsForBeforeUnloadTest(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
+  auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::PrepContentsForBeforeUnloadTest(web_contents);
+
+  // Wait for a round trip to the outer renderer to ensure any beforeunload
+  // toggle IPC has had time to reach the browser.
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "");
 
   // Try to navigate away from the page. If the beforeunload listener is
   // triggered and a dialog is shown, this navigation will never complete,
@@ -245,11 +249,17 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadShowDialog.csv"));
   auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
   content::PrepContentsForBeforeUnloadTest(web_contents);
-  web_contents->GetController().Reload(content::ReloadType::NORMAL, false);
+
+  // Wait for a round trip to the outer renderer to ensure the beforeunload
+  // toggle IPC has had time to reach the browser.
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "");
+
+  web_contents->GetController().LoadURL(GURL("about:blank"), {},
+                                        ui::PAGE_TRANSITION_TYPED, "");
 
   app_modal::JavaScriptAppModalDialog* before_unload_dialog =
       ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
-  EXPECT_TRUE(before_unload_dialog->is_reload());
+  EXPECT_FALSE(before_unload_dialog->is_reload());
   before_unload_dialog->OnAccept(base::string16(), false);
 }
