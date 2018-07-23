@@ -32,6 +32,9 @@ declare_args() {
 
   # Partition alloc is included by default except iOS.
   use_partition_alloc = !is_ios
+
+  # Use the new tcmalloc. It's relevant only when use_allocator == "tcmalloc".
+  use_new_tcmalloc = false
 }
 
 if (is_nacl) {

@@ -74,7 +74,11 @@ config("tcmalloc_flags") {
 if (use_allocator == "tcmalloc") {
   # tcmalloc currently won't compile on Android.
   source_set("tcmalloc") {
-    tcmalloc_dir = "//third_party/tcmalloc/gperftools-2.0/chromium"
+    if (use_new_tcmalloc) {
+      tcmalloc_dir = "//third_party/tcmalloc/chromium"
+    } else {
+      tcmalloc_dir = "//third_party/tcmalloc/gperftools-2.0/chromium"
+    }
 
     # Don't check tcmalloc's includes. These files include various files like
     # base/foo.h and they actually refer to tcmalloc's forked copy of base
@@ -214,7 +218,9 @@ if (use_allocator == "tcmalloc") {
       configs -= [ "//build/config/compiler:afdo" ]
     }
 
-    deps = []
+    deps = [
+      ":buildflags",
+    ]
 
     if (enable_profiling) {
       sources += [
@@ -272,7 +278,10 @@ if (use_allocator == "tcmalloc") {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [ "USE_ALLOCATOR_SHIM=$use_allocator_shim" ]
+  flags = [
+    "USE_ALLOCATOR_SHIM=$use_allocator_shim",
+    "USE_NEW_TCMALLOC=$use_new_tcmalloc",
+  ]
 }
 
 # Used to shim malloc symbols on Android. see //base/allocator/README.md.

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/allocator/buildflags.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,7 +20,13 @@
 
 // TODO(peria): Enable profiling on Windows.
 #if BUILDFLAG(ENABLE_PROFILING) && !defined(NO_TCMALLOC) && !defined(OS_WIN)
+
+#if BUILDFLAG(USE_NEW_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/gperftools/profiler.h"
+#else
 #include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/profiler.h"
+#endif
+
 #endif
 
 namespace base {
