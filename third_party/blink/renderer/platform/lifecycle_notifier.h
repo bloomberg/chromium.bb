@@ -81,20 +81,6 @@ class LifecycleNotifier : public GarbageCollectedMixin {
     }
   }
 
-  // ForEachObserver() variant that does not protect against memory corruption.
-  //
-  // Only used by SynchronousMutationNotifier::NotifyUpdateCharacterData. See
-  // implementation comment for why it is necessary.
-  //
-  // TODO(crbug.com/862900): Fix SynchronousMutationNotifier and remove this.
-  template <typename ForEachCallable>
-  void ForEachObserverWithoutChecks(const ForEachCallable& callable) const {
-    for (LifecycleObserverBase* observer_base : observers_) {
-      Observer* observer = static_cast<Observer*>(observer_base);
-      callable(observer);
-    }
-  }
-
  private:
   using ObserverSet = HeapHashSet<WeakMember<LifecycleObserverBase>>;
 

@@ -189,10 +189,8 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
-// TODO(crbug.com/862900): Fix DocumentMarkerController::DidUpdateCharacterData
-//                         and enable this test.
-TEST_F(DocumentMarkerControllerTest,
-       DISABLED_SynchronousMutationNotificationAfterGC) {
+// For http://crbug.com/862900
+TEST_F(DocumentMarkerControllerTest, SynchronousMutationNotificationAfterGC) {
   SetBodyContent("<b><i>foo</i></b>");
   Persistent<Text> sibling_text = CreateTextNode("bar");
   {
