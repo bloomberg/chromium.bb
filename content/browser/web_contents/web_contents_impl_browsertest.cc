@@ -2630,8 +2630,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
   }
 }
 
+// TODO(beccahughes@): This test is flaking on Android. https://crbug.com/855018
+#if defined(OS_ANDROID)
+#define MAYBE_NotifyFullscreenAcquired_Navigate \
+    DISABLED_NotifyFullscreenAcquired_Navigate
+#else
+#define MAYBE_NotifyFullscreenAcquired_Navigate NotifyFullscreenAcquired_Navigate
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       NotifyFullscreenAcquired_Navigate) {
+                       MAYBE_NotifyFullscreenAcquired_Navigate) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
