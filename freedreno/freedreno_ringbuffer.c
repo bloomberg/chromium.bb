@@ -71,7 +71,8 @@ fd_ringbuffer_new_object(struct fd_pipe *pipe, uint32_t size)
 
 void fd_ringbuffer_del(struct fd_ringbuffer *ring)
 {
-	fd_ringbuffer_reset(ring);
+	if (!(ring->flags & FD_RINGBUFFER_OBJECT))
+		fd_ringbuffer_reset(ring);
 	ring->funcs->destroy(ring);
 }
 
