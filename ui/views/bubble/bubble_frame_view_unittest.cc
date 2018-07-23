@@ -50,7 +50,8 @@ const int kExpectedAdditionalHeight = 12;
 
 class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
  public:
-  TestBubbleFrameViewWidgetDelegate(Widget* widget) : widget_(widget) {}
+  explicit TestBubbleFrameViewWidgetDelegate(Widget* widget)
+      : widget_(widget) {}
 
   ~TestBubbleFrameViewWidgetDelegate() override {}
 
@@ -77,35 +78,31 @@ class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
   }
 
  private:
-  Widget* widget_;
+  Widget* const widget_;
   View* contents_view_ = nullptr;  // Owned by |widget_|.
   bool should_show_close_ = false;
 };
 
 class TestBubbleFrameView : public BubbleFrameView {
  public:
-  TestBubbleFrameView(ViewsTestBase* test_base)
+  explicit TestBubbleFrameView(ViewsTestBase* test_base)
       : BubbleFrameView(gfx::Insets(), gfx::Insets(kMargin)),
-        test_base_(test_base),
         available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
-    SetBubbleBorder(std::unique_ptr<BubbleBorder>(
-        new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor)));
+    SetBubbleBorder(std::make_unique<BubbleBorder>(
+        kArrow, BubbleBorder::NO_SHADOW, kColor));
+    widget_ = std::make_unique<Widget>();
+    widget_delegate_ =
+        std::make_unique<TestBubbleFrameViewWidgetDelegate>(widget_.get());
+    Widget::InitParams params =
+        test_base->CreateParams(Widget::InitParams::TYPE_BUBBLE);
+    params.delegate = widget_delegate_.get();
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget_->Init(params);
   }
   ~TestBubbleFrameView() override {}
 
   // View overrides:
   const Widget* GetWidget() const override {
-    if (!widget_) {
-      widget_.reset(new Widget);
-      widget_delegate_.reset(
-          new TestBubbleFrameViewWidgetDelegate(widget_.get()));
-      Widget::InitParams params =
-          test_base_->CreateParams(Widget::InitParams::TYPE_BUBBLE);
-      params.delegate = widget_delegate_.get();
-      params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-      widget_->Init(params);
-    }
-
     return widget_.get();
   }
 
@@ -119,13 +116,10 @@ class TestBubbleFrameView : public BubbleFrameView {
   }
 
  private:
-  ViewsTestBase* test_base_;
+  const gfx::Rect available_bounds_;
 
-  gfx::Rect available_bounds_;
-
-  // Widget returned by GetWidget(). Only created if GetWidget() is called.
-  mutable std::unique_ptr<TestBubbleFrameViewWidgetDelegate> widget_delegate_;
-  mutable std::unique_ptr<Widget> widget_;
+  std::unique_ptr<TestBubbleFrameViewWidgetDelegate> widget_delegate_;
+  std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleFrameView);
 };
@@ -159,9 +153,6 @@ TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
 
 TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
   TestBubbleFrameView frame(this);
-  // TestBubbleFrameView::GetWidget() is responsible for creating the widget and
-  // widget delegate at first call, so it is called here for that side-effect.
-  ignore_result(frame.GetWidget());
   frame.widget_delegate()->SetShouldShowCloseButton(true);
   frame.ResetWindowControls();
   EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
