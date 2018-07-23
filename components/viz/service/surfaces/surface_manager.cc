@@ -28,6 +28,11 @@
 namespace viz {
 namespace {
 
+const char kUmaAliveSurfaces[] = "Compositing.SurfaceManager.AliveSurfaces";
+
+const char kUmaTemporarySurfaces[] =
+    "Compositing.SurfaceManager.TemporarySurfaces";
+
 constexpr base::TimeDelta kExpireInterval = base::TimeDelta::FromSeconds(10);
 
 const char kUmaRemovedTemporaryReference[] =
@@ -227,6 +232,13 @@ void SurfaceManager::GarbageCollectSurfaces() {
     return;
 
   SurfaceIdSet reachable_surfaces = GetLiveSurfacesForReferences();
+
+  // Log the number of reachable surfaces after a garbage collection.
+  UMA_HISTOGRAM_CUSTOM_COUNTS(kUmaAliveSurfaces, reachable_surfaces.size(), 1,
+                              200, 50);
+  // Log the number of temporary references after a garbage collection.
+  UMA_HISTOGRAM_CUSTOM_COUNTS(kUmaTemporarySurfaces,
+                              temporary_references_.size(), 1, 200, 50);
 
   std::vector<SurfaceId> surfaces_to_delete;
 

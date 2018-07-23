@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 
@@ -13,6 +15,21 @@ std::string SurfaceId::ToString() const {
   return base::StringPrintf("SurfaceId(%s, %s)",
                             frame_sink_id_.ToString().c_str(),
                             local_surface_id_.ToString().c_str());
+}
+
+uint32_t SurfaceId::ManhattanDistanceTo(const SurfaceId& other) const {
+  DCHECK_EQ(frame_sink_id_, other.frame_sink_id());
+  DCHECK_EQ(local_surface_id_.embed_token(),
+            other.local_surface_id().embed_token());
+
+  return (std::max(local_surface_id_.parent_sequence_number(),
+                   other.local_surface_id().parent_sequence_number()) -
+          std::min(local_surface_id_.parent_sequence_number(),
+                   other.local_surface_id().parent_sequence_number())) +
+         (std::max(local_surface_id_.child_sequence_number(),
+                   other.local_surface_id().child_sequence_number()) -
+          std::min(local_surface_id_.child_sequence_number(),
+                   other.local_surface_id().child_sequence_number()));
 }
 
 std::ostream& operator<<(std::ostream& out, const SurfaceId& surface_id) {
