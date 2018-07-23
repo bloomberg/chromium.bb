@@ -41,7 +41,7 @@ class PLATFORM_EXPORT HeaderFieldTokenizer final {
 
  private:
   bool ConsumeQuotedString(String& output);
-  void SkipSpaces();
+  void SkipOptionalWhitespace();
 
   unsigned index_;
   const String input_;
@@ -49,4 +49,4 @@ class PLATFORM_EXPORT HeaderFieldTokenizer final {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HEADER_FIELD_TOKENIZER_H_

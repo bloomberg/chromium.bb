@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 324 tests; 322 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 328 tests; 326 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS 0.js - count (0 ?== 0)
 PASS 1.js - count (1 ?== 1)
 PASS 1.js - name (metric ?== metric)
@@ -324,5 +324,9 @@ PASS 80.js - count (0 ?== 0)
 PASS 81.js - count (0 ?== 0)
 PASS 82.js - count (0 ?== 0)
 PASS 83.js - count (0 ?== 0)
+PASS 84.js - count (1 ?== 1)
+PASS 84.js - name (metric ?== metric)
+PASS 84.js - duration (42 ?== 42)
+PASS 84.js - description (tabs-should-get-trimmed ?== tabs-should-get-trimmed)
 Harness: the test ran to completion.
 
