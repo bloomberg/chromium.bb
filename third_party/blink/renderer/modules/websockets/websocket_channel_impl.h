@@ -60,6 +60,7 @@ class WebSocketHandshakeThrottle;
 // This is an implementation of WebSocketChannel. This is created on the main
 // thread for Document, or on the worker thread for WorkerGlobalScope. All
 // functions must be called on the execution context's thread.
+// TODO(nhiroki): Merge this class into WebSocketChannel.
 class MODULES_EXPORT WebSocketChannelImpl final
     : public WebSocketChannel,
       public WebSocketHandleClient,

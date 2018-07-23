@@ -110,7 +110,6 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "url/gurl.h"
@@ -923,13 +922,6 @@ RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
 void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
     blink::WebRTCAPIName api_name) {
   UpdateWebRTCMethodCount(api_name);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<blink::WebSocketHandshakeThrottle>
-RendererBlinkPlatformImpl::CreateWebSocketHandshakeThrottle() {
-  return GetContentClient()->renderer()->CreateWebSocketHandshakeThrottle();
 }
 
 //------------------------------------------------------------------------------

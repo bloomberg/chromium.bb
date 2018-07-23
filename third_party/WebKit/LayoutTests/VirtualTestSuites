@@ -640,21 +640,6 @@
              "--disable-features=NetworkService"]
   },
   {
-    "prefix": "off-main-thread-websocket",
-    "base": "external/wpt/websockets",
-    "args": ["--disable-features=OffMainThreadWebSocket,NestedWorkers"]
-  },
-  {
-    "prefix": "off-main-thread-websocket",
-    "base": "http/tests/websocket",
-    "args": ["--disable-features=OffMainThreadWebSocket,NestedWorkers"]
-  },
-  {
-    "prefix": "off-main-thread-websocket",
-    "base": "http/tests/security/mixedContent/websocket",
-    "args": ["--disable-features=OffMainThreadWebSocket,NestedWorkers"]
-  },
-  {
     "prefix": "webrtc-wpt-unified-plan",
     "base": "external/wpt/webrtc",
     "args": ["--enable-blink-features=RTCUnifiedPlanByDefault"]

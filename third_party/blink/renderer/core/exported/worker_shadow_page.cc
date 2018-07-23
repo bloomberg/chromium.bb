@@ -104,11 +104,6 @@ base::UnguessableToken WorkerShadowPage::GetDevToolsFrameToken() {
   return client_->GetDevToolsWorkerToken();
 }
 
-std::unique_ptr<WebSocketHandshakeThrottle>
-WorkerShadowPage::CreateWebSocketHandshakeThrottle() {
-  return Platform::Current()->CreateWebSocketHandshakeThrottle();
-}
-
 bool WorkerShadowPage::WasInitialized() const {
   return state_ == State::kInitialized;
 }

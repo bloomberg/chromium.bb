@@ -13,8 +13,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -69,12 +67,6 @@ bool SubresourceFilter::AllowLoad(
 }
 
 bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
-  // WebSocket is handled via document on the main thread unless the
-  // experimental off-main-thread WebSocket flag is enabled. See
-  // https://crbug.com/825740 for the details of the off-main-thread WebSocket.
-  DCHECK(execution_context_->IsDocument() ||
-         RuntimeEnabledFeatures::OffMainThreadWebSocketEnabled());
-
   WebDocumentSubresourceFilter::LoadPolicy load_policy =
       subresource_filter_->GetLoadPolicyForWebSocketConnect(url);
 

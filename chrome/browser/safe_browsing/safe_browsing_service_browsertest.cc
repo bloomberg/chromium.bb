@@ -203,7 +203,6 @@ enum class ContextType { kWindow, kWorker, kSharedWorker, kServiceWorker };
 
 enum class JsRequestType {
   kWebSocket,
-  kOffMainThreadWebSocket,
   // Load a URL using the Fetch API.
   kFetch
 };
@@ -235,7 +234,6 @@ std::string ContextTypeToString(ContextType context_type) {
 std::string JsRequestTypeToString(JsRequestType request_type) {
   switch (request_type) {
     case JsRequestType::kWebSocket:
-    case JsRequestType::kOffMainThreadWebSocket:
       return "websocket";
     case JsRequestType::kFetch:
       return "fetch";
@@ -269,7 +267,6 @@ GURL ConstructWebSocketURL(const GURL& main_url) {
 GURL ConstructJsRequestURL(const GURL& base_url, JsRequestType request_type) {
   switch (request_type) {
     case JsRequestType::kWebSocket:
-    case JsRequestType::kOffMainThreadWebSocket:
       return ConstructWebSocketURL(base_url);
     case JsRequestType::kFetch:
       return base_url.Resolve(kMalwarePage);
@@ -1831,23 +1828,11 @@ class SafeBrowsingServiceJsRequestTest
     : public ::testing::WithParamInterface<JsRequestTestParam>,
       public SafeBrowsingServiceTest {
  public:
-  void SetUp() override {
-    JsRequestTestParam param = GetParam();
-    if (param.request_type == JsRequestType::kWebSocket) {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kOffMainThreadWebSocket);
-    }
-    SafeBrowsingServiceTest::SetUp();
-  }
-
   void MarkAsMalware(const GURL& url) {
     SBFullHashResult uws_full_hash;
     GenUrlFullHashResult(url, MALWARE, &uws_full_hash);
     SetupResponseForUrl(url, uws_full_hash);
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 using SafeBrowsingServiceJsRequestInterstitialTest =
@@ -1889,10 +1874,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
         JsRequestTestParam(ContextType::kWorker, JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kWindow,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch)));
 
@@ -1925,10 +1906,6 @@ INSTANTIATE_TEST_CASE_P(
                            JsRequestType::kWebSocket),
         JsRequestTestParam(ContextType::kServiceWorker,
                            JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kSharedWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kServiceWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
         JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kServiceWorker,
                            JsRequestType::kFetch)));
@@ -1955,14 +1932,6 @@ INSTANTIATE_TEST_CASE_P(
                            JsRequestType::kWebSocket),
         JsRequestTestParam(ContextType::kServiceWorker,
                            JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kWindow,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kSharedWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kServiceWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),
@@ -2732,10 +2701,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
         JsRequestTestParam(ContextType::kWorker, JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kWindow,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch)));
 
@@ -2768,10 +2733,6 @@ INSTANTIATE_TEST_CASE_P(
                            JsRequestType::kWebSocket),
         JsRequestTestParam(ContextType::kServiceWorker,
                            JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kSharedWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kServiceWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
         JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kServiceWorker,
                            JsRequestType::kFetch)));
@@ -2802,14 +2763,6 @@ INSTANTIATE_TEST_CASE_P(
                            JsRequestType::kWebSocket),
         JsRequestTestParam(ContextType::kServiceWorker,
                            JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kWindow,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kSharedWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
-        JsRequestTestParam(ContextType::kServiceWorker,
-                           JsRequestType::kOffMainThreadWebSocket),
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch),
         JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),

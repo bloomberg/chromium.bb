@@ -440,9 +440,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(true);
 
-  WebRuntimeFeatures::EnableOffMainThreadWebSocket(
-      base::FeatureList::IsEnabled(features::kOffMainThreadWebSocket));
-
   WebRuntimeFeatures::EnableNestedWorkers(
       base::FeatureList::IsEnabled(blink::features::kNestedWorkers));
 

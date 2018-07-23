@@ -176,8 +176,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
       const blink::WebString& kind) override;
   void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
-  std::unique_ptr<blink::WebSocketHandshakeThrottle>
-  CreateWebSocketHandshakeThrottle() override;
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(
       const blink::Platform::ContextAttributes& attributes,

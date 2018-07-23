@@ -26,7 +26,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
-#include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
 #include "components/supervised_user_error_page/gin_wrapper.h"
 #include "components/supervised_user_error_page/supervised_user_error_page_android.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -284,18 +283,6 @@ void AwContentRendererClient::AddSupportedKeySystems(
   AwAddKeySystems(key_systems);
 }
 
-// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
-// default (https://crbug.com/825740).
-std::unique_ptr<blink::WebSocketHandshakeThrottle>
-AwContentRendererClient::CreateWebSocketHandshakeThrottle() {
-  if (!UsingSafeBrowsingMojoService())
-    return nullptr;
-  // This is called only for Shared Worker and Service Worker that don't have a
-  // real frame, so we specify MSG_ROUTING_NONE here.
-  return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
-      safe_browsing_.get(), MSG_ROUTING_NONE);
-}
-
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 AwContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<AwWebSocketHandshakeThrottleProvider>();
@@ -362,18 +349,6 @@ void AwContentRendererClient::GetInterface(
   RenderThread::Get()->GetConnector()->BindInterface(
       service_manager::Identity(content::mojom::kBrowserServiceName),
       interface_name, std::move(interface_pipe));
-}
-
-// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
-// default (https://crbug.com/825740).
-bool AwContentRendererClient::UsingSafeBrowsingMojoService() {
-  if (safe_browsing_)
-    return true;
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return false;
-  RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName, &safe_browsing_);
-  return true;
 }
 
 }  // namespace android_webview
