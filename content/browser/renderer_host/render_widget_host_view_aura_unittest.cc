@@ -2230,15 +2230,22 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   EXPECT_EQ(15U, gesture_event->data.scroll_update.delta_y);
 
   // A GFS is received showing that the user has lifted their fingers. This will
-  // reset the scroll state of the wheel phase handler.
+  // reset the scroll state of the wheel phase handler. The velocity should be
+  // big enough to make sure that fling is still active while sending the scroll
+  // event.
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gfx::Point(2, 2),
-                              ui::EventTimeForNow(), 0, 0, 10, 0, 10, 2);
+                              ui::EventTimeForNow(), 0, 0, 1000, 0, 1000, 2);
   view_->OnScrollEvent(&fling_start);
   base::RunLoop().RunUntilIdle();
 
   events = GetAndResetDispatchedMessages();
-  // A GFS with touchpad source won't get dispatched to the renderer.
-  EXPECT_EQ(0U, events.size());
+  // A GFS with touchpad source won't get dispatched to the renderer. However,
+  // since progressFling is called right away after processing the GFS, it is
+  // possible that a progress event is sent if the time delta between GFS
+  // timestamp and the time that it gets processed is large enough.
+  bool progress_event_sent = events.size();
+  if (progress_event_sent)
+    EXPECT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
 
   // Handling the next ui::ET_SCROLL event will generate a GFC which resets the
   // phase state. The fling controller processes GFC and generates a wheel event
@@ -2248,13 +2255,12 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
                           ui::EventTimeForNow(), 0, 0, 15, 0, 15, 2);
   view_->OnScrollEvent(&scroll2);
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(widget_host_->FlingCancellationIsDeferred());
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
   wheel_event = static_cast<const WebMouseWheelEvent*>(
       events[0]->ToEvent()->Event()->web_event.get());
-  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->momentum_phase);
-  wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 
@@ -4244,13 +4250,19 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send a fling start, but with a small velocity, the fling controller handles
   // GFS with touchpad source and the event doesn't get queued in gesture event
-  // queue. The overscroll state doesn't get reset till the first ProgressFling
-  // call.
+  // queue. The overscroll state doesn't get reset till the fling progress sends
+  // the fling end event.
   SimulateGestureFlingStartEvent(0.f, 0.1f, blink::kWebGestureDeviceTouchpad);
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
-  EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
-  EXPECT_EQ(OverscrollSource::TOUCHPAD, overscroll_source());
+  bool fling_end_event_sent_ = events.size();
+  if (fling_end_event_sent_) {
+    EXPECT_EQ("MouseWheel GestureScrollEnd", GetMessageNames(events));
+    EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+    EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
+  } else {
+    EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
+    EXPECT_EQ(OverscrollSource::TOUCHPAD, overscroll_source());
+  }
 
   base::TimeTicks progress_time =
       base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
