@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -182,6 +183,22 @@ TEST(ImageResourceConverter, ExampleValueTest) {
   expected_resource->type = "image/jpeg";
 
   EXPECT_EQ(expected_resource, ManifestImageResource::From(resource));
+}
+
+TEST(ImageResourceConverter, BlinkToMojoTypeTest) {
+  blink::ManifestImageResource icon;
+  icon.setSrc("http://example.com/lolcat.jpg");
+  icon.setPurpose("BADGE");
+  icon.setSizes("32x32 64x64 128x128");
+  icon.setType("image/jpeg");
+
+  blink::Manifest::ImageResource mojo_icon =
+      blink::ConvertManifestImageResource(icon);
+  EXPECT_EQ(mojo_icon.src.spec(), "http://example.com/lolcat.jpg");
+  EXPECT_EQ(mojo_icon.type, blink::WebString("image/jpeg").Utf16());
+  EXPECT_EQ(mojo_icon.sizes[1], gfx::Size(64, 64));
+  EXPECT_EQ(mojo_icon.purpose[0],
+            blink::Manifest::ImageResource::Purpose::BADGE);
 }
 
 }  // namespace

@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -105,3 +106,31 @@ blink::mojom::blink::ManifestImageResourcePtr TypeConverter<
 }
 
 }  // namespace mojo
+
+namespace blink {
+
+Manifest::ImageResource ConvertManifestImageResource(
+    const ManifestImageResource& icon) {
+  Manifest::ImageResource manifest_icon;
+  manifest_icon.src = blink::KURL(icon.src());
+  manifest_icon.type = WebString(mojo::ParseType(icon.type())).Utf16();
+
+  // Parse 'purpose'
+  const auto purposes = mojo::ParsePurpose(icon.purpose());
+  // ParsePurpose() would've weeded out any purposes that're not ANY or BADGE.
+  for (auto purpose : purposes) {
+    manifest_icon.purpose.emplace_back(
+        purpose == mojo::Purpose::ANY
+            ? Manifest::ImageResource::Purpose::ANY
+            : Manifest::ImageResource::Purpose::BADGE);
+  }
+  // Parse 'sizes'.
+  WTF::Vector<WebSize> sizes = mojo::ParseSizes(icon.sizes());
+  for (const auto& size : sizes) {
+    manifest_icon.sizes.emplace_back(gfx::Size(size.height, size.width));
+  }
+
+  return manifest_icon;
+}
+
+}  // namespace blink

@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
-#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -68,14 +67,10 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
       const WebSize& icon_display_size_pixels);
 
   // Picks the best icon from the list of developer provided icons, for current
-  // display, given the ideal |icon_display_size_pixels|, and returns its index
-  // in the icons_ array.
-  int PickBestIconForDisplay(ExecutionContext* execution_context,
-                             const WebSize& icon_display_size_pixels);
-
-  // Get a score for the given icon, based on ideal_size. The icon with the
-  // highest score is chosen.
-  double GetIconScore(ManifestImageResource icon, const int ideal_size);
+  // display, given the ideal |icon_display_size_pixels|, and returns its KURL.
+  // If none of the icons is appropriate, this returns an empty URL.
+  KURL PickBestIconForDisplay(ExecutionContext* execution_context,
+                              const WebSize& icon_display_size_pixels);
 
   bool stopped_ = false;
   scoped_refptr<SharedBuffer> data_;
