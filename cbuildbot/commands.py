@@ -2921,8 +2921,6 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
   suffix = 'dev.bin'
 
   cwd = os.path.join(build_root, 'src', 'scripts')
-  path = path_util.ToChrootPath(
-      os.path.join(build_root, 'src', 'platform', 'dev', 'host'))
   chroot_dir = os.path.join(build_root, 'chroot')
   chroot_tmp = os.path.join(chroot_dir, 'tmp')
   chroot_target = path_util.ToChrootPath(target_image_path)
@@ -2965,7 +2963,7 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
 
     if stateful:
       cmd = [
-          os.path.join(path, 'cros_generate_stateful_update_payload'),
+          'cros_generate_stateful_update_payload',
           '--image', chroot_target,
           '--output', chroot_temp_dir
       ]
