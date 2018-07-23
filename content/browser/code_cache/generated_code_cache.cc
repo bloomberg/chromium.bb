@@ -58,50 +58,85 @@ std::string GetCacheKey(const GURL& resource_url,
 // being initialized.
 class GeneratedCodeCache::PendingOperation {
  public:
-  PendingOperation(Operation op,
-                   std::string key,
-                   scoped_refptr<net::IOBufferWithSize>);
-  PendingOperation(Operation op, std::string key, const ReadDataCallback&);
-  PendingOperation(Operation op, std::string key);
+  static std::unique_ptr<PendingOperation> CreateWritePendingOp(
+      std::string key,
+      scoped_refptr<net::IOBufferWithSize>);
+  static std::unique_ptr<PendingOperation> CreateFetchPendingOp(
+      std::string key,
+      const ReadDataCallback&);
+  static std::unique_ptr<PendingOperation> CreateDeletePendingOp(
+      std::string key);
+  static std::unique_ptr<PendingOperation> CreateClearCachePendingOp(
+      net::CompletionCallback callback);
 
   ~PendingOperation();
 
   Operation operation() const { return op_; }
   const std::string& key() const { return key_; }
   const scoped_refptr<net::IOBufferWithSize> data() const { return data_; }
-  const ReadDataCallback& callback() const { return callback_; }
+  ReadDataCallback ReleaseReadCallback() { return std::move(read_callback_); }
+  net::CompletionCallback ReleaseCallback() { return std::move(callback_); }
 
  private:
+  PendingOperation(Operation op,
+                   std::string key,
+                   scoped_refptr<net::IOBufferWithSize>,
+                   const ReadDataCallback&,
+                   net::CompletionCallback);
+
   const Operation op_;
   const std::string key_;
   const scoped_refptr<net::IOBufferWithSize> data_;
-  const ReadDataCallback callback_;
+  ReadDataCallback read_callback_;
+  net::CompletionCallback callback_;
 };
+
+std::unique_ptr<GeneratedCodeCache::PendingOperation>
+GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
+    std::string key,
+    scoped_refptr<net::IOBufferWithSize> buffer) {
+  return base::WrapUnique(
+      new PendingOperation(Operation::kWrite, std::move(key), buffer,
+                           ReadDataCallback(), net::CompletionCallback()));
+}
+
+std::unique_ptr<GeneratedCodeCache::PendingOperation>
+GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
+    std::string key,
+    const ReadDataCallback& read_callback) {
+  return base::WrapUnique(new PendingOperation(
+      Operation::kFetch, std::move(key), scoped_refptr<net::IOBufferWithSize>(),
+      read_callback, net::CompletionCallback()));
+}
+
+std::unique_ptr<GeneratedCodeCache::PendingOperation>
+GeneratedCodeCache::PendingOperation::CreateDeletePendingOp(std::string key) {
+  return base::WrapUnique(
+      new PendingOperation(Operation::kDelete, std::move(key),
+                           scoped_refptr<net::IOBufferWithSize>(),
+                           ReadDataCallback(), net::CompletionCallback()));
+}
+
+std::unique_ptr<GeneratedCodeCache::PendingOperation>
+GeneratedCodeCache::PendingOperation::CreateClearCachePendingOp(
+    net::CompletionCallback callback) {
+  return base::WrapUnique(
+      new PendingOperation(Operation::kClearCache, std::string(),
+                           scoped_refptr<net::IOBufferWithSize>(),
+                           ReadDataCallback(), std::move(callback)));
+}
 
 GeneratedCodeCache::PendingOperation::PendingOperation(
     Operation op,
     std::string key,
-    scoped_refptr<net::IOBufferWithSize> buffer)
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    const ReadDataCallback& read_callback,
+    net::CompletionCallback callback)
     : op_(op),
       key_(std::move(key)),
       data_(buffer),
-      callback_(ReadDataCallback()) {}
-
-GeneratedCodeCache::PendingOperation::PendingOperation(
-    Operation op,
-    std::string key,
-    const ReadDataCallback& callback)
-    : op_(op),
-      key_(std::move(key)),
-      data_(scoped_refptr<net::IOBufferWithSize>()),
-      callback_(callback) {}
-
-GeneratedCodeCache::PendingOperation::PendingOperation(Operation op,
-                                                       std::string key)
-    : op_(op),
-      key_(std::move(key)),
-      data_(scoped_refptr<net::IOBufferWithSize>()),
-      callback_(ReadDataCallback()) {}
+      read_callback_(read_callback),
+      callback_(std::move(callback)) {}
 
 GeneratedCodeCache::PendingOperation::~PendingOperation() = default;
 
@@ -131,8 +166,9 @@ void GeneratedCodeCache::WriteData(
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
-    pending_ops_.push_back(std::make_unique<PendingOperation>(
-        Operation::kWrite, std::move(key), buffer));
+    pending_ops_.push_back(
+        GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
+            std::move(key), buffer));
     return;
   }
 
@@ -159,8 +195,9 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
-    pending_ops_.push_back(std::make_unique<PendingOperation>(
-        Operation::kFetch, std::move(key), read_data_callback));
+    pending_ops_.push_back(
+        GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
+            std::move(key), read_data_callback));
     return;
   }
 
@@ -183,11 +220,27 @@ void GeneratedCodeCache::DeleteEntry(const GURL& url,
     // Insert it into the list of pending operations while the backend is
     // still being opened.
     pending_ops_.push_back(
-        std::make_unique<PendingOperation>(Operation::kDelete, std::move(key)));
+        GeneratedCodeCache::PendingOperation::CreateDeletePendingOp(
+            std::move(key)));
     return;
   }
 
   DeleteEntryImpl(key);
+}
+
+int GeneratedCodeCache::ClearCache(net::CompletionCallback callback) {
+  if (backend_state_ == kFailed) {
+    return net::ERR_FAILED;
+  }
+
+  if (backend_state_ != kInitialized) {
+    pending_ops_.push_back(
+        GeneratedCodeCache::PendingOperation::CreateClearCachePendingOp(
+            std::move(callback)));
+    return net::ERR_IO_PENDING;
+  }
+
+  return backend_->DoomAllEntries(std::move(callback));
 }
 
 GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
@@ -242,13 +295,16 @@ void GeneratedCodeCache::IssuePendingOperations() {
   for (auto const& op : pending_ops_) {
     switch (op->operation()) {
       case kFetch:
-        FetchEntryImpl(op->key(), op->callback());
+        FetchEntryImpl(op->key(), op->ReleaseReadCallback());
         break;
       case kWrite:
         WriteDataImpl(op->key(), op->data());
         break;
       case kDelete:
         DeleteEntryImpl(op->key());
+        break;
+      case kClearCache:
+        DoPendingClearCache(op->ReleaseCallback());
         break;
     }
   }
@@ -378,6 +434,16 @@ void GeneratedCodeCache::DeleteEntryImpl(const std::string& key) {
     return;
 
   backend_->DoomEntry(key, net::LOWEST, net::CompletionOnceCallback());
+}
+
+void GeneratedCodeCache::DoPendingClearCache(
+    net::CompletionCallback user_callback) {
+  int result = backend_->DoomAllEntries(user_callback);
+  if (result != net::ERR_IO_PENDING) {
+    // Call the callback here because we returned ERR_IO_PENDING for initial
+    // request.
+    std::move(user_callback).Run(result);
+  }
 }
 
 }  // namespace content
