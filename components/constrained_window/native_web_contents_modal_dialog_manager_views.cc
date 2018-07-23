@@ -106,6 +106,13 @@ void NativeWebContentsModalDialogManagerViews::Show() {
   // shadows are below the constrained dialog in z-order when we do this.
   shown_widgets_.insert(widget);
 #endif
+
+#if !defined(USE_AURA)
+  // Don't re-animate when switching tabs. Note this is done on Mac only after
+  // the initial ShowWidget() call above, and then "sticks" for later calls.
+  // TODO(tapted): Consolidate this codepath with Aura.
+  widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
+#endif
 }
 
 void NativeWebContentsModalDialogManagerViews::Hide() {

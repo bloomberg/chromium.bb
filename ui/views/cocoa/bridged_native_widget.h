@@ -213,8 +213,19 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
   bool in_fullscreen_transition() const { return in_fullscreen_transition_; }
 
-  bool GetAnimate() const;
-  void SetAnimate(bool animate);
+  // Enables or disables all window animations.
+  void SetAnimationEnabled(bool animate);
+
+  // Sets which transitions will animate. Currently this only affects non-native
+  // animations. TODO(tapted): Use scoping to disable native animations at
+  // appropriate times as well.
+  void set_transitions_to_animate(int transitions) {
+    transitions_to_animate_ = transitions;
+  }
+
+  // Whether to run a custom animation for the provided |transition|.
+  bool ShouldRunCustomAnimationFor(
+      Widget::VisibilityTransition transition) const;
 
   // ui::CATransactionCoordinator::PreCommitObserver implementation
   bool ShouldWaitInPreCommit() override;
@@ -325,6 +336,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   // when the top-left point of the window moves vertically. The origin of the
   // window in AppKit coordinates is not actually changing in this case.
   gfx::Point last_window_frame_origin_;
+
+  // The transition types to animate when not relying on native NSWindow
+  // animation behaviors. Bitmask of Widget::VisibilityTransition.
+  int transitions_to_animate_ = Widget::ANIMATE_BOTH;
 
   // Whether this window wants to be fullscreen. If a fullscreen animation is in
   // progress then it might not be actually fullscreen.

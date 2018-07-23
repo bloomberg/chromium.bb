@@ -1218,12 +1218,24 @@ TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   retained_animation.reset();
 
   // Disable animations and show again.
-  modal_dialog_widget->SetVisibilityChangedAnimationsEnabled(false);
+  modal_dialog_widget->SetVisibilityAnimationTransition(Widget::ANIMATE_NONE);
   modal_dialog_widget->Show();
   EXPECT_FALSE(test_api.show_animation());  // No animation this time.
   modal_dialog_widget->Hide();
 
   // Test after re-enabling.
+  modal_dialog_widget->SetVisibilityAnimationTransition(Widget::ANIMATE_BOTH);
+  modal_dialog_widget->Show();
+  EXPECT_TRUE(test_api.show_animation());
+  retained_animation.reset(test_api.show_animation(),
+                           base::scoped_policy::RETAIN);
+
+  // Test whether disabling native animations also disables custom modal ones.
+  modal_dialog_widget->SetVisibilityChangedAnimationsEnabled(false);
+  modal_dialog_widget->Show();
+  EXPECT_FALSE(test_api.show_animation());  // No animation this time.
+  modal_dialog_widget->Hide();
+  // Renable.
   modal_dialog_widget->SetVisibilityChangedAnimationsEnabled(true);
   modal_dialog_widget->Show();
   EXPECT_TRUE(test_api.show_animation());
