@@ -257,8 +257,10 @@ source_set("testing") {
              [ "//third_party/blink/renderer/core:config" ]
 
   deps = [
-    ":bindings_core_impl_generated",
+    ":bindings_core_v8_generated",
     "//skia",
+    "//third_party/blink/public:generate_mojo_bindings",
+    "//third_party/blink/renderer/core:all_generators",
     "//third_party/blink/renderer/platform",
     "//v8",
   ]
