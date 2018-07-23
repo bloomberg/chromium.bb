@@ -614,7 +614,6 @@
         ],
         'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
-      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
         'shards': 12,
@@ -873,7 +872,6 @@
         ],
         'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
-      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
         'shards': 12,
@@ -1677,7 +1675,6 @@
         ],
         'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
-      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
         'shards': 12,
@@ -2124,7 +2121,6 @@
         ],
         'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
-      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
     },
   },
