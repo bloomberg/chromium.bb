@@ -173,8 +173,6 @@ class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
                  float yborder) override;
   void DrawWebVrOverlayForeground(const RenderInfo& render_info) override;
   UiScene::Elements GetWebVrOverlayElementsToDraw() override;
-  gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
-                                    const gfx::RectF& texture_rect) override;
 
   void HandleInput(base::TimeTicks current_time,
                    const RenderInfo& render_info,

@@ -8,9 +8,7 @@
 #include <array>
 #include <string>
 
-#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_bindings.h"
 
 #define SHADER(Src) "#version 100\n" #Src
@@ -19,18 +17,12 @@
 #define VOID_OFFSET(x) reinterpret_cast<void*>(x)
 
 namespace gfx {
-class RectF;
-class Size;
-class SizeF;
 class Transform;
 }  // namespace gfx
 
 namespace vr {
 
 std::array<float, 16> MatrixToGLArray(const gfx::Transform& matrix);
-
-VR_UI_EXPORT gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
-                                               const gfx::RectF& texture_rect);
 
 // Compile a shader.
 GLuint CompileShader(GLenum shader_type,
@@ -41,12 +33,6 @@ GLuint CompileShader(GLenum shader_type,
 GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
                             GLuint fragment_shader_handle,
                             std::string& error);
-
-// Returns the normalized size of the element projected into screen space.
-// If (1, 1) the element fills the entire buffer.
-VR_UI_EXPORT gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
-                                            float distance,
-                                            const gfx::SizeF& size);
 
 // Sets default texture parameters given a texture type.
 void SetTexParameters(GLenum texture_type);

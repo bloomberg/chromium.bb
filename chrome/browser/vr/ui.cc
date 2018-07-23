@@ -657,14 +657,6 @@ UiScene::Elements Ui::GetWebVrOverlayElementsToDraw() {
   return scene_->GetWebVrOverlayElementsToDraw();
 }
 
-gfx::Rect Ui::CalculatePixelSpaceRect(const gfx::Size& texture_size,
-                                      const gfx::RectF& texture_rect) {
-  const gfx::RectF rect =
-      ScaleRect(texture_rect, static_cast<float>(texture_size.width()),
-                static_cast<float>(texture_size.height()));
-  return gfx::Rect(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
 void Ui::HandleInput(base::TimeTicks current_time,
                      const RenderInfo& render_info,
                      const ControllerModel& controller_model,

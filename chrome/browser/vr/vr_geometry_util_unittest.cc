@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/vr_gl_util.h"
+#include "chrome/browser/vr/vr_geometry_util.h"
 
 #include "chrome/browser/vr/test/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,7 +11,7 @@
 
 namespace vr {
 
-TEST(VrGlUtilTest, CalculateScreenSize) {
+TEST(VrGeometryUtilTest, CalculateScreenSize) {
   gfx::SizeF size(2.4f, 1.6f);
 
   gfx::SizeF screen_size =

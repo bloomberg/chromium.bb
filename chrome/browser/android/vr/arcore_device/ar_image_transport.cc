@@ -75,8 +75,7 @@ bool ARImageTransport::Initialize() {
 
   glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
-  web_vr_renderer_ = std::make_unique<vr::WebVrRenderer>();
-  vr::BaseQuadRenderer::CreateBuffers();
+  ar_renderer_ = std::make_unique<ArRenderer>();
   glGenTextures(1, &camera_texture_id_arcore_);
 
   SetupHardwareBuffers();
@@ -192,7 +191,7 @@ gpu::MailboxHolder ARImageTransport::TransferFrame(
 
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
   // TODO(klausw): see if we can do this one time on initialization. That would
-  // be a tiny bit more efficient, but is only safe if ARCore and WebVrRenderer
+  // be a tiny bit more efficient, but is only safe if ARCore and ArRenderer
   // don't modify these states.
   glDisable(GL_CULL_FACE);
   glDisable(GL_SCISSOR_TEST);
@@ -203,7 +202,7 @@ gpu::MailboxHolder ARImageTransport::TransferFrame(
   // Draw the ARCore texture!
   float uv_transform_floats[16];
   uv_transform.matrix().asColMajorf(uv_transform_floats);
-  web_vr_renderer_->Draw(camera_texture_id_arcore_, uv_transform_floats, 0, 0);
+  ar_renderer_->Draw(camera_texture_id_arcore_, uv_transform_floats, 0, 0);
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
 
