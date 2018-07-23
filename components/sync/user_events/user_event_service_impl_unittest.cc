@@ -80,7 +80,10 @@ class TestSyncService : public FakeSyncService {
         is_using_secondary_passphrase_(is_using_secondary_passphrase),
         preferred_data_types_(preferred_data_types) {}
 
-  bool IsEngineInitialized() const override { return is_engine_initialized_; }
+  State GetState() const override {
+    return is_engine_initialized_ ? State::ACTIVE : State::INITIALIZING;
+  }
+
   bool IsUsingSecondaryPassphrase() const override {
     return is_using_secondary_passphrase_;
   }

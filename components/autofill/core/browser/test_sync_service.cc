@@ -30,10 +30,6 @@ syncer::ModelTypeSet TestSyncService::GetActiveDataTypes() const {
   return data_types_;
 }
 
-bool TestSyncService::IsEngineInitialized() const {
-  return is_engine_initialized_;
-}
-
 bool TestSyncService::IsFirstSetupComplete() const {
   return true;
 }

@@ -49,11 +49,6 @@ syncer::SyncService::State FakeSyncService::GetState() const {
   }
   // From this point on, Sync can start in principle.
   DCHECK(CanSyncStart());
-  // Note: We don't distinguish here if the engine doesn't exist at all, or
-  // exists but hasn't finished initializing.
-  if (!IsEngineInitialized()) {
-    return State::INITIALIZING;
-  }
   if (!IsFirstSetupComplete()) {
     return State::PENDING_DESIRED_CONFIGURATION;
   }
@@ -115,10 +110,6 @@ bool FakeSyncService::IsSetupInProgress() const {
 
 const GoogleServiceAuthError& FakeSyncService::GetAuthError() const {
   return error_;
-}
-
-bool FakeSyncService::IsEngineInitialized() const {
-  return false;
 }
 
 sync_sessions::OpenTabsUIDelegate* FakeSyncService::GetOpenTabsUIDelegate() {

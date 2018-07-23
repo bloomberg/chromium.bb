@@ -22,9 +22,36 @@ bool SyncService::IsSyncAllowed() const {
          !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY);
 }
 
+bool SyncService::IsEngineInitialized() const {
+  switch (GetState()) {
+    case State::DISABLED:
+    case State::WAITING_FOR_START_REQUEST:
+    case State::START_DEFERRED:
+    case State::INITIALIZING:
+      return false;
+    case State::PENDING_DESIRED_CONFIGURATION:
+    case State::CONFIGURING:
+    case State::ACTIVE:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool SyncService::IsSyncActive() const {
-  State state = GetState();
-  return state == State::CONFIGURING || state == State::ACTIVE;
+  switch (GetState()) {
+    case State::DISABLED:
+    case State::WAITING_FOR_START_REQUEST:
+    case State::START_DEFERRED:
+    case State::INITIALIZING:
+    case State::PENDING_DESIRED_CONFIGURATION:
+      return false;
+    case State::CONFIGURING:
+    case State::ACTIVE:
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool SyncService::IsFirstSetupInProgress() const {
