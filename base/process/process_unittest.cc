@@ -231,12 +231,7 @@ TEST_F(ProcessTest, SetProcessBackgrounded) {
     return;
   Process process(SpawnChild("SimpleChildProcess"));
   int old_priority = process.GetPriority();
-#if defined(OS_WIN)
-  EXPECT_TRUE(process.SetProcessBackgrounded(true));
-  EXPECT_TRUE(process.IsProcessBackgrounded());
-  EXPECT_TRUE(process.SetProcessBackgrounded(false));
-  EXPECT_FALSE(process.IsProcessBackgrounded());
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // On the Mac, backgrounding a process requires a port to that process.
   // In the browser it's available through the MachBroker class, which is not
   // part of base. Additionally, there is an indefinite amount of time between
@@ -250,8 +245,10 @@ TEST_F(ProcessTest, SetProcessBackgrounded) {
   EXPECT_FALSE(process.IsProcessBackgrounded(&provider));
 
 #else
-  process.SetProcessBackgrounded(true);
-  process.SetProcessBackgrounded(false);
+  EXPECT_TRUE(process.SetProcessBackgrounded(true));
+  EXPECT_TRUE(process.IsProcessBackgrounded());
+  EXPECT_TRUE(process.SetProcessBackgrounded(false));
+  EXPECT_FALSE(process.IsProcessBackgrounded());
 #endif
   int new_priority = process.GetPriority();
   EXPECT_EQ(old_priority, new_priority);
