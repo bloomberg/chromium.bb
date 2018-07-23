@@ -85,16 +85,12 @@ _NEGATIVE_FILTER = [
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = []
 
+_VERSION_SPECIFIC_FILTER['69'] = []
+
 _VERSION_SPECIFIC_FILTER['68'] = []
 
 _VERSION_SPECIFIC_FILTER['67'] = []
 
-_VERSION_SPECIFIC_FILTER['66'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2304
-    'ChromeDriverSiteIsolation.testCanClickOOPIF',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2350
-    'ChromeDriverTest.testSlowIFrame',
-]
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
