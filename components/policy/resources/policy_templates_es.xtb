@@ -235,6 +235,13 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       De lo contrario, el valor tls 1.1 puede asignarse a la política si se debe mantener la compatibilidad con un servidor con errores. Esta es una medida provisional y el servidor debería arreglarse rápidamente.</translation>
 <translation id="1864269674877167562">Si se ha asignado una cadena en blanco a la política o si esta no se configura, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción para autocompletar los datos durante el flujo de inicio de sesión del usuario.
       Si se ha asignado una cadena que representa un nombre de dominio a esta política, <ph name="PRODUCT_OS_NAME" /> mostrará dicha opción durante el inicio de sesión del usuario, por lo que este podrá introducir solo su nombre de usuario sin la extensión de nombre de dominio. El usuario podrá anular esta extensión de nombre de dominio.</translation>
+<translation id="1864382791685519617">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+
+      Permite controlar tanto la precarga de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web.
+
+      Si habilitas esta política, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
+
+      Si no se habilita, la predicción de red se habilitará, pero los usuarios podrán cambiarla.</translation>
 <translation id="1865417998205858223">Permisos clave</translation>
 <translation id="186719019195685253">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está conectado a la red eléctrica</translation>
 <translation id="187819629719252111">Permite que <ph name="PRODUCT_NAME" /> muestre cuadros de diálogo de selección de archivos para acceder a los archivos locales del ordenador.
@@ -716,6 +723,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Número máximo de conexiones simultáneas con el servidor proxy</translation>
+<translation id="2951386431828317490">Habilitar la función Autocompletar para perfiles</translation>
 <translation id="2956777931324644324">Esta política no está disponible a partir de la versión 36 de <ph name="PRODUCT_NAME" />.
 
       Especifica si se debe habilitar la extensión de certificados TLS limitados a dominios.
@@ -724,6 +732,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2957506574938329824">No permitir que los sitios web soliciten acceso a los dispositivos Bluetooth a través de la API Bluetooth web</translation>
 <translation id="2957513448235202597">Tipo de cuenta para la autenticación <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
+<translation id="2960128438010718932">La programación de lanzamiento progresivo para aplicar una nueva actualización</translation>
 <translation id="2960691910306063964">Habilitar o inhabilitar la autenticación sin PIN para host de acceso remoto</translation>
 <translation id="2976002782221275500">Permite especificar el tiempo transcurrido hasta la atenuación de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
 
@@ -763,6 +772,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Independientemente de cómo se configure esta política o de si se configura o no, los usuarios no podrán cambiar la opción de configuración de WPAD.</translation>
 <translation id="3072045631333522102">Protector de pantalla a utilizar en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones de Servicio para una cuenta de dispositivo local</translation>
+<translation id="3077183141551274418">Habilita o inhabilita los ciclos de vida de las pestañas</translation>
 <translation id="3086995894968271156">Configura Cast Receiver en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Permite establecer una lista de patrones de URL para especificar los sitios web que pueden mostrar imágenes.
 
@@ -1342,6 +1352,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Estas sugerencias se obtienen de forma remota de los servidores de Google.
 
       Si se le asigna el valor "False", no se obtendrán ni mostrarán sugerencias.</translation>
+<translation id="4788252609789586009">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen automáticamente formularios web con información almacenada anteriormente, como la información de la tarjeta de crédito.
+
+      Si inhabilitas esta opción, la función Autocompletar no hará sugerencias ni rellenará la información de la tarjeta de crédito, y tampoco guardará información adicional de la tarjeta de crédito que el usuario envíe cuando esté navegando por la Web.
+
+      Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para información de la tarjeta de crédito en la IU.</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si el valor de esta política se establece en True, siempre se habilitará el cursor grande.
@@ -1482,6 +1497,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si esta política está establecida en True, <ph name="PRODUCT_OS_NAME" /> evitará que el dispositivo se inicie en modo de desarrollador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de desarrollador.
 
       Si no se establece esta política o se establece en False, el modo de desarrollador seguirá disponible para el dispositivo.</translation>
+<translation id="520403427390290017">La función de ciclos de vida de las pestañas reclama CPU y, finalmente, memoria asociada a pestañas en ejecución que llevan mucho tiempo sin utilizarse. Primero las limita, después las bloquea y, por último, las descarta.
+
+      Si se le asigna el valor "False" a esta política, se inhabilitarán los ciclos de vida de las pestañas y estas se ejecutarán con normalidad.
+
+      Si se le asigna el valor "True" o no se le asigna ningún valor, se habilitarán los ciclos de vida de las pestañas.</translation>
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1529,6 +1549,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si se asigna el valor "False" a esta política, los usuarios no podrán enviar contenido a su dispositivo. Si se le asigna el valor "True", los usuarios podrán enviar contenido. Si no se establece esta política, los usuarios no podrán enviar contenido a los dispositivos Chrome OS registrados, pero sí lo podrán hacer a dispositivos no registrados.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido que se indican a continuación</translation>
+<translation id="5360146044009867539">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen automáticamente formularios web con información almacenada anteriormente, como la información de la dirección o el perfil.
+
+      Si inhabilitas esta opción, la función Autocompletar no hará sugerencias ni rellenará la información de la dirección, y tampoco guardará información adicional de la dirección que el usuario envíe cuando esté navegando por la Web.
+
+      Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para información de la dirección en la IU.</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
 <translation id="5366745336748853475">Te permite definir una lista de patrones de URL que especifican los sitios web en los que se selecciona automáticamente un certificado de cliente (si se solicita) en la pantalla de inicio de sesión del marco en el que se aloja el flujo SAML. Un ejemplo de uso es configurar un certificado a nivel de dispositivo para presentarlo a un proveedor de identidad SAML.
 
@@ -2253,6 +2278,15 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Si no se habilita esta opción, esta función no estará disponible.</translation>
 <translation id="7275334191706090484">Marcadores administrados</translation>
+<translation id="729492886167634859">Esta política define una lista de porcentajes que determinan qué parte de dispositivos <ph name="PRODUCT_OS_NAME" /> de la UO se actualizarán semanalmente a partir del día en el que se descubra la actualización. El momento de descubrimiento es posterior al momento de la publicación de la actualización, ya que puede haber pasado un tiempo desde que se publica la actualización hasta que el dispositivo busca actualizaciones.
+
+      El enésimo valor de la lista indicará el porcentaje de dispositivos que debe completar la actualización a la siguiente versión en la enésima semana posterior al descubrimiento de la actualización. Por ejemplo, si se descubre una actualización hoy, el primer valor de la lista definirá el porcentaje de los dispositivos de la UO que se deben actualizar a esa versión en 2 semanas a partir de hoy.
+
+      Si se ha asignado un valor a esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y seguirán esta.
+
+      Si esta lista está vacía, no se hará un lanzamiento progresivo y las actualizaciones se aplicarán de acuerdo con otras políticas de dispositivos.
+
+      Esta política no se aplica a los cambios de canal.</translation>
 <translation id="7295019613773647480">Habilitar usuarios supervisados</translation>
 <translation id="7301543427086558500">Permite especificar una lista de URL alternativas que se pueden utilizar para extraer términos de búsqueda del motor de búsqueda. Las URL deben incluir la cadena <ph name="SEARCH_TERM_MARKER" />, que se utilizará para extraer los términos de búsqueda.
 
@@ -2724,6 +2758,12 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
           Puedes consultar ejemplos de patrones en la página https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Inhabilitar almacenamiento del historial de navegación</translation>
+<translation id="8498293625012059298">Configura la URL de cambio de contraseñas (solo esquemas HTTP y HTTPS). El servicio de protección de contraseña enviará a los usuarios a esta URL para cambiar sus contraseñas cuando hayan visto una advertencia en el navegador.
+      Para que <ph name="PRODUCT_NAME" /> capture correctamente la nueva huella digital de la contraseña en esta página de cambio de contraseña, la página debe seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si se habilita esta opción, el servicio de protección de contraseña enviará a los usuarios a esta URL para cambiar sus contraseñas cuando hayan visto una advertencia en el navegador.
+      Si se inhabilita esta opción o no se configura, el servicio de protección de contraseña enviará a los usuarios a la página https://myaccounts.google.com para cambiar su contraseña.
+      Esta política no está disponible en las instancias de Windows que no están vinculadas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Configuración predeterminada (los usuarios pueden modificarla)</translation>
 <translation id="8507835864888987300">Establece una versión de destino para las actualizaciones automáticas.
 
@@ -2777,6 +2817,14 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Cuando esta política cambia al valor "False", se aplica al iniciar nuevas máquinas virtuales, pero no apaga las máquinas virtuales que ya se estén ejecutando.
       Si no se le asigna ningún valor a esta política en un dispositivo administrado, el dispositivo no puede ejecutar máquinas virtuales.
       Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
+<translation id="8669669491594628013">Permite controlar la activación de la advertencia de protección de contraseña. La protección de contraseña alerta a los usuarios cuando vuelven a utilizar la contraseña protegida en sitios web potencialmente sospechosos.
+
+      Las políticas "PasswordProtectionLoginURLs" y "PasswordProtectionChangePasswordURL" sirven para configurar qué contraseñas se protegen.
+
+      Si se le asigna el valor "PasswordProtectionWarningOff" a esta política, no se mostrará ninguna advertencia de protección de contraseña.
+      Si se le asigna el valor "PasswordProtectionWarningOnPasswordReuse", se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en cualquier sitio web que no esté incluido en la lista blanca.
+      Si se le asigna el valor "PasswordProtectionWarningOnPhishingReuse" a esta política, se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en los sitios web de phishing.
+      Si no se le asigna ningún valor a esta política, el servicio de protección de contraseña solo protegerá las contraseñas de Google, pero el usuario podrá cambiar esta opción.</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>

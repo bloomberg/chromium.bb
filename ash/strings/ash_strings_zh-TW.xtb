@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">裝置管理員或許可監控你的活動。</translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
 <translation id="1746730358044914197">輸入法是由你的管理員所設定。</translation>
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">切換視窗總覽</translation>
 <translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
 <translation id="2339073806695260576">輕觸檔案櫃的觸控筆圖示即可做筆記、擷取螢幕畫面，以及使用雷射筆或放大鏡。</translation>
-<translation id="2351266942280602854">語言和輸入</translation>
 <translation id="2352467521400612932">觸控筆設定</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已鎖定</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2696763960464195425">登出帳戶後，系統將移除你的資訊。<ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">設定鍵盤</translation>
 <translation id="2718395828230677721">夜燈</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">螢幕鎖定快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="4564869809620998694">字型服務</translation>
 <translation id="4570957409596482333">隨選朗讀按鈕</translation>
+<translation id="4585337515783392668">停止透過不明接收器投放</translation>
 <translation id="4628757576491864469">裝置</translation>
 <translation id="4659419629803378708">ChromeVox 已啟用</translation>
 <translation id="4734965478015604180">橫向</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">視窗管理員</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5832805196449965646">新增使用者</translation>
+<translation id="5837036133683224804">停止透過<ph name="RECEIVER_NAME" />投放「<ph name="ROUTE_TITLE" />」</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">沒有通知</translation>
+<translation id="6445835306623867477">正在透過<ph name="RECEIVER_NAME" />投放「<ph name="ROUTE_TITLE" />」</translation>
 <translation id="6452181791372256707">拒絕</translation>
 <translation id="6453179446719226835">語言已變更</translation>
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME" /> 畫面</translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">寫筆記</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的選項選單</translation>
 <translation id="8406981827175133772">全螢幕放大鏡</translation>
+<translation id="8427213022735114808">語音輸入功能會將你的語音資料傳送給 Google，讓你使用自己的語音在任何文字欄位中輸入內容。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8431190899827883166">顯示觸控回應</translation>
 <translation id="8433186206711564395">網路設定</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">解除鎖定</translation>
 <translation id="9151726767154816831">重新啟動並執行 Powerwash 即可更新</translation>
 <translation id="9179259655489829027">這項功能可讓你快速存取任何已登入的使用者帳戶，不需提供密碼。使用這項功能時，請務必只存取你信任的帳戶。</translation>
+<translation id="9193626018745640770">正在透過不明接收器投放</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
 <translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">退出整合桌面模式</translation>

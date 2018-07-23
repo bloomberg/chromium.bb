@@ -24,7 +24,7 @@
 <translation id="3805899903892079518">Chromium har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
 <translation id="4024541897090868497">For å få fanene dine på alle enhetene du bruker, logg på Chromium.</translation>
 <translation id="4241912885070669028">Du logger av en konto som administreres av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Dette fører til at Chromium-dataene dine slettes fra denne enheten, men de blir værende i Google-kontoen din.</translation>
-<translation id="4272892696084633551">Hjelp til med å forbedre funksjonene og ytelsen til Chromium</translation>
+<translation id="4272892696084633551">Bidra til å gjøre Chromium bedre og raskere</translation>
 <translation id="4555020257205549924">Når denne funksjonen er slått på, tilbyr Chromium å oversette sider som er skrevet på andre språk, ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Faner du har åpnet i Chromium på de andre enhetene dine, vises her.</translation>
 <translation id="495292094137889840">Begynn å bruke Chromium QR-skanneren</translation>
@@ -34,7 +34,7 @@
 <translation id="5945387852661427312">Du logger på med en konto som administreres av <ph name="DOMAIN" />, og du gir dermed administratoren for dette domenet kontroll over Chromium-dataene dine. Dataene dine blir knyttet til denne kontoen permanent. Når du logger av Chromium, slettes dataene dine fra denne enheten, men de er fortsatt lagret i Google-kontoen din.</translation>
 <translation id="6068866989048414399">Vilkår for Chromium</translation>
 <translation id="6268381023930128611">Vil du logge av Chromium?</translation>
-<translation id="641451971369018375">Kommuniserer med Google for å forbedre nettlesing og Chromium</translation>
+<translation id="641451971369018375">Kommuniserer med Google for å gjøre nettlesing og Chromium bedre</translation>
 <translation id="6424492062988593837">Chromium har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="6604711459180487467">Få en bedre Chromium-opplevelse basert på hvor du er.</translation>
 <translation id="6626296268883197964">Ved å bruke denne appen samtykker du i Chromiums <ph name="BEGIN_LINK_TOS" />vilkår for bruk<ph name="END_LINK_TOS" /> og <ph name="BEGIN_LINK_PRIVACY" />merknad om personvern<ph name="END_LINK_PRIVACY" />.</translation>

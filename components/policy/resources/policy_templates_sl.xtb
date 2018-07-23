@@ -240,6 +240,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je treba ohraniti združljivost s strežnikom z napakami, je pravilnik lahko nastavljen na »tls1«. To je začasen ukrep in napake v strežniku je treba hitro odpraviti.</translation>
 <translation id="1864269674877167562">Če je ta pravilnik nastavljen na prazen niz ali ni nastavljen, sistem <ph name="PRODUCT_OS_NAME" /> med potekom prijave uporabnika ne bo prikazal možnosti samodokončanja.
       Če je ta pravilnik nastavljen na niz, ki predstavlja ime domene, bo <ph name="PRODUCT_OS_NAME" /> pri prijavi uporabnika prikazal možnost samodokončanja, s čimer bo uporabniku omogočeno, da vnese samo uporabniško ime brez končnice imena domene. Uporabnik bo lahko prepisal končnico tega imena domene.</translation>
+<translation id="1864382791685519617">Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Ta pravilnik nadzira vnaprejšnji prenos podatkov DNS, vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani.
+
+      Če nastavite ta pravilnik, uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti te nastavitve.
+
+      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="1865417998205858223">Glavna dovoljenja</translation>
 <translation id="186719019195685253">Dejanje, ki se izvede, ko je pri napajanju iz električnega omrežja dosežena zakasnitev zaradi nedejavnosti</translation>
 <translation id="187819629719252111">Omogoča dostop do lokalnih datotek v računalniku, tako da programu <ph name="PRODUCT_NAME" /> dovoli prikaz pogovornih oken za izbiro datotek.
@@ -718,6 +725,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Največje dovoljeno število hkratnih povezav s strežnikom proxy</translation>
+<translation id="2951386431828317490">Omogočanje samodejnega izpolnjevanja za profile</translation>
 <translation id="2956777931324644324">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 36.
 
       Določa, ali mora biti razširitev za potrdila, domensko vezana na TLS, omogočena.
@@ -726,6 +734,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2957506574938329824">Ne dovoli nobenemu spletnemu mestu zahtevanja dostopa do naprav Bluetooth prek API-ja za Web Bluetooth</translation>
 <translation id="2957513448235202597">Vrsta računa za preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Pravila, kdaj se obide proxy</translation>
+<translation id="2960128438010718932">Produkcijski razpored za uveljavljanje nove posodobitve</translation>
 <translation id="2960691910306063964">Omogočanje ali onemogočanje preverjanja pristnosti brez kode PIN za gostitelje za oddaljeni dostop</translation>
 <translation id="2976002782221275500">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zatemni, če se napaja iz akumulatorja.
 
@@ -768,6 +777,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Neodvisno od tega, ali je pravilnik nastavljen oziroma kako je nastavljen, uporabniki ne morejo spremeniti nastavitve optimizacije WPAD.</translation>
 <translation id="3072045631333522102">Ohranjevalnik zaslona na zaslonu za prijavo v maloprodajnem načinu</translation>
 <translation id="3072847235228302527">Nastavitev pogojev storitve za lokalni račun v napravi.</translation>
+<translation id="3077183141551274418">Omogoči ali onemogoči življenjske cikle zavihkov</translation>
 <translation id="3086995894968271156">Konfiguriranje sprejemnika za Google Cast v sistemu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Omogoča nastavitev seznama vzorcev za URL-je, s katerim so določena spletna mesta, ki smejo prikazati slike.
 
@@ -1347,6 +1357,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Ti predlogi se prenesejo oddaljeno iz Googlovih strežnikov.
 
       Če je ta nastavitev onemogočena, se predlogi ne bodo prenesli ali prikazali.</translation>
+<translation id="4788252609789586009">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje podatkov o kreditni kartici v spletnih obrazcih s predhodno shranjenimi podatki.
+
+      Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o kreditni kartici in prav tako ne bo shranilo dodatnih podatkov o kreditni kartici, ki jih uporabnik lahko pošlje med brskanjem v spletu.
+
+      Če je ta nastavitev omogočena ali nima nastavljene vrednosti, bo uporabnik lahko nadziral samodejno izpolnjevanje za kreditne kartice v uporabniškem vmesniku.</translation>
 <translation id="4791031774429044540">Omogočanje funkcije velikega kazalca za ljudi s posebnimi potrebami.
 
           Če ta pravilnik vklopite, bo prikaz velikega kazalca vedno omogočen.
@@ -1485,6 +1500,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik vklopljen, bo sistem <ph name="PRODUCT_OS_NAME" /> preprečil, da bi se naprava zagnala v načinu za razvijalce. Če je stikalo za razvijalce vklopljeno, sistem ne bo dovolil zagona in bo prikazal zaslon z napako.
 
       Če ta pravilnik ni nastavljen ali je izklopljen, bo način za razvijalce v napravi še naprej na voljo.</translation>
+<translation id="520403427390290017">Funkcija življenjskih ciklov povrne sredstva CPE-ja, sčasoma pa tudi pomnilnika, povezana z zavihki, ki se izvajajo, vendar že dalj časa niso bili uporabljeni, in sicer tako, da jim najprej omeji delovanje, nato jih zamrzne, na koncu pa zavrže.
+
+      Če je pravilnik onemogočen, so življenjski cikli zavihkov onemogočeni in vsi zavihki se bodo še naprej normalno izvajali.
+
+      Če je pravilnik omogočen ali ni opredeljen, so življenjski cikli zavihkov omogočeni.</translation>
 <translation id="5208240613060747912">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati obvestil.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1532,6 +1552,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če je ta pravilnik onemogočen, uporabniki ne bodo mogli predvajati vsebine v tej napravi. Če je pravilnik omogočen, je uporabnikom dovoljeno predvajanje vsebine. Če ta pravilnik ni nastavljen, uporabnikom ni dovoljeno predvajati vsebine v včlanjenih napravah OS Chrome, vendar jo lahko predvajajo v napravah, ki niso včlanjene.</translation>
 <translation id="5330684698007383292">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
+<translation id="5360146044009867539">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje podatkov o profilu in naslovu v spletnih obrazcih s predhodno shranjenimi podatki.
+
+      Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o naslovu in prav tako ne bo shranilo dodatnih podatkov o naslovu, ki jih uporabnik lahko pošlje med brskanjem v spletu.
+
+      Če je ta nastavitev omogočena ali nima nastavljene vrednosti, bo uporabnik lahko nadziral samodejno izpolnjevanje za naslove v uporabniškem vmesniku.</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="5366745336748853475">Omogoča, da določite seznam vzorcev URL-jev, ki določajo spletna mesta, za katera je potrdilo odjemalca samodejno izbrano na zaslonu za prijavo v okviru, v katerem gostuje potek SAML, če spletno mesto zahteva potrdilo. Primer uporabe je konfiguriranje potrdila v napravi, ki je predloženo SAML IdP.
 
@@ -2257,6 +2282,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če je ta nastavitev onemogočena, ta funkcija ne bo na voljo.</translation>
 <translation id="7275334191706090484">Upravljani zaznamki</translation>
+<translation id="729492886167634859">Ta pravilnik opredeljuje seznam odstotkov, ki določajo delež naprav s sistemom <ph name="PRODUCT_OS_NAME" /> v organizacijski enoti, ki prejmejo posodobitev tedensko od dneva, ko je posodobitev prvič odkrita. Čas odkrivanja je poznejši od časa objave posodobitve, saj lahko po objavi posodobitve preteče nekaj časa, preden naprava preveri, ali je na voljo posodobitev.
+
+      N-ta vrednost na seznamu bo uporabljena kot odstotek naprav, ki morajo opraviti posodobitev na naslednjo različico v n-tem tednu po odkritju posodobitve. Če je na primer posodobitev odkrita danes, prva vrednost na seznamu določa odstotek naprav v organizacijski enoti, ki morajo posodobiti na dano posodobitev v enem tednu od današnjega dneva. Druga vrednost določa odstotek naprav v organizacijski enoti, ki morajo posodobiti na dano posodobitev v 2 tednih od današnjega dneva in tako naprej.
+
+      Če je za ta pravilnik določena vrednost, posodobitve prezrejo pravilnik <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> in upoštevajo ta pravilnik.
+
+      Če je seznam prazen, ni priprav in posodobitve bodo uveljavljene glede na druge pravilnike naprave.
+
+      Ta pravilnik se ne uporablja pri preklapljanju med kanali.</translation>
 <translation id="7295019613773647480">Omogoči zaščitene uporabnike</translation>
 <translation id="7301543427086558500">Določa seznam nadomestnih URL-jev, ki jih je mogoče uporabiti za pridobivanje iskalnih izrazov iz iskalnika. URL-ji morajo vsebovati niz <ph name="SEARCH_TERM_MARKER" />, ki bo uporabljen za pridobivanje iskalnih izrazov.
 
@@ -2721,6 +2755,13 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
           Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Onemogoči shranjevanje zgodovine brskalnika</translation>
+<translation id="8498293625012059298">Konfiguriranje URL-ja za spreminjanje gesla (samo sheme HTTP in HTTPS). 
+Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike na ta URL, da spremenijo geslo.
+      Če želite, da <ph name="PRODUCT_NAME" /> pravilno zajame prstni odtis novega gesla na tej strani za spreminjanje gesla, poskrbite, da je stran za spremembo gesla skladna s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Če je ta nastavitev omogočena, storitev za zaščito gesel po prikazu opozorila v brskalniku pošlje uporabnike na ta URL, da spremenijo gesla.
+      Če je ta nastavitev onemogočena ali ni nastavljena, storitev za zaščito gesel pošlje uporabnike na naslov https://myaccounts.google.com.
+      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Privzete nastavitve (uporabniki jih lahko preglasijo)</translation>
 <translation id="8507835864888987300">Določi ciljno različico za samodejne posodobitve.
 
@@ -2774,6 +2815,14 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če je nastavitev tega pravilnika spremenjena na »False«, se uporabi pri zagonu novih navideznih računalnikov, navideznih računalnikov, ki se že izvajajo, pa ne zaustavi.
       Če ta pravilnik ni nastavljen v upravljani napravi, v napravi ni dovoljeno izvajanje navideznih računalnikov.
       V napravah, ki niso upravljane, je dovoljeno izvajanje navideznih računalnikov.</translation>
+<translation id="8669669491594628013">Omogoča, da nadzirate sprožitev opozorila zaščite z geslom. Zaščita z geslom opozori uporabnike, ko zaščiteno geslo znova uporabijo na spletnih mestih, ki so morda sumljiva.
+
+      Pravilnika »PasswordProtectionLoginURLs« in »PasswordProtectionChangePasswordURL« lahko uporabite za konfiguriranje, katero geslo naj bo zaščiteno.
+
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOff«, ni prikazano nobeno opozorilo zaščite z geslom.
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPasswordReuse«, je opozorilo zaščite z geslom prikazano, ko uporabnik znova uporabi zaščiteno geslo na spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPhishingReuse«, je opozorilo zaščite z geslom prikazano, ko uporabnik znova uporabi zaščiteno geslo na spletnem mestu z lažnim predstavljanjem.
+      Če ta pravilnik ni nastavljen, storitev zaščite z geslom ščiti samo gesla za Google, vendar lahko uporabnik to nastavitev spremeni.</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Opozorilo zaščite z geslom sproži vnovična uporaba gesla</translation>

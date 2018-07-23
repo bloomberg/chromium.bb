@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">കൂടുതൽ വിശദാംശങ്ങൾ നൽകുക</translation>
 <translation id="1021110881106174305">സ്വീകരിച്ച കാർഡുകൾ</translation>
 <translation id="1032854598605920125">ഘടികാരദിശയിൽ‌ തിരിക്കുക</translation>
+<translation id="1035334672863811645">Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="1038842779957582377">അജ്ഞാത നാമം</translation>
 <translation id="1050038467049342496">മറ്റ് ആപ്പുകൾ അടയ്‌ക്കുക</translation>
 <translation id="1055184225775184556">&amp;ചേർക്കുന്നത് പഴയപടിയാക്കുക</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{ഒരു നിർദ്ദേശം}other{# നിർദ്ദേശങ്ങൾ}}</translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
 <translation id="20817612488360358">സിസ്റ്റം പ്രോക്‌സി ക്രമീകരണം ഉപയോഗിക്കുന്നതിനായി സജ്ജമാക്കി, പക്ഷെ ഒരു സ്‌പഷ്‌ടമായ പ്രോക്‌സി കോൺഫിഗറേഷനും അതോടൊപ്പം നിർദ്ദേശിച്ചിരിക്കുന്നു.</translation>
-<translation id="2084558088529668945"><ph name="ORG_NAME" /> നിയന്ത്രിക്കാത്ത ഒരു സൈറ്റിലാണ് നിങ്ങൾ പാസ്‌വേഡ് നൽകിയിരിക്കുന്നത്. അക്കൗണ്ട് പരിരക്ഷിക്കാൻ, മറ്റ് ആപ്പുകളിലും സൈറ്റുകളിലും നിങ്ങളുടെ പാസ്‌വേഡ് വീണ്ടും ഉപയോഗിക്കരുത്.</translation>
 <translation id="2091887806945687916">ശബ്‌ദം</translation>
 <translation id="2094505752054353250">ഡൊമെയ്‌ൻ പൊരുത്തമില്ലായ്‌മ</translation>
 <translation id="2096368010154057602">വകുപ്പ്</translation>
@@ -456,7 +456,6 @@
 <translation id="4171400957073367226">മോശം പരിശോധിച്ചുറപ്പിക്കൽ സിഗ്‌നേച്ചർ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ഇനം കൂടി}other{<ph name="ITEM_COUNT" /> ഇനങ്ങൾ കൂടി}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">മറ്റ് സൈറ്റുകളിൽ നിങ്ങളുടെ <ph name="ORG_NAME" /> പാസ്‌വേഡ് വീണ്ടും ഉപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="4196861286325780578">&amp;നീക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ഫയർവാളും ആന്റിവൈറസ് കോൺഫിഗറേഷനുകളും പരിശോധിക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">ക്രാഷുകള്‍</translation>
@@ -695,7 +694,6 @@
 <translation id="5869405914158311789">ഈ സൈറ്റ് ലഭ്യമാക്കാനാകുന്നില്ല</translation>
 <translation id="5869522115854928033">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
 <translation id="5893752035575986141">ക്രെഡിറ്റ് കാർഡുകൾ സ്വീകരിക്കുന്നു.</translation>
-<translation id="5898382028489516745">മറ്റ് സൈറ്റുകളിൽ നിങ്ങളുടെ <ph name="ORG_NAME" /> പാസ്‌വേഡ് വീണ്ടും ഉപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chromium ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (സമന്വയിപ്പിച്ചത്)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ഒരെണ്ണം ഉപയോഗത്തിലുണ്ട്}other{# എണ്ണം ഉപയോഗത്തിലുണ്ട്}}</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
@@ -1037,6 +1035,7 @@
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="8557066899867184262">കാർഡിന് പിന്നിലാണ് CVC രേഖപ്പെടുത്തിയിരിക്കുന്നത്.</translation>
 <translation id="8559762987265718583">നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല.</translation>
+<translation id="8564985650692024650">മറ്റ് സൈറ്റുകളിൽ നിങ്ങൾ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> പാസ്‌വേഡ് പുനരുപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chromium ശുപാർ‌ശ ചെയ്യുന്നു.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> ലേക്ക് പേജ് വിവര്‍‌ത്തനം ചെയ്യുന്നു...</translation>
 <translation id="858637041960032120">ഫോൺ നം. ചേർക്കൂ
 </translation>
@@ -1066,6 +1065,7 @@
 <translation id="884264119367021077">ഷിപ്പിംഗ് വിലാസം</translation>
 <translation id="884923133447025588">അസാധുവാക്കല്‍ പ്രവര്‍ത്തനം കണ്ടെത്തിയിട്ടില്ല.</translation>
 <translation id="885730110891505394">Google-മായി പങ്കിടുന്നു</translation>
+<translation id="8858065207712248076">മറ്റ് സൈറ്റുകളിൽ നിങ്ങൾ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> പാസ്‌വേഡ് പുനരുപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് പുനഃസജ്ജീകരിക്കാൻ Chrome ശുപാർ‌ശ ചെയ്യുന്നു.</translation>
 <translation id="8866481888320382733">നയ ക്രമീകരണങ്ങൾ പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="8870413625673593573">സമീപകാലത്ത് അടച്ചവ</translation>
 <translation id="8874824191258364635">ശരിയായ കാർഡ് നമ്പർ നൽകുക</translation>

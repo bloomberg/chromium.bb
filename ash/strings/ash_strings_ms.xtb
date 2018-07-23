@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Pentadbir peranti mungkin dapat memantau aktiviti anda.</translation>
 <translation id="1734367976349034509">Peranti ini diurus perusahaan</translation>
 <translation id="1746730358044914197">Kaedah masukan dikonfigurasi oleh pentadbir anda.</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
 <translation id="2338501278241028356">Hidupkan Bluetooth untuk menemui peranti berdekatan</translation>
 <translation id="2339073806695260576">Ketik butang stilus pada rak untuk mencatat nota, mengambil tangkapan skrin, menggunakan penuding laser atau kanta pembesar.</translation>
-<translation id="2351266942280602854">Bahasa dan input</translation>
 <translation id="2352467521400612932">Tetapan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Teruskan</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Lampu Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kad SIM dikunci</translation>
 <translation id="2653659639078652383">Serah</translation>
-<translation id="2696763960464195425">Maklumat anda akan dialih keluar apabila anda log keluar. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Tetapkan papan kekunci anda</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
@@ -195,6 +192,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4544944664594876241">Pintasan untuk mengunci skrin telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Perkhidmatan fon</translation>
 <translation id="4570957409596482333">Butang Pilih untuk Bercakap</translation>
+<translation id="4585337515783392668">Berhenti menghantar pada penerima yang tidak diketahui</translation>
 <translation id="4628757576491864469">Peranti</translation>
 <translation id="4659419629803378708">ChromeVox didayakan</translation>
 <translation id="4734965478015604180">Mendatar</translation>
@@ -241,6 +239,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5805697420284793859">Pengurus tetingkap</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Tambah Orang</translation>
+<translation id="5837036133683224804">Berhenti <ph name="ROUTE_TITLE" /> pada <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -277,6 +276,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Selesai</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> pada <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Tolak</translation>
 <translation id="6453179446719226835">Bahasa telah ditukar</translation>
 <translation id="6459472438155181876">Melanjutkan skrin ke <ph name="DISPLAY_NAME" /></translation>
@@ -373,6 +373,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8351131234907093545">Buat nota</translation>
 <translation id="8392451568018454956">Menu pilihan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Penggadang Skrin Penuh</translation>
+<translation id="8427213022735114808">Pengimlakan menghantar suara anda kepada Google untuk membolehkan penaipan suara dalam mana-mana medan teks.</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8431190899827883166">Tunjukkan ketikan</translation>
 <translation id="8433186206711564395">Tetapan rangkaian</translation>
@@ -414,6 +415,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9111102763498581341">Buka kunci</translation>
 <translation id="9151726767154816831">Mulakan semula dan powerwash untuk mengemas kini</translation>
 <translation id="9179259655489829027">Ciri ini membolehkan anda mengakses dengan cepat mana-mana pengguna yang telah log masuk tanpa memerlukan kata laluan. Gunakan ciri ini dengan akaun yang dipercayai sahaja.</translation>
+<translation id="9193626018745640770">Menghantar pada penerima yang tidak diketahui</translation>
 <translation id="9194617393863864469">Log masuk pengguna lain...</translation>
 <translation id="9201131092683066720">Bateri <ph name="PERCENTAGE" />% penuh.</translation>
 <translation id="9210037371811586452">Keluar daripada mod desktop bersatu</translation>

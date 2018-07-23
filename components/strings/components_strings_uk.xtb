@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Надати додаткову інформацію</translation>
 <translation id="1021110881106174305">Прийняті картки</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
+<translation id="1035334672863811645">увійдіть в обліковий запис Chrome</translation>
 <translation id="1038842779957582377">Невідоме ім’я</translation>
 <translation id="1050038467049342496">Закрийте інші додатки</translation>
 <translation id="1055184225775184556">&amp;Відмінити додавання</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 пропозиція}one{# пропозиція}few{# пропозиції}many{# пропозицій}other{# пропозиції}}</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="20817612488360358">Системні параметри проксі-сервера налаштовано для використання, але чітко вказано налаштування проксі-сервера.</translation>
-<translation id="2084558088529668945">Ви ввели пароль на сайті, яким не керує <ph name="ORG_NAME" />. Щоб захистити свій обліковий запис, не використовуйте цей пароль для інших додатків і сайтів.</translation>
 <translation id="2091887806945687916">Сигнал</translation>
 <translation id="2094505752054353250">Невідповідність домену</translation>
 <translation id="2096368010154057602">Департамент</translation>
@@ -457,7 +457,6 @@
 <translation id="4171400957073367226">Недійсний підпис для підтвердження</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{ще <ph name="ITEM_COUNT" /> елемент}one{ще <ph name="ITEM_COUNT" /> елемент}few{ще <ph name="ITEM_COUNT" /> елементи}many{ще <ph name="ITEM_COUNT" /> елементів}other{ще <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome радить скинути пароль, який приймає <ph name="ORG_NAME" />, якщо ви використовували його на інших сайтах.</translation>
 <translation id="4196861286325780578">&amp;Повторити переміщення</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />перевірити конфігурацію брандмауера й антивірусної програми<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Збої в роботі</translation>
@@ -585,6 +584,7 @@
 <translation id="5089810972385038852">Штат</translation>
 <translation id="5094747076828555589">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Chromium не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="5095208057601539847">Провінція чи область</translation>
+<translation id="5098332213681597508">Це ім’я з вашого облікового запису Google.</translation>
 <translation id="5115563688576182185">(64-розрядна версія)</translation>
 <translation id="5121084798328133320">Щойно ви підтвердите дані картки з облікового запису Google Payments, цей сайт отримає доступ до них.</translation>
 <translation id="5128122789703661928">Сеанс із цією назвою не можна видалити.</translation>
@@ -670,6 +670,7 @@
 <translation id="5633066919399395251">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть установити на ваш комп’ютер небезпечні програми, що викрадають або видаляють інформацію (як-от фотографії, паролі, повідомлення та дані кредитних карток). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Заблоковано оманливий вміст.</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
+<translation id="5666899935841546222">Хочете зберігати всі свої картки в одному додатку?</translation>
 <translation id="5675650730144413517">Сторінка не працює</translation>
 <translation id="5685654322157854305">Додати адресу доставки</translation>
 <translation id="5689199277474810259">Експортувати у формат JSON</translation>
@@ -696,7 +697,6 @@
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
 <translation id="5893752035575986141">Кредитні картки, які приймаються.</translation>
-<translation id="5898382028489516745">Chromium радить скинути пароль, який приймає <ph name="ORG_NAME" />, якщо ви використовували його на інших сайтах.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронізовано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Використовується 1 файл}one{Використовується # файл}few{Використовуються # файли}many{Використовуються # файлів}other{Використовуються # файлу}}</translation>
 <translation id="5939518447894949180">Скинути</translation>
@@ -1040,6 +1040,7 @@
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>
 <translation id="8557066899867184262">Код CVC розташований на зворотному боці картки.</translation>
 <translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
+<translation id="8564985650692024650">Chromium радить скинути пароль <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, якщо ви застосовували його на інших сайтах.</translation>
 <translation id="8571890674111243710">Виконується переклад сторінки такою мовою: <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Додати тел.номер
 </translation>
@@ -1069,6 +1070,7 @@
 <translation id="884264119367021077">Адреса доставки</translation>
 <translation id="884923133447025588">Не знайдено механізм відкликання.</translation>
 <translation id="885730110891505394">Надання інформації службам Google</translation>
+<translation id="8858065207712248076">Chrome радить скинути пароль <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, якщо ви застосовували його на інших сайтах.</translation>
 <translation id="8866481888320382733">Помилка аналізу налаштувань правила</translation>
 <translation id="8870413625673593573">Нещодавно закриті</translation>
 <translation id="8874824191258364635">Введіть дійсний номер картки</translation>

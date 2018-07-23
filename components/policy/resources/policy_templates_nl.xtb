@@ -232,6 +232,13 @@
       Als de compatibiliteit met een server met bugs moet worden behouden, kan dit beleid worden ingesteld op 'tls1.1'. Dit is slechts een noodoplossing. De server moet snel worden gerepareerd.</translation>
 <translation id="1864269674877167562">Als dit beleid is ingesteld op een lege tekenreeks of niet is geconfigureerd, geeft <ph name="PRODUCT_OS_NAME" /> geen optie voor Automatisch aanvullen weer tijdens het inlogproces van de gebruiker.
       Als dit beleid is ingesteld op een tekenreeks die een domeinnaam vertegenwoordigt, geeft <ph name="PRODUCT_OS_NAME" /> een optie voor Automatisch aanvullen weer tijdens het inlogproces van de gebruiker, waarbij de gebruiker alleen zijn gebruikersnaam hoeft te typen zonder de domeinnaamextensie. De gebruiker kan deze domeinnaamextensie overschrijven.</translation>
+<translation id="1864382791685519617">Hiermee wordt netwerkvoorspelling in <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Hiermee wordt DNS-prefetching, vooraf verbinden met TCP en SSL en het vooraf weergeven van webpagina's beheerd.
+
+      Als je dit beleid instelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet wordt ingesteld, wordt netwerkvoorspelling ingeschakeld, maar kan de gebruiker dit wijzigen.</translation>
 <translation id="1865417998205858223">Rechten voor sleutels</translation>
 <translation id="186719019195685253">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op netspanning</translation>
 <translation id="187819629719252111">Hiermee wordt toegang tot lokale bestanden op de computer toegestaan doordat <ph name="PRODUCT_NAME" /> dialoogvensters voor het selecteren van bestanden kan weergeven.
@@ -703,6 +710,7 @@
       Als dit beleid niet is ingesteld, wordt er uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximaal aantal gelijktijdige verbindingen met de proxyserver</translation>
+<translation id="2951386431828317490">Automatisch aanvullen inschakelen voor profielen</translation>
 <translation id="2956777931324644324">Dit beleid is buiten gebruik gesteld vanaf <ph name="PRODUCT_NAME" /> versie 36.
 
       Geeft aan of de extensie voor TLS-domeingebonden certificaten moet worden ingeschakeld.
@@ -711,6 +719,7 @@
 <translation id="2957506574938329824">Niet toestaan dat sites toegang tot Bluetooth-apparaten vragen via de Web Bluetooth API</translation>
 <translation id="2957513448235202597">Accounttype voor <ph name="HTTP_NEGOTIATE" />-verificatie</translation>
 <translation id="2959898425599642200">Regels voor proxyomzeiling</translation>
+<translation id="2960128438010718932">De gefaseerde planning voor het toepassen van nieuwe updates</translation>
 <translation id="2960691910306063964">Verificatie zonder pincode in- of uitschakelen voor hosts voor externe toegang</translation>
 <translation id="2976002782221275500">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt gedimd wanneer er op de batterij wordt gewerkt.
 
@@ -753,6 +762,7 @@
       Onafhankelijk van of en hoe dit beleid is ingesteld, kan de instelling voor WPAD-optimalisatie niet worden gewijzigd door gebruikers.</translation>
 <translation id="3072045631333522102">Screensaver voor gebruik in het inlogvenster in de winkelmodus</translation>
 <translation id="3072847235228302527">De Servicevoorwaarden instellen voor een apparaat-lokaal account</translation>
+<translation id="3077183141551274418">Hiermee schakel je levenscyclussen voor tabbladen in of uit</translation>
 <translation id="3086995894968271156">De Cast-receiver instellen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die afbeeldingen mogen weergeven.
 
@@ -1327,6 +1337,11 @@
       Deze suggesties worden extern via Google-servers opgehaald.
 
       Als dit is ingesteld op 'false' (onwaar), kunnen er geen suggesties worden opgehaald of weergegeven.</translation>
+<translation id="4788252609789586009">Hiermee wordt de functie 'Automatisch aanvullen' van <ph name="PRODUCT_NAME" /> ingeschakeld zodat gebruikers creditcardgegevens automatisch kunnen invullen op webformulieren aan de hand van eerder opgeslagen gegevens.
+
+      Als deze instelling is uitgeschakeld, worden er nooit creditcardgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Er worden ook geen aanvullende creditcardgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl deze browset op internet.
+
+      Als deze instelling is ingeschakeld of geen waarde heeft, kan de gebruiker 'Automatisch aanvullen' voor creditcards beheren in de UI.</translation>
 <translation id="4791031774429044540">De toegankelijkheidsfunctie 'Grote muisaanwijzer' inschakelen.
 
           Als dit beleid op 'waar' is ingesteld, is de grote muisaanwijzer altijd ingeschakeld.
@@ -1461,6 +1476,11 @@
       Als dit beleid is ingesteld op Waar (True), voorkomt <ph name="PRODUCT_OS_NAME" /> dat het apparaat wordt opgestart in de ontwikkelaarsmodus. Als de schakelaar voor de ontwikkelaarsmodus op 'Aan' is gezet, wordt het systeem niet opgestart en wordt een foutscherm weergegeven.
 
       Als dit beleid niet is ingesteld of is ingesteld op Onwaar, (False) blijft de ontwikkelaarsmodus beschikbaar voor het apparaat.</translation>
+<translation id="520403427390290017">De functie voor levenscyclussen voor tabbladen bespaart CPU en uiteindelijk geheugen voor tabbladen die al langere tijd niet worden gebruikt. Eerst worden deze beperkt, vervolgens worden ze vastgezet en uiteindelijk worden ze gedeactiveerd.
+
+      Als dit beleid is ingesteld op 'false' (onwaar), zijn levenscyclussen voor tabbladen uitgeschakeld en blijven alle tabbladen gewoon actief.
+
+      Als dit beleid is ingesteld op 'true' (waar) of niet is opgegeven, zijn levenscyclussen voor tabbladen ingeschakeld.</translation>
 <translation id="5208240613060747912">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1508,6 +1528,11 @@
 
           Als dit beleid is ingesteld op 'False' (Onwaar), kunnen gebruikers geen content casten naar hun apparaat. Als dit beleid is ingesteld op 'True' (Waar), mogen gebruikers content casten. Als dit beleid niet is ingesteld, mogen gebruikers geen content naar geregistreerde Chrome OS-apparaten casten, maar wel naar niet-geregistreerde apparaten.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
+<translation id="5360146044009867539">Hiermee wordt de functie 'Automatisch aanvullen' van <ph name="PRODUCT_NAME" /> ingeschakeld zodat en gebruikers profiel- en adresgegevens automatisch kunnen invullen op webformulieren aan de hand van eerder opgeslagen gegevens.
+
+      Als deze instelling is uitgeschakeld, worden er nooit adresgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Er worden ook geen aanvullende adresgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl deze browset op internet.
+
+      Als deze instelling is ingeschakeld of er geen waarde is ingesteld, kan de gebruiker 'Automatisch aanvullen' voor adressen beheren in de UI.</translation>
 <translation id="5365946944967967336">Knop 'Homepage' in de werkbalk weergeven</translation>
 <translation id="5366745336748853475">Hiermee kun je een lijst met URL-patronen opgeven die sites specificeren waarvoor automatisch een clientcertificaat moet worden geselecteerd op het inlogscherm in het frame waarin de SAML-procedure wordt gehost als de site vraagt om een certificaat. Een voorbeeld van het gebruik is een certificaat voor het hele apparaat configureren om te presenteren aan de SAML IdP.
 
@@ -2224,6 +2249,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als deze instelling is uitgeschakeld, is deze functie niet beschikbaar.</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
+<translation id="729492886167634859">Dit beleid definieert een lijst van percentages. Deze percentages bepalen welk deel van <ph name="PRODUCT_OS_NAME" />-apparaten in de OE per week moet worden geüpdatet vanaf de dag waarop de update voor het eerst wordt ontdekt. De update wordt later ontdekt dan deze wordt gepubliceerd, aangezien het even kan duren voordat het apparaat controleert op updates.
+
+      De n-de waarde in de lijst wordt gebruikt als het percentage apparaten dat moet worden geüpdatet naar de volgende versie in de n-de week nadat de update voor het eerst wordt ontdekt. Als een update bijvoorbeeld vandaag wordt ontdekt, bepaalt de eerste waarde in de lijst welk percentage apparaten in de OE binnen een week moet worden geüpdatet naar die versie. De tweede waarde bepaalt het percentage apparaten in de OE dat naar die versie moet worden geüpdatet binnen twee weken vanaf vandaag, enzovoort.
+
+      Als er voor dit beleid een waarde is ingesteld, negeren updates het beleid <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> en wordt in plaats daarvan dit beleid gevolgd.
+
+      Als deze lijst leeg is, vindt het updaten niet gefaseerd plaats en worden updates toegepast volgens ander apparaatbeleid.
+
+      Dit beleid is niet van toepassing op kanaalwisselingen.</translation>
 <translation id="7295019613773647480">Gebruikers met beperkte rechten inschakelen</translation>
 <translation id="7301543427086558500">Hiermee wordt een lijst met alternatieve URL's gespecificeerd die kunnen worden gebruikt om zoektermen uit de zoekmachine te extraheren. De URL's moeten de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten die wordt gebruikt om de zoektermen te extraheren.
 
@@ -2685,6 +2719,12 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Opslaan van browsegeschiedenis uitschakelen</translation>
+<translation id="8498293625012059298">Hiermee stel je de URL voor het wijzigen van het wachtwoord in (alleen http- en https-schema's). De wachtwoordbeveiligingsservice stuurt gebruikers naar deze URL, waar ze hun wachtwoord kunnen wijzigen nadat ze een waarschuwing in de browser hebben gezien.
+      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> de nieuwe vingerafdruk van het wachtwoord correct vastlegt op deze pagina voor wachtwoordwijziging, moet je ervoor zorgen dat je pagina voor wachtwoordwijziging voldoet aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Als deze instelling is ingeschakeld, stuurt de wachtwoordbeveiligingsservice gebruikers naar deze URL, waar ze hun wachtwoord kunnen wijzigen nadat ze een waarschuwing in de browser hebben gezien.
+      Als deze instelling is uitgeschakeld of niet is ingesteld, stuurt de wachtwoordbeveiligingsservice gebruikers naar https://myaccounts.google.com, waar ze hun wachtwoord kunnen wijzigen.
+      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="8499172469244085141">Standaardinstellingen (gebruikers kunnen overschrijven)</translation>
 <translation id="8507835864888987300">Hiermee stel je een doelversie voor 'Automatische updates' in.
 
@@ -2739,6 +2779,14 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als dit beleid wordt gewijzigd naar False (Onwaar), wordt dit toegepast op nieuwe virtuele machines, maar worden reeds uitgevoerde virtuele machines niet uitgeschakeld.
       Als dit beleid op een beheerd apparaat niet is ingesteld, mogen er geen virtuele machines worden uitgevoerd op het apparaat.
       Virtuele machines mogen worden uitgevoerd op onbeheerde apparaten.</translation>
+<translation id="8669669491594628013">Hiermee kun je de activering van een waarschuwing voor wachtwoordbeveiliging beheren. Wachtwoordbeveiliging waarschuwt gebruikers wanneer ze hun beveiligde wachtwoord hergebruiken op potentieel verdachte sites.
+
+      Je kunt het beleid 'PasswordProtectionLoginURLs' en 'PasswordProtectionChangePasswordURL' gebruiken om te configureren welk wachtwoord moet worden beveiligd.
+
+      Als dit beleid is ingesteld op 'PasswordProtectionWarningOff', wordt er geen waarschuwing voor wachtwoordbeveiliging weergegeven.
+      Als dit beleid is ingesteld op 'PasswordProtectionWarningOnPasswordReuse', wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het beveiligde wachtwoord hergebruikt op een site die niet op de witte lijst staat.
+      Als dit beleid is ingesteld op 'PasswordProtectionWarningOnPhishingReuse', wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het beveiligde wachtwoord hergebruikt op een phishingsite.
+      Als dit beleid niet is ingesteld, beschermt de wachtwoordbeveiligingsservice alleen Google-wachtwoorden, maar kan de gebruiker deze instelling wijzigen.</translation>
 <translation id="8672321184841719703">Doelversie voor automatische updates</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Waarschuwing voor wachtwoordbeveiliging wordt geactiveerd bij hergebruik van een wachtwoord</translation>

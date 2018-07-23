@@ -240,6 +240,13 @@
       Kitu atveju, jei reikia išlaikyti suderinamumą su serveriu, kuriame yra riktų, šią politiką galima nustatyti į „tls1.1“. Tai laikina priemonė; serverį reikia greitai sutvarkyti.</translation>
 <translation id="1864269674877167562">Jei ši politika nustatyta į tuščią eilutę arba yra nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ nerodys automatinio užbaigimo parinkties naudotojų prisijungimo eigoje.
       Jei ši politika nustatyta į eilutę, kuri nurodo domeno pavadinimą, „<ph name="PRODUCT_OS_NAME" />“ rodys automatinio užbaigimo parinktį prisijungiant ir naudotojai galės įvesti tik savo naudotojo vardą be domeno pavadinimo plėtinio. Naudotojas galės nepaisyti šio domeno pavadinimo plėtinio.</translation>
+<translation id="1864382791685519617">Įgalinamas tinklo numatymas sistemoje „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama pakeisti šio nustatymo.
+
+      Naudojant šią politiką valdomas išankstinis DNS pateikimas, išankstinis TCP ir SSL ryšys bei tinklalapių pateikimas.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudotojai negalės pakeisti ar nepaisyti šio nustatymo.
+
+      Jei ši politika nebus nustatyta, bus įgalintas tinklo numatymas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="1865417998205858223">Raktų leidimai</translation>
 <translation id="186719019195685253">Veiksmas, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas, veikiant iš kintamosios srovės šaltinio</translation>
 <translation id="187819629719252111">Leidžiama pasiekti įrenginyje saugomus vietinius failus leidžiant „<ph name="PRODUCT_NAME" />“ pateikti failų pasirinkimo dialogo langus.
@@ -716,6 +723,7 @@
       Jei ši politika nenustatyta, taikoma „<ph name="PRINTERS_ALLOW_ALL" />“.
       </translation>
 <translation id="2908277604670530363">Didžiausias jungčių prie tarpinio serverio vienu metu skaičius</translation>
+<translation id="2951386431828317490">Profilių automatinio pildymo funkcijos įgalinimas</translation>
 <translation id="2956777931324644324">Ši politika nebenaudojama nuo 36 versijos „<ph name="PRODUCT_NAME" />“.
 
       Nurodoma, ar TLS domeno sertifikatų plėtinys turėtų būti įgalintas.
@@ -724,6 +732,7 @@
 <translation id="2957506574938329824">Neleisti jokiai svetainei pateikti užklausos pasiekti „Bluetooth“ įrenginių naudojant „Web Bluetooth“ API</translation>
 <translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> autentifikavimo paskyros tipas</translation>
 <translation id="2959898425599642200">Tarpinio serverio apėjimo taisyklės</translation>
+<translation id="2960128438010718932">Naujinio etapinio pritaikymo tvarkaraštis</translation>
 <translation id="2960691910306063964">Nuotolinės prieigos prieglobų autentifikavimo be PIN kodo įjungimas arba išjungimas</translation>
 <translation id="2976002782221275500">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas pritemdomas, kai naudojama akumuliatoriaus energija.
 
@@ -766,6 +775,7 @@
       Neatsižvelgiant į tai, ar ši politika nustatyta ir kaip ji nustatyta, WPAD optimizavimo nustatymo negali keisti naudotojai.</translation>
 <translation id="3072045631333522102">Naudotina prisijungimo ekrano užsklanda dirbant mažmeninės prekybos režimu</translation>
 <translation id="3072847235228302527">Nustatyti vietinės įrenginio paskyros paslaugų teikimo sąlygas</translation>
+<translation id="3077183141551274418">Įgalinama arba išjungiama skirtukų naudojimo trukmė</translation>
 <translation id="3086995894968271156">Konfigūruokite „Cast Receiver“ politiką „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="3088796212846734853">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdus, sąrašą.
 
@@ -1341,6 +1351,11 @@
       Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serverių.
 
       Jei šis nustatymas nustatytas kaip „false“, siūlymai nebus gaunami ar pateikiami.</translation>
+<translation id="4788252609789586009">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai užpildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., kredito kortelės informaciją.
+
+      Jei šis nustatymas išjungtas, Automatinio pildymo funkcija niekada nesiūlys ir automatiškai nepildys kredito kortelės informacijos, taip pat neišsaugos papildomos kredito kortelės informacijos, kurią naudotojas gali pateikti naršydamas žiniatinklyje.
+
+      Jei šis nustatymas įgalintas arba vertė nenustatyta, naudotojas galės valdyti kredito kortelių informacijos Automatinio pildymo funkciją naudotojo sąsajoje.</translation>
 <translation id="4791031774429044540">Įgalinti didelio žymeklio pasiekiamumo funkciją.
 
           Jei ši politika galioja, didelis žymeklis bus visada įgalintas.
@@ -1480,6 +1495,11 @@
       Jei šios politikos nuostata nustatyta į „Taip“, „<ph name="PRODUCT_OS_NAME" />“ neleis paleisti įrenginio kūrėjo režimu. Sistema nebus paleista ir bus rodomas klaidos ekranas, įjungus kūrėjo jungiklį.
 
       Jei ši politika nenustatyta ar nustatyta „Ne“, kūrėjo režimas liks pasiekiamas įrenginiui.</translation>
+<translation id="520403427390290017">Skirtukų naudojimo trukmės funkcija atlaisvina centrinį procesorių ir atmintį, susietą su veikiančiais skirtukais, kurie buvo nenaudojami ilgą laiką. Pirma, reguliuojamas skirtukų veikimas, tada jie sustabdomi ir galiausiai atmetami.
+
+      Jei politika nustatyta į „false“, skirtukų naudojimo trukmės funkcija bus išjungta, o visi skirtukai veiks įprastai.
+
+      Jei politika nustatyta į „true“ arba nenurodyta, skirtukų naudojimo trukmės funkcija bus įgalinta.</translation>
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -1527,6 +1547,11 @@
 
           Jei ši politika nustatyta kaip „False“ (netiesa), naudotojai negalės perduoti turinio į įrenginį. Jei ši politika nustatyta kaip „True“ (tiesa), naudotojai perduoti turinį galės. Jei ši politika nenustatyta, naudotojai negalės perduoti turinio į užregistruotus „Chrome“ OS įrenginius, bet galės perduoti į neužregistruotus įrenginius.</translation>
 <translation id="5330684698007383292">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti šių tipų turinį</translation>
+<translation id="5360146044009867539">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai užpildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., profilio ir adreso informaciją.
+
+      Jei šis nustatymas išjungtas, Automatinio pildymo funkcija niekada nesiūlys ir automatiškai nepildys adreso informacijos, taip pat neišsaugos papildomos adreso informacijos, kurią naudotojas gali pateikti naršydamas žiniatinklyje.
+
+      Jei šis nustatymas įgalintas arba vertė nenustatyta, naudotojas galės valdyti adreso informacijos Automatinio pildymo funkciją naudotojo sąsajoje.</translation>
 <translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
 <translation id="5366745336748853475">Galima sudaryti URL šablonų sąrašą, nurodantį, kurioms svetainėms prisijungimo ekrane, kur rėmelyje priglobiama SAML eiga, automatiškai pasirenkamas kliento sertifikatas (jei svetainėje jo reikalaujama). Naudojimo pavyzdys – sukonfigūruoti įrenginio sertifikatą, kad jis būtų pateiktas „SAML IdP“ eigoje.
 
@@ -2250,6 +2275,15 @@
 
           Jei šis nustatymas neleidžiamas, ši funkcija nepasiekiama.</translation>
 <translation id="7275334191706090484">Tvarkomos žymės</translation>
+<translation id="729492886167634859">Ši politika apibrėžia procentinių verčių sąrašą, kur nurodoma OV įrenginių dalis („<ph name="PRODUCT_OS_NAME" />“), kurie bus atnaujinti per savaitę nuo pirmos naujinio aptikimo dienos. Aptikimo laikas yra vėlesnis nei naujinio paskelbimo laikas, nes paskelbus naujinį įrenginys gali tikrinti, ar yra naujinių, tik po kurio laiko.
+
+      N-toji sąrašo vertė bus naudojama kaip procentinė įrenginių dalis, kurių sistema turėtų būti atnaujinta į naują versiją n-tąją savaitę po naujinio aptikimo. Pvz., jei naujinys aptiktas šiandien, pirma sąrašo vertė nurodys procentinę OV įrenginių dalį, kurių sistema turėtų būti atnaujinta į naują versiją per savaitę nuo šiandien. Antra vertė nurodo procentinę OV įrenginių dalį, kurių sistema turėtų būti atnaujinta į tą versiją per dvi savaites nuo šiandien ir t. t.
+
+      Jei šios politikos vertė nustatyta, naujiniai nepaisys politikos „<ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />“ ir vietoje to atsižvelgs į šią politiką.
+
+      Jei šis sąrašas tuščias, etapinis diegimas nebus naudojamas, o naujiniai bus pritaikyti atsižvelgiant į kitas įrenginių politikos nuostatas.
+
+      Ši politika netaikoma keičiant kanalus.</translation>
 <translation id="7295019613773647480">Įgalinti prižiūrimus naudotojus</translation>
 <translation id="7301543427086558500">Nurodomas alternatyvių URL, kuriuos galima naudoti paieškos terminams iš paieškos variklio gauti, sąrašas. URL turėtų būti eilutė „<ph name="SEARCH_TERM_MARKER" />“, kuri bus naudojama paieškos terminams gauti.
 
@@ -2715,6 +2749,12 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
           Šablonų pavyzdžių galite rasti apsilankę adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
+<translation id="8498293625012059298">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
+      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jei šis nustatymas įgalintas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
+      Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
+      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="8499172469244085141">Numatytieji nustatymai (naudotojai gali nepaisyti)</translation>
 <translation id="8507835864888987300">Nustatoma tikslinė automatinių naujinių versija.
 
@@ -2768,6 +2808,14 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Pakeitus šios politikos nustatymą į „False“, jis taikomas paleidžiant naujus virtualiuosius įrenginius, bet jau veikiantys virtualieji įrenginiai nėra išjungiami.
       Jei ši politika nenustatyta valdomame įrenginyje, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
       Nevaldomiems įrenginiams leidžiama paleisti virtualiuosius įrenginius.</translation>
+<translation id="8669669491594628013">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
+
+      Politiką „PasswordProtectionLoginURLs“ ir „PasswordProtectionChangePasswordURL“ galite naudoti konfigūruodami, kuriuos slaptažodžius apsaugoti.
+
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOff“, nebus rodomas įspėjimas dėl slaptažodžio apsaugos.
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPasswordReuse“, įspėjimas dėl slaptažodžio apsaugos bus rodomas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kuri neįtraukta į baltąjį sąrašą.
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPhishingReuse“, įspėjimas dėl slaptažodžio apsaugos bus rodomas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kurioje sukčiaujama.
+      Jei ši politika nenustatyta, slaptažodžio apsaugos paslauga apsaugos tik „Google“ slaptažodžius, bet naudotojas galės pakeisti šį nustatymą.</translation>
 <translation id="8672321184841719703">Taikomo automatinio naujinio versija</translation>
 <translation id="867410340948518937">U2F (universalusis antras veiksnys, angl. „Universal Second Factor“)</translation>
 <translation id="8685024486845674965">Įspėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>

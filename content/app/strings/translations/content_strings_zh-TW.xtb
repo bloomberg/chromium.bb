@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">滑桿</translation>
 <translation id="1211441953136645838">章節附註</translation>
 <translation id="1281252709823657822">對話方塊</translation>
+<translation id="1289247557029249093">離開子母畫面模式</translation>
 <translation id="1335095011850992622">參與名單</translation>
 <translation id="1342835525016946179">文章</translation>
 <translation id="1359897965706325498">橫幅</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2657045182931379222">圖形物件</translation>
 <translation id="2674318244760992338">頁尾</translation>
+<translation id="2706474812903655270">目前在子母畫面模式中播放這部影片</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2723001399770238859">音訊</translation>
 <translation id="2746543609216772311">必須輸入 <ph name="MINIMUM_DATE_OR_TIME" /> 或之後的值。</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">剩餘時間</translation>
 <translation id="7740016676195725605">停止顯示字幕</translation>
 <translation id="7740050170769002709">HTML 內容</translation>
+<translation id="7750228210027921155">子母畫面</translation>
 <translation id="7789962463072032349">暫停</translation>
 <translation id="7802800022689234070">顯示/隱藏三角標記</translation>
 <translation id="7888071071722539607">請在電子郵件地址中包含「<ph name="ATSIGN" />」。「<ph name="INVALIDADDRESS" />」未包含「<ph name="ATSIGN" />」。</translation>

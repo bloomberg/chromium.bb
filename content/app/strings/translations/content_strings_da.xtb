@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">skyder</translation>
 <translation id="1211441953136645838">slutnote</translation>
 <translation id="1281252709823657822">dialogboks</translation>
+<translation id="1289247557029249093">Afslut tilstanden med integreret billede</translation>
 <translation id="1335095011850992622">anerkendelser</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2657045182931379222">grafikobjekt</translation>
 <translation id="2674318244760992338">sidefod</translation>
+<translation id="2706474812903655270">Denne video afspilles i tilstanden med integreret billede</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="2723001399770238859">lyd</translation>
 <translation id="2746543609216772311">Værdien må ikke være tidligere end <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">resterende tid</translation>
 <translation id="7740016676195725605">stop visning af undertekster</translation>
 <translation id="7740050170769002709">HTML-indhold</translation>
+<translation id="7750228210027921155">Integreret billede</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">Trekant til at vise eller skjule indhold</translation>
 <translation id="7888071071722539607">Mailadressen skal indeholde et "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" mangler et "<ph name="ATSIGN" />".</translation>

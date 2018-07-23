@@ -564,7 +564,6 @@
 <translation id="1829192082282182671">Zooma ut</translation>
 <translation id="1830550083491357902">Inte inloggad</translation>
 <translation id="1832511806131704864">Mobiländringen har uppdaterats</translation>
-<translation id="1832685970989658809">Administratören har inaktiverat sparade betalningsmetoder</translation>
 <translation id="1834503245783133039">Nedladdningen misslyckades: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Rensa sökning</translation>
 <translation id="1838709767668011582">Google-webbplats</translation>
@@ -941,7 +940,6 @@
 <translation id="2435457462613246316">Visa lösenord</translation>
 <translation id="2436186046335138073">Vill du tillåta att <ph name="HANDLER_HOSTNAME" /> öppnar alla <ph name="PROTOCOL" />-länkar?</translation>
 <translation id="2436707352762155834">Minimum</translation>
-<translation id="2437139306601019091">Mätningen av dataanvändning avslutades</translation>
 <translation id="2440604414813129000">Visa &amp;källa</translation>
 <translation id="2445081178310039857">Tilläggets rotkatalog måste anges.</translation>
 <translation id="2445484935443597917">Skapa en ny profil</translation>
@@ -1877,7 +1875,6 @@
 <translation id="3855441664322950881">Paketera tillägg</translation>
 <translation id="3855676282923585394">Importera bokmärken och inställningar...</translation>
 <translation id="3856800405688283469">Välj tidszon</translation>
-<translation id="3856921555429624101">Mätningen av dataanvändningen har avslutats</translation>
 <translation id="3857228364945137633">Testa att låsa upp din <ph name="DEVICE_TYPE" /> utan lösenord när mobilen finns i närheten med Smart Lock.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Synkroniseringen har pausats</translation>
@@ -2248,7 +2245,6 @@
 <translation id="4508051413094283164">Öppna alla i ett inkognitofönster</translation>
 <translation id="4508265954913339219">Aktiveringen misslyckades</translation>
 <translation id="4508765956121923607">Visa &amp;källa</translation>
-<translation id="4509823033118379431">Bilderna är inte tillgängliga för närvarande. Samlingarna visas när du har återfått anslutningen.</translation>
 <translation id="451407183922382411">Tekniken kommer från <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Skapa ny kontrollerad användare</translation>
 <translation id="4514610446763173167">Växla mellan att spela upp och pausa video</translation>
@@ -2325,6 +2321,7 @@
 <translation id="4627442949885028695">Fortsätta på en annan enhet</translation>
 <translation id="4628314759732363424">Ändra ...</translation>
 <translation id="4628757576491864469">Enheter</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4630590996962964935">Ogiltigt tecken: $1</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4632483769545853758">Slå på ljud från flik</translation>
@@ -2510,7 +2507,6 @@
 <translation id="4905417359854579806">Klar att säkerhetskopiera <ph name="FILE_COUNT" /></translation>
 <translation id="4907161631261076876">Den här filen brukar inte laddas ned. Den kan vara skadlig.</translation>
 <translation id="4907306957610201395">Behörighetskategori</translation>
-<translation id="4907824805858067479">Administratören har inaktiverat sparade kort</translation>
 <translation id="4908811072292128752">Öppna en ny flik om du vill surfa på två webbplatser samtidigt</translation>
 <translation id="4909038193460299775">Eftersom kontot hanteras av <ph name="DOMAIN" /> raderas bokmärken, historik, lösenord och andra inställningar från enheten. Däremot finns uppgifterna kvar i Google-kontot och kan hanteras via <ph name="BEGIN_LINK" />Google Översikt<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">Registreringen är klar</translation>
@@ -3230,7 +3226,6 @@
 <translation id="5990386583461751448">Översatt</translation>
 <translation id="5991049340509704927">Förstora</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Be administratören att ta bort den här appen så att du kan fortsätta att surfa på internet.}other{Be administratören att ta bort de här apparna så att du kan fortsätta att surfa på internet.}}</translation>
-<translation id="5993332328670040093">Dataanvändningen mäts inte längre.</translation>
 <translation id="6002458620803359783">Önskade röster</translation>
 <translation id="6005695835120147974">Medierouter</translation>
 <translation id="6006484371116297560">Klassiskt</translation>
@@ -3422,7 +3417,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> brukar inte laddas ned och kan vara skadlig.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Ny skrivare i nätverket}other{Nya skrivare i nätverket}}</translation>
-<translation id="6286684120317096255">Dataanvändningen mäts</translation>
 <translation id="6286708577777130801">Sparad lösenordsinformation</translation>
 <translation id="6287852322318138013">Välj en app om du vill öppna filen</translation>
 <translation id="6289452883081499048">Anpassade tjänster från Google, som Play</translation>
@@ -4133,7 +4127,6 @@
 <translation id="7400839060291901923">Konfigurera anslutningen på din <ph name="PHONE_NAME" /></translation>
 <translation id="740624631517654988">Blockering av popup-fönster</translation>
 <translation id="7407430846095439694">Importera och bind</translation>
-<translation id="7409233648990234464">Starta om och använd Powerwash</translation>
 <translation id="7409836189476010449">Kör Flash</translation>
 <translation id="7410344089573941623">Fråga om <ph name="HOST" /> vill använda kameran och mikrofonen</translation>
 <translation id="741204030948306876">Ja</translation>
@@ -4987,7 +4980,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8725178340343806893">Favoriter/bokmärken</translation>
 <translation id="8726206820263995930">Det uppstod ett fel när policyinställningarna hämtades från servern: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">Visa inte det här igen</translation>
 <translation id="8727344521467137076">Det finns skadlig programvara på datorn. Chrome tar bort den och återställer inställningarna så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8732030010853991079">Använd tillägget genom att klicka på den här ikonen.</translation>

@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresa: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Administrator uređaja možda će moći nadzirati vašu aktivnost.</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja tvrtka</translation>
 <translation id="1746730358044914197">Načine unosa konfigurira administrator.</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Prebaci na prozor pregleda</translation>
 <translation id="2338501278241028356">Uključite Bluetooth da biste otkrili uređaje u blizini</translation>
 <translation id="2339073806695260576">Dodirnite gumb pisaljke na polici da biste napisali bilješku, izradili snimku zaslona, upotrijebili laserski pokazivač ili povećalo.</translation>
-<translation id="2351266942280602854">Jezik i unos</translation>
 <translation id="2352467521400612932">Postavke pisaljke</translation>
 <translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Nastavi</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Noćno svjetlo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kartica je zaključana</translation>
 <translation id="2653659639078652383">Pošalji</translation>
-<translation id="2696763960464195425">Vaši će podaci biti uklonjeni kada se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Postavite tipkovnicu</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">Promijenio se prečac za zaključavanje zaslona. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Usluga fonta</translation>
 <translation id="4570957409596482333">Gumb Odabira za govor</translation>
+<translation id="4585337515783392668">Zaustavite emitiranje na nepoznatom prijamniku</translation>
 <translation id="4628757576491864469">Uređaji</translation>
 <translation id="4659419629803378708">ChromeVox omogućen</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">Upravitelj prozora</translation>
 <translation id="5820394555380036790">OS Chromium</translation>
 <translation id="5832805196449965646">Dodaj osobu</translation>
+<translation id="5837036133683224804">Zaustavite <ph name="ROUTE_TITLE" /> na uređaju <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="5895138241574237353">Ponovno pokreni</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">Tipka CAPS LOCK isključena</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Dovršeno</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na uređaju <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Odbaci</translation>
 <translation id="6453179446719226835">Jezik je promijenjen</translation>
 <translation id="6459472438155181876">Proširivanje zaslona na zaslon <ph name="DISPLAY_NAME" /></translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">Izrada bilješke</translation>
 <translation id="8392451568018454956">Izbornik opcija za korisnika <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Povećalo za cijeli zaslon</translation>
+<translation id="8427213022735114808">Diktat šalje Googleu audiopodatke o vašem glasu kako biste mogli unositi tekst govorom u bilo koje tekstno polje.</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8431190899827883166">Prikaži dodire</translation>
 <translation id="8433186206711564395">Postavke mreže</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">Otključaj</translation>
 <translation id="9151726767154816831">Ponovo pokrenite sustav i Powerwash za ažuriranje</translation>
 <translation id="9179259655489829027">Ta vam značajka omogućuje brzi pristup bilo kojem prijavljenom korisniku bez zahtijevanja zaporke. Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
+<translation id="9193626018745640770">Emitiranje na nepoznatom prijamniku</translation>
 <translation id="9194617393863864469">Prijavljivanje drugog korisnika...</translation>
 <translation id="9201131092683066720">Baterija je <ph name="PERCENTAGE" />% puna.</translation>
 <translation id="9210037371811586452">Izlaz iz načina jedinstvene radne površine</translation>

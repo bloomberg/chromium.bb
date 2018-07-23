@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">માફ કરશો, તમારો પાસવર્ડ હજી ચકાસી શકાયો નથી. નોંધ: જો તમે તાજેતરમાં તમારો પાસવર્ડ બદલ્યો હોય, તો તમારો નવો પાસવર્ડ તમે એક વાર સાઇન આઉટ કરી લો તે પછી લાગુ થશે, કૃપા કરીને અહીં જૂના પાસવર્ડનો ઉપયોગ કરો.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
 <translation id="1698760176351776263">IPv6 સરનામું: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">ઉપકરણ વ્યવસ્થાપક તમારી પ્રવૃત્તિનું નિયમન કરી શકે છે.</translation>
 <translation id="1734367976349034509">આ ઉપકરણ એન્ટરપ્રાઇઝ દ્વારા સંચાલિત થાય છે</translation>
 <translation id="1746730358044914197">ઇનપુટ પદ્ધતિઓને તમારા વ્યવસ્થાપક દ્વારા ગોઠવવામાં આવી છે.</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
 <translation id="2338501278241028356">નજીકનાં ઉપકરણો શોધવા માટે Bluetooth ચાલુ કરો</translation>
 <translation id="2339073806695260576">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, લેઝર પૉઇન્ટર અથવા મૅગ્નિફાયિંગ ગ્લાસનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટન પર ટૅપ કરો.</translation>
-<translation id="2351266942280602854">ભાષા અને ઇનપુટ</translation>
 <translation id="2352467521400612932">કલમની સેટિંગ્સ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="2359808026110333948">ચાલુ રાખો</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">રાત્રિ પ્રકાશ: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM કાર્ડ લૉક કરેલ છે</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
-<translation id="2696763960464195425">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારી માહિતી કાઢી નાખવામાં આવશે. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">તમારું કીબોર્ડ સેટ કરો</translation>
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">સ્ક્રીનને લૉક કરવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" /> ને બદલે <ph name="NEW_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="4564869809620998694">ફૉન્ટ સેવા</translation>
 <translation id="4570957409596482333">સાંભળવા માટે પસંદ કરો બટન</translation>
+<translation id="4585337515783392668">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરવાનું રોકો</translation>
 <translation id="4628757576491864469">ઉપકરણો</translation>
 <translation id="4659419629803378708">ChromeVox સક્ષમ કર્યું</translation>
 <translation id="4734965478015604180">આડી</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">વિન્ડો મેનેજર</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">વ્યક્તિ ઉમેરો</translation>
+<translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> પર <ph name="ROUTE_TITLE" />ને રોકો</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK બંધ છે</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">થઈ ગયું</translation>
+<translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> પર <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">નકારો</translation>
 <translation id="6453179446719226835">ભાષા બદલવામાં આવી છે</translation>
 <translation id="6459472438155181876">સ્ક્રીનને <ph name="DISPLAY_NAME" /> પર વિસ્તૃત કરી રહ્યાં છે</translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> માટે વિકલ્પો મેનૂ</translation>
 <translation id="8406981827175133772">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
+<translation id="8427213022735114808">કોઈપણ ટેક્સ્ટ ફીલ્ડમાં અવાજ ટાઇપ કરવાને મંજૂરી આપવા માટે, શ્રુતલેખન Googleને તમારો અવાજ મોકલે છે.</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8431190899827883166">ટૅપ બતાવો</translation>
 <translation id="8433186206711564395">નેટવર્ક સેટિંગ્સ</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">અનલોક કરો</translation>
 <translation id="9151726767154816831">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો અને પાવરવૉશ કરો</translation>
 <translation id="9179259655489829027">આ સુવિધા તમને પાસવર્ડની જરૂર વગર ઝડપથી કોઈ સાઇન-ઇન થયેલ વપરાશકર્તાને ઍક્સેસ કરવાની પરવાનગી આપે છે. માત્ર તમે જેના પર વિશ્વાસ કરતા હો તે એકાઉન્ટ સાથે જ આ સુવિધાનો ઉપયોગ કરો.</translation>
+<translation id="9193626018745640770">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="9194617393863864469">અન્ય વપરાશકર્તા સાઇન ઇન કરો...</translation>
 <translation id="9201131092683066720">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ છે.</translation>
 <translation id="9210037371811586452">એકીકૃત ડેસ્કટૉપ મોડથી બહાર નીકળે છે</translation>

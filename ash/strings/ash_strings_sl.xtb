@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">Vašega gesla še ni bilo mogoče preveriti. Opomba: če ste nedavno spremenili geslo, bo novo geslo začelo veljati, ko se odjavite. Tu uporabite starega.</translation>
 <translation id="1677472565718498478">Še <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Naslov IPv6: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Skrbnik naprave lahko morda nadzira vašo dejavnost.</translation>
 <translation id="1734367976349034509">To napravo upravlja podjetje</translation>
 <translation id="1746730358044914197">Načine vnosa konfigurira skrbnik.</translation>
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
 <translation id="2338501278241028356">Vklopite Bluetooth, če želite odkriti naprave v bližini</translation>
 <translation id="2339073806695260576">Dotaknite se gumba pisala na polici, če želite ustvariti zapisek, posneti posnetek zaslona ali uporabiti laserski kazalnik oziroma povečevalno steklo.</translation>
-<translation id="2351266942280602854">Jezik in vnos</translation>
 <translation id="2352467521400612932">Nastavitve pisala</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Nočna svetloba: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kartica SIM je zaklenjena</translation>
 <translation id="2653659639078652383">Pošlji</translation>
-<translation id="2696763960464195425">Vaši podatki bodo odstranjeni, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Nastavitev tipkovnice</translation>
 <translation id="2718395828230677721">Nočna svetloba</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">Bližnjica za zaklepanje zaslona je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Storitev za pisave</translation>
 <translation id="4570957409596482333">Gumb za »Izberite in poslušajte«</translation>
+<translation id="4585337515783392668">Ustvari predvajanje v neznanem sprejemniku</translation>
 <translation id="4628757576491864469">Naprave</translation>
 <translation id="4659419629803378708">Omogočen je ChromeVox</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">Upravitelj oken</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Dodaj osebo</translation>
+<translation id="5837036133683224804">Ustavi zavihek <ph name="ROUTE_TITLE" /> v sprejemniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">Tipka CAPS LOCK je izklopljena</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Končano</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Zavrni</translation>
 <translation id="6453179446719226835">Jezik je spremenjen</translation>
 <translation id="6459472438155181876">Razširitev zaslon na <ph name="DISPLAY_NAME" /></translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392451568018454956">Meni z možnostmi za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Celozaslonska lupa</translation>
+<translation id="8427213022735114808">Narekovanje pošlje vaš glas v Google zaradi omogočanja glasovnega vnašanja v poljubnem besedilnem polju.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8431190899827883166">Prikaz dotikov</translation>
 <translation id="8433186206711564395">Omrežne nastavitve</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">Odkleni</translation>
 <translation id="9151726767154816831">Če želite posodobiti, znova zaženite in uporabite funkcijo Powerwash</translation>
 <translation id="9179259655489829027">S to funkcijo lahko hitro dostopate do poljubnega prijavljenega uporabnika, ne da bi vam bilo treba vnesti geslo. Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
+<translation id="9193626018745640770">Predvajanje v neznanem sprejemniku</translation>
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>

@@ -565,7 +565,6 @@
 <translation id="1829192082282182671">Thu &amp;nhỏ</translation>
 <translation id="1830550083491357902">Chưa đăng nhập</translation>
 <translation id="1832511806131704864">Đã cập nhật thay đổi điện thoại</translation>
-<translation id="1832685970989658809">Quản trị viên của bạn đã vô hiệu hóa các phương thức thanh toán đã lưu</translation>
 <translation id="1834503245783133039">Tải xuống không thành công: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Xóa tìm kiếm</translation>
 <translation id="1838709767668011582">Trang web Google</translation>
@@ -942,7 +941,6 @@
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2436186046335138073">Cho phép <ph name="HANDLER_HOSTNAME" /> mở tất cả liên kết <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Tối thiểu</translation>
-<translation id="2437139306601019091">Đã kết thúc đo lường mức sử dụng dữ liệu</translation>
 <translation id="2440604414813129000">Xem &amp;nguồn</translation>
 <translation id="2445081178310039857">Thư mục gốc của tiện ích là bắt buộc.</translation>
 <translation id="2445484935443597917">Tạo hồ sơ mới</translation>
@@ -1878,7 +1876,6 @@
 <translation id="3855441664322950881">Đóng gói tiện ích</translation>
 <translation id="3855676282923585394">Nhập Dấu trang và Cài đặt...</translation>
 <translation id="3856800405688283469">Chọn múi giờ</translation>
-<translation id="3856921555429624101">Đã kết thúc đo lường mức sử dụng dữ liệu</translation>
 <translation id="3857228364945137633">Dùng thử Smart Lock để mở khóa <ph name="DEVICE_TYPE" /> của bạn mà không cần mật khẩu khi điện thoại của bạn ở gần.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Đã tạm dừng đồng bộ hóa</translation>
@@ -2249,7 +2246,6 @@
 <translation id="4508051413094283164">Mở tất cả trong cửa sổ ẩn danh</translation>
 <translation id="4508265954913339219">Kích hoạt không thành công</translation>
 <translation id="4508765956121923607">Xem &amp;Nguồn</translation>
-<translation id="4509823033118379431">Hiện không sử dụng được hình ảnh. Vui lòng kết nối lại để xem các bộ sưu tập.</translation>
 <translation id="451407183922382411">Do <ph name="COMPANY_NAME" /> cung cấp</translation>
 <translation id="4514542542275172126">Thiết lập người dùng được giám sát mới</translation>
 <translation id="4514610446763173167">Bật/tắt video để phát hoặc tạm dừng</translation>
@@ -2326,6 +2322,7 @@
 <translation id="4627442949885028695">Tiếp tục từ thiết bị khác</translation>
 <translation id="4628314759732363424">Thay đổi...</translation>
 <translation id="4628757576491864469">Thiết bị</translation>
+<translation id="4628948037717959914">Ảnh</translation>
 <translation id="4630590996962964935">Ký tự không hợp lệ: $1</translation>
 <translation id="4631887759990505102">Nghệ sĩ</translation>
 <translation id="4632483769545853758">Bật âm thanh tab</translation>
@@ -2511,7 +2508,6 @@
 <translation id="4905417359854579806">Đã sẵn sàng sao lưu <ph name="FILE_COUNT" /></translation>
 <translation id="4907161631261076876">Tệp này thường không được tải xuống và có thể nguy hiểm.</translation>
 <translation id="4907306957610201395">Danh mục quyền</translation>
-<translation id="4907824805858067479">Quản trị viên của bạn đã vô hiệu hóa các thẻ được lưu</translation>
 <translation id="4908811072292128752">Mở tab mới để duyệt hai trang web cùng lúc</translation>
 <translation id="4909038193460299775">Vì tài khoản này do <ph name="DOMAIN" /> quản lý nên dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn sẽ bị xóa khỏi thiết bị này. Tuy nhiên, dữ liệu của bạn sẽ vẫn được lưu trữ trong Tài khoản Google và có thể được quản lý trên <ph name="BEGIN_LINK" />Trang tổng quan Google<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">Bạn đã đăng ký thành công</translation>
@@ -3231,7 +3227,6 @@
 <translation id="5990386583461751448">Đã dịch</translation>
 <translation id="5991049340509704927">Phóng to</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Để đảm bảo có thể tiếp tục duyệt web, hãy yêu cầu quản trị viên xóa ứng dụng này.}other{Để đảm bảo có thể tiếp tục duyệt web, hãy yêu cầu quản trị viên xóa những ứng dụng này.}}</translation>
-<translation id="5993332328670040093">Mức sử dụng dữ liệu của bạn sẽ không được đo lường nữa.</translation>
 <translation id="6002458620803359783">Giọng nói ưu tiên</translation>
 <translation id="6005695835120147974">Bộ định tuyến phương tiện</translation>
 <translation id="6006484371116297560">Cổ điển</translation>
@@ -3423,7 +3418,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> thường không được tải xuống và có thể nguy hiểm.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Máy in mới trên mạng của bạn}other{Máy in mới trên mạng của bạn}}</translation>
-<translation id="6286684120317096255">Đang đo lường mức sử dụng dữ liệu</translation>
 <translation id="6286708577777130801">Chi tiết mật khẩu đã lưu</translation>
 <translation id="6287852322318138013">Chọn một ứng dụng để mở tệp này</translation>
 <translation id="6289452883081499048">Các dịch vụ cá nhân hóa của Google như Play</translation>
@@ -4134,7 +4128,6 @@
 <translation id="7400839060291901923">Thiết lập kết nối trên <ph name="PHONE_NAME" /> của bạn</translation>
 <translation id="740624631517654988">Đã chặn cửa sổ bật lên</translation>
 <translation id="7407430846095439694">Nhập và liên kết</translation>
-<translation id="7409233648990234464">Chạy lại và Powerwash</translation>
 <translation id="7409836189476010449">Chạy Flash</translation>
 <translation id="7410344089573941623">Hỏi xem <ph name="HOST" /> có muốn truy cập vào máy ảnh và micrô của bạn không</translation>
 <translation id="741204030948306876">Có, tôi đồng ý</translation>
@@ -4988,7 +4981,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8725178340343806893">Mục ưa thích/Dấu trang</translation>
 <translation id="8726206820263995930">Lỗi khi tìm nạp cài đặt chính sách từ máy chủ: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">Không hiển thị lại hộp thoại này</translation>
 <translation id="8727344521467137076">Có phần mềm độc hại trên máy tính của bạn. Chrome sẽ xóa phần mềm này và khôi phục cài đặt của bạn để trình duyệt có thể hoạt động bình thường trở lại.</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="8732030010853991079">Sử dụng tiện ích này bằng cách nhấp vào biểu tượng này.</translation>

@@ -299,6 +299,7 @@
 <translation id="1433811987160647649">Ερώτηση πριν από την πρόσβαση</translation>
 <translation id="1434696352799406980">Με αυτήν την ενέργεια, θα γίνει επαναφορά της σελίδας εκκίνησης, της σελίδας σε νέα καρτέλα, της μηχανής αναζήτησης και των καρφιτσωμένων καρτελών σας. Επιπλέον, θα απενεργοποιηθούν όλες οι επεκτάσεις και θα γίνει διαγραφή των προσωρινών δεδομένων σας, όπως είναι τα cookie. Οι σελιδοδείκτες, το ιστορικό και οι αποθηκευμένοι κωδικοί πρόσβασής σας δεν θα διαγραφούν.</translation>
 <translation id="1434886155212424586">Η αρχική σελίδα είναι η σελίδα "Νέα καρτέλα"</translation>
+<translation id="1436671784520050284">Συνέχιση ρύθμισης</translation>
 <translation id="1436784010935106834">Καταργήθηκαν</translation>
 <translation id="1438632560381091872">Κατάργηση σίγασης καρτελών</translation>
 <translation id="1442392616396121389">Πρόθημα δρομολόγησης</translation>
@@ -318,6 +319,7 @@
 <translation id="1465827627707997754">Κομμάτι πίτσα</translation>
 <translation id="1467432559032391204">Αριστερά</translation>
 <translation id="1468571364034902819">Δεν είναι δυνατή η χρήση αυτού του προφίλ</translation>
+<translation id="1470533772306424441">Θα εγκαταστήσουμε αυτές τις εφαρμογές για εσάς. Μπορείτε να βρείτε περισσότερες εφαρμογές για τη συσκευή σας στο Play Store.</translation>
 <translation id="1470811252759861213">Για να εμφανίζονται οι επεκτάσεις σε όλους τους υπολογιστές, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">Το αρχείο "<ph name="FILENAME" />" δεν ανέβηκε. Δεν υπάρχει επαρκής ελεύθερος χώρος στο Google Drive σας.</translation>
 <translation id="1475502736924165259">Έχετε καταχωρίσει πιστοποιητικά που δεν αντιστοιχούν σε καμία από τις άλλες κατηγορίες</translation>
@@ -565,7 +567,6 @@
 <translation id="1829192082282182671">Σμίκρυνση</translation>
 <translation id="1830550083491357902">Δεν είναι συνδεδεμένος</translation>
 <translation id="1832511806131704864">Η αλλαγή του τηλεφώνου ενημερώθηκε</translation>
-<translation id="1832685970989658809">Οι αποθηκευμένοι τρόποι πληρωμής απενεργοποιήθηκαν από τον διαχειριστή σας</translation>
 <translation id="1834503245783133039">Ανεπιτυχής λήψη: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Διαγραφή αναζητήσεων</translation>
 <translation id="1838709767668011582">Ιστότοπος Google</translation>
@@ -793,6 +794,7 @@
 <translation id="2192505247865591433">Από:</translation>
 <translation id="2193365732679659387">Ρυθμίσεις αξιοπιστίας</translation>
 <translation id="2195729137168608510">Προστασία ηλεκτρονικού ταχυδρομείου</translation>
+<translation id="2199298570273670671">Σφάλμα</translation>
 <translation id="2200356397587687044">Το Chrome χρειάζεται άδεια για να συνεχίσει</translation>
 <translation id="220138918934036434">Απόκρυψη κουμπιού</translation>
 <translation id="2202898655984161076">Προέκυψε πρόβλημα κατά την καταχώριση εκτυπωτών. Μερικοί από τους εκτυπωτές σας ενδέχεται να μην έχουν καταχωρηθεί σωστά με το <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -942,10 +944,10 @@
 <translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
 <translation id="2436186046335138073">Να επιτρέπεται στο <ph name="HANDLER_HOSTNAME" /> το άνοιγμα όλων των συνδέσμων <ph name="PROTOCOL" />;</translation>
 <translation id="2436707352762155834">Ελάχιστο</translation>
-<translation id="2437139306601019091">Η μέτρηση της χρήσης δεδομένων έληξε</translation>
 <translation id="2440604414813129000">Προβολή κώ&amp;δικα</translation>
 <translation id="2445081178310039857">Απαιτείται ο κατάλογος ρίζας επέκτασης.</translation>
 <translation id="2445484935443597917">Δημιουργία νέου προφίλ</translation>
+<translation id="2446585455334014596">Η εφαρμογή <ph name="APP_NAME" /> θέλει να επαληθεύσει την ταυτότητά σας</translation>
 <translation id="2448312741937722512">Τύπος</translation>
 <translation id="2450223707519584812">Δεν θα μπορείτε να προσθέσετε χρήστες, επειδή απουσιάζουν τα κλειδιά του Google API. Για λεπτομέρειες, ανατρέξτε στη διεύθυνση <ph name="DETAILS_URL" />.</translation>
 <translation id="2450310832094867474">Απενεργοποίηση συγχρονισμού και αποσύνδεση;</translation>
@@ -955,6 +957,7 @@
 <translation id="2453576648990281505">Το αρχείο υπάρχει ήδη</translation>
 <translation id="2453860139492968684">Τέλος</translation>
 <translation id="2454247629720664989">Λέξη-κλειδί</translation>
+<translation id="245661998428026871">Θα σταματήσει η αναπαραγωγή του βίντεο στη λειτουργία picture-in-picture.</translation>
 <translation id="2457246892030921239">Η εφαρμογή <ph name="APP_NAME" /> θέλει να αντιγράψει αρχεία από <ph name="VOLUME_NAME" />.</translation>
 <translation id="2462724976360937186">Αναγνωριστικό κλειδιού Αρχής πιστοποίησης</translation>
 <translation id="2462752602710430187">Προστέθηκε <ph name="PRINTER_NAME" /></translation>
@@ -1362,6 +1365,7 @@
 <translation id="304826556400666995">Κατάργηση σίγασης καρτελών</translation>
 <translation id="3053013834507634016">Χρήση κλειδιού πιστοποιητικού</translation>
 <translation id="3057861065630527966">Δημιουργία αντιγράφων ασφαλείας για τις φωτογραφίες και τα βίντεό σας</translation>
+<translation id="3059313675706898490">Android Messages</translation>
 <translation id="3060379269883947824">Ενεργοποίηση λειτουργίας "Επιλέξτε για εκφώνηση"</translation>
 <translation id="3061707000357573562">Υπηρεσία ενημέρωσης κώδικα</translation>
 <translation id="3064410671692449875">Ανεπαρκή δεδομένα</translation>
@@ -1410,6 +1414,7 @@
 <translation id="313205617302240621">Ξεχάσατε τον κωδικό πρόσβασής σας;</translation>
 <translation id="3132996321662585180">Ανανέωση καθημερινά</translation>
 <translation id="3135204511829026971">Περιστροφή οθόνης</translation>
+<translation id="313638818480447860">Βρήκαμε <ph name="NUMBER_OF_APPS" /> εφαρμογές οι οποίες έχουν συνδεθεί στον λογαριασμό σας και έχουν βελτιστοποιηθεί για αυτήν τη συσκευή.</translation>
 <translation id="313963229645891001">Λήψη: <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Προεπιλεγμένο κίτρινο avatar</translation>
 <translation id="3140353188828248647">Εστίαση γραμμής διευθύνσεων</translation>
@@ -1440,6 +1445,7 @@
 <translation id="3182749001423093222">Ορθογραφικός έλεγχος</translation>
 <translation id="3183139917765991655">Εργαλείο εισαγωγής προφίλ</translation>
 <translation id="3184560914950696195">Δεν είναι δυνατή η αποθήκευση στο $1. Οι επεξεργασμένες εικόνες θα αποθηκεύονται στο φάκελο "Λήψεις".</translation>
+<translation id="3188257591659621405">Τα αρχεία μου</translation>
 <translation id="3188465121994729530">Μετακίνηση μέσου όρου</translation>
 <translation id="3190558889382726167">Ο κωδικός πρόσβασης αποθηκεύτηκε</translation>
 <translation id="3192947282887913208">Αρχεία ήχου</translation>
@@ -1527,6 +1533,7 @@
 <translation id="3326821416087822643">Συμπίεση αρχείου <ph name="FILE_NAME" />…</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Πληροφορίες εφαρμογής</translation>
+<translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Αναπαραγωγή βίντεο στη λειτουργία picture-in-picture</translation>
 <translation id="3335337277364016868">Έτος ηχογράφησης</translation>
 <translation id="3335947283844343239">Εκ Νέου Άνοιγμα Κλεισμένης Καρτέλας</translation>
 <translation id="3336664756920573711">Ξεκλειδώστε τη συσκευή <ph name="DEVICE_TYPE" /> με το τηλέφωνο Android που χρησιμοποιείτε</translation>
@@ -1546,6 +1553,7 @@
 <translation id="3360297538363969800">Η εκτύπωση απέτυχε. Ελέγξτε τον εκτυπωτή σας και δοκιμάστε ξανά.</translation>
 <translation id="3364721542077212959">Εργαλεία γραφίδας</translation>
 <translation id="3365598184818502391">Χρησιμοποιήστε το Ctrl ή το Alt</translation>
+<translation id="3367047597842238025">Ρυθμίστε τη συσκευή <ph name="DEVICE_TYPE" /> όπως θέλετε και ανακαλύψτε όλες τις εκπληκτικές δυνατότητες που είναι στη διάθεσή σας.</translation>
 <translation id="3368922792935385530">Σε σύνδεση</translation>
 <translation id="3369624026883419694">Ανάλυση της διεύθυνσης του κεντρικού υπολογιστή...</translation>
 <translation id="337286756654493126">Ανάγνωση φακέλων που ανοίγετε στην εφαρμογή</translation>
@@ -1559,6 +1567,7 @@
 <translation id="3389312115541230716">Κάντε δεξί κλικ στο εικονίδιο <ph name="SMALL_PRODUCT_LOGO" /> στη γραμμή εργασιών</translation>
 <translation id="3391716558283801616">Καρτέλα 7</translation>
 <translation id="3396331542604645348">Ο επιλεγμένος εκτυπωτής δεν είναι διαθέσιμος ή δεν έχει εγκατασταθεί σωστά. Ελέγξτε τον εκτυπωτή σας ή δοκιμάστε να επιλέξετε άλλον εκτυπωτή.</translation>
+<translation id="3396800784455899911">Εάν κάνετε κλικ στο κουμπί "Αποδοχή και συνέχεια", αποδέχεστε την επεξεργασία που περιγράφεται παραπάνω για αυτές τις υπηρεσίες Google.</translation>
 <translation id="3399432415385675819">Οι ειδοποιήσεις θα απενεργοποιηθούν</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">Δεν υπάρχουν αποθηκευμένοι κωδικοί πρόσβασης για αυτόν τον ιστότοπο</translation>
@@ -1787,10 +1796,13 @@
 <translation id="3726463242007121105">Δεν είναι δυνατό το άνοιγμα αυτής της συσκευής επειδή δεν υποστηρίζεται το σύστημα αρχείων της.</translation>
 <translation id="3727148787322499904">Η αλλαγή αυτής της ρύθμισης θα επηρεάσει όλα τα κοινόχρηστα δίκτυα</translation>
 <translation id="3727187387656390258">Έλεγχος αναδυόμενου παραθύρου</translation>
+<translation id="3729506734996624908">Επιτρεπόμενοι ιστότοποι</translation>
 <translation id="3732078975418297900">Σφάλμα στη γραμμή <ph name="ERROR_LINE" /></translation>
 <translation id="3733127536501031542">Διακομιστής SSL με αναβάθμιση</translation>
+<translation id="3735740477244556633">Ταξινόμηση κατά</translation>
 <translation id="3737274407993947948">Σφάλμα εγκατάστασης Linux…</translation>
 <translation id="3737536731758327622">Οι λήψεις σας εμφανίζονται εδώ</translation>
+<translation id="3738671331307774213">Η επαλήθευση της ταυτότητάς σας συμβάλλει στην προστασία των προσωπικών δεδομένων σας</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Άνοιγμα <ph name="APPLICATION" />;</translation>
 <translation id="3741158646617793859">Το <ph name="DEVICE_NAME" /> θα εμφανίζεται πλέον στην Κονσόλα διαχειριστή</translation>
@@ -1875,10 +1887,10 @@
 <translation id="3846116211488856547">Αποκτήστε εργαλεία για τον προγραμματισμό ιστοτόπων, εφαρμογών Android και άλλων στοιχείων. Με την εγκατάσταση του Linux, θα ληφθούν <ph name="DOWNLOAD_SIZE" /> δεδομένα.</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3851428669031642514">Φόρτωση μη ασφαλών σεναρίων</translation>
+<translation id="3854599674806204102">Ορίστε μια επιλογή</translation>
 <translation id="3855441664322950881">Στοίβαξη επέκτασης</translation>
 <translation id="3855676282923585394">Εισαγωγή σελιδοδεικτών και ρυθμίσεων...</translation>
 <translation id="3856800405688283469">Επιλογή ζώνης ώρας</translation>
-<translation id="3856921555429624101">Η μέτρηση της χρήσης δεδομένων έληξε</translation>
 <translation id="3857228364945137633">Δοκιμάστε το Smart Lock, για να ξεκλειδώσετε το <ph name="DEVICE_TYPE" /> χωρίς κωδικό πρόσβασης, όταν το τηλέφωνό σας είναι κοντά.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Ο συγχρονισμός τέθηκε σε παύση</translation>
@@ -2249,7 +2261,6 @@
 <translation id="4508051413094283164">Άνοιγμα όλων σε παράθυρο για ανώνυμη περιήγηση</translation>
 <translation id="4508265954913339219">Η ενεργοποίηση απέτυχε</translation>
 <translation id="4508765956121923607">Προβολή Πηγαίου Κώ&amp;δικα</translation>
-<translation id="4509823033118379431">Οι εικόνες δεν είναι διαθέσιμες προς το παρόν. Συνδεθείτε ξανά για να δείτε τις συλλογές.</translation>
 <translation id="451407183922382411">Με την υποστήριξη της <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Ρύθμιση νέου εποπτευόμενου χρήστη</translation>
 <translation id="4514610446763173167">Εναλλαγή αναπαραγωγής ή παύσης βίντεο</translation>
@@ -2326,6 +2337,7 @@
 <translation id="4627442949885028695">Συνέχεια από άλλη συσκευή</translation>
 <translation id="4628314759732363424">Αλλαγή…</translation>
 <translation id="4628757576491864469">Συσκευές</translation>
+<translation id="4628948037717959914">Φωτογραφία</translation>
 <translation id="4630590996962964935">Μη έγκυρος χαρακτήρας: $1</translation>
 <translation id="4631887759990505102">Καλλιτέχνης</translation>
 <translation id="4632483769545853758">Κατάργηση σίγασης καρτέλας</translation>
@@ -2511,7 +2523,6 @@
 <translation id="4905417359854579806">Έτοιμο για δημιουργία αντιγράφων ασφαλείας για <ph name="FILE_COUNT" /> αρχεία</translation>
 <translation id="4907161631261076876">Δεν πραγματοποιείται συχνά λήψη αυτού του αρχείου και ενδέχεται να είναι επικίνδυνη.</translation>
 <translation id="4907306957610201395">Κατηγορία δικαιωμάτων</translation>
-<translation id="4907824805858067479">Οι αποθηκευμένες κάρτες απενεργοποιήθηκαν από τον διαχειριστή σας</translation>
 <translation id="4908811072292128752">Ανοίξτε μια νέα καρτέλα για ταυτόχρονη περιήγηση σε δύο ιστότοπους</translation>
 <translation id="4909038193460299775">Επειδή η διαχείριση αυτού του λογαριασμού γίνεται από τον τομέα <ph name="DOMAIN" />, οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα διαγραφούν από αυτήν τη συσκευή. Ωστόσο, τα δεδομένα σας θα παραμείνουν αποθηκευμένα στον Λογαριασμό σας Google και η διαχείρισή τους μπορεί να γίνεται στον <ph name="BEGIN_LINK" />Πίνακα ελέγχου Google<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">Έχετε εγγραφεί επιτυχώς</translation>
@@ -2543,6 +2554,7 @@
 <translation id="4955814292505481804">Ετήσια</translation>
 <translation id="4957949153200969297">Ενεργοποιήστε μόνο τις λειτουργίες που σχετίζονται με τον Συγχρονισμό <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="4961000125720751066">Οι κάρτες σας θα πρέπει να είναι σε ένα σημείο</translation>
 <translation id="496226124210045887">Ο φάκελος που επιλέξατε περιέχει ευαίσθητα αρχεία. Είστε σίγουροι ότι θέλετε να παραχωρήσετε στο "$1" μόνιμη πρόσβαση ανάγνωσης σε αυτόν το φάκελο;</translation>
 <translation id="4964455510556214366">Διάταξη</translation>
 <translation id="4964673849688379040">Γίνεται έλεγχος…</translation>
@@ -2590,6 +2602,7 @@
 <translation id="5027562294707732951">Προσθήκη επέκτασης</translation>
 <translation id="5029568752722684782">Διαγραφή αντιγράφου</translation>
 <translation id="5030338702439866405">Έκδοση από</translation>
+<translation id="503155457707535043">Λήψη εφαρμογών</translation>
 <translation id="503498442187459473">Ο ιστότοπος <ph name="HOST" /> επιθυμεί να χρησιμοποιήσει την κάμερα και το μικρόφωνο σας</translation>
 <translation id="5036662165765606524">Να μην επιτρέπεται σε κανέναν ιστότοπο να κατεβάζει αυτόματα πολλά αρχεία</translation>
 <translation id="5037676449506322593">Επιλογή Όλων</translation>
@@ -3105,6 +3118,7 @@
 <translation id="57838592816432529">Σίγαση</translation>
 <translation id="5785583009707899920">Βοηθητικά προγράμματα διαχείρισης αρχείων του Chrome</translation>
 <translation id="5787146423283493983">Βασική συμφωνία</translation>
+<translation id="5788127256798019331">Αρχεία Play</translation>
 <translation id="5788367137662787332">Λυπούμαστε, δεν ήταν δυνατή η προσάρτηση τουλάχιστον ενός διαμερίσματος της συσκευής <ph name="DEVICE_LABEL" />.</translation>
 <translation id="5794414402486823030">Άνοιγμα πάντα με πρόγραμμα προβολής συστήματος</translation>
 <translation id="5794786537412027208">Τερματισμός όλων των εφαρμογών του Chrome</translation>
@@ -3232,7 +3246,6 @@
 <translation id="5990386583461751448">Μεταφρασμένη</translation>
 <translation id="5991049340509704927">Μεγέθυνση</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Για να είστε σίγουροι ότι θα μπορείτε να περιηγηθείτε στον ιστό, ζητήστε από τον διαχειριστή να καταργήσει αυτήν την εφαρμογή.}other{Για να είστε σίγουροι ότι θα μπορείτε να περιηγηθείτε στον ιστό, ζητήστε από τον διαχειριστή να καταργήσει αυτές τις εφαρμογές.}}</translation>
-<translation id="5993332328670040093">Δεν θα εκτελείται πλέον μέτρηση της χρήσης δεδομένων σας.</translation>
 <translation id="6002458620803359783">Προτιμώμενες φωνές</translation>
 <translation id="6005695835120147974">Δρομολογητής μέσων</translation>
 <translation id="6006484371116297560">Κλασικό</translation>
@@ -3358,6 +3371,7 @@
 <translation id="6178664161104547336">Επιλογή πιστοποιητικού</translation>
 <translation id="6181431612547969857">Η λήψη αποκλείστηκε</translation>
 <translation id="6185132558746749656">Τοποθεσία συσκευής</translation>
+<translation id="6185617499004995178">Εργαλείο επικύρωσης CUPS IPP</translation>
 <translation id="6185696379715117369">Page up</translation>
 <translation id="6189273858858366896">Ρύθμιση ή διαχείριση κοινόχρηστων αρχείων δικτύου.</translation>
 <translation id="6189412234224385711">Άνοιγμα με <ph name="EXTENSION_NAME" /></translation>
@@ -3390,6 +3404,7 @@
 <translation id="6231881193380278751">Προσθέστε μια παράμετρο ερωτήματος στη διεύθυνση URL για αυτόματη ανανέωση της σελίδας: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Μπαταρία</translation>
 <translation id="6232116551750539448">Η σύνδεση με το <ph name="NAME" /> χάθηκε</translation>
+<translation id="6235700927623181151">Αυτή η καρτέλα μοιράζεται το περιεχόμενο της επιφάνειας εργασίας σας.</translation>
 <translation id="6237816943013845465">Σας επιτρέπει να προσαρμόσετε την ανάλυση της οθόνης σας</translation>
 <translation id="6238923052227198598">Διατήρηση πιο πρόσφατης σημείωσης στον οθόνη κλειδώματος</translation>
 <translation id="6239558157302047471">Επαναφόρτωση &amp;πλαισίου</translation>
@@ -3424,7 +3439,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413">Η λήψη του αρχείου <ph name="FILE_NAME" /> δεν είναι συνήθης και μπορεί να είναι επικίνδυνη.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Εντοπίστηκε νέος εκτυπωτής στο δίκτυό σας}other{Εντοπίστηκαν νέοι εκτυπωτές στο δίκτυό σας}}</translation>
-<translation id="6286684120317096255">Η χρήση δεδομένων σας καταμετράται</translation>
 <translation id="6286708577777130801">Λεπτομέρειες αποθηκευμένου κωδικού πρόσβασης</translation>
 <translation id="6287852322318138013">Επιλέξτε μια εφαρμογή για να ανοίξετε αυτό το αρχείο</translation>
 <translation id="6289452883081499048">Εξατομικευμένες υπηρεσίες Google, όπως το Play</translation>
@@ -3535,6 +3549,7 @@
 <translation id="6451180435462401570">Διαχείριση συσκευών Cloud Print</translation>
 <translation id="6451689256222386810">Εάν ξεχάσετε τη φράση πρόσβασης ή θέλετε να αλλάξετε αυτήν τη ρύθμιση, <ph name="BEGIN_LINK" />επαναφέρετε τον συγχρονισμό<ph name="END_LINK" />.</translation>
 <translation id="6452181791372256707">Απόρριψη</translation>
+<translation id="6455264371803474013">Σε συγκεκριμένους ιστοτόπους</translation>
 <translation id="6455894534188563617">&amp;Νέος φάκελος</translation>
 <translation id="6456394469623773452">Καλό</translation>
 <translation id="6456631036739229488">Το τηλέφωνο στο οποίο χρησιμοποιείται το Smart Lock άλλαξε. Καταχωρίστε τον κωδικό πρόσβασης, για να ενημερώσετε το Smart Lock. Την επόμενη φορά, το τηλέφωνό σας θα ξεκλειδώσει το <ph name="DEVICE_TYPE" />. Απενεργοποιήστε το Smart Lock στις Ρυθμίσεις.</translation>
@@ -3612,6 +3627,7 @@
 <translation id="657402800789773160">&amp;Επαναφόρτωση αυτής της σελίδας</translation>
 <translation id="6577284282025554716">Η λήψη ακυρώθηκε: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Κρυπτογράφηση συγχρονισμένων κωδικών πρόσβαση με το όνομα χρήστη και τον κωδικό πρόσβασης Google</translation>
+<translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - Κοινόχρηστο περιεχόμενο επιφάνειας εργασίας</translation>
 <translation id="6580151766480067746">Έκδοση ARC</translation>
 <translation id="6581162200855843583">Σύνδεσμος του Google Drive</translation>
 <translation id="6582421931165117398">Προκειμένου να προστατεύσετε τα προσωπικά στοιχεία σας, αλλάξτε τον κωδικό πρόσβασής σας τώρα. Θα σας ζητηθεί να συνδεθείτε, για να μπορέσετε να αλλάξετε τον κωδικό πρόσβασής σας.</translation>
@@ -4078,6 +4094,7 @@
 <translation id="730289542559375723">{NUM_APPLICATIONS,plural, =1{Αυτή η εφαρμογή μπορεί να εμποδίσει τη σωστή λειτουργία του Chrome.}other{Αυτές οι εφαρμογές μπορεί να εμποδίσουν τη σωστή λειτουργία του Chrome.}}</translation>
 <translation id="7303900363563182677">Αυτός ο ιστότοπος δεν μπορεί να δει το κείμενο και τις εικόνες που έχουν αντιγραφεί στο πρόχειρο</translation>
 <translation id="730515362922783851">Ανταλλαγή δεδομένων με οποιαδήποτε συσκευή στο τοπικό δίκτυο ή το διαδίκτυο</translation>
+<translation id="7307129035224081534">Σε παύση</translation>
 <translation id="7308002049209013926">Χρησιμοποιήστε την Εφαρμογή εκκίνησης, για να μεταβείτε γρήγορα σε νέες εφαρμογές και δραστηριότητες. Για να μεταβείτε εδώ από το πληκτρολόγιο, πατήστε Alt + Shift + L.</translation>
 <translation id="7309257895202129721">Εμφάνιση &amp;στοιχείων ελέγχου</translation>
 <translation id="7310598146671372464">Η σύνδεση απέτυχε. Ο διακομιστής δεν υποστηρίζει τους καθορισμένους τύπους κρυπτογράφησης Kerberos. Επικοινωνήστε με τον διαχειριστή σας.</translation>
@@ -4135,7 +4152,6 @@
 <translation id="7400839060291901923">Ρυθμίστε τη σύνδεση στο τηλέφωνό σας <ph name="PHONE_NAME" /></translation>
 <translation id="740624631517654988">Αποκλείστηκε αναδυόμενο παράθυρο</translation>
 <translation id="7407430846095439694">Εισαγωγή και δέσμευση</translation>
-<translation id="7409233648990234464">Επανεκκίνηση και Powerwash</translation>
 <translation id="7409836189476010449">Εκτέλεση Flash</translation>
 <translation id="7410344089573941623">Ερώτηση εάν το <ph name="HOST" /> θέλει να αποκτήσει πρόσβαση στην κάμερα και στο μικρόφωνό σας</translation>
 <translation id="741204030948306876">Ναι, συμφωνώ</translation>
@@ -4168,6 +4184,7 @@
 <translation id="7465778193084373987">URL ανάκλησης πιστοποιητικού Netscape</translation>
 <translation id="7469894403370665791">Αυτόματη σύνδεση σε αυτό το δίκτυο</translation>
 <translation id="747114903913869239">Σφάλμα: Δεν είναι δυνατή η αποκωδικοποίηση της επέκτασης</translation>
+<translation id="7473753388963818366">Ας ετοιμάσουμε το <ph name="DEVICE_TYPE" /> για εσάς</translation>
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="747459581954555080">Επαναφορά όλων</translation>
 <translation id="7475671414023905704">URL χαμένου κωδικού πρόσβασης Netscape</translation>
@@ -4292,6 +4309,7 @@
 <translation id="7665369617277396874">Προσθήκη λογαριασμού</translation>
 <translation id="7671130400130574146">Χρήση της γραμμής τίτλου συστήματος και των περιγραμμάτων.</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> στη σελίδα <ph name="PAGE_TITLE" />.</translation>
+<translation id="7676867886086876795">Αποστολή της φωνής σας στην Google, ώστε να επιτρέπεται η υπαγόρευση σε οποιοδήποτε πεδίο κειμένου.</translation>
 <translation id="7681095912841365527">Ο ιστότοπος μπορεί να χρησιμοποιεί bluetooth</translation>
 <translation id="7683373461016844951">Για να συνεχίσετε, κάντε κλικ στο κουμπί OK και, στη συνέχεια, κάντε κλικ στην επιλογή "Προσθήκη ατόμου" για να δημιουργήσετε ένα νέο προφίλ για τη διεύθυνση ηλεκτρονικού ταχυδρομείου <ph name="DOMAIN" />.</translation>
 <translation id="7684212569183643648">Εγκαταστάθηκε από το διαχειριστή σας</translation>
@@ -4333,6 +4351,7 @@
 <translation id="7740996059027112821">Τυπική</translation>
 <translation id="7748528009589593815">Προηγούμενη καρτέλα</translation>
 <translation id="7748626145866214022">Στη γραμμή ενεργειών υπάρχουν περισσότερες επιλογές. Πιέστε Alt + A, για να εστιάσετε στη γραμμή ενεργειών.</translation>
+<translation id="7750228210027921155">Picture in picture</translation>
 <translation id="7751260505918304024">Προβολή όλων</translation>
 <translation id="7754704193130578113">Εμφάνιση ερώτησης για τη θέση αποθήκευσης κάθε αρχείου πριν από τη λήψη</translation>
 <translation id="7758143121000533418">Family Link</translation>
@@ -4441,6 +4460,7 @@
 <translation id="7857949311770343000">Είναι αυτή η σελίδα νέας καρτέλας που περιμένατε να δείτε;</translation>
 <translation id="786073089922909430">Υπηρεσία: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Λήψεις</translation>
+<translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookie}}</translation>
 <translation id="786957569166715433">Έγινε σύζευξη της συσκευής <ph name="DEVICE_NAME" /></translation>
 <translation id="7870730066603611552">Έλεγχος επιλογών συγχρονισμού μετά τη ρύθμιση</translation>
 <translation id="7870790288828963061">Δεν βρέθηκαν εφαρμογές kiosk με νεότερη έκδοση. Δεν υπάρχουν στοιχεία προς ενημέρωση. Αφαιρέστε τη συσκευή USB.</translation>
@@ -4762,6 +4782,7 @@
 <translation id="8373553483208508744">Σίγαση καρτελών</translation>
 <translation id="8382913212082956454">Αντιγραφή διεύθυνσης &amp;ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="8386903983509584791">Η σάρωση ολοκληρώθηκε</translation>
+<translation id="8389492867173948260">Να επιτρέπεται σε αυτήν την επέκταση να διαβάζει και να αλλάζει όλα τα δεδομένα σας στους ιστοτόπους που επισκέπτεστε:</translation>
 <translation id="8390449457866780408">Ο διακομιστής δεν είναι διαθέσιμος.</translation>
 <translation id="8391712576156218334">Η εικόνα δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="8392234662362215700">Πατήστε Control-Shift-Space για εναλλαγή διάταξης πληκτρολογίου.</translation>
@@ -4793,6 +4814,7 @@
 <translation id="84297032718407999">Θα αποσυνδεθείτε σε <ph name="LOGOUT_TIME_LEFT" /></translation>
 <translation id="8431909052837336408">Αλλαγή αριθμού PIN της κάρτας SIM</translation>
 <translation id="8434480141477525001">NaCl Εντοπισμός σφαλμάτων θύρας</translation>
+<translation id="8435395510592618362">Επαληθεύστε την ταυτότητά σας με την εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="843760761634048214">Αποθήκευση πιστωτικής κάρτας</translation>
 <translation id="8438328416656800239">Εναλλαγή σε ένα έξυπνο πρόγραμμα περιήγησης</translation>
 <translation id="8438566539970814960">Βελτιώστε τις αναζητήσεις και την περιήγηση</translation>
@@ -4819,6 +4841,7 @@
 <translation id="8465252176946159372">Μη έγκυρο</translation>
 <translation id="8465444703385715657">Η προσθήκη <ph name="PLUGIN_NAME" /> απαιτεί την άδειά σας για να εκτελεστεί</translation>
 <translation id="8466234950814670489">Αρχείο Tar</translation>
+<translation id="8466417995783206254">Αυτή η καρτέλα αναπαράγει κάποιο βίντεο στη λειτουργία picture-in-picture.</translation>
 <translation id="8468750959626135884">Ξεκλειδώστε τη συσκευή <ph name="DEVICE_TYPE" /> με το τηλέφωνο Android που χρησιμοποιείτε.</translation>
 <translation id="8470028084415844044">Για να έχετε όλους τους κωδικούς πρόσβασης σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="8470513973197838199">Αποθηκευμένοι κωδικοί πρόσβασης για το <ph name="ORIGIN" /></translation>
@@ -4839,6 +4862,7 @@
 <translation id="8496717697661868878">Εκτέλεση αυτής της προσθήκης</translation>
 <translation id="8497219075884839166">Βοηθητικά προγράμματα των Windows</translation>
 <translation id="8498214519255567734">Διευκολύνετε τη θέαση της οθόνης ή την ανάγνωση σε συνθήκες χαμηλού φωτισμού</translation>
+<translation id="8498395510292172881">Συνέχιση ανάγνωσης στο Chrome</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="850875081535031620">Δεν βρέθηκε επιβλαβές λογισμικό</translation>
 <translation id="8509646642152301857">Η λήψη λεξικού ορθογραφικού ελέγχου απέτυχε.</translation>
@@ -4989,7 +5013,6 @@
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8725178340343806893">Αγαπημένα/σελιδοδείκτες</translation>
 <translation id="8726206820263995930">Σφάλμα ανάκτησης ρυθμίσεων πολιτικής από το διακομιστή: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">Να μην εμφανιστεί ξανά</translation>
 <translation id="8727344521467137076">Υπάρχει επιβλαβές λογισμικό στον υπολογιστή σας. Το Chrome το καταργεί και θα επαναφέρει τις ρυθμίσεις σας, ούτως ώστε το πρόγραμμα περιήγησης να λειτουργεί και πάλι κανονικά.</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8732030010853991079">Χρησιμοποιήστε αυτήν την επέκταση κάνοντας κλικ σε αυτό το εικονίδιο.</translation>
@@ -5178,6 +5201,7 @@
 <translation id="9027459031423301635">Άνοιγμα Συνδέσμου σε Νέα Καρτέ&amp;λα</translation>
 <translation id="9030515284705930323">Ο οργανισμός σας δεν έχει ενεργοποιήσει το Google Play Store για τον λογαριασμό σας. Για περισσότερες πληροφορίες, επικοινωνήστε με τον διαχειριστή σας.</translation>
 <translation id="9033857511263905942">&amp;Επικόλληση</translation>
+<translation id="9034924485347205037">Αρχεία Linux</translation>
 <translation id="9035012421917565900">Τα στοιχεία δεν είναι δυνατό να επιστρέψουν στο "<ph name="DESTINATION_NAME" />", επομένως δεν θα μπορείτε να αναιρέσετε αυτήν την ενέργεια.</translation>
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Εμφάνιση πρωτοτύπου</translation>
@@ -5278,6 +5302,7 @@
 <translation id="9173995187295789444">Σάρωση για συσκευές Bluetooth…</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Συνδέθηκε συσκευή Bluetooth</translation>
 <translation id="9177499212658576372">Αυτήν τη στιγμή είστε συνδεδεμένοι στο δίκτυο <ph name="NETWORK_TYPE" />.</translation>
+<translation id="9179734824669616955">Ρύθμιση του Linux (Beta) στο <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Αυτή η διαδικασία μπορεί να διαρκέσει μερικά λεπτά. Έναρξη του κοντέινερ Linux.</translation>
 <translation id="9180380851667544951">Ο ιστότοπος μπορεί να μοιραστεί την οθόνη σας</translation>
 <translation id="9188441292293901223">Ενημερώστε το τηλέφωνό σας σε μια νεότερη έκδοση του Android για να ξεκλειδώσετε αυτό το <ph name="DEVICE_TYPE" />.</translation>

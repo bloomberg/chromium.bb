@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Správce zařízení může mít možnost sledovat vaši aktivitu.</translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
 <translation id="1746730358044914197">Metody zadávání nastavuje váš administrátor.</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Přepnutí přehledu okna</translation>
 <translation id="2338501278241028356">Chcete-li objevit okolní zařízení, zapněte Bluetooth</translation>
 <translation id="2339073806695260576">Klepnutím na tlačítko dotykového pera na poličce můžete pořídit poznámku nebo snímek obrazovky, případně použít laserové ukazovátko nebo lupu.</translation>
-<translation id="2351266942280602854">Jazyk a vstup</translation>
 <translation id="2352467521400612932">Nastavení dotykového pera</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Pokračovat</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Noční režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karta je uzamčena</translation>
 <translation id="2653659639078652383">Odeslat</translation>
-<translation id="2696763960464195425">Informace budou po odhlášení odstraněny. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Nastavit klávesnici</translation>
 <translation id="2718395828230677721">Noční režim</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">Zkratka k odemknutí obrazovky se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Služba písem</translation>
 <translation id="4570957409596482333">Tlačítko pro poslech vybraného textu</translation>
+<translation id="4585337515783392668">Ukončit odesílání do neznámého přijímače</translation>
 <translation id="4628757576491864469">Zařízení</translation>
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
 <translation id="4734965478015604180">Na šířku</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">Správce oken</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Přidat uživatele</translation>
+<translation id="5837036133683224804">Zastavit <ph name="ROUTE_TITLE" /> na přijímači <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Vypnuto</translation>
 <translation id="5895138241574237353">Restartovat</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Vše je hotovo</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na přijímači <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Odmítnout</translation>
 <translation id="6453179446719226835">Jazyk se změnil</translation>
 <translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME" /></translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">Vytvořit poznámku</translation>
 <translation id="8392451568018454956">Nabídka možností pro uživatele <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa celé obrazovky</translation>
+<translation id="8427213022735114808">Diktování odesílá váš hlas do Googlu, aby bylo možné hlasově zadávat do libovolného textového pole.</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8431190899827883166">Zobrazovat klepnutí</translation>
 <translation id="8433186206711564395">Nastavení sítě</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">Odemknout</translation>
 <translation id="9151726767154816831">Chcete-li zařízení aktualizovat, restartujte je a resetujte pomocí funkce Powerwash</translation>
 <translation id="9179259655489829027">Tato funkce umožňuje rychle získat přístup ke kterémukoliv přihlášenému uživateli, aniž by bylo potřeba zadávat heslo. Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
+<translation id="9193626018745640770">Odesílání do neznámého přijímače</translation>
 <translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
 <translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>

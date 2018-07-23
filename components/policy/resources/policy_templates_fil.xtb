@@ -238,6 +238,13 @@
       Kung hindi, kung kailangang panatilihin ang compatibility sa isang server na maraming bug, maaaring itakda ang patakarang ito sa "tls1.1". Isa itong pansamantalang solusyon at dapat na maayos kaagad ang server.</translation>
 <translation id="1864269674877167562">Kung nakatakda sa isang blangkong string o hindi naka-configure ang patakaran na ito, hindi magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng isang opsyon sa pag-autocomplete sa flow ng pag-sign in ng user.
       Kung ang patakaran na ito ay nakatakda sa isang string na kumakatawan sa isang domain name, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng opsyon sa pag-autocomplete sa pag-sign in ng user na nagbibigay-daan sa user na i-type lang ang kanyang user name nang wala ang extension ng domain name. Magagawa ng user na i-overwrite ang extension ng domain name na ito.</translation>
+<translation id="1864382791685519617">Ine-enable ang panghuhula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Kinokontrol nito ang pag-prefetch ng DNS, pag-preconnect ng TCP at SSL, at pag-prerender ng mga web page.
+
+      Kung itatakda mo ang patakarang ito, hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
+
+      Kung iiwang hindi nakatakda ang patakarang ito, mae-enable ang panghuhula ng network ngunit mababago ito ng user.</translation>
 <translation id="1865417998205858223">Mga Pangunahing Pahintulot</translation>
 <translation id="186719019195685253">Pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang AC power</translation>
 <translation id="187819629719252111">Binibigyang-daan ang access sa mga lokal na file sa machine sa pamamagitan ng pagpayag sa <ph name="PRODUCT_NAME" /> na magpakita ng mga dialog ng pagpili ng file.
@@ -714,6 +721,7 @@
       Kung hindi nakatakda ang patakarang ito, ipagpapalagay na pinili ang <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Pinakamataas na bilang ng sabay-sabay na koneksyon sa proxy server</translation>
+<translation id="2951386431828317490">Ine-enable ang AutoFill para sa mga profile</translation>
 <translation id="2956777931324644324">Itinigil na ang patakarang ito simula ng bersyon 36 ng <ph name="PRODUCT_NAME" /> .
 
       Tinutukoy kung dapat i-enable ang mga extension ng TLS domain-bound na certificate.
@@ -722,6 +730,7 @@
 <translation id="2957506574938329824">Huwag payagan ang anumang site na humiling ng access sa mga Bluetooth device sa pamamagitan ng Web Bluetooth API</translation>
 <translation id="2957513448235202597">Uri ng account para sa pagpapatotoo ng <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Mga panuntunan sa pag-bypass ng proxy</translation>
+<translation id="2960128438010718932">Ang iskedyul ng pag-stage para sa paglalapat ng bagong update</translation>
 <translation id="2960691910306063964">I-enable o i-disable ang pagpapatotoo na hindi gumagamit ng PIN para sa mga host ng malayuang access</translation>
 <translation id="2976002782221275500">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay idi-dim ang screen kapag tumatakbo gamit ang power ng baterya.
 
@@ -764,6 +773,7 @@
       Nakatakda man o paano man itinakda ang patakarang ito, hindi mababago ng mga user ang setting ng pag-optimize ng WPAD.</translation>
 <translation id="3072045631333522102">Screen saver na gagamitin sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="3072847235228302527">Itakda ang Mga Tuntunin ng Serbisyo para sa isang account na lokal sa device</translation>
+<translation id="3077183141551274418">Ine-enable o dini-disable ang mga lifecycle ng tab</translation>
 <translation id="3086995894968271156">I-configure ang Cast Receiver sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Binibigyang-daan kang magtakda ng listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpakita ng mga larawan.
 
@@ -1332,6 +1342,11 @@
       Malayuang kinuha ang mga suhestyong ito sa mga server ng Google.
 
       Kung nakatakda sa false ang setting na ito, hindi makukuha o maipapakita ang mga suhestyon.</translation>
+<translation id="4788252609789586009">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng credit card sa mga web form gamit ang dati nang na-store na impormasyon.
+
+      Kung idi-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng credit card, o hindi nito ise-save ang karagdagang impormasyon ng credit card na maaaring isumite ng user habang nagba-browse siya sa web.
+
+      Kung ie-enable o walang value ang setting na ito, makokontrol ng user ang AutoFill para sa mga credit card sa UI.</translation>
 <translation id="4791031774429044540">I-enable ang tampok sa pagiging naa-access ng malaking cursor.
 
           Kung nakatakda sa true ang patakarang ito, palaging naka-enable ang malaking cursor.
@@ -1468,6 +1483,11 @@
       Kung itatakda sa True ang patakarang ito, pipigilan ng <ph name="PRODUCT_OS_NAME" /> ang device na ma-boot sa mode ng developer. Tatangging mag-boot ang system at magpapakita ito ng screen ng error kapag naka-on ang switch ng developer.
 
       Kung hindi nakatakda o nakatakda sa False ang patakarang ito, mananatiling available ang mode ng developer para sa device.</translation>
+<translation id="520403427390290017">Binabawi ng feature na mga lifecyle ng tab ang CPU at ang memory na nauugnay sa mga tumatakbong tab na matagal nang hindi nagagamit sa pamamagitan ng pagkontrol muna sa mga ito, at pag-freeze at pag-discard sa mga ito pagkatapos.
+
+      Kung itatakda ang patakaran sa false, madi-disable ang mga lifecycle ng tab, at maiiwang tumatakbo nang normal ang lahat ng tab.
+
+      Kung itatakda ang patakaran sa true o kung iiwan itong hindi nakatakda, mae-enable ang mga lifecycle ng tab.</translation>
 <translation id="5208240613060747912">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1515,6 +1535,11 @@
 
           Kung nakatakda ang patakarang ito sa False, hindi makakapag-cast ng content ang mga user sa kanilang device. Kung nakatakda ang patakarang ito sa True, pinapayagan ang mga user na mag-cast ng content. Kung hindi nakatakda ang patakarang ito, hindi pinapayagan ang mga user na mag-cast ng content sa mga naka-enroll na Chrome OS device, ngunit makakapag-cast ang mga user sa mga device na hindi naka-enroll.</translation>
 <translation id="5330684698007383292">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga sumusunod na uri ng nilalaman</translation>
+<translation id="5360146044009867539">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng profile at address sa mga web form gamit ang dati nang na-store na impormasyon.
+
+      Kung idi-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng address, o hindi nito ise-save ang karagdagang impormasyon ng address na maaaring isumite ng user habang nagba-browse siya sa web.
+
+      Kung ie-enable o walang value ang setting na ito, makokontrol ng user ang AutoFill para sa mga address sa UI.</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="5366745336748853475">Nagbibigay-daan sa iyong tumukoy ng listahan ng mga pattern ng url na tumutukoy sa mga site kung saan awtomatikong pinipili ang isang certificate ng client sa screen ng pag-sign in sa frame na nagho-host sa flow ng SAML, kung humihiling ng certificate ang site. Ang isang halimbawa ng paggamit ay ang pag-configure ng certificate para sa buong device na ipapakita sa SAML IdP.
 
@@ -2240,6 +2265,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung naka-disable ang setting na ito, hindi magiging available ang tampok na ito.</translation>
 <translation id="7275334191706090484">Mga Pinamamahalaang Bookmark</translation>
+<translation id="729492886167634859">Naglalarawan ang patakarang ito ng listahan ng mga porsyentong maglalarawan sa bahagi ng mga <ph name="PRODUCT_OS_NAME" /> device sa OU na mag-a-update kada linggo simula sa araw ng pagkakatuklas sa update. Mahuhuli ang oras ng pagkakatuklas sa oras ng pag-publish sa update, dahil maaaring matagalan ang pagsusuri ng device para sa mga update pagkatapos ng pag-publish sa update.
+
+      Gagamitin ang n-th na value sa listahan bilang porsyento ng mga device na dapat matapos mag-update sa susunod na bersyon sa n-th na linggo pagkatapos matuklasan ang update. Halimbawa, kung may matutuklasang update ngayon, ilalarawan ng unang value sa listahan ang porsyento ng mga device sa OU na dapat mag-update sa bersyong iyon isang linggo mula ngayon. Ilalarawan ng pangalawang value ang porsyento ng mga device sa OU na dapat mag-update sa bersyong iyon 2 linggo mula ngayon, at iba pa.
+
+      Kung may inilalarawang value para sa patakarang ito, babalewalain ng mga update ang patakarang <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> at sa halip ay susundin nito ang patakarang ito.
+
+      Kung walang laman ang patakarang ito, walang magiging pag-stage at mailalapat ang mga update ayon sa iba pang patakaran sa device.
+
+      Hindi nalalapat ang patakarang ito sa mga paglipat ng channel.</translation>
 <translation id="7295019613773647480">I-enable ang mga pinangangasiwaang user</translation>
 <translation id="7301543427086558500">Tinutukoy ang isang listahan ng mga kahaliling URL na magagamit upang kumuha ng mga termino para sa paghahanap sa search engine. Nilalaman dapat ng mga URL ang string na <ph name="SEARCH_TERM_MARKER" />, na gagamitin upang kunin ang mga termino para sa paghahanap.
 
@@ -2706,6 +2740,12 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
           Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Huwag paganahin ang pag-save ng kasaysayan ng browser</translation>
+<translation id="8498293625012059298">Kino-configure ang URL para sa pagpapalit ng password (HTTP at HTTPS na scheme lang). Ididirekta ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para mapalitan nila ang kanilang password pagkatapos nilang makakita ng babala sa browser.
+      Para maayos na ma-capture ng <ph name="PRODUCT_NAME" /> ang bagong password na fingerprint sa page na ito ng pagpapalit ng password, tiyaking sumusunod ang iyong page ng pagpapalit ng password sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Kung ie-enable ang setting na ito, ididirekta ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para mapalitan nila ang kanilang password pagkatapos nilang makakita ng babala sa browser.
+      Kung idi-disable o hindi itatakda ang setting na ito, ididirekta ng serbisyo sa pagprotekta ng password ang mga user sa https://myaccounts.google.com para mapalitan nila ang kanilang password.
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Mga Default na Setting (maaaring i-override ng mga user)</translation>
 <translation id="8507835864888987300">Nagtatakda ng target na bersyon para sa Mga Awtomatikong Pag-update.
 
@@ -2759,6 +2799,14 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kapag binago sa False ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong virtual machine ngunit hindi magsa-shut down sa mga virtual machine na tumatakbo na.
       Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
       Pinapayagan ang mga hindi pinamamahalaang device na magpatakbo ng mga virtual machine.</translation>
+<translation id="8669669491594628013">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala sa pagprotekta ng password. Aalertuhan ng pagprotekta ng password ang mga user kapag muli nilang ginamit ang kanilang pinoprotektahang password sa mga potensyal na kahina-hinalang site.
+
+      Maaari mong gamitin ang patakarang 'PasswordProtectionLoginURLs' at 'PasswordProtectionChangePasswordURL' para i-configure ang poprotektahang password.
+
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOff,' walang ipapakitang babala sa pagprotekta ng password.
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPasswordReuse,' magpapakita ng babala sa pagprotekta ng password kapag muling ginamit ng user ang kanyang pinoprotektahang password sa isang hindi naka-whitelist na site.
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPhishingReuse,' magpapakita ng babala sa pagprotekta ng password kapag muling ginamit ng user ang kanyang pinoprotektahang password sa isang phishing site.
+      Kung iiwang hindi nakatakda ang patakarang ito, ang mga password lang sa Google ang poprotektahan ng serbisyo sa pagprotekta ng password ngunit mababago ng user ang setting na ito.</translation>
 <translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Ang babala ng proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>

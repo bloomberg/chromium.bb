@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">drsnik</translation>
 <translation id="1211441953136645838">končna opomba</translation>
 <translation id="1281252709823657822">pogovorno okno</translation>
+<translation id="1289247557029249093">Zapri način slike v sliki</translation>
 <translation id="1335095011850992622">seznam sodelujočih</translation>
 <translation id="1342835525016946179">člnk</translation>
 <translation id="1359897965706325498">pasica</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2657045182931379222">grafični predmet</translation>
 <translation id="2674318244760992338">noga</translation>
+<translation id="2706474812903655270">Ta videoposnetek se predvaja v načinu slike v sliki</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="2723001399770238859">zvok</translation>
 <translation id="2746543609216772311">Vrednost mora biti <ph name="MINIMUM_DATE_OR_TIME" /> ali pozneje.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">preostali čas</translation>
 <translation id="7740016676195725605">ustavitev prikazovanja podnapisov</translation>
 <translation id="7740050170769002709">Vsebina HTML</translation>
+<translation id="7750228210027921155">Slika v sliki</translation>
 <translation id="7789962463072032349">premor</translation>
 <translation id="7802800022689234070">trikotnik z dodatno vsebino</translation>
 <translation id="7888071071722539607">V e-poštnem naslovu mora biti znak »<ph name="ATSIGN" />«. V naslovu »<ph name="INVALIDADDRESS" />« manjka »<ph name="ATSIGN" />«.</translation>

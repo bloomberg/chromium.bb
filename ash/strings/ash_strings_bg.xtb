@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">За съжаление, паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще влезе в сила, след като излезете от профила си. Моля, използвайте старата парола тук.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 адрес: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Администраторът на устройството може да е в състояние да наблюдава активността ви.</translation>
 <translation id="1734367976349034509">Това устройство се управлява корпоративно</translation>
 <translation id="1746730358044914197">Методите на въвеждане са конфигурирани от администратора ви.</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
 <translation id="2338501278241028356">Включете Bluetooth, за да бъдат открити устройствата в близост</translation>
 <translation id="2339073806695260576">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате лазерната показалка или лупата.</translation>
-<translation id="2351266942280602854">Език и въвеждане</translation>
 <translation id="2352467521400612932">Настройки за писалката</translation>
 <translation id="2354174487190027830">„<ph name="NAME" />“ се активира</translation>
 <translation id="2359808026110333948">Напред</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Нощно осветление: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картата е заключена</translation>
 <translation id="2653659639078652383">Изпращане</translation>
-<translation id="2696763960464195425">Информацията ви ще бъде премахната, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Задайте клавиатура</translation>
 <translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">Комбинацията за заключване на екрана е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="4564869809620998694">Услуга за шрифтове</translation>
 <translation id="4570957409596482333">Бутон за функцията Прочитане на глас</translation>
+<translation id="4585337515783392668">Спиране на предаването към неизвестен приемник</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Активирахте ChromeVox</translation>
 <translation id="4734965478015604180">Хоризонтална ориентация</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">Мениджър на прозорците</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Добавяне на човек</translation>
+<translation id="5837036133683224804">Спиране на предаването на <ph name="ROUTE_TITLE" /> към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Всичко е готово</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6452181791372256707">Отхвърляне</translation>
 <translation id="6453179446719226835">Езикът е променен</translation>
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">Създаване на бележка</translation>
 <translation id="8392451568018454956">Меню с опции за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Лупа за увеличаване на целия екран</translation>
+<translation id="8427213022735114808">Функцията за диктуване изпраща гласа ви до Google, за да даде възможност за гласово въвеждане във всяко текстово поле.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8431190899827883166">Показване на докосванията</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">Отключване</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
 <translation id="9179259655489829027">С тази функция получавате бърз достъп без парола до всеки влязъл потребител. Използвайте я само с надеждни профили.</translation>
+<translation id="9193626018745640770">Предава се към неизвестен приемник</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>

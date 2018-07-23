@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
 <translation id="1021110881106174305">Карты, которые принимаются к оплате</translation>
 <translation id="1032854598605920125">Повернуть по часовой стрелке</translation>
+<translation id="1035334672863811645">войдите в Chrome</translation>
 <translation id="1038842779957582377">неизвестное имя</translation>
 <translation id="1050038467049342496">Закройте другие приложения.</translation>
 <translation id="1055184225775184556">&amp;Отменить добавление</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 вариант}one{# вариант}few{# варианта}many{# вариантов}other{# варианта}}</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="20817612488360358">Включены системные настройки прокси-сервера, но при этом его конфигурация задана явным образом.</translation>
-<translation id="2084558088529668945">Вы ввели пароль на сайте, которым не управляет <ph name="ORG_NAME" />. Чтобы защитить свой аккаунт, не используйте этот пароль для других приложений и сайтов.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Несоответствие домена</translation>
 <translation id="2096368010154057602">Округ</translation>
@@ -456,7 +456,6 @@
 <translation id="4171400957073367226">Подтверждающая подпись недействительна</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Ещё <ph name="ITEM_COUNT" /> товар}one{Ещё <ph name="ITEM_COUNT" /> товар}few{Ещё <ph name="ITEM_COUNT" /> товара}many{Ещё <ph name="ITEM_COUNT" /> товаров}other{Ещё <ph name="ITEM_COUNT" /> товара}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Рекомендуем сбросить пароль в домене <ph name="ORG_NAME" />, если вы используете его на других сайтах.</translation>
 <translation id="4196861286325780578">&amp;Повторить перемещение</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверьте настройки брандмауэра и антивирусного ПО<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Сбои в работе Chrome</translation>
@@ -695,7 +694,6 @@
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5893752035575986141">Принимаются кредитные карты.</translation>
-<translation id="5898382028489516745">Рекомендуем сбросить пароль в домене <ph name="ORG_NAME" />, если вы используете его на других сайтах.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используется # файла cookie}many{Используется # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -1039,6 +1037,7 @@
 <translation id="8553075262323480129">Перевод не удался, так как не удается определить язык страницы.</translation>
 <translation id="8557066899867184262">CVC-код указан на обратной стороне карты.</translation>
 <translation id="8559762987265718583">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
+<translation id="8564985650692024650">Chromium рекомендует сбросить пароль, используемый в подразделении <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, если вы указывали его на других сайтах.</translation>
 <translation id="8571890674111243710">Перевод страницы на <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Добавьте номер</translation>
 <translation id="859285277496340001">Этот сертификат не определяет механизм проверки отзыва.</translation>
@@ -1067,6 +1066,7 @@
 <translation id="884264119367021077">Адрес доставки</translation>
 <translation id="884923133447025588">Не обнаружен механизм отзыва.</translation>
 <translation id="885730110891505394">Доступ Google</translation>
+<translation id="8858065207712248076">Chrome рекомендует сбросить пароль, используемый в подразделении <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, если вы указывали его на других сайтах.</translation>
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>

@@ -239,6 +239,13 @@
       În caz contrar, dacă trebuie menținută compatibilitatea cu un server cu erori, politica poate fi setată la „tls1”. Aceasta este o măsură temporară, iar problemele de pe server trebuie să fie remediate rapid.</translation>
 <translation id="1864269674877167562">Dacă această politică este configurată ca un șir necompletat sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> nu va afișa opțiunea de completare automată în timpul procesului de conectare a utilizatorului.
       Dacă această politică este configurată ca un șir care reprezintă un nume de domeniu, <ph name="PRODUCT_OS_NAME" /> va afișa opțiunea de completare automată în timp ce utilizatorul se conectează. Astfel, utilizatorul poate introduce doar numele său de utilizator, fără extensia numelui de domeniu. Utilizatorul va putea să suprascrie extensia numelui de domeniu.</translation>
+<translation id="1864382791685519617">Activează anticiparea în rețea în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
+
+      Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web.
+
+      Dacă setezi această politică, utilizatorii nu pot modifica sau suprascrie această setare în <ph name="PRODUCT_NAME" />.
+
+      Dacă această politică nu este configurată, anticiparea în rețea va fi activată, dar utilizatorul o va putea modifica.</translation>
 <translation id="1865417998205858223">Permisiunile privind certificatele</translation>
 <translation id="186719019195685253">Acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează o sursă de c.a.</translation>
 <translation id="187819629719252111">Permite accesul la fișierele locale de pe computer, permițând <ph name="PRODUCT_NAME" /> să afișeze casete de dialog pentru selectarea fișierelor. Dacă activați această setare, utilizatorii pot deschide casete de dialog pentru selectarea fișierelor ca de obicei. Dacă dezactivați această setare, ori de câte ori utilizatorul efectuează o acțiune care ar determina apariția unei casete de dialog pentru selectarea fișierelor (cum ar fi importarea marcajelor, încărcarea fișierelor, salvarea linkurilor etc.), este afișat un mesaj și se presupune că utilizatorul a făcut clic pe Anulați în caseta de dialog. Dacă această setare nu este setată, utilizatorii pot deschide ca de obicei casetele de dialog pentru selectarea fișierelor.</translation>
@@ -697,6 +704,7 @@
       Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_ALLOW_ALL" /> în mod prestabilit.
       </translation>
 <translation id="2908277604670530363">Numărul maxim de conexiuni simultane la serverul proxy</translation>
+<translation id="2951386431828317490">Activează completarea automată pentru profiluri</translation>
 <translation id="2956777931324644324">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 36.
 
       Specifică dacă extensia pentru certificatele TLS legate la domeniu trebuie să fie activată.
@@ -705,6 +713,7 @@
 <translation id="2957506574938329824">Nu permite niciunui site să solicite acces la dispozitivele Bluetooth prin API-ul Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipul de cont pentru autentificarea <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reguli de ocolire a proxy-ului</translation>
+<translation id="2960128438010718932">Programul de simulare pentru aplicarea unei noi actualizări</translation>
 <translation id="2960691910306063964">Activează sau dezactivează autentificarea fără cod PIN pentru gazdele de acces la distanță</translation>
 <translation id="2976002782221275500">Indică intervalul de timp fără intervenția utilizatorului după care luminozitatea ecranului este redusă atunci când dispozitivul funcționează pe baterie.
 
@@ -745,6 +754,7 @@
       Indiferent dacă politica este configurată sau nu și indiferent de modul în care este configurată, utilizatorii nu pot să modifice setarea privind optimizarea pentru WPAD.</translation>
 <translation id="3072045631333522102">Screen saver setat pentru ecranul de conectare în modul Vânzare</translation>
 <translation id="3072847235228302527">Setați Termenii și condițiile pentru un cont local de pe dispozitiv</translation>
+<translation id="3077183141551274418">Activează sau dezactivează ciclurile de viață ale filelor</translation>
 <translation id="3086995894968271156">Configurează Cast Receiver în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care au permisiunea să afișeze imagini.
 
@@ -1304,6 +1314,11 @@
       Aceste sugestii vor fi preluate de la distanță de pe serverele Google.
 
       Dacă setarea este dezactivată, nu se vor prelua și nu se vor afișa sugestii.</translation>
+<translation id="4788252609789586009">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit în formularele web folosind informațiile stocate anterior.
+
+      Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre carduri de credit, nici nu va salva informații suplimentare despre carduri de credit pe care utilizatorul le-ar putea trimite când navighează pe web.
+
+      Dacă setarea este activată sau nu are nicio valoare, utilizatorul va putea controla funcția de completare automată pentru carduri de credit în interfața de utilizare.</translation>
 <translation id="4791031774429044540">Activați funcția de accesibilitate pentru cursorul mare.
 
           Dacă această politică este activată, cursorul mare va fi întotdeauna activat.
@@ -1432,6 +1447,11 @@
       Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite pornirea dispozitivului în modul pentru dezvoltatori. Sistemul va refuza pornirea și va afișa un ecran de eroare atunci când comutatorul modului pentru dezvoltatori este pornit.
 
       Dacă politica nu este configurată sau dacă este dezactivată, modul pentru dezvoltatori va fi în continuare disponibil pe dispozitiv.</translation>
+<translation id="520403427390290017">Funcția privind ciclurile de viață ale filelor revendică unitatea CPU și, în final, memoria asociată filelor deschise care n-au fost folosite mult timp. Pentru aceasta, întâi le limitează, apoi le îngheață și în final renunță la ele.
+
+      Dacă politica este dezactivată, ciclurile de viață ale filelor sunt dezactivate și toate filele vor fi lăsate să ruleze normal.
+
+      Dacă politica este activată sau nu este specificată, ciclurile de viață ale filelor sunt activate.</translation>
 <translation id="5208240613060747912">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5219844027738217407">În cazul aplicațiilor Android, această politică afectează numai microfonul. Când politica este activată, microfonul este dezactivat pentru toate aplicațiile Android, fără excepții.</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
@@ -1477,6 +1497,11 @@
 
           Dacă această politică este dezactivată, utilizatorii nu vor putea să proiecteze conținut pe dispozitivul lor. Dacă această politică este activată, utilizatorii pot să proiecteze conținut. Dacă această politică nu este configurată, utilizatorii nu pot să proiecteze conținut pe dispozitivele cu sistemul de operare Chrome înregistrate, însă pot să facă acest lucru pe dispozitive neînregistrate.</translation>
 <translation id="5330684698007383292">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut</translation>
+<translation id="5360146044009867539">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit și adrese în formularele web folosind informațiile stocate anterior.
+
+      Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre adrese information, nici nu va salva informațiile suplimentare despre adrese pe care utilizatorul le-ar putea trimite când navighează pe web
+
+      Dacă setarea este activată sau nu are nicio valoare, utilizatorul va putea controla funcția de completare automată pentru adrese în interfața de utilizare.</translation>
 <translation id="5365946944967967336">Afișează butonul Pagina principală în bara de instrumente</translation>
 <translation id="5366745336748853475">Îți permite să specifici o listă de șabloane de adrese URL care stabilesc site-urile pentru care este selectat automat un certificat de client pe ecranul de conectare din cadrul care găzduiește fluxul SAML, dacă site-ul solicită un astfel de certificat. Un exemplu de utilizare este configurarea unui certificat la nivel de dispozitiv care trebuie prezentat furnizorului de identitate SAML.
 
@@ -2163,6 +2188,15 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă setarea este dezactivată, această funcție nu va fi disponibilă.</translation>
 <translation id="7275334191706090484">Marcaje gestionate</translation>
+<translation id="729492886167634859">Această politică definește o listă de procente care vor defini proporția de dispozitive <ph name="PRODUCT_OS_NAME" /> din UO de actualizat pe săptămână, începând din ziua în care se descoperă actualizarea. Momentul descoperirii apare după momentul de publicare a actualizării, deoarece este posibil să treacă un timp după până când dispozitivul va căuta actualizări.
+
+      Valoarea „n” din listă va fi folosită ca procent de dispozitive care trebuie să încheie actualizarea la următoarea versiune în săptămâna „n” de după ce a fost descoperită actualizarea. De exemplu, dacă se descoperă astăzi o actualizare, prima valoare din listă definește procentul de dispozitive din UO care trebuie să treacă la versiunea respectivă în următoarea săptămână. A doua valoare definește procentul de dispozitive din UO care trebuie să treacă la versiunea respectivă în următoarele două săptămâni și așa mai departe.
+
+      Dacă există o valoare definită pentru această politică, actualizările vor ignora politica <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> și o vor urma pe aceasta.
+
+      Dacă lista este goală, nu va exista nicio simulare și actualizările vor fi aplicate conform altor politici privind dispozitivele.
+
+      Această politică nu se aplică pentru comutările de canal.</translation>
 <translation id="7295019613773647480">Activați utilizatorii monitorizați</translation>
 <translation id="7301543427086558500">Specifică o listă de adrese URL alternative care pot fi utilizate pentru a extrage termenii de căutare din motorul de căutare. Adresele URL trebuie să conțină șirul <ph name="SEARCH_TERM_MARKER" />, care va fi folosit pentru a extrage termenii de căutare.
 
@@ -2613,6 +2647,12 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
           Pentru exemple de șabloane, accesează https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Dezactivează salvarea istoricului browserului</translation>
+<translation id="8498293625012059298">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele după ce au văzut un avertisment în browser.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Dacă această setare este activată, serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele după ce au văzut un avertisment în browser.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va direcționa utilizatorii la  https://myaccounts.google.com pentru a-și schimba parola.
+      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Setări prestabilite (utilizatorii le pot ignora)</translation>
 <translation id="8507835864888987300">Setează o versiune țintă pentru actualizările automate.
 
@@ -2666,6 +2706,14 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
       Atunci când se dezactivează politica, ea se aplică mașinilor virtuale noi care pornesc, dar nu le închide pe cele care rulează deja.
       Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
       Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
+<translation id="8669669491594628013">Îți permite să controlezi declanșarea avertismentului privind protecția prin parolă. Protecția prin parolă îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
+
+      Poți folosi politicile „PasswordProtectionLoginURLs” și „PasswordProtectionChangePasswordURL” pentru a configura parola de protejat.
+
+      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția prin parolă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorul refolosește parola protejată pe un site care nu este trecut în lista albă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorul refolosește parola protejată pe un site de phishing.
+      Dacă această politică nu este configurată, serviciul de protecție prin parolă va proteja doar parolele Google, dar utilizatorul va putea modifica această setare.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Avertismentul privind protecția prin parolă este declanșat de refolosirea parolei</translation>

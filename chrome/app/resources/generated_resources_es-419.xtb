@@ -562,7 +562,6 @@
 <translation id="1829192082282182671">Alejar</translation>
 <translation id="1830550083491357902">No has accedido.</translation>
 <translation id="1832511806131704864">Cambio de teléfono actualizado</translation>
-<translation id="1832685970989658809">Tu administrador inhabilitó las formas de pago guardadas</translation>
 <translation id="1834503245783133039">No se pudo realizar la descarga: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Borrar la búsqueda</translation>
 <translation id="1838709767668011582">Sitio de Google</translation>
@@ -939,7 +938,6 @@
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2436186046335138073">¿Deseas permitir que <ph name="HANDLER_HOSTNAME" /> abra todos los vínculos de <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Mínimo</translation>
-<translation id="2437139306601019091">Se terminó de medir el uso de datos</translation>
 <translation id="2440604414813129000">Ver códig&amp;o fuente</translation>
 <translation id="2445081178310039857">Se requiere un directorio de raíz de la extensión.</translation>
 <translation id="2445484935443597917">Crear un perfil nuevo</translation>
@@ -1875,7 +1873,6 @@
 <translation id="3855441664322950881">Extensión de empaque</translation>
 <translation id="3855676282923585394">Importar favoritos y configuración...</translation>
 <translation id="3856800405688283469">Seleccionar zona horaria</translation>
-<translation id="3856921555429624101">Se terminó de medir el uso de datos</translation>
 <translation id="3857228364945137633">Prueba Smart Lock para desbloquear tu <ph name="DEVICE_TYPE" /> sin necesidad de una contraseña cuando el teléfono está cerca.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Se pausó la sincronización</translation>
@@ -2246,7 +2243,6 @@
 <translation id="4508051413094283164">Abrir todo en una ventana de incógnito</translation>
 <translation id="4508265954913339219">Falló la activación</translation>
 <translation id="4508765956121923607">Ver códig&amp;o fuente</translation>
-<translation id="4509823033118379431">Por el momento, las imágenes no están disponibles. Vuelve a conectarte para ver las colecciones.</translation>
 <translation id="451407183922382411">Con la tecnología de <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Configurar un nuevo usuario supervisado</translation>
 <translation id="4514610446763173167">Reproduce o pausa el video</translation>
@@ -2323,6 +2319,7 @@
 <translation id="4627442949885028695">Cómo continuar desde otro dispositivo</translation>
 <translation id="4628314759732363424">Cambiar</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4630590996962964935">Carácter no válido: $1</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4632483769545853758">Activar sonido de la pestaña</translation>
@@ -2508,7 +2505,6 @@
 <translation id="4905417359854579806">Ya se puede realizar una copia de seguridad de <ph name="FILE_COUNT" /></translation>
 <translation id="4907161631261076876">Este archivo no se descarga con frecuencia y podría ser peligroso.</translation>
 <translation id="4907306957610201395">Categoría de permiso</translation>
-<translation id="4907824805858067479">Tu administrador inhabilitó las tarjetas guardadas</translation>
 <translation id="4908811072292128752">Abre una pestaña nueva para navegar en dos sitios al mismo tiempo</translation>
 <translation id="4909038193460299775">Debido a que esta cuenta la administra <ph name="DOMAIN" />, tus favoritos, historial, contraseñas y otras opciones de configuración se borrarán de este dispositivo. Sin embargo, tus datos permanecerán almacenados en tu cuenta de Google y se podrán administrar en el <ph name="BEGIN_LINK" />Panel de control de Google<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">Te inscribiste correctamente</translation>
@@ -3228,7 +3224,6 @@
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="5991049340509704927">Ampliar</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para asegurarte de que puedas seguir navegando en la Web, pídele a tu administrador que quite esta aplicación.}other{Para asegurarte de que puedas seguir navegando en la Web, pídele a tu administrador que quite estas aplicaciones.}}</translation>
-<translation id="5993332328670040093">Ya no se medirá el uso de datos.</translation>
 <translation id="6002458620803359783">Voces preferidas</translation>
 <translation id="6005695835120147974">Router multimedia</translation>
 <translation id="6006484371116297560">Clásico</translation>
@@ -3420,7 +3415,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> no es un archivo que se descargue de forma habitual y es posible que sea peligroso.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Nueva impresora en la red}other{Nuevas impresoras en la red}}</translation>
-<translation id="6286684120317096255">Se está midiendo el uso de datos</translation>
 <translation id="6286708577777130801">Detalles de las contraseñas guardadas</translation>
 <translation id="6287852322318138013">Seleccionar una aplicación para abrir este archivo</translation>
 <translation id="6289452883081499048">Servicios de Google personalizados, como Play</translation>
@@ -4131,7 +4125,6 @@
 <translation id="7400839060291901923">Configurar la conexión en tu <ph name="PHONE_NAME" /></translation>
 <translation id="740624631517654988">Ventana emergente (pop-up) bloqueada</translation>
 <translation id="7407430846095439694">Importar y vincular</translation>
-<translation id="7409233648990234464">Reiniciar y Powerwash</translation>
 <translation id="7409836189476010449">Ejecutar Flash</translation>
 <translation id="7410344089573941623">Preguntar si <ph name="HOST" /> quiere acceder a la cámara y al micrófono</translation>
 <translation id="741204030948306876">Sí, acepto</translation>
@@ -4986,7 +4979,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8725178340343806893">Favoritos/Favoritos</translation>
 <translation id="8726206820263995930">Se produjo un error al recuperar la configuración de la política del servidor: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">No volver a mostrar</translation>
 <translation id="8727344521467137076">Se detectó software dañino en tu computadora. Chrome lo está quitando y restaurará tu configuración para que el navegador vuelva a funcionar con normalidad.</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8732030010853991079">Para usar esta extensión, haz clic en este ícono.</translation>

@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">повзунок</translation>
 <translation id="1211441953136645838">кінцева виноска</translation>
 <translation id="1281252709823657822">діалогове вікно</translation>
+<translation id="1289247557029249093">Вийти з режиму "картинка в картинці"</translation>
 <translation id="1335095011850992622">подяки</translation>
 <translation id="1342835525016946179">стаття</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2657045182931379222">графічний об’єкт</translation>
 <translation id="2674318244760992338">нижній колонтитул</translation>
+<translation id="2706474812903655270">Це відео відтворюється в режимі "картинка в картинці"</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="2723001399770238859">аудіо</translation>
 <translation id="2746543609216772311">Має бути <ph name="MINIMUM_DATE_OR_TIME" /> або пізніша дата.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">залишилось часу</translation>
 <translation id="7740016676195725605">сховати приховані субтитри</translation>
 <translation id="7740050170769002709">Вміст HTML</translation>
+<translation id="7750228210027921155">Картинка в картинці</translation>
 <translation id="7789962463072032349">призупинити</translation>
 <translation id="7802800022689234070">трикутник відкривання</translation>
 <translation id="7888071071722539607">Електронна адреса має містити знак "<ph name="ATSIGN" />". В електронній адресі "<ph name="INVALIDADDRESS" />" знака "<ph name="ATSIGN" />" немає.</translation>

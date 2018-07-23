@@ -57,6 +57,7 @@
 <translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID" /> від постачальника <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Файл маніфесту недійсний</translation>
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME" />. Його не можна видаляти чи змінювати.</translation>
+<translation id="7939686037314084444">Розширення завантажилося неправильно. Можливо, йому не вдасться перехоплювати запити мережі.</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальна камера</translation>
 <translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження "<ph name="ATTEMPTED_FILENAME" />", оскільки інше розширення (<ph name="EXTENSION_NAME" />) визначило іншу назву файлу "<ph name="ACTUAL_FILENAME" />".</translation>

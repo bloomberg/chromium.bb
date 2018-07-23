@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">Schieberegler</translation>
 <translation id="1211441953136645838">Endnote</translation>
 <translation id="1281252709823657822">Kleines Fenster</translation>
+<translation id="1289247557029249093">Bild-im-Bild-Modus beenden</translation>
 <translation id="1335095011850992622">Mitwirkende</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">Banner</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2657045182931379222">Grafikobjekt</translation>
 <translation id="2674318244760992338">Fußzeile</translation>
+<translation id="2706474812903655270">Dieses Video wird im Bild-in-Bild-Modus wiedergegeben</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2723001399770238859">Audio</translation>
 <translation id="2746543609216772311">Verwenden Sie <ph name="MINIMUM_DATE_OR_TIME" /> oder einen späteren Wert.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">Verbleibende Zeit</translation>
 <translation id="7740016676195725605">Keine Untertitel mehr anzeigen</translation>
 <translation id="7740050170769002709">HTML-Inhalte</translation>
+<translation id="7750228210027921155">Bild-in-Bild</translation>
 <translation id="7789962463072032349">Pausieren</translation>
 <translation id="7802800022689234070">Aufklappdreieck</translation>
 <translation id="7888071071722539607">Die E-Mail-Adresse muss ein <ph name="ATSIGN" />-Zeichen enthalten. In der Angabe "<ph name="INVALIDADDRESS" />" fehlt ein <ph name="ATSIGN" />-Zeichen.</translation>

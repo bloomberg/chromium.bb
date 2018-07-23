@@ -29,6 +29,7 @@
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1204037785786432551">リンクをダウンロード</translation>
 <translation id="1206892813135768548">リンク テキストをコピー</translation>
+<translation id="1208340532756947324">複数の端末で独自の設定を同期して共有するには、同期を有効にします</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="123724288017357924">キャッシュ コンテンツを無視して現在のページを再読み込みする</translation>
 <translation id="124116460088058876">その他の言語</translation>
@@ -129,6 +130,7 @@
 <translation id="1989112275319619282">閲覧</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> がペア設定を要求しています</translation>
 <translation id="1994173015038366702">サイトの URL</translation>
+<translation id="2002537628803770967">Google Pay に登録したクレジット カードと住所</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB を他のアプリで使用中</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
@@ -225,6 +227,7 @@
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
 <translation id="2810645512293415242">簡易版ページを使用してデータの保存と読み込みを高速化します。</translation>
+<translation id="2818669890320396765">お使いのどの端末でも同じブックマークを使用するには、ログインして同期を有効にします</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
@@ -303,6 +306,7 @@
 <translation id="3549657413697417275">履歴を検索</translation>
 <translation id="3552151358455404883">Chrome の同期とカスタマイズを [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で管理</translation>
 <translation id="3557336313807607643">連絡先に追加</translation>
+<translation id="3568688522516854065">他の端末と同じタブを使用するには、ログインして同期を有効にします</translation>
 <translation id="3587482841069643663">すべて</translation>
 <translation id="3590487821116122040">Chrome で重要度が低いと判断されるサイトのストレージ（設定を保存していないサイトやアクセス頻度の少ないサイトなど）</translation>
 <translation id="3599863153486145794">ログインしているすべての端末の履歴を削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
@@ -375,6 +379,7 @@
 <translation id="4192273449750167573">次の画面で設定を確認</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4198423547019359126">ダウンロードの保存先はありません</translation>
+<translation id="4209895695669353772">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、同期を有効にします</translation>
 <translation id="4226663524361240545">通知を受け取ると端末が振動します</translation>
 <translation id="4242533952199664413">設定を開く</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
@@ -400,6 +405,7 @@
 <translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」にブックマークしました</translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> を <ph name="PRODUCT_NAME" /> でダウンロードしました</translation>
 <translation id="4468959413250150279">特定のサイトの音声をミュートします。</translation>
+<translation id="4472118726404937099">複数の端末で独自の設定を同期して共有するには、ログインして同期を有効にします</translation>
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
 <translation id="4487967297491345095">Chrome のすべてのアプリデータを完全に削除します。削除されるデータには、すべてのファイル、設定、アカウント、データベースなどが含まれます。</translation>
 <translation id="4508440807153586353">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -408,7 +414,6 @@
 <translation id="4521489764227272523">選択したデータが Chrome から削除され、同期デバイスからも削除されました。
 
 他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
-<translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4532845899244822526">フォルダの選択</translation>
 <translation id="4550003330909367850">ここでパスワードを表示またはコピーするには、この端末に画面ロックを設定してください。</translation>
 <translation id="4558311620361989323">ウェブページのショートカット</translation>
@@ -585,6 +590,7 @@
 <translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5858741533101922242">Chrome から Bluetooth アダプタをオンにできません</translation>
 <translation id="5860033963881614850">オフ</translation>
+<translation id="5862731021271217234">他の端末と同じタブを使用するには、同期を有効にします</translation>
 <translation id="5864174910718532887">詳細: サイト名の順</translation>
 <translation id="5864419784173784555">別のダウンロードの完了待ちです…</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
@@ -863,6 +869,7 @@
 <translation id="8100932616285851614">ナビゲーションパネルを閉じました</translation>
 <translation id="8103578431304235997">シークレット タブ</translation>
 <translation id="8105951947646329362">関連ページを表示する</translation>
+<translation id="8109613176066109935">お使いのどの端末でも同じブックマークを使用するには、同期を有効にします</translation>
 <translation id="8116925261070264013">ミュート中</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8168435359814927499">コンテンツ</translation>
@@ -967,6 +974,7 @@
 <translation id="9065203028668620118">編集</translation>
 <translation id="9070377983101773829">音声検索を開始</translation>
 <translation id="9071742570345586758">バーチャル リアリティ コンテンツを表示するには、Google VR サービスをインストールしてください</translation>
+<translation id="9074336505530349563">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、ログインして同期を有効にします</translation>
 <translation id="9086455579313502267">ネットワークにアクセスできません</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB をダウンロードで使用中</translation>
 <translation id="9100505651305367705">記事の簡易表示がサポートされている場合、簡易表示を提案する</translation>

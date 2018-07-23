@@ -57,6 +57,7 @@
 <translation id="7003844668372540529">محصول نامشخص <ph name="PRODUCT_ID" /> از <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">فایل مانیفست نامعتبر است</translation>
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME" /> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
+<translation id="7939686037314084444">افزونه درست بارگیری نشد. شاید نتواند درخواست‌های شبکه را رهگیری کند.</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">رو به کاربر</translation>
 <translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری بارگیری «<ph name="ATTEMPTED_FILENAME" />» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME" />) نام فایل دیگری «<ph name="ACTUAL_FILENAME" />» را تعیین کرد.</translation>
