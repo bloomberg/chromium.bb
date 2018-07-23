@@ -25,8 +25,10 @@ class TargetRegistry {
                               DevToolsAgentHostImpl* agent_host,
                               DevToolsAgentHostClient* client);
   void DetachSubtargetSession(const std::string& session_id);
-  bool DispatchMessageOnAgentHost(const std::string& message,
-                                  base::DictionaryValue* parsed_message);
+  bool CanDispatchMessageOnAgentHost(base::DictionaryValue* parsed_message);
+  void DispatchMessageOnAgentHost(
+      const std::string& message,
+      std::unique_ptr<base::DictionaryValue> parsed_message);
   void SendMessageToClient(const std::string& session_id,
                            const std::string& message);
 

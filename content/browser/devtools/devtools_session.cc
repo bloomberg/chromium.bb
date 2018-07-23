@@ -125,19 +125,19 @@ void DevToolsSession::MojoConnectionDestroyed() {
 
 void DevToolsSession::DispatchProtocolMessage(
     const std::string& message,
-    base::DictionaryValue* parsed_message) {
+    std::unique_ptr<base::DictionaryValue> parsed_message) {
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (delegate && parsed_message &&
-      delegate->HandleCommand(agent_host_, client_, parsed_message)) {
+      delegate->HandleCommand(agent_host_, client_, parsed_message.get())) {
     return;
   }
 
   int call_id;
   std::string method;
-  if (dispatcher_->dispatch(protocol::toProtocolValue(parsed_message, 1000),
-                            &call_id,
-                            &method) != protocol::Response::kFallThrough) {
+  if (dispatcher_->dispatch(
+          protocol::toProtocolValue(parsed_message.get(), 1000), &call_id,
+          &method) != protocol::Response::kFallThrough) {
     return;
   }
 

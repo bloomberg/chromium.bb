@@ -111,14 +111,15 @@ void BrowserDevToolsAgentHost::Reload() {
 bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
     const std::string& message,
-    base::DictionaryValue* parsed_message) {
+    std::unique_ptr<base::DictionaryValue> parsed_message) {
   auto it = target_registries_.find(client);
   if (it != target_registries_.end() &&
-      it->second->DispatchMessageOnAgentHost(message, parsed_message)) {
+      it->second->CanDispatchMessageOnAgentHost(parsed_message.get())) {
+    it->second->DispatchMessageOnAgentHost(message, std::move(parsed_message));
     return true;
   }
-  return DevToolsAgentHostImpl::DispatchProtocolMessage(client, message,
-                                                        parsed_message);
+  return DevToolsAgentHostImpl::DispatchProtocolMessage(
+      client, message, std::move(parsed_message));
 }
 
 }  // content
