@@ -934,6 +934,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glFlushMappedBufferRangeEXT"));
   }
 
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+    fn.glFramebufferParameteriFn =
+        reinterpret_cast<glFramebufferParameteriProc>(
+            GetGLProcAddress("glFramebufferParameteri"));
+  }
+
   if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
     fn.glFramebufferRenderbufferEXTFn =
         reinterpret_cast<glFramebufferRenderbufferEXTProc>(
@@ -3036,6 +3042,12 @@ void GLApiBase::glFlushMappedBufferRangeFn(GLenum target,
                                            GLintptr offset,
                                            GLsizeiptr length) {
   driver_->fn.glFlushMappedBufferRangeFn(target, offset, length);
+}
+
+void GLApiBase::glFramebufferParameteriFn(GLenum target,
+                                          GLenum pname,
+                                          GLint param) {
+  driver_->fn.glFramebufferParameteriFn(target, pname, param);
 }
 
 void GLApiBase::glFramebufferRenderbufferEXTFn(GLenum target,
@@ -5776,6 +5788,13 @@ void TraceGLApi::glFlushMappedBufferRangeFn(GLenum target,
                                             GLsizeiptr length) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFlushMappedBufferRange")
   gl_api_->glFlushMappedBufferRangeFn(target, offset, length);
+}
+
+void TraceGLApi::glFramebufferParameteriFn(GLenum target,
+                                           GLenum pname,
+                                           GLint param) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFramebufferParameteri")
+  gl_api_->glFramebufferParameteriFn(target, pname, param);
 }
 
 void TraceGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
@@ -9094,6 +9113,15 @@ void DebugGLApi::glFlushMappedBufferRangeFn(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << offset
                  << ", " << length << ")");
   gl_api_->glFlushMappedBufferRangeFn(target, offset, length);
+}
+
+void DebugGLApi::glFramebufferParameteriFn(GLenum target,
+                                           GLenum pname,
+                                           GLint param) {
+  GL_SERVICE_LOG("glFramebufferParameteri"
+                 << "(" << GLEnums::GetStringEnum(target) << ", "
+                 << GLEnums::GetStringEnum(pname) << ", " << param << ")");
+  gl_api_->glFramebufferParameteriFn(target, pname, param);
 }
 
 void DebugGLApi::glFramebufferRenderbufferEXTFn(GLenum target,
@@ -12804,6 +12832,12 @@ void NoContextGLApi::glFlushMappedBufferRangeFn(GLenum target,
                                                 GLintptr offset,
                                                 GLsizeiptr length) {
   NoContextHelper("glFlushMappedBufferRange");
+}
+
+void NoContextGLApi::glFramebufferParameteriFn(GLenum target,
+                                               GLenum pname,
+                                               GLint param) {
+  NoContextHelper("glFramebufferParameteri");
 }
 
 void NoContextGLApi::glFramebufferRenderbufferEXTFn(GLenum target,

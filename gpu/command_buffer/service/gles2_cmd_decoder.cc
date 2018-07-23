@@ -1640,6 +1640,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glFlush.
   void DoFlush();
 
+  // Wrapper for glFramebufferParameteri.
+  void DoFramebufferParameteri(GLenum target, GLenum pname, GLint param);
+
   // Wrapper for glFramebufferRenderbufffer.
   void DoFramebufferRenderbuffer(
       GLenum target, GLenum attachment, GLenum renderbuffertarget,
@@ -4091,6 +4094,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.chromium_nonblocking_readback =
       feature_info_->context_type() == CONTEXT_TYPE_WEBGL2;
   caps.num_surface_buffers = surface_->GetBufferCount();
+  caps.mesa_framebuffer_flip_y =
+      feature_info_->feature_flags().mesa_framebuffer_flip_y;
 
   return caps;
 }
@@ -7925,6 +7930,18 @@ void GLES2DecoderImpl::DoClearBufferfi(
   MarkDrawBufferAsCleared(GL_DEPTH, drawbuffer);
   MarkDrawBufferAsCleared(GL_STENCIL, drawbuffer);
   api()->glClearBufferfiFn(buffer, drawbuffer, depth, stencil);
+}
+
+void GLES2DecoderImpl::DoFramebufferParameteri(GLenum target,
+                                               GLenum pname,
+                                               GLint param) {
+  const char* func_name = "glFramebufferParameteri";
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  if (!framebuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no framebuffer bound");
+    return;
+  }
+  api()->glFramebufferParameteriFn(target, pname, param);
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(

@@ -253,6 +253,7 @@ GL_APICALL void         GL_APIENTRY glGenVertexArraysOES (GLsizeiNotNegative n, 
 GL_APICALL void         GL_APIENTRY glDeleteVertexArraysOES (GLsizeiNotNegative n, const GLuint* arrays);
 GL_APICALL GLboolean    GL_APIENTRY glIsVertexArrayOES (GLidVertexArray array);
 GL_APICALL void         GL_APIENTRY glBindVertexArrayOES (GLidBindVertexArray array);
+GL_APICALL void         GL_APIENTRY glFramebufferParameteri (GLenumFramebufferTarget target, GLenumFramebufferParameter pname, GLint param);
 
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (GLuint64 swap_id, GLbitfieldSwapBuffersFlags flags = 0);

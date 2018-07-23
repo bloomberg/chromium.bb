@@ -2113,6 +2113,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8B9B, "GL_IMPLEMENTATION_COLOR_READ_FORMAT",
     },
     {
+        0x8BBB, "GL_FRAMEBUFFER_FLIP_Y_MESA",
+    },
+    {
         0x8BC0, "GL_COUNTER_TYPE_AMD",
     },
     {
@@ -4563,6 +4566,10 @@ std::string GLES2Util::GetStringFramebufferAttachmentParameter(uint32_t value) {
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringFramebufferParameter(uint32_t value) {
+  return GLES2Util::GetQualifiedEnumString(NULL, 0, value);
 }
 
 std::string GLES2Util::GetStringFramebufferTarget(uint32_t value) {

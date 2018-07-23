@@ -2679,6 +2679,17 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
   EXPECT_TRUE(result);
 }
 
+TEST_F(GLES2ImplementationTest, FramebufferParameteri) {
+  struct Cmds {
+    cmds::FramebufferParameteri cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_FRAMEBUFFER, 2, 3);
+
+  gl_->FramebufferParameteri(GL_FRAMEBUFFER, 2, 3);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, FlushMappedBufferRange) {
   struct Cmds {
     cmds::FlushMappedBufferRange cmd;

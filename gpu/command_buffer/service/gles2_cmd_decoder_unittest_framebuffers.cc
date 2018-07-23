@@ -4038,6 +4038,49 @@ INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderTestWithDrawRectangle,
                         ::testing::Bool());
 
+TEST_P(GLES2DecoderManualInitTest, MESAFramebufferFlipYExtensionEnabled) {
+  InitState init;
+  init.gl_version = "OpenGL ES 3.1";
+  init.context_type = CONTEXT_TYPE_WEBGL1;
+  init.extensions = "GL_MESA_framebuffer_flip_y";
+  InitDecoder(init);
+
+  EXPECT_TRUE(feature_info()->validators()->framebuffer_parameter.IsValid(
+      GL_FRAMEBUFFER_FLIP_Y_MESA));
+
+  EXPECT_CALL(*gl_, FramebufferParameteri(_, _, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  cmds::FramebufferParameteri cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_FRAMEBUFFER_FLIP_Y_MESA, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderManualInitTest, MESAFramebufferFlipYExtensionDisabled) {
+  InitState init;
+  init.gl_version = "OpenGL ES 3.1";
+  init.context_type = CONTEXT_TYPE_WEBGL1;
+  InitDecoder(init);
+
+  EXPECT_FALSE(feature_info()->validators()->framebuffer_parameter.IsValid(
+      GL_FRAMEBUFFER_FLIP_Y_MESA));
+
+  EXPECT_CALL(*gl_, FramebufferParameteri(_, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  cmds::FramebufferParameteri cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_FRAMEBUFFER_FLIP_Y_MESA, 1);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // TODO(gman): PixelStorei
 
 // TODO(gman): SwapBuffers

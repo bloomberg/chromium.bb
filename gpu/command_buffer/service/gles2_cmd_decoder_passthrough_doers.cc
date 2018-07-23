@@ -1157,6 +1157,13 @@ error::Error GLES2DecoderPassthroughImpl::DoFlushMappedBufferRange(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoFramebufferParameteri(GLenum target,
+                                                                  GLenum pname,
+                                                                  GLint param) {
+  api()->glFramebufferParameteriFn(target, pname, param);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoFramebufferRenderbuffer(
     GLenum target,
     GLenum attachment,

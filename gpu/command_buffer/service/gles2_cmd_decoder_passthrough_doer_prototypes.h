@@ -175,6 +175,7 @@ error::Error DoFlush();
 error::Error DoFlushMappedBufferRange(GLenum target,
                                       GLintptr offset,
                                       GLsizeiptr size);
+error::Error DoFramebufferParameteri(GLenum target, GLenum pname, GLint param);
 error::Error DoFramebufferRenderbuffer(GLenum target,
                                        GLenum attachment,
                                        GLenum renderbuffertarget,

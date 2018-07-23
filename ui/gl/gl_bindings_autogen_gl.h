@@ -395,6 +395,9 @@ typedef void(GL_BINDING_CALL* glFlushProc)(void);
 typedef void(GL_BINDING_CALL* glFlushMappedBufferRangeProc)(GLenum target,
                                                             GLintptr offset,
                                                             GLsizeiptr length);
+typedef void(GL_BINDING_CALL* glFramebufferParameteriProc)(GLenum target,
+                                                           GLenum pname,
+                                                           GLint param);
 typedef void(GL_BINDING_CALL* glFramebufferRenderbufferEXTProc)(
     GLenum target,
     GLenum attachment,
@@ -1700,6 +1703,7 @@ struct ProcsGL {
   glFinishFenceNVProc glFinishFenceNVFn;
   glFlushProc glFlushFn;
   glFlushMappedBufferRangeProc glFlushMappedBufferRangeFn;
+  glFramebufferParameteriProc glFramebufferParameteriFn;
   glFramebufferRenderbufferEXTProc glFramebufferRenderbufferEXTFn;
   glFramebufferTexture2DEXTProc glFramebufferTexture2DEXTFn;
   glFramebufferTexture2DMultisampleEXTProc
@@ -2344,6 +2348,9 @@ class GL_EXPORT GLApi {
   virtual void glFlushMappedBufferRangeFn(GLenum target,
                                           GLintptr offset,
                                           GLsizeiptr length) = 0;
+  virtual void glFramebufferParameteriFn(GLenum target,
+                                         GLenum pname,
+                                         GLint param) = 0;
   virtual void glFramebufferRenderbufferEXTFn(GLenum target,
                                               GLenum attachment,
                                               GLenum renderbuffertarget,
@@ -3487,6 +3494,8 @@ class GL_EXPORT GLApi {
 #define glFlush ::gl::g_current_gl_context->glFlushFn
 #define glFlushMappedBufferRange \
   ::gl::g_current_gl_context->glFlushMappedBufferRangeFn
+#define glFramebufferParameteri \
+  ::gl::g_current_gl_context->glFramebufferParameteriFn
 #define glFramebufferRenderbufferEXT \
   ::gl::g_current_gl_context->glFramebufferRenderbufferEXTFn
 #define glFramebufferTexture2DEXT \

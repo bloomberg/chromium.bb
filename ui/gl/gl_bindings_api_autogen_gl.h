@@ -339,6 +339,9 @@ void glFlushFn(void) override;
 void glFlushMappedBufferRangeFn(GLenum target,
                                 GLintptr offset,
                                 GLsizeiptr length) override;
+void glFramebufferParameteriFn(GLenum target,
+                               GLenum pname,
+                               GLint param) override;
 void glFramebufferRenderbufferEXTFn(GLenum target,
                                     GLenum attachment,
                                     GLenum renderbuffertarget,

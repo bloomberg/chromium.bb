@@ -1766,5 +1766,10 @@ TEST_P(FeatureInfoTest, InitializeCHROMIUM_unpremultiply_and_dither_copy) {
   }
 }
 
+TEST_P(FeatureInfoTest, InitializeMESAFramebufferFlipYExtensionTrue) {
+  SetupInitExpectations("GL_MESA_framebuffer_flip_y");
+  EXPECT_TRUE(info_->feature_flags().mesa_framebuffer_flip_y);
+}
+
 }  // namespace gles2
 }  // namespace gpu
