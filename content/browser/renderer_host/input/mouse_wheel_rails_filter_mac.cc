@@ -17,6 +17,15 @@ MouseWheelRailsFilterMac::~MouseWheelRailsFilterMac() {
 
 WebInputEvent::RailsMode MouseWheelRailsFilterMac::UpdateRailsMode(
     const WebMouseWheelEvent& event) {
+  if (event.phase == WebMouseWheelEvent::kPhaseNone &&
+      event.momentum_phase == WebMouseWheelEvent::kPhaseNone) {
+    // We should only set the rails mode for trackpad wheel events. The AppKit
+    // documentation state that legacy mouse events (legacy mouse) do not have
+    // |phase| and |momentum_phase|.
+    // https://developer.apple.com/documentation/appkit/nsevent/1533550-phase.
+    return WebInputEvent::kRailsModeFree;
+  }
+
   // A somewhat-arbitrary decay constant for hysteresis.
   const float kDecayConstant = 0.8f;
 
