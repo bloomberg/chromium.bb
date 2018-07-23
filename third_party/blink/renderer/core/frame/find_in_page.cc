@@ -197,9 +197,8 @@ WebFloatRect FindInPage::ActiveFindMatchRect() {
   return WebFloatRect();
 }
 
-void FindInPage::ActivateNearestFindResult(
-    const WebFloatPoint& point,
-    ActivateNearestFindResultCallback callback) {
+void FindInPage::ActivateNearestFindResult(int request_id,
+                                           const WebFloatPoint& point) {
   WebRect active_match_rect;
   const int ordinal =
       EnsureTextFinder().SelectNearestFindMatch(point, &active_match_rect);
@@ -208,16 +207,18 @@ void FindInPage::ActivateNearestFindResult(
     // the current match count) in case the host is waiting for a response due
     // to rate-limiting.
     int number_of_matches = EnsureTextFinder().TotalMatchCount();
-    std::move(callback).Run(WebRect(), number_of_matches,
-                            -1 /* active_match_ordinal */,
-                            !EnsureTextFinder().FrameScoping() ||
-                                !number_of_matches /* final_reply */);
+    mojom::blink::FindMatchUpdateType update_type =
+        mojom::blink::FindMatchUpdateType::kMoreUpdatesComing;
+    if (!EnsureTextFinder().FrameScoping() || !number_of_matches)
+      update_type = mojom::blink::FindMatchUpdateType::kFinalUpdate;
+    client_->SetNumberOfMatches(request_id, number_of_matches, update_type);
     return;
   }
-  // Call callback with current active match's rect and its ordinal,
-  // and don't update total number of matches.
-  std::move(callback).Run(active_match_rect, -1 /* number_of_matches */,
-                          ordinal, true /* final_reply*/);
+  client_->SetActiveMatch(request_id, active_match_rect, ordinal);
+}
+
+void FindInPage::SetClient(mojom::blink::FindInPageClientPtr client) {
+  client_ = std::move(client);
 }
 
 void FindInPage::GetNearestFindResult(const WebFloatPoint& point,

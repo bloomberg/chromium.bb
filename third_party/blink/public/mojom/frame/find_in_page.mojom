@@ -24,26 +24,16 @@ interface FindInPage {
   GetNearestFindResult(gfx.mojom.PointF point) => (float distance);
 
   // Activates a find result nearest to |point|, which is in fractions of the
-  // content document's width and height.
-  //
-  // Return values:
-  //
-  // |active_match_rect| will contain the bounding box of the activated
-  // find-in-page match marker. Might be an empty rect if there is none.
-  //
-  // |number_of_matches| is the current number of matches, or -1 if we
-  // shouldn't update number of matches.
-  //
-  // |active_match_ordinal| will contain the activated match's ordinal
-  // or -1 if  we shouldn't update the active match ordinal.
-  //
-  // |final_update| is true if it's the final find reply for the frame.
-  //
-  ActivateNearestFindResult(gfx.mojom.PointF point) =>
-                           (gfx.mojom.Rect active_match_rect,
-                           int32 number_of_matches,
-                           int32 active_match_ordinal,
-                           bool final_update);
+  // content document's width and height. This function will call either the
+  // SetActiveMatch or SetNumberOfMatches on the FindInPageClient for this
+  // FindInPage instance.
+  // TODO(rakina): Find a way to remove |request_id|
+  ActivateNearestFindResult(int32 request_id, gfx.mojom.PointF point);
+
+  // Sets the client for this FindInPage instance. Should be called before
+  // calling ActivateNearestFindResult.
+  // TODO(rakina): Remove the need for this?
+  SetClient(FindInPageClient client);
 
   // Returns the bounding boxes of the find-in-page match markers from the
   // frame. The bounding boxes are returned in find-in-page coordinates.
@@ -68,6 +58,21 @@ interface FindInPage {
                 gfx.mojom.RectF active_match_rect);
 };
 
+// Per-frame client of FindInPage.
+interface FindInPageClient {
+  // Sets the number of matches of the frame to |number_of_matches|.
+  // If |final_update| is true, there will be no more update to the number of
+  // matches or active match for this frame.
+  SetNumberOfMatches(int32 request_id, uint32 number_of_matches,
+                     FindMatchUpdateType update_type);
+
+  // Sets the current active match rect and ordinal. This is the final
+  // find update for the frame, notifying the browser side that there will be
+  // no more update to number of matches or active match for this frame.
+  SetActiveMatch(int32 request_id, gfx.mojom.Rect active_match_rect,
+                 int32 active_match_ordinal);
+};
+
 // This enum defines what actions the renderer should take next when
 // the user has completed a find-in-page;
 enum StopFindAction {
@@ -77,4 +82,10 @@ enum StopFindAction {
   kStopFindActionKeepSelection,
   // The active match selection will be activated.
   kStopFindActionActivateSelection
+};
+
+// Type of updates for FindInPageClient::SetNumberOfMatches
+enum FindMatchUpdateType {
+  kFinalUpdate,
+  kMoreUpdatesComing
 };
