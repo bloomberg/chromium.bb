@@ -19148,6 +19148,7 @@
       {
         "isolate_name": "monochrome_apk_checker",
         "name": "monochrome_apk_checker",
+        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -21818,6 +21819,7 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
+        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -21832,6 +21834,7 @@
       {
         "isolate_name": "monochrome_apk_checker",
         "name": "monochrome_apk_checker",
+        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -21850,6 +21853,7 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
+        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
