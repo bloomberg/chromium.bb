@@ -89,6 +89,7 @@ using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
+using blink::scheduler::WebResourceLoadingTaskRunnerHandle;
 
 namespace content {
 
@@ -366,21 +367,28 @@ WebURLLoaderFactoryImpl::CreateTestOnlyFactory() {
 
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle) {
   if (!loader_factory_) {
     // In some tests like RenderViewTests loader_factory_ is not available.
     // These tests can still use data URLs to bypass the ResourceDispatcher.
-    if (!task_runner)
-      task_runner = base::ThreadTaskRunnerHandle::Get();
+    if (!task_runner_handle) {
+      // TODO(altimin): base::ThreadTaskRunnerHandle::Get is deprecated in
+      // the renderer. Fix this for frame and non-frame clients.
+      task_runner_handle =
+          WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
+              base::ThreadTaskRunnerHandle::Get());
+    }
+
     return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                              std::move(task_runner),
+                                              std::move(task_runner_handle),
                                               nullptr /* factory */);
   }
 
-  DCHECK(task_runner);
+  DCHECK(task_runner_handle);
   DCHECK(resource_dispatcher_);
-  return std::make_unique<WebURLLoaderImpl>(
-      resource_dispatcher_.get(), std::move(task_runner), loader_factory_);
+  return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
+                                            std::move(task_runner_handle),
+                                            loader_factory_);
 }
 
 // This inner class exists since the WebURLLoader may be deleted while inside a
@@ -390,11 +398,12 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
  public:
   using ReceivedData = RequestPeer::ReceivedData;
 
-  Context(WebURLLoaderImpl* loader,
-          ResourceDispatcher* resource_dispatcher,
-          scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-          scoped_refptr<network::SharedURLLoaderFactory> factory,
-          mojom::KeepAliveHandlePtr keep_alive_handle);
+  Context(
+      WebURLLoaderImpl* loader,
+      ResourceDispatcher* resource_dispatcher,
+      std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
+      scoped_refptr<network::SharedURLLoaderFactory> factory,
+      mojom::KeepAliveHandlePtr keep_alive_handle);
 
   ResourceDispatcher* resource_dispatcher() { return resource_dispatcher_; }
   int request_id() const { return request_id_; }
@@ -448,6 +457,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
+  std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
@@ -520,7 +530,7 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
 WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
     ResourceDispatcher* resource_dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle_ptr)
     : loader_(loader),
@@ -528,7 +538,8 @@ WebURLLoaderImpl::Context::Context(
       report_raw_headers_(false),
       client_(nullptr),
       resource_dispatcher_(resource_dispatcher),
-      task_runner_(std::move(task_runner)),
+      task_runner_handle_(std::move(task_runner_handle)),
+      task_runner_(task_runner_handle_->GetTaskRunner()),
       keep_alive_handle_(
           keep_alive_handle_ptr
               ? std::make_unique<KeepAliveHandleWithChildProcessReference>(
@@ -579,10 +590,11 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
 void WebURLLoaderImpl::Context::DidChangePriority(
     WebURLRequest::Priority new_priority, int intra_priority_value) {
   if (request_id_ != -1) {
-    resource_dispatcher_->DidChangePriority(
-        request_id_,
-        ConvertWebKitPriorityToNetPriority(new_priority),
-        intra_priority_value);
+    net::RequestPriority net_priority =
+        ConvertWebKitPriorityToNetPriority(new_priority);
+    resource_dispatcher_->DidChangePriority(request_id_, net_priority,
+                                            intra_priority_value);
+    task_runner_handle_->DidChangeRequestPriority(net_priority);
   }
 }
 
@@ -1123,21 +1135,21 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : WebURLLoaderImpl(resource_dispatcher,
-                       std::move(task_runner),
+                       std::move(task_runner_handle),
                        std::move(url_loader_factory),
                        nullptr) {}
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle)
     : context_(new Context(this,
                            resource_dispatcher,
-                           std::move(task_runner),
+                           std::move(task_runner_handle),
                            std::move(url_loader_factory),
                            std::move(keep_alive_handle))) {}
 

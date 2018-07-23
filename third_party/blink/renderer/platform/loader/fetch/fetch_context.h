@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CONTEXT_H_
 
+#include <memory>
+
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -38,6 +40,7 @@
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
+#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -231,7 +234,6 @@ class PLATFORM_EXPORT FetchContext
 
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
-      scoped_refptr<base::SingleThreadTaskRunner>,
       const ResourceLoaderOptions&) {
     NOTREACHED();
     return nullptr;
@@ -257,6 +259,16 @@ class PLATFORM_EXPORT FetchContext
   // post-detach actions like keepalive requests.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
     return Platform::Current()->CurrentThread()->GetTaskRunner();
+  }
+
+  // TODO(altimin): This is used when creating a URLLoader, and
+  // FetchContext::GetLoadingTaskRunner is used whenever asynchronous tasks
+  // around resource loading are posted. Modify the code so that all
+  // the tasks related to loading a resource use the resource loader handle's
+  // task runner.
+  virtual std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+  CreateResourceLoadingTaskRunnerHandle() {
+    return nullptr;
   }
 
   // Called when the underlying context is detached. Note that some

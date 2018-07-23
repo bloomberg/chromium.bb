@@ -21,7 +21,8 @@ class WebURLLoaderFactoryWithMock : public WebURLLoaderFactory {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      scoped_refptr<base::SingleThreadTaskRunner>) override;
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>)
+      override;
 
  private:
   // Not owned. The mock factory should outlive |this|.

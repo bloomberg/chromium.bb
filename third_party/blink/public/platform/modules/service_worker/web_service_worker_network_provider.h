@@ -35,11 +35,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
+#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace blink {
 
@@ -78,7 +75,7 @@ class WebServiceWorkerNetworkProvider {
   // if this doesn't provide a ServiceWorker specific URLLoader.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) {
     return nullptr;
   }
 

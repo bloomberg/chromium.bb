@@ -79,13 +79,21 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-    DCHECK(task_runner);
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle) override {
+    DCHECK(task_runner_handle);
     DCHECK(resource_dispatcher_);
-    if (auto loader = CreateServiceWorkerURLLoader(request, task_runner))
-      return loader;
-    return std::make_unique<WebURLLoaderImpl>(
-        resource_dispatcher_.get(), std::move(task_runner), loader_factory_);
+    if (CanCreateServiceWorkerURLLoader(request)) {
+      // Create our own URLLoader to route the request to the controller service
+      // worker.
+      return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
+                                                std::move(task_runner_handle),
+                                                service_worker_loader_factory_);
+    }
+
+    return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
+                                              std::move(task_runner_handle),
+                                              loader_factory_);
   }
 
   void SetServiceWorkerURLLoaderFactory(
@@ -102,9 +110,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   base::WeakPtr<Factory> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
  private:
-  std::unique_ptr<blink::WebURLLoader> CreateServiceWorkerURLLoader(
-      const blink::WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  bool CanCreateServiceWorkerURLLoader(const blink::WebURLRequest& request) {
     // TODO(horo): Unify this code path with
     // ServiceWorkerNetworkProvider::CreateURLLoader that is used for document
     // cases.
@@ -112,7 +118,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
     // We need the service worker loader factory populated in order to create
     // our own URLLoader for subresource loading via a service worker.
     if (!service_worker_loader_factory_)
-      return nullptr;
+      return false;
 
     // If the URL is not http(s) or otherwise whitelisted, do not intercept the
     // request. Schemes like 'blob' and 'file' are not eligible to be
@@ -122,18 +128,14 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
     // its fallback factory).
     if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS() &&
         !OriginCanAccessServiceWorkers(request.Url())) {
-      return nullptr;
+      return false;
     }
 
     // If GetSkipServiceWorker() returns true, no need to intercept the request.
     if (request.GetSkipServiceWorker())
-      return nullptr;
+      return false;
 
-    // Create our own URLLoader to route the request to the controller service
-    // worker.
-    return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                              std::move(task_runner),
-                                              service_worker_loader_factory_);
+    return true;
   }
 
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;

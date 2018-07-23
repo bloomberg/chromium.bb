@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_LOADER_WEB_URL_LOADER_IMPL_H_
 #define CONTENT_RENDERER_LOADER_WEB_URL_LOADER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -12,12 +14,9 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace network {
 struct ResourceResponseInfo;
@@ -41,7 +40,8 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle) override;
 
  private:
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
@@ -53,13 +53,15 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
  public:
   WebURLLoaderImpl(
       ResourceDispatcher* resource_dispatcher,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   // When non-null |keep_alive_handle| is specified, this loader prolongs
   // this render process's lifetime.
   WebURLLoaderImpl(
       ResourceDispatcher* resource_dispatcher,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       mojom::KeepAliveHandlePtr keep_alive_handle);
   ~WebURLLoaderImpl() override;
