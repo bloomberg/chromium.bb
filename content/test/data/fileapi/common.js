@@ -32,18 +32,18 @@ function getLog()
 function fileErrorToString(e)
 {
   switch (e.code) {
-    case FileError.QUOTA_EXCEEDED_ERR:
+    case DOMException.QUOTA_EXCEEDED_ERR:
       return 'QUOTA_EXCEEDED_ERR';
-    case FileError.NOT_FOUND_ERR:
+    case DOMException.NOT_FOUND_ERR:
       return 'NOT_FOUND_ERR';
-    case FileError.SECURITY_ERR:
+    case DOMException.SECURITY_ERR:
       return 'SECURITY_ERR';
-    case FileError.INVALID_MODIFICATION_ERR:
+    case DOMException.INVALID_MODIFICATION_ERR:
       return 'INVALID_MODIFICATION_ERR';
-    case FileError.INVALID_STATE_ERR:
+    case DOMException.INVALID_STATE_ERR:
       return 'INVALID_STATE_ERR';
     default:
-      return 'Unknown Error';
+      return 'Unknown Error (' + e + ')';
   }
 }
 
