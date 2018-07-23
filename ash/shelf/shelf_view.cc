@@ -67,6 +67,11 @@ using views::View;
 
 namespace ash {
 
+// Indices of the start-aligned system buttons (the "back" button in tablet
+// mode, and the "app list" button).
+constexpr int kBackButtonIndex = 0;
+constexpr int kAppListButtonIndex = 1;
+
 // The proportion of the shelf space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
 // is contention for the space.
@@ -914,6 +919,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   const int available_size = shelf_->PrimaryAxisValue(width(), height());
   const int first_panel_index = model_->FirstPanelIndex();
   const int last_button_index = first_panel_index - 1;
+  int app_list_button_position;
 
   int x = 0;
   int y = 0;
@@ -926,8 +932,9 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
-    if (i == 2 && chromeos::switches::ShouldUseShelfNewUi()) {
-      // Start centering after we've laid out the launcher button.
+    if (i == kAppListButtonIndex + 1 &&
+        chromeos::switches::ShouldUseShelfNewUi()) {
+      // Start centering after we've laid out the app list button.
       // Center the shelf items on the whole shelf, including the status
       // area widget.
       int centered_shelf_items_size = GetDimensionOfCenteredShelfItemsInNewUi();
@@ -937,16 +944,22 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
           status_widget->GetWindowBoundsInScreen().height());
       int padding_for_centering =
           (available_size + status_widget_size - centered_shelf_items_size) / 2;
-      x = shelf_->PrimaryAxisValue(padding_for_centering, 0);
-      y = shelf_->PrimaryAxisValue(0, padding_for_centering);
+      if (padding_for_centering > app_list_button_position + button_spacing) {
+        // Only shift buttons to the right, never let them interfere with the
+        // left-aligned system buttons.
+        x = shelf_->PrimaryAxisValue(padding_for_centering, 0);
+        y = shelf_->PrimaryAxisValue(0, padding_for_centering);
+      }
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     // If not in tablet mode do not increase |x| or |y|. Instead just let the
     // next item (app list button) cover the back button, which will have
     // opacity 0 anyways.
-    if (i == 0 && !IsTabletModeEnabled())
+    if (i == kBackButtonIndex && !IsTabletModeEnabled())
       continue;
+    if (i == kAppListButtonIndex)
+      app_list_button_position = shelf_->PrimaryAxisValue(x, y);
 
     // There is no spacing between the first two elements. Do not worry about y
     // since the back button only appears in tablet mode, which forces the shelf
