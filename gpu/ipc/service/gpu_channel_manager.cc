@@ -434,7 +434,7 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
       gpu::kGpuFeatureStatusEnabled;
   if (enable_raster_transport) {
     raster_decoder_context_state_->InitializeGrContext(
-        gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_);
+        gpu_driver_bug_workarounds_, gr_shader_cache());
   }
 
   gr_cache_controller_.emplace(raster_decoder_context_state_.get(),

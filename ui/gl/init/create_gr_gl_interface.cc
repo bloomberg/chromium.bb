@@ -45,7 +45,7 @@ const char* kBlacklistExtensions[] = {
 
 }  // anonymous namespace
 
-sk_sp<GrGLInterface> CreateGrGLInterface(
+sk_sp<const GrGLInterface> CreateGrGLInterface(
     const gl::GLVersionInfo& version_info) {
   gl::ProcsGL* gl = &gl::g_current_gl_driver->fn;
   gl::GLApi* api = gl::g_current_gl_context;
@@ -488,7 +488,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
 
   interface->fStandard = standard;
   interface->fExtensions.swap(&extensions);
-  sk_sp<GrGLInterface> returned(interface);
+  sk_sp<const GrGLInterface> returned(interface);
   return returned;
 }
 
