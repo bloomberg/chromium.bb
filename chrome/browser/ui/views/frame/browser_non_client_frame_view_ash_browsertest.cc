@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/common/chrome_features.h"
@@ -223,7 +224,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // buttons should be visible.
   ToggleFullscreenModeAndWait(browser());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
@@ -248,7 +248,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   // Frame paints by default.
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(0, frame_view->frame_header_->GetHeaderHeightForPainting());
+  EXPECT_LT(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
 
   // Enter both browser fullscreen and tab fullscreen. Entering browser
   // fullscreen should enable immersive fullscreen.
@@ -262,14 +263,14 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
           ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
   // End the reveal. When in both immersive browser fullscreen and tab
   // fullscreen.
   revealed_lock.reset();
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(0, frame_view->frame_header_->GetHeaderHeightForPainting());
+  EXPECT_EQ(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
 
   // Repeat test but without tab fullscreen.
   ExitFullscreenModeForTabAndWait(browser(), web_contents);
@@ -279,22 +280,23 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
       ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_LT(0, frame_view->frame_header_->GetHeaderHeightForPainting());
+  EXPECT_LT(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
 
   // Ending the reveal. Immersive browser should have the same behavior as full
   // screen, i.e., having an origin of (0,0).
   revealed_lock.reset();
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(0, frame_view->frame_header_->GetHeaderHeightForPainting());
+  EXPECT_EQ(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
   ExitFullscreenModeAndWait(browser_view);
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_LT(0, frame_view->frame_header_->GetHeaderHeightForPainting());
+  EXPECT_LT(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
 }
 
 // Tests that Avatar icon should show on the top left corner of the teleported
@@ -385,6 +387,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
 // Tests that FrameCaptionButtonContainer has been relaid out in response to
 // tablet mode being toggled.
+// TODO(estade): Implement this behavior in OopAsh (test by checking the
+// window's caption button bounds).
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ToggleTabletModeRelayout) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
