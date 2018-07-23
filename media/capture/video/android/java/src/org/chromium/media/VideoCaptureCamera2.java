@@ -807,7 +807,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                         Context.CAMERA_SERVICE);
         try {
             return manager.getCameraCharacteristics(Integer.toString(id));
-        } catch (CameraAccessException | IllegalArgumentException ex) {
+        } catch (CameraAccessException | IllegalArgumentException | AssertionError ex) {
             Log.e(TAG, "getCameraCharacteristics: ", ex);
         }
         return null;
