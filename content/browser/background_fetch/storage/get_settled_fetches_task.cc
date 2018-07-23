@@ -17,9 +17,11 @@ namespace background_fetch {
 GetSettledFetchesTask::GetSettledFetchesTask(
     DatabaseTaskHost* host,
     BackgroundFetchRegistrationId registration_id,
+    std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
     SettledFetchesCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
+      match_params_(std::move(match_params)),
       settled_fetches_callback_(std::move(callback)),
       weak_factory_(this) {}
 
@@ -101,12 +103,39 @@ void GetSettledFetchesTask::GetResponses() {
     return;
   }
 
+  if (match_params_->FilterByRequest()) {
+    // Get a response only for the relevant fetch.
+    settled_fetches_.emplace_back();
+    settled_fetches_.back().request = match_params_->request_to_match();
+    for (const auto& completed_request : completed_requests_) {
+      if (completed_request.serialized_request() !=
+          match_params_->request_to_match().Serialize()) {
+        continue;
+      }
+      // A matching request!
+      FillResponse(&settled_fetches_.back(),
+                   base::BindOnce(&GetSettledFetchesTask::FinishWithError,
+                                  weak_factory_.GetWeakPtr(),
+                                  blink::mojom::BackgroundFetchError::NONE));
+      // TODO(crbug.com/863852): Add support for matchAll();
+      return;
+    }
+
+    // No matching request found.
+    FillUncachedResponse(
+        &settled_fetches_.back(),
+        base::BindOnce(&GetSettledFetchesTask::FinishWithError,
+                       weak_factory_.GetWeakPtr(),
+                       blink::mojom::BackgroundFetchError::NONE));
+    return;
+  }
+
+  // Process all completed requests.
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
       completed_requests_.size(),
       base::BindOnce(&GetSettledFetchesTask::FinishWithError,
                      weak_factory_.GetWeakPtr(),
                      blink::mojom::BackgroundFetchError::NONE));
-
   settled_fetches_.reserve(completed_requests_.size());
   for (const auto& completed_request : completed_requests_) {
     settled_fetches_.emplace_back();
@@ -125,8 +154,8 @@ void GetSettledFetchesTask::FillResponse(
 
   auto request =
       std::make_unique<ServiceWorkerFetchRequest>(settled_fetch->request);
-
-  handle_.value()->Match(std::move(request), nullptr /* match_params */,
+  handle_.value()->Match(std::move(request),
+                         match_params_->cloned_cache_query_params(),
                          base::BindOnce(&GetSettledFetchesTask::DidMatchRequest,
                                         weak_factory_.GetWeakPtr(),
                                         settled_fetch, std::move(callback)));
@@ -143,6 +172,7 @@ void GetSettledFetchesTask::DidMatchRequest(
     return;
   }
   settled_fetch->response = std::move(*cache_response);
+
   std::move(callback).Run();
 }
 

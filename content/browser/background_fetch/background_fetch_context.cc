@@ -12,6 +12,7 @@
 #include "content/browser/background_fetch/background_fetch_metrics.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
+#include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
@@ -364,6 +365,7 @@ void BackgroundFetchContext::DidMarkForDeletion(
       // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
       data_manager_->GetSettledFetchesForRegistration(
           registration_id,
+          std::make_unique<BackgroundFetchRequestMatchParams>(),
           base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
                          weak_factory_.GetWeakPtr(), registration_id));
       return;

@@ -213,11 +213,12 @@ void BackgroundFetchDataManager::MarkRequestAsComplete(
 
 void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     const BackgroundFetchRegistrationId& registration_id,
+    std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
     SettledFetchesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::GetSettledFetchesTask>(
-      this, registration_id, std::move(callback)));
+      this, registration_id, std::move(match_params), std::move(callback)));
 }
 
 void BackgroundFetchDataManager::MarkRegistrationForDeletion(
