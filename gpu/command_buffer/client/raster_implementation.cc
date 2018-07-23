@@ -103,8 +103,9 @@ class TransferCacheSerializeHelperImpl
   void CreateEntryInternal(const cc::ClientTransferCacheEntry& entry) final {
     size_t size = entry.SerializedSize();
     void* data = support_->MapTransferCacheEntry(size);
-    // TODO(piman): handle error (failed to allocate/map shm)
-    DCHECK(data);
+    if (!data)
+      return;
+
     bool succeeded = entry.Serialize(
         base::make_span(reinterpret_cast<uint8_t*>(data), size));
     DCHECK(succeeded);
