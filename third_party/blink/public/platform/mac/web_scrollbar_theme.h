@@ -36,6 +36,10 @@
 
 namespace blink {
 
+#if INSIDE_BLINK
+class WebScrollbarThemeClient;
+#endif
+
 // This enum must match NSScrollerStyle in the 10.7 SDK.
 enum ScrollerStyle { kScrollerStyleLegacy = 0, kScrollerStyleOverlay = 1 };
 
@@ -49,16 +53,25 @@ class WebScrollbarTheme {
   // |preferredScrollerStyle| is the current value of +[NSScroller
   // preferredScrollerStyle].
   // |redraw| is true if the update requires a redraw to include the change.
-  // |WebScrollbarButtonsPlacement| is the current value of
-  // AppleScrollBarVariant. |jump_on_track_click| is the current value of
-  // AppleScrollerPagingBehavior.
+  // |jump_on_track_click| is the current value of AppleScrollerPagingBehavior.
   BLINK_EXPORT static void UpdateScrollbarsWithNSDefaults(
       float initial_button_delay,
       float autoscroll_button_delay,
       ScrollerStyle preferred_scroller_style,
       bool redraw,
-      WebScrollbarButtonsPlacement,
       bool jump_on_track_click);
+
+  static float InitialButtonDelay();
+  static float AutoscrollButtonDelay();
+  static ScrollerStyle PreferredScrollerStyle();
+  static bool JumpOnTrackClick();
+
+// Registered clients will receive a callback whenever
+// UpdateScrollbarsWithNSDefaults is called.
+#if INSIDE_BLINK
+  static void RegisterClient(WebScrollbarThemeClient& client);
+  static void UnregisterClient(WebScrollbarThemeClient& client);
+#endif
 };
 
 }  // namespace blink
