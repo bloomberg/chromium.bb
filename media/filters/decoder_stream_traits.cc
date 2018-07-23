@@ -66,6 +66,11 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
     const DecoderType::WaitingForDecryptionKeyCB&
         waiting_for_decryption_key_cb) {
   DCHECK(config.IsValidConfig());
+
+  if (config_.IsValidConfig() && !config_.Matches(config))
+    OnConfigChanged(config);
+  config_ = config;
+
   stats_.audio_decoder_name = decoder->GetDisplayName();
   decoder->Initialize(config, cdm_context, init_cb, output_cb,
                       waiting_for_decryption_key_cb);

@@ -249,6 +249,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "audio_buffer_stream_unittest.cc",
     "audio_clock_unittest.cc",
     "audio_decoder_selector_unittest.cc",
     "audio_renderer_algorithm_unittest.cc",
