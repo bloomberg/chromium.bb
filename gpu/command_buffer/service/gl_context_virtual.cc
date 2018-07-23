@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -100,6 +101,16 @@ gl::YUVToRGBConverter* GLContextVirtual::GetYUVToRGBConverter(
 void GLContextVirtual::ForceReleaseVirtuallyCurrent() {
   shared_context_->OnReleaseVirtuallyCurrent(this);
 }
+
+#if defined(OS_MACOSX)
+uint64_t GLContextVirtual::BackpressureFenceCreate() {
+  return shared_context_->BackpressureFenceCreate();
+}
+
+void GLContextVirtual::BackpressureFenceWait(uint64_t fence) {
+  shared_context_->BackpressureFenceWait(fence);
+}
+#endif
 
 GLContextVirtual::~GLContextVirtual() {
   Destroy();

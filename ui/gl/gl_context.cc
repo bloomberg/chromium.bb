@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
@@ -186,6 +187,14 @@ void GLContext::ReinitializeDynamicBindings() {
 void GLContext::ForceReleaseVirtuallyCurrent() {
   NOTREACHED();
 }
+
+#if defined(OS_MACOSX)
+uint64_t GLContext::BackpressureFenceCreate() {
+  return 0;
+}
+
+void GLContext::BackpressureFenceWait(uint64_t fence) {}
+#endif
 
 bool GLContext::HasExtension(const char* name) {
   return gfx::HasExtension(GetExtensions(), name);
