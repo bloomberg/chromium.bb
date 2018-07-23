@@ -185,19 +185,72 @@ bool HTMLParserScriptRunner::IsParserBlockingScriptReady() {
   return ParserBlockingScript()->IsReady();
 }
 
-// This has two callers and corresponds to different concepts in the spec:
-// - When called from executeParsingBlockingScripts(), this corresponds to some
-//   steps of the "Otherwise" Clause of 'An end tag whose tag name is "script"'
-//   [scriptEndTag]
-//   https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
-// - When called from executeScriptsWaitingForParsing(), this corresponds
-//   [ESB]
-//   https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
-//   and thus currently this function does more than specced.
-// TODO(hiroshige): Make the spec and implementation consistent.
-void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
-    PendingScript* pending_script,
-    ScriptStreamer::Type pending_script_type) {
+// Corresponds to some steps of the "Otherwise" Clause of 'An end tag whose
+// tag name is "script"'
+// https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
+void HTMLParserScriptRunner::
+    ExecutePendingParserBlockingScriptAndDispatchEvent() {
+  // Stop watching loads before executeScript to prevent recursion if the script
+  // reloads itself.
+  // TODO(kouhei): Consider merging this w/ pendingScript->dispose() after the
+  // if block.
+  // TODO(kouhei, hiroshige): Consider merging this w/ the code clearing
+  // |parser_blocking_script_| below.
+  PendingScript* pending_script = parser_blocking_script_;
+  pending_script->StopWatchingForLoad();
+
+  if (!IsExecutingScript()) {
+    // TODO(kouhei, hiroshige): Investigate why we need checkpoint here.
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+    // The parser cannot be unblocked as a microtask requested another
+    // resource
+    if (!document_->IsScriptExecutionReady())
+      return;
+  }
+
+  // <spec step="B.1">Let the script be the pending
+  // parsing-blocking script. There is no longer a pending parsing-blocking
+  // script.</spec>
+  parser_blocking_script_ = nullptr;
+
+  {
+    // <spec step="B.7">Increment the parser's script
+    // nesting level by one (it should be zero before this step, so this sets it
+    // to one).</spec>
+    HTMLParserReentryPermit::ScriptNestingLevelIncrementer
+        nesting_level_incrementer =
+            reentry_permit_->IncrementScriptNestingLevel();
+
+    // TODO(hiroshige): Remove IgnoreDestructiveWriteCountIncrementer here,
+    // according to the spec. After https://crbug.com/721914 is resolved,
+    // |document_| is equal to the element's context document used in
+    // PendingScript::ExecuteScriptBlockInternal(), and thus this can be removed
+    // more easily.
+    IgnoreDestructiveWriteCountIncrementer
+        ignore_destructive_write_count_incrementer(document_);
+
+    // <spec step="B.8">Execute the script.</spec>
+    DCHECK(IsExecutingScript());
+    DoExecuteScript(pending_script, DocumentURLForScriptExecution(document_));
+
+    // <spec step="B.9">Decrement the parser's script
+    // nesting level by one. If the parser's script nesting level is zero (which
+    // it always should be at this point), then set the parser pause flag to
+    // false.</spec>
+    //
+    // This is implemented by ~ScriptNestingLevelIncrementer().
+  }
+
+  DCHECK(!IsExecutingScript());
+}
+
+// Should be correspond to
+// https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
+// but currently does more than specced, because historically this and
+// ExecutePendingParserBlockingScriptAndDispatchEvent() was the same method.
+// TODO(hiroshige): Make this spec-conformant.
+void HTMLParserScriptRunner::ExecutePendingDeferredScriptAndDispatchEvent(
+    PendingScript* pending_script) {
   // Stop watching loads before executeScript to prevent recursion if the script
   // reloads itself.
   // TODO(kouhei): Consider merging this w/ pendingScript->dispose() after the
@@ -205,20 +258,8 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
   pending_script->StopWatchingForLoad();
 
   if (!IsExecutingScript()) {
+    // TODO(kouhei, hiroshige): Investigate why we need checkpoint here.
     Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
-    if (pending_script_type == ScriptStreamer::kParsingBlocking) {
-      // The parser cannot be unblocked as a microtask requested another
-      // resource
-      if (!document_->IsScriptExecutionReady())
-        return;
-    }
-  }
-
-  // <spec label="scriptEndTag" step="B.1">Let the script be the pending
-  // parsing-blocking script. There is no longer a pending parsing-blocking
-  // script.</spec>
-  if (pending_script_type == ScriptStreamer::kParsingBlocking) {
-    parser_blocking_script_ = nullptr;
   }
 
   {
@@ -345,8 +386,7 @@ void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
     InsertionPointRecord insertion_point_record(host_->InputStream());
 
     // 1., 7.--9.
-    ExecutePendingScriptAndDispatchEvent(parser_blocking_script_,
-                                         ScriptStreamer::kParsingBlocking);
+    ExecutePendingParserBlockingScriptAndDispatchEvent();
 
     // <spec step="B.10">Let the insertion point be undefined again.</spec>
     //
@@ -411,7 +451,7 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
 
     // <spec step="3.2">Execute the first script in the list of scripts that
     // will execute when the document has finished parsing.</spec>
-    ExecutePendingScriptAndDispatchEvent(first, ScriptStreamer::kDeferred);
+    ExecutePendingDeferredScriptAndDispatchEvent(first);
 
     // FIXME: What is this m_document check for?
     if (!document_)
