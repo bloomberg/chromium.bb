@@ -28,7 +28,7 @@ def _CheckForUseOfGlobalTaskRunnerGetter(input_api, output_api):
         problems.append('%s:%d' % (f, line_number))
 
   if problems:
-    return [output_api.PresubmitError(
+    return [output_api.PresubmitPromptWarning(
       'base::ThreadTaskRunnerHandle::Get() and'
       ' base::SequencedTaskRunnerHandle::Get() are deprecated in renderer;'
       ' please use RenderFrame::GetTaskRunner for production code and'
