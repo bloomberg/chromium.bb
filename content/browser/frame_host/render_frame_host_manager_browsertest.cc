@@ -2370,7 +2370,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   GURL url1(std::string(kChromeUIScheme) + "://" +
             std::string(kChromeUIGpuHost));
   GURL url2(std::string(kChromeUIScheme) + "://" +
-            std::string(kChromeUIAccessibilityHost));
+            std::string(kChromeUIHistogramHost));
 
   // Visit a WebUI page with bindings.
   NavigateToURL(shell(), url1);

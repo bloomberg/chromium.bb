@@ -106,6 +106,11 @@ void BrowserAccessibilityStateImpl::DisableAccessibility() {
   ResetAccessibilityMode();
 }
 
+bool BrowserAccessibilityStateImpl::IsRendererAccessibilityEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableRendererAccessibility);
+}
+
 void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = ui::AXMode();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -120,7 +125,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
   std::vector<WebContentsImpl*> web_contents_vector =
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)
-    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode());
+    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode_);
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
@@ -155,6 +160,10 @@ void BrowserAccessibilityStateImpl::UpdateHistograms() {
 
 void BrowserAccessibilityStateImpl::OnAXModeAdded(ui::AXMode mode) {
   AddAccessibilityModeFlags(mode);
+}
+
+ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
+  return accessibility_mode_;
 }
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
@@ -207,7 +216,7 @@ void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
   std::vector<WebContentsImpl*> web_contents_vector =
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)
-    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode());
+    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode_);
 }
 
 }  // namespace content

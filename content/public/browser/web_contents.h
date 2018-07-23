@@ -390,6 +390,12 @@ class WebContents : public PageNavigator,
   // both renderer accessibility, and a native browser accessibility tree.
   virtual bool IsFullAccessibilityModeForTesting() const = 0;
 
+  virtual ui::AXMode GetAccessibilityMode() const = 0;
+
+  virtual void SetAccessibilityMode(ui::AXMode mode) = 0;
+
+  virtual base::string16 DumpAccessibilityTree(bool internal) = 0;
+
   virtual const PageImportanceSignals& GetPageImportanceSignals() const = 0;
 
   // Tab navigation state ------------------------------------------------------

@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -349,6 +350,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
   // print dialog.
+  if (url.host_piece() == chrome::kChromeUIAccessibilityHost)
+    return &NewWebUI<AccessibilityUI>;
   if (url.host_piece() == chrome::kChromeUIBluetoothInternalsHost)
     return &NewWebUI<BluetoothInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIComponentsHost)

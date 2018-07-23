@@ -22,7 +22,6 @@ const char kAboutSrcDocURL[] = "about:srcdoc";
 
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIIndexedDBInternalsHost[] = "indexeddb-internals";
-const char kChromeUIAccessibilityHost[] = "accessibility";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
 const char kChromeUIDinoHost[] = "dino";

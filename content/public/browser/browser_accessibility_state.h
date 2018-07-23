@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 
 #include "content/common/content_export.h"
+#include "ui/accessibility/ax_modes.h"
 
 namespace content {
 
@@ -27,6 +28,18 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // Disables accessibility for all running tabs. (Only if accessibility is not
   // required by a command line flag or by a platform requirement.)
   virtual void DisableAccessibility() = 0;
+
+  virtual bool IsRendererAccessibilityEnabled() = 0;
+
+  virtual ui::AXMode GetAccessibilityMode() const = 0;
+
+  // Adds the given accessibility mode flags to the current accessibility
+  // mode bitmap.
+  virtual void AddAccessibilityModeFlags(ui::AXMode mode) = 0;
+
+  // Remove the given accessibility mode flags from the current accessibility
+  // mode bitmap.
+  virtual void RemoveAccessibilityModeFlags(ui::AXMode mode) = 0;
 
   // Resets accessibility to the platform default for all running tabs.
   // This is probably off, but may be on, if --force_renderer_accessibility is

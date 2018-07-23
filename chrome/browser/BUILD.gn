@@ -82,6 +82,8 @@ jumbo_split_static_library("browser") {
     "about_flags.h",
     "accessibility/accessibility_permission_context.cc",
     "accessibility/accessibility_permission_context.h",
+    "accessibility/accessibility_ui.cc",
+    "accessibility/accessibility_ui.h",
     "after_startup_task_utils.cc",
     "after_startup_task_utils.h",
     "app_controller_mac.h",

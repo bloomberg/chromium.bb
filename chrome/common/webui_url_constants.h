@@ -25,6 +25,7 @@ namespace chrome {
 // Please keep in alphabetical order, with OS/feature specific sections below.
 extern const char kChromeUIAboutHost[];
 extern const char kChromeUIAboutURL[];
+extern const char kChromeUIAccessibilityHost[];
 extern const char kChromeUIAppLauncherPageHost[];
 extern const char kChromeUIAppListStartPageURL[];
 extern const char kChromeUIAppsURL[];

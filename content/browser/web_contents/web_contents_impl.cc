@@ -35,6 +35,8 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
@@ -540,7 +542,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
       accessibility_mode_(
-          BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
+          BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode()),
       audio_stream_monitor_(this),
       bluetooth_connected_device_count_(0),
       media_device_group_id_salt_base_(
@@ -2981,6 +2983,13 @@ void WebContentsImpl::AccessibilityLocationChangesReceived(
     const std::vector<AXLocationChangeNotificationDetails>& details) {
   for (auto& observer : observers_)
     observer.AccessibilityLocationChangesReceived(details);
+}
+
+base::string16 WebContentsImpl::DumpAccessibilityTree(bool internal) {
+  auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
+  DCHECK(ax_mgr);
+  return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(ax_mgr,
+                                                                      internal);
 }
 
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(

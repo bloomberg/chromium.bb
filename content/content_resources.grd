@@ -10,9 +10,6 @@
   <translations />
   <release seq="1">
     <includes>
-      <include name="IDR_ACCESSIBILITY_HTML" file="browser/resources/accessibility/accessibility.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
-      <include name="IDR_ACCESSIBILITY_CSS" file="browser/resources/accessibility/accessibility.css" compress="gzip" type="BINDATA" />
-      <include name="IDR_ACCESSIBILITY_JS" file="browser/resources/accessibility/accessibility.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_APPCACHE_INTERNALS_HTML" file="browser/resources/appcache/appcache_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_APPCACHE_INTERNALS_JS" file="browser/resources/appcache/appcache_internals.js" flattenhtml="false" compress="gzip" type="BINDATA" />
       <include name="IDR_APPCACHE_INTERNALS_CSS" file="browser/resources/appcache/appcache_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />

@@ -274,8 +274,6 @@ jumbo_source_set("browser") {
     "accessibility/accessibility_tree_formatter_utils_win.cc",
     "accessibility/accessibility_tree_formatter_utils_win.h",
     "accessibility/accessibility_tree_formatter_win.cc",
-    "accessibility/accessibility_ui.cc",
-    "accessibility/accessibility_ui.h",
     "accessibility/browser_accessibility.cc",
     "accessibility/browser_accessibility.h",
     "accessibility/browser_accessibility_cocoa.h",

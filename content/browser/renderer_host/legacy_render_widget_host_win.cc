@@ -182,7 +182,7 @@ bool LegacyRenderWidgetHostHWND::Init() {
   DCHECK(SUCCEEDED(hr));
 
   ui::AXMode mode =
-      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
   if (!mode.has_mode(ui::AXMode::kNativeAPIs)) {
     // Attempt to detect screen readers or other clients who want full
     // accessibility support, by seeing if they respond to this event.

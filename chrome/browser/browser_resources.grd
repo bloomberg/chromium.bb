@@ -92,6 +92,9 @@
       <if expr="not is_android">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_ACCESSIBILITY_HTML" file="resources\accessibility\accessibility.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_ACCESSIBILITY_CSS" file="resources\accessibility\accessibility.css" compress="gzip" type="BINDATA" />
+      <include name="IDR_ACCESSIBILITY_JS" file="resources\accessibility\accessibility.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_AD_NETWORK_HASHES" file="resources\ad_networks.dat" type="BINDATA" />
       <include name="IDR_BLUETOOTH_ADAPTER_MOJO_JS" file="${root_gen_dir}\device\bluetooth\public\mojom\adapter.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_DEVICE_MOJO_JS" file="${root_gen_dir}\device\bluetooth\public\mojom\device.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
