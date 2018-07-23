@@ -35,8 +35,14 @@ def CopyFile(f, dest, deps):
       dest = os.path.join(dest, os.path.basename(f))
 
     deps.append(f)
-    if os.path.isfile(dest) and filecmp.cmp(dest, f, shallow=False):
-      return
+
+    if os.path.isfile(dest):
+      if filecmp.cmp(dest, f, shallow=False):
+        return
+      # The shutil.copy() below would fail if the file does not have write
+      # permissions. Deleting the file has similar costs to modifying the
+      # permissions.
+      os.unlink(dest)
 
     shutil.copy(f, dest)
 
