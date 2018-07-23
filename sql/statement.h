@@ -124,7 +124,6 @@ class SQL_EXPORT Statement {
   // where that type is not the native type. For safety, call ColumnType only
   // on a column before getting the value out in any way.
   ColType ColumnType(int col) const;
-  ColType DeclaredColumnType(int col) const;
 
   // These all take a 0-based argument index.
   bool ColumnBool(int col) const;

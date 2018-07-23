@@ -18,15 +18,6 @@ using base::ASCIIToUTF16;
 
 namespace content {
 
-void CreateV1Table(sql::Connection* db) {
-  ASSERT_TRUE(db->is_open());
-  ASSERT_TRUE(db->Execute("DROP TABLE IF EXISTS ItemTable"));
-  ASSERT_TRUE(db->Execute(
-      "CREATE TABLE ItemTable ("
-      "key TEXT UNIQUE ON CONFLICT REPLACE, "
-      "value TEXT NOT NULL ON CONFLICT FAIL)"));
-}
-
 void CreateV2Table(sql::Connection* db) {
   ASSERT_TRUE(db->is_open());
   ASSERT_TRUE(db->Execute("DROP TABLE IF EXISTS ItemTable"));
@@ -36,36 +27,14 @@ void CreateV2Table(sql::Connection* db) {
       "value BLOB NOT NULL ON CONFLICT FAIL)"));
 }
 
-void CreateInvalidKeyColumnTable(sql::Connection* db) {
-  // Create a table with the key type as FLOAT - this is "invalid"
+void CreateInvalidTable(sql::Connection* db) {
+  // Create a table with out a key column - this is "invalid"
   // as far as the DOM Storage db is concerned.
   ASSERT_TRUE(db->is_open());
   ASSERT_TRUE(db->Execute("DROP TABLE IF EXISTS ItemTable"));
   ASSERT_TRUE(db->Execute(
       "CREATE TABLE IF NOT EXISTS ItemTable ("
-      "key FLOAT UNIQUE ON CONFLICT REPLACE, "
       "value BLOB NOT NULL ON CONFLICT FAIL)"));
-}
-void CreateInvalidValueColumnTable(sql::Connection* db) {
-  // Create a table with the value type as FLOAT - this is "invalid"
-  // as far as the DOM Storage db is concerned.
-  ASSERT_TRUE(db->is_open());
-  ASSERT_TRUE(db->Execute("DROP TABLE IF EXISTS ItemTable"));
-  ASSERT_TRUE(db->Execute(
-      "CREATE TABLE IF NOT EXISTS ItemTable ("
-      "key TEXT UNIQUE ON CONFLICT REPLACE, "
-      "value FLOAT NOT NULL ON CONFLICT FAIL)"));
-}
-
-void InsertDataV1(sql::Connection* db,
-                  const base::string16& key,
-                  const base::string16& value) {
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO ItemTable VALUES (?,?)"));
-  statement.BindString16(0, key);
-  statement.BindString16(1, value);
-  ASSERT_TRUE(statement.is_valid());
-  statement.Run();
 }
 
 void CheckValuesMatch(DOMStorageDatabase* db,
@@ -201,36 +170,10 @@ TEST(DOMStorageDatabaseTest, TestDetectSchemaVersion) {
   db.db_.reset(new sql::Connection());
   ASSERT_TRUE(db.db_->OpenInMemory());
 
-  CreateInvalidValueColumnTable(db.db_.get());
+  CreateInvalidTable(db.db_.get());
   EXPECT_EQ(DOMStorageDatabase::INVALID, db.DetectSchemaVersion());
-
-  CreateInvalidKeyColumnTable(db.db_.get());
-  EXPECT_EQ(DOMStorageDatabase::INVALID, db.DetectSchemaVersion());
-
-  CreateV1Table(db.db_.get());
-  EXPECT_EQ(DOMStorageDatabase::V1, db.DetectSchemaVersion());
 
   CreateV2Table(db.db_.get());
-  EXPECT_EQ(DOMStorageDatabase::V2, db.DetectSchemaVersion());
-}
-
-TEST(DOMStorageDatabaseTest, TestLazyOpenUpgradesDatabase) {
-  // This test needs to operate with a file on disk so that we
-  // can create a table at version 1 and then close it again
-  // so that LazyOpen sees there is work to do (LazyOpen will return
-  // early if the database is already open).
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_name =
-      temp_dir.GetPath().AppendASCII("TestDOMStorageDatabase.db");
-
-  DOMStorageDatabase db(file_name);
-  db.db_.reset(new sql::Connection());
-  ASSERT_TRUE(db.db_->Open(file_name));
-  CreateV1Table(db.db_.get());
-  db.Close();
-
-  EXPECT_TRUE(db.LazyOpen(true));
   EXPECT_EQ(DOMStorageDatabase::V2, db.DetectSchemaVersion());
 }
 
@@ -264,25 +207,6 @@ TEST(DOMStorageDatabaseTest, WriteWithClear) {
   storage.clear();
   ASSERT_TRUE(db.CommitChanges(true, storage));
   CheckValuesMatch(&db, storage);
-}
-
-TEST(DOMStorageDatabaseTest, UpgradeFromV1ToV2WithData) {
-  const base::string16 kCannedKey = ASCIIToUTF16("foo");
-  const base::NullableString16 kCannedValue(ASCIIToUTF16("bar"), false);
-  DOMStorageValuesMap expected;
-  expected[kCannedKey] = kCannedValue;
-
-  DOMStorageDatabase db;
-  db.db_.reset(new sql::Connection());
-  ASSERT_TRUE(db.db_->OpenInMemory());
-  CreateV1Table(db.db_.get());
-  InsertDataV1(db.db_.get(), kCannedKey, kCannedValue.string());
-
-  ASSERT_TRUE(db.UpgradeVersion1To2());
-
-  EXPECT_EQ(DOMStorageDatabase::V2, db.DetectSchemaVersion());
-
-  CheckValuesMatch(&db, expected);
 }
 
 TEST(DOMStorageDatabaseTest, TestSimpleRemoveOneValue) {

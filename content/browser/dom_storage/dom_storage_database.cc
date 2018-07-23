@@ -186,12 +186,8 @@ bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
     // and whether it's usable (i.e. not corrupted).
     SchemaVersion current_version = DetectSchemaVersion();
 
-    if (current_version == V2) {
+    if (current_version == V2)
       return true;
-    } else if (current_version == V1) {
-      if (UpgradeVersion1To2())
-        return true;
-    }
   }
 
   // This is the exceptional case - to try and recover we'll attempt
@@ -218,20 +214,7 @@ DOMStorageDatabase::SchemaVersion DOMStorageDatabase::DetectSchemaVersion() {
       !db_->DoesColumnExist("ItemTable", "value"))
     return INVALID;
 
-  // We must use a unique statement here as we aren't going to step it.
-  sql::Statement statement(
-      db_->GetUniqueStatement("SELECT key,value from ItemTable LIMIT 1"));
-  if (statement.DeclaredColumnType(0) != sql::COLUMN_TYPE_TEXT)
-    return INVALID;
-
-  switch (statement.DeclaredColumnType(1)) {
-    case sql::COLUMN_TYPE_BLOB:
-      return V2;
-    case sql::COLUMN_TYPE_TEXT:
-      return V1;
-    default:
-      return INVALID;
-  }
+  return V2;
 }
 
 bool DOMStorageDatabase::CreateTableV2() {
@@ -261,32 +244,6 @@ bool DOMStorageDatabase::DeleteFileAndRecreate() {
 
   failed_to_open_ = true;
   return false;
-}
-
-bool DOMStorageDatabase::UpgradeVersion1To2() {
-  DCHECK(IsOpen());
-  DCHECK(DetectSchemaVersion() == V1);
-
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
-      "SELECT * FROM ItemTable"));
-  DCHECK(statement.is_valid());
-
-  // Need to migrate from TEXT value column to BLOB.
-  // Store the current database content so we can re-insert
-  // the data into the new V2 table.
-  DOMStorageValuesMap values;
-  while (statement.Step()) {
-    base::string16 key = statement.ColumnString16(0);
-    base::NullableString16 value(statement.ColumnString16(1), false);
-    values[key] = value;
-  }
-
-  sql::Transaction migration(db_.get());
-  return migration.Begin() &&
-      db_->Execute("DROP TABLE ItemTable") &&
-      CreateTableV2() &&
-      CommitChanges(false, values) &&
-      migration.Commit();
 }
 
 void DOMStorageDatabase::Close() {
