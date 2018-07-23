@@ -29,29 +29,19 @@
         --cr-input-error-display: none;
         --cr-input-input: {
           background-color: white;
-          -webkit-padding-end: 0;
-          -webkit-padding-start: 0;
-          padding-bottom: 2px;
-          padding-top: 2px;
           border-bottom: 1px solid var(--google-grey-900);
         }
+        --cr-input-padding-end: 0;
+        --cr-input-padding-start: 0;
+        --cr-input-padding-bottom: 2px;
+        --cr-input-padding-top: 2px;
         display: inline-block;
         vertical-align: middle;
         width: 160px;  /* Special width for search input. */
       }
 
       :host([has-search-text]) cr-input {
-        /* Unfortunately we have to duplicate most of this mixin, due to how
-           redeclaration overrides the entire mixin, but the only value that
-           changes is padding-end. */
-        --cr-input-input: {
-          background-color: white;
-          -webkit-padding-end: 20px;
-          -webkit-padding-start: 0;
-          padding-bottom: 2px;
-          padding-top: 2px;
-          border-bottom: 1px solid var(--google-grey-900);
-        }
+        --cr-input-padding-end: 20px;
       }
 
       #searchInput {

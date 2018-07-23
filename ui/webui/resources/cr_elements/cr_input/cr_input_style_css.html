@@ -59,10 +59,10 @@
          *
          * See https://crbug.com/846254 and associated CL for more information.
          */
-        -webkit-padding-end: 8px;
-        -webkit-padding-start: 8px;
-        padding-bottom: 6px;
-        padding-top: 6px;
+        -webkit-padding-end: var(--cr-input-padding-end, 8px);
+        -webkit-padding-start: var(--cr-input-padding-start, 8px);
+        padding-bottom: var(--cr-input-padding-bottom, 6px);
+        padding-top: var(--cr-input-padding-top, 6px);
 
         @apply --cr-input-input;
       }
