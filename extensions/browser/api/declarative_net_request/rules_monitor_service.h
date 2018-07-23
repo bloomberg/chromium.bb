@@ -36,15 +36,6 @@ class RulesetMatcher;
 class RulesMonitorService : public BrowserContextKeyedAPI,
                             public ExtensionRegistryObserver {
  public:
-  class Observer {
-   public:
-    // Called when this service loads a new ruleset.
-    virtual void OnRulesetLoaded() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<RulesMonitorService>*
   GetFactoryInstance();
@@ -54,10 +45,6 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // Returns true if there is registered declarative ruleset corresponding to
   // the given |extension_id|.
   bool HasRegisteredRuleset(const ExtensionId& extension_id) const;
-
-  // Adds or removes an observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
  private:
   struct LoadRulesetInfo;
@@ -101,8 +88,6 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   const ExtensionPrefs* const prefs_;
   ExtensionRegistry* const extension_registry_;
   WarningService* const warning_service_;
-
-  base::ObserverList<Observer> observers_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

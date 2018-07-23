@@ -33,8 +33,7 @@ namespace extensions {
 // This class owns all RulesRegistries implementations of an ExtensionService.
 // This class lives on the UI thread.
 class RulesRegistryService : public BrowserContextKeyedAPI,
-                             public ExtensionRegistryObserver,
-                             public RulesCacheDelegate::Observer {
+                             public ExtensionRegistryObserver {
  public:
   static const int kDefaultRulesRegistryID;
   static const int kInvalidRulesRegistryID;
@@ -48,15 +47,6 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
       return std::tie(event_name, rules_registry_id) <
              std::tie(other.event_name, other.rules_registry_id);
     }
-  };
-
-  class Observer {
-   public:
-    // Called when any of the |cache_delegates_| have rule updates.
-    virtual void OnUpdateRules() = 0;
-
-   protected:
-    virtual ~Observer() {}
   };
 
   explicit RulesRegistryService(content::BrowserContext* context);
@@ -102,10 +92,6 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   // Indicates whether any registry has rules registered.
   bool HasAnyRegisteredRules() const;
 
-  // Adds or removes an observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   // For testing.
   void SimulateExtensionUninstalled(const Extension* extension);
 
@@ -133,9 +119,6 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
-
-  // RulesCacheDelegate::Observer implementation.
-  void OnUpdateRules() override;
 
   // Iterates over all registries, and calls |notification_callback| on them
   // with |extension| as the argument. If a registry lives on a different
@@ -168,8 +151,6 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
       extension_registry_observer_;
 
   content::BrowserContext* browser_context_;
-
-  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesRegistryService);
 };

@@ -274,10 +274,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   // storage configuration info.
   void GetQuotaSettings(storage::OptionalQuotaSettingsCallback callback);
 
-  // Called to initialize |network_context_| when |GetNetworkContext()| is
-  // first called or there is an error.
-  void InitNetworkContext();
-
   network::mojom::URLLoaderFactory*
   GetURLLoaderFactoryForBrowserProcessInternal();
 

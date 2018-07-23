@@ -96,10 +96,6 @@ void CORSURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void CORSURLLoaderFactory::ClearBindings() {
-  bindings_.CloseAllBindings();
-}
-
 void CORSURLLoaderFactory::DeleteIfNeeded() {
   if (!context_)
     return;

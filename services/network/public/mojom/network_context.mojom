@@ -523,11 +523,6 @@ interface NetworkContext {
                     int32 load_flags,
                     bool privacy_mode_enabled);
 
-  // Destroys all URLLoaderFactory bindings, which should then be regenerated.
-  // This should be called if there is a change to the proxies which should be
-  // used on URLLoaders.
-  ResetURLLoaderFactories();
-
   [Sync]
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header.
