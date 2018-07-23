@@ -3154,7 +3154,6 @@ split_static_library("ui") {
         "views/bubble_anchor_util_views.cc",
         "views/certificate_selector.cc",
         "views/certificate_selector.h",
-        "views/chrome_javascript_native_dialog_factory_views.cc",
         "views/chrome_web_dialog_view.cc",
         "views/constrained_web_dialog_delegate_views.cc",
         "views/download/download_feedback_dialog_view.cc",
@@ -3923,6 +3922,7 @@ split_static_library("ui") {
     }
     if (use_aura) {
       sources += [
+        "views/chrome_javascript_native_dialog_factory_views.cc",
         "views/extensions/extension_popup_aura.cc",
         "views/extensions/extension_popup_aura.h",
       ]
