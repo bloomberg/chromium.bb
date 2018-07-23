@@ -349,8 +349,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     case IBD::ALTERNATE_NAV_INFOBAR_DELEGATE: {
       AutocompleteMatch match;
       match.destination_url = GURL("http://intranetsite/");
-      AlternateNavInfoBarDelegate::Create(GetWebContents(), base::string16(),
-                                          match, GURL("http://example.com/"));
+      AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
+          GetWebContents(), base::string16(), match,
+          GURL("http://example.com/"));
       break;
     }
 

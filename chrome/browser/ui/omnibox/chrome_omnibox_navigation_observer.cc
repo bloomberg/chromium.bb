@@ -123,7 +123,7 @@ void ChromeOmniboxNavigationObserver::SetURLLoaderFactoryForTesting(
 }
 
 void ChromeOmniboxNavigationObserver::CreateAlternateNavInfoBar() {
-  AlternateNavInfoBarDelegate::Create(
+  AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
       web_contents(), text_, alternate_nav_match_, match_.destination_url);
 }
 

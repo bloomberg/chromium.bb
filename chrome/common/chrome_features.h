@@ -175,6 +175,8 @@ extern const base::Feature kHappinessTrackingSystem;
 extern const base::Feature kViewsCastDialog;
 #endif
 
+extern const base::Feature kIdnNavigationSuggestions;
+
 extern const base::Feature kImprovedRecoveryComponent;
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

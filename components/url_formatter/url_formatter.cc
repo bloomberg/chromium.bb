@@ -28,13 +28,24 @@ namespace url_formatter {
 
 namespace {
 
-base::string16 IDNToUnicodeWithAdjustments(
+enum IDNConversionStatus {
+  // The input has no IDN component.
+  NO_IDN,
+  // The input has an IDN component but it's unsafe to display
+  // so was not converted.
+  UNSAFE_IDN,
+  // The input was successfully converted to IDN.
+  IDN_CONVERTED,
+};
+
+IDNConversionResult IDNToUnicodeWithAdjustments(
     base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments);
-bool IDNToUnicodeOneComponent(const base::char16* comp,
-                              size_t comp_len,
-                              bool is_tld_ascii,
-                              base::string16* out);
+
+IDNConversionStatus IDNToUnicodeOneComponent(const base::char16* comp,
+                                             size_t comp_len,
+                                             bool is_tld_ascii,
+                                             base::string16* out);
 
 class AppendComponentTransform {
  public:
@@ -60,7 +71,7 @@ class HostComponentTransform : public AppendComponentTransform {
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
     if (!trim_trivial_subdomains_)
-      return IDNToUnicodeWithAdjustments(component_text, adjustments);
+      return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
 
     // Exclude the registry and domain from trivial subdomain stripping.
     // To get the adjustment offset calculations correct, we need to transform
@@ -73,7 +84,7 @@ class HostComponentTransform : public AppendComponentTransform {
     // If there is no domain and registry, we may be looking at an intranet
     // or otherwise non-standard host. Leave those alone.
     if (domain_and_registry.empty())
-      return IDNToUnicodeWithAdjustments(component_text, adjustments);
+      return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
 
     base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
     base::StringTokenizer tokenizer(
@@ -103,8 +114,10 @@ class HostComponentTransform : public AppendComponentTransform {
       DCHECK(tokenizer.token_is_delim());
     }
 
-    base::string16 unicode_result = IDNToUnicodeWithAdjustments(
-        transformed_subdomain + domain_and_registry, adjustments);
+    base::string16 unicode_result =
+        IDNToUnicodeWithAdjustments(transformed_subdomain + domain_and_registry,
+                                    adjustments)
+            .result;
     base::OffsetAdjuster::MergeSequentialAdjustments(
         trivial_subdomains_adjustments, adjustments);
     return unicode_result;
@@ -246,8 +259,9 @@ base::LazyInstance<IDNSpoofChecker>::Leaky g_idn_spoof_checker =
 
 // TODO(brettw): We may want to skip this step in the case of file URLs to
 // allow unicode UNC hostnames regardless of encodings.
-base::string16 IDNToUnicodeWithAdjustments(
-    base::StringPiece host, base::OffsetAdjuster::Adjustments* adjustments) {
+IDNConversionResult IDNToUnicodeWithAdjustments(
+    base::StringPiece host,
+    base::OffsetAdjuster::Adjustments* adjustments) {
   if (adjustments)
     adjustments->clear();
   // Convert the ASCII input to a base::string16 for ICU.
@@ -262,10 +276,10 @@ base::string16 IDNToUnicodeWithAdjustments(
     is_tld_ascii = false;
   }
 
+  IDNConversionResult result;
   // Do each component of the host separately, since we enforce script matching
   // on a per-component basis.
   base::string16 out16;
-  bool has_idn_component = false;
   for (size_t component_start = 0, component_end;
        component_start < input16.length();
        component_start = component_end + 1) {
@@ -278,10 +292,12 @@ base::string16 IDNToUnicodeWithAdjustments(
     bool converted_idn = false;
     if (component_end > component_start) {
       // Add the substring that we just found.
-      converted_idn =
+      IDNConversionStatus status =
           IDNToUnicodeOneComponent(input16.data() + component_start,
                                    component_length, is_tld_ascii, &out16);
-      has_idn_component |= converted_idn;
+      converted_idn = (status == IDN_CONVERTED);
+      result.has_idn_component |=
+          (status == IDN_CONVERTED || status == UNSAFE_IDN);
     }
     size_t new_component_length = out16.length() - new_component_start;
 
@@ -295,15 +311,20 @@ base::string16 IDNToUnicodeWithAdjustments(
       out16.push_back('.');
   }
 
+  result.result = out16;
+
   // Leave as punycode any inputs that spoof top domains.
-  if (has_idn_component &&
-      g_idn_spoof_checker.Get().SimilarToTopDomains(out16)) {
-    if (adjustments)
-      adjustments->clear();
-    return input16;
+  if (result.has_idn_component) {
+    result.matching_top_domain =
+        g_idn_spoof_checker.Get().GetSimilarTopDomain(out16);
+    if (!result.matching_top_domain.empty()) {
+      if (adjustments)
+        adjustments->clear();
+      result.result = input16;
+    }
   }
 
-  return out16;
+  return result;
 }
 
 // Returns true if the given Unicode host component is safe to display to the
@@ -354,14 +375,15 @@ base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;
 // same as the input if it is not IDN in ACE/punycode or the IDN is unsafe to
 // display.
 // Returns whether any conversion was performed.
-bool IDNToUnicodeOneComponent(const base::char16* comp,
-                              size_t comp_len,
-                              bool is_tld_ascii,
-                              base::string16* out) {
+IDNConversionStatus IDNToUnicodeOneComponent(const base::char16* comp,
+                                             size_t comp_len,
+                                             bool is_tld_ascii,
+                                             base::string16* out) {
   DCHECK(out);
   if (comp_len == 0)
-    return false;
+    return NO_IDN;
 
+  IDNConversionStatus idn_status = NO_IDN;
   // Only transform if the input can be an IDN component.
   static const base::char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
   if ((comp_len > arraysize(kIdnPrefix)) &&
@@ -390,8 +412,10 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
       if (IsIDNComponentSafe(
               base::StringPiece16(out->data() + original_length,
                                   base::checked_cast<size_t>(output_length)),
-              is_tld_ascii))
-        return true;
+              is_tld_ascii)) {
+        return IDN_CONVERTED;
+      }
+      idn_status = UNSAFE_IDN;
     }
 
     // Something went wrong. Revert to original string.
@@ -401,7 +425,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   // We get here with no IDN or on error, in which case we just append the
   // literal input.
   out->append(comp, comp_len);
-  return false;
+  return idn_status;
 }
 
 }  // namespace
@@ -657,8 +681,12 @@ void AppendFormattedHost(const GURL& url, base::string16* output) {
       HostComponentTransform(false), output, nullptr, nullptr);
 }
 
-base::string16 IDNToUnicode(base::StringPiece host) {
+IDNConversionResult IDNToUnicodeWithDetails(base::StringPiece host) {
   return IDNToUnicodeWithAdjustments(host, nullptr);
+}
+
+base::string16 IDNToUnicode(base::StringPiece host) {
+  return IDNToUnicodeWithAdjustments(host, nullptr).result;
 }
 
 base::string16 StripWWW(const base::string16& text) {

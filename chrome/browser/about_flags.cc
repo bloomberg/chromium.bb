@@ -4145,6 +4145,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoStrings)},
 #endif
 
+    {"enable-idn-navigation-suggestions",
+     flag_descriptions::kIdnNavigationSuggestionsName,
+     flag_descriptions::kIdnNavigationSuggestionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kIdnNavigationSuggestions)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
