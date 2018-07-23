@@ -5,11 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_FACTORY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_FACTORY_H_
 
-#include "base/memory/scoped_refptr.h"
+#include <memory>
 
-namespace base {
-class SingleThreadTaskRunner;
-}
+#include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 
 namespace blink {
 
@@ -26,7 +25,7 @@ class WebURLLoaderFactory {
   // the most appropriate URLLoaderFactory implementation.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) = 0;
 };
 
 }  // namespace blink

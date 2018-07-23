@@ -97,12 +97,13 @@ class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle) override {
     DCHECK(platform_);
     // This loader should be used only for process-local resources such as
     // data URLs.
     auto default_loader = std::make_unique<content::WebURLLoaderImpl>(
-        nullptr, task_runner, nullptr);
+        nullptr, std::move(task_runner_handle), nullptr);
     return platform_->GetURLLoaderMockFactory()->CreateURLLoader(
         std::move(default_loader));
   }

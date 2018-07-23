@@ -176,7 +176,9 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   TestWebURLLoaderClient(ResourceDispatcher* dispatcher)
       : loader_(new WebURLLoaderImpl(
             dispatcher,
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            blink::scheduler::WebResourceLoadingTaskRunnerHandle::
+                CreateUnprioritized(
+                    blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &fake_url_loader_factory_))),
         delete_on_receive_redirect_(false),

@@ -241,7 +241,6 @@ const SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
     const ResourceRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const ResourceLoaderOptions& options) {
   CountUsage(WebFeature::kOffMainThreadFetch);
   WrappedResourceRequest wrapped(request);
@@ -264,19 +263,22 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
   if (url_loader_factory) {
     return web_context_
         ->WrapURLLoaderFactory(url_loader_factory.PassInterface().PassHandle())
-        ->CreateURLLoader(wrapped, task_runner);
+        ->CreateURLLoader(wrapped, CreateResourceLoadingTaskRunnerHandle());
   }
 
   if (request.GetRequestContext() == WebURLRequest::kRequestContextScript) {
     if (!script_loader_factory_)
       script_loader_factory_ = web_context_->CreateScriptLoaderFactory();
-    if (script_loader_factory_)
-      return script_loader_factory_->CreateURLLoader(wrapped, task_runner);
+    if (script_loader_factory_) {
+      return script_loader_factory_->CreateURLLoader(
+          wrapped, CreateResourceLoadingTaskRunnerHandle());
+    }
   }
 
   if (!url_loader_factory_)
     url_loader_factory_ = web_context_->CreateURLLoaderFactory();
-  return url_loader_factory_->CreateURLLoader(wrapped, task_runner);
+  return url_loader_factory_->CreateURLLoader(
+      wrapped, CreateResourceLoadingTaskRunnerHandle());
 }
 
 blink::mojom::ControllerServiceWorkerMode
@@ -407,6 +409,12 @@ void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerFetchContext::GetLoadingTaskRunner() {
   return loading_task_runner_;
+}
+
+std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+WorkerFetchContext::CreateResourceLoadingTaskRunnerHandle() {
+  return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
+      GetLoadingTaskRunner());
 }
 
 SecurityContext& WorkerFetchContext::GetSecurityContext() const {

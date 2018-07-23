@@ -98,7 +98,8 @@ class WebServiceWorkerNetworkProviderForFrame
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle) override {
     // RenderThreadImpl is nullptr in some tests.
     if (!RenderThreadImpl::current())
       return nullptr;
@@ -134,7 +135,7 @@ class WebServiceWorkerNetworkProviderForFrame
     // pointer into SharedURLLoaderFactory.
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
-        std::move(task_runner),
+        std::move(task_runner_handle),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             provider_->context()->GetSubresourceLoaderFactory()));
   }

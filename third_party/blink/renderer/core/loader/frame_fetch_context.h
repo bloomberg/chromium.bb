@@ -166,7 +166,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
-      scoped_refptr<base::SingleThreadTaskRunner>,
       const ResourceLoaderOptions&) override;
 
   ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
@@ -207,6 +206,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // FetchContext overrides:
   FrameScheduler* GetFrameScheduler() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
+  std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
+  CreateResourceLoadingTaskRunnerHandle() override;
 
   // BaseFetchContext overrides:
   const FetchClientSettingsObject* GetFetchClientSettingsObject()

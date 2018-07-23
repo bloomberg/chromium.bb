@@ -119,7 +119,8 @@ class WebServiceWorkerNetworkProviderImpl
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          task_runner_handle) override {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
     if (render_thread && provider_->script_loader_factory() &&
         blink::ServiceWorkerUtils::IsServicificationEnabled() &&
@@ -127,7 +128,7 @@ class WebServiceWorkerNetworkProviderImpl
       // TODO(crbug.com/796425): Temporarily wrap the raw
       // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
       return std::make_unique<WebURLLoaderImpl>(
-          render_thread->resource_dispatcher(), std::move(task_runner),
+          render_thread->resource_dispatcher(), std::move(task_runner_handle),
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               provider_->script_loader_factory()));
     }

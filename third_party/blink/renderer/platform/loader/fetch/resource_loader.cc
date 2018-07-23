@@ -115,8 +115,7 @@ void ResourceLoader::Trace(blink::Visitor* visitor) {
 void ResourceLoader::Start() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   ActivateCacheAwareLoadingIfNeeded(request);
-  loader_ = Context().CreateURLLoader(request, Context().GetLoadingTaskRunner(),
-                                      resource_->Options());
+  loader_ = Context().CreateURLLoader(request, resource_->Options());
   DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   auto throttle_option = ResourceLoadScheduler::ThrottleOption::kThrottleable;
 
@@ -188,8 +187,7 @@ void ResourceLoader::Release(
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
 
-  loader_ = Context().CreateURLLoader(request, Context().GetLoadingTaskRunner(),
-                                      resource_->Options());
+  loader_ = Context().CreateURLLoader(request, resource_->Options());
   StartWith(request);
 }
 
