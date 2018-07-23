@@ -1491,6 +1491,12 @@ void FeatureInfo::InitializeFeatures() {
   // https://github.com/KhronosGroup/WebGL/pull/2583
   feature_flags_.separate_stencil_ref_mask_writemask =
       !(gl_version_info_->is_d3d) && !IsWebGLContext();
+
+  if (gfx::HasExtension(extensions, "GL_MESA_framebuffer_flip_y")) {
+    feature_flags_.mesa_framebuffer_flip_y = true;
+    validators_.framebuffer_parameter.AddValue(GL_FRAMEBUFFER_FLIP_Y_MESA);
+    AddExtensionString("GL_MESA_framebuffer_flip_y");
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

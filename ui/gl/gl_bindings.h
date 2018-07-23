@@ -410,6 +410,11 @@
 #define GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM 0x84F8
 #endif /* GL_CHROMIUM_nonblocking_readback */
 
+#ifndef GL_MESA_framebuffer_flip_y
+#define GL_MESA_framebuffer_flip_y 1
+#define GL_FRAMEBUFFER_FLIP_Y_MESA 0x8BBB
+#endif /* GL_MESA_framebuffer_flip_y */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

@@ -683,6 +683,10 @@ _NAMED_TYPE_INFO = {
       'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER',
     ],
   },
+  'FramebufferParameter' : {
+    'type': 'GLenum',
+    'valid' : [],
+  },
   'MatrixMode': {
     'type': 'GLenum',
     'is_complete': True,
@@ -4058,6 +4062,12 @@ _FUNCTION_INFO = {
     'impl_func': True,
     'internal': True,
     'es3': True,
+  },
+  'FramebufferParameteri': {
+    'decoder_func': 'DoFramebufferParameteri',
+    'unit_test': False,
+    'extension': 'MESA_framebuffer_flip_y',
+    'extension_flag': 'mesa_framebuffer_flip_y',
   },
 }
 

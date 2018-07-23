@@ -2110,6 +2110,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8B9B, "GL_IMPLEMENTATION_COLOR_READ_FORMAT",
     },
     {
+        0x8BBB, "GL_FRAMEBUFFER_FLIP_Y_MESA",
+    },
+    {
         0x8BC0, "GL_COUNTER_TYPE_AMD",
     },
     {

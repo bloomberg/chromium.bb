@@ -3905,6 +3905,26 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindVertexArrayOES(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleFramebufferParameteri(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::FramebufferParameteri& c =
+      *static_cast<const volatile gles2::cmds::FramebufferParameteri*>(
+          cmd_data);
+  if (!features().mesa_framebuffer_flip_y) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLint param = static_cast<GLint>(c.param);
+  error::Error error = DoFramebufferParameteri(target, pname, param);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleSwapBuffers(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

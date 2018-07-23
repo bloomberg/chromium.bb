@@ -1398,6 +1398,7 @@ Validators::Validators()
       framebuffer_attachment_parameter(
           valid_framebuffer_attachment_parameter_table,
           arraysize(valid_framebuffer_attachment_parameter_table)),
+      framebuffer_parameter(),
       framebuffer_target(valid_framebuffer_target_table,
                          arraysize(valid_framebuffer_target_table)),
       g_l_state(valid_g_l_state_table, arraysize(valid_g_l_state_table)),

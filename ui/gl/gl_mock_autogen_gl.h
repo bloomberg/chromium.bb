@@ -309,6 +309,8 @@ MOCK_METHOD1(FinishFenceNV, void(GLuint fence));
 MOCK_METHOD0(Flush, void());
 MOCK_METHOD3(FlushMappedBufferRange,
              void(GLenum target, GLintptr offset, GLsizeiptr length));
+MOCK_METHOD3(FramebufferParameteri,
+             void(GLenum target, GLenum pname, GLint param));
 MOCK_METHOD4(FramebufferRenderbufferEXT,
              void(GLenum target,
                   GLenum attachment,

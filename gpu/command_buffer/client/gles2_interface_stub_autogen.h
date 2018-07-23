@@ -596,6 +596,7 @@ void GenVertexArraysOES(GLsizei n, GLuint* arrays) override;
 void DeleteVertexArraysOES(GLsizei n, const GLuint* arrays) override;
 GLboolean IsVertexArrayOES(GLuint array) override;
 void BindVertexArrayOES(GLuint array) override;
+void FramebufferParameteri(GLenum target, GLenum pname, GLint param) override;
 void SwapBuffers(GLuint64 swap_id, GLbitfield flags) override;
 GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                    GLsizei count,

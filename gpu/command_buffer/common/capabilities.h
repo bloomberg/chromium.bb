@@ -196,6 +196,8 @@ struct GPU_EXPORT Capabilities {
 
   bool chromium_nonblocking_readback = false;
 
+  bool mesa_framebuffer_flip_y = false;
+
   int major_version = 2;
   int minor_version = 0;
 
