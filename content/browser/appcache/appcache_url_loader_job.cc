@@ -44,9 +44,6 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   load_timing_info_.request_start_time = base::Time::Now();
   load_timing_info_.request_start = base::TimeTicks::Now();
 
-  AppCacheHistograms::AddAppCacheJobStartDelaySample(base::TimeTicks::Now() -
-                                                     start_time_tick_);
-
   manifest_url_ = manifest_url;
   cache_id_ = cache_id;
   entry_ = entry;
@@ -65,9 +62,6 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
   // In tests we only care about the delivery_type_ state.
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
-
-  AppCacheHistograms::AddNetworkJobStartDelaySample(base::TimeTicks::Now() -
-                                                    start_time_tick_);
 
   // We signal our caller with an empy callback that it needs to perform
   // the network load.
@@ -88,9 +82,6 @@ void AppCacheURLLoaderJob::DeliverErrorResponse() {
   if (loader_callback_)
     CallLoaderCallback();
   NotifyCompleted(net::ERR_FAILED);
-
-  AppCacheHistograms::AddErrorJobStartDelaySample(base::TimeTicks::Now() -
-                                                  start_time_tick_);
 }
 
 AppCacheURLLoaderJob* AppCacheURLLoaderJob::AsURLLoaderJob() {
