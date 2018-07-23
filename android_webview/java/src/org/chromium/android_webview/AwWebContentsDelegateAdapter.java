@@ -52,6 +52,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
 
     public void setContainerView(View containerView) {
         mContainerView = containerView;
+        mContainerView.setClickable(true);
     }
 
     @Override
