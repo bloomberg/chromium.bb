@@ -275,12 +275,17 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
     EXPECT_FALSE(version->update_timer_.IsRunning());
   }
 
-  ServiceWorkerVersion* GetVersionToUpdate(ServiceWorkerProviderHost* host) {
-    return host->version_to_update_.get();
+  bool HasVersionToUpdate(ServiceWorkerProviderHost* host) {
+    return !host->versions_to_update_.empty();
   }
 
-  std::vector<std::string> bad_messages_;
+  // |scoped_feature_list_| must be before |thread_bundle_|, since
+  // the thread bundle's destruction causes service worker-related
+  // objects to destruct, whose destructors need to know whether servicification
+  // is enabled.
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle thread_bundle_;
+
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   ServiceWorkerContextCore* context_;
   scoped_refptr<ServiceWorkerRegistration> registration1_;
@@ -292,7 +297,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   ContentBrowserClient* old_content_browser_client_;
   int next_renderer_provided_id_;
   std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::vector<std::string> bad_messages_;
 
  private:
   ServiceWorkerProviderHost* CreateProviderHostInternal(
@@ -961,7 +966,7 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
 }
 
 // Tests that the service worker involved with a navigation (via
-// SetServiceWorkerToUpdate) is updated when the host for the navigation is
+// AddServiceWorkerToUpdate) is updated when the host for the navigation is
 // destroyed.
 TEST_P(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
   // This code path only is used in S13nSW.
@@ -980,9 +985,19 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration1_->SetActiveVersion(version1);
-  host->SetServiceWorkerToUpdate(version1);
 
+  auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration2_.get(), GURL("https://www.example.com/sw.js"),
+      2 /* version_id */, helper_->context()->AsWeakPtr());
+  version2->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version2->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration2_->SetActiveVersion(version1);
+
+  host->AddServiceWorkerToUpdate(version1);
+  host->AddServiceWorkerToUpdate(version2);
   ExpectUpdateIsNotScheduled(version1.get());
+  ExpectUpdateIsNotScheduled(version2.get());
 
   // Destroy the provider host.
   ASSERT_TRUE(remote_endpoints_.back().host_ptr()->is_bound());
@@ -991,6 +1006,7 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
 
   // The provider host's destructor should have scheduled the update.
   ExpectUpdateIsScheduled(version1.get());
+  ExpectUpdateIsScheduled(version2.get());
 }
 
 // Tests that the service worker involved with a navigation is updated when the
@@ -1012,14 +1028,12 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   // Make a window.
   ServiceWorkerProviderHost* host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
-  host->AssociateRegistration(registration1_.get(),
-                              false /* notify_controllerchange */);
 
   // Mark the service worker as needing update. Update should not be scheduled
   // yet.
-  host->SetServiceWorkerToUpdate(version1);
+  host->AddServiceWorkerToUpdate(version1);
   ExpectUpdateIsNotScheduled(version1.get());
-  EXPECT_EQ(version1.get(), GetVersionToUpdate(host));
+  EXPECT_TRUE(HasVersionToUpdate(host));
 
   // Send the hint from the renderer. Update should be scheduled.
   mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
@@ -1027,7 +1041,7 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   (*host_ptr)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsScheduled(version1.get());
-  EXPECT_FALSE(GetVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(host));
 }
 
 // Tests that the host receives a HintToUpdateServiceWorker message but
@@ -1053,21 +1067,82 @@ TEST_P(ServiceWorkerProviderHostTest,
   registration1_->SetActiveVersion(version1);
 
   // Pretend the registration gets associated after the main
-  // resource request, so SetServiceWorkerToUpdate() is not called.
-  host->AssociateRegistration(registration1_.get(),
-                              false /* notify_controllerchange */);
+  // resource request, so AddServiceWorkerToUpdate() is not called.
 
   ExpectUpdateIsNotScheduled(version1.get());
-  EXPECT_FALSE(GetVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(host));
 
   // Send the hint from the renderer. Update should not be scheduled, since
-  // SetServiceWorkerToUpdate() was not called.
+  // AddServiceWorkerToUpdate() was not called.
   mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
       remote_endpoints_.back().host_ptr();
   (*host_ptr)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsNotScheduled(version1.get());
-  EXPECT_FALSE(GetVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(host));
+}
+
+TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
+  // This code path only is used in S13nSW.
+  if (!IsServiceWorkerServicificationEnabled())
+    return;
+
+  // Make active versions.
+  auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration1_.get(), GURL("https://www.example.com/sw.js"),
+      1 /* version_id */, helper_->context()->AsWeakPtr());
+  version1->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration1_->SetActiveVersion(version1);
+
+  auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration2_.get(), GURL("https://www.example.com/sw.js"),
+      2 /* version_id */, helper_->context()->AsWeakPtr());
+  version2->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version2->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration2_->SetActiveVersion(version1);
+
+  auto version3 = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration3_.get(), GURL("https://other.example.com/sw.js"),
+      3 /* version_id */, helper_->context()->AsWeakPtr());
+  version3->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version3->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration3_->SetActiveVersion(version1);
+
+  // Make a window.
+  ServiceWorkerProviderHost* host =
+      CreateProviderHost(GURL("https://www.example.com/example.html"));
+
+  // Mark the service worker as needing update. Update should not be scheduled
+  // yet.
+  host->AddServiceWorkerToUpdate(version1);
+  host->AddServiceWorkerToUpdate(version2);
+  host->AddServiceWorkerToUpdate(version3);
+  ExpectUpdateIsNotScheduled(version1.get());
+  ExpectUpdateIsNotScheduled(version2.get());
+  ExpectUpdateIsNotScheduled(version3.get());
+  EXPECT_TRUE(HasVersionToUpdate(host));
+
+  // Pretend another page also used version3.
+  version3->IncrementPendingUpdateHintCount();
+
+  // Send the hint from the renderer. Update should be scheduled except for
+  // |version3| as it's being used by another page.
+  mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
+      remote_endpoints_.back().host_ptr();
+  (*host_ptr)->HintToUpdateServiceWorker();
+  base::RunLoop().RunUntilIdle();
+  ExpectUpdateIsScheduled(version1.get());
+  ExpectUpdateIsScheduled(version2.get());
+  ExpectUpdateIsNotScheduled(version3.get());
+  EXPECT_FALSE(HasVersionToUpdate(host));
+
+  // Pretend the other page also finished for version3.
+  version3->DecrementPendingUpdateHintCount();
+  ExpectUpdateIsScheduled(version3.get());
 }
 
 INSTANTIATE_TEST_CASE_P(IsServiceWorkerServicificationEnabled,

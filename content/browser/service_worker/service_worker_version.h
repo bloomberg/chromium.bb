@@ -485,6 +485,24 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   static bool IsInstalled(ServiceWorkerVersion::Status status);
 
+  // For scheduling Soft Update after main resource requests. We schedule
+  // a Soft Update to happen "soon" after each main resource request, attempting
+  // to do the update after the page load finished. The renderer sends a hint
+  // when it's a good time to update. This is a count of outstanding expected
+  // hints, to handle multiple main resource requests occurring near the same
+  // time.
+  //
+  // On each request that dispatches a fetch event to this worker (or would
+  // have, in the case of a no-fetch event worker), this count is incremented.
+  // When the browser-side provider host receives a hint from the renderer that
+  // it is a good time to update the service worker, the count is decremented.
+  // It is also decremented when if the provider host is destroyed before
+  // receiving the hint.
+  //
+  // When the count transitions from 1 to 0, update is scheduled.
+  void IncrementPendingUpdateHintCount();
+  void DecrementPendingUpdateHintCount();
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerPingController;
@@ -818,6 +836,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::ObserverList<Observer> observers_;
   ServiceWorkerScriptCacheMap script_cache_map_;
   base::OneShotTimer update_timer_;
+
+  // For scheduling Soft Update after main resource requests. See
+  // IncrementPendingUpdateHintCount() documentation.
+  int pending_update_hint_count_ = 0;
 
   // Starts running in StartWorker and continues until the worker is stopped.
   base::RepeatingTimer timeout_timer_;

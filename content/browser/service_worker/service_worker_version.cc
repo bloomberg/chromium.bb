@@ -1362,6 +1362,19 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
   return false;
 }
 
+void ServiceWorkerVersion::IncrementPendingUpdateHintCount() {
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  pending_update_hint_count_++;
+}
+
+void ServiceWorkerVersion::DecrementPendingUpdateHintCount() {
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK_GT(pending_update_hint_count_, 0);
+  pending_update_hint_count_--;
+  if (pending_update_hint_count_ == 0)
+    ScheduleUpdate();
+}
+
 void ServiceWorkerVersion::OnPongFromWorker() {
   ping_controller_.OnPongReceived();
 }

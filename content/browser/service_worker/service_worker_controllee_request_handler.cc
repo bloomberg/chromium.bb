@@ -457,7 +457,7 @@ void ServiceWorkerControlleeRequestHandler::
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
       IsResourceTypeFrame(resource_type_)) {
-    provider_host_->SetServiceWorkerToUpdate(active_version);
+    provider_host_->AddServiceWorkerToUpdate(active_version);
   }
   bool is_forwarded =
       MaybeForwardToServiceWorker(url_job_.get(), active_version.get());
@@ -497,7 +497,7 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
       IsResourceTypeFrame(resource_type_)) {
-    provider_host_->SetServiceWorkerToUpdate(version);
+    provider_host_->AddServiceWorkerToUpdate(version);
   }
   MaybeForwardToServiceWorker(url_job_.get(), version.get());
 }
