@@ -1266,8 +1266,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   }
   for (size_t i : ordered_item_indices) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
-    if (!item.active ||
-        (dice_enabled_ && avatar_menu->GetNumberOfItems() >= 2)) {
+    if (!item.active) {
       gfx::Image image = profiles::GetSizedAvatarIcon(
           item.icon, true, kIconSize, kIconSize, profiles::SHAPE_CIRCLE);
       views::LabelButton* button =
