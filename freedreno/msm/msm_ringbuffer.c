@@ -391,12 +391,6 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 
 	finalize_current_cmd(ring, last_start);
 
-	/* needs to be after get_cmd() as that could create bos/cmds table: */
-	req.bos = VOID2U64(msm_ring->submit.bos),
-	req.nr_bos = msm_ring->submit.nr_bos;
-	req.cmds = VOID2U64(msm_ring->submit.cmds),
-	req.nr_cmds = msm_ring->submit.nr_cmds;
-
 	/* for each of the cmd's fix up their reloc's: */
 	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
@@ -406,6 +400,12 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		cmd->relocs = VOID2U64(&msm_cmd->relocs[a]);
 		cmd->nr_relocs = (b > a) ? b - a : 0;
 	}
+
+	/* needs to be after get_cmd() as that could create bos/cmds table: */
+	req.bos = VOID2U64(msm_ring->submit.bos),
+	req.nr_bos = msm_ring->submit.nr_bos;
+	req.cmds = VOID2U64(msm_ring->submit.cmds),
+	req.nr_cmds = msm_ring->submit.nr_cmds;
 
 	DEBUG_MSG("nr_cmds=%u, nr_bos=%u", req.nr_cmds, req.nr_bos);
 
