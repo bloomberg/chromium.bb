@@ -817,8 +817,8 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
       # More likely for there to be a bug in supersize than an ELF to not have a
       # single string literal.
       assert merge_string_syms
-      string_positions = [(s.address, s.size) for s in merge_string_syms]
-      bulk_analyzer.AnalyzeStringLiterals(elf_path, string_positions)
+      string_ranges = [(s.address, s.size) for s in merge_string_syms]
+      bulk_analyzer.AnalyzeStringLiterals(elf_path, string_ranges)
 
   logging.info('Stripping linker prefixes from symbol names')
   _StripLinkerAddedSymbolPrefixes(raw_symbols)
