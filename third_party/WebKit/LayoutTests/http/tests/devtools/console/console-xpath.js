@@ -15,13 +15,13 @@
       Console.ConsoleViewMessage.prototype, '_formattedParameterAsNodeForTest', formattedParameter, true);
   ConsoleTestRunner.addConsoleViewSniffer(messageSniffer, true);
 
-  ConsoleTestRunner.evaluateInConsole('$x(\'42\')');                           // number
-  ConsoleTestRunner.evaluateInConsole('$x(\'name(/html)\')');                  // string
-  ConsoleTestRunner.evaluateInConsole('$x(\'not(42)\')');                      // boolean
-  ConsoleTestRunner.evaluateInConsole('$x(\'/html/body/p\').length');          // node iterator
-  ConsoleTestRunner.evaluateInConsole('$x(\'//a/@href\')[0]');                 // href, should not throw
-  ConsoleTestRunner.evaluateInConsole('$x(\'./a/@href\', document.body)[0]');  // relative to document.body selector
-  ConsoleTestRunner.evaluateInConsole('$x(\'./a@href\', document.body)');      // incorrect selector, shouldn't crash
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'42\')');                           // number
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'name(/html)\')');                  // string
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'not(42)\')');                      // boolean
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'/html/body/p\').length');          // node iterator
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'//a/@href\')[0]');                 // href, should not throw
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'./a/@href\', document.body)[0]');  // relative to document.body selector
+  await ConsoleTestRunner.evaluateInConsolePromise('$x(\'./a@href\', document.body)');      // incorrect selector, shouldn't crash
   TestRunner.evaluateInPage('console.log(\'complete\')');                      // node iterator
 
   var completeMessageReceived = false;
