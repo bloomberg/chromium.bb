@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -79,6 +80,11 @@ class GLRendererTest : public testing::Test {
 
   static const Program* current_program(GLRenderer* renderer) {
     return renderer->current_program_;
+  }
+
+  static TexCoordPrecision get_cached_tex_coord_precision(
+      GLRenderer* renderer) {
+    return renderer->draw_cache_.program_key.tex_coord_precision();
   }
 
   RenderPassList render_passes_in_draw_order_;
@@ -483,9 +489,6 @@ class FakeRendererGL : public GLRenderer {
   // GLRenderer methods.
 
   // Changing visibility to public.
-  using GLRenderer::DoDrawQuad;
-  using GLRenderer::BeginDrawingFrame;
-  using GLRenderer::FinishDrawingQuadList;
   using GLRenderer::stencil_enabled;
 };
 
@@ -654,6 +657,128 @@ TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
 
   DrawFrame(renderer_.get(), viewport_size);
   EXPECT_TRUE(renderer_->stencil_enabled());
+}
+
+TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
+  // TestContextProvider, used inside FakeOuputSurfaceClient, redefines
+  // GetShaderPrecisionFormat() and sets the resolution of mediump with
+  // 10-bits (1024). So any value higher than 1024 should use highp.
+  // The goal is to make sure the fragment shaders used in DoDrawQuad() use
+  // the correct precision qualifier.
+
+  const gfx::Size viewport_size(1, 1);
+  RenderPass* root_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
+
+  const bool needs_blending = false;
+  const bool premultiplied_alpha = false;
+  const bool flipped = false;
+  const bool nearest_neighbor = false;
+  const float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  const gfx::PointF uv_top_left(0, 0);
+  const gfx::PointF uv_bottom_right(1, 1);
+
+  auto child_context_provider = TestContextProvider::Create();
+  child_context_provider->BindToCurrentThread();
+
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+
+  // Here is where the texture is created. Any value bigger than 1024 should use
+  // a highp.
+  auto transfer_resource = TransferableResource::MakeGLOverlay(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      gfx::Size(1025, 1025), true);
+  ResourceId client_resource_id = child_resource_provider->ImportResource(
+      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+
+  std::unordered_map<ResourceId, ResourceId> resource_map =
+      cc::SendResourceAndGetChildToParentMap(
+          {client_resource_id}, resource_provider_.get(),
+          child_resource_provider.get(), child_context_provider.get());
+  unsigned resource_id = resource_map[client_resource_id];
+
+  // The values defined here should not alter the size of the already created
+  // texture.
+  TextureDrawQuad* overlay_quad =
+      root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
+  shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
+                       gfx::Rect(1023, 1023), gfx::Rect(1023, 1023), false,
+                       false, 1, SkBlendMode::kSrcOver, 0);
+  overlay_quad->SetNew(shared_state, gfx::Rect(1023, 1023),
+                       gfx::Rect(1023, 1023), needs_blending, resource_id,
+                       premultiplied_alpha, uv_top_left, uv_bottom_right,
+                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                       nearest_neighbor, false);
+
+  DrawFrame(renderer_.get(), viewport_size);
+
+  TexCoordPrecision precision = get_cached_tex_coord_precision(renderer_.get());
+  EXPECT_EQ(precision, TEX_COORD_PRECISION_HIGH);
+
+  child_resource_provider->ShutdownAndReleaseAllResources();
+}
+
+TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
+  // TestContextProvider, used inside FakeOuputSurfaceClient, redefines
+  // GetShaderPrecisionFormat() and sets the resolution of mediump with
+  // 10-bits (1024). So any value higher than 1024 should use highp.
+  // The goal is to make sure the fragment shaders used in DoDrawQuad() use
+  // the correct precision qualifier.
+
+  const gfx::Size viewport_size(1, 1);
+  RenderPass* root_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
+
+  const bool needs_blending = false;
+  const bool premultiplied_alpha = false;
+  const bool flipped = false;
+  const bool nearest_neighbor = false;
+  const float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  const gfx::PointF uv_top_left(0, 0);
+  const gfx::PointF uv_bottom_right(1, 1);
+
+  auto child_context_provider = TestContextProvider::Create();
+  child_context_provider->BindToCurrentThread();
+
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+
+  // Here is where the texture is created. Any value smaller than 1024 should
+  // use a mediump.
+  auto transfer_resource = TransferableResource::MakeGLOverlay(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      gfx::Size(1023, 1023), true);
+  ResourceId client_resource_id = child_resource_provider->ImportResource(
+      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+
+  std::unordered_map<ResourceId, ResourceId> resource_map =
+      cc::SendResourceAndGetChildToParentMap(
+          {client_resource_id}, resource_provider_.get(),
+          child_resource_provider.get(), child_context_provider.get());
+  unsigned resource_id = resource_map[client_resource_id];
+
+  // The values defined here should not alter the size of the already created
+  // texture.
+  TextureDrawQuad* overlay_quad =
+      root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
+  shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
+                       gfx::Rect(1025, 1025), gfx::Rect(1025, 1025), false,
+                       false, 1, SkBlendMode::kSrcOver, 0);
+  overlay_quad->SetNew(shared_state, gfx::Rect(1025, 1025),
+                       gfx::Rect(1025, 1025), needs_blending, resource_id,
+                       premultiplied_alpha, uv_top_left, uv_bottom_right,
+                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                       nearest_neighbor, false);
+
+  DrawFrame(renderer_.get(), viewport_size);
+
+  TexCoordPrecision precision = get_cached_tex_coord_precision(renderer_.get());
+  EXPECT_EQ(precision, TEX_COORD_PRECISION_MEDIUM);
+
+  child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
 class ForbidSynchronousCallGLES2Interface : public TestGLES2Interface {

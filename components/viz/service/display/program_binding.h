@@ -118,6 +118,7 @@ class VIZ_SERVICE_EXPORT ProgramKey {
   void set_has_output_color_matrix(bool value) {
     has_output_color_matrix_ = value;
   }
+  TexCoordPrecision tex_coord_precision() const { return precision_; }
 
  private:
   friend struct ProgramKeyHash;
