@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
+#include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -348,6 +349,12 @@ typedef NS_ENUM(int, TrailingButtonState) {
                     action:@selector(sharePage)
           forControlEvents:UIControlEventTouchUpInside];
 
+      // Add self as a target to collect the metrics.
+      [self.locationBarSteadyView.trailingButton
+                 addTarget:self
+                    action:@selector(shareButtonPressed)
+          forControlEvents:UIControlEventTouchUpInside];
+
       [self.locationBarSteadyView.trailingButton
           setImage:
               [[UIImage imageNamed:@"location_bar_share"]
@@ -394,6 +401,15 @@ typedef NS_ENUM(int, TrailingButtonState) {
       .constrainedView = self.locationBarSteadyView.trailingButton;
   [self.dispatcher startVoiceSearch];
 }
+
+// Called when the share button is pressed.
+// The actual share dialog is opened by the dispatcher, only collect the metrics
+// here.
+- (void)shareButtonPressed {
+  base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
+}
+
+#pragma mark - UIMenu
 
 - (void)showLongPressMenu:(UILongPressGestureRecognizer*)sender {
   if (sender.state == UIGestureRecognizerStateBegan) {
