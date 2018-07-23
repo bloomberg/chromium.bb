@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_context.h"
 
@@ -46,6 +47,10 @@ class GPU_GLES2_EXPORT GLContextVirtual : public gl::GLContext {
   gl::YUVToRGBConverter* GetYUVToRGBConverter(
       const gfx::ColorSpace& color_space) override;
   void ForceReleaseVirtuallyCurrent() override;
+#if defined(OS_MACOSX)
+  uint64_t BackpressureFenceCreate() override;
+  void BackpressureFenceWait(uint64_t fence) override;
+#endif
 
  protected:
   ~GLContextVirtual() override;

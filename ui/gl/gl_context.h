@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "build/build_config.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_share_group.h"
@@ -192,6 +193,16 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // longer considered virtually current. The real context remains
   // current.
   virtual void ForceReleaseVirtuallyCurrent();
+
+#if defined(OS_MACOSX)
+  // Create a fence for all work submitted to this context so far, and return a
+  // monotonically increasing handle to it. This returned handle never needs to
+  // be freed. This method is used to create backpressure to throttle GL work
+  // on macOS, so that we do not starve CoreAnimation.
+  virtual uint64_t BackpressureFenceCreate();
+  // Perform a client-side wait on a previously-created fence.
+  virtual void BackpressureFenceWait(uint64_t fence);
+#endif
 
  protected:
   virtual ~GLContext();

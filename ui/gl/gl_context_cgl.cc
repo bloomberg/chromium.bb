@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -148,9 +149,9 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 }
 
 void GLContextCGL::Destroy() {
-  if (!yuv_to_rgb_converters_.empty()) {
+  if (!yuv_to_rgb_converters_.empty() || !backpressure_fences_.empty()) {
     // If this context is not current, bind this context's API so that the YUV
-    // converter can safely destruct
+    // converter and GLFences can safely destruct
     GLContext* current_context = GetRealCurrent();
     if (current_context != this) {
       SetCurrentGL(GetCurrentGL());
@@ -159,6 +160,7 @@ void GLContextCGL::Destroy() {
     ScopedCGLSetCurrentContext scoped_set_current(
         static_cast<CGLContextObj>(context_));
     yuv_to_rgb_converters_.clear();
+    backpressure_fences_.clear();
 
     // Rebind the current context's API if needed.
     if (current_context && current_context != this) {
@@ -232,6 +234,72 @@ YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter(
     yuv_to_rgb_converter =
         std::make_unique<YUVToRGBConverter>(*GetVersionInfo(), color_space);
   return yuv_to_rgb_converter.get();
+}
+
+// If the GLFence extensions are not supported or are unstable, fall back to
+// using a glFinish. Use this id to denote a fence that should be implemented
+// as glFinish.
+constexpr uint64_t kFinishFenceId = -1;
+
+uint64_t GLContextCGL::BackpressureFenceCreate() {
+  TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceCreate");
+  // TODO(ccameron): Remove this CHECK.
+  CHECK(CGLGetCurrentContext() == context_);
+  CHECK(context_);
+  if (gl::GLFence::IsSupported()) {
+    backpressure_fences_[next_backpressure_fence_] = GLFence::Create();
+    return next_backpressure_fence_++;
+  }
+  return kFinishFenceId;
+}
+
+void GLContextCGL::BackpressureFenceWait(uint64_t fence_id) {
+  TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceWait");
+  // TODO(ccameron): Remove this CHECK.
+  CHECK(CGLGetCurrentContext() == context_);
+  CHECK(context_);
+  if (fence_id == kFinishFenceId) {
+    glFinish();
+    return;
+  }
+
+  // If a fence is not found, then it has already been waited on.
+  auto found = backpressure_fences_.find(fence_id);
+  if (found == backpressure_fences_.end())
+    return;
+  std::unique_ptr<GLFence> fence = std::move(found->second);
+  backpressure_fences_.erase(found);
+
+  // While we could call GLFence::ClientWait, this performs a busy wait on
+  // Mac, leading to high CPU usage. Instead we poll with a 1ms delay. This
+  // should have minimal impact, as we will only hit this path when we are
+  // more than one frame (16ms) behind.
+  //
+  // Note that on some platforms (10.9), fences appear to sometimes get
+  // lost and will never pass. Add a 32ms timout to prevent these
+  // situations from causing a GPU process hang.
+  // https://crbug.com/618075
+  bool fence_completed = false;
+  for (int poll_iter = 0; !fence_completed && poll_iter < 32; ++poll_iter) {
+    if (poll_iter > 0) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+    }
+    {
+      TRACE_EVENT0("gpu", "GLFence::HasCompleted");
+      fence_completed = fence->HasCompleted();
+    }
+  }
+  if (!fence_completed) {
+    TRACE_EVENT0("gpu", "Finish");
+    // We timed out waiting for the above fence, just issue a glFinish.
+    glFinish();
+  }
+  fence.reset();
+
+  // Waiting on |fence_id| has implicitly waited on all previous fences, so
+  // remove them.
+  while (backpressure_fences_.begin()->first < fence_id)
+    backpressure_fences_.erase(backpressure_fences_.begin());
 }
 
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
