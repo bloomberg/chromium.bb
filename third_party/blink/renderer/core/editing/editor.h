@@ -30,7 +30,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_style.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -43,6 +42,7 @@ namespace blink {
 
 class CompositeEditCommand;
 class DragData;
+class EditingBehavior;
 class EditorCommand;
 class FrameSelection;
 class LocalFrame;
