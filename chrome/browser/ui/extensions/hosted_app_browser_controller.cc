@@ -122,7 +122,7 @@ bool HostedAppBrowserController::IsForHostedApp(const Browser* browser) {
 // static
 bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
     const Browser* browser) {
-  return base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
          IsForHostedApp(browser);
 }
 
@@ -162,7 +162,7 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
       // indicator of a Bookmark App for an installable website.
       created_for_installed_pwa_(
-          base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+          base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
           UrlHandlers::GetUrlHandlers(GetExtension())) {
   browser_->tab_strip_model()->AddObserver(this);
 }
