@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/cocoa/spinner_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/native_theme/native_theme.h"
 
 using cocoa_spinner_util::kDegrees90;

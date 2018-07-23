@@ -34,9 +34,6 @@
 #if defined(IsMinimized)
 #undef IsMinimized
 #endif
-#if defined(CreateWindow)
-#undef CreateWindow
-#endif
 #endif
 
 namespace base {

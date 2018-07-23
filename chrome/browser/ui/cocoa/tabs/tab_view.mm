@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/cocoa/cocoa_util.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -183,12 +184,6 @@ ui::ThreePartImage& GetStrokeImage(bool active, StrokeType stroke_type) {
     case STROKE_HEAVY_INVERTED:
       return heavyInvertedStroke;
   }
-}
-
-CGFloat LineWidthFromContext(CGContextRef context) {
-  CGRect unitRect = CGRectMake(0.0, 0.0, 1.0, 1.0);
-  CGRect deviceRect = CGContextConvertRectToDeviceSpace(context, unitRect);
-  return 1.0 / deviceRect.size.height;
 }
 
 }  // namespace
@@ -930,7 +925,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   }
 
   // The line width is always 1px.
-  CGFloat lineWidth = LineWidthFromContext(context);
+  CGFloat lineWidth = cocoa_util::LineWidthFromContext(context);
   [bezierPath setLineWidth:lineWidth];
 
   // Screen pixels lay between integral coordinates in user space. If you draw
@@ -972,7 +967,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
-  CGFloat lineWidth = LineWidthFromContext(context);
+  CGFloat lineWidth = cocoa_util::LineWidthFromContext(context);
 
   // Line width is always 1px.
   [middleEdgePath setLineWidth:lineWidth];
