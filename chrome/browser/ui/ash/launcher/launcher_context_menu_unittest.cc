@@ -344,6 +344,33 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   }
 }
 
+TEST_F(LauncherContextMenuTest, ArcLauncherSuspenedAppMenu) {
+  arc::mojom::AppInfo app = arc_test().fake_apps()[0];
+  app.suspended = true;
+  arc_test().app_instance()->RefreshAppList();
+  arc_test().app_instance()->SendRefreshAppList({app});
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  controller()->PinAppWithID(app_id);
+
+  const ash::ShelfID shelf_id(app_id);
+  const ash::ShelfItem* item = controller()->GetItem(shelf_id);
+  ASSERT_TRUE(item);
+  ash::ShelfItemDelegate* item_delegate =
+      model()->GetShelfItemDelegate(shelf_id);
+  ASSERT_TRUE(item_delegate);
+  EXPECT_TRUE(item_delegate->GetAppMenuItems(0 /* event_flags */).empty());
+
+  const int64_t display_id = GetPrimaryDisplay().id();
+  std::unique_ptr<ui::MenuModel> menu =
+      GetContextMenu(item_delegate, display_id);
+  ASSERT_TRUE(menu);
+
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
+}
+
 TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
   arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(

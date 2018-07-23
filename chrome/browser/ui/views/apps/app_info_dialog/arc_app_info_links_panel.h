@@ -38,10 +38,11 @@ class ArcAppInfoLinksPanel : public AppInfoPanel,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // ArcAppListPrefs::Observer:
-  void OnAppReadyChanged(const std::string& app_id, bool ready) override;
-  void OnAppRemoved(const std::string& app_id) override;
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppRemoved(const std::string& app_id) override;
 
   void UpdateLink(bool enabled);
 

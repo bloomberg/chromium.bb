@@ -61,22 +61,23 @@ void ArcAppInfoLinksPanel::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
-void ArcAppInfoLinksPanel::OnAppReadyChanged(const std::string& app_id,
-                                             bool ready) {
-  if (app_id == arc::kSettingsAppId)
-    UpdateLink(ready);
-}
-
-void ArcAppInfoLinksPanel::OnAppRemoved(const std::string& app_id) {
-  if (app_id == arc::kSettingsAppId)
-    UpdateLink(false);
-}
-
 void ArcAppInfoLinksPanel::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
   if (app_id == arc::kSettingsAppId)
     UpdateLink(app_info.ready);
+}
+
+void ArcAppInfoLinksPanel::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  if (app_id == arc::kSettingsAppId)
+    UpdateLink(app_info.ready);
+}
+
+void ArcAppInfoLinksPanel::OnAppRemoved(const std::string& app_id) {
+  if (app_id == arc::kSettingsAppId)
+    UpdateLink(false);
 }
 
 void ArcAppInfoLinksPanel::UpdateLink(bool enabled) {

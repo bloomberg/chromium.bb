@@ -242,11 +242,11 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
 }
 
-void ArcAppWindowLauncherController::OnAppReadyChanged(
-    const std::string& arc_app_id,
-    bool ready) {
-  if (!ready)
-    OnAppRemoved(arc_app_id);
+void ArcAppWindowLauncherController::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  if (!app_info.ready)
+    OnAppRemoved(app_id);
 }
 
 std::vector<int> ArcAppWindowLauncherController::GetTaskIdsForApp(

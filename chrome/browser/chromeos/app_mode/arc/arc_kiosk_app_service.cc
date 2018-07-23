@@ -58,8 +58,10 @@ void ArcKioskAppService::OnAppRegistered(
   PreconditionsChanged();
 }
 
-void ArcKioskAppService::OnAppReadyChanged(const std::string& id, bool ready) {
-  if (!app_id_.empty() && id != app_id_)
+void ArcKioskAppService::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  if (!app_id_.empty() && app_id != app_id_)
     return;
   PreconditionsChanged();
 }

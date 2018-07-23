@@ -37,17 +37,19 @@ class AndroidAppsHandler : public ::settings::SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
   // ArcAppListPrefs::Observer
-  void OnAppRemoved(const std::string& app_id) override;
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppRemoved(const std::string& app_id) override;
 
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
  private:
   std::unique_ptr<base::DictionaryValue> BuildAndroidAppsInfo();
-  void OnAppChanged(const std::string& app_id);
   void HandleRequestAndroidAppsInfo(const base::ListValue* args);
+  void HandleAppChanged(const std::string& app_id);
   void SendAndroidAppsInfo();
   void ShowAndroidAppsSettings(const base::ListValue* args);
   void ShowAndroidManageAppLinks(const base::ListValue* args);

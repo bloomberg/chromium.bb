@@ -69,7 +69,8 @@ class ArcAppListPrefs : public KeyedService,
             bool sticky,
             bool notifications_enabled,
             bool ready,
-            bool showInLauncher,
+            bool suspended,
+            bool show_in_launcher,
             bool shortcut,
             bool launchable);
     ~AppInfo();
@@ -81,11 +82,21 @@ class ArcAppListPrefs : public KeyedService,
     std::string icon_resource_id;
     base::Time last_launch_time;
     base::Time install_time;
+    // Whether app could not be uninstalled.
     bool sticky;
+    // Whether notifications are enabled for the app.
     bool notifications_enabled;
+    // Whether app is ready.
     bool ready;
-    bool showInLauncher;
+    // Whether app was suspended by policy. It may have or may not have ready
+    // state.
+    bool suspended;
+    // Whether app needs to be shown in launcher.
+    bool show_in_launcher;
+    // Whether app represents a shortcut.
     bool shortcut;
+    // Whether app can be launched. In some case we cannot launch an app because
+    // it requires parameters we might not provide.
     bool launchable;
   };
 
@@ -112,8 +123,9 @@ class ArcAppListPrefs : public KeyedService,
     // Notifies an observer that new app is registered.
     virtual void OnAppRegistered(const std::string& app_id,
                                  const AppInfo& app_info) {}
-    // Notifies an observer that app ready state has been changed.
-    virtual void OnAppReadyChanged(const std::string& id, bool ready) {}
+    // Notifies an observer that app states have been changed.
+    virtual void OnAppStatesChanged(const std::string& id,
+                                    const AppInfo& app_info) {}
     // Notifies an observer that app was removed.
     virtual void OnAppRemoved(const std::string& id) {}
     // Notifies an observer that app icon has been installed or updated.
@@ -357,14 +369,15 @@ class ArcAppListPrefs : public KeyedService,
                                                 bool installed) const;
 
   void AddApp(const arc::mojom::AppInfo& app_info);
-  void AddAppAndShortcut(bool app_ready,
-                         const std::string& name,
+  void AddAppAndShortcut(const std::string& name,
                          const std::string& package_name,
                          const std::string& activity,
                          const std::string& intent_uri,
                          const std::string& icon_resource_id,
                          const bool sticky,
                          const bool notifications_enabled,
+                         const bool app_ready,
+                         const bool suspended,
                          const bool shortcut,
                          const bool launchable);
   // Adds or updates local pref for given package.
@@ -431,8 +444,8 @@ class ArcAppListPrefs : public KeyedService,
 
   void ClearIconRequestRecord();
 
-  // Dispatches OnAppReadyChanged event to observers.
-  void NotifyAppReadyChanged(const std::string& app_id, bool ready);
+  // Dispatches OnAppStatesChanged event to observers.
+  void NotifyAppStatesChanged(const std::string& app_id);
 
   // Marks app icons as invalidated and request icons updated.
   void InvalidateAppIcons(const std::string& app_id);

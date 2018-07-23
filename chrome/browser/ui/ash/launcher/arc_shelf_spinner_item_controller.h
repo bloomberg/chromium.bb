@@ -32,8 +32,8 @@ class ArcShelfSpinnerItemController : public ShelfSpinnerItemController,
   void SetHost(const base::WeakPtr<ShelfSpinnerController>& host) override;
 
   // ArcAppListPrefs::Observer:
-  void OnAppReadyChanged(const std::string& changed_app_id,
-                         bool ready) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& removed_app_id) override;
 
   // arc::ArcSessionManager::Observer:

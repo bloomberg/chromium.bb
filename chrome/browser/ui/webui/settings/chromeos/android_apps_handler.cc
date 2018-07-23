@@ -57,14 +57,20 @@ void AndroidAppsHandler::OnJavascriptDisallowed() {
 void AndroidAppsHandler::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  OnAppChanged(app_id);
+  HandleAppChanged(app_id);
+}
+
+void AndroidAppsHandler::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  HandleAppChanged(app_id);
 }
 
 void AndroidAppsHandler::OnAppRemoved(const std::string& app_id) {
-  OnAppChanged(app_id);
+  HandleAppChanged(app_id);
 }
 
-void AndroidAppsHandler::OnAppChanged(const std::string& app_id) {
+void AndroidAppsHandler::HandleAppChanged(const std::string& app_id) {
   if (app_id != arc::kSettingsAppId)
     return;
   SendAndroidAppsInfo();

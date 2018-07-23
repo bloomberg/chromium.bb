@@ -59,7 +59,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                          aura::Window* lost_active) override;
 
   // ArcAppListPrefs::Observer:
-  void OnAppReadyChanged(const std::string& app_id, bool ready) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& app_id) override;
   void OnTaskCreated(int task_id,
                      const std::string& package_name,

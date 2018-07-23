@@ -35,14 +35,16 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
   // ArcAppListPrefs::Observer:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
-  void OnAppReadyChanged(const std::string& app_id, bool ready) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
 
   // Launches the app if ready to launch, recording the input user interaction.
   // If not ready to launch,
   void LaunchAppIfReady(arc::UserInteractionType interaction);
 
  private:
-  void LaunchApp();
+  bool MaybeLaunchApp(const std::string& app_id,
+                      const ArcAppListPrefs::AppInfo& app_info);
 
   // Unowned pointer.
   content::BrowserContext* context_;

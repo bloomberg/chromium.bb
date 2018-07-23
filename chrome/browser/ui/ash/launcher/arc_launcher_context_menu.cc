@@ -59,7 +59,7 @@ void ArcLauncherContextMenu::BuildMenu(
   }
 
   const bool app_is_open = controller()->IsOpen(item().id);
-  if (!app_is_open) {
+  if (!app_is_open && !app_info->suspended) {
     DCHECK(app_info->launchable);
     AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);

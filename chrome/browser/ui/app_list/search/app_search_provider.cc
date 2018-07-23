@@ -304,7 +304,7 @@ class ArcDataSource : public AppSearchProvider::DataSource,
         continue;
       }
 
-      if (!app_info->launchable || !app_info->showInLauncher)
+      if (!app_info->show_in_launcher)
         continue;
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
@@ -324,6 +324,11 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   // ArcAppListPrefs::Observer overrides:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override {
+    owner()->RefreshAppsAndUpdateResults(false);
+  }
+
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override {
     owner()->RefreshAppsAndUpdateResults(false);
   }
 
