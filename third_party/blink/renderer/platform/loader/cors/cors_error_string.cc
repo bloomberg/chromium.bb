@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
 
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -82,6 +83,7 @@ ErrorParameter ErrorParameter::CreateForAccessCheck(
     case network::mojom::CORSError::kInvalidAllowOriginValue:
     case network::mojom::CORSError::kAllowOriginMismatch:
     case network::mojom::CORSError::kInvalidAllowCredentials:
+    case network::mojom::CORSError::kCORSDisabledScheme:
     case network::mojom::CORSError::kPreflightWildcardOriginNotAllowed:
     case network::mojom::CORSError::kPreflightMissingAllowOriginHeader:
     case network::mojom::CORSError::kPreflightMultipleAllowOriginValues:
@@ -312,6 +314,10 @@ String GetErrorString(const ErrorParameter& param) {
                  "XMLHttpRequest is controlled by the withCredentials "
                  "attribute."
                : ""));
+    case CORSError::kCORSDisabledScheme:
+      return String::Format(
+          "Cross origin requests are only supported for protocol schemes: %s.",
+          SchemeRegistry::ListOfCORSEnabledURLSchemes().Ascii().data());
     case CORSError::kPreflightInvalidStatus:
       return String("Response for preflight does not have HTTP ok status.");
     case CORSError::kPreflightDisallowedRedirect:

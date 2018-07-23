@@ -1,15 +1,16 @@
+CONSOLE WARNING: line 8: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 CONSOLE ERROR: line 13: Failed to load mailto:foo@bar.com: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 CONSOLE ERROR: line 13: Failed to load mailto:foo@bar.com: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 CONSOLE ERROR: line 13: Failed to load localhost:8080/: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 CONSOLE ERROR: line 13: Failed to load localhost:8080/: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 CONSOLE ERROR: line 13: Failed to load tel:1234: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 CONSOLE ERROR: line 13: Failed to load tel:1234: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-CONSOLE ERROR: line 29: Failed to load mailto:foo@bar.com: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-CONSOLE ERROR: line 29: Failed to load mailto:foo@bar.com: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-CONSOLE ERROR: line 29: Failed to load localhost:8080/: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-CONSOLE ERROR: line 29: Failed to load localhost:8080/: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-CONSOLE ERROR: line 29: Failed to load tel:1234: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-CONSOLE ERROR: line 29: Failed to load tel:1234: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
+CONSOLE ERROR: Failed to load mailto:foo@bar.com: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
+CONSOLE ERROR: Failed to load mailto:foo@bar.com: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
+CONSOLE ERROR: Failed to load localhost:8080/: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
+CONSOLE ERROR: Failed to load localhost:8080/: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
+CONSOLE ERROR: Failed to load tel:1234: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
+CONSOLE ERROR: Failed to load tel:1234: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 This is a testharness.js-based test.
 PASS sync test for url=mailto:foo@bar.com, contentType=undefined
 PASS sync test for url=mailto:foo@bar.com, contentType=application/json
