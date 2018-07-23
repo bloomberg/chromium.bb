@@ -54,6 +54,8 @@ extern const char kSiteCharacteristicsDb_FaviconUpdateObservationWindow[];
 extern const char kSiteCharacteristicsDb_TitleUpdateObservationWindow[];
 extern const char kSiteCharacteristicsDb_AudioUsageObservationWindow[];
 extern const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[];
+extern const char kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod[];
+extern const char kSiteCharacteristicsDb_AudioUsageGracePeriod[];
 
 // Variation parameter names related to infinite session restore.
 extern const char kInfiniteSessionRestore_MinSimultaneousTabLoads[];
@@ -99,6 +101,10 @@ extern const base::TimeDelta
     kSiteCharacteristicsDb_AudioUsageObservationWindow_Default;
 extern const base::TimeDelta
     kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default;
+extern const base::TimeDelta
+    kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod_Default;
+extern const base::TimeDelta
+    kSiteCharacteristicsDb_AudioUsageGracePeriod_Default;
 
 // Default values for infinite session restore feature.
 extern const uint32_t kInfiniteSessionRestore_MinSimultaneousTabLoadsDefault;
@@ -220,6 +226,16 @@ struct SiteCharacteristicsDatabaseParams {
   // Minimum observation window before considering that this website doesn't
   // use notifications while in background.
   base::TimeDelta notifications_usage_observation_window;
+  // The period of time after loading during which we ignore title/favicon
+  // change events. It's possible for some site that are loaded in background to
+  // use some of these features without this being an attempt to communicate
+  // with the user (e.g. the tab is just really finishing to load).
+  base::TimeDelta title_or_favicon_change_grace_period;
+  // The period of time during which we ignore audio usage gets ignored after a
+  // tab gets backgrounded. It's necessary because there might be a delay
+  // between a media request gets initiated and the time the audio actually
+  // starts.
+  base::TimeDelta audio_usage_grace_period;
 };
 
 // Parameters used by the infinite session restore feature.

@@ -61,6 +61,14 @@ base::TimeDelta GetLongestObservationWindow() {
                    params.notifications_usage_observation_window});
 }
 
+// Returns the longest grace period.
+base::TimeDelta GetLongestGracePeriod() {
+  const SiteCharacteristicsDatabaseParams& params =
+      GetStaticSiteCharacteristicsDatabaseParams();
+  return std::max({params.title_or_favicon_change_grace_period,
+                   params.audio_usage_grace_period});
+}
+
 // Returns the SiteCharacteristicsProto that backs |reader|.
 const SiteCharacteristicsProto* GetSiteCharacteristicsProtoFromReader(
     SiteCharacteristicsDataReader* reader) {
@@ -209,6 +217,8 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     // Background the tab and reload it so the audio will stop playing if it's
     // still playing.
     GetActiveWebContents()->WasHidden();
+    test_clock_.Advance(
+        GetStaticSiteCharacteristicsDatabaseParams().audio_usage_grace_period);
   }
 
   // Ensure that the current tab is allowed to display non-persistent
@@ -220,6 +230,11 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
         CONTENT_SETTING_ALLOW);
 
     ExecuteScriptInMainFrame("RequestNotificationsPermission();");
+  }
+
+  void ExpireTitleOrFaviconGracePeriod() {
+    test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
+                            .title_or_favicon_change_grace_period);
   }
 
   base::SimpleTestTickClock& test_clock() { return test_clock_; }
@@ -410,7 +425,10 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
       &SiteCharacteristicsDataReader::UpdatesTitleInBackground,
       base::BindRepeating(
           &LocalSiteCharacteristicsDatabaseTest::ChangeTitleOfActiveWebContents,
-          base::Unretained(this)));
+          base::Unretained(this)),
+      base::BindRepeating(&LocalSiteCharacteristicsDatabaseTest::
+                              ExpireTitleOrFaviconGracePeriod,
+                          base::Unretained(this)));
 }
 
 // Test that the favicon update feature usage in background gets detected
@@ -421,6 +439,9 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
       &SiteCharacteristicsDataReader::UpdatesFaviconInBackground,
       base::BindRepeating(&LocalSiteCharacteristicsDatabaseTest::
                               ChangeFaviconOfActiveWebContents,
+                          base::Unretained(this)),
+      base::BindRepeating(&LocalSiteCharacteristicsDatabaseTest::
+                              ExpireTitleOrFaviconGracePeriod,
                           base::Unretained(this)));
 }
 
@@ -497,6 +518,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
   WaitForTransitionToLoaded(GetActiveWebContents());
   GetActiveWebContents()->WasHidden();
 
+  test_clock().Advance(GetLongestGracePeriod());
+
   // Cause the "title update in background" feature to be used.
   ChangeTitleOfActiveWebContents();
 
@@ -535,6 +558,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, PRE_ClearHistory) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   WaitForTransitionToLoaded(GetActiveWebContents());
   GetActiveWebContents()->WasHidden();
+
+  test_clock().Advance(GetLongestGracePeriod());
 
   // Cause the "title update in background" feature to be used.
   ChangeTitleOfActiveWebContents();

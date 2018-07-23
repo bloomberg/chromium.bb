@@ -5,11 +5,13 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 
 #include "base/macros.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
@@ -77,12 +79,14 @@ std::unique_ptr<KeyedService> BuildMockDataStoreForContext(
 class LocalSiteCharacteristicsWebContentsObserverTest
     : public testing::ChromeTestHarnessWithLocalDB {
  protected:
-  LocalSiteCharacteristicsWebContentsObserverTest() = default;
+  LocalSiteCharacteristicsWebContentsObserverTest()
+      : scoped_set_tick_clock_for_testing_(&test_clock_) {}
   ~LocalSiteCharacteristicsWebContentsObserverTest() override = default;
 
   void SetUp() override {
     testing::ChromeTestHarnessWithLocalDB::SetUp();
 
+    test_clock().Advance(base::TimeDelta::FromSeconds(1));
     // Set the testing factory for the test browser context.
     LocalSiteCharacteristicsDataStoreFactory::GetInstance()->SetTestingFactory(
         browser_context(), &BuildMockDataStoreForContext);
@@ -122,9 +126,13 @@ class LocalSiteCharacteristicsWebContentsObserverTest
             receiver_.GetNavigationIDForWebContents(web_contents()), ""};
   }
 
+  base::SimpleTestTickClock& test_clock() { return test_clock_; }
+
  private:
   std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver> observer_;
   PageSignalReceiver receiver_;
+  base::SimpleTestTickClock test_clock_;
+  ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsWebContentsObserverTest);
 };
@@ -169,6 +177,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   EXPECT_CALL(*mock_writer, OnDestroy());
 }
 
+// Test that the feature usage events get forwarded to the writer when the tab
+// is in background.
 TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
        FeatureEventsGetForwardedWhenInBackground) {
   MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
@@ -180,14 +190,16 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
-
   EXPECT_CALL(*mock_writer,
               NotifySiteVisibilityChanged(TabVisibility::kForeground));
+  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   web_contents()->WasShown();
+  observer()->OnLoadingStateChange(web_contents(),
+                                   TabLoadTracker::LoadingState::LOADING,
+                                   TabLoadTracker::LoadingState::LOADED);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  // Test that the feature usage events get forwarded to the writer when the
-  // tab is in background.
+  // Ensure that no event gets forwarded if the tab is not in background.
   observer()->DidUpdateFaviconURL({});
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->TitleWasSet(nullptr);
@@ -203,18 +215,44 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
+  // Notification usage events always get forwarded.
+  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
+  observer()->OnNonPersistentNotificationCreated(web_contents(),
+                                                 GetNavIdForWebContents());
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  auto params = GetStaticSiteCharacteristicsDatabaseParams();
+  // Title and Favicon should be ignored during the post-loading grace period.
+  observer()->DidUpdateFaviconURL({});
+  observer()->TitleWasSet(nullptr);
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  test_clock().Advance(params.title_or_favicon_change_grace_period);
+
   EXPECT_CALL(*mock_writer, NotifyUpdatesFaviconInBackground());
   observer()->DidUpdateFaviconURL({});
   ::testing::Mock::VerifyAndClear(mock_writer);
   EXPECT_CALL(*mock_writer, NotifyUpdatesTitleInBackground());
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  EXPECT_CALL(*mock_writer, NotifyUsesAudioInBackground());
+
+  // Brievly switch the tab to foreground to reset the last backgrounded time.
+  EXPECT_CALL(*mock_writer,
+              NotifySiteVisibilityChanged(TabVisibility::kForeground));
+  EXPECT_CALL(*mock_writer,
+              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+  web_contents()->WasShown();
+  web_contents()->WasHidden();
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  // Audio usage events should be ignored during the post-background grace
+  // period.
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents(),
-                                                 GetNavIdForWebContents());
+
+  test_clock().Advance(params.audio_usage_grace_period);
+  EXPECT_CALL(*mock_writer, NotifyUsesAudioInBackground());
+  observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -243,6 +281,23 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
+
+  EXPECT_CALL(*mock_writer, OnDestroy());
+}
+
+TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
+       NotificationEventsWhenLoadingInBackground) {
+  MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
+
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
+                                                   LoadingState::LOADING);
+
+  EXPECT_CALL(*mock_writer,
+              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+  web_contents()->WasHidden();
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
   observer()->OnNonPersistentNotificationCreated(web_contents(),
                                                  GetNavIdForWebContents());
   ::testing::Mock::VerifyAndClear(mock_writer);
