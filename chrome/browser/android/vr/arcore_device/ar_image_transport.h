@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/vr/renderers/web_vr_renderer.h"
+#include "chrome/browser/android/vr/arcore_device/ar_renderer.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -48,8 +48,7 @@ class ARImageTransport {
   void SetupHardwareBuffers();
   void ResizeSharedBuffer(const gfx::Size& size, SharedFrameBuffer* buffer);
   bool IsOnGlThread() const;
-  // TODO(https://crbug.com/838013): rename WebVRRenderer.
-  std::unique_ptr<vr::WebVrRenderer> web_vr_renderer_;
+  std::unique_ptr<ArRenderer> ar_renderer_;
   // samplerExternalOES texture data for WebXR content image.
   GLuint camera_texture_id_arcore_ = 0;
   GLuint camera_fbo_ = 0;

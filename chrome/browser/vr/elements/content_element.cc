@@ -8,7 +8,7 @@
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
-#include "chrome/browser/vr/vr_gl_util.h"
+#include "chrome/browser/vr/vr_geometry_util.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {

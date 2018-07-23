@@ -42,6 +42,7 @@
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_test_input.h"
+#include "chrome/browser/vr/vr_geometry_util.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
@@ -1412,7 +1413,7 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
     eye_info.view_matrix = eye_matrix * head_pose;
 
     const gfx::RectF& rect = GfxRectFromUV(vp.GetSourceUv());
-    eye_info.viewport = ui_->CalculatePixelSpaceRect(render_size, rect);
+    eye_info.viewport = vr::CalculatePixelSpaceRect(render_size, rect);
 
     eye_info.proj_matrix =
         PerspectiveMatrixFromView(vp.GetSourceFov(), kZNear, kZFar);

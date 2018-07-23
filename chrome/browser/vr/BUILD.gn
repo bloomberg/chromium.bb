@@ -20,6 +20,18 @@ buildflag_header("vr_build_features") {
   flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
 }
 
+source_set("vr_gl_utils") {
+  sources = [
+    "vr_gl_util.cc",
+    "vr_gl_util.h",
+  ]
+
+  deps = [
+    "//skia",
+    "//ui/gl/init",
+  ]
+}
+
 component("vr_common") {
   sources = [
     "animation.cc",
@@ -244,8 +256,8 @@ component("vr_common") {
     "ui_unsupported_mode.h",
     "vr_export.h",
     "vr_features.h",
-    "vr_gl_util.cc",
-    "vr_gl_util.h",
+    "vr_geometry_util.cc",
+    "vr_geometry_util.h",
   ]
 
   public_deps = [
@@ -254,6 +266,7 @@ component("vr_common") {
 
   deps = [
     ":vr_build_features",
+    ":vr_gl_utils",
     "//base",
     "//cc/animation",
     "//cc/paint",
@@ -330,7 +343,7 @@ test("vr_common_unittests") {
     "ui_input_manager_unittest.cc",
     "ui_scene_unittest.cc",
     "ui_unittest.cc",
-    "vr_gl_util_unittest.cc",
+    "vr_geometry_util_unittest.cc",
   ]
 
   # TODO(mthiesse, crbug.com/769373): The dependency on device/vr:fakes requires

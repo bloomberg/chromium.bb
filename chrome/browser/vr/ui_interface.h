@@ -91,8 +91,6 @@ class UiInterface : public BrowserUiInterface {
                          float yborder) = 0;
   virtual void DrawWebVrOverlayForeground(const RenderInfo&) = 0;
   virtual UiScene::Elements GetWebVrOverlayElementsToDraw() = 0;
-  virtual gfx::Rect CalculatePixelSpaceRect(const gfx::Size&,
-                                            const gfx::RectF&) = 0;
   virtual void HandleInput(base::TimeTicks current_time,
                            const RenderInfo& render_info,
                            const ControllerModel& controller_model,
