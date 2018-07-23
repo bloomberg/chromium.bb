@@ -126,20 +126,19 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
   bool FetchResource(const GURL& url) {
     if (!url.is_valid())
       return false;
-    std::string script(
+    std::string script = JsReplace(
         "var xhr = new XMLHttpRequest();"
-        "xhr.open('GET', '");
-    script += url.spec() +
-              "', true);"
-              "xhr.onload = function (e) {"
-              "  if (xhr.readyState === 4) {"
-              "    window.domAutomationController.send(xhr.status === 200);"
-              "  }"
-              "};"
-              "xhr.onerror = function () {"
-              "  window.domAutomationController.send(false);"
-              "};"
-              "xhr.send(null)";
+        "xhr.open('GET', $1, true);"
+        "xhr.onload = function (e) {"
+        "  if (xhr.readyState === 4) {"
+        "    window.domAutomationController.send(xhr.status === 200);"
+        "  }"
+        "};"
+        "xhr.onerror = function () {"
+        "  window.domAutomationController.send(false);"
+        "};"
+        "xhr.send(null);",
+        url);
     return ExecuteScript(script);
   }
 

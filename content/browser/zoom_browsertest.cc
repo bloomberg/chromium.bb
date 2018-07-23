@@ -95,13 +95,12 @@ double GetMainframeWindowBorder(const ToRenderFrameHost& adapter) {
 }
 
 double GetMainFrameZoomFactor(const ToRenderFrameHost& adapter, double border) {
-  const char kGetMainFrameZoomLevel[] =
-      "window.domAutomationController.send("
-      "(window.outerWidth - %f)/window.innerWidth"
-      ");";
   double zoom_factor;
   EXPECT_TRUE(ExecuteScriptAndExtractDouble(
-      adapter, base::StringPrintf(kGetMainFrameZoomLevel, border),
+      adapter,
+      JsReplace("window.domAutomationController.send("
+                "   (window.outerWidth - $1) / window.innerWidth);",
+                border),
       &zoom_factor));
   return zoom_factor;
 }
