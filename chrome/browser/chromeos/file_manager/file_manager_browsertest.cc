@@ -544,9 +544,9 @@ static const TestAccountInfo kTestAccounts[] = {
 };
 
 // Test fixture class for testing multi-profile features.
-class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
+class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
  public:
-  MultiProfileFileManagerBrowserTest() = default;
+  MultiProfileFilesAppBrowserTest() = default;
 
  protected:
   // Enables multi-profiles.
@@ -637,25 +637,25 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
  private:
   std::string test_case_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiProfileFileManagerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MultiProfileFilesAppBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFilesAppBrowserTest, PRE_BasicDownloads) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFilesAppBrowserTest, BasicDownloads) {
   AddAllUsers();
   // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDownloads");
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFilesAppBrowserTest, PRE_BasicDrive) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFilesAppBrowserTest, BasicDrive) {
   AddAllUsers();
   // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDrive");
