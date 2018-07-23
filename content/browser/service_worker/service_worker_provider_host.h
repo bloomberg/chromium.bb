@@ -361,12 +361,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerObjectHost> GetOrCreateServiceWorkerObjectHost(
       scoped_refptr<ServiceWorkerVersion> version);
 
-  // Returns true if |registration| can be associated with this provider.
-  bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
-
-  // For use by the ServiceWorkerControlleeRequestHandler to disallow
-  // new registration association while a navigation is occurring and
-  // an existing registration is being looked for.
+  // For use by the ServiceWorkerControlleeRequestHandler to disallow a
+  // registration claiming this host while its main resource request is
+  // occurring.
+  //
+  // TODO(crbug.com/866353): This should be unneccessary: registration code
+  // already avoids claiming clients that are not execution ready. However
+  // there may be edge cases with shared workers (pre-NetS13nServiceWorker) and
+  // about:blank iframes, since |is_execution_ready_| is initialized true for
+  // them. Try to remove this after S13nServiceWorker.
   void SetAllowAssociation(bool allow) { allow_association_ = allow; }
 
   // Returns true if the context referred to by this host (i.e. |context_|) is

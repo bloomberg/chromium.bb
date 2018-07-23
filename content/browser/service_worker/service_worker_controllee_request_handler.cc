@@ -319,8 +319,8 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // in redirect case, unassociate it now.
   provider_host_->DisassociateRegistration();
 
-  // Also prevent a register job from establishing an association to a new
-  // registration while we're finding an existing registration.
+  // Also prevent a registration from claiming this host while it's not
+  // yet execution ready.
   provider_host_->SetAllowAssociation(false);
 
   stripped_url_ = net::SimplifyUrlForRequest(url);
