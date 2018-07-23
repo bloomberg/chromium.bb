@@ -4143,9 +4143,14 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
   if (is_before_or_after) {
     const ComputedStyle* layout_parent_style = style;
     if (style->Display() == EDisplay::kContents) {
-      Node* layout_parent = LayoutTreeBuilderTraversal::LayoutParent(*this);
-      DCHECK(layout_parent);
-      layout_parent_style = layout_parent->GetComputedStyle();
+      // TODO(futhark@chromium.org): Calling getComputedStyle for elements
+      // outside the flat tree should return empty styles, but currently we do
+      // not. See issue https://crbug.com/831568. We can replace the if-test
+      // with DCHECK(layout_parent) when that issue is fixed.
+      if (Node* layout_parent =
+              LayoutTreeBuilderTraversal::LayoutParent(*this)) {
+        layout_parent_style = layout_parent->GetComputedStyle();
+      }
     }
     return GetDocument().EnsureStyleResolver().PseudoStyleForElement(
         this, request, style, layout_parent_style);
