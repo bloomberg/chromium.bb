@@ -32,7 +32,6 @@ component("ash") {
     "accelerators/accelerator_controller.h",
     "accelerators/accelerator_delegate.cc",
     "accelerators/accelerator_delegate.h",
-    "accelerators/accelerator_handler.h",
     "accelerators/accelerator_ids.h",
     "accelerators/accelerator_router.cc",
     "accelerators/accelerator_router.h",
