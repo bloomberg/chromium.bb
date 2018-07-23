@@ -18,6 +18,10 @@
 namespace gpu {
 namespace {
 
+// Put an arbitrary (high) limit on number of cache entries to prevent
+// unbounded handle growth with tiny entries.
+static size_t kMaxCacheEntries = 2000;
+
 size_t CacheSizeLimit() {
   size_t memory_usage = 128 * 1024 * 1024;
   if (base::SysInfo::IsLowEndDevice())
@@ -70,7 +74,9 @@ ServiceTransferCache::CacheEntryInternal::operator=(
     CacheEntryInternal&& other) = default;
 
 ServiceTransferCache::ServiceTransferCache()
-    : entries_(EntryCache::NO_AUTO_EVICT), cache_size_limit_(CacheSizeLimit()) {
+    : entries_(EntryCache::NO_AUTO_EVICT),
+      cache_size_limit_(CacheSizeLimit()),
+      max_cache_entries_(kMaxCacheEntries) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -154,7 +160,8 @@ cc::ServiceTransferCacheEntry* ServiceTransferCache::GetEntry(
 
 void ServiceTransferCache::EnforceLimits() {
   for (auto it = entries_.rbegin(); it != entries_.rend();) {
-    if (total_size_ <= cache_size_limit_) {
+    if (total_size_ <= cache_size_limit_ &&
+        entries_.size() <= max_cache_entries_) {
       return;
     }
     if (it->second.handle && !it->second.handle->Delete()) {

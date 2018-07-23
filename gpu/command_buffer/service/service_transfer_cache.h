@@ -62,6 +62,10 @@ class GPU_GLES2_EXPORT ServiceTransferCache
     cache_size_limit_ = cache_size_limit;
     EnforceLimits();
   }
+  void SetMaxCacheEntriesForTesting(size_t max_cache_entries) {
+    max_cache_entries_ = max_cache_entries;
+    EnforceLimits();
+  }
   size_t cache_size_for_testing() const { return total_size_; }
 
  private:
@@ -96,6 +100,9 @@ class GPU_GLES2_EXPORT ServiceTransferCache
 
   // The limit above which the cache will start evicting resources.
   size_t cache_size_limit_ = 0;
+
+  // The max number of entries we will hold in the cache.
+  size_t max_cache_entries_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTransferCache);
 };
