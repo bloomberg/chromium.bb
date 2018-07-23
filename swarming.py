@@ -633,6 +633,7 @@ def yield_results(
       # Adds a task to the thread pool to call 'retrieve_results' and return
       # the results together with shard_index that produced them (as a tuple).
       def enqueue_retrieve_results(shard_index, task_id):
+        # pylint: disable=no-value-for-parameter
         task_fn = lambda *args: (shard_index, retrieve_results(*args))
         pool.add_task(
             0, results_channel.wrap_task(task_fn), swarm_base_url, shard_index,
@@ -1006,7 +1007,7 @@ def add_trigger_options(parser):
 
   group = optparse.OptionGroup(parser, 'TaskRequest details')
   group.add_option(
-      '--priority', type='int', default=100,
+      '--priority', type='int', default=200,
       help='The lower value, the more important the task is')
   group.add_option(
       '-T', '--task-name', metavar='NAME',

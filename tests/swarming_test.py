@@ -160,7 +160,7 @@ def gen_result_response(**kwargs):
     u'server_versions': [u'1'],
     u'started_ts': u'2014-09-24T13:49:09.012345',
     u'state': 'COMPLETED',
-    u'tags': [u'cpu:x86', u'priority:100', u'user:joe@localhost'],
+    u'tags': [u'cpu:x86', u'priority:200', u'user:joe@localhost'],
     u'task_id': u'10100',
     u'try_number': 1,
     u'user': u'joe@localhost',
@@ -928,7 +928,7 @@ class TestMain(NetTestCase):
       'name': u'None/foo=bar',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
-      'priority': 100,
+      'priority': 200,
       'task_slices': [
         {
           'expiration_secs': 21600,
@@ -982,7 +982,7 @@ class TestMain(NetTestCase):
       'name': u'None/foo=bar/' + FILE_HASH,
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
-      'priority': 100,
+      'priority': 200,
       'task_slices': [
         {
           'expiration_secs': 21600,
@@ -1040,7 +1040,7 @@ class TestMain(NetTestCase):
       'name': u'None/foo=bar',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
-      'priority': 100,
+      'priority': 200,
       'task_slices': [
         {
           'expiration_secs': 21600,
@@ -1574,7 +1574,7 @@ class TestMain(NetTestCase):
     request = {
       'name': u'None/foo=bar',
       'parent_task_id': '',
-      'priority': 100,
+      'priority': 200,
       'pool_task_template': 'AUTO',
       'task_slices': [
         {
