@@ -209,8 +209,8 @@ PrivetNotificationService::PrivetNotificationService(
 }
 
 PrivetNotificationService::~PrivetNotificationService() {
-#if BUILDFLAG(ENABLE_MDNS)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if BUILDFLAG(ENABLE_MDNS)
   if (traffic_detector_)
     traffic_detector_->Stop();
 #endif
@@ -329,6 +329,10 @@ void PrivetNotificationService::Start() {
 
 void PrivetNotificationService::OnNotificationsEnabledChanged() {
 #if BUILDFLAG(ENABLE_MDNS)
+  if (traffic_detector_)
+    traffic_detector_->Stop();
+  traffic_detector_ = nullptr;
+
   if (IsForced()) {
     StartLister();
   } else if (*enable_privet_notification_member_) {
@@ -339,7 +343,6 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
             base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
     traffic_detector_->Start();
   } else {
-    traffic_detector_ = nullptr;
     device_lister_.reset();
     service_discovery_client_ = nullptr;
     privet_notifications_listener_.reset();
@@ -357,9 +360,6 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
 
 void PrivetNotificationService::StartLister() {
   ReportPrivetUmaEvent(PRIVET_LISTER_STARTED);
-#if BUILDFLAG(ENABLE_MDNS)
-  traffic_detector_ = nullptr;
-#endif  // ENABLE_MDNS
   service_discovery_client_ =
       local_discovery::ServiceDiscoverySharedClient::GetInstance();
   device_lister_.reset(
