@@ -388,7 +388,7 @@ void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
   DCHECK(needs_push_frame_);
   needs_push_frame_ = false;
   current_frame_damage_rect_.join(damage_rect);
-  if (current_frame_damage_rect_.isEmpty())
+  if (current_frame_damage_rect_.isEmpty() || !canvas_resource)
     return;
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   GetOrCreateResourceDispatcher()->DispatchFrame(std::move(canvas_resource),
