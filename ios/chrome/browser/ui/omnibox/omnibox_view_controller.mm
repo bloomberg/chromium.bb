@@ -85,6 +85,13 @@ const CGFloat kClearButtonSize = 28.0f;
   self.textField.placeholderTextColor = [self placeholderAndClearButtonColor];
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   [self setupClearButton];
+
+  // TODO(crbug.com/866446): Use UITextFieldDelegate instead.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(textFieldDidBeginEditing)
+             name:UITextFieldTextDidBeginEditingNotification
+           object:self.textField];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -120,6 +127,14 @@ const CGFloat kClearButtonSize = 28.0f;
 - (UIColor*)placeholderAndClearButtonColor {
   return self.incognito ? [UIColor colorWithWhite:1 alpha:0.5]
                         : [UIColor colorWithWhite:0 alpha:0.3];
+}
+
+#pragma mark notification callbacks
+
+// Called on UITextFieldTextDidBeginEditingNotification for self.textField.
+- (void)textFieldDidBeginEditing {
+  // Update the clear button state.
+  [self updateClearButtonVisibility];
 }
 
 #pragma mark clear button
