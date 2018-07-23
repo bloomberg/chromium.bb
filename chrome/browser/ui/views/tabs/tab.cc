@@ -272,7 +272,7 @@ gfx::Path GetRefreshInteriorPath(float scale,
   // Bottom left.
   left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
                   SkPath::kCW_Direction, left + corner_gap, bottom);
-  left_path.rLineTo(0, bottom_extension);
+  left_path.lineTo(left + corner_gap, extended_bottom);
 
   // Bottom/top edges of left side.
   left_path.lineTo(right, extended_bottom);
