@@ -30,6 +30,8 @@ message BackgroundFetchRegistration {
 //
 // Next Tag: 3
 message BackgroundFetchOptions {
+  // The initial title provided by the developer. This can be updated,
+  // and the most recent value is stored in BackgroundFetchUIOptions.
   optional string title = 1;
 
   // https://w3c.github.io/manifest/#dom-imageresource
@@ -66,7 +68,7 @@ message BackgroundFetchOptions {
 // in memory. This information should be everything needed to reconstruct
 // the state of an interrupted background fetch.
 //
-// Next Tag: 7
+// Next Tag: 6
 message BackgroundFetchMetadata {
   optional int64 creation_microseconds_since_unix_epoch = 1;
   optional string origin = 2;
@@ -76,10 +78,17 @@ message BackgroundFetchMetadata {
 
   // Number of fetches initiated by the developer.
   optional int32 num_fetches = 5;
+}
+
+// All the updateable options that show up in the UI (e.g. notification).
+//
+// Next Tag: 3
+message BackgroundFetchUIOptions {
+  optional string title = 1;
 
   // Raw bytes needed to deserialize into a PNG icon. Only used if the icon
   // has a max resolution of 256x256. This means this is at most ~256KB.
-  optional bytes icon = 6;
+  optional bytes icon = 2;
 }
 
 // A background fetch request that is still in a pending state.
