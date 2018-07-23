@@ -13,7 +13,8 @@ import("//build/config/sanitizers/sanitizers.gni")
 assert(is_android)
 
 # These identify targets that have .build_config files (except for android_apk,
-# java_binary, resource_rewriter, since we never need to depend on these).
+# java_binary, resource_rewriter, android_app_bundle since we never need to
+# depend on these).
 _java_target_whitelist = [
   "*:*_java",
   "*:*_javalib",
@@ -30,6 +31,7 @@ _java_target_whitelist = [
   "*:*_resources",
   "*:*_grd",
   "*:*locale_paks",
+  "*_module",
 
   # TODO(agrieve): Rename targets below to match above patterns.
   "*android_webview/glue:glue",
@@ -67,7 +69,8 @@ template("write_build_config") {
   # consider them in dependency chains.
   if (_type != "android_apk" && _type != "java_binary" &&
       _type != "resource_rewriter" && _type != "dist_jar" &&
-      _type != "java_annotation_processor" && _type != "dist_aar") {
+      _type != "java_annotation_processor" && _type != "dist_aar" &&
+      _type != "android_app_bundle") {
     set_sources_assignment_filter(_java_target_whitelist)
     _parent_invoker = invoker.invoker
     _target_label =
@@ -934,7 +937,7 @@ if (enable_java_templates) {
         "--output-path",
         rebase_path(_output_jar_path, root_build_dir),
         "--classpath",
-        "@FileArg($_rebased_build_config:android:sdk_jars)",
+        "@FileArg($_rebased_build_config:deps_info:proguard_classpath_jars)",
       ]
       if (proguard_verbose) {
         args += [ "--verbose" ]
@@ -2952,24 +2955,31 @@ if (enable_java_templates) {
                                "secondary_abi_loadable_modules",
                                "type",
                              ])
-      if (type == "android_apk") {
+      if (type == "android_apk" || type == "android_app_bundle_module") {
         forward_variables_from(
             invoker,
             [
               "android_manifest",
               "android_manifest_dep",
-              "apk_path",
-              "apk_under_test",
               "extra_shared_libraries",
               "final_dex_path",
-              "incremental_allowed",
-              "incremental_apk_path",
-              "incremental_install_json_path",
-              "proto_resources_path",
               "secondary_abi_shared_libraries_runtime_deps_file",
               "shared_libraries_runtime_deps_file",
               "uncompress_shared_libraries",
             ])
+      }
+      if (type == "android_apk") {
+        forward_variables_from(invoker,
+                               [
+                                 "apk_path",
+                                 "apk_under_test",
+                                 "incremental_allowed",
+                                 "incremental_apk_path",
+                                 "incremental_install_json_path",
+                               ])
+      }
+      if (type == "android_app_bundle_module") {
+        forward_variables_from(invoker, [ "proto_resources_path" ])
       }
       build_config = _build_config
       is_prebuilt = _is_prebuilt
@@ -3068,7 +3078,8 @@ if (enable_java_templates) {
       }
       if (_lint_enabled) {
         android_lint("${_main_target_name}__lint") {
-          if (invoker.type == "android_apk") {
+          if (invoker.type == "android_apk" ||
+              invoker.type == "android_app_bundle_module") {
             forward_variables_from(invoker, [ "android_manifest" ])
           } else if (defined(_android_manifest_for_lint)) {
             android_manifest = _android_manifest_for_lint
