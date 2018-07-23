@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import py_utils
 import logging
+
+import py_utils
 
 from page_sets.system_health import system_health_story
 from page_sets.system_health import story_tags

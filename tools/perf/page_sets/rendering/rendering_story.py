@@ -30,7 +30,7 @@ class RenderingStory(page.Page):
   URL = NotImplemented
   ABSTRACT_STORY = True
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
-  TAGS = None
+  TAGS =[]
   PLATFORM_SPECIFIC = False
   YEAR = None
 
@@ -42,10 +42,9 @@ class RenderingStory(page.Page):
                make_javascript_deterministic=True,
                base_dir=None):
     tags = []
-    if self.TAGS:
-      for t in self.TAGS:
-        assert t in story_tags.ALL_TAGS
-        tags.append(t.name)
+    for t in self.TAGS:
+      assert t in story_tags.ALL_TAGS
+      tags.append(t.name)
     name = self.BASE_NAME + name_suffix
     if self.YEAR:
       name += ('_' + self.YEAR)

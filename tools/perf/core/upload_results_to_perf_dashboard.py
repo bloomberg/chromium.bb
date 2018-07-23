@@ -42,8 +42,9 @@ def _GetDashboardJson(options):
   with open(options.results_file) as f:
     results = json.load(f)
   dashboard_json = {}
-  if not 'charts' in results:
+  if 'charts' not in results:
     # These are legacy results.
+    # pylint: disable=redefined-variable-type
     dashboard_json = results_dashboard.MakeListOfPoints(
       results, options.configuration_name, stripped_test_name,
       options.buildername, options.buildnumber, {},

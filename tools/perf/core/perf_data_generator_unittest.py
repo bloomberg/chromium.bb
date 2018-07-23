@@ -1,13 +1,13 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import json
 import unittest
 
 from core import perf_data_generator
 from core.perf_data_generator import BenchmarkMetadata
 
 import mock
-import json
 
 
 class PerfDataGeneratorTest(unittest.TestCase):

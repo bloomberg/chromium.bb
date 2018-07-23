@@ -4,8 +4,9 @@
 
 import logging
 import os
-import py_utils
 import time
+
+import py_utils
 
 from telemetry.page import legacy_page_test
 from telemetry.util import image_util

@@ -62,9 +62,11 @@ rm win_10_test_data.json
 """
 
 import argparse
-from collections import OrderedDict
-import core.path_util
+import collections
 import json
+import sys
+
+import core.path_util
 
 core.path_util.AddTelemetryToPath()
 
@@ -153,16 +155,16 @@ def generate_sharding_map(
       story_timing_ordered_dict, num_shards)
 
   total_time = 0
-  sharding_map = OrderedDict()
-  debug_map = OrderedDict()
-  min_shard_time = float('inf')
+  sharding_map = collections.OrderedDict()
+  debug_map = collections.OrderedDict()
+  min_shard_time = sys.maxint
   min_shard_index = None
   max_shard_time = 0
   max_shard_index = None
   num_stories = len(story_timing_ordered_dict)
   for i in range(num_shards):
-    sharding_map[str(i)] = {'benchmarks': OrderedDict()}
-    debug_map[str(i)] = OrderedDict()
+    sharding_map[str(i)] = {'benchmarks': collections.OrderedDict()}
+    debug_map[str(i)] = collections.OrderedDict()
     time_per_shard = 0
     stories_in_shard = []
     expected_total_time = expected_time_per_shard * (i + 1)
@@ -194,7 +196,7 @@ def generate_sharding_map(
       json.dump(debug_map, output_file, indent = 4, separators=(',', ': '))
 
 
-  sharding_map['extra_infos'] = OrderedDict([
+  sharding_map['extra_infos'] = collections.OrderedDict([
       ('num_stories', num_stories),
       # Double all the time stats by 2 to account for reference build.
       ('predicted_min_shard_time', min_shard_time * 2),
@@ -214,7 +216,7 @@ def _get_expected_time_per_shard(timing_data, num_shards):
 
 def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
     all_stories):
-  benchmarks = OrderedDict()
+  benchmarks = collections.OrderedDict()
   for story in stories_in_shard:
     (b, story) = story.split('/', 1)
     if b not in benchmarks:
@@ -222,7 +224,7 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
     benchmarks[b].append(story)
 
   # Format the benchmark's stories by indices
-  benchmarks_in_shard = OrderedDict()
+  benchmarks_in_shard = collections.OrderedDict()
   for b in benchmarks:
     benchmarks_in_shard[b] = {}
     first_story = all_stories[b].index(benchmarks[b][0])
@@ -251,7 +253,7 @@ def _load_timing_data_from_file(benchmarks_data, timing_data_file, repeat):
 
 
 def _init_timing_dict_for_benchmarks(benchmarks_data):
-  timing_data = OrderedDict()
+  timing_data = collections.OrderedDict()
   for b in benchmarks_data:
     story_list = benchmarks_data[b]['stories']
     for story in story_list:
@@ -260,20 +262,20 @@ def _init_timing_dict_for_benchmarks(benchmarks_data):
 
 
 def _generate_empty_sharding_map(num_shards):
-  sharding_map = OrderedDict()
+  sharding_map = collections.OrderedDict()
   for i in range(0, num_shards):
-    sharding_map[str(i)] = {'benchmarks': OrderedDict()}
+    sharding_map[str(i)] = {'benchmarks': collections.OrderedDict()}
   return sharding_map
 
 
 def test_sharding_map(sharding_map_file, timing_data, all_stories):
-  results = OrderedDict()
+  results = collections.OrderedDict()
 
   with open(sharding_map_file) as f:
-    sharding_map = json.load(f, object_pairs_hook=OrderedDict)
+    sharding_map = json.load(f, object_pairs_hook=collections.OrderedDict)
     sharding_map.pop('extra_infos', None)
     for shard in sharding_map:
-      results[shard] = OrderedDict()
+      results[shard] = collections.OrderedDict()
       shard_total_time = 0
       for benchmark_name in sharding_map[shard]['benchmarks']:
         benchmark = sharding_map[shard]['benchmarks'][benchmark_name]
