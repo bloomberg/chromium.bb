@@ -8,6 +8,8 @@ import json
 import logging
 import multiprocessing as mp
 import os
+from os import listdir
+from os.path import isfile, join, basename
 import shutil
 import sys
 import tempfile
@@ -18,8 +20,6 @@ from core import oauth_api
 from core import path_util
 from core import upload_results_to_perf_dashboard
 from core import results_merger
-from os import listdir
-from os.path import isfile, join, basename
 
 path_util.AddAndroidPylibToPath()
 

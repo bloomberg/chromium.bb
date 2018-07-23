@@ -11,7 +11,6 @@
 import calendar
 import datetime
 import httplib
-import httplib2
 import json
 import os
 import subprocess
@@ -24,11 +23,13 @@ import urllib2
 import uuid
 import zlib
 
+import httplib2
+
 from telemetry.internal.util import external_modules
 
-psutil = external_modules.ImportOptionalModule('psutil')
-
 from core import path_util
+
+psutil = external_modules.ImportOptionalModule('psutil')
 
 
 # The paths in the results dashboard URLs for sending results.

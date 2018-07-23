@@ -772,7 +772,7 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
 def _verify_benchmark_owners(benchmark_metadata):
   unowned_benchmarks = set()
   for benchmark_name in benchmark_metadata:
-    if benchmark_metadata[benchmark_name].emails == None:
+    if benchmark_metadata[benchmark_name].emails is None:
       unowned_benchmarks.add(benchmark_name)
 
   assert not unowned_benchmarks, (

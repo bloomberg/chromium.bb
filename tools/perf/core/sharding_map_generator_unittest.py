@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import OrderedDict
+import collections
 import copy
-from core import sharding_map_generator
 import json
 import os
 import tempfile
 import unittest
+
+from core import sharding_map_generator
 
 from py_utils import tempfile_ext
 
@@ -16,12 +17,12 @@ from py_utils import tempfile_ext
 class TestShardingMapGenerator(unittest.TestCase):
 
   def _init_sample_timing_data(self, times):
-    timing_data = OrderedDict()
+    timing_data = collections.OrderedDict()
     all_stories = {}
-    for i in range(len(times)):
+    for i, _ in enumerate(times):
       all_stories['benchmark_' + str(i)] = []
       story_times = times[i]
-      for j in range(len(story_times)):
+      for j, _ in enumerate(story_times):
         all_stories['benchmark_' + str(i)].append('story_' + str(j))
         timing_data['benchmark_' + str(i) + '/' + 'story_' + str(j)] = (
             story_times[j])

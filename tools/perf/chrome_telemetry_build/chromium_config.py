@@ -4,6 +4,7 @@
 
 import os
 
+# pylint: disable=wrong-import-position
 from core import path_util
 
 CLIENT_CONFIG_PATH = os.path.join(

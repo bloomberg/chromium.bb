@@ -15,6 +15,7 @@ from telemetry.wpr import archive_info
 from core import path_util
 import fetch_benchmark_deps
 
+
 def NormPaths(paths):
   return sorted([os.path.normcase(p) for p in paths.splitlines()])
 

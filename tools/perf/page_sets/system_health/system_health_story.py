@@ -54,17 +54,16 @@ class SystemHealthStory(page.Page):
   # flow during replay. Switch this to False when recording.
   SKIP_LOGIN = True
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
-  TAGS = None
+  TAGS = []
   PLATFORM_SPECIFIC = False
 
   def __init__(self, story_set, take_memory_measurement,
       extra_browser_args=None):
     case, group, _ = self.NAME.split(':')
     tags = []
-    if self.TAGS:
-      for t in self.TAGS:
-        assert t in story_tags.ALL_TAGS
-        tags.append(t.name)
+    for t in self.TAGS:  # pylint: disable=not-an-iterable
+      assert t in story_tags.ALL_TAGS
+      tags.append(t.name)
     super(SystemHealthStory, self).__init__(
         shared_page_state_class=_SystemHealthSharedState,
         page_set=story_set, name=self.NAME, url=self.URL, tags=tags,

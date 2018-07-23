@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from page_sets.login_helpers import google_login
 
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 
-import os
 
 def _DeterministicPerformanceCounters():
   with open(os.path.join(os.path.dirname(__file__),
