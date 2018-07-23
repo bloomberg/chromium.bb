@@ -88,6 +88,49 @@ bool IsImageOrVideoElement(const Element* element) {
     return true;
   return false;
 }
+
+bool ShouldForceLegacyLayout(const ComputedStyle& style,
+                             const Element& element) {
+  // Form controls are not supported yet.
+  if (element.ShouldForceLegacyLayout())
+    return true;
+
+  // TODO(layout-dev): Once LayoutNG handles inline content editable, we
+  // should get rid of following code fragment.
+  const Document& document = element.GetDocument();
+  if (style.UserModify() != EUserModify::kReadOnly || document.InDesignMode() ||
+      style.Display() == EDisplay::kWebkitBox ||
+      style.Display() == EDisplay::kWebkitInlineBox)
+    return true;
+
+  if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+    // Disable NG for the entire subtree if we're establishing a block
+    // fragmentation context.
+    if (style.SpecifiesColumns() ||
+        (style.IsOverflowPaged() &&
+         &element != document.ViewportDefiningElement()))
+      return true;
+    if (document.Printing()) {
+      // This needs to be discovered on the root element.
+      DCHECK_EQ(element, document.documentElement());
+      return true;
+    }
+  }
+
+  // The custom container is laid out by the legacy engine. Its children may
+  // not establish new formatting contexts, so we need to protect against
+  // re-entering LayoutNG there.
+  if (style.Display() == EDisplay::kLayoutCustom ||
+      style.Display() == EDisplay::kInlineLayoutCustom)
+    return true;
+
+  // 'text-combine-upright' property is not supported yet.
+  if (style.HasTextCombine() && !style.IsHorizontalWritingMode())
+    return true;
+
+  return false;
+}
+
 }  // namespace
 
 static EDisplay EquivalentBlockDisplay(EDisplay display) {
@@ -668,40 +711,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   }
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout() &&
-      element) {
-    const Document& document = element->GetDocument();
-    if (element->ShouldForceLegacyLayout()) {
-      // Form controls are not supported yet.
-      style.SetForceLegacyLayout(true);
-    } else if (style.UserModify() != EUserModify::kReadOnly ||
-               document.InDesignMode() ||
-               style.Display() == EDisplay::kWebkitBox ||
-               style.Display() == EDisplay::kWebkitInlineBox) {
-      // TODO(layout-dev): Once LayoutNG handles inline content editable, we
-      // should get rid of following code fragment.
-      style.SetForceLegacyLayout(true);
-
-    } else if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
-      // Disable NG for the entire subtree if we're establishing a block
-      // fragmentation context.
-      if (style.SpecifiesColumns() ||
-          (style.IsOverflowPaged() &&
-           element != document.ViewportDefiningElement())) {
-        style.SetForceLegacyLayout(true);
-      } else if (document.Printing()) {
-        // This needs to be discovered on the root element.
-        DCHECK_EQ(element, document.documentElement());
-        style.SetForceLegacyLayout(true);
-      }
-    }
-    if (!style.ForceLegacyLayout()) {
-      // The custom container is laid out by the legacy engine. Its children may
-      // not establish new formatting contexts, so we need to protect against
-      // re-entering LayoutNG there.
-      if (style.Display() == EDisplay::kLayoutCustom ||
-          style.Display() == EDisplay::kInlineLayoutCustom)
-        style.SetForceLegacyLayout(true);
-    }
+      element && ShouldForceLegacyLayout(style, *element)) {
+    style.SetForceLegacyLayout(true);
   }
 
   // If intrinsically sized images or videos are disallowed by feature policy,
