@@ -68,10 +68,6 @@ component("fido") {
     "fido_device_authenticator.h",
     "fido_discovery.cc",
     "fido_discovery.h",
-    "fido_hid_message.cc",
-    "fido_hid_message.h",
-    "fido_hid_packet.cc",
-    "fido_hid_packet.h",
     "fido_parsing_utils.cc",
     "fido_parsing_utils.h",
     "fido_request_handler.h",
@@ -84,6 +80,10 @@ component("fido") {
     "get_assertion_request_handler.h",
     "get_assertion_task.cc",
     "get_assertion_task.h",
+    "hid/fido_hid_message.cc",
+    "hid/fido_hid_message.h",
+    "hid/fido_hid_packet.cc",
+    "hid/fido_hid_packet.h",
     "make_credential_request_handler.cc",
     "make_credential_request_handler.h",
     "make_credential_task.cc",
@@ -141,10 +141,10 @@ component("fido") {
   # HID is not supported on Android.
   if (!is_android) {
     sources += [
-      "fido_hid_device.cc",
-      "fido_hid_device.h",
-      "fido_hid_discovery.cc",
-      "fido_hid_discovery.h",
+      "hid/fido_hid_device.cc",
+      "hid/fido_hid_device.h",
+      "hid/fido_hid_discovery.cc",
+      "hid/fido_hid_discovery.h",
     ]
 
     deps += [
@@ -205,7 +205,7 @@ source_set("mocks") {
 
 fuzzer_test("fido_hid_message_fuzzer") {
   sources = [
-    "fido_hid_message_fuzzer.cc",
+    "hid/fido_hid_message_fuzzer.cc",
   ]
   deps = [
     ":fido",
@@ -272,8 +272,8 @@ source_set("test_support") {
   # Android doesn't compile. Linux requires udev.
   if (!is_linux_without_udev && !is_android) {
     sources += [
-      "fake_hid_impl_for_testing.cc",
-      "fake_hid_impl_for_testing.h",
+      "hid/fake_hid_impl_for_testing.cc",
+      "hid/fake_hid_impl_for_testing.h",
     ]
   }
 }

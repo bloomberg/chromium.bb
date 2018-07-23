@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_hid_device.h"
+#include "device/fido/hid/fido_hid_device.h"
 
 #include <memory>
 #include <tuple>
@@ -14,9 +14,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/test_callback_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -256,13 +256,12 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
 
   EXPECT_CALL(mock_connection, ReadPtr(_))
       // First response to HID_INIT request with an incorrect nonce.
-      .WillOnce(
-          Invoke([kIncorrectNonce, &mock_connection](auto* cb) {
-            std::move(*cb).Run(
-                true, 0,
-                CreateMockInitResponse(
-                    kIncorrectNonce, mock_connection.connection_channel_id()));
-          }))
+      .WillOnce(Invoke([kIncorrectNonce, &mock_connection](auto* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockInitResponse(kIncorrectNonce,
+                                   mock_connection.connection_channel_id()));
+      }))
       // Second response to HID_INIT request with a correct nonce.
       .WillOnce(Invoke(
           [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FAKE_HID_IMPL_FOR_TESTING_H_
-#define DEVICE_FIDO_FAKE_HID_IMPL_FOR_TESTING_H_
+#ifndef DEVICE_FIDO_HID_FAKE_HID_IMPL_FOR_TESTING_H_
+#define DEVICE_FIDO_HID_FAKE_HID_IMPL_FOR_TESTING_H_
 
 #include <map>
 #include <string>
@@ -120,4 +120,4 @@ class FakeHidManager : public device::mojom::HidManager {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FAKE_HID_IMPL_FOR_TESTING_H_
+#endif  // DEVICE_FIDO_HID_FAKE_HID_IMPL_FOR_TESTING_H_

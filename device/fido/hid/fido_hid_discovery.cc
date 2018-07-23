@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_hid_discovery.h"
+#include "device/fido/hid/fido_hid_discovery.h"
 
 #include <utility>
 
-#include "device/fido/fido_hid_device.h"
+#include "device/fido/hid/fido_hid_device.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

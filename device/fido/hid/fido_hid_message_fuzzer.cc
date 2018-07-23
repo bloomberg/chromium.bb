@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "device/fido/fido_hid_message.h"
+#include "device/fido/hid/fido_hid_message.h"
 
 namespace device {
 

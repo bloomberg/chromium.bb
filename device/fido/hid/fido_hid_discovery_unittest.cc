@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_hid_discovery.h"
+#include "device/fido/hid/fido_hid_discovery.h"
 
 #include <string>
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
-#include "device/fido/fake_hid_impl_for_testing.h"
-#include "device/fido/fido_hid_device.h"
+#include "device/fido/hid/fake_hid_impl_for_testing.h"
+#include "device/fido/hid/fido_hid_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
