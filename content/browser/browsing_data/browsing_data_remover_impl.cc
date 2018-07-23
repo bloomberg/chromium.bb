@@ -303,7 +303,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     network::mojom::ClearDataFilterPtr service_filter =
         filter_builder.BuildNetworkServiceFilter();
-    DCHECK(service_filter->origins.empty())
+    DCHECK(!service_filter || service_filter->origins.empty())
         << "Origin-based deletion is not suitable for channel IDs.";
 
     BrowserContext::GetDefaultStoragePartition(browser_context_)

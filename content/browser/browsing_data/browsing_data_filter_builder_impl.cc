@@ -128,6 +128,8 @@ BrowsingDataFilterBuilderImpl::BuildGeneralFilter() const {
 
 network::mojom::ClearDataFilterPtr
 BrowsingDataFilterBuilderImpl::BuildNetworkServiceFilter() const {
+  if (IsEmptyBlacklist())
+    return nullptr;
   network::mojom::ClearDataFilterPtr filter =
       network::mojom::ClearDataFilter::New();
   filter->type = (mode_ == Mode::WHITELIST)
