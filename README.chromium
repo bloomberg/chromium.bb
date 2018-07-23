@@ -260,3 +260,8 @@ D. Local Modifications
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-13852
 
+11. Align memory buffer used in Decimal Format
+
+  - patches/decimalformat_align.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20039
