@@ -20,7 +20,6 @@ class GLSurface;
 
 namespace gpu {
 class GpuDriverBugWorkarounds;
-class GpuProcessActivityFlags;
 class ServiceTransferCache;
 
 namespace raster {
@@ -34,8 +33,7 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
                             scoped_refptr<gl::GLContext> context,
                             bool use_virtualized_gl_contexts);
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
-                           GrContextOptions::PersistentCache* cache,
-                           GpuProcessActivityFlags* activity_flags = nullptr);
+                           GrContextOptions::PersistentCache* cache);
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
