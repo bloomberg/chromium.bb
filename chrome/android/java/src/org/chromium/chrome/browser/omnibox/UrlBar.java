@@ -40,7 +40,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.UiUtils;
 
@@ -164,10 +163,10 @@ public class UrlBar extends AutocompleteEditText {
      */
     public interface UrlBarDelegate {
         /**
-         * @return The current active {@link Tab}. May be null.
+         * @return The view to be focused on a backward focus traversal.
          */
         @Nullable
-        Tab getCurrentTab();
+        View getViewForUrlBackFocus();
 
         /**
          * @return Whether the keyboard should be allowed to learn from the user input.
@@ -396,9 +395,8 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public View focusSearch(int direction) {
-        if (direction == View.FOCUS_BACKWARD && mUrlBarDelegate.getCurrentTab() != null
-                && mUrlBarDelegate.getCurrentTab().getView() != null) {
-            return mUrlBarDelegate.getCurrentTab().getView();
+        if (direction == View.FOCUS_BACKWARD && mUrlBarDelegate.getViewForUrlBackFocus() != null) {
+            return mUrlBarDelegate.getViewForUrlBackFocus();
         } else {
             return super.focusSearch(direction);
         }
