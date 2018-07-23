@@ -120,15 +120,16 @@ class CanvasRenderingContext2DTest : public PageTestBase {
     return CanvasElement().GetGPUMemoryUsage();
   }
   void DrawSomething() {
-    CanvasElement().DidDraw();
-    CanvasElement().FinalizeFrame();
+    Canvas2DLayerBridge* bridge = CanvasElement().GetCanvas2DLayerBridge();
+    bridge->DidDraw(FloatRect(0, 0, 1, 1));
+    bridge->FinalizeFrame();
     // Grabbing an image forces a flush
-    CanvasElement().CopiedImage(kBackBuffer, kPreferAcceleration);
+    bridge->NewImageSnapshot(kPreferAcceleration);
   }
 
-  enum LatencyMode { kNormalLatency, kLowLatency };
-
-  void CreateContext(OpacityMode, LatencyMode = kNormalLatency);
+  void CreateContext(OpacityMode,
+                     String color_space = String(),
+                     LinearPixelMathState = kLinearPixelMathDisabled);
   ScriptState* GetScriptState() {
     return ToScriptStateForMainWorld(canvas_element_->GetFrame());
   }
@@ -184,12 +185,19 @@ CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
       opaque_bitmap_(IntSize(10, 10), kOpaqueBitmap),
       alpha_bitmap_(IntSize(10, 10), kTransparentBitmap) {}
 
-void CanvasRenderingContext2DTest::CreateContext(OpacityMode opacity_mode,
-                                                 LatencyMode latency_mode) {
+void CanvasRenderingContext2DTest::CreateContext(
+    OpacityMode opacity_mode,
+    String color_space,
+    LinearPixelMathState LinearPixelMath_state) {
   String canvas_type("2d");
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = opacity_mode == kNonOpaque;
-  attributes.low_latency = latency_mode == kLowLatency;
+  if (!color_space.IsEmpty()) {
+    attributes.color_space = color_space;
+    if (LinearPixelMath_state == kLinearPixelMathEnabled) {
+      attributes.pixel_format = "float16";
+    }
+  }
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
 }
 
@@ -1199,24 +1207,6 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
 
   // Never hibernate a canvas with no resource provider
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
-}
-
-TEST_F(CanvasRenderingContext2DTest, LowLatencyIsSingleBuffered) {
-  CreateContext(kNonOpaque, kLowLatency);
-  // No need to set-up the layer bridge when testing low latency mode.
-  DrawSomething();
-  auto frame1_resource =
-      CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
-          ->ProduceFrame();
-  EXPECT_TRUE(!!frame1_resource);
-  DrawSomething();
-  auto frame2_resource =
-      CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
-          ->ProduceFrame();
-  EXPECT_TRUE(!!frame2_resource);
-  EXPECT_EQ(frame1_resource.get(), frame2_resource.get());
 }
 
 }  // namespace blink
