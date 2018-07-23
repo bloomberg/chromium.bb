@@ -149,6 +149,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
@@ -1152,6 +1153,12 @@ void CopyFeatureSwitch(const base::CommandLine& src,
     dest->AppendSwitchASCII(switch_name, base::JoinString(features, ","));
 }
 
+void GetNetworkChangeManager(
+    network::mojom::NetworkChangeManagerRequest request) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GetNetworkService()->GetNetworkChangeManager(std::move(request));
+}
+
 }  // namespace
 
 // Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
@@ -2057,6 +2064,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  AddUIThreadInterface(registry.get(),
+                       base::BindRepeating(&GetNetworkChangeManager));
 
   // ---- Please do not register interfaces below this line ------
   //

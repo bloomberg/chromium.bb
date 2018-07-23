@@ -226,16 +226,6 @@
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/0
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/1
 
-# http://crbug.com/784576
-# Convert ExtensionRequestLimitingThrottle into a URLLoaderThrottle.
--ExtensionRequestLimitingThrottleBrowserTest.DoNotThrottleCachedResponse
--ExtensionRequestLimitingThrottleBrowserTest.DoNotThrottleCachedResponse_NonRedirectCached
--ExtensionRequestLimitingThrottleBrowserTest.DoNotThrottleCachedResponse_Redirect
--ExtensionRequestLimitingThrottleBrowserTest.ThrottleRequest
--ExtensionRequestLimitingThrottleBrowserTest.ThrottleRequest_Redirect
--ExtensionRequestLimitingThrottleBrowserTest.ThrottleRequest_RedirectCached
--ExtensionRequestLimitingThrottleCommandLineBrowserTest.ThrottleRequestDisabled
-
 # Switch test from using a custom net::URLRequestFileJob to using a test
 # URLLoaderFactory via SetNetworkFactoryForTesting.
 -ErrorPageSniffTest.SniffSmallHttpErrorResponseAsDownload

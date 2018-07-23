@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/extension_throttle_manager.h"
+#include "extensions/renderer/extension_throttle_manager.h"
 
 #include <utility>
 
@@ -10,13 +10,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "extensions/browser/extension_request_limiting_throttle.h"
 #include "extensions/common/constants.h"
+#include "extensions/renderer/extension_url_loader_throttle.h"
 #include "net/base/url_util.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_event_type.h"
-#include "net/log/net_log_source_type.h"
-#include "net/url_request/url_request.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace extensions {
 
@@ -25,20 +23,15 @@ const unsigned int ExtensionThrottleManager::kRequestsBetweenCollecting = 200;
 
 ExtensionThrottleManager::ExtensionThrottleManager()
     : requests_since_last_gc_(0),
-      registered_from_thread_(base::kInvalidThreadId),
       ignore_user_gesture_load_flag_for_tests_(false) {
   url_id_replacements_.ClearPassword();
   url_id_replacements_.ClearUsername();
   url_id_replacements_.ClearQuery();
   url_id_replacements_.ClearRef();
-
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 ExtensionThrottleManager::~ExtensionThrottleManager() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-
+  base::AutoLock auto_lock(lock_);
   // Since the manager object might conceivably go away before the
   // entries, detach the entries' back-pointer to the manager.
   UrlEntryMap::iterator i = url_entries_.begin();
@@ -53,18 +46,17 @@ ExtensionThrottleManager::~ExtensionThrottleManager() {
   url_entries_.clear();
 }
 
-std::unique_ptr<content::ResourceThrottle>
-ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
-  if (request->site_for_cookies().scheme() != extensions::kExtensionScheme) {
+std::unique_ptr<content::URLLoaderThrottle>
+ExtensionThrottleManager::MaybeCreateURLLoaderThrottle(
+    const blink::WebURLRequest& request) {
+  if (!request.SiteForCookies().ProtocolIs(extensions::kExtensionScheme))
     return nullptr;
-  }
-  return std::make_unique<extensions::ExtensionRequestLimitingThrottle>(request,
-                                                                        this);
+  return std::make_unique<ExtensionURLLoaderThrottle>(this);
 }
 
 scoped_refptr<ExtensionThrottleEntryInterface>
 ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Internal function, no locking.
 
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
@@ -108,14 +100,49 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
   return entry;
 }
 
+bool ExtensionThrottleManager::ShouldRejectRequest(const GURL& request_url,
+                                                   int request_load_flags) {
+  base::AutoLock auto_lock(lock_);
+  return RegisterRequestUrl(request_url)
+      ->ShouldRejectRequest(request_load_flags);
+}
+
+bool ExtensionThrottleManager::ShouldRejectRedirect(
+    const GURL& request_url,
+    int request_load_flags,
+    const net::RedirectInfo& redirect_info) {
+  {
+    base::AutoLock auto_lock(lock_);
+    const std::string url_id = GetIdFromUrl(request_url);
+    scoped_refptr<ExtensionThrottleEntry>& entry = url_entries_[url_id];
+    DCHECK(entry);
+    entry->UpdateWithResponse(redirect_info.status_code);
+  }
+  return ShouldRejectRequest(redirect_info.new_url, request_load_flags);
+}
+
+void ExtensionThrottleManager::WillProcessResponse(
+    const GURL& response_url,
+    const network::ResourceResponseHead& response_head) {
+  if (response_head.network_accessed) {
+    base::AutoLock auto_lock(lock_);
+    const std::string url_id = GetIdFromUrl(response_url);
+    scoped_refptr<ExtensionThrottleEntry>& entry = url_entries_[url_id];
+    DCHECK(entry);
+    entry->UpdateWithResponse(response_head.headers->response_code());
+  }
+}
+
 void ExtensionThrottleManager::SetBackoffPolicyForTests(
     std::unique_ptr<net::BackoffEntry::Policy> policy) {
+  base::AutoLock auto_lock(lock_);
   backoff_policy_for_tests_ = std::move(policy);
 }
 
 void ExtensionThrottleManager::OverrideEntryForTests(
     const GURL& url,
     ExtensionThrottleEntry* entry) {
+  base::AutoLock auto_lock(lock_);
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
 
@@ -126,6 +153,7 @@ void ExtensionThrottleManager::OverrideEntryForTests(
 }
 
 void ExtensionThrottleManager::EraseEntryForTests(const GURL& url) {
+  base::AutoLock auto_lock(lock_);
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
   url_entries_.erase(url_id);
@@ -133,11 +161,11 @@ void ExtensionThrottleManager::EraseEntryForTests(const GURL& url) {
 
 void ExtensionThrottleManager::SetIgnoreUserGestureLoadFlagForTests(
     bool ignore_user_gesture_load_flag_for_tests) {
+  base::AutoLock auto_lock(lock_);
   ignore_user_gesture_load_flag_for_tests_ = true;
 }
 
-void ExtensionThrottleManager::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void ExtensionThrottleManager::SetOnline(bool is_online) {
   // When we switch from online to offline or change IP addresses, we
   // clear all back-off history. This is a precaution in case the change in
   // online state now lets us communicate without error with servers that
@@ -149,6 +177,7 @@ void ExtensionThrottleManager::OnNetworkChanged(
   // to will live until those requests end, and these entries may be
   // inconsistent with new entries for the same URLs, but since what we
   // want is a clean slate for the new connection type, this is OK.
+  base::AutoLock auto_lock(lock_);
   url_entries_.clear();
   requests_since_last_gc_ = 0;
 }

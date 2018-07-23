@@ -28,7 +28,6 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "extensions/buildflags/buildflags.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/net_buildflags.h"
@@ -61,7 +60,6 @@ class DomainReliabilityMonitor;
 }
 
 namespace extensions {
-class ExtensionThrottleManager;
 class InfoMap;
 }
 
@@ -155,7 +153,6 @@ class ProfileIOData {
   // with a content::ResourceContext, and they want access to Chrome data for
   // that profile.
   extensions::InfoMap* GetExtensionInfoMap() const;
-  extensions::ExtensionThrottleManager* GetExtensionThrottleManager() const;
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
@@ -612,12 +609,6 @@ class ProfileIOData {
   mutable scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Is NULL if switches::kDisableExtensionsHttpThrottling is on.
-  mutable std::unique_ptr<extensions::ExtensionThrottleManager>
-      extension_throttle_manager_;
-#endif
 
   // Owned by the ChromeNetworkDelegate, which is owned (possibly with one or
   // more layers of LayeredNetworkDelegate) by the URLRequestContext, which is

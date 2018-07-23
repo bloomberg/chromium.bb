@@ -26,6 +26,7 @@ class AwURLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
       int render_frame_id,
       const blink::WebURLRequest& request,
       content::ResourceType resource_type) override;
+  void SetOnline(bool is_online) override;
 
  private:
   // This copy constructor works in conjunction with Clone(), not intended for

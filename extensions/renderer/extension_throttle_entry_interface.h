@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_INTERFACE_H_
-#define EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_INTERFACE_H_
+#ifndef EXTENSIONS_RENDERER_EXTENSION_THROTTLE_ENTRY_INTERFACE_H_
+#define EXTENSIONS_RENDERER_EXTENSION_THROTTLE_ENTRY_INTERFACE_H_
 
 #include <stdint.h>
 
@@ -12,11 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "net/base/net_export.h"
-
-namespace net {
-class URLRequest;
-}  // namespace net
 
 namespace extensions {
 
@@ -27,13 +22,15 @@ class ExtensionThrottleEntryInterface
   ExtensionThrottleEntryInterface() {}
 
   // Returns true when we have encountered server errors and are doing
-  // exponential back-off, unless the request has load flags that mean
-  // it is likely to be user-initiated, or the NetworkDelegate returns
+  // exponential back-off, unless |request_load_flags| indicates the
+  // request is likely to be user-initiated, or the NetworkDelegate returns
   // false for |CanThrottleRequest(request)|.
   //
   // URLRequestHttpJob checks this method prior to every request; it
   // cancels requests if this method returns true.
-  virtual bool ShouldRejectRequest(const net::URLRequest& request) const = 0;
+  //
+  // Note: See load_flags.h for more detail on |request_load_flags|.
+  virtual bool ShouldRejectRequest(int request_load_flags) const = 0;
 
   // Calculates a recommended sending time for the next request and reserves it.
   // The sending time is not earlier than the current exponential back-off
@@ -75,4 +72,4 @@ class ExtensionThrottleEntryInterface
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_INTERFACE_H_
+#endif  // EXTENSIONS_RENDERER_EXTENSION_THROTTLE_ENTRY_INTERFACE_H_

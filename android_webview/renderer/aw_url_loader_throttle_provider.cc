@@ -82,4 +82,6 @@ AwURLLoaderThrottleProvider::CreateThrottles(
   return throttles;
 }
 
+void AwURLLoaderThrottleProvider::SetOnline(bool is_online) {}
+
 }  // namespace android_webview
