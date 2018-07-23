@@ -76,8 +76,9 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
 
 void BeginFrameProvider::RequestBeginFrame() {
   requested_needs_begin_frame_ = true;
-  if (needs_begin_frame_)
+  if (needs_begin_frame_) {
     return;
+  }
 
   CreateCompositorFrameSinkIfNeeded();
 
@@ -87,11 +88,10 @@ void BeginFrameProvider::RequestBeginFrame() {
 
 void BeginFrameProvider::OnBeginFrame(const viz::BeginFrameArgs& args) {
   // If there was no need for a BeginFrame, just skip it.
-  if (needs_begin_frame_) {
+  if (needs_begin_frame_ && requested_needs_begin_frame_) {
     requested_needs_begin_frame_ = false;
-
     begin_frame_client_->BeginFrame();
-
+  } else {
     if (!requested_needs_begin_frame_) {
       needs_begin_frame_ = false;
       compositor_frame_sink_->SetNeedsBeginFrame(false);

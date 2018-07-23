@@ -124,6 +124,9 @@ enum class TaskType : unsigned {
   // The task runner may be throttled.
   kMiscPlatformAPI = 22,
 
+  // Tasks used for DedicatedWorker's requestAnimationFrame.
+  kWorkerAnimation = 51,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -194,7 +197,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 51,
+  kCount = 52,
 };
 
 }  // namespace blink

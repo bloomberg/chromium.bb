@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -15,7 +16,9 @@ WorkerAnimationFrameProvider::WorkerAnimationFrameProvider(
     : begin_frame_provider_(
           std::make_unique<BeginFrameProvider>(begin_frame_provider_params,
                                                this)),
-      callback_collection_(context) {}
+      callback_collection_(context),
+      context_(context),
+      weak_factory_(this) {}
 
 int WorkerAnimationFrameProvider::RegisterCallback(
     FrameRequestCallbackCollection::FrameCallback* callback) {
@@ -30,15 +33,23 @@ void WorkerAnimationFrameProvider::CancelCallback(int id) {
 }
 
 void WorkerAnimationFrameProvider::BeginFrame() {
-  double time = WTF::CurrentTimeTicksInMilliseconds();
-  // We don't want to expose microseconds residues to users.
-  time = round(time * 60) / 60;
+  // TODO(fserb): Remove this once the Mojo changes for scheduling are in.
+  context_->GetTaskRunner(TaskType::kWorkerAnimation)
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(
+              [](base::WeakPtr<WorkerAnimationFrameProvider> provider) {
+                double time = WTF::CurrentTimeTicksInMilliseconds();
+                // We don't want to expose microseconds residues to users.
+                time = round(time * 60) / 60;
 
-  callback_collection_.ExecuteCallbacks(time, time);
+                provider->callback_collection_.ExecuteCallbacks(time, time);
 
-  for (auto& offscreen_canvas : offscreen_canvases_) {
-    offscreen_canvas->PushFrameIfNeeded();
-  }
+                for (auto& offscreen_canvas : provider->offscreen_canvases_) {
+                  offscreen_canvas->PushFrameIfNeeded();
+                }
+              },
+              weak_factory_.GetWeakPtr()));
 }
 
 void WorkerAnimationFrameProvider::RegisterOffscreenCanvas(
@@ -57,6 +68,7 @@ void WorkerAnimationFrameProvider::DeregisterOffscreenCanvas(
 
 void WorkerAnimationFrameProvider::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_collection_);
+  visitor->Trace(context_);
 }
 
 }  // namespace blink
