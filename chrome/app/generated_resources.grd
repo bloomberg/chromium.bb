@@ -4783,6 +4783,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_BG_IMAGE_NOT_USABLE" desc="Error message for when an uploaded image is not usuable as a custom background. (On the New Tab Page)">
         This image can't be used. Choose a different image.
       </message>
+      <message name="IDS_NTP_CUSTOM_BG_BACK_LABEL" desc="Accessibility label for the back arrow on the background picker dialog. (On the New Tab Page)">
+        Back
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL" desc="Accessibility label for the gear icon. (On the New Tab Page)">
+        Customize this page
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_GOOGLE_PHOTO_LABEL" desc="Accessibility label for a Google Photos image tile. (On the New Tab Page)">
+        Photo
+      </message>
 
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
