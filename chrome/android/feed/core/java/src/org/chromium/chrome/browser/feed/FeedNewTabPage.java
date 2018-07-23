@@ -33,6 +33,8 @@ import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -53,10 +55,13 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
     private SectionHeaderView mSectionHeaderView;
     private FeedImageLoader mImageLoader;
 
-    private static class DummySnackbarApi implements SnackbarApi {
-        // TODO: implement snackbar functionality.
+    private class BasicSnackbarApi implements SnackbarApi {
         @Override
-        public void show(String message) {}
+        public void show(String message) {
+            mNewTabPageManager.getSnackbarManager().showSnackbar(
+                    Snackbar.make(message, new SnackbarManager.SnackbarController() {},
+                            Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM));
+        }
     }
 
     private static class BasicStreamConfiguration implements StreamConfiguration {
@@ -143,7 +148,7 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
                                 new FeedActionHandler(navigationDelegate),
                                 new BasicStreamConfiguration(activity.getResources()),
                                 new BasicCardConfiguration(activity.getResources()),
-                                new DummySnackbarApi())
+                                new BasicSnackbarApi())
                         .build();
 
         mStream = streamScope.getStream();
