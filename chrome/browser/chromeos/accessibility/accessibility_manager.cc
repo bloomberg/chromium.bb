@@ -116,35 +116,36 @@ BrailleController* GetBrailleController() {
 
 }  // namespace
 
-class ChromeVoxPanelWidgetObserver : public views::WidgetObserver {
+class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
  public:
-  ChromeVoxPanelWidgetObserver(views::Widget* widget,
-                               AccessibilityManager* manager)
-      : widget_(widget), manager_(manager) {
+  AccessibilityPanelWidgetObserver(views::Widget* widget,
+                                   base::OnceCallback<void()> on_destroying)
+      : widget_(widget), on_destroying_(std::move(on_destroying)) {
     widget_->AddObserver(this);
   }
 
-  ~ChromeVoxPanelWidgetObserver() override = default;
+  ~AccessibilityPanelWidgetObserver() override = default;
 
   void OnWidgetClosing(views::Widget* widget) override {
     CHECK_EQ(widget_, widget);
     widget->RemoveObserver(this);
-    manager_->OnChromeVoxPanelClosing();
-    // |this| is deleted.
+    std::move(on_destroying_).Run();
+    // |this| should be deleted.
   }
 
   void OnWidgetDestroying(views::Widget* widget) override {
     CHECK_EQ(widget_, widget);
     widget->RemoveObserver(this);
-    manager_->OnChromeVoxPanelDestroying();
-    // |this| is deleted.
+    std::move(on_destroying_).Run();
+    // |this| should be deleted.
   }
 
  private:
   views::Widget* widget_;
-  AccessibilityManager* manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeVoxPanelWidgetObserver);
+  base::OnceCallback<void()> on_destroying_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelWidgetObserver);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1192,8 +1193,10 @@ void AccessibilityManager::PostLoadChromeVox() {
 
   if (!chromevox_panel_) {
     chromevox_panel_ = new ChromeVoxPanel(profile_);
-    chromevox_panel_widget_observer_.reset(
-        new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
+    chromevox_panel_widget_observer_.reset(new AccessibilityPanelWidgetObserver(
+        chromevox_panel_->GetWidget(),
+        base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
+                       base::Unretained(this))));
   }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1230,13 +1233,10 @@ void AccessibilityManager::PostSwitchChromeVoxProfile() {
     chromevox_panel_ = nullptr;
   }
   chromevox_panel_ = new ChromeVoxPanel(profile_);
-  chromevox_panel_widget_observer_.reset(
-      new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
-}
-
-void AccessibilityManager::OnChromeVoxPanelClosing() {
-  chromevox_panel_widget_observer_.reset();
-  chromevox_panel_ = nullptr;
+  chromevox_panel_widget_observer_.reset(new AccessibilityPanelWidgetObserver(
+      chromevox_panel_->GetWidget(),
+      base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
+                     base::Unretained(this))));
 }
 
 void AccessibilityManager::OnChromeVoxPanelDestroying() {
