@@ -153,12 +153,12 @@
 <translation id="6394232988457703198">Du bør starte Chromium på nytt nå.</translation>
 <translation id="6400072781405947421">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium er en nettleser som kjører nettsider og programmer i lynets hastighet. Den er rask, stabil og enkel å bruke. Surf på nettet på en tryggere måte med Chromium, som har innebygd beskyttelse mot skadelig programvare og nettfisking.</translation>
-<translation id="641451971369018375">Kommuniserer med Google for å forbedre nettlesing og Chromium</translation>
+<translation id="641451971369018375">Kommuniserer med Google for å gjøre nettlesing og Chromium bedre</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium startes på nytt om 1 sekund}other{Chromium startes på nytt om # sekunder}}</translation>
 <translation id="6475912303565314141">Den styrer også hvilken side som vises når du starter Chromium.</translation>
 <translation id="6485906693002546646">Du bruker <ph name="PROFILE_EMAIL" /> for synkronisering av Chromium-tingene dine. For å oppdatere alternativene for synkronisering eller bruke Chromium uten Google-konto, kan du gå til <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
-<translation id="6570579332384693436">For å rette opp i skrivefeil, Chromium sender teksten du skriver i tekstfeltet til Google</translation>
+<translation id="6570579332384693436">For å rette opp i skrivefeil sender Chromium sender tekst du skriver i tekstfelt, til Google</translation>
 <translation id="6598877126913850652">Gå til innstillinger for Chromium-varsler</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium startes på nytt nå}=1{Chromium startes på nytt om 1 sekund}other{Chromium startes på nytt om # sekunder}}</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>

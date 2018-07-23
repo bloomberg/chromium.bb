@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">Неверный пароль. Обратите внимание! Если вы недавно изменили пароль, но не выходили из системы, значит, новый пароль ещё не вступил в силу и необходимо указать старый.</translation>
 <translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Адрес IPv6: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Администратор может отслеживать ваши действия на этом устройстве.</translation>
 <translation id="1734367976349034509">Это корпоративное устройство</translation>
 <translation id="1746730358044914197">Способы ввода настраиваются администратором</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Переключить режим обзора</translation>
 <translation id="2338501278241028356">Включите Bluetooth, чтобы найти устройства</translation>
 <translation id="2339073806695260576">Нажмите кнопку стилуса на панели запуска, чтобы создать заметку, сделать скриншот или использовать стилус в качестве лупы или лазерной указки.</translation>
-<translation id="2351266942280602854">Языки и раскладки клавиатуры</translation>
 <translation id="2352467521400612932">Настройки стилуса</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Далее</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Ночной режим: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-карта заблокирована</translation>
 <translation id="2653659639078652383">Отправить</translation>
-<translation id="2696763960464195425">После выхода из аккаунта ваши данные будут удалены. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Выберите раскладку</translation>
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>

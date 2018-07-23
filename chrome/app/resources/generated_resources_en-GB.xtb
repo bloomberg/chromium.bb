@@ -567,7 +567,6 @@
 <translation id="1829192082282182671">Zoom &amp;Out</translation>
 <translation id="1830550083491357902">Not signed in</translation>
 <translation id="1832511806131704864">Phone change updated</translation>
-<translation id="1832685970989658809">Saved payment methods are disabled by your administrator</translation>
 <translation id="1834503245783133039">Download unsuccessful: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Clear search</translation>
 <translation id="1838709767668011582">Google site</translation>
@@ -945,7 +944,6 @@
 <translation id="2435457462613246316">Show password</translation>
 <translation id="2436186046335138073">Allow <ph name="HANDLER_HOSTNAME" /> to open all <ph name="PROTOCOL" /> links?</translation>
 <translation id="2436707352762155834">Minimum</translation>
-<translation id="2437139306601019091">Data use measuring ended</translation>
 <translation id="2440604414813129000">View s&amp;ource</translation>
 <translation id="2445081178310039857">Extension root directory is required.</translation>
 <translation id="2445484935443597917">Create a New Profile</translation>
@@ -1892,7 +1890,6 @@
 <translation id="3855441664322950881">Pack extension</translation>
 <translation id="3855676282923585394">Import Bookmarks and Settings...</translation>
 <translation id="3856800405688283469">Select Time Zone</translation>
-<translation id="3856921555429624101">Data use measuring has ended</translation>
 <translation id="3857228364945137633">Try Smart Lock to unlock your <ph name="DEVICE_TYPE" /> without a password when your phone is nearby.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Sync paused</translation>
@@ -2263,7 +2260,6 @@
 <translation id="4508051413094283164">Open all in incognito window</translation>
 <translation id="4508265954913339219">Activation failed</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
-<translation id="4509823033118379431">The images are not currently available. Please reconnect to view the collections.</translation>
 <translation id="451407183922382411">Powered by <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Set up new supervised user</translation>
 <translation id="4514610446763173167">Toggle video to play or pause</translation>
@@ -2340,6 +2336,7 @@
 <translation id="4627442949885028695">Continue from another device</translation>
 <translation id="4628314759732363424">Change...</translation>
 <translation id="4628757576491864469">Devices</translation>
+<translation id="4628948037717959914">Photo</translation>
 <translation id="4630590996962964935">Invalid character: $1</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4632483769545853758">Unmute Tab</translation>
@@ -2525,7 +2522,6 @@
 <translation id="4905417359854579806">Ready to backup <ph name="FILE_COUNT" /></translation>
 <translation id="4907161631261076876">This file is not commonly downloaded and may be dangerous.</translation>
 <translation id="4907306957610201395">Permission Category</translation>
-<translation id="4907824805858067479">Saved cards are disabled by your administrator</translation>
 <translation id="4908811072292128752">Open a new tab to browse two sites at once</translation>
 <translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">You are enrolled successfully</translation>
@@ -3248,7 +3244,6 @@
 <translation id="5990386583461751448">Translated</translation>
 <translation id="5991049340509704927">Magnify</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{To ensure that you can keep browsing the web, ask your administrator to remove this application.}other{To ensure that you can keep browsing the web, ask your administrator to remove these applications.}}</translation>
-<translation id="5993332328670040093">Your data use will no longer be measured.</translation>
 <translation id="6002458620803359783">Preferred Voices</translation>
 <translation id="6005695835120147974">Media Router</translation>
 <translation id="6006484371116297560">Classic</translation>
@@ -3442,7 +3437,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> is not commonly downloaded and may be dangerous.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{New printer on your network}other{New printers on your network}}</translation>
-<translation id="6286684120317096255">Data use is being measured</translation>
 <translation id="6286708577777130801">Saved password details</translation>
 <translation id="6287852322318138013">Select an app to open this file</translation>
 <translation id="6289452883081499048">Personalised Google services such as Play</translation>
@@ -4156,7 +4150,6 @@
 <translation id="7400839060291901923">Set up connection on your <ph name="PHONE_NAME" /></translation>
 <translation id="740624631517654988">Pop-up blocked</translation>
 <translation id="7407430846095439694">Import and Bind</translation>
-<translation id="7409233648990234464">Relaunch and Powerwash</translation>
 <translation id="7409836189476010449">Run Flash</translation>
 <translation id="7410344089573941623">Ask if <ph name="HOST" /> wants to access your camera and microphone</translation>
 <translation id="741204030948306876">Yes, I'm in</translation>
@@ -5018,7 +5011,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8725178340343806893">Favourites/bookmarks</translation>
 <translation id="8726206820263995930">Error when fetching policy settings from the server: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">Don’t show this again</translation>
 <translation id="8727344521467137076">There's harmful software on your computer. Chrome is removing it and will restore your settings to make your browser work normally again.</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8732030010853991079">Use this extension by clicking on this icon.</translation>

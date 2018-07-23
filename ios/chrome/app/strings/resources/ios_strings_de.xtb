@@ -76,6 +76,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2120297377148151361">Aktivitäten und Interaktionen</translation>
 <translation id="213900355088104901">Wenn Sie privat surfen möchten, öffnen Sie einen Inkognito-Tab</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ungelesene Artikel in Leseliste.</translation>
 <translation id="2230173723195178503">Webseite geladen</translation>
 <translation id="2256128224215992540">Vorschläge für Suche &amp; Websites</translation>
 <translation id="2267753748892043616">Konto hinzufügen</translation>
@@ -219,6 +220,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 
 Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
+<translation id="4807020197310989387">1 ungelesener Artikel in Leseliste.</translation>
 <translation id="481968316161811770">Cookies, Websitedaten</translation>
 <translation id="4854345657858711387">Passcode einrichten</translation>
 <translation id="4860895144060829044">Anrufen</translation>
@@ -394,6 +396,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7830720446622801252">Nicht-personalisierte Dienste</translation>
 <translation id="7856733331829174190">Fehler beim Download</translation>
 <translation id="7859704718976024901">Browserverlauf</translation>
+<translation id="7918293828610777738">Ihre Leseliste ist offline verfügbar. Sie können eine Seite Ihrer Leseliste hinzufügen, indem Sie auf <ph name="SHARE_OPENING_ICON" /> &gt; <ph name="READ_LATER_TEXT" /> tippen.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Passwörter exportieren…</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
@@ -411,6 +414,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8080028325999236607">Alle Tabs schließen</translation>
 <translation id="8114753159095730575">Dateidownload verfügbar. Optionen stehen unten auf dem Bildschirm zur Verfügung.</translation>
 <translation id="8160722851663543621">Suchanfragen, die in die Adressleiste oder das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet</translation>
+<translation id="8178325540017397816">Die ausgewählten Elemente werden entfernt</translation>
 <translation id="8205564605687841303">Abbrechen</translation>
 <translation id="8225985093977202398">Bilder &amp; Dateien im Cache</translation>
 <translation id="8261506727792406068">Löschen</translation>

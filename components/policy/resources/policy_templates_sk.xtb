@@ -227,6 +227,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak musí byť zachovaná kompatibilita s chybným serverom, pravidlo môže byť nastavené na hodnotu „tls1“. Ide o krátkodobé riešenie a príslušný server by mal byť urýchlene opravený.</translation>
 <translation id="1864269674877167562">Ak nie je toto pravidlo nakonfigurované alebo ak je nastavené na prázdny textový reťazec, <ph name="PRODUCT_OS_NAME" /> nezobrazí počas procesu prihlásenia možnosť automatického dopĺňania.
       Ak je toto pravidlo nastavené na textový reťazec, ktorý zastupuje názov domény, <ph name="PRODUCT_OS_NAME" /> zobrazí počas procesu prihlásenia možnosť automatického dopĺňania. Takto bude môcť používateľ zadávať iba používateľské meno bez prípony s názvom domény. Používateľ bude môcť príponu s názvom domény prepísať.</translation>
+<translation id="1864382791685519617">Povolí predpovedanie siete v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom toto nastavenie zmeniť.
+
+      Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a SSL a predbežné vykreslenie webových stránok.
+
+      Ak toto pravidlo nastavíte, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť.
+
+      Ak ho ponecháte nenastavené, predpovedanie siete bude aktívne, no používatelia budú môcť toto nastavenie zmeniť.</translation>
 <translation id="1865417998205858223">Kľúčové povolenia</translation>
 <translation id="186719019195685253">Akcia, ktorá sa má vykonať po uplynutí určitého času nečinnosti počas prevádzky s napájaním</translation>
 <translation id="187819629719252111">Umožňuje pristupovať k miestnym súborom v počítači tým, že prehliadaču <ph name="PRODUCT_NAME" /> umožní zobrazenie dialógových okien na výber súboru.
@@ -698,6 +705,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, bude platiť možnosť <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximálny počet súčasných pripojení k serveru proxy</translation>
+<translation id="2951386431828317490">Povoliť Automatické dopĺňanie pre profily</translation>
 <translation id="2956777931324644324">Podpora tohto pravidla bola ukončená vo verzii 36 aplikácie <ph name="PRODUCT_NAME" />.
 
       Určuje, či má byť povolené rozšírenie pre certifikáty TLS typu domain-bound.
@@ -706,6 +714,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2957506574938329824">Nepovoliť žiadnemu webu požadovať prístup k zariadeniam Bluetooth prostredníctvom rozhrania Web Bluetooth API</translation>
 <translation id="2957513448235202597">Typ účtu pre overenie <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Pravidlá vynechania servera proxy</translation>
+<translation id="2960128438010718932">Rozvrh etáp zavádzania novej aktualizácie</translation>
 <translation id="2960691910306063964">Povolenie alebo zakázanie overenia totožnosti bez použitia kódu PIN pre hostiteľov vzdialeného prístupu</translation>
 <translation id="2976002782221275500">Určuje dobu nečinnosti používateľa, po ktorej sa pri napájaní z batérie zníži jas obrazovky.
 
@@ -748,6 +757,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Bez ohľadu na to, či je toto pravidlo nastavené, alebo na spôsob, akým bolo nastavené, nemôžu používatelia nastavenie optimalizácie WPAD zmeniť.</translation>
 <translation id="3072045631333522102">Šetrič obrazovky, ktorý sa má použiť na prihlasovacej obrazovke v režime určenom pre predaj</translation>
 <translation id="3072847235228302527">Nastaviť Zmluvné podmienky pre miestny účet v zariadení</translation>
+<translation id="3077183141551274418">Povolí alebo zakáže životné cykly kariet</translation>
 <translation id="3086995894968271156">Konfigurácia prijímača Cast v systéme <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré môžu zobrazovať obrázky.
 
@@ -1316,6 +1326,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Tieto návrhy sa načítajú vzdialene zo serverov Googlu.
 
       Ak toto pravidlo nastavíte na hodnotu false, návrhy sa nenačítajú ani zobrazia.</translation>
+<translation id="4788252609789586009">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje kreditných kariet do webových formulárov na základe predtým uložených informácií.
+
+      Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje kreditných kariet ani ukladať informácie o ďalších kartách, ktoré môže používateľ odoslať počas prehliadania webu.
+
+      Ak ho povolíte alebo preň nenastavíte žiadnu hodnotu, používateľ bude môcť ovládať funkciu Automatické dopĺňanie pre kreditné karty v používateľskom rozhraní.</translation>
 <translation id="4791031774429044540">Povolí veľký kurzor (funkcia na uľahčenie prístupu).
 
       Ak toto pravidlo povolíte, bude veľký kurzor vždy zapnutý.
@@ -1452,6 +1467,11 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto pravidlo nastavíte na hodnotu Pravda, systém <ph name="PRODUCT_OS_NAME" /> zabráni zariadeniu, aby sa reštartovalo v režime pre vývojárov. Systém odmietne reštartovanie a ak je zapnutý prepínač pre vývojárov, zobrazí chybovú obrazovku.
       Ak toto pravidlo nenastavíte alebo ho nastavíte na hodnotu Nepravda, režim pre vývojárov bude na zariadení naďalej dostupný.</translation>
+<translation id="520403427390290017">Funkcia životných cyklov kariet obnovuje prostriedky procesora a nakoniec aj pamäť súvisiace s otvorenými kartami, ktoré sa veľmi dlho nepoužívali. Najprv ich spomalí, potom zmrazí a nakoniec zahodí.
+
+      Ak toto pravidlo nastavíte na hodnotu False, životné cykly kariet budú zakázané a všetky karty budú fungovať ako normálne.
+
+      Ak ho nastavíte na hodnotu True alebo ho nenastavíte, bude funkcia životných cyklov kariet povolená.</translation>
 <translation id="5208240613060747912">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré nemôžu zobrazovať upozornenia.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultNotificationsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -1500,6 +1520,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak toto pravidlo nastavíte na hodnotu False, používatelia nebudú môcť do svojho zariadenia prenášať obsah. Ak ho nastavíte na hodnotu True, používatelia budú môcť prenášať obsah. Ak ho nenastavíte, používatelia nebudú môcť prenášať obsah do registrovaných zariadení Chrome OS, ale v prípade iných zariadení to bude povolené.</translation>
 <translation id="5330684698007383292">Povoliť doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať nasledujúce typy obsahu</translation>
+<translation id="5360146044009867539">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje profilu a adresy do webových formulárov na základe predtým uložených informácií.
+
+      Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje adresy ani ukladať informácie o ďalších adresách, ktoré môže používateľ odoslať počas prehliadania webu.
+
+      Ak ho povolíte alebo preň nenastavíte žiadnu hodnotu, používateľ bude môcť ovládať funkciu Automatické dopĺňanie pre adresy v používateľskom rozhraní.</translation>
 <translation id="5365946944967967336">Zobraziť tlačidlo Domov na paneli s nástrojmi</translation>
 <translation id="5366745336748853475">Umožňuje určiť zoznam vzorov webových adries označujúcich weby, v prípade ktorých sa na prihlasovacej obrazovke v rámci hosťujúcom postup SAML automaticky vyberie certifikát klienta, keď určitý web požaduje certifikát. Príklad využitia: Konfigurácia poskytovania certifikátu pre celé zariadenie v poskytovateľovi identity SAML.
 
@@ -2225,6 +2250,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak je toto nastavenie zakázané, nebude táto funkcia k dispozícii.</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
+<translation id="729492886167634859">Toto pravidlo definuje zoznam percentuálnych hodnôt určujúcich časť zariadení so systémom <ph name="PRODUCT_OS_NAME" /> v organizačnej jednotke, ktorá má byť každý týždeň aktualizovaná odo dňa prvého zistenia dostupnosti aktualizácie. Čas zistenia nasleduje po čase zverejnenia aktualizácie, pretože zariadenie môže skontrolovať dostupnosť aktualizácií až s určitým časovým odstupom po ich zverejnení.
+
+      N-tá hodnota v zozname bude použitá ako percento zariadení, ktoré by malo dokončiť aktualizáciu na ďalšiu verziu v n-tom týždni po zistení dostupnosti aktualizácie. Ak sa napríklad zistí dostupnosť aktualizácie dnes, potom prvá hodnota v zozname definuje percento zariadení v organizačnej jednotke, ktoré by sa malo aktualizovať na túto verziu do jedného týždňa od dnešného dňa. Druhá hodnota definuje percento zariadení v organizačnej jednotke, ktoré by sa malo aktualizovať na túto verziu do dvoch týždňov od dnešného dňa atď.
+
+      Ak pre toto pravidlo nastavíte určitú hodnotu, aktualizácie budú ignorovať pravidlo <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> a budú sa namiesto toho riadiť týmto pravidlom.
+
+      Ak je tento zoznam prázdny, nebude dochádzať k zavádzaniu po etapách a aktualizácie sa budú zavádzať podľa iných pravidiel zariadenia.
+
+      Toto pravidlo sa netýka zmien kanálov.</translation>
 <translation id="7295019613773647480">Povoliť kontrolovaných používateľov</translation>
 <translation id="7301543427086558500">Určuje zoznam alternatívnych webových adries, ktoré sa môžu použiť na extrahovanie hľadaných výrazov z vyhľadávačov. Webové adresy by mali obsahovať značku <ph name="SEARCH_TERM_MARKER" />, ktorá sa použije na extrahovanie hľadaných výrazov.
 
@@ -2687,6 +2721,12 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Zakázať ukladanie histórie prehliadača</translation>
+<translation id="8498293625012059298">Nastavuje webovú adresu na zmenu hesla (iba schémy HTTP a HTTPS). Služba ochrany heslom odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
+      Na to, aby služba <ph name="PRODUCT_NAME" /> správne zaznamenala digitálny odtlačok nového hesla na tejto stránke na zmenu hesla, musí táto stránka dodržiavať pokyny uvedené na adrese https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Ak toto nastavenie aktivujete, služba ochrany heslom odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
+      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany heslom odkáže používateľov na adresu https://myaccounts.google.com, aby si tam zmenili heslo.
+      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú v doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Predvolené nastavenia (používatelia ich môžu nahradiť)</translation>
 <translation id="8507835864888987300">Umožňuje nastaviť cieľovú verziu automatických aktualizácií.
 
@@ -2740,6 +2780,14 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Keď ho zmeníte na hodnotu False, použije sa na začínajúce nové virtuálne počítače, ale nevypne tie, ktoré sú už spustené.
       Ak toto pravidlo nenastavíte v spravovanom zariadení, nebude môcť spúšťať virtuálne počítače.
       Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
+<translation id="8669669491594628013">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
+
+      Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.
+
+      Ak toto pravidlo nastavíte na možnosť PasswordProtectionWarningOff, nezobrazí sa žiadne upozornenie v rámci ochrany heslom.
+      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPasswordReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo na webe, ktorý nebol pridaný na zoznam povolených webov.
+      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPhishingReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije chránené heslo na phishingovom webe.
+      Ak toto pravidlo nenastavíte, služba ochrany heslom bude chrániť iba heslá Google. Používateľ však bude môcť toto nastavenie zmeniť.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
 <translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
 <translation id="8685024486845674965">Upozornenie ochrany heslom sa spúšťa po opätovnom použití hesla</translation>

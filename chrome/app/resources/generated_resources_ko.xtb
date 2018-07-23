@@ -565,7 +565,6 @@
 <translation id="1829192082282182671">축소(&amp;O)</translation>
 <translation id="1830550083491357902">로그인하지 않음</translation>
 <translation id="1832511806131704864">휴대전화 변경사항이 업데이트됨</translation>
-<translation id="1832685970989658809">관리자가 저장한 결제 수단을 사용 중지했습니다.</translation>
 <translation id="1834503245783133039">다운로드 실패: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">검색어 지우기</translation>
 <translation id="1838709767668011582">Google 사이트</translation>
@@ -942,7 +941,6 @@
 <translation id="2435457462613246316">비밀번호 표시</translation>
 <translation id="2436186046335138073"><ph name="HANDLER_HOSTNAME" />에서 모든 <ph name="PROTOCOL" /> 링크를 열도록 허용하시겠습니까?</translation>
 <translation id="2436707352762155834">최소</translation>
-<translation id="2437139306601019091">데이터 사용 측정 종료됨</translation>
 <translation id="2440604414813129000">소스 보기(&amp;O)</translation>
 <translation id="2445081178310039857">확장 프로그램 루트 디렉토리가 필요합니다.</translation>
 <translation id="2445484935443597917">새 프로필 만들기</translation>
@@ -1878,7 +1876,6 @@
 <translation id="3855441664322950881">확장 프로그램 압축</translation>
 <translation id="3855676282923585394">북마크 및 설정 가져오기...</translation>
 <translation id="3856800405688283469">시간대 선택</translation>
-<translation id="3856921555429624101">데이터 사용 측정이 종료됨</translation>
 <translation id="3857228364945137633">휴대전화가 근처에 있을 때 비밀번호 없이 Smart Lock을 사용하여 <ph name="DEVICE_TYPE" />을(를) 잠금 해제할 수 있습니다.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: 동기화 중지됨</translation>
@@ -2247,7 +2244,6 @@
 <translation id="4508051413094283164">모두 시크릿 창에서 열기</translation>
 <translation id="4508265954913339219">활성화 실패</translation>
 <translation id="4508765956121923607">소스 보기(&amp;O)</translation>
-<translation id="4509823033118379431">현재 이미지를 사용할 수 없습니다. 컬렉션을 확인하려면 다시 연결하세요.</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> 제공</translation>
 <translation id="4514542542275172126">새로운 관리 대상 사용자 설정</translation>
 <translation id="4514610446763173167">동영상 재생 또는 일시중지 전환</translation>
@@ -2324,6 +2320,7 @@
 <translation id="4627442949885028695">다른 기기에서 계속</translation>
 <translation id="4628314759732363424">변경...</translation>
 <translation id="4628757576491864469">기기</translation>
+<translation id="4628948037717959914">사진</translation>
 <translation id="4630590996962964935">잘못된 문자: $1</translation>
 <translation id="4631887759990505102">아티스트</translation>
 <translation id="4632483769545853758">탭 음소거 해제</translation>
@@ -2509,7 +2506,6 @@
 <translation id="4905417359854579806">파일 <ph name="FILE_COUNT" />개 백업 준비 완료</translation>
 <translation id="4907161631261076876">이 파일은 위험할 수 있기 때문에 일반적으로 다운로드하지 않습니다.</translation>
 <translation id="4907306957610201395">권한 카테고리</translation>
-<translation id="4907824805858067479">저장한 카드가 관리자에 의해 사용 중지되었습니다</translation>
 <translation id="4908811072292128752">새 탭을 열어 한 번에 두 개의 사이트를 탐색할 수 있습니다</translation>
 <translation id="4909038193460299775">이 계정은 <ph name="DOMAIN" />에 의해 관리되므로 북마크, 방문 기록, 비밀번호 및 기타 설정이 이 기기에서 삭제됩니다. 하지만 데이터는 Google 계정에 계속 저장되며 <ph name="BEGIN_LINK" />Google 대시보드<ph name="END_LINK" />에서 관리할 수 있습니다.</translation>
 <translation id="4909359680501173791">등록 완료</translation>
@@ -3229,7 +3225,6 @@
 <translation id="5990386583461751448">번역됨</translation>
 <translation id="5991049340509704927">확대</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{계속 웹을 탐색하려면 관리자에게 이 애플리케이션을 삭제해 달라고 요청하세요.}other{계속 웹을 탐색하려면 관리자에게 이 애플리케이션을 삭제해 달라고 요청하세요.}}</translation>
-<translation id="5993332328670040093">더 이상 데이터 사용이 측정되지 않습니다.</translation>
 <translation id="6002458620803359783">선호하는 음성</translation>
 <translation id="6005695835120147974">미디어 라우터</translation>
 <translation id="6006484371116297560">기본</translation>
@@ -3421,7 +3416,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 다운로드하지 않습니다.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{네트워크에 새로운 프린터 있음}other{네트워크에 새로운 프린터 있음}}</translation>
-<translation id="6286684120317096255">데이터 사용 측정 중</translation>
 <translation id="6286708577777130801">저장된 암호 세부정보</translation>
 <translation id="6287852322318138013">이 파일을 열 때 사용할 앱 선택</translation>
 <translation id="6289452883081499048">Play 등 Google 서비스 맞춤설정</translation>
@@ -4132,7 +4126,6 @@
 <translation id="7400839060291901923"><ph name="PHONE_NAME" />에서 연결 설정</translation>
 <translation id="740624631517654988">팝업 차단됨</translation>
 <translation id="7407430846095439694">가져오기 및 연결</translation>
-<translation id="7409233648990234464">다시 실행 및 Powerwash</translation>
 <translation id="7409836189476010449">Flash 실행</translation>
 <translation id="7410344089573941623"><ph name="HOST" />에서 카메라와 마이크에 액세스하려는 경우 메시지 표시</translation>
 <translation id="741204030948306876">사용</translation>
@@ -4986,7 +4979,6 @@
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8725178340343806893">즐겨찾기/북마크</translation>
 <translation id="8726206820263995930">서버에서 정책 설정을 가져오는 중에 오류 발생: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">이 메시지를 다시 표시하지 않음</translation>
 <translation id="8727344521467137076">컴퓨터에 유해한 소프트웨어가 있습니다. Chrome에서 이 소프트웨어를 삭제하고 있으며 설정을 복원하여 브라우저가 다시 정상적으로 작동하도록 합니다.</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8732030010853991079">아이콘을 클릭하여 확장 프로그램을 사용합니다.</translation>

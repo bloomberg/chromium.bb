@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">curseur</translation>
 <translation id="1211441953136645838">note de fin</translation>
 <translation id="1281252709823657822">boîte de dialogue</translation>
+<translation id="1289247557029249093">Quitter le mode PIP</translation>
 <translation id="1335095011850992622">crédits</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bannière</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2657045182931379222">objet graphique</translation>
 <translation id="2674318244760992338">pied de page</translation>
+<translation id="2706474812903655270">Cette vidéo est diffusée en mode PIP</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">La date ou l'heure doit être égale ou postérieure à "<ph name="MINIMUM_DATE_OR_TIME" />".</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">temps restant</translation>
 <translation id="7740016676195725605">ne plus afficher les sous-titres</translation>
 <translation id="7740050170769002709">Contenu HTML</translation>
+<translation id="7750228210027921155">Mode PIP (Picture-in-Picture)</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">triangle d'expansion</translation>
 <translation id="7888071071722539607">Veuillez inclure "<ph name="ATSIGN" />" dans l'adresse e-mail. Il manque un symbole "<ph name="ATSIGN" />" dans "<ph name="INVALIDADDRESS" />".</translation>

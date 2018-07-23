@@ -36,7 +36,6 @@
 <translation id="1658406695958299976">Жао нам је, верификација лозинке још увек није успела. Напомена: ако сте недавно променили лозинку, нова лозинка ће се применити када се одјавите. Овде користите стару лозинку.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
 <translation id="1698760176351776263">IPv6 адреса: <ph name="ADDRESS" /></translation>
-<translation id="170389796989115980">Администратор уређаја може да надгледа ваше активности.</translation>
 <translation id="1734367976349034509">Овим уређајем управља предузеће</translation>
 <translation id="1746730358044914197">Методе уноса конфигурише администратор.</translation>
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
@@ -74,7 +73,6 @@
 <translation id="2303600792989757991">Укључи/искључи преглед прозора</translation>
 <translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
 <translation id="2339073806695260576">Додирните дугме писаљке на полици да бисте направили белешку и снимак екрана и да бисте користили ласерски показивач или лупу.</translation>
-<translation id="2351266942280602854">Језик и унос</translation>
 <translation id="2352467521400612932">Подешавања писаљке</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Настави</translation>
@@ -92,7 +90,6 @@
 <translation id="2597972630681408282">Ноћно светло: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
-<translation id="2696763960464195425">Информације ће бити уклоњене када се одјавите. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Подесите тастатуру</translation>
 <translation id="2718395828230677721">Ноћно светло</translation>
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
@@ -194,6 +191,7 @@
 <translation id="4544944664594876241">Пречица за закључавање екрана је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Услуга за фонтове</translation>
 <translation id="4570957409596482333">Дугме Изаберите за говор</translation>
+<translation id="4585337515783392668">Заустави пребацивање на непознати пријемник</translation>
 <translation id="4628757576491864469">Уређаји</translation>
 <translation id="4659419629803378708">ChromeVox је омогућен</translation>
 <translation id="4734965478015604180">Хоризонтално</translation>
@@ -240,6 +238,7 @@
 <translation id="5805697420284793859">Менаџер прозора</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
 <translation id="5832805196449965646">Додај особу</translation>
+<translation id="5837036133683224804">Заустави <ph name="ROUTE_TITLE" /> на уређају <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Искључено</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -276,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Готово</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> на уређају <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Одбиј</translation>
 <translation id="6453179446719226835">Језик је промењен</translation>
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME" /></translation>
@@ -372,6 +372,7 @@
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8392451568018454956">Мени са опцијама за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Лупа за цео екран</translation>
+<translation id="8427213022735114808">Диктирање шаље податке о гласу Google-у да би се омогућило диктирање у свим пољима за текст.</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8431190899827883166">Приказ додира</translation>
 <translation id="8433186206711564395">Мрежна подешавања</translation>
@@ -413,6 +414,7 @@
 <translation id="9111102763498581341">Откључај</translation>
 <translation id="9151726767154816831">Поново покрените и обавите Powerwash да бисте ажурирали</translation>
 <translation id="9179259655489829027">Ова функција вам омогућава да брзо приступите било ком пријављеном кориснику без лозинке. Користите ову функцију само са налозима у које имате поверења.</translation>
+<translation id="9193626018745640770">Пребацује се на непознати пријемник</translation>
 <translation id="9194617393863864469">Пријавите још једног корисника...</translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE" />% пуна.</translation>
 <translation id="9210037371811586452">Излазак из режима спојених радних површина</translation>

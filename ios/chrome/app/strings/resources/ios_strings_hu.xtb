@@ -76,6 +76,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2120297377148151361">Tevékenység és interakciók</translation>
 <translation id="213900355088104901">Privát böngészéshez nyisson inkognitólapot</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> olvasatlan cikk az olvasási listán.</translation>
 <translation id="2230173723195178503">A weboldal betöltött</translation>
 <translation id="2256128224215992540">Keresési és webhelyjavaslatok</translation>
 <translation id="2267753748892043616">Fiók hozzáadása</translation>
@@ -219,6 +220,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 
 Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="473775607612524610">Frissítés</translation>
+<translation id="4807020197310989387">1 olvasatlan cikk az olvasási listán.</translation>
 <translation id="481968316161811770">Cookie-k, webhelyadatok</translation>
 <translation id="4854345657858711387">Biztonsági kód beállítása</translation>
 <translation id="4860895144060829044">Hívás</translation>
@@ -394,6 +396,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7830720446622801252">Nem személyre szabott szolgáltatások</translation>
 <translation id="7856733331829174190">Nem sikerült letölteni</translation>
 <translation id="7859704718976024901">Böngészési előzmények</translation>
+<translation id="7918293828610777738">Olvasási listája hozzáférhető offline módban. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />, majd <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Jelszavak exportálása…</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
@@ -411,6 +414,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8080028325999236607">Összes lap bezárása</translation>
 <translation id="8114753159095730575">A fájlletöltés megvalósítható. A beállításokat a képernyő alján nyithatja meg.</translation>
 <translation id="8160722851663543621">A címsávban és a keresőmezőben végrehajtott kereséseket, valamint bizonyos cookie-kat elküld az alapértelmezett keresőmotornak</translation>
+<translation id="8178325540017397816">A kiválasztott elemek törlődnek</translation>
 <translation id="8205564605687841303">Mégse</translation>
 <translation id="8225985093977202398">A gyorsítótárban lévő képek és fájlok</translation>
 <translation id="8261506727792406068">Törlés</translation>

@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Provide additional details.</translation>
 <translation id="1021110881106174305">Accepted cards</translation>
 <translation id="1032854598605920125">Rotate clockwise</translation>
+<translation id="1035334672863811645">sign in to Chrome</translation>
 <translation id="1038842779957582377">unknown name</translation>
 <translation id="1050038467049342496">Close other apps</translation>
 <translation id="1055184225775184556">&amp;Undo Add</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestion}other{# suggestions}}</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
-<translation id="2084558088529668945">You entered your password on a site that’s not managed by <ph name="ORG_NAME" />. To protect your account, don’t reuse your password on other apps and sites.</translation>
 <translation id="2091887806945687916">Sound</translation>
 <translation id="2094505752054353250">Domain mismatch</translation>
 <translation id="2096368010154057602">Department</translation>
@@ -457,7 +457,6 @@
 <translation id="4171400957073367226">Bad verification signature</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> more item}other{<ph name="ITEM_COUNT" /> more items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome recommends resetting your <ph name="ORG_NAME" /> password if you reused it on other sites.</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Crashes</translation>
@@ -698,7 +697,6 @@
 <translation id="5869405914158311789">This site can’t be reached</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5893752035575986141">Credit cards are accepted.</translation>
-<translation id="5898382028489516745">Chromium recommends resetting your <ph name="ORG_NAME" /> password if you reused it on other sites.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in use}other{# in use}}</translation>
 <translation id="5939518447894949180">Reset</translation>
@@ -1042,6 +1040,7 @@
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
 <translation id="8557066899867184262">The CVC is located behind your card.</translation>
 <translation id="8559762987265718583">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
+<translation id="8564985650692024650">Chromium recommends resetting your <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> password if you reused it on other sites.</translation>
 <translation id="8571890674111243710">Translating page into <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Add phone no.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
@@ -1070,6 +1069,7 @@
 <translation id="884264119367021077">Delivery address</translation>
 <translation id="884923133447025588">No revocation mechanism found.</translation>
 <translation id="885730110891505394">Sharing with Google</translation>
+<translation id="8858065207712248076">Chrome recommends resetting your <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> password if you reused it on other sites.</translation>
 <translation id="8866481888320382733">Error parsing policy settings</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8874824191258364635">Enter a valid card number</translation>

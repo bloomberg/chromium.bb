@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">posúvač</translation>
 <translation id="1211441953136645838">vysvetlivka</translation>
 <translation id="1281252709823657822">dialóg</translation>
+<translation id="1289247557029249093">Ukončiť režim obraz v obraze</translation>
 <translation id="1335095011850992622">titulky</translation>
 <translation id="1342835525016946179">článok</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2657045182931379222">grafický objekt</translation>
 <translation id="2674318244760992338">päta</translation>
+<translation id="2706474812903655270">Toto video sa prehráva v režime obraz v obraze</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2723001399770238859">zvuk</translation>
 <translation id="2746543609216772311">Hodnota musí byť <ph name="MINIMUM_DATE_OR_TIME" /> alebo neskôr.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">zostávajúci čas</translation>
 <translation id="7740016676195725605">ukončiť zobrazovanie skrytých titulkov</translation>
 <translation id="7740050170769002709">Obsah HTML</translation>
+<translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7789962463072032349">pozastaviť</translation>
 <translation id="7802800022689234070">trojuholníkové tlačidlo na zobrazenie skrytého obsahu</translation>
 <translation id="7888071071722539607">Uveďte v e-mailovej adrese znak <ph name="ATSIGN" />. V adrese <ph name="INVALIDADDRESS" /> znak <ph name="ATSIGN" /> chýba.</translation>

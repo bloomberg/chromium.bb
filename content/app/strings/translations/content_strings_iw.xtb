@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">מחוון</translation>
 <translation id="1211441953136645838">הערת סיום</translation>
 <translation id="1281252709823657822">דו-שיח</translation>
+<translation id="1289247557029249093">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="1335095011850992622">קרדיטים</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">מודעת באנר</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2657045182931379222">אובייקט גרפי</translation>
 <translation id="2674318244760992338">כותרת תחתונה</translation>
+<translation id="2706474812903655270">הסרטון הזה פועל במצב 'תמונה בתוך תמונה'</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2723001399770238859">אודיו</translation>
 <translation id="2746543609216772311">על הערך להיות <ph name="MINIMUM_DATE_OR_TIME" /> ומעלה.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">זמן שנותר</translation>
 <translation id="7740016676195725605">הפסק להציג כתוביות סגורות</translation>
 <translation id="7740050170769002709">‏תוכן HTML</translation>
+<translation id="7750228210027921155">תמונה בתוך תמונה</translation>
 <translation id="7789962463072032349">השהה</translation>
 <translation id="7802800022689234070">משולש הצגה/הסתרה</translation>
 <translation id="7888071071722539607">כלול '<ph name="ATSIGN" />' בכתובת האימייל. ב-'<ph name="INVALIDADDRESS" />' חסר '<ph name="ATSIGN" />'.</translation>

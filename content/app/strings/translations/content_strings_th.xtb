@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">แถบเลื่อน</translation>
 <translation id="1211441953136645838">อ้างอิงท้ายเรื่อง</translation>
 <translation id="1281252709823657822">กล่องโต้ตอบ</translation>
+<translation id="1289247557029249093">ออกจากโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="1335095011850992622">เครดิต</translation>
 <translation id="1342835525016946179">บทความ</translation>
 <translation id="1359897965706325498">แบนเนอร์</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2657045182931379222">ออบเจ็กต์กราฟิก</translation>
 <translation id="2674318244760992338">ส่วนท้าย</translation>
+<translation id="2706474812903655270">กำลังเล่นวิดีโอในโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="2723001399770238859">เสียง</translation>
 <translation id="2746543609216772311">ค่าต้องเป็น <ph name="MINIMUM_DATE_OR_TIME" /> หรือหลังจากนั้น</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">เวลาที่เหลือ</translation>
 <translation id="7740016676195725605">หยุดแสดงคำอธิบายภาพ</translation>
 <translation id="7740050170769002709">เนื้อหา HTML</translation>
+<translation id="7750228210027921155">การแสดงภาพซ้อนภาพ</translation>
 <translation id="7789962463072032349">หยุดชั่วคราว</translation>
 <translation id="7802800022689234070">สามเหลี่ยมซ่อนเนื้อหา</translation>
 <translation id="7888071071722539607">โปรดใส่ "<ph name="ATSIGN" />" ในที่อยู่อีเมล "<ph name="INVALIDADDRESS" />" ขาด "<ph name="ATSIGN" />"</translation>

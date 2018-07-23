@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">ಸ್ಲೈಡರ್</translation>
 <translation id="1211441953136645838">ಮುಕ್ತಾಯ ಟಿಪ್ಪಣಿ</translation>
 <translation id="1281252709823657822">ಸಂವಾದ</translation>
+<translation id="1289247557029249093">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ ಮೋಡ್ ಅನ್ನು ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="1335095011850992622">ಕ್ರೆಡಿಟ್‌ಗಳು</translation>
 <translation id="1342835525016946179">ಲೇಖನ</translation>
 <translation id="1359897965706325498">ಬ್ಯಾನರ್</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="2657045182931379222">ಗ್ರಾಫಿಕ್ಸ್ ವಸ್ತು</translation>
 <translation id="2674318244760992338">ಅಡಿಟಿಪ್ಪಣಿ</translation>
+<translation id="2706474812903655270">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ ಮೋಡ್‌ನಲ್ಲಿ ಈ ವೀಡಿಯೊ ಪ್ಲೇ ಆಗುತ್ತಿದೆ</translation>
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
 <translation id="2723001399770238859">ಆಡಿಯೋ</translation>
 <translation id="2746543609216772311">ಮೌಲ್ಯವು <ph name="MINIMUM_DATE_OR_TIME" /> ಅಥವಾ ನಂತರದ್ದಾಗಿರಬೇಕು.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">ಉಳಿದಿರುವ ಸಮಯ</translation>
 <translation id="7740016676195725605">ಮುಚ್ಚಲಾಗಿರುವ ಶೀರ್ಷಿಕೆಗಳ ಪ್ರದರ್ಶಿಸುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="7740050170769002709">HTML ವಿಷಯ</translation>
+<translation id="7750228210027921155">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ</translation>
 <translation id="7789962463072032349">ವಿರಾಮ</translation>
 <translation id="7802800022689234070">ತ್ರಿಕೋನ ಪ್ರಕಟಣೆ</translation>
 <translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN" />' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN" />' ನಲ್ಲಿ '<ph name="INVALIDADDRESS" />' ಕಾಣೆಯಾಗಿದೆ.</translation>

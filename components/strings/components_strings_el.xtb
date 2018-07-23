@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1021110881106174305">Αποδεκτές κάρτες</translation>
 <translation id="1032854598605920125">Περιστροφή προς τα δεξιά</translation>
+<translation id="1035334672863811645">σύνδεση στο Chrome</translation>
 <translation id="1038842779957582377">άγνωστο όνομα</translation>
 <translation id="1050038467049342496">Κλείστε τις άλλες εφαρμογές</translation>
 <translation id="1055184225775184556">&amp;Αναίρεση προσθήκης</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 πρόταση}other{# προτάσεις}}</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="20817612488360358">Οι ρυθμίσεις διακομιστή μεσολάβησης του συστήματος έχουν οριστεί για να χρησιμοποιηθούν, αλλά καθορίζεται επίσης μια ρητή διαμόρφωση του διακομιστή μεσολάβησης.</translation>
-<translation id="2084558088529668945">Έχετε εισαγάγει τον κωδικό πρόσβασής σας σε έναν ιστότοπο τον οποίο δεν διαχειρίζεται ο οργανισμός <ph name="ORG_NAME" />. Για να προστατεύσετε τον λογαριασμό σας, μην επαναχρησιμοποιείτε τον κωδικό πρόσβασής σας σε άλλες εφαρμογές και ιστοτόπους.</translation>
 <translation id="2091887806945687916">Ήχος</translation>
 <translation id="2094505752054353250">Αναντιστοιχία τομέα</translation>
 <translation id="2096368010154057602">Νομός</translation>
@@ -457,7 +457,6 @@
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ακόμη στοιχείο}other{<ph name="ITEM_COUNT" /> ακόμη στοιχεία}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Το Chrome συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="ORG_NAME" /> εάν τον έχετε επαναχρησιμοποιήσει σε άλλους ιστοτόπους.</translation>
 <translation id="4196861286325780578">&amp;Επανάληψη μετακίνησης</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Ελέγξτε τις διαμορφώσεις του τείχους προστασίας και της προστασίας από ιούς<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Απότομες διακοπές λειτουργίας</translation>
@@ -586,6 +585,7 @@
 <translation id="5089810972385038852">Πολιτεία</translation>
 <translation id="5094747076828555589">Ο διακομιστής δεν μπορεί να αποδείξει ότι είναι το <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του δεν θεωρείται έμπιστο από το Chromium. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="5095208057601539847">Επαρχία</translation>
+<translation id="5098332213681597508">Αυτό το όνομα προέρχεται από τον Λογαριασμό σας Google.</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5121084798328133320">Μετά την επιβεβαίωση, τα στοιχεία της κάρτας από τον λογαριασμό πληρωμών Google θα κοινοποιηθούν σε αυτόν τον ιστότοπο.</translation>
 <translation id="5128122789703661928">Η περίοδος σύνδεσης με αυτό το όνομα δεν είναι έγκυρη για διαγραφή.</translation>
@@ -671,6 +671,7 @@
 <translation id="5633066919399395251">Οι εισβολείς που βρίσκονται αυτήν τη στιγμή στον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ενδέχεται να επιχειρήσουν να εγκαταστήσουν επικίνδυνα προγράμματα στον υπολογιστή σας, τα οποία μπορούν να υποκλέψουν ή να διαγράψουν τα δεδομένα σας (για παράδειγμα, φωτογραφίες, κωδικούς πρόσβασης, μηνύματα και στοιχεία πιστωτικών καρτών). <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Το παραπλανητικό περιεχόμενο αποκλείστηκε.</translation>
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
+<translation id="5666899935841546222">Θέλετε να έχετε όλες τις κάρτες σας σε ένα μέρος;</translation>
 <translation id="5675650730144413517">Αυτή η σελίδα δεν λειτουργεί</translation>
 <translation id="5685654322157854305">Προσθήκη διεύθυνσης αποστολής</translation>
 <translation id="5689199277474810259">Εξαγωγή σε JSON</translation>
@@ -697,7 +698,6 @@
 <translation id="5869405914158311789">Δεν είναι δυνατή η πρόσβαση σε αυτόν τον ιστότοπο</translation>
 <translation id="5869522115854928033">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
 <translation id="5893752035575986141">Οι πιστωτικές κάρτες γίνονται δεκτές.</translation>
-<translation id="5898382028489516745">Το Chromium συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="ORG_NAME" /> εάν τον έχετε επαναχρησιμοποιήσει σε άλλους ιστοτόπους.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (συγχρονισμένο)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 σε χρήση}other{# σε χρήση}}</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
@@ -1041,6 +1041,7 @@
 <translation id="8553075262323480129">Η μετάφραση απέτυχε επειδή δεν ήταν δυνατός ο προσδιορισμός της σελίδας.</translation>
 <translation id="8557066899867184262">Ο κωδικός CVC βρίσκεται στο πίσω μέρος της κάρτας.</translation>
 <translation id="8559762987265718583">Δεν είναι δυνατή η επίτευξη ιδιωτικής σύνδεσης με τον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> επειδή η ημερομηνία και η ώρα (<ph name="DATE_AND_TIME" />) της συσκευής σας είναι λανθασμένες.</translation>
+<translation id="8564985650692024650">Το Chromium συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, εάν τον έχετε χρησιμοποιήσει και σε άλλους ιστοτόπους.</translation>
 <translation id="8571890674111243710">Μετάφραση σελίδας σε <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Προσθ. τηλεφ.
 </translation>
@@ -1070,6 +1071,7 @@
 <translation id="884264119367021077">Διεύθυνση αποστολής</translation>
 <translation id="884923133447025588">Δεν εντοπίστηκε μηχανισμός ακύρωσης.</translation>
 <translation id="885730110891505394">Κοινοποίηση στις υπηρεσίες της Google</translation>
+<translation id="8858065207712248076">Το Chrome συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> εάν τον έχετε χρησιμοποιήσει και σε άλλους ιστοτόπους.</translation>
 <translation id="8866481888320382733">Σφάλμα ανάλυσης ρυθμίσεων πολιτικής</translation>
 <translation id="8870413625673593573">Έκλεισαν πρόσφατα</translation>
 <translation id="8874824191258364635">Εισαγάγετε έναν έγκυρο αριθμό κάρτας</translation>

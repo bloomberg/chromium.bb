@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Oppgi flere detaljer</translation>
 <translation id="1021110881106174305">Godkjente kort</translation>
 <translation id="1032854598605920125">Rotér med klokken</translation>
+<translation id="1035334672863811645">logg på Chrome</translation>
 <translation id="1038842779957582377">ukjent navn</translation>
 <translation id="1050038467049342496">Lukk andre apper</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 forslag}other{# forslag}}</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="20817612488360358">Innstillinger for systemmellomtjener er stilt inn på å brukes, men en uttrykkelig mellomtjenerkonfigurasjon er også angitt.</translation>
-<translation id="2084558088529668945">Du har skrevet inn passordet ditt på et nettsted som ikke administreres av <ph name="ORG_NAME" />. For å beskytte kontoen din må du ikke bruke det samme passordet i andre apper og på andre nettsteder.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2094505752054353250">Domenene samsvarer ikke</translation>
 <translation id="2096368010154057602">Avdeling</translation>
@@ -457,7 +457,6 @@
 <translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> element til}other{<ph name="ITEM_COUNT" /> elementer til}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome anbefaler at du tilbakestiller passordet ditt for <ph name="ORG_NAME" /> hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sjekk brannmur- og antiviruskonfigurasjonen<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kræsj</translation>
@@ -696,7 +695,6 @@
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
-<translation id="5898382028489516745">Chromium anbefaler at du tilbakestiller passordet ditt for <ph name="ORG_NAME" /> hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
@@ -1040,6 +1038,7 @@
 <translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
 <translation id="8557066899867184262">CVC-koden finner du på baksiden av kortet.</translation>
 <translation id="8559762987265718583">En privat tilkobling til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kunne ikke etableres fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) er feil på enheten.</translation>
+<translation id="8564985650692024650">Chromium anbefaler at du tilbakestiller passordet ditt for <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="8571890674111243710">Oversett siden til <ph name="LANGUAGE" /></translation>
 <translation id="858637041960032120">Legg til telefonnummer</translation>
 <translation id="859285277496340001">Sertifikatet spesifiserer ikke en mekanisme for å kontrollere hvorvidt det har blitt tilbakekalt.</translation>
@@ -1068,6 +1067,7 @@
 <translation id="884264119367021077">Leveringsadresse</translation>
 <translation id="884923133447025588">Finner ingen tilbakekallingsmekanisme.</translation>
 <translation id="885730110891505394">Deling med Google</translation>
+<translation id="8858065207712248076">Chrome anbefaler at du tilbakestiller passordet ditt for <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8874824191258364635">Angi et gyldig kortnummer</translation>

@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">плъзгач</translation>
 <translation id="1211441953136645838">бележка в края</translation>
 <translation id="1281252709823657822">диалогов прозорец</translation>
+<translation id="1289247557029249093">Изход от режима „Картина в картината“</translation>
 <translation id="1335095011850992622">признания за източника</translation>
 <translation id="1342835525016946179">статия</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2657045182931379222">графичен обект</translation>
 <translation id="2674318244760992338">долен колонтитул</translation>
+<translation id="2706474812903655270">Този видеоклип се възпроизвежда в режим „Картина в картината“</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2723001399770238859">звук</translation>
 <translation id="2746543609216772311">Стойността трябва да е <ph name="MINIMUM_DATE_OR_TIME" /> или по-късно.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">оставащо време</translation>
 <translation id="7740016676195725605">спиране на показването на надписите</translation>
 <translation id="7740050170769002709">HTML съдържание</translation>
+<translation id="7750228210027921155">Картина в картината</translation>
 <translation id="7789962463072032349">поставяне на пауза</translation>
 <translation id="7802800022689234070">триъгълник за разкриване на съдържание</translation>
 <translation id="7888071071722539607">Моля, включете „<ph name="ATSIGN" />“ в имейл адреса. В/ъв „<ph name="INVALIDADDRESS" />“ липсва „<ph name="ATSIGN" />“.</translation>

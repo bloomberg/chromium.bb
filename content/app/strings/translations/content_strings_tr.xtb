@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">kaydırma çubuğu</translation>
 <translation id="1211441953136645838">son not</translation>
 <translation id="1281252709823657822">iletişim kutusu</translation>
+<translation id="1289247557029249093">Pencere içinde pencere modundan çık</translation>
 <translation id="1335095011850992622">katkıda bulunanlar</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2657045182931379222">grafik nesnesi</translation>
 <translation id="2674318244760992338">altbilgi</translation>
+<translation id="2706474812903655270">Bu video pencere içinde pencere modunda oynatılıyor</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="2723001399770238859">ses</translation>
 <translation id="2746543609216772311">Değer <ph name="MINIMUM_DATE_OR_TIME" /> veya daha ileri olmalıdır.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">kalan süre</translation>
 <translation id="7740016676195725605">altyazıların görüntülenmesini durdur</translation>
 <translation id="7740050170769002709">HTML içeriği</translation>
+<translation id="7750228210027921155">Pencere içinde pencere</translation>
 <translation id="7789962463072032349">duraklat</translation>
 <translation id="7802800022689234070">açıklama üçgeni</translation>
 <translation id="7888071071722539607">Lütfen e-posta adresine bir "<ph name="ATSIGN" />" işareti ekleyin. "<ph name="INVALIDADDRESS" />" adresinde "<ph name="ATSIGN" />" eksik.</translation>

@@ -76,6 +76,7 @@
 <translation id="2120297377148151361">アクティビティと操作</translation>
 <translation id="213900355088104901">シークレット モードで閲覧するにはシークレット タブを開きます</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> 件のリーディング リストの記事が未読です。</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2256128224215992540">検索とサイトの候補を表示</translation>
 <translation id="2267753748892043616">アカウントを追加</translation>
@@ -219,6 +220,7 @@
 
 データは同期パスフレーズで暗号化されます。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="473775607612524610">アップデート</translation>
+<translation id="4807020197310989387">1 件のリーディング リストの記事が未読です。</translation>
 <translation id="481968316161811770">Cookie、サイトデータ</translation>
 <translation id="4854345657858711387">パスコードの設定</translation>
 <translation id="4860895144060829044">通話</translation>
@@ -394,6 +396,7 @@
 <translation id="7830720446622801252">カスタマイズされないサービス</translation>
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
+<translation id="7918293828610777738">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> &gt; [<ph name="READ_LATER_TEXT" />] をタップします。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">パスワードをエクスポート...</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
@@ -411,6 +414,7 @@
 <translation id="8080028325999236607">すべてのタブを閉じる</translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
 <translation id="8160722851663543621">アドレスバーや検索ボックスに入力した検索語句と Cookie を既定の検索エンジンに送信します</translation>
+<translation id="8178325540017397816">選択したアイテムが削除されます</translation>
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8261506727792406068">削除</translation>

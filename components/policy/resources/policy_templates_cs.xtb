@@ -222,6 +222,13 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Pokud je třeba zajistit kompatibilitu s chybným serverem, lze nastavit hodnotu „tls1.1“. Jedná se však o nouzové řešení a server by měl být co nejrychleji opraven.</translation>
 <translation id="1864269674877167562">Pokud tato zásada není nastavena nebo je nastavena na prázdný textový řetězec, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení nezobrazí možnost automatického doplňování.
       Pokud je tato zásada nastavena na textový řetězec, který představuje název domény, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení zobrazí možnost automatického doplňování a uživatel bude moci zadat pouze uživatelské jméno bez přípony s názvem domény. Příponu s názvem domény uživatel bude moci přepsat.</translation>
+<translation id="1864382791685519617">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> předvídání akcí sítě a brání uživatelům ve změně tohoto nastavení.
+
+Tato zásada ovlivňuje předběžné načítání záznamů DNS, předběžná připojení TCP a SSL a předběžné vykreslování webových stránek.
+
+Pokud tuto zásadu nastavíte, uživatelé ji v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
+
+Pokud tuto zásadu ponecháte nenastavenou, bude předvídání akcí sítě aktivováno, ale uživatelé nastavení budou moci změnit.</translation>
 <translation id="1865417998205858223">Klíčová oprávnění</translation>
 <translation id="186719019195685253">Akce, která bude provedena, pokud bude dosaženo limitu doby nečinnosti při provozu na síťové napájení</translation>
 <translation id="187819629719252111">Umožňuje přistupovat k místním souborům v počítači tím, že aplikaci <ph name="PRODUCT_NAME" /> povolí, aby zobrazovala dialogová okna pro výběr souboru. 
@@ -685,6 +692,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
       Pokud tato zásada není nastavena, předpokládá se použití možnosti <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximální počet současných připojení k proxy serveru</translation>
+<translation id="2951386431828317490">Povoluje automatické vyplňování pro profily</translation>
 <translation id="2956777931324644324">Podpora této zásady byla ve verzi 36 prohlížeče <ph name="PRODUCT_NAME" /> ukončena.
 
       Určuje, zda má být povoleno rozšíření certifikátů svázaných s doménami.
@@ -693,6 +701,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 <translation id="2957506574938329824">Nedovolit žádnému webu požadovat přístup k zařízením Bluetooth pomocí rozhraní Web Bluetooth API</translation>
 <translation id="2957513448235202597">Typ účtu pro ověření protokolu <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Pravidla vynechání proxy serveru</translation>
+<translation id="2960128438010718932">Plán zavádění nové aktualizace po etapách</translation>
 <translation id="2960691910306063964">Aktivovat nebo deaktivovat ověřování bez kódu PIN u hostitelů vzdáleného přístupu</translation>
 <translation id="2976002782221275500">Udává dobu nečinnosti uživatele, po které bude při napájení z baterie snížen jas obrazovky.
 
@@ -732,6 +741,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
       Nezávisle na tom, zda je tato zásada nastavena nebo jak je nastavena, uživatelé nastavení optimalizace WPAD nemohou změnit.</translation>
 <translation id="3072045631333522102">Spořič obrazovky, který bude použit na přihlašovací obrazovce v režimu pro obchody</translation>
 <translation id="3072847235228302527">Nastavit smluvní podmínky pro účet v zařízení</translation>
+<translation id="3077183141551274418">Povolí nebo zakáže životní cykly karet</translation>
 <translation id="3086995894968271156">Nakonfigurujte přijímač Cast ve službě <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno zobrazovat obrázky.
 
@@ -1300,6 +1310,11 @@ Pokud zásadu nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovat přihla�
       Tyto návrhy se načítají vzdáleně ze serverů Google.
 
       Pokud je tato zásada nastavená na hodnotu false, návrhy se načítat ani zobrazovat nebudou.</translation>
+<translation id="4788252609789586009">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o platebních kartách pomocí dříve uložených údajů.
+
+      Pokud je toto nastavení zakázáno, nebude automatické vyplňování navrhovat ani vyplňovat informace o platebních kartách a nebude ani ukládat další informace o platebních kartách, které uživatel při prohlížení webu odešle.
+
+      Pokud je toto nastavení zapnuto nebo nemá žádnou hodnotu, uživatel bude moci automatické vyplňování pro platební karty ovládat v uživatelském rozhraní.</translation>
 <translation id="4791031774429044540">Aktivuje funkci usnadnění přístupu pomocí velkého kurzoru.
 
 Pokud je tato zásada nastavena na hodnotu true, velký kurzor bude vždy aktivní.
@@ -1437,6 +1452,11 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
       Pokud je tato zásada nastavena na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> zabrání spuštění zařízení v režimu pro vývojáře. Po zapnutí přepínače pro vývojáře se systém odmítne spustit a zobrazí se obrazovka s chybou.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, režim pro vývojáře bude v zařízení nadále k dispozici.</translation>
+<translation id="520403427390290017">Funkce životních cyklů karet umožňuje znovu získat kapacitu procesoru a případně také paměť obsazenou spuštěnými kartami, které již dlouhou dobu nebyly použity. Takovým kartám se nejdříve omezí prostředky, poté se zmrazí a nakonec se zahodí.
+
+      Je-li tato zásada nastavena na hodnotu false, jsou životní cykly karet zakázány a všechny karty budou běžně ponechány spuštěné.
+
+      Pokud je tato zásada nastavena na hodnotu true nebo není zadána, je funkce životního cyklu karet povolena.</translation>
 <translation id="5208240613060747912">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat oznámení.
 
          Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1484,6 +1504,11 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 
           Je-li tato zásada nastavena na hodnotu False, uživatelé do svého zařízení nebudou moci odesílat obsah. Je-li tato zásada nastavena na hodnotu True, uživatelé obsah odesílat mohou. Pokud tato zásada není nastavena, uživatelé nemohou odesílat obsah do zaregistrovaných zařízení se systémem Chrome OS, ale do nezaregistrovaných zařízení jej odesílat mohou.</translation>
 <translation id="5330684698007383292">Umožnit pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu</translation>
+<translation id="5360146044009867539">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o profilu a adresách pomocí dříve uložených údajů.
+
+      Pokud je toto nastavení zakázáno, automatické vyplňování nebude navrhovat ani vyplňovat informace o adresách a nebude ani ukládat další informace o adresách, které uživatel při prohlížení webu odešle.
+
+      Pokud je toto nastavení zapnuto nebo nemá žádnou hodnotu, uživatel bude moci automatické vyplňování adres ovládat v uživatelském rozhraní.</translation>
 <translation id="5365946944967967336">Zobrazit na liště tlačítko Domů</translation>
 <translation id="5366745336748853475">Umožňuje zadat seznam vzorů adres URL webů, pro které se na přihlašovací obrazovce v rámci procesu SAML automaticky vybere certifikát klienta, pokud o něj daný web požádá. Tuto zásadu lze využít například k nakonfigurování certifikátu pro celé zařízení, který bude předkládán poskytovateli identity SAML.
 
@@ -2194,6 +2219,15 @@ V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS
 
           Pokud je toto nastavení deaktivováno, tato funkce nebude dostupná.</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
+<translation id="729492886167634859">Tato zásada určuje seznam procentuálních podílů zařízení se systémem <ph name="PRODUCT_OS_NAME" /> v organizační jednotce, která se aktualizují každý týden ode dne prvního objevení aktualizace. Čas objevení je pozdější než čas publikování aktualizace, protože zařízení může dostupnost aktualizací zkontrolovat až nějakou dobu po publikování aktualizace.
+
+      N-tá hodnota v seznamu se použije jako procento zařízení, na kterých má být aktualizace na další verzi provedena v n-tém týdnu po objevení aktualizace. Pokud je například aktualizace objevena dnes, první hodnota v seznamu udává, jaké procento zařízení v organizační jednotce se má na danou verzi aktualizovat do jednoho týdne od dnes. Druhá hodnota udává, jaké procento zařízení v organizační jednotce se má na danou verzi aktualizovat do dvou týdnu od dnes, atd.
+
+      Pokud je v této zásadě definovaná nějaká hodnota, budou aktualizace ignorovat zásadu <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> a budou se namísto ní řídit touto zásadou.
+
+      Je-li seznam prázdný, aktualizace se nebudou zavádět na etapy, ale podle jiných zásad zařízení.
+
+      Tato zásada se nevztahuje na přepínání mezi kanály.</translation>
 <translation id="7295019613773647480">Aktivovat dozorovaného uživatele</translation>
 <translation id="7301543427086558500">Určuje seznam alternativních adres URL, ze kterých lze získat vyhledávací dotazy pro vyhledávač. Tyto adresy URL by měly obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />, podle kterého budou vyhledávací dotazy rozpoznány.
 
@@ -2643,6 +2677,12 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 
           Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktivovat ukládání historie prohlížeče</translation>
+<translation id="8498293625012059298">Konfiguruje adresu URL pro změnu hesla (pouze schémata HTTP a HTTPS). Po zobrazení upozornění v prohlížeči bude služba pro ochranu hesel odesílat uživatele na tuto adresu URL, aby si změnili heslo.
+      Aby prohlížeč <ph name="PRODUCT_NAME" /> na stránce pro změnu hesla mohl správně pořídit otisk nového hesla, měla by odpovídat pokynům na stránce https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Pokud je toto nastavení zapnuto, bude služba pro ochranu hesel uživatele po zobrazení upozornění v prohlížeči odesílat na tuto adresu URL, aby si změnili heslo.
+      Pokud je toto nastavení vypnuto nebo není nastaveno, bude služba pro ochranu hesel uživatele za účelem změny hesla odesílat na adresu https://accounts.google.com.
+      V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
 <translation id="8499172469244085141">Výchozí nastavení (uživatelé mohou zásady přepsat)</translation>
 <translation id="8507835864888987300">Nastavuje cílovou verzi pro automatické aktualizace.
 
@@ -2696,6 +2736,14 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
       Při změně na hodnotu False se na spouštění nových virtuálních počítačů použije nové nastavení, ale již spuštěné virtuální počítače nebudou ukončeny.
       Pokud na spravovaném zařízení není nastavena tato zásada, je v něm spouštění virtuálních počítačů zakázáno.
       Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
+<translation id="8669669491594628013">Umožňuje ovládat spouštění upozornění ohledně ochrany hesla. Upozornění ohledně ochrany hesla se uživatelům zobrazí, pokud své chráněné heslo použijí na potenciálně podezřelých webech.
+
+      Pomocí zásad PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL můžete nakonfigurovat, která hesla mají být chráněna.
+
+      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOff, upozornění ohledně ochrany hesla se zobrazovat nebude.
+      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOnPasswordReuse, zobrazí se upozornění ohledně ochrany hesla, když uživatel použije chráněné heslo na webu, který není uveden na seznamu povolených.
+      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOnPhishingReuse, zobrazí se upozornění ohledně ochrany hesla, když uživatel použije chráněné heslo na phishingovém webu.
+      Pokud tuto zásadu ponecháte nenastavenou, bude služba pro ochranu hesel chránit pouze hesla Google, ale uživatel toto nastavení bude moci změnit.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla</translation>

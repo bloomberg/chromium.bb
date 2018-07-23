@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">csúszka</translation>
 <translation id="1211441953136645838">záró jegyzet</translation>
 <translation id="1281252709823657822">párbeszédpanel</translation>
+<translation id="1289247557029249093">Kilépés a kép a képben módból</translation>
 <translation id="1335095011850992622">készítők</translation>
 <translation id="1342835525016946179">cikk</translation>
 <translation id="1359897965706325498">szalaghirdetés</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2657045182931379222">grafikus objektum</translation>
 <translation id="2674318244760992338">lábléc</translation>
+<translation id="2706474812903655270">A videó lejátszása kép a képben módban történik</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Az érték <ph name="MINIMUM_DATE_OR_TIME" /> vagy azt követő kell, hogy legyen.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">hátralévő idő</translation>
 <translation id="7740016676195725605">feliratok elrejtése</translation>
 <translation id="7740050170769002709">HTML-tartalom</translation>
+<translation id="7750228210027921155">Kép a képben</translation>
 <translation id="7789962463072032349">szüneteltetés</translation>
 <translation id="7802800022689234070">plusz tartalom kibontására szolgáló háromszög</translation>
 <translation id="7888071071722539607">Kérjük, írjon egy „<ph name="ATSIGN" />” karaktert az e-mail címbe. A(z) „<ph name="INVALIDADDRESS" />” címből hiányzik a „<ph name="ATSIGN" />” jel.</translation>

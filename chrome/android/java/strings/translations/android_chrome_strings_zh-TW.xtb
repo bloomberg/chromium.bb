@@ -29,6 +29,7 @@
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1204037785786432551">下載連結</translation>
 <translation id="1206892813135768548">複製連結文字</translation>
+<translation id="1208340532756947324">如要進行同步處理並在所有裝置上享有個人化的體驗，請開啟同步處理功能</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="123724288017357924">重新載入目前的網頁，略過已快取的內容</translation>
 <translation id="124116460088058876">更多語言</translation>
@@ -129,6 +130,7 @@
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> 要求配對</translation>
 <translation id="1994173015038366702">網站網址</translation>
+<translation id="2002537628803770967">使用 Google Pay 儲存的信用卡和地址資訊</translation>
 <translation id="200815880754187296">其他應用程式佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="2017836877785168846">將歷史記錄和自動即時查詢從網址列中清除。</translation>
 <translation id="2021896219286479412">全螢幕網站控制</translation>
@@ -225,6 +227,7 @@
 <translation id="2777555524387840389">還剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">還剩 1 秒</translation>
 <translation id="2810645512293415242">網頁內容經過簡化，不僅節省數據用量，更加快載入速度。</translation>
+<translation id="2818669890320396765">如要將書籤同步到所有裝置，請登入並開啟同步處理功能</translation>
 <translation id="2836148919159985482">輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2870560284913253234">網站</translation>
@@ -303,6 +306,7 @@
 <translation id="3549657413697417275">搜尋你的記錄</translation>
 <translation id="3552151358455404883">前往<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />頁面管理 Chrome 同步功能和個人化設定</translation>
 <translation id="3557336313807607643">新增為聯絡人</translation>
+<translation id="3568688522516854065">如要存取你在其他裝置上開啟的分頁，請登入並開啟同步處理功能</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3590487821116122040">Chrome 認定為不重要的網站 (例如未儲存任何設定的網站，或是您不常造訪的網站) 所儲存的資料</translation>
 <translation id="3599863153486145794">將歷史記錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
@@ -375,6 +379,7 @@
 <translation id="4192273449750167573">在下一個畫面中查看你的設定</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
+<translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
@@ -400,6 +405,7 @@
 <translation id="4452548195519783679">已將書籤加入「<ph name="FOLDER_NAME" />」</translation>
 <translation id="4453340223357552416"><ph name="PRODUCT_NAME" /> 已下載「<ph name="FILE_NAME" />」</translation>
 <translation id="4468959413250150279">將特定網站設為靜音。</translation>
+<translation id="4472118726404937099">如要進行同步處理並在所有裝置上享有個人化的體驗，請登入並開啟同步處理功能</translation>
 <translation id="4479647676395637221">允許網站使用您的攝影機前，必須先詢問您 (建議)</translation>
 <translation id="4487967297491345095">Chrome 的應用程式資料會全部遭到永久刪除，包括所有檔案、設定、帳戶、資料庫等等。</translation>
 <translation id="4508440807153586353">只有知道您通關密語的使用者，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果您忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
@@ -408,7 +414,6 @@
 <translation id="4521489764227272523">系統已將你所選取的資料從 Chrome 和其他同步的裝置中移除。
 
 你的 Google 帳戶仍可能保留了其他類型的瀏覽記錄，例如其他 Google 服務中的搜尋和活動記錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
-<translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4532845899244822526">選擇資料夾</translation>
 <translation id="4550003330909367850">如要在這裡查看或複製你的密碼，請為這個裝置設定螢幕鎖定功能。</translation>
 <translation id="4558311620361989323">網頁快速鍵</translation>
@@ -585,6 +590,7 @@
 <translation id="5854790677617711513">超過 30 天前</translation>
 <translation id="5858741533101922242">Chrome 無法開啟藍牙轉接器</translation>
 <translation id="5860033963881614850">關閉</translation>
+<translation id="5862731021271217234">如要存取你在其他裝置上開啟的分頁，請開啟同步處理功能</translation>
 <translation id="5864174910718532887">詳細資料：依網站名稱排序</translation>
 <translation id="5864419784173784555">正在等待其他下載程序完成…</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
@@ -863,6 +869,7 @@
 <translation id="8100932616285851614">導覽面版已關閉</translation>
 <translation id="8103578431304235997">無痕式分頁</translation>
 <translation id="8105951947646329362">建議相關的網頁</translation>
+<translation id="8109613176066109935">如要將書籤同步到所有裝置，請開啟同步處理功能</translation>
 <translation id="8116925261070264013">已設為靜音</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8168435359814927499">內容</translation>
@@ -967,6 +974,7 @@
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9070377983101773829">開始語音搜尋</translation>
 <translation id="9071742570345586758">如要查看虛擬實境內容，請安裝 Google VR 服務</translation>
+<translation id="9074336505530349563">如要取得個人化的 Google 推薦內容，請登入並開啟同步處理功能</translation>
 <translation id="9086455579313502267">無法存取網路</translation>
 <translation id="9099018167121903954">下載內容佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">詢問是否以簡易模式顯示支援這項功能的文章</translation>

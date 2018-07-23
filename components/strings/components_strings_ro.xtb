@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Specifică detalii suplimentare</translation>
 <translation id="1021110881106174305">Carduri acceptate</translation>
 <translation id="1032854598605920125">Rotește în sensul acelor de ceasornic</translation>
+<translation id="1035334672863811645">conectează-te la Chrome</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="1050038467049342496">închide celelalte aplicații;</translation>
 <translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
@@ -164,7 +165,6 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestie}few{# sugestii}other{# de sugestii}}</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="20817612488360358">Setările proxy de sistem sunt setate pentru a fi utilizate, dar o configurație explicită pentru proxy este, de asemenea, specificată.</translation>
-<translation id="2084558088529668945">Ai introdus parola pe un site care nu este gestionat de <ph name="ORG_NAME" />. Pentru a proteja contul, nu folosi aceeași parolă pentru alte aplicații și site-uri.</translation>
 <translation id="2091887806945687916">Sunet</translation>
 <translation id="2094505752054353250">Nepotrivire domeniu</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -457,7 +457,6 @@
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Încă <ph name="ITEM_COUNT" /> articol}few{Încă <ph name="ITEM_COUNT" /> articole}other{Încă <ph name="ITEM_COUNT" /> de articole}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome îți recomandă să resetezi parola pentru <ph name="ORG_NAME" /> dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Blocări</translation>
@@ -585,6 +584,7 @@
 <translation id="5089810972385038852">Stat</translation>
 <translation id="5094747076828555589">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chromium nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="5095208057601539847">Provincie</translation>
+<translation id="5098332213681597508">Acest nume provine din Contul tău Google.</translation>
 <translation id="5115563688576182185">(64 de biți)</translation>
 <translation id="5121084798328133320">După ce confirmi, acest site va avea acces la detaliile cardului tău din contul Google Payments.</translation>
 <translation id="5128122789703661928">Sesiunea cu acest nume nu este validă pentru ștergere.</translation>
@@ -670,6 +670,7 @@
 <translation id="5633066919399395251">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pot încerca să instaleze programe periculoase pe computerul tău, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografii, parole, mesaje sau date despre cardurile de credit). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Conținutul înșelător a fost blocat.</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
+<translation id="5666899935841546222">Vrei să ai toate cardurile într-un singur loc?</translation>
 <translation id="5675650730144413517">Pagina nu funcționează</translation>
 <translation id="5685654322157854305">Adaugă adresa de expediere</translation>
 <translation id="5689199277474810259">Exportă în format JSON</translation>
@@ -696,7 +697,6 @@
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
 <translation id="5893752035575986141">Se acceptă carduri de credit.</translation>
-<translation id="5898382028489516745">Chromium îți recomandă să resetezi parola pentru <ph name="ORG_NAME" /> dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizat)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 în uz}few{# în uz}other{# în uz}}</translation>
 <translation id="5939518447894949180">Resetează</translation>
@@ -1040,6 +1040,7 @@
 <translation id="8553075262323480129">Traducerea nu a reușit, deoarece nu a putut fi stabilită limba paginii.</translation>
 <translation id="8557066899867184262">Codul CVC se află pe spatele cardului.</translation>
 <translation id="8559762987265718583">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
+<translation id="8564985650692024650">Chromium îți recomandă să resetezi parola pentru <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="8571890674111243710">Se traduce pagina în <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Adăugați telefon
 </translation>
@@ -1069,6 +1070,7 @@
 <translation id="884264119367021077">Adresa de expediere</translation>
 <translation id="884923133447025588">Nu a fost găsit niciun mecanism de revocare.</translation>
 <translation id="885730110891505394">Permiterea accesului pentru Google</translation>
+<translation id="8858065207712248076">Chrome îți recomandă să resetezi parola pentru <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="8874824191258364635">Introdu un număr de card valid</translation>

@@ -564,7 +564,6 @@
 <translation id="1829192082282182671">&amp;Уменьшить</translation>
 <translation id="1830550083491357902">Вход не выполнен</translation>
 <translation id="1832511806131704864">Сведения о телефоне обновлены</translation>
-<translation id="1832685970989658809">Администратор отключил автозаполнение способов оплаты.</translation>
 <translation id="1834503245783133039">Не удалось скачать файл <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Удалить условия поиска</translation>
 <translation id="1838709767668011582">Сайт Google</translation>
@@ -941,7 +940,6 @@
 <translation id="2435457462613246316">Показать пароль</translation>
 <translation id="2436186046335138073">Использовать <ph name="HANDLER_HOSTNAME" /> для обработки ссылок типа "<ph name="PROTOCOL" />"?</translation>
 <translation id="2436707352762155834">Минимальные</translation>
-<translation id="2437139306601019091">Отслеживание расхода трафика прекращено</translation>
 <translation id="2440604414813129000">Просмотреть и&amp;сходный код</translation>
 <translation id="2445081178310039857">Требуется корневой каталог расширения.</translation>
 <translation id="2445484935443597917">Создать профиль</translation>
@@ -1879,7 +1877,6 @@
 <translation id="3855441664322950881">Упаковать расширение</translation>
 <translation id="3855676282923585394">Импорт закладок и настроек...</translation>
 <translation id="3856800405688283469">Выберите часовой пояс</translation>
-<translation id="3856921555429624101">Отслеживание расхода трафика прекращено</translation>
 <translation id="3857228364945137633">Благодаря Smart Lock вам не придется вводить пароль. Снимайте блокировку устройства <ph name="DEVICE_TYPE" /> с помощью телефона.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: синхронизация приостановлена</translation>
@@ -2250,7 +2247,6 @@
 <translation id="4508051413094283164">Открыть все в режиме инкогнито</translation>
 <translation id="4508265954913339219">Активация завершилась со сбоем</translation>
 <translation id="4508765956121923607">Исходный код страницы</translation>
-<translation id="4509823033118379431">Эти изображения сейчас недоступны. Чтобы посмотреть коллекции, подключитесь повторно.</translation>
 <translation id="451407183922382411">Технологии <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Создать контролируемый профиль.</translation>
 <translation id="4514610446763173167">Запустить или приостановить видео</translation>
@@ -2327,6 +2323,7 @@
 <translation id="4627442949885028695">Продолжить на другом устройстве</translation>
 <translation id="4628314759732363424">Изменить</translation>
 <translation id="4628757576491864469">Устройства</translation>
+<translation id="4628948037717959914">Фото</translation>
 <translation id="4630590996962964935">Недопустимый символ: $1</translation>
 <translation id="4631887759990505102">Исполнитель</translation>
 <translation id="4632483769545853758">Включить звук на вкладке</translation>
@@ -2512,7 +2509,6 @@
 <translation id="4905417359854579806">Файлы (<ph name="FILE_COUNT" />) готовы к сохранению</translation>
 <translation id="4907161631261076876">Этот файл скачивают редко. Возможно, он вредоносный.</translation>
 <translation id="4907306957610201395">Категория разрешения</translation>
-<translation id="4907824805858067479">Администратор отключил автозаполнение для карт</translation>
 <translation id="4908811072292128752">Откройте новую вкладку, чтобы перейти на другой сайт, не закрывая предыдущий</translation>
 <translation id="4909038193460299775">Ваш аккаунт управляется доменом <ph name="DOMAIN" />. Все закладки, история, пароли и настройки будут удалены с устройства, однако данные в аккаунте Google сохранятся. Вы можете просмотреть и изменить их в <ph name="BEGIN_LINK" />Личном кабинете Google<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">Регистрация завершена</translation>
@@ -3232,7 +3228,6 @@
 <translation id="5990386583461751448">Перевод</translation>
 <translation id="5991049340509704927">Увеличение</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить это приложение.}one{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}few{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}many{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}other{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}}</translation>
-<translation id="5993332328670040093">Расход трафика больше не отслеживается.</translation>
 <translation id="6002458620803359783">Голоса по умолчанию</translation>
 <translation id="6005695835120147974">Медиамаршрутизатор</translation>
 <translation id="6006484371116297560">Классическая</translation>
@@ -3424,7 +3419,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413">Файл <ph name="FILE_NAME" /> скачивают редко. Возможно, он вредоносный.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Новый принтер в сети}one{Новые принтеры в сети}few{Новые принтеры в сети}many{Новые принтеры в сети}other{Новые принтеры в сети}}</translation>
-<translation id="6286684120317096255">Расход трафика отслеживается</translation>
 <translation id="6286708577777130801">Данные сохраненного пароля</translation>
 <translation id="6287852322318138013">Выберите программу, в которой необходимо открыть этот файл</translation>
 <translation id="6289452883081499048">Вам доступна персонализация сервисов Google (например, Google Play).</translation>
@@ -4135,7 +4129,6 @@
 <translation id="7400839060291901923">Настройте соединение на устройстве <ph name="PHONE_NAME" /></translation>
 <translation id="740624631517654988">Всплывающее окно заблокировано</translation>
 <translation id="7407430846095439694">Импортировать и подключить</translation>
-<translation id="7409233648990234464">Перезапустить и включить Powerwash</translation>
 <translation id="7409836189476010449">Запустить Flash</translation>
 <translation id="7410344089573941623">Запрашивать разрешение на доступ к камере и микрофону для сайта <ph name="HOST" /></translation>
 <translation id="741204030948306876">ОК</translation>
@@ -4989,7 +4982,6 @@
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8725178340343806893">Избранное/Закладки</translation>
 <translation id="8726206820263995930">Ошибка при получении настроек политики с сервера: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727142376512517020">Больше не показывать</translation>
 <translation id="8727344521467137076">На компьютере обнаружено вредоносное ПО. Chrome удалит его и восстановит настройки, чтобы вернуть браузер в обычное состояние.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8732030010853991079">Активируйте расширение, нажав на этот значок.</translation>

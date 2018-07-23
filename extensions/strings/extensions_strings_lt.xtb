@@ -57,6 +57,7 @@
 <translation id="7003844668372540529">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš „<ph name="VENDOR_NAME" />“</translation>
 <translation id="7068383018033524534">Netinkamas aprašo failas</translation>
 <translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME" />“. Jo negalima pašalinti ar pakeisti.</translation>
+<translation id="7939686037314084444">Nepavyko tinkamai įkelti plėtinio. Gali būti, kad jam nepavyks nuskaityti tinklo užklausų.</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME" />“</translation>
 <translation id="8035920974645200807">Nukreiptas į naudotoją</translation>
 <translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME" />“, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME" />“.</translation>

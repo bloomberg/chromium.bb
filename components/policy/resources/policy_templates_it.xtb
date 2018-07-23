@@ -227,6 +227,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       In caso contrario, se è necessario mantenere la compatibilità con un server con errori, è possibile impostare la norma su "tls1.1". Si tratta di una misura temporanea ed è necessario correggere rapidamente il server.</translation>
 <translation id="1864269674877167562">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
       Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio. L'utente potrà sovrascrivere l'estensione del nome di dominio.</translation>
+<translation id="1864382791685519617">Consente la previsione della rete in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
+
+      Controlla il precaricamento DNS, la preconnessione TCP ed SSL e il prerendering delle pagine web.
+
+      Se imposti questa norma, gli utenti non potranno modificare né sostituire questa impostazione in <ph name="PRODUCT_NAME" />.
+
+      Se questa norma non viene impostata, la previsione di rete verrà attivata ma l'utente potrà modificarla.</translation>
 <translation id="1865417998205858223">Autorizzazioni chiave</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
 <translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME" /> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
@@ -677,6 +684,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Numero massimo di connessioni simultanee al server proxy</translation>
+<translation id="2951386431828317490">Attiva la Compilazione automatica per i profili</translation>
 <translation id="2956777931324644324">Questa norma è stata ritirata a partire dalla versione 36 di <ph name="PRODUCT_NAME" />.
 
       Consente di specificare se attivare o meno l'estensione di certificati associati al dominio TLS.
@@ -685,6 +693,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2957506574938329824">Non consentire ad alcun sito di richiedere l'accesso ai dispositivi Bluetooth tramite l'API Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipo di account per l'autenticazione <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regole di bypass proxy</translation>
+<translation id="2960128438010718932">Il programma di gestione temporale per l'applicazione di nuovi aggiornamenti</translation>
 <translation id="2960691910306063964">Consente di attivare o disattivare l'autenticazione senza PIN per gli host di accesso remoto</translation>
 <translation id="2976002782221275500">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene utilizzata la batteria.
 
@@ -722,6 +731,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Indipendentemente da se o come questa norma è impostata, l'utente non può modificare l'impostazione di ottimizzazione di WPAD.</translation>
 <translation id="3072045631333522102">Screensaver da utilizzare nella schermata di accesso in modalità retail</translation>
 <translation id="3072847235228302527">Imposta i Termini di servizio di un account locale del dispositivo</translation>
+<translation id="3077183141551274418">Abilita o disabilita i cicli di vita delle schede</translation>
 <translation id="3086995894968271156">Consente di configurare Cast Receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita la visualizzazione di immagini.
 
@@ -1264,6 +1274,11 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Questi suggerimenti vengono recuperati da remoto dai server di Google.
 
       Se la norma è impostata su false, non verranno recuperati o mostrati suggerimenti.</translation>
+<translation id="4788252609789586009">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e di permettere agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come i dati della carta di credito.
+
+      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non memorizzerà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
+
+      Se questa impostazione è attivata, l'utente potrà gestire la funzione Compilazione automatica globale per le carte di credito nell'interfaccia utente.</translation>
 <translation id="4791031774429044540">Consente di attivare la funzione di accessibilità del puntatore grande.
 
 Se la norma viene impostata su true, il puntatore grande sarà sempre attivo.
@@ -1386,6 +1401,11 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se questa norma viene impostata su True, <ph name="PRODUCT_OS_NAME" /> impedirà l'avvio del dispositivo in modalità sviluppatore. Il sistema non verrà avviato e verrà visualizzata una schermata di errore quando viene attivata la modalità sviluppatore.
 
       Se questa norma non è impostata o è impostata su False, la modalità sviluppatore continuerà a essere disponibile per il dispositivo.</translation>
+<translation id="520403427390290017">La funzionalità cicli di vita della scheda reclama la CPU e le eventuali memorie associate che non sono state utilizzate per un lungo periodo di tempo, inizialmente limitandole, quindi bloccandole e infine eliminandole.
+
+      Se la norma viene impostata su false, i cicli di vita della scheda verranno disattivati e tutte le schede verranno eseguite normalmente.
+
+      Se la norma è impostata su true o non viene impostata in alcun modo, i cicli di vita della scheda verranno attivati.</translation>
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
@@ -1431,6 +1451,11 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
           Se questa norma viene impostata su False, gli utenti non potranno trasmettere contenuti al proprio dispositivo. Se questa norma viene impostata su True, gli utenti potranno trasmettere contenuti. Se questa norma non viene impostata, gli utenti non potranno trasmettere contenuti a dispositivi Chrome OS registrati, ma potranno trasmetterli a dispositivi non registrati.</translation>
 <translation id="5330684698007383292">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuti</translation>
+<translation id="5360146044009867539">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e di permettere agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come i dati del profilo e l'indirizzo.
+
+      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati relativi all'indirizzo, né memorizzerà altre informazioni relative ad altri indirizzi che l'utente potrebbe inviare durante la navigazione sul Web.
+
+      Se questa impostazione è attivata o non vi è impostato alcun valore, l'utente potrà gestire la funzione Compilazione automatica globale per gli indirizzi nell'interfaccia utente.</translation>
 <translation id="5365946944967967336">Mostra il pulsante Pagina iniziale nella barra degli strumenti</translation>
 <translation id="5366745336748853475">Ti consente di specificare un elenco di pattern URL relativi ai siti che richiedono certificati per cui viene selezionato automaticamente un certificato client nella schermata di accesso all'interno del frame che ospita il flusso SAML. Un esempio di utilizzo è la configurazione di un certificato a livello di dispositivo da presentare all'IdP SAML.
 
@@ -2105,6 +2130,15 @@ Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato
 
 Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</translation>
 <translation id="7275334191706090484">Preferiti gestiti</translation>
+<translation id="729492886167634859">Questa norma definisce un elenco di percentuali dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nella UO da aggiornare ogni settimana a partire dal giorno in cui l'aggiornamento viene rilevato. L'ora del rilevamento è diversa dall'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
+
+      Il valore numerico nell'elenco rappresenta la percentuale di dispositivi che dovrebbero completare l'aggiornamento alla versione successiva entro una data settimana dal rilevamento dell'aggiornamento. Ad esempio, se oggi viene rilevato un aggiornamento, il primo valore nell'elenco definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro una settimana a partire da oggi. Il secondo valore definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro due settimane a partire da oggi e così via.
+
+      Se viene definito un valore per questa norma, gli aggiornamenti la applicano ignorando la norma <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />.
+
+      Se quest'elenco è vuoto, non viene eseguita alcuna gestione temporale e gli aggiornamenti vengono applicati in base alle altre norme del dispositivo.
+
+      Questa norma non viene applicata agli switch del canale.</translation>
 <translation id="7295019613773647480">Attiva utenti supervisionati</translation>
 <translation id="7301543427086558500">Specifica un elenco di URL alternativi che possono essere utilizzati per estrarre termini di ricerca dal motore di ricerca. Gli URL devono contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà utilizzata per estrarre i termini di ricerca.
 
@@ -2545,6 +2579,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
+<translation id="8498293625012059298">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password invierà gli utenti a questo URL dopo la visualizzazione di un avviso sul browser.
+      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare le password, dopo la visualizzazione di un avviso browser.
+      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccounts.google.com per modificare la password.
+      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
 <translation id="8507835864888987300">Consente di impostare una versione target per gli Aggiornamenti automatici.
 
@@ -2598,6 +2637,14 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
       Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
       I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
+<translation id="8669669491594628013">Ti consente di controllare l'attivazione dell'avviso di protezione tramite password. La protezione tramite password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
+
+      Puoi utilizzare le norme 'PasswordProtectionLoginURLs' e 'PasswordProtectionChangePasswordURL' per configurare la password da proteggere.
+
+      Se questa norma è impostata su 'PasswordProtectionWarningOff', non apparirà alcun avviso di protezione tramite password.
+      Se questa norma è impostata su 'PasswordProtectionWarningOnPasswordReuse', l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
+      Se questa norma è impostata su 'PasswordProtectionWarningOnPhishingReuse', l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito di phishing.
+      Se questa norma viene lasciata non impostata, il servizio di protezione tramite password proteggerà esclusivamente le password Google, ma l'utente sarà in grado di modificare questa impostazione.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>

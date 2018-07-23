@@ -57,6 +57,7 @@
 <translation id="7003844668372540529">Produto <ph name="PRODUCT_ID" /> desconhecido de <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">O arquivo de manifesto é inválido</translation>
 <translation id="7217838517480956708">O administrador desta máquina requer a instalação de <ph name="EXTENSION_NAME" />. Não é possível remover ou modificá-lo.</translation>
+<translation id="7939686037314084444">A extensão não foi carregada corretamente. Talvez ela não consiga interceptar solicitações de rede.</translation>
 <translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Voltada para o usuário</translation>
 <translation id="8047248493720652249">Falha ao nomear o download "<ph name="ATTEMPTED_FILENAME" />" com esta extensão, porque outra extensão (<ph name="EXTENSION_NAME" />) determinou um nome de arquivo diferente: "<ph name="ACTUAL_FILENAME" />".</translation>
