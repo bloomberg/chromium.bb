@@ -24368,6 +24368,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IndexedDatabaseMethods">
+  <obsolete>
+    Deprecated as of July 2018.
+  </obsolete>
   <int value="0" label="CreateObjectStore()"/>
   <int value="1" label="DeleteObjectStore()"/>
   <int value="2" label="Transaction()"/>
