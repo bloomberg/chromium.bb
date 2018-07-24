@@ -4,10 +4,18 @@
 
 #import <XCTest/XCTest.h>
 
+#import "base/test/ios/wait_util.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -84,7 +92,59 @@ NSString* GetTextFieldForID(int categoryId) {
 @interface AutofillSettingsTestCase : ChromeTestCase
 @end
 
-@implementation AutofillSettingsTestCase
+@implementation AutofillSettingsTestCase {
+  // The PersonalDataManager instance for the current browser state.
+  autofill::PersonalDataManager* _personalDataManager;
+}
+
+- (void)setUp {
+  [super setUp];
+
+  _personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+  _personalDataManager->SetSyncingForTest(true);
+}
+
+- (void)tearDown {
+  // Clear existing profiles and credit cards.
+  for (const auto* profile : _personalDataManager->GetProfiles()) {
+    _personalDataManager->RemoveByGUID(profile->guid());
+  }
+  for (const auto* creditCard : _personalDataManager->GetCreditCards()) {
+    _personalDataManager->RemoveByGUID(creditCard->guid());
+  }
+
+  [super tearDown];
+}
+
+- (autofill::AutofillProfile)addAutofillProfile {
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  size_t profileCount = _personalDataManager->GetProfiles().size();
+  _personalDataManager->AddProfile(profile);
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^bool() {
+                   return profileCount <
+                          _personalDataManager->GetProfiles().size();
+                 }),
+             @"Failed to add profile.");
+  return profile;
+}
+
+- (autofill::CreditCard)addCreditCard {
+  autofill::CreditCard creditCard = autofill::test::GetCreditCard();  // Visa.
+  size_t cardCount = _personalDataManager->GetCreditCards().size();
+  _personalDataManager->AddCreditCard(creditCard);
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^bool() {
+                   return cardCount <
+                          _personalDataManager->GetCreditCards().size();
+                 }),
+             @"Failed to add credit card.");
+  return creditCard;
+}
 
 // Helper to load a page with an address form and submit it.
 - (void)loadAndSubmitTheForm {
@@ -103,6 +163,7 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Helper to open the settings page for the record with |address|.
 - (void)openEditAddress:(NSString*)address {
+  // Go to Autofill Settings.
   [ChromeEarlGreyUI openSettingsMenu];
   NSString* label = l10n_util::GetNSString(IDS_IOS_AUTOFILL);
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(label)]
@@ -202,10 +263,12 @@ NSString* GetTextFieldForID(int categoryId) {
 }
 
 // Checks that if the autofill profiles and credit cards list view is in edit
-// mode, the "autofill" and "wallet" switch items are disabled.
+// mode, the Autofill, address, and credit card switches are disabled.
 - (void)testListViewEditMode {
-  [self loadAndSubmitTheForm];
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+  autofill::CreditCard creditCard = [self addCreditCard];
 
+  // Go to Autofill Settings.
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabel(
@@ -217,10 +280,130 @@ NSString* GetTextFieldForID(int categoryId) {
                                           IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
       performAction:grey_tap()];
 
-  // Check the "autofill" switch is disabled. Disabled switches are toggled off.
+  // Check the Autofill, address, and credit card switches are disabled.
+  // Disabled switches are toggled off.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
                                           @"autofillItem_switch", NO, NO)]
       assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"addressItem_switch", NO, NO)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"cardItem_switch", NO, NO)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Checks that the autofill address switch can be toggled on/off independently
+// and the list of autofill profiles is not affected by it.
+- (void)testToggleAutofillAddressSwitch {
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+
+  // Go to Autofill Settings.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(IDS_IOS_AUTOFILL))]
+      performAction:grey_tap()];
+
+  // Toggle the Autofill address switch off.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"addressItem_switch", YES, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+
+  // Expect Autofill profiles to remain visible.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          @"John H. Doe, 666 Erebus St.")]
+      assertWithMatcher:grey_notNil()];
+
+  // Toggle the Autofill address switch back on.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"addressItem_switch", NO, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+
+  // Expect Autofill profiles to remain visible.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          @"John H. Doe, 666 Erebus St.")]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Checks that the autofill credit card switch can be toggled on/off
+// independently and the list of autofill credit cards is not affected by it.
+- (void)testToggleAutofillCreditCardSwitch {
+  autofill::CreditCard creditCard = [self addCreditCard];
+
+  // Go to Autofill Settings.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(IDS_IOS_AUTOFILL))]
+      performAction:grey_tap()];
+
+  // Toggle the Autofill credit card switch off.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"cardItem_switch", YES, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+
+  // Expect Autofill credit cards to remain visible.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityLabel(
+                     @"Test User, Visa  ‪• • • • 1111‬")]
+      assertWithMatcher:grey_notNil()];
+
+  // Toggle the Autofill credit card switch back on.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"cardItem_switch", NO, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+
+  // Expect Autofill credit cards to remain visible.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityLabel(
+                     @"Test User, Visa  ‪• • • • 1111‬")]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that toggling the Autofill switch on and off disables and enables the
+// Autofill address and credit card switches respectively and that the list of
+// autofill addresses and credit cards is not affected by it.
+- (void)testToggleAutofillSwitches {
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+  autofill::CreditCard creditCard = [self addCreditCard];
+
+  // Go to Autofill Settings.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(IDS_IOS_AUTOFILL))]
+      performAction:grey_tap()];
+
+  // Toggle the Autofill switch off and back on.
+  for (BOOL expectedState : {YES, NO}) {
+    // Toggle the Autofill switch.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                            @"autofillItem_switch",
+                                            expectedState, YES)]
+        performAction:chrome_test_util::TurnSettingsSwitchOn(!expectedState)];
+
+    // Expect Autofill address and credit card switches to be disabled when
+    // Autofill toggle is off and enabled when it is on. Disabled switches are
+    // toggled off.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                            @"addressItem_switch",
+                                            !expectedState, !expectedState)]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                            @"cardItem_switch", !expectedState,
+                                            !expectedState)]
+        assertWithMatcher:grey_notNil()];
+
+    // Expect Autofill addresses and credit cards to remain visible.
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                            @"John H. Doe, 666 Erebus St.")]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:
+                   grey_accessibilityLabel(
+                       @"Test User, Visa  ‪• • • • 1111‬")]
+        assertWithMatcher:grey_notNil()];
+  }
 }
 
 @end

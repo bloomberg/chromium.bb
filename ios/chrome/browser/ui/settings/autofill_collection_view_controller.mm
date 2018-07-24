@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
 
+#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -39,6 +40,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillSwitch = kItemTypeEnumZero,
+  ItemTypeAutofillAddressSwitch,
+  ItemTypeAutofillCardSwitch,
   ItemTypeAddress,
   ItemTypeCard,
   ItemTypeHeader,
@@ -48,22 +51,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - AutofillCollectionViewController
 
-@interface AutofillCollectionViewController ()<
-    PersonalDataManagerObserverBridgeDelegate> {
+@interface AutofillCollectionViewController ()<PersonalDataManagerObserver> {
   std::string _locale;  // User locale.
   autofill::PersonalDataManager* _personalDataManager;
 
   ios::ChromeBrowserState* _browserState;
   std::unique_ptr<autofill::PersonalDataManagerObserverBridge> _observer;
-  BOOL _deletionInProgress;
 
-  // Writing user-initiated switch state changes to the pref service results in
+  // Deleting profiles and credit cards updates PersonalDataManager resulting in
   // an observer callback, which handles general data updates with a reloadData.
   // It is better to handle user-initiated changes with more specific actions
   // such as inserting or removing items/sections. This boolean is used to
   // stop the observer callback from acting on user-initiated changes.
-  BOOL _userInteractionInProgress;
+  BOOL _deletionInProgress;
 }
+
+@property(nonatomic, getter=isAutofillEnabled) BOOL autofillEnabled;
+@property(nonatomic, getter=isAutofillProfileEnabled)
+    BOOL autofillProfileEnabled;
+@property(nonatomic, getter=isAutofillCreditCardEnabled)
+    BOOL autofillCreditCardEnabled;
 
 @end
 
@@ -106,11 +113,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierSwitches];
   [model addItem:[self autofillSwitchItem]
       toSectionWithIdentifier:SectionIdentifierSwitches];
+  [model addItem:[self addressSwitchItem]
+      toSectionWithIdentifier:SectionIdentifierSwitches];
+  [model addItem:[self cardSwitchItem]
+      toSectionWithIdentifier:SectionIdentifierSwitches];
 
-  if ([self isAutofillEnabled]) {
-    [self populateProfileSection];
-    [self populateCardSection];
-  }
+  [self populateProfileSection];
+  [self populateCardSection];
 }
 
 #pragma mark - LoadModel Helpers
@@ -155,6 +164,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL);
   switchItem.on = [self isAutofillEnabled];
   switchItem.accessibilityIdentifier = @"autofillItem_switch";
+  return switchItem;
+}
+
+- (CollectionViewItem*)addressSwitchItem {
+  SettingsSwitchItem* switchItem =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeAutofillAddressSwitch];
+  switchItem.text = l10n_util::GetNSString(IDS_IOS_ENABLE_AUTOFILL_PROFILES);
+  switchItem.on = [self isAutofillProfileEnabled];
+  switchItem.accessibilityIdentifier = @"addressItem_switch";
+  return switchItem;
+}
+
+- (CollectionViewItem*)cardSwitchItem {
+  SettingsSwitchItem* switchItem =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeAutofillCardSwitch];
+  switchItem.text =
+      l10n_util::GetNSString(IDS_IOS_ENABLE_AUTOFILL_CREDIT_CARDS);
+  switchItem.on = [self isAutofillCreditCardEnabled];
+  switchItem.accessibilityIdentifier = @"cardItem_switch";
   return switchItem;
 }
 
@@ -229,7 +257,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - SettingsRootCollectionViewController
 
 - (BOOL)shouldShowEditButton {
-  return [self isAutofillEnabled];
+  return YES;
 }
 
 - (BOOL)editButtonEnabled {
@@ -246,41 +274,56 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemType itemType = static_cast<ItemType>(
       [self.collectionViewModel itemTypeForIndexPath:indexPath]);
 
-  if (itemType == ItemTypeAutofillSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(autofillSwitchChanged:)
-                    forControlEvents:UIControlEventValueChanged];
+  if (![cell isKindOfClass:[SettingsSwitchCell class]])
+    return cell;
+
+  SEL action = nil;
+  switch (itemType) {
+    case ItemTypeAutofillSwitch:
+      action = @selector(autofillSwitchChanged:);
+      break;
+    case ItemTypeAutofillAddressSwitch:
+      action = @selector(autofillAddressSwitchChanged:);
+      break;
+    case ItemTypeAutofillCardSwitch:
+      action = @selector(autofillCardSwitchChanged:);
+      break;
+    default:
+      NOTREACHED() << "Unknown Switch cell item type.";
+      break;
   }
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+  [switchCell.switchView addTarget:self
+                            action:action
+                  forControlEvents:UIControlEventValueChanged];
+
   return cell;
 }
 
 #pragma mark - Switch Callbacks
 
 - (void)autofillSwitchChanged:(UISwitch*)switchView {
-  [self setSwitchItemOn:[switchView isOn] itemType:ItemTypeAutofillSwitch];
-  _userInteractionInProgress = YES;
-  [self setAutofillEnabled:[switchView isOn]];
-  _userInteractionInProgress = NO;
-  [self updateEditButton];
-
-  // Avoid reference cycle in block.
-  __weak AutofillCollectionViewController* weakSelf = self;
-  [self.collectionView performBatchUpdates:^{
-    // Obtain strong reference again.
-    AutofillCollectionViewController* strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-
-    if ([switchView isOn]) {
-      [strongSelf insertProfileAndCardSections];
-    } else {
-      [strongSelf removeProfileAndCardSections];
-    }
+  BOOL switchIsOn = [switchView isOn];
+  [self setSwitchItemOn:switchIsOn itemType:ItemTypeAutofillSwitch];
+  [self setAutofillEnabled:switchIsOn];
+  [self setSwitchItemEnabled:switchIsOn itemType:ItemTypeAutofillAddressSwitch];
+  [self setSwitchItemEnabled:switchIsOn itemType:ItemTypeAutofillCardSwitch];
+  if (switchIsOn) {
+    [self autofillAddressSwitchChanged:switchView];
+    [self autofillCardSwitchChanged:switchView];
   }
-                                completion:nil];
+}
+
+- (void)autofillAddressSwitchChanged:(UISwitch*)switchView {
+  [self setSwitchItemOn:[switchView isOn]
+               itemType:ItemTypeAutofillAddressSwitch];
+  [self setAutofillProfileEnabled:[switchView isOn]];
+}
+
+- (void)autofillCardSwitchChanged:(UISwitch*)switchView {
+  [self setSwitchItemOn:[switchView isOn] itemType:ItemTypeAutofillCardSwitch];
+  [self setAutofillCreditCardEnabled:[switchView isOn]];
 }
 
 #pragma mark - Switch Helpers
@@ -317,59 +360,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:@[ switchItem ]];
 }
 
-#pragma mark - Insert or Delete Items and Sections
-
-- (void)insertProfileAndCardSections {
-  [self populateProfileSection];
-  [self populateCardSection];
-  NSIndexSet* sections = [self indexSetForExistingProfileAndCardSections];
-  [self.collectionView insertSections:sections];
-}
-
-- (void)removeProfileAndCardSections {
-  // It is important to build the section indexSet before removing sections.
-  NSIndexSet* sections = [self indexSetForExistingProfileAndCardSections];
-  if ([self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierProfiles]) {
-    [self.collectionViewModel
-        removeSectionWithIdentifier:SectionIdentifierProfiles];
-  }
-  if ([self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierCards]) {
-    [self.collectionViewModel
-        removeSectionWithIdentifier:SectionIdentifierCards];
-  }
-  [self.collectionView deleteSections:sections];
-}
-
-- (NSIndexSet*)indexSetForExistingProfileAndCardSections {
-  NSMutableIndexSet* sections = [[NSMutableIndexSet alloc] init];
-  if ([self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierProfiles]) {
-    [sections
-        addIndex:[self.collectionViewModel
-                     sectionForSectionIdentifier:SectionIdentifierProfiles]];
-  }
-  if ([self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierCards]) {
-    [sections addIndex:[self.collectionViewModel
-                           sectionForSectionIdentifier:SectionIdentifierCards]];
-  }
-  return sections;
-}
-
 #pragma mark - MDCCollectionViewStylingDelegate
 
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeAddress || item.type == ItemTypeCard) {
-    return [MDCCollectionViewCell
-        cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                           forItem:item];
-  }
-  return MDCCellDefaultOneLineHeight;
+  return [MDCCollectionViewCell
+      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
+                         forItem:item];
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
@@ -377,6 +376,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
     case ItemTypeAutofillSwitch:
+    case ItemTypeAutofillAddressSwitch:
+    case ItemTypeAutofillCardSwitch:
       return YES;
     default:
       return NO;
@@ -435,12 +436,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super collectionViewWillBeginEditing:collectionView];
 
   [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillSwitch];
+  [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillAddressSwitch];
+  [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillCardSwitch];
 }
 
 - (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
   [super collectionViewWillEndEditing:collectionView];
 
   [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillSwitch];
+  [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillAddressSwitch];
+  [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillCardSwitch];
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
@@ -524,18 +529,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark PersonalDataManagerObserverBridgeDelegate
+#pragma mark PersonalDataManagerObserver
 
 - (void)onPersonalDataChanged {
-  // If the change is due to local editing, or if local editing is happening
-  // concurrently, updates are handled by collection view editing callbacks.
-  // Data is reloaded at the end of deletion to make sure entries are in sync.
   if (_deletionInProgress)
-    return;
-
-  // If the change is due to user-initiated switch state changes, updates
-  // are handled by the switch callbacks.
-  if (_userInteractionInProgress)
     return;
 
   if (![self localProfilesOrCreditCardsExist] && [self.editor isEditing]) {
@@ -547,7 +544,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reloadData];
 }
 
-#pragma mark - Pref Helpers
+#pragma mark - Getters and Setter
 
 - (BOOL)isAutofillEnabled {
   return _browserState->GetPrefs()->GetBoolean(
@@ -557,6 +554,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setAutofillEnabled:(BOOL)isEnabled {
   _browserState->GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled,
                                         isEnabled);
+}
+
+- (BOOL)isAutofillProfileEnabled {
+  return _browserState->GetPrefs()->GetBoolean(
+      autofill::prefs::kAutofillProfileEnabled);
+}
+
+- (void)setAutofillProfileEnabled:(BOOL)isEnabled {
+  _browserState->GetPrefs()->SetBoolean(
+      autofill::prefs::kAutofillProfileEnabled, isEnabled);
+}
+
+- (BOOL)isAutofillCreditCardEnabled {
+  return _browserState->GetPrefs()->GetBoolean(
+      autofill::prefs::kAutofillCreditCardEnabled);
+}
+
+- (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
+  _browserState->GetPrefs()->SetBoolean(
+      autofill::prefs::kAutofillCreditCardEnabled, isEnabled);
 }
 
 @end

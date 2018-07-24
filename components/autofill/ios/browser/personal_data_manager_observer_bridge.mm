@@ -13,7 +13,7 @@
 namespace autofill {
 
 PersonalDataManagerObserverBridge::PersonalDataManagerObserverBridge(
-    id<PersonalDataManagerObserverBridgeDelegate> delegate)
+    id<PersonalDataManagerObserver> delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 }
