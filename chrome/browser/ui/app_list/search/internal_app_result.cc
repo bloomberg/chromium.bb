@@ -10,12 +10,10 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
@@ -38,21 +36,11 @@ InternalAppResult::InternalAppResult(Profile* profile,
   if (id() == kInternalAppIdContinueReading) {
     large_icon_service_ =
         LargeIconServiceFactory::GetForBrowserContext(profile);
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    service->AddObserver(this);
-    service->TriggerRefresh(syncer::ModelTypeSet(syncer::SESSIONS));
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
   }
 }
 
-InternalAppResult::~InternalAppResult() {
-  if (id() == kInternalAppIdContinueReading) {
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-    service->RemoveObserver(this);
-  }
-}
+InternalAppResult::~InternalAppResult() = default;
 
 void InternalAppResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
@@ -72,10 +60,6 @@ void InternalAppResult::Open(int event_flags) {
   }
 
   OpenInternalApp(id(), profile(), event_flags);
-}
-
-void InternalAppResult::OnForeignSessionUpdated(syncer::SyncService* sync) {
-  UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
 }
 
 void InternalAppResult::UpdateContinueReadingFavicon(

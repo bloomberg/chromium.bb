@@ -12,7 +12,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "components/favicon_base/favicon_types.h"
-#include "components/sync/driver/sync_service_observer.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;
@@ -26,15 +25,11 @@ namespace favicon_base {
 struct LargeIconImageResult;
 }  // namespace favicon_base
 
-namespace syncer {
-class SyncService;
-}  // namespace syncer
-
 namespace app_list {
 
 class AppContextMenu;
 
-class InternalAppResult : public AppResult, syncer::SyncServiceObserver {
+class InternalAppResult : public AppResult {
  public:
   InternalAppResult(Profile* profile,
                     const std::string& app_id,
@@ -52,9 +47,6 @@ class InternalAppResult : public AppResult, syncer::SyncServiceObserver {
  private:
   // ChromeSearchResult overrides:
   AppContextMenu* GetAppContextMenu() override;
-
-  // syncer::SyncServiceObserver overrides:
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
 
   // Get large icon image from servers and update icon for continue reading.
   // If there is no cache hit on LargeIconService and
