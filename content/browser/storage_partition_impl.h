@@ -129,10 +129,10 @@ class CONTENT_EXPORT StoragePartitionImpl
       const base::Callback<bool(const GURL&)>& url_matcher,
       base::OnceClosure callback) override;
   void Flush() override;
+  void ResetURLLoaderFactories() override;
   void ClearBluetoothAllowedDevicesMapForTesting() override;
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
-  void ResetURLLoaderFactoryForBrowserProcessForTesting() override;
 
   BackgroundFetchContext* GetBackgroundFetchContext();
   BackgroundSyncContext* GetBackgroundSyncContext();

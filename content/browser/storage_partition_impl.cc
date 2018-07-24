@@ -1164,6 +1164,11 @@ void StoragePartitionImpl::Flush() {
     GetDOMStorageContext()->Flush();
 }
 
+void StoragePartitionImpl::ResetURLLoaderFactories() {
+  GetNetworkContext()->ResetURLLoaderFactories();
+  url_loader_factory_for_browser_process_.reset();
+}
+
 void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
   bluetooth_allowed_devices_map_->Clear();
 }
@@ -1181,10 +1186,6 @@ void StoragePartitionImpl::WaitForDeletionTasksForTesting() {
     on_deletion_helpers_done_callback_ = loop.QuitClosure();
     loop.Run();
   }
-}
-
-void StoragePartitionImpl::ResetURLLoaderFactoryForBrowserProcessForTesting() {
-  url_loader_factory_for_browser_process_.reset();
 }
 
 BrowserContext* StoragePartitionImpl::browser_context() const {
