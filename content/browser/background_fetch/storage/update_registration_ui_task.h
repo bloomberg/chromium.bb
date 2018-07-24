@@ -33,7 +33,7 @@ class UpdateRegistrationUITask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidUpdateTitle(blink::ServiceWorkerStatusCode status);
+  void DidUpdateUIOptions(blink::ServiceWorkerStatusCode status);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 

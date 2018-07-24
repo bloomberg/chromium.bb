@@ -28,15 +28,21 @@ UpdateRegistrationUITask::UpdateRegistrationUITask(
 UpdateRegistrationUITask::~UpdateRegistrationUITask() = default;
 
 void UpdateRegistrationUITask::Start() {
+  // TODO(crbug.com/865063): Persist new icon if applicable and don't
+  // overwrite unupdated values.
+  proto::BackgroundFetchUIOptions ui_options;
+  ui_options.set_title(updated_title_);
+
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(),
-      {{TitleKey(registration_id_.unique_id()), updated_title_}},
-      base::BindOnce(&UpdateRegistrationUITask::DidUpdateTitle,
+      {{UIOptionsKey(registration_id_.unique_id()),
+        ui_options.SerializeAsString()}},
+      base::BindOnce(&UpdateRegistrationUITask::DidUpdateUIOptions,
                      weak_factory_.GetWeakPtr()));
 }
 
-void UpdateRegistrationUITask::DidUpdateTitle(
+void UpdateRegistrationUITask::DidUpdateUIOptions(
     blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
