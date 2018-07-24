@@ -210,3 +210,15 @@ function login(test, local, remote) {
                           'password2' + suffix, 'cookie2');
       });
 }
+
+function wait_for_port_message(port, handler) {
+  return new Promise((resolve, reject) => {
+    port.onmessage = (e) => {
+      try {
+        resolve(handler(e));
+      } catch (e) {
+        reject(e);
+      }
+    };
+  });
+}
