@@ -29,7 +29,6 @@
             android:layout_gravity="center"
             android:alpha="0"
             android:visibility="invisible"
-            android:contentDescription="@string/accessibility_toolbar_btn_site_info"
             app:chrometint="@color/dark_mode_tint" />
     </FrameLayout>
 

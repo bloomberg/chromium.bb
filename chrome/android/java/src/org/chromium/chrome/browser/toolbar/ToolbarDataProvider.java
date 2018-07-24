@@ -8,7 +8,9 @@ import android.content.res.ColorStateList;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -98,6 +100,27 @@ public interface ToolbarDataProvider {
      */
     @DrawableRes
     int getSecurityIconResource(boolean isTablet);
+
+    /**
+     * @return The resource ID of the content description for the security icon.
+     */
+    @StringRes
+    default int getSecurityIconContentDescription() {
+        switch (getSecurityLevel()) {
+            case ConnectionSecurityLevel.NONE:
+            case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
+                return R.string.accessibility_security_btn_warn;
+            case ConnectionSecurityLevel.DANGEROUS:
+                return R.string.accessibility_security_btn_dangerous;
+            case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
+            case ConnectionSecurityLevel.SECURE:
+            case ConnectionSecurityLevel.EV_SECURE:
+                return R.string.accessibility_security_btn_secure;
+            default:
+                assert false;
+        }
+        return 0;
+    }
 
     /**
      * @return The {@link ColorStateList} to use to tint the security state icon.
