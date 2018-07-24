@@ -12,6 +12,10 @@ version <next>:
 - adeclick filter
 - adeclip filter
 - libtensorflow backend for DNN based filters like srcnn
+- vc1 decoder is now bit-exact
+- ATRAC9 decoder
+- lensfun wrapper filter
+- colorconstancy filter
 
 
 version 4.0:
