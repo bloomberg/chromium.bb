@@ -42,6 +42,12 @@ const CGFloat kBubblePresentationDelay = 1;
 // dismissed, it remains allocated so that |userEngaged| remains accessible.
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* bottomToolbarTipBubblePresenter;
+// Used to display the long press on toolbar buttons tip in-product help
+// promotion bubble. |nil| if the tip bubble has not yet been presented. Once
+// the bubble is dismissed, it remains allocated so that |userEngaged| remains
+// accessible.
+@property(nonatomic, strong)
+    BubbleViewControllerPresenter* longPressToolbarTipBubblePresenter;
 // Used to display the new tab tip in-product help promotion bubble. |nil| if
 // the new tab tip bubble has not yet been presented. Once the bubble is
 // dismissed, it remains allocated so that |userEngaged| remains accessible.
@@ -59,6 +65,8 @@ const CGFloat kBubblePresentationDelay = 1;
 @implementation BubblePresenter
 
 @synthesize bottomToolbarTipBubblePresenter = _bottomToolbarTipBubblePresenter;
+@synthesize longPressToolbarTipBubblePresenter =
+    _longPressToolbarTipBubblePresenter;
 @synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
 @synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize browserState = _browserState;
@@ -109,6 +117,26 @@ const CGFloat kBubblePresentationDelay = 1;
       ->AddOnInitializedCallback(base::BindRepeating(onInitializedBlock));
 }
 
+- (void)presentLongPressBubbleIfEligible {
+  DCHECK(self.browserState);
+  // Waits to present the bubble until the feature engagement tracker database
+  // is fully initialized. This method requires that |self.browserState| is not
+  // NULL.
+  __weak BubblePresenter* weakSelf = self;
+  void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+    if (!successfullyLoaded)
+      return;
+    [weakSelf presentLongPressBubble];
+  };
+
+  // Because the new tab tip occurs on startup, the feature engagement
+  // tracker's database is not guaranteed to be loaded by this time. For the
+  // bubble to appear properly, a callback is used to guarantee the event data
+  // is loaded before the check to see if the promotion should be displayed.
+  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+      ->AddOnInitializedCallback(base::BindRepeating(onInitializedBlock));
+}
+
 - (void)dismissBubbles {
   [self.tabTipBubblePresenter dismissAnimated:NO];
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
@@ -141,6 +169,35 @@ const CGFloat kBubblePresentationDelay = 1;
     [self presentNewIncognitoTabTipBubble];
   if (!self.bottomToolbarTipBubblePresenter.isUserEngaged)
     [self presentBottomToolbarTipBubble];
+}
+
+- (void)presentLongPressBubble {
+  if (self.longPressToolbarTipBubblePresenter.isUserEngaged)
+    return;
+
+  if (![self canPresentBubble])
+    return;
+
+  BubbleArrowDirection arrowDirection =
+      IsSplitToolbarMode() ? BubbleArrowDirectionDown : BubbleArrowDirectionUp;
+  NSString* text = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT);
+  CGPoint searchButtonAnchor =
+      [self anchorPointToGuide:kTabSwitcherGuide direction:arrowDirection];
+
+  // If the feature engagement tracker does not consider it valid to display
+  // the tip, then end early to prevent the potential reassignment of the
+  // existing |longPressToolbarTipBubblePresenter| to nil.
+  BubbleViewControllerPresenter* presenter = [self
+      presentBubbleForFeature:feature_engagement::kIPHLongPressToolbarTipFeature
+                    direction:arrowDirection
+                    alignment:BubbleAlignmentTrailing
+                         text:text
+                  anchorPoint:searchButtonAnchor];
+  if (!presenter)
+    return;
+
+  self.bottomToolbarTipBubblePresenter = presenter;
 }
 
 // Presents and returns a bubble view controller for the |feature| with an arrow
@@ -180,8 +237,8 @@ presentBubbleForFeature:(const base::Feature&)feature
       [self anchorPointToGuide:kSearchButtonGuide direction:arrowDirection];
 
   // If the feature engagement tracker does not consider it valid to display
-  // the new tab tip, then end early to prevent the potential reassignment
-  // of the existing |bottomToolbarTipBubblePresenter| to nil.
+  // the tip, then end early to prevent the potential reassignment of the
+  // existing |bottomToolbarTipBubblePresenter| to nil.
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHBottomToolbarTipFeature
                     direction:arrowDirection

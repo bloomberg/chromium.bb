@@ -40,6 +40,10 @@ class ChromeBrowserState;
 // bubble will not be shown.
 - (void)presentBubblesIfEligible;
 
+// Presents the in-product help for the LongPress help if the feature engagement
+// and the application states determine that it is possible to present it.
+- (void)presentLongPressBubbleIfEligible;
+
 // Dismisses all bubbles.
 - (void)dismissBubbles;
 

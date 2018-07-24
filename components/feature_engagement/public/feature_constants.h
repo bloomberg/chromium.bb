@@ -49,6 +49,7 @@ extern const base::Feature kIPHNewTabFeature;
 
 #if defined(OS_IOS)
 extern const base::Feature kIPHBottomToolbarTipFeature;
+extern const base::Feature kIPHLongPressToolbarTipFeature;
 extern const base::Feature kIPHNewTabTipFeature;
 extern const base::Feature kIPHNewIncognitoTabTipFeature;
 extern const base::Feature kIPHBadgedReadingListFeature;
