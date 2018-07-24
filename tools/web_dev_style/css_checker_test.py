@@ -109,7 +109,7 @@ body.alternate-logo #logo {
 }
 
 div {
-  -webkit-margin-start: 5px;
+  margin-inline-start: 5px;
 }
 
 .stuff1 {
@@ -124,11 +124,11 @@ div {
 div {
   /* A hopefully safely ignored comment and @media statement. /**/
   color: red;
-  -webkit-margin-start: 5px;
+  -webkit-margin-before-collapse: discard;
 }""", """
 - Alphabetize properties and list vendor specific (i.e. -webkit) above standard.
     color: red;
-    -webkit-margin-start: 5px;""")
+    -webkit-margin-before-collapse: discard;""")
 
   def testCssAlphaWithLongerDashedProps(self):
     self.VerifyContentsProducesOutput("""
@@ -388,18 +388,83 @@ b:before,
     color: #bad; (replace with rgb(187, 170, 221))
     color: #bada55; (replace with rgb(186, 218, 85))""")
 
-  def testWebkitBeforeOrAfter(self):
+  def testPrefixedLogicalAxis(self):
     self.VerifyContentsProducesOutput("""
 .test {
-  -webkit-margin-before: 10px;
-  -webkit-margin-start: 20px;
-  -webkit-padding-after: 3px;
-  -webkit-padding-end: 5px;
+  -webkit-logical-height: 50%;
+  -webkit-logical-width: 50%;
+  -webkit-max-logical-height: 200px;
+  -webkit-max-logical-width: 200px;
+  -webkit-min-logical-height: 100px;
+  -webkit-min-logical-width: 100px;
 }
 """, """
-- Use *-top/bottom instead of -webkit-*-before/after.
-    -webkit-margin-before: 10px; (replace with margin-top)
-    -webkit-padding-after: 3px; (replace with padding-bottom)""")
+- Unprefix logical axis property.
+    -webkit-logical-height: 50%; (replace with block-size)
+    -webkit-logical-width: 50%; (replace with inline-size)
+    -webkit-max-logical-height: 200px; (replace with max-block-size)
+    -webkit-max-logical-width: 200px; (replace with max-inline-size)
+    -webkit-min-logical-height: 100px; (replace with min-block-size)
+    -webkit-min-logical-width: 100px; (replace with min-inline-size)""")
+
+  def testPrefixedLogicalSide(self):
+    self.VerifyContentsProducesOutput("""
+.test {
+  -webkit-border-after: 1px solid blue;
+  -webkit-border-after-color: green;
+  -webkit-border-after-style: dotted;
+  -webkit-border-after-width: 10px;
+  -webkit-border-before: 2px solid blue;
+  -webkit-border-before-color: green;
+  -webkit-border-before-style: dotted;
+  -webkit-border-before-width: 20px;
+  -webkit-border-end: 3px solid blue;
+  -webkit-border-end-color: green;
+  -webkit-border-end-style: dotted;
+  -webkit-border-end-width: 30px;
+  -webkit-border-start: 4px solid blue;
+  -webkit-border-start-color: green;
+  -webkit-border-start-style: dotted;
+  -webkit-border-start-width: 40px;
+  -webkit-margin-after: 1px;
+  -webkit-margin-after-collapse: discard;
+  -webkit-margin-before: 2px;
+  -webkit-margin-before-collapse: discard;
+  -webkit-margin-end: 3px;
+  -webkit-margin-end-collapse: discard;
+  -webkit-margin-start: 4px;
+  -webkit-margin-start-collapse: discard;
+  -webkit-padding-after: 1px;
+  -webkit-padding-before: 2px;
+  -webkit-padding-end: 3px;
+  -webkit-padding-start: 4px;
+}
+""", """
+- Unprefix logical side property.
+    -webkit-border-after: 1px solid blue; (replace with border-block-end)
+    -webkit-border-after-color: green; (replace with border-block-end-color)
+    -webkit-border-after-style: dotted; (replace with border-block-end-style)
+    -webkit-border-after-width: 10px; (replace with border-block-end-width)
+    -webkit-border-before: 2px solid blue; (replace with border-block-start)
+    -webkit-border-before-color: green; (replace with border-block-start-color)
+    -webkit-border-before-style: dotted; (replace with border-block-start-style)
+    -webkit-border-before-width: 20px; (replace with border-block-start-width)
+    -webkit-border-end: 3px solid blue; (replace with border-inline-end)
+    -webkit-border-end-color: green; (replace with border-inline-end-color)
+    -webkit-border-end-style: dotted; (replace with border-inline-end-style)
+    -webkit-border-end-width: 30px; (replace with border-inline-end-width)
+    -webkit-border-start: 4px solid blue; (replace with border-inline-start)
+    -webkit-border-start-color: green; (replace with border-inline-start-color)
+    -webkit-border-start-style: dotted; (replace with border-inline-start-style)
+    -webkit-border-start-width: 40px; (replace with border-inline-start-width)
+    -webkit-margin-after: 1px; (replace with margin-block-end)
+    -webkit-margin-before: 2px; (replace with margin-block-start)
+    -webkit-margin-end: 3px; (replace with margin-inline-end)
+    -webkit-margin-start: 4px; (replace with margin-inline-start)
+    -webkit-padding-after: 1px; (replace with padding-block-end)
+    -webkit-padding-before: 2px; (replace with padding-block-start)
+    -webkit-padding-end: 3px; (replace with padding-inline-end)
+    -webkit-padding-start: 4px; (replace with padding-inline-start)""")
 
   def testCssZeroWidthLengths(self):
     self.VerifyContentsProducesOutput("""
