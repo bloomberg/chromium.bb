@@ -85,7 +85,9 @@
 
   // Tell the delegate to display the tab.
   DCHECK(self.delegate);
-  [self.delegate tabSwitcher:self shouldFinishWithActiveModel:targetModel];
+  [self.delegate tabSwitcher:self
+      shouldFinishWithActiveModel:targetModel
+                     focusOmnibox:NO];
 
   return tab;
 }

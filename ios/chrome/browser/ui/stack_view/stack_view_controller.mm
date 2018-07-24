@@ -2085,7 +2085,8 @@ NSString* const kTransitionToolbarAnimationKey =
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
   [_delegate tabSwitcher:self
-      shouldFinishWithActiveModel:_activeCardSet.tabModel];
+      shouldFinishWithActiveModel:_activeCardSet.tabModel
+                     focusOmnibox:NO];
 
   [self animateTransitionWithStyle:STACK_TRANSITION_STYLE_DISMISSING];
 }
@@ -2200,7 +2201,8 @@ NSString* const kTransitionToolbarAnimationKey =
   [_activeCardSet.tabModel setCurrentTab:tab];
 
   [_delegate tabSwitcher:self
-      shouldFinishWithActiveModel:_activeCardSet.tabModel];
+      shouldFinishWithActiveModel:_activeCardSet.tabModel
+                     focusOmnibox:NO];
 
   CGFloat statusBarHeight = StatusBarHeight();
   CGRect viewBounds, remainder;

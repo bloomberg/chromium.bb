@@ -28,7 +28,8 @@
 // Informs the delegate the stack controller should be dismissed with the given
 // active model.
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel;
+    shouldFinishWithActiveModel:(TabModel*)tabModel
+                   focusOmnibox:(BOOL)focusOmnibox;
 
 // Informs the delegate that the stack controller is done and should be
 // dismissed.

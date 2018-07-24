@@ -417,7 +417,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // |currentBVC| can be made active.
 - (void)activateBVCAndMakeCurrentBVCPrimary;
 // Sets |currentBVC| as the root view controller for the window.
-- (void)displayCurrentBVC;
+- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox;
 // Shows the tab switcher UI.
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
@@ -458,8 +458,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (bool)mustShowRestoreInfobar;
 // Begins the process of dismissing the tab switcher with the given current
 // model, switching which BVC is suspended if necessary, but not updating the
-// UI.
-- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel;
+// UI.  The omnibox will be focused after the tab switcher dismissal is
+// completed if |focusOmnibox| is YES.
+- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
+                                      focusOmnibox:(BOOL)focusOmnibox;
 // Completes the process of dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher;
@@ -1800,7 +1802,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_browserViewWrangler setCurrentBVC:bvc storageSwitcher:self];
 
   if (!_dismissingTabSwitcher)
-    [self displayCurrentBVC];
+    [self displayCurrentBVCAndFocusOmnibox:NO];
 
   // Tell the BVC that was made current that it can use the web.
   [self activateBVCAndMakeCurrentBVCPrimary];
@@ -1894,9 +1896,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self switchGlobalStateToMode:mode];
 }
 
-- (void)displayCurrentBVC {
+- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
+  ProceduralBlock completion = nil;
+  if (focusOmnibox) {
+    __weak BrowserViewController* weakCurrentBVC = self.currentBVC;
+    completion = ^{
+      [weakCurrentBVC.dispatcher focusOmnibox];
+    };
+  }
   [self.viewControllerSwapper showTabViewController:self.currentBVC
-                                         completion:nil];
+                                         completion:completion];
   [self.currentBVC.dispatcher
       setIncognitoContentVisible:(self.currentBVC == self.otrBVC)];
 }
@@ -2016,7 +2025,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
     [_tabSwitcher tabSwitcherDismissWithModel:tabModel animated:NO];
   } else {
-    [self beginDismissingTabSwitcherWithCurrentModel:tabModel];
+    [self beginDismissingTabSwitcherWithCurrentModel:tabModel focusOmnibox:NO];
     [self finishDismissingTabSwitcher];
   }
 }
@@ -2024,8 +2033,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - TabSwitcherDelegate
 
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel {
-  [self beginDismissingTabSwitcherWithCurrentModel:tabModel];
+    shouldFinishWithActiveModel:(TabModel*)tabModel
+                   focusOmnibox:(BOOL)focusOmnibox {
+  [self beginDismissingTabSwitcherWithCurrentModel:tabModel
+                                      focusOmnibox:focusOmnibox];
 }
 
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
@@ -2041,7 +2052,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - TabSwitcherDelegate helper methods
 
-- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel {
+- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
+                                      focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(tabModel == self.mainTabModel || tabModel == self.otrTabModel);
 
   _dismissingTabSwitcher = YES;
@@ -2059,7 +2071,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // _dismissingTabSwitcher is YES.  When the presentation experiment is
   // enabled, force the BVC transition to start.
   if (TabSwitcherPresentsBVCEnabled()) {
-    [self displayCurrentBVC];
+    [self displayCurrentBVCAndFocusOmnibox:focusOmnibox];
   }
 }
 
@@ -2092,7 +2104,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
 
   // Displaying the current BVC dismisses the tab switcher.
-  [self displayCurrentBVC];
+  [self displayCurrentBVCAndFocusOmnibox:NO];
 
   ProceduralBlock action = [self completionBlockForTriggeringAction:
                                      self.NTPActionAfterTabSwitcherDismissal];
