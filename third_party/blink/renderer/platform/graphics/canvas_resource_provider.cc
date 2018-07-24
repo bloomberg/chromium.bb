@@ -152,6 +152,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
 
   ~CanvasResourceProviderTextureGpuMemoryBuffer() override = default;
   bool SupportsDirectCompositing() const override { return true; }
+  bool SupportsSingleBuffering() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -263,6 +264,7 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
 
   ~CanvasResourceProviderRamGpuMemoryBuffer() override = default;
   bool SupportsDirectCompositing() const override { return true; }
+  bool SupportsSingleBuffering() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -318,6 +320,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
   }
   ~CanvasResourceProviderSharedBitmap() override = default;
   bool SupportsDirectCompositing() const override { return true; }
+  bool SupportsSingleBuffering() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -684,6 +687,7 @@ void CanvasResourceProvider::InvalidateSurface() {
   canvas_image_provider_.reset();
   xform_canvas_ = nullptr;
   surface_ = nullptr;
+  single_buffer_ = nullptr;
 }
 
 uint32_t CanvasResourceProvider::ContentUniqueID() const {
@@ -721,6 +725,11 @@ void CanvasResourceProvider::ClearRecycledResources() {
 }
 
 scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
+  if (IsSingleBuffered()) {
+    if (!single_buffer_)
+      single_buffer_ = CreateResource();
+    return single_buffer_;
+  }
   if (recycled_resources_.size()) {
     scoped_refptr<CanvasResource> resource =
         std::move(recycled_resources_.back());
@@ -728,6 +737,13 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
     return resource;
   }
   return CreateResource();
+}
+
+void CanvasResourceProvider::TryEnableSingleBuffering() {
+  if (IsSingleBuffered() || !SupportsSingleBuffering())
+    return;
+  SetResourceRecyclingEnabled(false);
+  is_single_buffered_ = true;
 }
 
 }  // namespace blink

@@ -415,9 +415,13 @@ void HTMLCanvasElement::FinalizeFrame() {
 
     if (!LowLatencyEnabled())
       canvas2d_bridge_->FinalizeFrame();
+  }
 
-    if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
-        GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+  if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
+    AccelerationHint hint =
+        Is2d() ? kPreferNoAcceleration : kPreferAcceleration;
+    if (GetOrCreateCanvasResourceProvider(hint)) {
+      ResourceProvider()->TryEnableSingleBuffering();
       // Push a frame
       base::TimeTicks start_time = WTF::CurrentTimeTicks();
       scoped_refptr<CanvasResource> canvas_resource =
@@ -1138,9 +1142,8 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeForTesting(
 scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
     SourceDrawingBuffer source_buffer,
     AccelerationHint hint) {
-  if (SurfaceLayerBridge()) {
+  if (PlaceholderFrame())
     return PlaceholderFrame()->Bitmap();
-  }
 
   if (!IsPaintable())
     return nullptr;
