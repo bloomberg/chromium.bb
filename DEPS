@@ -1078,7 +1078,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/android_arch_core_common',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1089,7 +1089,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/android_arch_lifecycle_common',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1100,7 +1100,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/android_arch_lifecycle_runtime',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1111,7 +1111,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_animated_vector_drawable',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1122,7 +1122,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_appcompat_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1133,7 +1133,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_cardview_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1144,7 +1144,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_design',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1155,7 +1155,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_gridlayout_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1166,7 +1166,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_leanback_v17',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1177,7 +1177,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_mediarouter_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1188,7 +1188,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_multidex',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1199,7 +1199,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_palette_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1210,7 +1210,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_preference_leanback_v17',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1221,7 +1221,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_preference_v14',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1232,7 +1232,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_preference_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1243,7 +1243,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_recyclerview_v7',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1254,7 +1254,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_annotations',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1265,7 +1265,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_compat',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1276,7 +1276,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_core_ui',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1287,7 +1287,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_core_utils',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1298,7 +1298,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_fragment',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1309,7 +1309,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_media_compat',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1320,7 +1320,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_v13',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1331,7 +1331,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_v4',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1342,7 +1342,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_support_vector_drawable',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
@@ -1353,7 +1353,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/repository/com_android_support_transition',
-              'version': 'version:27.0.0-cr0',
+              'version': 'version:27.0.0-cr1',
           },
       ],
       'condition': 'checkout_android',
