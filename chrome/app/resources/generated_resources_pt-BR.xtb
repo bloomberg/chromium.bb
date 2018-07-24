@@ -4017,7 +4017,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7191454237977785534">Salvar arquivo como</translation>
 <translation id="7193374945610105795">Nenhuma senha salva para <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Procurando por Chromeboxes próximas...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Estas são informações gerais sobre seu dispositivo e como você o utiliza (como nível da bateria, uso de apps e conectividade da rede). Os dados serão usados para aprimorar os produtos e serviços do Google para todos. Algumas informações agregadas também ajudarão parceiros, como desenvolvedores do Android, a fazer apps e produtos melhores.<ph name="END_PARAGRAPH1" />
+<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Estas são informações gerais sobre seu dispositivo e como você o utiliza (como nível da bateria, uso de apps e conectividade da rede). Os dados serão usados para aprimorar os produtos e serviços do Google para todos. Algumas informações agregadas também ajudarão parceiros, como desenvolvedores Android, a fazer apps e produtos melhores.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />A desativação deste recurso não afetará a capacidade do seu dispositivo de enviar as informações necessárias para serviços essenciais, como atualizações do sistema e segurança.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />É possível controlar este recurso em Config. &gt; Google. Selecione Uso e diagnóstico no menu.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Conseguir &amp;ajuda</translation>

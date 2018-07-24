@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">സ്ലൈഡർ</translation>
 <translation id="1211441953136645838">അന്തിമ കുറിപ്പ്</translation>
 <translation id="1281252709823657822">ഡയലോഗ്</translation>
+<translation id="1289247557029249093">ചിത്രത്തിനുള്ളിലെ ചിത്രം മോഡിന് പുറത്ത് കടക്കുക</translation>
 <translation id="1335095011850992622">ക്രെഡിറ്റുകൾ</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1359897965706325498">ബാനർ</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="2657045182931379222">ഗ്രാഫിക്‌സ് ഒബ്‌ജക്‌റ്റ്</translation>
 <translation id="2674318244760992338">അടിക്കുറിപ്പ്</translation>
+<translation id="2706474812903655270">ചിത്രത്തിനുള്ളിലെ ചിത്രം മോഡിലാണ് ഈ വീഡിയോ പ്ലേ ചെയ്യുന്നത്</translation>
 <translation id="2709516037105925701">ഓട്ടോഫില്‍</translation>
 <translation id="2723001399770238859">ഓഡിയോ</translation>
 <translation id="2746543609216772311">മൂല്യം <ph name="MINIMUM_DATE_OR_TIME" /> എന്നതോ അതിനുശേഷമുള്ള തീയതിയോ ആയിരിക്കണം.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">അവശേഷിക്കുന്ന സമയം</translation>
 <translation id="7740016676195725605">അടച്ച അടിക്കുറിപ്പുകൾ പ്രദർശിപ്പിക്കുന്നത് നിർത്തുക</translation>
 <translation id="7740050170769002709">HTML ഉള്ളടക്കം</translation>
+<translation id="7750228210027921155">ചിത്രത്തിനുള്ളിലെ ചിത്രം</translation>
 <translation id="7789962463072032349">താല്‍‌ക്കാലികമായി നിര്‍‌ത്തുക</translation>
 <translation id="7802800022689234070">ഡിസ്‌ക്ലോഷർ ത്രികോണം</translation>
 <translation id="7888071071722539607">ഇമെയിൽ വിലാസത്തിൽ '<ph name="ATSIGN" />' ഉൾപ്പെടുത്തുക. '<ph name="INVALIDADDRESS" />' എന്നതിൽ ഒരു '<ph name="ATSIGN" />' കാണുന്നില്ല.</translation>

@@ -76,6 +76,7 @@
 <translation id="2120297377148151361">እንቅስቃሴ እና መስተጋብሮች</translation>
 <translation id="213900355088104901">በግል ለማሰስ ማንነት የማያሳውቅ ትር ይክፈቱ</translation>
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ያልተነበቡ የንባብ ዝርዝር ጽሑፎች።</translation>
 <translation id="2230173723195178503">ድረ-ገጽ ተጭኗል</translation>
 <translation id="2256128224215992540">የፍለጋ እና የጣቢያ አስተያየት ጥቆማዎች</translation>
 <translation id="2267753748892043616">መለያ አክል</translation>
@@ -219,6 +220,7 @@
 
 የእርስዎ ውሂብ በእርስዎ የስምረት የይለፍ ቃል ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="473775607612524610">አዘምን</translation>
+<translation id="4807020197310989387">1 ያልተነበበ የንባብ ዝርዝር ጽሑፍ።</translation>
 <translation id="481968316161811770">ኩኪዎች፣ የጣቢያ ውሂብ</translation>
 <translation id="4854345657858711387">የይለፍ ኮድ ያዘጋጁ</translation>
 <translation id="4860895144060829044">ደውል</translation>
@@ -394,6 +396,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7830720446622801252">ግላዊነት ያልተላበሱ አገልግሎቶች</translation>
 <translation id="7856733331829174190">ማውረድ አልተቻለም</translation>
 <translation id="7859704718976024901">የአሰሳ ታሪክ</translation>
+<translation id="7918293828610777738">የንባብ ዝርዝርዎ ከመስመር ውጭ ይገኛል። አንድ ገጽ ወደ የንባብ ዝርዝርዎ ለማከል በመጀመሪያ <ph name="SHARE_OPENING_ICON" />ን ከዚያም <ph name="READ_LATER_TEXT" />ን መታ ያድርጉ።</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">የይለፍ ቃላትን ወደ ውጭ ላክ...</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
@@ -411,6 +414,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8080028325999236607">ሁሉንም ትሮች ይዝጉ</translation>
 <translation id="8114753159095730575">ፋይል ለመውረድ ይገኛል። አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ።</translation>
 <translation id="8160722851663543621">ፍለጋዎችን ከአድራሻ አሞሌው እና ከፍለጋ ሳጥኑ እና አንዳንድ ኩኪዎችን ወደ ነባሪው የፍለጋ ፕሮግራምዎ ይልካል</translation>
+<translation id="8178325540017397816">የመረጧቸው ንጥሎች ይወገዳሉ</translation>
 <translation id="8205564605687841303">ተወው</translation>
 <translation id="8225985093977202398">የተሸጎጡ ምስሎች እና ፋይሎች</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>

@@ -57,6 +57,7 @@
 <translation id="7003844668372540529">Okänd produkt (<ph name="PRODUCT_ID" />) från <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Manifestfilen är ogiltig</translation>
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME" /> ska installeras. Det kan inte tas bort eller ändras.</translation>
+<translation id="7939686037314084444">Tillägget lästes inte in korrekt. Det kan eventuellt inte fånga upp nätverksbegäranden.</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Vänd mot användaren</translation>
 <translation id="8047248493720652249">Det gick inte att namnge nedladdningen <ph name="ATTEMPTED_FILENAME" /> eftersom ett annat tillägg (<ph name="EXTENSION_NAME" />) valde ett annat filnamn <ph name="ACTUAL_FILENAME" />.</translation>
