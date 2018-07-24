@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -60,6 +61,11 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
+    // ServiceWorkerContextRequestHandler is a non-S13nServiceWorker specific
+    // class and we don't use it when S13nServiceWorker is enabled.
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kServiceWorkerServicification);
+
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -160,6 +166,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   }
 
  protected:
+  // |scoped_feature_list_| must be before |thread_bundle_|.
+  // See comments in ServiceWorkerProviderHostTest.
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
