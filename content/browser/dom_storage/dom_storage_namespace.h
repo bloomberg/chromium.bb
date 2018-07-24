@@ -63,7 +63,8 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Creates a clone of |this| namespace including
   // shallow copies of all contained areas.
   // Should only be called for session storage namespaces.
-  DOMStorageNamespace* Clone(const std::string& clone_namespace_id);
+  scoped_refptr<DOMStorageNamespace> Clone(
+      const std::string& clone_namespace_id);
 
   void DeleteSessionStorageOrigin(const url::Origin& origin);
   void PurgeMemory(bool aggressively);
