@@ -31,10 +31,9 @@
      </group>
     <group android:id="@+id/with_settings_normal_menu_group"
         android:visible="false" >
-        <!-- TODO(xingliu): Use the new settings icon with better alpha value. -->
         <item
             android:id="@+id/settings_menu_id"
-            android:icon="@drawable/btn_settings"
+            android:icon="@drawable/settings_cog"
             android:title="@string/preferences"
             android:visible="false"
             app:showAsAction="ifRoom"
