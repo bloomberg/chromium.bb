@@ -42,6 +42,9 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 /** Queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
         implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate {
+    // Shared with other org.chromium.chrome.browser.searchwidget classes.
+    protected static final String TAG = "searchwidget";
+
     /** Notified about events happening inside a SearchActivity. */
     public static class SearchActivityDelegate {
         /**
@@ -73,7 +76,6 @@ public class SearchActivity extends AsyncInitializationActivity
         }
     }
 
-    private static final String TAG = "searchwidget";
     private static final Object DELEGATE_LOCK = new Object();
 
     /** Notified about events happening for the SearchActivity. */
