@@ -48,6 +48,9 @@ versions array. This can be overridden by supplying a 'known_as' key.
 """
 GL_FUNCTIONS = [
 { 'return_type': 'void',
+  'names': ['glActiveShaderProgram'],
+  'arguments': 'GLuint pipeline, GLuint program', },
+{ 'return_type': 'void',
   'names': ['glActiveTexture'],
   'arguments': 'GLenum texture', },
 { 'return_type': 'void',
@@ -116,6 +119,9 @@ GL_FUNCTIONS = [
   'arguments': 'GLuint index, GLuint texture, GLint level, GLboolean layered,'
                'GLint layer, GLenum access, GLint format', },
 { 'return_type': 'void',
+  'names': ['glBindProgramPipeline'],
+  'arguments': 'GLuint pipeline', },
+{ 'return_type': 'void',
   'names': ['glBindRenderbufferEXT', 'glBindRenderbuffer'],
   'arguments': 'GLenum target, GLuint renderbuffer', },
 { 'return_type': 'void',
@@ -141,6 +147,10 @@ GL_FUNCTIONS = [
                { 'name': 'glBindVertexArrayAPPLE',
                  'extensions': ['GL_APPLE_vertex_array_object'] }],
   'arguments': 'GLuint array' },
+{ 'return_type': 'void',
+  'names': ['glBindVertexBuffer'],
+  'arguments': 'GLuint bindingindex, GLuint buffer, GLintptr offset, '
+               'GLsizei stride', },
 { 'return_type': 'void',
   'known_as': 'glBlendBarrierKHR',
   'versions': [{ 'name': 'glBlendBarrierNV',
@@ -364,6 +374,9 @@ GL_FUNCTIONS = [
 { 'return_type': 'GLuint',
   'names': ['glCreateShader'],
   'arguments': 'GLenum type', },
+{ 'return_type': 'GLuint',
+  'names': ['glCreateShaderProgramv'],
+  'arguments': 'GLenum type, GLsizei count, const char* const* strings', },
 { 'return_type': 'void',
   'names': ['glCullFace'],
   'arguments': 'GLenum mode', },
@@ -411,6 +424,9 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glDeleteProgram'],
   'arguments': 'GLuint program', },
+{ 'return_type': 'void',
+  'names': ['glDeleteProgramPipelines'],
+  'arguments': 'GLsizei n, const GLuint* pipelines', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glDeleteQueries' },
                { 'name': 'glDeleteQueriesARB'},
@@ -474,8 +490,17 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei numAttachments, '
       'const GLenum* attachments' },
 { 'return_type': 'void',
+  'names': ['glDispatchCompute'],
+  'arguments': 'GLuint numGroupsX, GLuint numGroupsY, GLuint numGroupsZ', },
+{ 'return_type': 'void',
+  'names': ['glDispatchComputeIndirect'],
+  'arguments': 'GLintptr indirect', },
+{ 'return_type': 'void',
   'names': ['glDrawArrays'],
   'arguments': 'GLenum mode, GLint first, GLsizei count', },
+{ 'return_type': 'void',
+  'names': ['glDrawArraysIndirect'],
+  'arguments': 'GLenum mode, const void* indirect', },
 { 'return_type': 'void',
   'known_as': 'glDrawArraysInstancedANGLE',
   'names': ['glDrawArraysInstancedARB', 'glDrawArraysInstancedANGLE',
@@ -491,6 +516,9 @@ GL_FUNCTIONS = [
   'names': ['glDrawElements'],
   'arguments':
       'GLenum mode, GLsizei count, GLenum type, const void* indices', },
+{ 'return_type': 'void',
+  'names': ['glDrawElementsIndirect'],
+  'arguments': 'GLenum mode, GLenum type, const void* indirect', },
 { 'return_type': 'void',
   'known_as': 'glDrawElementsInstancedANGLE',
   'names': ['glDrawElementsInstancedARB', 'glDrawElementsInstancedANGLE',
@@ -599,6 +627,9 @@ GL_FUNCTIONS = [
                { 'name': 'glGenPathsCHROMIUM',
                  'extensions': ['GL_CHROMIUM_path_rendering'] }],
   'arguments': 'GLsizei range' },
+{ 'return_type': 'GLuint',
+  'names': ['glGenProgramPipelines'],
+  'arguments': 'GLsizei n, GLuint* pipelines' },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glGenQueries' },
                { 'name': 'glGenQueriesARB', },
@@ -662,6 +693,9 @@ GL_FUNCTIONS = [
 { 'return_type': 'GLint',
   'names': ['glGetAttribLocation'],
   'arguments': 'GLuint program, const char* name', },
+{ 'return_type': 'void',
+  'names': ['glGetBooleani_v'],
+  'arguments': 'GLenum target, GLuint index, GLboolean* data', },
 { 'return_type': 'void',
   'versions': [{'name': 'glGetBooleani_vRobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
@@ -741,6 +775,9 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLenum attachment, GLenum pname, GLsizei bufSize, '
       'GLsizei* length, GLint* params', },
+{ 'return_type': 'void',
+  'names': ['glGetFramebufferParameteriv'],
+  'arguments': 'GLenum target, GLenum pname, GLint* params', },
 { 'return_type': 'void',
   'versions': [{'name': 'glGetFramebufferParameterivRobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
@@ -879,6 +916,18 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint program, GLenum pname, GLsizei bufSize, GLsizei* length, '
       'GLint* params', },
+{ 'return_type': 'void',
+  'names': ['glGetProgramPipelineInfoLog'],
+  'arguments':
+      'GLuint pipeline, GLsizei bufSize, GLsizei* length, GLchar* infoLog', },
+{ 'return_type': 'void',
+  'names': ['glGetProgramPipelineiv'],
+  'arguments':
+      'GLuint pipeline, GLenum pname, GLint* params', },
+{ 'return_type': 'void',
+  'names': ['glGetProgramResourceIndex'],
+  'arguments':
+      'GLuint program, GLenum programInterface, const GLchar* name', },
 { 'return_type': 'void',
   'versions': [{'name': 'glGetProgramResourceiv',
                 'extensions': ['GL_ARB_program_interface_query']}],
@@ -1204,6 +1253,9 @@ GL_FUNCTIONS = [
   'names': ['glIsProgram'],
   'arguments': 'GLuint program', },
 { 'return_type': 'GLboolean',
+  'names': ['glIsProgramPipeline'],
+  'arguments': 'GLuint pipeline', },
+{ 'return_type': 'GLboolean',
   'versions': [{ 'name': 'glIsQuery' },
                { 'name': 'glIsQueryARB' },
                { 'name': 'glIsQueryEXT',
@@ -1272,6 +1324,9 @@ GL_FUNCTIONS = [
                { 'name': 'glMatrixLoadIdentityCHROMIUM',
                  'extensions': ['GL_CHROMIUM_path_rendering'] }],
   'arguments': 'GLenum matrixMode' },
+{ 'return_type': 'void',
+  'names': ['glMemoryBarrierByRegion'],
+  'arguments': 'GLbitfield barriers', },
 { 'return_type': 'void',
   'known_as': 'glMemoryBarrierEXT',
   'versions': [{ 'name': 'glMemoryBarrier',
@@ -1367,6 +1422,131 @@ GL_FUNCTIONS = [
   'GLint components, const GLfloat* coeffs',
   'is_optional': True, },
 { 'return_type': 'void',
+  'names': ['glProgramUniform1f'],
+  'arguments': 'GLuint program, GLint location, GLfloat v0' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform1fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform1i'],
+  'arguments': 'GLuint program, GLint location, GLint v0' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform1iv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform1ui'],
+  'arguments': 'GLuint program, GLint location, GLuint v0' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform1uiv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLuint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform2f'],
+  'arguments': 'GLuint program, GLint location, GLfloat v0, GLfloat v1' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform2fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform2i'],
+  'arguments': 'GLuint program, GLint location, GLint v0, GLint v1' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform2iv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform2ui'],
+  'arguments': 'GLuint program, GLint location, GLuint v0, GLuint v1' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform2uiv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLuint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform3f'],
+  'arguments': 'GLuint program, GLint location, GLfloat v0, GLfloat v1, '
+               'GLfloat v2' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform3fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform3i'],
+  'arguments': 'GLuint program, GLint location, GLint v0, GLint v1, GLint v2' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform3iv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform3ui'],
+  'arguments': 'GLuint program, GLint location, GLuint v0, GLuint v1, '
+               'GLuint v2' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform3uiv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLuint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform4f'],
+  'arguments': 'GLuint program, GLint location, GLfloat v0, GLfloat v1, '
+               'GLfloat v2, GLfloat v3' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform4fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform4i'],
+  'arguments': 'GLuint program, GLint location, GLint v0, GLint v1, GLint v2, '
+               'GLint v3' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform4iv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform4ui'],
+  'arguments': 'GLuint program, GLint location, GLuint v0, GLuint v1, '
+               'GLuint v2, GLuint v3' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniform4uiv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'const GLuint* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix2fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix2x3fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix2x4fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix3fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix3x2fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix3x4fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix4fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix4x2fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
+  'names': ['glProgramUniformMatrix4x3fv'],
+  'arguments': 'GLuint program, GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value' },
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glPushDebugGroup' },
                { 'name': 'glPushDebugGroupKHR',
                  'extensions': ['GL_KHR_debug'] }],
@@ -1436,6 +1616,9 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glSampleCoverage'],
   'arguments': 'GLclampf value, GLboolean invert', },
+{ 'return_type': 'void',
+  'names': ['glSampleMaski'],
+  'arguments': 'GLuint maskNumber, GLbitfield mask', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glSamplerParameterf',
                  'extensions': ['GL_ARB_sampler_objects'] }],
@@ -1676,6 +1859,11 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
+  'names': ['glTexStorage2DMultisample'],
+  'arguments':
+      'GLenum target, GLsizei samples, GLenum internalformat, '
+      'GLsizei width, GLsizei height, GLboolean fixedsamplelocations', },
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glTexStorage3D',
                  'extensions': ['GL_ARB_texture_storage'] }],
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
@@ -1832,8 +2020,14 @@ GL_FUNCTIONS = [
   'names': ['glUseProgram'],
   'arguments': 'GLuint program', },
 { 'return_type': 'void',
+  'names': ['glUseProgramStages'],
+  'arguments': 'GLuint pipeline, GLbitfield stages, GLuint program', },
+{ 'return_type': 'void',
   'names': ['glValidateProgram'],
   'arguments': 'GLuint program', },
+{ 'return_type': 'void',
+  'names': ['glValidateProgramPipeline'],
+  'arguments': 'GLuint pipeline', },
 { 'return_type': 'void',
   'names': ['glVertexAttrib1f'],
   'arguments': 'GLuint indx, GLfloat x', },
@@ -1859,11 +2053,18 @@ GL_FUNCTIONS = [
   'names': ['glVertexAttrib4fv'],
   'arguments': 'GLuint indx, const GLfloat* values', },
 { 'return_type': 'void',
+  'names': ['glVertexAttribBinding'],
+  'arguments': 'GLuint attribindex, GLuint bindingindex', },
+{ 'return_type': 'void',
   'known_as': 'glVertexAttribDivisorANGLE',
   'names': ['glVertexAttribDivisorARB', 'glVertexAttribDivisorANGLE',
             'glVertexAttribDivisorEXT', 'glVertexAttribDivisor'],
   'arguments':
       'GLuint index, GLuint divisor', },
+{ 'return_type': 'void',
+  'names': ['glVertexAttribFormat'],
+  'arguments': 'GLuint attribindex, GLint size, GLenum type, '
+               'GLboolean normalized, GLuint relativeoffset', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glVertexAttribI4i' }],
   'arguments': 'GLuint indx, GLint x, GLint y, GLint z, GLint w', },
@@ -1877,6 +2078,10 @@ GL_FUNCTIONS = [
   'versions': [{ 'name': 'glVertexAttribI4uiv' }],
   'arguments': 'GLuint indx, const GLuint* values', },
 { 'return_type': 'void',
+  'names': ['glVertexAttribIFormat'],
+  'arguments': 'GLuint attribindex, GLint size, GLenum type, '
+               'GLuint relativeoffset', },
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glVertexAttribIPointer' }],
   'arguments': 'GLuint indx, GLint size, GLenum type, GLsizei stride, '
                'const void* ptr', },
@@ -1884,6 +2089,9 @@ GL_FUNCTIONS = [
   'names': ['glVertexAttribPointer'],
   'arguments': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
                'GLsizei stride, const void* ptr', },
+{ 'return_type': 'void',
+  'names': ['glVertexBindingDivisor'],
+  'arguments': 'GLuint bindingindex, GLuint divisor', },
 { 'return_type': 'void',
   'names': ['glViewport'],
   'arguments': 'GLint x, GLint y, GLsizei width, GLsizei height', },
@@ -2548,6 +2756,7 @@ GLES2_HEADERS_WITH_ENUMS = [
   'GLES2/gl2chromium.h',
   'GLES2/gl2extchromium.h',
   'GLES3/gl3.h',
+  'GLES3/gl31.h',
 ]
 
 SELF_LOCATION = os.path.dirname(os.path.abspath(__file__))
@@ -2690,7 +2899,14 @@ def GenerateAPIHeader(file, functions, set_name):
   """Generates gl_bindings_api_autogen_x.h"""
 
   # Write file header.
-  file.write(LICENSE_AND_HEADER)
+  file.write(LICENSE_AND_HEADER +
+"""
+
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this:
+// no-include-guard-because-multiply-included
+
+""")
 
   # Write API declaration.
   for func in functions:
@@ -2704,7 +2920,14 @@ def GenerateMockHeader(file, functions, set_name):
   """Generates gl_mock_autogen_x.h"""
 
   # Write file header.
-  file.write(LICENSE_AND_HEADER)
+  file.write(LICENSE_AND_HEADER +
+"""
+
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this:
+// no-include-guard-because-multiply-included
+
+""")
 
   # Write API declaration.
   for func in functions:
@@ -2731,7 +2954,14 @@ def GenerateStubHeader(file, functions):
   """Generates gl_stub_autogen_gl.h"""
 
   # Write file header.
-  file.write(LICENSE_AND_HEADER)
+  file.write(LICENSE_AND_HEADER +
+"""
+
+#ifndef UI_GL_GL_STUB_AUTOGEN_H_
+#define UI_GL_GL_STUB_AUTOGEN_H_
+
+""")
+
 
   # Write API declaration.
   for func in functions:
@@ -2747,6 +2977,7 @@ def GenerateStubHeader(file, functions):
       file.write(';\n');
 
   file.write('\n')
+  file.write('#endif  //  UI_GL_GL_STUB_AUTOGEN_H_')
 
 def GenerateStubSource(file, functions):
   """Generates gl_stub_autogen_gl.cc"""
@@ -3157,7 +3388,14 @@ def GetUniquelyNamedFunctions(functions):
 def GenerateMockBindingsHeader(file, functions):
   """Headers for functions that invoke MockGLInterface members"""
 
-  file.write(LICENSE_AND_HEADER)
+  file.write(LICENSE_AND_HEADER +
+"""
+
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this:
+// no-include-guard-because-multiply-included
+
+""")
   uniquely_named_functions = GetUniquelyNamedFunctions(functions)
 
   for key in sorted(uniquely_named_functions.iterkeys()):
@@ -3264,7 +3502,13 @@ def GenerateEnumUtils(out_file, input_filenames):
             raise RuntimeError("code collision: %s and %s have the same code %s"
                                %  (dict[value], name, value))
 
-  out_file.write(LICENSE_AND_HEADER)
+  out_file.write(LICENSE_AND_HEADER +
+"""
+
+#ifndef UI_GL_GL_ENUMS_IMPLEMENTATION_AUTOGEN_H_
+#define UI_GL_GL_ENUMS_IMPLEMENTATION_AUTOGEN_H_
+
+""")
   out_file.write("static const GLEnums::EnumToString "
                  "enum_to_string_table[] = {\n")
   for value in sorted(dict):
@@ -3277,6 +3521,7 @@ const size_t GLEnums::enum_to_string_table_len_ =
   sizeof(enum_to_string_table) / sizeof(enum_to_string_table[0]);
 
 """)
+  out_file.write('#endif  //  UI_GL_GL_ENUMS_IMPLEMENTATION_AUTOGEN_H_')
 
 
 def ParseFunctionsFromHeader(header_file, extensions, versions):
