@@ -387,6 +387,17 @@
             </paper-icon-button-light>
           </a>
 
+          <a class$="inherit-color no-outline
+              [[getListItemClass_(unifiedConsentEnabled)]]" tabindex="-1"
+              target="_blank" href="$i18n{syncDashboardUrl}">
+            <div class="start">
+              $i18n{manageSyncedDataTitle}
+            </div>
+            <paper-icon-button-light actionable class="icon-external">
+              <button aria-label="$i18n{manageSyncedDataTitle}"></button>
+            </paper-icon-button-light>
+          </a>
+
           <div id="encryptionDescription"
               hidden="[[syncPrefs.passphraseRequired]]"
               class$="two-line single-column
@@ -451,17 +462,6 @@
               </div>
             </div>
           </template>
-
-          <a class$="inherit-color no-outline
-              [[getListItemClass_(unifiedConsentEnabled)]]" tabindex="-1"
-              target="_blank" href="$i18n{syncDashboardUrl}">
-            <div class="start">
-              $i18n{manageSyncedDataTitle}
-            </div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button aria-label="$i18n{manageSyncedDataTitle}"></button>
-            </paper-icon-button-light>
-          </a>
 
         </div>
       </div>
