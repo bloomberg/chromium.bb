@@ -127,9 +127,6 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Test that submitting a form ensures saving the data as an autofill profile.
 - (void)testAutofillProfileSaving {
-  // TODO(crbug.com/866730): Re-enable when fixed
-  EARL_GREY_TEST_DISABLED(@"Test broken.");
-
   [self loadAndSubmitTheForm];
   [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
 
@@ -150,9 +147,6 @@ NSString* GetTextFieldForID(int categoryId) {
 // Test that editing country names is followed by validating the value and
 // replacing it with a canonical one.
 - (void)testAutofillProfileEditing {
-  // TODO(crbug.com/866730): Re-enable when fixed
-  EARL_GREY_TEST_DISABLED(@"Test broken.");
-
   [self loadAndSubmitTheForm];
   [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
 
@@ -187,9 +181,6 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Test that the page for viewing autofill profile details is accessible.
 - (void)testAccessibilityOnAutofillProfileViewPage {
-  // TODO(crbug.com/866730): Re-enable when fixed
-  EARL_GREY_TEST_DISABLED(@"Test broken.");
-
   [self loadAndSubmitTheForm];
   [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -199,9 +190,6 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Test that the page for editing autofill profile details is accessible.
 - (void)testAccessibilityOnAutofillProfileEditPage {
-  // TODO(crbug.com/866730): Re-enable when fixed
-  EARL_GREY_TEST_DISABLED(@"Test broken.");
-
   [self loadAndSubmitTheForm];
   [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
   // Switch on edit mode.
@@ -216,9 +204,6 @@ NSString* GetTextFieldForID(int categoryId) {
 // Checks that if the autofill profiles and credit cards list view is in edit
 // mode, the "autofill" and "wallet" switch items are disabled.
 - (void)testListViewEditMode {
-  // TODO(crbug.com/866730): Re-enable when fixed
-  EARL_GREY_TEST_DISABLED(@"Test broken.");
-
   [self loadAndSubmitTheForm];
 
   [ChromeEarlGreyUI openSettingsMenu];
