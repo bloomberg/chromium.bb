@@ -138,6 +138,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   ~SyncService() override {}
 
+  //////////////////////////////////////////////////////////////////////////////
+  // BASIC STATE ACCESS
+  //////////////////////////////////////////////////////////////////////////////
+
   // Returns the set of reasons that are keeping Sync disabled, as a bitmask of
   // DisableReason enum entries.
   virtual int GetDisableReasons() const = 0;
@@ -154,112 +158,24 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // syncer::GetUploadToGoogleState instead of this.
   virtual State GetState() const = 0;
 
-  // Whether the user has completed the initial Sync setup. This does not mean
-  // that sync is currently running (due to delayed startup, unrecoverable
-  // errors, or shutdown). If you want to know whether Sync is actually running,
-  // use GetState instead.
-  virtual bool IsFirstSetupComplete() const = 0;
-
-  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
-  // Equivalent to "!HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
-  // !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)".
-  bool IsSyncAllowed() const;
-
-  // DEPRECATED! Use GetState instead. Equivalent to
-  // "GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
-  // To see which datatypes are actually syncing, see GetActiveDataTypes().
-  bool IsSyncActive() const;
-
   // Returns true if the local sync backend server has been enabled through a
   // command line flag or policy. In this case sync is considered active but any
   // implied consent for further related services e.g. Suggestions, Web History
   // etc. is considered not granted.
   virtual bool IsLocalSyncEnabled() const = 0;
 
-  // Triggers a GetUpdates call for the specified |types|, pulling any new data
-  // from the sync server.
-  virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
+  // Information about the currently signed in user.
+  virtual AccountInfo GetAuthenticatedAccountInfo() const = 0;
 
-  // Get the set of current active data types (those chosen or configured by
-  // the user which have not also encountered a runtime error).
-  // Note that if the Sync engine is in the middle of a configuration, this
-  // will the the empty set. Once the configuration completes the set will
-  // be updated.
-  virtual ModelTypeSet GetActiveDataTypes() const = 0;
-
-  // Returns the SyncClient instance associated with this service.
-  virtual SyncClient* GetSyncClient() const = 0;
-
-  // Adds/removes an observer. SyncService does not take ownership of the
-  // observer.
-  virtual void AddObserver(SyncServiceObserver* observer) = 0;
-  virtual void RemoveObserver(SyncServiceObserver* observer) = 0;
-
-  // Returns true if |observer| has already been added as an observer.
-  virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
-
-  // ---------------------------------------------------------------------------
-  // TODO(sync): The methods below were pulled from ProfileSyncService, and
-  // should be evaluated to see if they should stay.
-
-  // Called when a datatype (SyncableService) has a need for sync to start
-  // ASAP, presumably because a local change event has occurred but we're
-  // still in deferred start mode, meaning the SyncableService hasn't been
-  // told to MergeDataAndStartSyncing yet.
-  virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
-
-  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
-  // Equivalent to having no disable reasons, i.e.
-  // "GetDisableReasons() == DISABLE_REASON_NONE".
-  bool CanSyncStart() const;
-
-  // Stops sync at the user's request. |data_fate| controls whether the sync
-  // engine should clear its data directory when it shuts down. Generally
-  // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
-  // when they sign out of the profile entirely.
-  virtual void RequestStop(SyncStopDataFate data_fate) = 0;
-
-  // The user requests that sync start. This only actually starts sync if
-  // IsSyncAllowed is true and the user is signed in. Once sync starts,
-  // other things such as IsFirstSetupComplete being false can still prevent
-  // it from moving into the "active" state.
-  virtual void RequestStart() = 0;
-
-  // Returns the set of types which are preferred for enabling. This is a
-  // superset of the active types (see GetActiveDataTypes()).
-  virtual ModelTypeSet GetPreferredDataTypes() const = 0;
-
-  // Called when a user chooses which data types to sync. |sync_everything|
-  // represents whether they chose the "keep everything synced" option; if
-  // true, |chosen_types| will be ignored and all data types will be synced.
-  // |sync_everything| means "sync all current and future data types."
-  // |chosen_types| must be a subset of UserSelectableTypes().
-  virtual void OnUserChoseDatatypes(bool sync_everything,
-                                    ModelTypeSet chosen_types) = 0;
-
-  // Called whe Sync has been setup by the user and can be started.
-  virtual void SetFirstSetupComplete() = 0;
-
-  // Returns true if initial sync setup is in progress (does not return true
-  // if the user is customizing sync after already completing setup once).
-  // SyncService uses this to determine if it's OK to start syncing, or if the
-  // user is still setting up the initial sync configuration.
-  bool IsFirstSetupInProgress() const;
-
-  // Called by the UI to notify the SyncService that UI is visible so it will
-  // not start syncing. This tells sync whether it's safe to start downloading
-  // data types yet (we don't start syncing until after sync setup is complete).
-  // The UI calls this and holds onto the instance for as long as any part of
-  // the signin wizard is displayed (even just the login UI).
-  // When the last outstanding handle is deleted, this kicks off the sync engine
-  // to ensure that data download starts. In this case,
-  // |ReconfigureDatatypeManager| will get triggered.
-  virtual std::unique_ptr<SyncSetupInProgressHandle>
-  GetSetupInProgressHandle() = 0;
-
-  virtual bool IsSetupInProgress() const = 0;
-
+  // The last authentication error that was encountered by the SyncService. This
+  // error can be either from Chrome's identity system (e.g. while trying to get
+  // an access token), or from the Sync server. It gets cleared when the error
+  // is resolved.
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // DERIVED STATE ACCESS
+  //////////////////////////////////////////////////////////////////////////////
 
   // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
   // Equivalent to "HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)".
@@ -270,9 +186,127 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
   bool IsEngineInitialized() const;
 
-  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
-  // not currently syncing, returns nullptr.
-  virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
+  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
+  // Equivalent to "!HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
+  // !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)".
+  bool IsSyncAllowed() const;
+
+  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
+  // Equivalent to having no disable reasons, i.e.
+  // "GetDisableReasons() == DISABLE_REASON_NONE".
+  bool CanSyncStart() const;
+
+  // DEPRECATED! Use GetState instead. Equivalent to
+  // "GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
+  // To see which datatypes are actually syncing, see GetActiveDataTypes().
+  bool IsSyncActive() const;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // INITIAL SETUP / CONSENT
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Returns true if initial sync setup is in progress (does not return true
+  // if the user is customizing sync after already completing setup once).
+  // SyncService uses this to determine if it's OK to start syncing, or if the
+  // user is still setting up the initial sync configuration.
+  bool IsFirstSetupInProgress() const;
+
+  // Whether the user has completed the initial Sync setup. This does not mean
+  // that sync is currently running (due to delayed startup, unrecoverable
+  // errors, or shutdown). If you want to know whether Sync is actually running,
+  // use GetState instead.
+  virtual bool IsFirstSetupComplete() const = 0;
+
+  // Called when Sync has been setup by the user and can be started.
+  virtual void SetFirstSetupComplete() = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // SETUP-IN-PROGRESS HANDLING
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Called by the UI to notify the SyncService that UI is visible so it will
+  // not start syncing. This tells sync whether it's safe to start downloading
+  // data types yet (we don't start syncing until after sync setup is complete).
+  // The UI calls this and holds onto the instance for as long as any part of
+  // the signin wizard is displayed (even just the login UI).
+  // When the last outstanding handle is deleted, this kicks off the sync engine
+  // to ensure that data download starts.
+  virtual std::unique_ptr<SyncSetupInProgressHandle>
+  GetSetupInProgressHandle() = 0;
+
+  // Whether a Sync setup is currently in progress, i.e. a setup UI is being
+  // shown.
+  virtual bool IsSetupInProgress() const = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // DATA TYPE STATE
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Returns the set of types which are preferred for enabling. This is a
+  // superset of the active types (see GetActiveDataTypes()).
+  virtual ModelTypeSet GetPreferredDataTypes() const = 0;
+
+  // Get the set of current active data types (those chosen or configured by
+  // the user which have not also encountered a runtime error).
+  // Note that if the Sync engine is in the middle of a configuration, this
+  // will the the empty set. Once the configuration completes the set will
+  // be updated.
+  virtual ModelTypeSet GetActiveDataTypes() const = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // ACTIONS / STATE CHANGE REQUESTS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // The user requests that sync start. This only actually starts sync if
+  // IsSyncAllowed is true and the user is signed in. Once sync starts,
+  // other things such as IsFirstSetupComplete being false can still prevent
+  // it from moving into the "active" state.
+  virtual void RequestStart() = 0;
+
+  // Stops sync at the user's request. |data_fate| controls whether the sync
+  // engine should clear its data directory when it shuts down. Generally
+  // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
+  // when they sign out of the profile entirely.
+  virtual void RequestStop(SyncStopDataFate data_fate) = 0;
+
+  // Called when a datatype (SyncableService) has a need for sync to start
+  // ASAP, presumably because a local change event has occurred but we're
+  // still in deferred start mode, meaning the SyncableService hasn't been
+  // told to MergeDataAndStartSyncing yet.
+  virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
+
+  // Called when a user chooses which data types to sync. |sync_everything|
+  // represents whether they chose the "keep everything synced" option; if
+  // true, |chosen_types| will be ignored and all data types will be synced.
+  // |sync_everything| means "sync all current and future data types."
+  // |chosen_types| must be a subset of UserSelectableTypes().
+  virtual void OnUserChoseDatatypes(bool sync_everything,
+                                    ModelTypeSet chosen_types) = 0;
+
+  // Triggers a GetUpdates call for the specified |types|, pulling any new data
+  // from the sync server. Used by tests and debug UI (sync-internals).
+  virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
+
+  // Attempts to re-enable a data type that is currently disabled due to a
+  // data type error or an unready error. Note, this does not change the
+  // preferred state of a datatype, and is not persisted across restarts.
+  virtual void ReenableDatatype(ModelType type) = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // OBSERVERS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Adds/removes an observer. SyncService does not take ownership of the
+  // observer.
+  virtual void AddObserver(SyncServiceObserver* observer) = 0;
+  virtual void RemoveObserver(SyncServiceObserver* observer) = 0;
+
+  // Returns true if |observer| has already been added as an observer.
+  virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // ENCRYPTION
+  //////////////////////////////////////////////////////////////////////////////
 
   // Returns true if OnPassphraseRequired has been called for decryption and
   // we have an encrypted data type enabled.
@@ -313,21 +347,33 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // to ensure thread safety.
   virtual bool IsCryptographerReady(const BaseTransaction* trans) const = 0;
 
+  //////////////////////////////////////////////////////////////////////////////
+  // ACCESS TO INNER OBJECTS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // TODO(crbug.com/865936): Move this down into ProfileSyncService.
+  virtual SyncClient* GetSyncClient() const = 0;
+
+  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
+  // not currently syncing, returns nullptr.
+  virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
+
   // TODO(akalin): This is called mostly by ModelAssociators and
   // tests.  Figure out how to pass the handle to the ModelAssociators
   // directly, figure out how to expose this to tests, and remove this
   // function.
   virtual UserShare* GetUserShare() const = 0;
 
-  // Returns DeviceInfo provider for the local device.
+  // TODO(mastiz): Get rid of this, e.g. by moving it to SyncClient.
   virtual const LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const = 0;
 
-  // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
-  // not change the preferred state of a datatype, and is not persisted across
-  // restarts.
-  virtual void ReenableDatatype(ModelType type) = 0;
+  // TODO(crbug.com/865936): Move this down into ProfileSyncService.
+  virtual GlobalIdMapper* GetGlobalIdMapper() const = 0;
 
-  // Return sync token status.
+  //////////////////////////////////////////////////////////////////////////////
+  // DETAILED STATE FOR DEBUG UI
+  //////////////////////////////////////////////////////////////////////////////
+
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
 
   // Initializes a struct of status indicators with data from the engine.
@@ -335,7 +381,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // the struct will be filled with default data.
   virtual bool QueryDetailedSyncStatus(SyncStatus* result) const = 0;
 
-  // Returns the last synced time.
   virtual base::Time GetLastSyncedTime() const = 0;
 
   virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
@@ -376,11 +421,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual void GetAllNodes(
       const base::Callback<void(std::unique_ptr<base::ListValue>)>&
           callback) = 0;
-
-  // Information about the currently signed in user.
-  virtual AccountInfo GetAuthenticatedAccountInfo() const = 0;
-
-  virtual GlobalIdMapper* GetGlobalIdMapper() const = 0;
 
  protected:
   SyncService() {}
