@@ -66,12 +66,18 @@ public class OfflinePageEvaluationBridge {
      * Class used for writing logs to external log file asynchronously to prevent violating strict
      * mode during test.
      */
-    private class LogTask extends AsyncTask<String, Void, Void> {
+    private class LogTask extends AsyncTask<Void, Void, Void> {
+        final String mLogString;
+
+        LogTask(String logString) {
+            mLogString = logString;
+        }
+
         @Override
-        protected Void doInBackground(String... strings) {
+        protected Void doInBackground(Void... params) {
             try {
                 synchronized (mLogOutput) {
-                    mLogOutput.write(strings[0]);
+                    mLogOutput.write(mLogString);
                     mLogOutput.flush();
                 }
             } catch (IOException e) {
@@ -198,9 +204,9 @@ public class OfflinePageEvaluationBridge {
                 new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault());
         String logString = formatter.format(date) + ": " + sourceTag + " | " + message
                 + System.getProperty("line.separator");
-        LogTask logTask = new LogTask();
+        LogTask logTask = new LogTask(logString);
         Log.d(TAG, logString);
-        logTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, logString);
+        logTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     public void closeLog() {

@@ -390,17 +390,18 @@ public class SelectFileDialog
 
                 if (photos.length == 1) {
                     GetDisplayNameTask task =
-                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), false);
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, Uri.parse(photos[0]));
+                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), false,
+                                    new Uri[] {Uri.parse(photos[0])});
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     return;
                 } else {
                     Uri[] filePathArray = new Uri[photos.length];
                     for (int i = 0; i < photos.length; ++i) {
                         filePathArray[i] = Uri.parse(photos[i]);
                     }
-                    GetDisplayNameTask task =
-                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), true);
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, filePathArray);
+                    GetDisplayNameTask task = new GetDisplayNameTask(
+                            ContextUtils.getApplicationContext(), true, filePathArray);
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
                 break;
 
@@ -565,9 +566,9 @@ public class SelectFileDialog
             for (int i = 0; i < itemCount; ++i) {
                 filePathArray[i] = clipData.getItemAt(i).getUri();
             }
-            GetDisplayNameTask task =
-                    new GetDisplayNameTask(ContextUtils.getApplicationContext(), true);
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, filePathArray);
+            GetDisplayNameTask task = new GetDisplayNameTask(
+                    ContextUtils.getApplicationContext(), true, filePathArray);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             return;
         }
 
@@ -577,9 +578,9 @@ public class SelectFileDialog
         }
 
         if (ContentResolver.SCHEME_CONTENT.equals(results.getScheme())) {
-            GetDisplayNameTask task =
-                    new GetDisplayNameTask(ContextUtils.getApplicationContext(), false);
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, results.getData());
+            GetDisplayNameTask task = new GetDisplayNameTask(
+                    ContextUtils.getApplicationContext(), false, new Uri[] {results.getData()});
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             return;
         }
 
@@ -699,32 +700,34 @@ public class SelectFileDialog
         return count;
     }
 
-    class GetDisplayNameTask extends AsyncTask<Uri, Void, String[]> {
+    class GetDisplayNameTask extends AsyncTask<Void, Void, String[]> {
         String[] mFilePaths;
         final Context mContext;
         final boolean mIsMultiple;
+        final Uri[] mUris;
 
-        public GetDisplayNameTask(Context context, boolean isMultiple) {
+        public GetDisplayNameTask(Context context, boolean isMultiple, Uri[] uris) {
             mContext = context;
             mIsMultiple = isMultiple;
+            mUris = uris;
         }
 
         @Override
-        public String[] doInBackground(Uri...uris) {
-            mFilePaths = new String[uris.length];
-            String[] displayNames = new String[uris.length];
+        public String[] doInBackground(Void... params) {
+            mFilePaths = new String[mUris.length];
+            String[] displayNames = new String[mUris.length];
             try {
-                for (int i = 0; i < uris.length; i++) {
+                for (int i = 0; i < mUris.length; i++) {
                     // The selected files must be returned as a list of absolute paths. A MIUI 8.5
                     // device was observed to return a file:// URI instead, so convert if necessary.
                     // See https://crbug.com/752834 for context.
-                    if (ContentResolver.SCHEME_FILE.equals(uris[i].getScheme())) {
-                        mFilePaths[i] = uris[i].getSchemeSpecificPart();
+                    if (ContentResolver.SCHEME_FILE.equals(mUris[i].getScheme())) {
+                        mFilePaths[i] = mUris[i].getSchemeSpecificPart();
                     } else {
-                        mFilePaths[i] = uris[i].toString();
+                        mFilePaths[i] = mUris[i].toString();
                     }
                     displayNames[i] = ContentUriUtils.getDisplayName(
-                            uris[i], mContext, MediaStore.MediaColumns.DISPLAY_NAME);
+                            mUris[i], mContext, MediaStore.MediaColumns.DISPLAY_NAME);
                 }
             }  catch (SecurityException e) {
                 // Some third party apps will present themselves as being able

@@ -133,12 +133,12 @@ public class SelectFileDialogTest {
     @Test
     public void testMultipleFileSelectorWithFileUris() throws Throwable {
         SelectFileDialog selectFileDialog = new SelectFileDialog(0);
-        SelectFileDialog.GetDisplayNameTask task =
-                selectFileDialog.new GetDisplayNameTask(ContextUtils.getApplicationContext(), true);
         Uri[] filePathArray = new Uri[] {
                 Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_0.jpg"),
                 Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_1.jpg")};
-        task.doInBackground(filePathArray);
+        SelectFileDialog.GetDisplayNameTask task = selectFileDialog.new GetDisplayNameTask(
+                ContextUtils.getApplicationContext(), true, filePathArray);
+        task.doInBackground();
         assertEquals(task.mFilePaths[0].toString(),
                 "///storage/emulated/0/DCIM/Camera/IMG_0.jpg");
         assertEquals(task.mFilePaths[1].toString(),

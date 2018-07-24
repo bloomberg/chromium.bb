@@ -17,18 +17,21 @@ import java.util.concurrent.TimeUnit;
 /**
  * A worker task to scale bitmaps in the background.
  */
-class BitmapScalerTask extends AsyncTask<Bitmap, Void, Bitmap> {
+class BitmapScalerTask extends AsyncTask<Void, Void, Bitmap> {
     private final LruCache<String, Bitmap> mCache;
     private final String mFilePath;
     private final int mSize;
+    private final Bitmap mBitmap;
 
     /**
      * A BitmapScalerTask constructor.
      */
-    public BitmapScalerTask(LruCache<String, Bitmap> cache, String filePath, int size) {
+    public BitmapScalerTask(
+            LruCache<String, Bitmap> cache, String filePath, int size, Bitmap bitmap) {
         mCache = cache;
         mFilePath = filePath;
         mSize = size;
+        mBitmap = bitmap;
     }
 
     /**
@@ -37,13 +40,13 @@ class BitmapScalerTask extends AsyncTask<Bitmap, Void, Bitmap> {
      * @return A sorted list of images (by last-modified first).
      */
     @Override
-    protected Bitmap doInBackground(Bitmap... bitmaps) {
+    protected Bitmap doInBackground(Void... params) {
         assert !ThreadUtils.runningOnUiThread();
 
         if (isCancelled()) return null;
 
         long begin = SystemClock.elapsedRealtime();
-        Bitmap bitmap = BitmapUtils.scale(bitmaps[0], mSize, false);
+        Bitmap bitmap = BitmapUtils.scale(mBitmap, mSize, false);
         long scaleTime = SystemClock.elapsedRealtime() - begin;
         RecordHistogram.recordTimesHistogram(
                 "Android.PhotoPicker.BitmapScalerTask", scaleTime, TimeUnit.MILLISECONDS);
