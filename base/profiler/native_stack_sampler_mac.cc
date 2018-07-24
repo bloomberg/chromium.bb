@@ -511,20 +511,10 @@ InternalModule NativeStackSamplerMac::GetInternalModule(
   if (loc != module_cache_entry_.end())
     return loc->internal_module;
 
-  Dl_info inf;
-  if (!dladdr(reinterpret_cast<const void*>(instruction_pointer), &inf))
-    return InternalModule();
-
-  auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
-
-  InternalModule internal_module(
-      base_module_address, GetUniqueId(inf.dli_fbase), FilePath(inf.dli_fname));
-
-  module_cache_entry_.emplace_back(
-      base_module_address,
-      base_module_address + GetModuleTextSize(inf.dli_fbase), internal_module);
-
-  return internal_module;
+  InternalModule module = GetModuleForAddress(instruction_pointer);
+  module_cache_entry_.emplace_back(module.base_address,
+                                   module.base_address + module.size, module);
+  return module;
 }
 
 template <typename StackFrameCallback, typename ContinueUnwindPredicate>
@@ -620,12 +610,28 @@ void NativeStackSamplerMac::WalkStack(
 
 }  // namespace
 
+// NativeStackSampler ---------------------------------------------------------
+
+// static
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
     NativeStackSamplerTestDelegate* test_delegate) {
   return std::make_unique<NativeStackSamplerMac>(thread_id, test_delegate);
 }
 
+// static
+StackSamplingProfiler::InternalModule NativeStackSampler::GetModuleForAddress(
+    uintptr_t address) {
+  Dl_info inf;
+  if (!dladdr(reinterpret_cast<const void*>(address), &inf))
+    return StackSamplingProfiler::InternalModule();
+  auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
+  return StackSamplingProfiler::InternalModule(
+      base_module_address, GetUniqueId(inf.dli_fbase), FilePath(inf.dli_fname),
+      GetModuleTextSize(inf.dli_fbase));
+}
+
+// static
 size_t NativeStackSampler::GetStackBufferSize() {
   // In platform_thread_mac's GetDefaultThreadStackSize(), RLIMIT_STACK is used
   // for all stacks, not just the main thread's, so it is good for use here.

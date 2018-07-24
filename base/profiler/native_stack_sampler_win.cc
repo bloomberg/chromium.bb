@@ -495,6 +495,9 @@ std::vector<InternalFrame> NativeStackSamplerWin::CreateInternalFrames(
 
 }  // namespace
 
+// NativeStackSampler ---------------------------------------------------------
+
+// static
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
     NativeStackSamplerTestDelegate* test_delegate) {
@@ -512,6 +515,14 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
   return std::unique_ptr<NativeStackSampler>();
 }
 
+// static
+StackSamplingProfiler::InternalModule NativeStackSampler::GetModuleForAddress(
+    uintptr_t address) {
+  // TODO(alph): Implement it.
+  return StackSamplingProfiler::InternalModule();
+}
+
+// static
 size_t NativeStackSampler::GetStackBufferSize() {
   // The default Win32 reserved stack size is 1 MB and Chrome Windows threads
   // currently always use the default, but this allows for expansion if it

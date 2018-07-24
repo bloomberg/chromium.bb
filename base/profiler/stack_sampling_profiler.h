@@ -90,6 +90,10 @@ class BASE_EXPORT StackSamplingProfiler {
     InternalModule(uintptr_t base_address,
                    const std::string& id,
                    const FilePath& filename);
+    InternalModule(uintptr_t base_address,
+                   const std::string& id,
+                   const FilePath& filename,
+                   size_t size);
     ~InternalModule();
 
     // Points to the base address of the module.
@@ -109,6 +113,9 @@ class BASE_EXPORT StackSamplingProfiler {
 
     // The validness of the module.
     bool is_valid;
+
+    // Size of the module.
+    size_t size;
   };
 
   // Frame represents an individual sampled stack frame with module information.
