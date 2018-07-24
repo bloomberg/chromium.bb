@@ -244,7 +244,13 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, GetDisplayInfo) {
 
 #if !defined(OS_CHROMEOS)
 
-IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
+// TODO(crbug.com/866904): Fails sometimes on Win 10 dbg bots.
+#if defined(OS_WIN)
+#define MAYBE_SetDisplay DISABLED_SetDisplay
+#else
+#define MAYBE_SetDisplay SetDisplay
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, MAYBE_SetDisplay) {
   scoped_refptr<SystemDisplaySetDisplayPropertiesFunction> set_info_function(
       new SystemDisplaySetDisplayPropertiesFunction());
 
