@@ -85,35 +85,34 @@ const CGFloat kHorizontalSpacing = 8.0f;
     _deleteButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_DELETE_BUTTON)
          destructive:YES
-            position:Leading];
-    _deleteButton.accessibilityIdentifier = kReadingListToolbarDeleteButtonID;
+            position:Leading
+          identifier:kReadingListToolbarDeleteButtonID];
 
     _deleteAllButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON)
          destructive:YES
-            position:Leading];
-    _deleteAllButton.accessibilityIdentifier =
-        kReadingListToolbarDeleteAllReadButtonID;
+            position:Leading
+          identifier:kReadingListToolbarDeleteAllReadButtonID];
 
     _markButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_MARK_ALL_BUTTON)
          destructive:NO
-            position:Centered];
-    _markButton.accessibilityIdentifier = kReadingListToolbarMarkButtonID;
+            position:Centered
+          identifier:kReadingListToolbarMarkButtonID];
 
     _cancelButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_CANCEL_BUTTON)
          destructive:NO
-            position:Trailing];
-    _cancelButton.accessibilityIdentifier = kReadingListToolbarCancelButtonID;
+            position:Trailing
+          identifier:kReadingListToolbarCancelButtonID];
 
     _editButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_EDIT_BUTTON)
          destructive:NO
-            position:Trailing];
-    _editButton.accessibilityIdentifier = kReadingListToolbarEditButtonID;
+            position:Trailing
+          identifier:kReadingListToolbarEditButtonID];
 
     [_editButton addTarget:nil
                     action:@selector(enterEditingModePressed)

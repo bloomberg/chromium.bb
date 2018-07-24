@@ -16,7 +16,8 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 // Initializer.
 - (instancetype)initWithText:(NSString*)labelText
                  destructive:(BOOL)isDestructive
-                    position:(ButtonPositioning)position;
+                    position:(ButtonPositioning)position
+                  identifier:(NSString*)identifier;
 
 // Associates a target object and action method with the UIButton.
 - (void)addTarget:(id)target
