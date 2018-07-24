@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -38,16 +37,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   static constexpr int kTrailingPaddingPreMd = 2;
 
   // A view that draws the separator.
-  class SeparatorView : public views::View,
-                        public ui::ImplicitAnimationObserver {
+  class SeparatorView : public views::View {
    public:
     explicit SeparatorView(IconLabelBubbleView* owner);
 
     // views::View:
     void OnPaint(gfx::Canvas* canvas) override;
-
-    // ui::ImplicitAnimationObserver:
-    void OnImplicitAnimationsCompleted() override;
 
     // Updates the opacity based on the ink drop's state.
     void UpdateOpacity();
@@ -154,6 +149,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldUpdateInkDropOnClickCanceled() const override;
   void NotifyClick(const ui::Event& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
