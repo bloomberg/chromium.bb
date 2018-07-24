@@ -238,7 +238,7 @@ const base::Feature kDownloadsForeground{"DownloadsForeground",
 #if defined(OS_ANDROID)
 // Enable changing default downloads storage location on Android.
 const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // An experimental way of showing app banners, which has modal banners and gives
