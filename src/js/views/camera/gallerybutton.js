@@ -118,10 +118,7 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
  */
 camera.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
   if (camera.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
-    // TODO(yuli): Don't open video-player app here.
-    const id = picture.isMotionPicture ?
-        'jcgeabjmjgoblfofpppfkcoakmfobdko|app|video' :
-        'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
+    const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
     chrome.fileManagerPrivate.executeTask(
         id, [picture.pictureEntry], result => {
       if (result != 'opened' && result != 'message_sent') {
