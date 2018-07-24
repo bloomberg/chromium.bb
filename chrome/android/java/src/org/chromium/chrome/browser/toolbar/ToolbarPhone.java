@@ -868,8 +868,12 @@ public class ToolbarPhone extends ToolbarLayout
         // We set the incognito toggle button's visibility from GONE to VISIBLE when the tab
         // switcher starts to open, but we don't want this to affect the Omnibox's size during the
         // animation, so we have to make an adjustment here.
+        // However, if the experimental button is showing it sits in a FrameLayout with the
+        // incognito button and the omnibox will be appropriately sized without an explicit
+        // adjustment.
         int incognitoButtonWidth = 0;
-        if (mIncognitoToggleButton != null && mIncognitoToggleButton.getVisibility() == VISIBLE) {
+        if (mIncognitoToggleButton != null && mIncognitoToggleButton.getVisibility() == VISIBLE
+                && (mExperimentalButton == null || mExperimentalButton.getVisibility() == GONE)) {
             incognitoButtonWidth += mIncognitoToggleButton.getMeasuredWidth();
         }
         return Math.max(mToolbarSidePadding,
@@ -1392,10 +1396,15 @@ public class ToolbarPhone extends ToolbarLayout
 
         // Draw the experimental button if necessary.
         if (mExperimentalButton != null && mExperimentalButton.getVisibility() != View.GONE) {
+            canvas.save();
+            translateCanvasToView(mToolbarButtonsContainer, mExperimentalButton, canvas);
+
             previousAlpha = mExperimentalButton.getAlpha();
             mExperimentalButton.setAlpha(previousAlpha * floatAlpha);
             drawChild(canvas, mExperimentalButton, SystemClock.uptimeMillis());
             mExperimentalButton.setAlpha(previousAlpha);
+
+            canvas.restore();
         }
 
         // Draw the tab stack button and associated text.

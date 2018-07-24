@@ -44,23 +44,27 @@
             android:layout_width="4dp"
             android:layout_height="match_parent" />
 
-        <ViewStub
-            android:id="@+id/experimental_button_stub"
-            android:inflatedId="@+id/experimental_toolbar_button"
-            android:layout="@layout/experimental_toolbar_button"
-            style="@style/ToolbarButton"
-            android:paddingStart="8dp"
-            android:layout_gravity="top"
-            android:visibility="gone" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top" >
 
-        <ViewStub
-            android:id="@+id/incognito_button_stub"
-            android:inflatedId="@+id/incognito_button"
-            android:layout="@layout/toolbar_phone_incognito_button"
-            style="@style/ToolbarButton"
-            android:layout_gravity="top"
-            android:contentDescription="@string/accessibility_tabstrip_btn_incognito_toggle_standard"
-            android:visibility="gone" />
+            <ViewStub
+                android:id="@+id/experimental_button_stub"
+                android:inflatedId="@+id/experimental_toolbar_button"
+                android:layout="@layout/experimental_toolbar_button"
+                style="@style/ToolbarButton"
+                android:paddingStart="8dp"
+                android:visibility="gone" />
+
+            <ViewStub
+                android:id="@+id/incognito_button_stub"
+                android:inflatedId="@+id/incognito_button"
+                android:layout="@layout/toolbar_phone_incognito_button"
+                style="@style/ToolbarButton"
+                android:contentDescription="@string/accessibility_tabstrip_btn_incognito_toggle_standard"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <ImageButton android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"
