@@ -169,18 +169,12 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
 base::Optional<CORSErrorStatus> CheckPreflightResult(
     PreflightResult* result,
     const ResourceRequest& original_request) {
-  base::Optional<mojom::CORSError> error =
+  base::Optional<CORSErrorStatus> status =
       result->EnsureAllowedCrossOriginMethod(original_request.method);
-  if (error)
-    return CORSErrorStatus(*error, original_request.method);
+  if (status)
+    return status;
 
-  std::string detected_error_header;
-  error = result->EnsureAllowedCrossOriginHeaders(original_request.headers,
-                                                  &detected_error_header);
-  if (error)
-    return CORSErrorStatus(*error, detected_error_header);
-
-  return base::nullopt;
+  return result->EnsureAllowedCrossOriginHeaders(original_request.headers);
 }
 
 // TODO(toyoshim): Remove this class once the Network Service is enabled.

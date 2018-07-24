@@ -26,7 +26,7 @@ struct TestCase {
   const std::string request_headers;
   const mojom::FetchCredentialsMode request_credentials_mode;
 
-  const base::Optional<mojom::CORSError> expected_result;
+  const base::Optional<CORSErrorStatus> expected_result;
 };
 
 const TestCase method_cases[] = {
@@ -67,29 +67,36 @@ const TestCase method_cases[] = {
     // Not found in the preflight response and the safe lit.
     {"", "", mojom::FetchCredentialsMode::kOmit, "OPTIONS", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "OPTIONS")},
     {"", "", mojom::FetchCredentialsMode::kOmit, "PUT", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "PUT")},
     {"", "", mojom::FetchCredentialsMode::kOmit, "DELETE", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "DELETE")},
     {"GET", "", mojom::FetchCredentialsMode::kOmit, "PUT", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "PUT")},
     {"GET, POST, DELETE", "", mojom::FetchCredentialsMode::kOmit, "PUT", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "PUT")},
 
     // Request method is normalized to upper-case, but allowed methods is not.
     // Comparison is in case-sensitive, that means allowed methods should be in
     // upper case.
     {"put", "", mojom::FetchCredentialsMode::kOmit, "PUT", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "PUT")},
     {"put", "", mojom::FetchCredentialsMode::kOmit, "put", "",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kMethodDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                     "put")},
     {"PUT", "", mojom::FetchCredentialsMode::kOmit, "put", "",
      mojom::FetchCredentialsMode::kOmit, base::nullopt},
     // ... But, GET is always allowed by the safe list.
@@ -117,7 +124,8 @@ const TestCase header_cases[] = {
      mojom::FetchCredentialsMode::kOmit, base::nullopt},
     {"GET", "*", mojom::FetchCredentialsMode::kInclude, "GET", "xyzzy:t",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kHeaderDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
+                     "xyzzy")},
 
     // Forbidden headers can pass.
     {"GET", "", mojom::FetchCredentialsMode::kOmit, "GET",
@@ -126,13 +134,16 @@ const TestCase header_cases[] = {
     // Not found in the preflight response and the safe list.
     {"GET", "", mojom::FetchCredentialsMode::kOmit, "GET", "X-MY-HEADER:t",
      mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kHeaderDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
+                     "X-MY-HEADER")},
     {"GET", "X-SOME-OTHER-HEADER", mojom::FetchCredentialsMode::kOmit, "GET",
      "X-MY-HEADER:t", mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kHeaderDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
+                     "X-MY-HEADER")},
     {"GET", "X-MY-HEADER", mojom::FetchCredentialsMode::kOmit, "GET",
      "X-MY-HEADER:t\r\nY-MY-HEADER:t", mojom::FetchCredentialsMode::kOmit,
-     mojom::CORSError::kHeaderDisallowedByPreflightResponse},
+     CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
+                     "Y-MY-HEADER")},
 };
 
 TEST_F(PreflightResultTest, MaxAge) {
@@ -177,7 +188,7 @@ TEST_F(PreflightResultTest, EnsureHeaders) {
     net::HttpRequestHeaders headers;
     headers.AddHeadersFromString(test.request_headers);
     EXPECT_EQ(test.expected_result,
-              result->EnsureAllowedCrossOriginHeaders(headers, nullptr));
+              result->EnsureAllowedCrossOriginHeaders(headers));
   }
 }
 

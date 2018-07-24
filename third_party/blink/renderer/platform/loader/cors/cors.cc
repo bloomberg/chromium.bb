@@ -146,6 +146,7 @@ bool EnsurePreflightResultAndCacheOnSuccess(
   DCHECK(error_description);
 
   base::Optional<network::mojom::CORSError> error;
+  base::Optional<network::CORSErrorStatus> status;
 
   std::unique_ptr<network::cors::PreflightResult> result =
       network::cors::PreflightResult::Create(
@@ -164,23 +165,22 @@ bool EnsurePreflightResultAndCacheOnSuccess(
     return false;
   }
 
-  error = result->EnsureAllowedCrossOriginMethod(
+  status = result->EnsureAllowedCrossOriginMethod(
       std::string(request_method.Ascii().data()));
-  if (error) {
+  if (status) {
     *error_description = CORS::GetErrorString(
-        CORS::ErrorParameter::CreateForPreflightResponseCheck(*error,
-                                                              request_method));
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(
+            status->cors_error, request_method));
     return false;
   }
 
-  std::string detected_error_header;
-  error = result->EnsureAllowedCrossOriginHeaders(
-      *CreateNetHttpRequestHeaders(request_header_map), &detected_error_header);
-  if (error) {
+  status = result->EnsureAllowedCrossOriginHeaders(
+      *CreateNetHttpRequestHeaders(request_header_map));
+  if (status) {
     *error_description = CORS::GetErrorString(
         CORS::ErrorParameter::CreateForPreflightResponseCheck(
-            *error, String(detected_error_header.data(),
-                           detected_error_header.length())));
+            status->cors_error, String(status->failed_parameter.data(),
+                                       status->failed_parameter.length())));
     return false;
   }
 
