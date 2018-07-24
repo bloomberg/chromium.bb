@@ -79,7 +79,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_bridge_views.h"
-#import "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1599,71 +1598,14 @@ bool IsTabDetachingInFullscreenEnabled() {
                                      step:(translate::TranslateStep)step
                                 errorType:(translate::TranslateErrors::Type)
                                 errorType {
-  if (chrome::ShowAllDialogsWithViewsToolkit()) {
-    ShowTranslateBubbleViews([self window], [self locationBarBridge], contents,
-                             step, errorType, true);
-    return;
-  }
-  // TODO(hajimehoshi): The similar logic exists at TranslateBubbleView::
-  // ShowBubble. This should be unified.
-  if (translateBubbleController_) {
-    // When the user reads the advanced setting panel, the bubble should not be
-    // changed because they are focusing on the bubble.
-    if (translateBubbleController_.webContents == contents &&
-        translateBubbleController_.model->GetViewState() ==
-        TranslateBubbleModel::VIEW_STATE_ADVANCED) {
-      return;
-    }
-    if (step != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
-      TranslateBubbleModel::ViewState viewState =
-          TranslateBubbleModelImpl::TranslateStepToViewState(step);
-      [translateBubbleController_ switchView:viewState];
-    } else {
-      [translateBubbleController_ switchToErrorView:errorType];
-    }
-    return;
-  }
-
-  std::string sourceLanguage;
-  std::string targetLanguage;
-  ChromeTranslateClient::GetTranslateLanguages(
-      contents, &sourceLanguage, &targetLanguage);
-
-  std::unique_ptr<translate::TranslateUIDelegate> uiDelegate(
-      new translate::TranslateUIDelegate(
-          ChromeTranslateClient::GetManagerFromWebContents(contents)
-              ->GetWeakPtr(),
-          sourceLanguage, targetLanguage));
-  std::unique_ptr<TranslateBubbleModel> model(
-      new TranslateBubbleModelImpl(step, std::move(uiDelegate)));
-  translateBubbleController_ =
-      [[TranslateBubbleController alloc] initWithParentWindow:self
-                                                        model:std::move(model)
-                                                  webContents:contents];
-  [translateBubbleController_ showWindow:nil];
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserver:self
-             selector:@selector(translateBubbleWindowWillClose:)
-                 name:NSWindowWillCloseNotification
-               object:[translateBubbleController_ window]];
+  ShowTranslateBubbleViews([self window], [self locationBarBridge], contents,
+                           step, errorType, true);
 }
 
 - (void)dismissPermissionBubble {
   PermissionPrompt::Delegate* delegate = [self permissionRequestManager];
   if (delegate)
     delegate->Closing();
-}
-
-// Nil out the weak translate bubble controller reference.
-- (void)translateBubbleWindowWillClose:(NSNotification*)notification {
-  DCHECK_EQ([notification object], [translateBubbleController_ window]);
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self
-                    name:NSWindowWillCloseNotification
-                  object:[translateBubbleController_ window]];
-  translateBubbleController_ = nil;
 }
 
 // If the browser is in incognito mode or has multi-profiles, install the image
