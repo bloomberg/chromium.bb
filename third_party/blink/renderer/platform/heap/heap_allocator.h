@@ -72,7 +72,7 @@ class PLATFORM_EXPORT HeapAllocator {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     DCHECK(state->IsAllocationAllowed());
-    size_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
+    uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     NormalPageArena* arena = static_cast<NormalPageArena*>(
         state->Heap().VectorBackingArena(gc_info_index));
     return reinterpret_cast<T*>(arena->AllocateObject(
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT HeapAllocator {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     DCHECK(state->IsAllocationAllowed());
-    size_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
+    uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     NormalPageArena* arena = static_cast<NormalPageArena*>(
         state->Heap().ExpandedVectorBackingArena(gc_info_index));
     return reinterpret_cast<T*>(arena->AllocateObject(
@@ -96,7 +96,7 @@ class PLATFORM_EXPORT HeapAllocator {
                                   size_t quantized_shrunk_size);
   template <typename T>
   static T* AllocateInlineVectorBacking(size_t size) {
-    size_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
+    uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(HeapVectorBacking<T>);
@@ -112,7 +112,7 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T, typename HashTable>
   static T* AllocateHashTableBacking(size_t size) {
-    size_t gc_info_index =
+    uint32_t gc_info_index =
         GCInfoTrait<HeapHashTableBacking<HashTable>>::Index();
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();

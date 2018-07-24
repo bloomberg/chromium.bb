@@ -430,8 +430,8 @@ int ThreadHeap::ArenaIndexOfVectorArenaLeastRecentlyExpanded(
   return arena_index_with_min_arena_age;
 }
 
-BaseArena* ThreadHeap::ExpandedVectorBackingArena(size_t gc_info_index) {
-  size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
+BaseArena* ThreadHeap::ExpandedVectorBackingArena(uint32_t gc_info_index) {
+  uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
   --likely_to_be_promptly_freed_[entry_index];
   int arena_index = vector_backing_arena_index_;
   arena_ages_[arena_index] = ++current_arena_ages_;
@@ -448,9 +448,9 @@ void ThreadHeap::AllocationPointAdjusted(int arena_index) {
   }
 }
 
-void ThreadHeap::PromptlyFreed(size_t gc_info_index) {
+void ThreadHeap::PromptlyFreed(uint32_t gc_info_index) {
   DCHECK(thread_state_->CheckThread());
-  size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
+  uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
   // See the comment in vectorBackingArena() for why this is +3.
   likely_to_be_promptly_freed_[entry_index] += 3;
 }
@@ -550,7 +550,7 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
   size_t total_dead_count = 0;
   size_t total_live_size = 0;
   size_t total_dead_size = 0;
-  for (size_t gc_info_index = 1;
+  for (uint32_t gc_info_index = 1;
        gc_info_index <= GCInfoTable::Get().GcInfoIndex(); ++gc_info_index) {
     total_live_count += info.live_count[gc_info_index];
     total_dead_count += info.dead_count[gc_info_index];

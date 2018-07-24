@@ -280,7 +280,7 @@ class PLATFORM_EXPORT ThreadHeap {
   Address AllocateOnArenaIndex(ThreadState*,
                                size_t,
                                int arena_index,
-                               size_t gc_info_index,
+                               uint32_t gc_info_index,
                                const char* type_name);
   template <typename T>
   static Address Allocate(size_t, bool eagerly_sweep = false);
@@ -350,9 +350,9 @@ class PLATFORM_EXPORT ThreadHeap {
   //   (*) More than 33% of the same type of vectors have been promptly
   //       freed since the last GC.
   //
-  BaseArena* VectorBackingArena(size_t gc_info_index) {
+  BaseArena* VectorBackingArena(uint32_t gc_info_index) {
     DCHECK(thread_state_->CheckThread());
-    size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
+    uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
     --likely_to_be_promptly_freed_[entry_index];
     int arena_index = vector_backing_arena_index_;
     // If likely_to_be_promptly_freed_[entryIndex] > 0, that means that
@@ -367,14 +367,14 @@ class PLATFORM_EXPORT ThreadHeap {
     DCHECK(IsVectorArenaIndex(arena_index));
     return arenas_[arena_index];
   }
-  BaseArena* ExpandedVectorBackingArena(size_t gc_info_index);
+  BaseArena* ExpandedVectorBackingArena(uint32_t gc_info_index);
   static bool IsVectorArenaIndex(int arena_index) {
     return BlinkGC::kVector1ArenaIndex <= arena_index &&
            arena_index <= BlinkGC::kVector4ArenaIndex;
   }
   static bool IsNormalArenaIndex(int);
   void AllocationPointAdjusted(int arena_index);
-  void PromptlyFreed(size_t gc_info_index);
+  void PromptlyFreed(uint32_t gc_info_index);
   void ClearArenaAges();
   int ArenaIndexOfVectorArenaLeastRecentlyExpanded(int begin_arena_index,
                                                    int end_arena_index);
@@ -602,7 +602,7 @@ class VerifyEagerFinalization {
 inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
                                                 size_t size,
                                                 int arena_index,
-                                                size_t gc_info_index,
+                                                uint32_t gc_info_index,
                                                 const char* type_name) {
   DCHECK(state->IsAllocationAllowed());
   DCHECK_NE(arena_index, BlinkGC::kLargeObjectArenaIndex);
@@ -651,7 +651,7 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
       arena_index = ArenaIndexForObjectSize(size);
   }
 
-  size_t gc_info_index = GCInfoTrait<T>::Index();
+  uint32_t gc_info_index = GCInfoTrait<T>::Index();
   // TODO(haraken): We don't support reallocate() for finalizable objects.
   DCHECK(!GCInfoTable::Get()
               .GCInfoFromIndex(previous_header->GcInfoIndex())
