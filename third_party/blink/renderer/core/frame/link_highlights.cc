@@ -30,9 +30,13 @@ void LinkHighlights::Trace(blink::Visitor* visitor) {
 }
 
 void LinkHighlights::RemoveAllHighlights() {
-  if (timeline_) {
-    for (auto& highlight : link_highlights_)
+  for (auto& highlight : link_highlights_) {
+    if (timeline_)
       timeline_->AnimationDestroyed(*highlight);
+    if (auto* node = highlight->GetNode()) {
+      if (auto* layout_object = node->GetLayoutObject())
+        layout_object->SetNeedsPaintPropertyUpdate();
+    }
   }
   link_highlights_.clear();
 }
@@ -64,6 +68,7 @@ void LinkHighlights::SetTapHighlights(
     link_highlights_.push_back(LinkHighlightImpl::Create(node));
     if (timeline_)
       timeline_->AnimationAttached(*link_highlights_.back());
+    node->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
   }
 }
 
@@ -103,6 +108,27 @@ void LinkHighlights::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view) {
     timeline_.reset();
   }
   animation_host_ = nullptr;
+}
+
+bool LinkHighlights::NeedsHighlightEffectInternal(
+    const LayoutObject& object) const {
+  for (auto& highlight : link_highlights_) {
+    if (auto* node = highlight->GetNode()) {
+      if (node->GetLayoutObject() == &object)
+        return true;
+    }
+  }
+  return false;
+}
+
+CompositorElementId LinkHighlights::element_id(const LayoutObject& object) {
+  for (auto& highlight : link_highlights_) {
+    if (auto* node = highlight->GetNode()) {
+      if (node->GetLayoutObject() == &object)
+        return highlight->element_id();
+    }
+  }
+  return CompositorElementId();
 }
 
 }  // namespace blink

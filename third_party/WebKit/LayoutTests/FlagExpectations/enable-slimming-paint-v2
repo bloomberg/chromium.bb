@@ -104,6 +104,8 @@ crbug.com/841567 virtual/threaded/fast/scrolling [ Skip ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
 crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
+# Link highlights are no longer affected by ancestor effects.
+crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 
 Bug(none) paint/invalidation/clip/clip-flex-text.html [ Pass Failure ]
 Bug(none) virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Failure ]

@@ -73,7 +73,6 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
 class LocalFrameView;
 class NGPhysicalBoxFragment;
-class ObjectPaintProperties;
 class PaintLayer;
 class PseudoStyleRequest;
 

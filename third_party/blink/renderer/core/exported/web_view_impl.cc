@@ -1738,11 +1738,6 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   if (page_color_overlay_)
     page_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
 
-  // TODO(chrishtr): link highlights don't currently paint themselves, it's
-  // still driven by cc.  Fix this.
-  // TODO(pdr): Move this to LocalFrameView::UpdateLifecyclePhasesInternal.
-  GetPage()->GetLinkHighlights().UpdateGeometry();
-
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
     WebWidgetClient* client =
@@ -3121,12 +3116,6 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
 
   // Give the visual viewport's scroll layer its initial size.
   GetPage()->GetVisualViewport().MainFrameDidChangeSize();
-
-  // Make sure link highlight from previous page is cleared.
-  // TODO(pdr): Move this to Page::DidCommitLoad.
-  GetPage()->GetLinkHighlights().ResetForPageNavigation();
-  if (!MainFrameImpl())
-    return;
 }
 
 void WebViewImpl::ResizeAfterLayout() {

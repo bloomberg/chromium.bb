@@ -698,6 +698,7 @@ void Page::DidCommitLoad(LocalFrame* frame) {
     GetVisualViewport().SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
     hosts_using_features_.UpdateMeasurementsAndClear();
   }
+  GetLinkHighlights().ResetForPageNavigation();
 }
 
 void Page::AcceptLanguagesChanged() {

@@ -3762,6 +3762,10 @@ crbug.com/820334 virtual/outofblink-cors-ns/external/wpt/fetch/api/request/reque
 
 crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 
+# Link highlights currently paint under ancestor affects but this is being
+# changed with BlinkGenPropertyTrees. Until that launches, this test will fail.
+crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
+
 # Sheriff failures 2017-02-03
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
 

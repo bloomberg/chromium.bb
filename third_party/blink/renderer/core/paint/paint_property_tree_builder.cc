@@ -7,6 +7,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -134,6 +135,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateTransform();
   ALWAYS_INLINE void UpdateTransformForNonRootSVG();
   ALWAYS_INLINE void UpdateEffect();
+  ALWAYS_INLINE void UpdateLinkHighlightEffect();
   ALWAYS_INLINE void UpdateFilter();
   ALWAYS_INLINE void UpdateFragmentClip();
   ALWAYS_INLINE void UpdateCssClip();
@@ -689,6 +691,39 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
     if (properties_->MaskClip()) {
       context_.current.clip = context_.absolute_position.clip =
           context_.fixed_position.clip = properties_->MaskClip();
+    }
+  }
+}
+
+static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
+  auto* page = object.GetFrame()->GetPage();
+  return page->GetLinkHighlights().NeedsHighlightEffect(object);
+}
+
+void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
+  if (NeedsPaintPropertyUpdate()) {
+    if (NeedsLinkHighlightEffect(object_)) {
+      // While the link highlight uses the current transform space for
+      // positioning, it's parent effect is the root so that it is not affected
+      // by enclosing filters.
+      const auto& parent = EffectPaintPropertyNode::Root();
+      EffectPaintPropertyNode::State link_highlight_state;
+      link_highlight_state.local_transform_space = context_.current.transform;
+      link_highlight_state.compositor_element_id =
+          object_.GetFrame()->GetPage()->GetLinkHighlights().element_id(
+              object_);
+      link_highlight_state.direct_compositing_reasons =
+          CompositingReason::kActiveOpacityAnimation;
+      // Unlike other property nodes, link highlight effect nodes are guaranteed
+      // to be leaf nodes and do not require subtree invalidation, so we do not
+      // call |OnUpdate| here.
+      properties_->UpdateLinkHighlightEffect(parent,
+                                             std::move(link_highlight_state));
+    } else {
+      // Unlike other property nodes, link highlight effect nodes are guaranteed
+      // to be leaf nodes and do not require subtree invalidation, so we do not
+      // call |OnClear| here.
+      properties_->ClearLinkHighlightEffect();
     }
   }
 }
@@ -1763,6 +1798,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     UpdateTransform();
     UpdateClipPathClip(false);
     UpdateEffect();
+    UpdateLinkHighlightEffect();
     UpdateClipPathClip(true);  // Special pass for SPv1 composited clip-path.
     UpdateCssClip();
     UpdateFilter();
@@ -2407,10 +2443,11 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
   bool needs_paint_properties =
       object_.StyleRef().ClipPath() || NeedsPaintOffsetTranslation(object_) ||
       NeedsTransform(object_) || NeedsClipPathClip(object_) ||
-      NeedsEffect(object_) || NeedsTransformForNonRootSVG(object_) ||
-      NeedsFilter(object_) || NeedsCssClip(object_) ||
-      NeedsInnerBorderRadiusClip(object_) || NeedsOverflowClip(object_) ||
-      NeedsPerspective(object_) || NeedsSVGLocalToBorderBoxTransform(object_) ||
+      NeedsEffect(object_) || NeedsLinkHighlightEffect(object_) ||
+      NeedsTransformForNonRootSVG(object_) || NeedsFilter(object_) ||
+      NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
+      NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
+      NeedsSVGLocalToBorderBoxTransform(object_) ||
       NeedsScrollOrScrollTranslation(object_);
   // Need of fragmentation clip will be determined in CreateFragmentContexts().
 
