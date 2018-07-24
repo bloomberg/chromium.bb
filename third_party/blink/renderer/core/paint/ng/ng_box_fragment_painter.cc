@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_clipper.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -176,17 +177,6 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
   PaintOverflowControlsIfNeeded(info, paint_offset);
 }
 
-void NGBoxFragmentPainter::PaintInlineBox(const PaintInfo& paint_info,
-                                          const LayoutPoint& paint_offset) {
-  const LayoutPoint adjusted_paint_offset =
-      paint_offset + box_fragment_.Offset().ToLayoutPoint();
-  if (paint_info.phase == PaintPhase::kForeground &&
-      box_fragment_.Style().Visibility() == EVisibility::kVisible)
-    PaintBoxDecorationBackground(paint_info, adjusted_paint_offset);
-
-  PaintObject(paint_info, adjusted_paint_offset, true);
-}
-
 void NGBoxFragmentPainter::PaintObject(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
@@ -335,7 +325,7 @@ void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
   } else if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
     if (child.HasSelfPaintingLayer())
       return;
-    NGBoxFragmentPainter(child).PaintInlineBox(descendants_info, paint_offset);
+    NGInlineBoxFragmentPainter(child).Paint(descendants_info, paint_offset);
   } else {
     NOTREACHED();
   }
@@ -440,7 +430,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     NGPhysicalSize size = box_fragment_.Size();
     paint_rect = LayoutRect(LayoutPoint(), LayoutSize(size.width, size.height));
   }
-
   paint_rect.MoveBy(paint_offset);
 
   bool painting_overflow_contents =
@@ -776,15 +765,21 @@ void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
                                              bool object_has_multiple_boxes) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
-  const LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
-  if (PhysicalFragment().IsBlockFlow()) {
-    // TODO(layout-dev): Add support for box-decoration-break: slice
-    // See BoxModelObjectPainter::LogicalOffsetOnLine
-    // if (box_fragment_.Style().BoxDecorationBreak() ==
-    //    EBoxDecorationBreak::kSlice) {
-    //  local_offset -= LogicalOffsetOnLine(*flow_box_);
-    //}
-    PaintBlockFlowContents(paint_info, paint_offset - local_offset);
+  LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
+  if (object_has_multiple_boxes) {
+    NGInlineBoxFragmentPainter inline_box_painter(box_fragment_);
+    if (box_fragment_.Style().BoxDecorationBreak() ==
+        EBoxDecorationBreak::kSlice) {
+      LayoutUnit offset_on_line;
+      LayoutUnit total_width;
+      inline_box_painter.ComputeFragmentOffsetOnLine(
+          box_fragment_.Style().Direction(), &offset_on_line, &total_width);
+      LayoutSize line_offset(offset_on_line, LayoutUnit());
+      local_offset -= box_fragment_.Style().IsHorizontalWritingMode()
+                          ? line_offset
+                          : line_offset.TransposedSize();
+    }
+    inline_box_painter.Paint(paint_info, paint_offset - local_offset);
   } else {
     PaintObject(paint_info, paint_offset - local_offset);
   }
