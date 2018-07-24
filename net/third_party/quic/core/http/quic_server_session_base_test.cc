@@ -30,6 +30,7 @@
 #include "net/third_party/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "net/third_party/quic/test_tools/quic_server_session_base_peer.h"
 #include "net/third_party/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
@@ -43,23 +44,6 @@ using testing::StrictMock;
 
 namespace quic {
 namespace test {
-
-class QuicServerSessionBasePeer {
- public:
-  static QuicStream* GetOrCreateDynamicStream(QuicServerSessionBase* s,
-                                              QuicStreamId id) {
-    return s->GetOrCreateDynamicStream(id);
-  }
-  static void SetCryptoStream(QuicServerSessionBase* s,
-                              QuicCryptoServerStream* crypto_stream) {
-    s->crypto_stream_.reset(crypto_stream);
-    s->static_streams()[kCryptoStreamId] = crypto_stream;
-  }
-  static bool IsBandwidthResumptionEnabled(QuicServerSessionBase* s) {
-    return s->bandwidth_resumption_enabled_;
-  }
-};
-
 namespace {
 
 class TestServerSession : public QuicServerSessionBase {

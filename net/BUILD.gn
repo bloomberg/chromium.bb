@@ -3101,6 +3101,7 @@ source_set("quic_test_tools") {
     "third_party/quic/test_tools/quic_packet_generator_peer.h",
     "third_party/quic/test_tools/quic_sent_packet_manager_peer.cc",
     "third_party/quic/test_tools/quic_sent_packet_manager_peer.h",
+    "third_party/quic/test_tools/quic_server_session_base_peer.h",
     "third_party/quic/test_tools/quic_session_peer.cc",
     "third_party/quic/test_tools/quic_session_peer.h",
     "third_party/quic/test_tools/quic_spdy_session_peer.cc",
