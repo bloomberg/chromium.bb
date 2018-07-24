@@ -212,7 +212,6 @@ bool ServiceTransferCache::OnMemoryDump(
   }
 
   for (auto it = entries_.begin(); it != entries_.end(); it++) {
-    uint32_t entry_id = it->first.entry_id;
     auto entry_type = it->first.entry_type;
     const auto* entry = it->second.entry.get();
     const cc::ServiceImageTransferCacheEntry* image_entry = nullptr;
@@ -224,13 +223,15 @@ bool ServiceTransferCache::OnMemoryDump(
 
     if (image_entry && image_entry->fits_on_gpu()) {
       std::string dump_name = base::StringPrintf(
-          "gpu/transfer_cache/cache_0x%" PRIXPTR "/gpu/entry_%d",
-          reinterpret_cast<uintptr_t>(this), entry_id);
+          "gpu/transfer_cache/cache_0x%" PRIXPTR "/gpu/entry_0x%" PRIXPTR,
+          reinterpret_cast<uintptr_t>(this),
+          reinterpret_cast<uintptr_t>(entry));
       DumpMemoryForImageTransferCacheEntry(pmd, dump_name, image_entry);
     } else {
       std::string dump_name = base::StringPrintf(
-          "gpu/transfer_cache/cache_0x%" PRIXPTR "/cpu/entry_%d",
-          reinterpret_cast<uintptr_t>(this), entry_id);
+          "gpu/transfer_cache/cache_0x%" PRIXPTR "/cpu/entry_0x%" PRIXPTR,
+          reinterpret_cast<uintptr_t>(this),
+          reinterpret_cast<uintptr_t>(entry));
       MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
       dump->AddScalar(MemoryAllocatorDump::kNameSize,
                       MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
