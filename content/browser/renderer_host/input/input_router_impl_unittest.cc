@@ -767,7 +767,13 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   EXPECT_FALSE(HasPendingEvents());
 }
 
-TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
+// TODO(https://crbug.com/866946): Test is flaky on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_GestureTypesIgnoringAck DISABLED_GestureTypesIgnoringAck
+#else
+#define MAYBE_GestureTypesIgnoringAck GestureTypesIgnoringAck
+#endif
+TEST_F(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
   const WebInputEvent::Type eventTypes[] = {
       WebInputEvent::kGestureTapDown,     WebInputEvent::kGestureShowPress,
