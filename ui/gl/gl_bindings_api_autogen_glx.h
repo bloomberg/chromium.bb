@@ -8,6 +8,10 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this:
+// no-include-guard-because-multiply-included
+
 void glXBindTexImageEXTFn(Display* dpy,
                           GLXDrawable drawable,
                           int buffer,
