@@ -203,6 +203,21 @@ void Connection::ResetErrorExpecter() {
   current_expecter_cb_ = nullptr;
 }
 
+// static
+base::FilePath Connection::JournalPath(const base::FilePath& db_path) {
+  return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-journal"));
+}
+
+// static
+base::FilePath Connection::WriteAheadLogPath(const base::FilePath& db_path) {
+  return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-wal"));
+}
+
+// static
+base::FilePath Connection::SharedMemoryFilePath(const base::FilePath& db_path) {
+  return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-shm"));
+}
+
 Connection::StatementRef::StatementRef(Connection* connection,
                                        sqlite3_stmt* stmt,
                                        bool was_valid)
@@ -245,7 +260,6 @@ Connection::Connection()
       page_size_(0),
       cache_size_(0),
       exclusive_locking_(false),
-      restrict_to_user_(false),
       transaction_nesting_(0),
       needs_rollback_(false),
       in_memory_(false),
@@ -562,8 +576,7 @@ bool Connection::RegisterIntentToUpload() const {
   // Put the collection of diagnostic data next to the databases.  In most
   // cases, this is the profile directory, but safe-browsing stores a Cookies
   // file in the directory above the profile directory.
-  base::FilePath breadcrumb_path(
-      db_path.DirName().Append(FILE_PATH_LITERAL("sqlite-diag")));
+  base::FilePath breadcrumb_path = db_path.DirName().AppendASCII("sqlite-diag");
 
   // Lock against multiple updates to the diagnostics file.  This code should
   // seldom be called in the first place, and when called it should seldom be
@@ -1137,8 +1150,8 @@ void Connection::Poison() {
 bool Connection::Delete(const base::FilePath& path) {
   base::AssertBlockingAllowed();
 
-  base::FilePath journal_path(path.value() + FILE_PATH_LITERAL("-journal"));
-  base::FilePath wal_path(path.value() + FILE_PATH_LITERAL("-wal"));
+  base::FilePath journal_path = Connection::JournalPath(path);
+  base::FilePath wal_path = Connection::WriteAheadLogPath(path);
 
   std::string journal_str = AsUTF8ForSQL(journal_path);
   std::string wal_str = AsUTF8ForSQL(wal_path);
@@ -1162,16 +1175,13 @@ bool Connection::Delete(const base::FilePath& path) {
   vfs->xDelete(vfs, path_str.c_str(), 0);
 
   int journal_exists = 0;
-  vfs->xAccess(vfs, journal_str.c_str(), SQLITE_ACCESS_EXISTS,
-               &journal_exists);
+  vfs->xAccess(vfs, journal_str.c_str(), SQLITE_ACCESS_EXISTS, &journal_exists);
 
   int wal_exists = 0;
-  vfs->xAccess(vfs, wal_str.c_str(), SQLITE_ACCESS_EXISTS,
-               &wal_exists);
+  vfs->xAccess(vfs, wal_str.c_str(), SQLITE_ACCESS_EXISTS, &wal_exists);
 
   int path_exists = 0;
-  vfs->xAccess(vfs, path_str.c_str(), SQLITE_ACCESS_EXISTS,
-               &path_exists);
+  vfs->xAccess(vfs, path_str.c_str(), SQLITE_ACCESS_EXISTS, &path_exists);
 
   return !journal_exists && !wal_exists && !path_exists;
 }
@@ -1630,30 +1640,6 @@ bool Connection::OpenInternal(const std::string& file_name,
       return OpenInternal(file_name, NO_RETRY);
     return false;
   }
-
-  // TODO(shess): OS_WIN support?
-#if defined(OS_POSIX)
-  if (restrict_to_user_) {
-    DCHECK_NE(file_name, std::string(":memory"));
-    base::FilePath file_path(file_name);
-    int mode = 0;
-    // TODO(shess): Arguably, failure to retrieve and change
-    // permissions should be fatal if the file exists.
-    if (base::GetPosixFilePermissions(file_path, &mode)) {
-      mode &= base::FILE_PERMISSION_USER_MASK;
-      base::SetPosixFilePermissions(file_path, mode);
-
-      // SQLite sets the permissions on these files from the main
-      // database on create.  Set them here in case they already exist
-      // at this point.  Failure to set these permissions should not
-      // be fatal unless the file doesn't exist.
-      base::FilePath journal_path(file_name + FILE_PATH_LITERAL("-journal"));
-      base::FilePath wal_path(file_name + FILE_PATH_LITERAL("-wal"));
-      base::SetPosixFilePermissions(journal_path, mode);
-      base::SetPosixFilePermissions(wal_path, mode);
-    }
-  }
-#endif  // defined(OS_POSIX)
 
   // Enable extended result codes to provide more color on I/O errors.
   // Not having extended result codes is not a fatal problem, as

@@ -66,6 +66,12 @@ config("chromium_sqlite3_compile_options") {
     # TODO(pwnall): Upstream the ability to use this define.
     "SQLITE_MMAP_READ_ONLY=1",
 
+    # The default POSIX permissions for a newly created SQLite database.
+    #
+    # If unspecified, this defaults to 0644. All the data stored by Chrome is
+    # private, so our databases use stricter settings.
+    "SQLITE_DEFAULT_FILE_PERMISSIONS=0600",
+
     # SQLite uses a lookaside buffer to improve performance of small mallocs.
     # Chrome already depends on small mallocs being efficient, so we disable
     # this to avoid the extra memory overhead.
@@ -137,9 +143,6 @@ config("chromium_sqlite3_compile_options") {
 
     # Uses isnan() in the C99 standard library.
     "SQLITE_HAVE_ISNAN",
-
-    # TODO(pwnall): Add SQLITE_OMIT_COMPLETE when we import a SQLite release
-    #               including https://www.sqlite.org/src/info/c3e816cca4ddf096
   ]
 
   # On OSX, SQLite has extra logic for detecting the use of network
