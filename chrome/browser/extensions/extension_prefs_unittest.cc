@@ -993,6 +993,13 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->ReadPrefAsURLPatternSet(no_component_extension_->id(),
                                                   pref_key, &scriptable_hosts,
                                                   valid_schemes));
+
+    // Both extensions should be registered with the ExtensionPrefValueMap.
+    // See https://crbug.com/454513.
+    EXPECT_TRUE(prefs_.extension_pref_value_map()->CanExtensionControlPref(
+        component_extension_->id(), "a_pref", false));
+    EXPECT_TRUE(prefs_.extension_pref_value_map()->CanExtensionControlPref(
+        no_component_extension_->id(), "a_pref", false));
   }
 
  private:
