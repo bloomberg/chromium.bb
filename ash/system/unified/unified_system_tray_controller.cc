@@ -41,8 +41,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
@@ -119,9 +117,7 @@ void UnifiedSystemTrayController::HandleSignOutAction() {
 
 void UnifiedSystemTrayController::HandleLockAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->RequestLockScreen();
+  Shell::Get()->session_controller()->LockScreen();
   CloseBubble();
 }
 

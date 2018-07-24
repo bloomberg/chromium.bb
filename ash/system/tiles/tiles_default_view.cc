@@ -24,8 +24,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/wm/lock_state_controller.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
@@ -128,9 +126,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
     night_light_button_->Toggle();
   } else if (sender == lock_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
-    chromeos::DBusThreadManager::Get()
-        ->GetSessionManagerClient()
-        ->RequestLockScreen();
+    Shell::Get()->session_controller()->LockScreen();
   } else if (sender == power_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
     Shell::Get()->lock_state_controller()->RequestShutdown(
