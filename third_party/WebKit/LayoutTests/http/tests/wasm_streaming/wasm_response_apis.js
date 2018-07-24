@@ -255,3 +255,12 @@ function TestStreamingInstantiateExistsInWorker() {
   worker.addEventListener('message', e => resolve(e.data));
   return promise.then(exists => assert_true(exists));
 }
+
+function TestRegression837417() {
+  let old_then = WebAssembly.Module.prototype.then;
+  WebAssembly.Module.prototype.then = resolve => resolve(String.fromCharCode(
+      null, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41));
+
+  return WebAssembly.instantiateStreaming(fetch(incrementer_url))
+    .then(pair => assert_equals(5, pair.instance.exports.increment(4)));
+}
