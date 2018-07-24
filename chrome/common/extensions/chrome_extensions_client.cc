@@ -105,6 +105,8 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
 
 void ChromeExtensionsClient::Initialize() {
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ChromeExtensionsClientInitTime");
+
   // Registration could already be finalized in unit tests, where the utility
   // thread runs in-process.
   if (!ManifestHandler::IsRegistrationFinalized()) {
