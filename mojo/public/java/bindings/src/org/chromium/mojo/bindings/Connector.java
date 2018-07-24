@@ -158,7 +158,11 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     private void onError(MojoException exception) {
         close();
         if (mErrorHandler != null) {
-            mErrorHandler.onConnectionError(exception);
+            try {
+                mErrorHandler.onConnectionError(exception);
+            } catch (RuntimeException e) {
+                ExceptionHandler.DefaultExceptionHandler.getInstance().handleException(e);
+            }
         }
     }
 
