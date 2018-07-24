@@ -42,7 +42,7 @@ The DeviceOrientation Events API is implemented in `third_party/blink/renderer/m
 [DeviceMotionEvent]: ../../../third_party/blink/renderer/modules/device_orientation/device_motion_event.idl
 [DeviceOrientationEvent]: ../../../third_party/blink/renderer/modules/device_orientation/device_orientation_event.idl
 
-The content renderer layer is located in `content/renderer/device_sensors`.
+The content renderer layer is located in `third_party/blink/renderer/modules/device_orientation`.
 
 Testing:
 
