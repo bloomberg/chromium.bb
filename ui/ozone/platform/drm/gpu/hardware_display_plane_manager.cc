@@ -15,7 +15,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane_dummy.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
@@ -44,19 +43,6 @@ HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(
 HardwareDisplayPlaneList::PageFlipInfo::~PageFlipInfo() {
 }
 
-HardwareDisplayPlaneList::PageFlipInfo::Plane::Plane(int plane,
-                                                     int framebuffer,
-                                                     const gfx::Rect& bounds,
-                                                     const gfx::Rect& src_rect)
-    : plane(plane),
-      framebuffer(framebuffer),
-      bounds(bounds),
-      src_rect(src_rect) {
-}
-
-HardwareDisplayPlaneList::PageFlipInfo::Plane::~Plane() {
-}
-
 HardwareDisplayPlaneManager::HardwareDisplayPlaneManager() : drm_(nullptr) {
 }
 
@@ -66,48 +52,18 @@ HardwareDisplayPlaneManager::~HardwareDisplayPlaneManager() {
 bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   drm_ = drm;
 
-  bool has_universal_planes = false;
 // Try to get all of the planes if possible, so we don't have to try to
 // discover hidden primary planes.
 #if defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
-  has_universal_planes =
+  has_universal_planes_ =
       drm_->SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 #endif
 
   if (!InitializeCrtcProperties(drm))
     return false;
 
-  ScopedDrmPlaneResPtr plane_resources = drm->GetPlaneResources();
-  if (!plane_resources) {
-    PLOG(ERROR) << "Failed to get plane resources.";
+  if (!InitializePlanes(drm))
     return false;
-  }
-
-  std::set<uint32_t> plane_ids;
-  for (uint32_t i = 0; i < plane_resources->count_planes; ++i) {
-    plane_ids.insert(plane_resources->planes[i]);
-    std::unique_ptr<HardwareDisplayPlane> plane(
-        CreatePlane(plane_resources->planes[i]));
-
-    if (plane->Initialize(drm))
-      planes_.push_back(std::move(plane));
-  }
-
-  // crbug.com/464085: if driver reports no primary planes for a crtc, create a
-  // dummy plane for which we can assign exactly one overlay.
-  // TODO(dnicoara): refactor this to simplify AssignOverlayPlanes and move
-  // this workaround into HardwareDisplayPlaneLegacy.
-  if (!has_universal_planes) {
-    for (size_t i = 0; i < crtc_properties_.size(); ++i) {
-      if (plane_ids.find(crtc_properties_[i].id - 1) == plane_ids.end()) {
-        std::unique_ptr<HardwareDisplayPlane> dummy_plane(
-            new HardwareDisplayPlaneDummy(crtc_properties_[i].id - 1, 1 << i));
-        if (dummy_plane->Initialize(drm)) {
-          planes_.push_back(std::move(dummy_plane));
-        }
-      }
-    }
-  }
 
   std::sort(planes_.begin(), planes_.end(),
             [](const std::unique_ptr<HardwareDisplayPlane>& l,

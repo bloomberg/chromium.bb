@@ -395,18 +395,26 @@ bool MockDrmDevice::CommitProperties(
     uint32_t flags,
     uint32_t crtc_count,
     scoped_refptr<PageFlipRequest> page_flip_request) {
+  commit_count_++;
+  if (!commit_expectation_)
+    return false;
+
   for (uint32_t i = 0; i < request->cursor; ++i) {
     EXPECT_TRUE(ValidatePropertyValue(request->items[i].property_id,
                                       request->items[i].value));
+  }
+
+  if (!page_flip_request)
+    return true;
+
+  callbacks_.push(page_flip_request->AddPageFlip());
+  // Only update values if not testing.
+  for (uint32_t i = 0; i < request->cursor; ++i) {
     EXPECT_TRUE(UpdateProperty(request->items[i].object_id,
                                request->items[i].property_id,
                                request->items[i].value));
   }
 
-  commit_count_++;
-  if (page_flip_request) {
-    callbacks_.push(page_flip_request->AddPageFlip());
-  }
   return true;
 }
 

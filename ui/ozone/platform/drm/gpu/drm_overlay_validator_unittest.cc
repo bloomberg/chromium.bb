@@ -149,7 +149,20 @@ void DrmOverlayValidatorTest::InitializeDrmState(
       crtc_states.size());
   std::vector<ui::MockDrmDevice::PlaneProperties> plane_properties;
   std::map<uint32_t, std::string> property_names = {
-      {kTypePropId, "type"}, {kInFormatsPropId, "IN_FORMATS"},
+      // Add all required properties.
+      {1000, "CRTC_ID"},
+      {1001, "CRTC_X"},
+      {1002, "CRTC_Y"},
+      {1003, "CRTC_W"},
+      {1004, "CRTC_H"},
+      {1005, "FB_ID"},
+      {1006, "SRC_X"},
+      {1007, "SRC_Y"},
+      {1008, "SRC_W"},
+      {1009, "SRC_H"},
+      // Defines some optional properties we use for convenience.
+      {kTypePropId, "type"},
+      {kInFormatsPropId, "IN_FORMATS"},
   };
 
   uint32_t plane_id = kPlaneIdBase;
@@ -164,17 +177,22 @@ void DrmOverlayValidatorTest::InitializeDrmState(
          ++plane_idx) {
       crtc_plane_properties[plane_idx].id = plane_id++;
       crtc_plane_properties[plane_idx].crtc_mask = 1 << crtc_idx;
-      crtc_plane_properties[plane_idx].properties = {
-          {.id = kTypePropId,
-           .value = plane_idx == 0 ? DRM_PLANE_TYPE_PRIMARY
-                                   : DRM_PLANE_TYPE_OVERLAY},
-          {.id = kInFormatsPropId, .value = property_id++},
-      };
 
-      drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
-          crtc_plane_properties[plane_idx].properties[1].value,
-          crtc_states[crtc_idx].planes[plane_idx].formats,
-          std::vector<drm_format_modifier>()));
+      for (const auto& pair : property_names) {
+        uint64_t value = 0;
+        if (pair.first == kTypePropId) {
+          value =
+              plane_idx == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY;
+        } else if (pair.first == kInFormatsPropId) {
+          value = property_id++;
+          drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
+              value, crtc_states[crtc_idx].planes[plane_idx].formats,
+              std::vector<drm_format_modifier>()));
+        }
+
+        crtc_plane_properties[plane_idx].properties.push_back(
+            {.id = pair.first, .value = value});
+      }
     }
 
     plane_properties.insert(plane_properties.end(),
@@ -183,7 +201,7 @@ void DrmOverlayValidatorTest::InitializeDrmState(
   }
 
   drm_->InitializeState(crtc_properties, plane_properties, property_names,
-                        /* use_atomic= */ false);
+                        /* use_atomic= */ true);
 }
 
 void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
