@@ -105,7 +105,9 @@ bool ExtensionThrottleManager::ShouldRejectRedirect(
     const std::string url_id = GetIdFromUrl(request_url);
     ExtensionThrottleEntry* entry = url_entries_[url_id].get();
     DCHECK(entry);
-    entry->UpdateWithResponse(redirect_info.status_code);
+    // TODO(crbug.com/866798) Temporarily checking for null ptr.
+    if (entry)
+      entry->UpdateWithResponse(redirect_info.status_code);
   }
   return ShouldRejectRequest(redirect_info.new_url, request_load_flags);
 }
@@ -118,7 +120,9 @@ void ExtensionThrottleManager::WillProcessResponse(
     const std::string url_id = GetIdFromUrl(response_url);
     ExtensionThrottleEntry* entry = url_entries_[url_id].get();
     DCHECK(entry);
-    entry->UpdateWithResponse(response_head.headers->response_code());
+    // TODO(crbug.com/866798) Temporarily checking for null ptr.
+    if (entry)
+      entry->UpdateWithResponse(response_head.headers->response_code());
   }
 }
 
