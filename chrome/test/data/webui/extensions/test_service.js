@@ -14,6 +14,7 @@ cr.define('extensions', function() {
         'loadUnpacked',
         'retryLoadUnpacked',
         'reloadItem',
+        'setItemHostAccess',
         'setProfileInDevMode',
         'setShortcutHandlingSuspended',
         'shouldIgnoreUpdate',
@@ -82,6 +83,11 @@ cr.define('extensions', function() {
     getExtensionSize() {
       this.methodCalled('getExtensionSize');
       return Promise.resolve('20 MB');
+    }
+
+    /** @override */
+    setItemHostAccess(id, access) {
+      this.methodCalled('setItemHostAccess', [id, access]);
     }
 
     /** @override */

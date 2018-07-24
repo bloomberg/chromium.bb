@@ -68,6 +68,7 @@ js_type_check("closure_compile") {
     ":options_dialog",
     ":pack_dialog",
     ":pack_dialog_alert",
+    ":runtime_host_permissions",
     ":runtime_hosts_dialog",
     ":service",
     ":shortcut_input",
@@ -276,6 +277,14 @@ js_library("pack_dialog_alert") {
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
+  ]
+  externs_list = [ "$externs_path/developer_private.js" ]
+}
+
+js_library("runtime_host_permissions") {
+  deps = [
+    ":item",
+    ":runtime_hosts_dialog",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }
