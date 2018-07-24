@@ -65,7 +65,7 @@ TEST(TextUtilsTest, RemoveAcceleratorChar) {
 }
 
 // Disabled on Ozone since there are no fonts: crbug.com/320050
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE)
 #define MAYBE_GetStringWidth DISABLED_GetStringWidth
 #else
 #define MAYBE_GetStringWidth GetStringWidth

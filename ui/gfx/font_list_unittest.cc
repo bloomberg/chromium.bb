@@ -98,13 +98,7 @@ TEST(FontListTest, ParseDescription) {
                                           &size_pixels, &weight));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_FromDescString DISABLED_Fonts_FromDescString
-#else
-#define MAYBE_Fonts_FromDescString Fonts_FromDescString
-#endif
-TEST(FontListTest, MAYBE_Fonts_FromDescString) {
+TEST(FontListTest, Fonts_FromDescString) {
   // Test init from font name size string.
   FontList font_list = FontList("arial, Courier New, 13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -113,15 +107,7 @@ TEST(FontListTest, MAYBE_Fonts_FromDescString) {
   EXPECT_EQ("Courier New|13|normal", FontToString(fonts[1]));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_FromDescStringInFlexibleFormat \
-    DISABLED_Fonts_FromDescStringInFlexibleFormat
-#else
-#define MAYBE_Fonts_FromDescStringInFlexibleFormat \
-    Fonts_FromDescStringInFlexibleFormat
-#endif
-TEST(FontListTest, MAYBE_Fonts_FromDescStringInFlexibleFormat) {
+TEST(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
   // Test init from font name size string with flexible format.
   FontList font_list = FontList("  arial   ,   Courier New ,   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -130,15 +116,7 @@ TEST(FontListTest, MAYBE_Fonts_FromDescStringInFlexibleFormat) {
   EXPECT_EQ("Courier New|13|normal", FontToString(fonts[1]));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat \
-    DISABLED_Fonts_FromDescStringWithStyleInFlexibleFormat
-#else
-#define MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat \
-    Fonts_FromDescStringWithStyleInFlexibleFormat
-#endif
-TEST(FontListTest, MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat) {
+TEST(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
   // Test init from font name style size string with flexible format.
   FontList font_list = FontList(
       "  arial  ,  Courier New ,  Bold   "
@@ -149,13 +127,7 @@ TEST(FontListTest, MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat) {
   EXPECT_EQ("Courier New|13|italic|bold", FontToString(fonts[1]));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_FromFont DISABLED_Fonts_FromFont
-#else
-#define MAYBE_Fonts_FromFont Fonts_FromFont
-#endif
-TEST(FontListTest, MAYBE_Fonts_FromFont) {
+TEST(FontListTest, Fonts_FromFont) {
   // Test init from Font.
   Font font("Arial", 8);
   FontList font_list = FontList(font);
@@ -164,14 +136,7 @@ TEST(FontListTest, MAYBE_Fonts_FromFont) {
   EXPECT_EQ("Arial|8|normal", FontToString(fonts[0]));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_FromFontWithNonNormalStyle \
-    DISABLED_Fonts_FromFontWithNonNormalStyle
-#else
-#define MAYBE_Fonts_FromFontWithNonNormalStyle Fonts_FromFontWithNonNormalStyle
-#endif
-TEST(FontListTest, MAYBE_Fonts_FromFontWithNonNormalStyle) {
+TEST(FontListTest, Fonts_FromFontWithNonNormalStyle) {
   // Test init from Font with non-normal style.
   Font font("Arial", 8);
   FontList font_list(font.Derive(2, Font::NORMAL, Font::Weight::BOLD));
@@ -185,13 +150,7 @@ TEST(FontListTest, MAYBE_Fonts_FromFontWithNonNormalStyle) {
   EXPECT_EQ("Arial|6|italic|normal", FontToString(fonts[0]));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_FromFontVector DISABLED_Fonts_FromFontVector
-#else
-#define MAYBE_Fonts_FromFontVector Fonts_FromFontVector
-#endif
-TEST(FontListTest, MAYBE_Fonts_FromFontVector) {
+TEST(FontListTest, Fonts_FromFontVector) {
   // Test init from Font vector.
   Font font("Arial", 8);
   Font font_1("Courier New", 10);
@@ -223,13 +182,7 @@ TEST(FontListTest, FontDescString_GetStyle) {
   EXPECT_EQ(Font::Weight::BOLD, font_list.GetFontWeight());
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_GetStyle DISABLED_Fonts_GetStyle
-#else
-#define MAYBE_Fonts_GetStyle Fonts_GetStyle
-#endif
-TEST(FontListTest, MAYBE_Fonts_GetStyle) {
+TEST(FontListTest, Fonts_GetStyle) {
   std::vector<Font> fonts;
   fonts.push_back(Font("Arial", 8));
   fonts.push_back(Font("Sans serif", 8));
@@ -242,13 +195,7 @@ TEST(FontListTest, MAYBE_Fonts_GetStyle) {
   EXPECT_EQ(Font::Weight::BOLD, font_list.GetFontWeight());
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_Derive DISABLED_Fonts_Derive
-#else
-#define MAYBE_Fonts_Derive Fonts_Derive
-#endif
-TEST(FontListTest, MAYBE_Fonts_Derive) {
+TEST(FontListTest, Fonts_Derive) {
   std::vector<Font> fonts;
   fonts.push_back(Font("Arial", 8));
   fonts.push_back(Font("Courier New", 8));
@@ -269,13 +216,7 @@ TEST(FontListTest, MAYBE_Fonts_Derive) {
   EXPECT_EQ("Courier New|13|underline|bold", FontToString(underline_fonts[1]));
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_DeriveWithSizeDelta DISABLED_Fonts_DeriveWithSizeDelta
-#else
-#define MAYBE_Fonts_DeriveWithSizeDelta Fonts_DeriveWithSizeDelta
-#endif
-TEST(FontListTest, MAYBE_Fonts_DeriveWithSizeDelta) {
+TEST(FontListTest, Fonts_DeriveWithSizeDelta) {
   std::vector<Font> fonts;
   fonts.push_back(
       Font("Arial", 18).Derive(0, Font::ITALIC, Font::Weight::NORMAL));
@@ -291,7 +232,7 @@ TEST(FontListTest, MAYBE_Fonts_DeriveWithSizeDelta) {
   EXPECT_EQ("Courier New|13|italic|normal", FontToString(derived_fonts[1]));
 }
 
-// TODO(489354): Enable this on android.
+// TODO(865540): Enable this on android.
 #if defined(OS_ANDROID)
 #define MAYBE_Fonts_GetHeight_GetBaseline DISABLED_Fonts_GetHeight_GetBaseline
 #else
@@ -327,14 +268,7 @@ TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
             font_list_mix.GetHeight() - font_list_mix.GetBaseline());
 }
 
-// TODO(489354): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_Fonts_DeriveWithHeightUpperBound \
-    DISABLED_Fonts_DeriveWithHeightUpperBound
-#else
-#define MAYBE_Fonts_DeriveWithHeightUpperBound Fonts_DeriveWithHeightUpperBound
-#endif
-TEST(FontListTest, MAYBE_Fonts_DeriveWithHeightUpperBound) {
+TEST(FontListTest, Fonts_DeriveWithHeightUpperBound) {
   std::vector<Font> fonts;
 
   fonts.push_back(Font("Arial", 18));

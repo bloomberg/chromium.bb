@@ -8,20 +8,40 @@
 
 namespace gfx {
 
+/*
+Reference for fonts available on Android:
+
+Jelly Bean:
+  https://android.googlesource.com/platform/frameworks/base/+/jb-release/data/fonts/system_fonts.xml
+KitKat:
+  https://android.googlesource.com/platform/frameworks/base/+/kitkat-release/data/fonts/system_fonts.xml
+master:
+  https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/fonts.xml
+
+Note that we have to support the full range from JellyBean to the latest
+dessert.
+*/
+
 #if defined(OS_LINUX)
 const char kTestFontName[] = "Arimo";
+#elif defined(OS_ANDROID)
+const char kTestFontName[] = "sans-serif";
 #else
 const char kTestFontName[] = "Arial";
 #endif
 
 #if defined(OS_LINUX)
 const char kSymbolFontName[] = "DejaVu Sans";
+#elif defined(OS_ANDROID)
+const char kSymbolFontName[] = "monospace";
 #else
 const char kSymbolFontName[] = "Symbol";
 #endif
 
 #if defined(OS_LINUX)
 const char kCJKFontName[] = "Noto Sans CJK JP";
+#elif defined(OS_ANDROID)
+const char kCJKFontName[] = "serif";
 #elif defined(OS_MACOSX)
 const char kCJKFontName[] = "Heiti SC";
 #else
