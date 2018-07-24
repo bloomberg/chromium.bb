@@ -15,7 +15,6 @@
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::string;
 
 namespace quic {
 
@@ -205,7 +204,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 
   CryptoHandshakeMessage msg;
   config.ToHandshakeMessage(&msg);
-  string error_details;
+  QuicString error_details;
   const QuicErrorCode error =
       session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);
   ASSERT_EQ(QUIC_NO_ERROR, error);

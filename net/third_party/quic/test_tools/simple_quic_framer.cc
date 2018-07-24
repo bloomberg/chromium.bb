@@ -12,8 +12,6 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-using std::string;
-
 namespace quic {
 namespace test {
 
@@ -54,7 +52,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     // Save a copy of the data so it is valid after the packet is processed.
-    string* string_data = new string(frame.data_buffer, frame.data_length);
+    QuicString* string_data =
+        new QuicString(frame.data_buffer, frame.data_length);
     stream_data_.push_back(QuicWrapUnique(string_data));
     // TODO(ianswett): A pointer isn't necessary with emplace_back.
     stream_frames_.push_back(QuicMakeUnique<QuicStreamFrame>(
@@ -230,7 +229,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<QuicWindowUpdateFrame> window_update_frames_;
   std::vector<QuicBlockedFrame> blocked_frames_;
   std::vector<QuicNewConnectionIdFrame> new_connection_id_frames_;
-  std::vector<std::unique_ptr<string>> stream_data_;
+  std::vector<std::unique_ptr<QuicString>> stream_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFramerVisitor);
 };

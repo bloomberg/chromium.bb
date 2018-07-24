@@ -8554,8 +8554,7 @@ TEST_P(QuicFramerTest, BuildConnectivityProbingPacket) {
                   header.nonce != nullptr, header.packet_number_length);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
-                                      data.length(), AsChars(p),
-                                      QUIC_ARRAYSIZE(packet));
+                                      data.length(), AsChars(p), packet_size);
 }
 
 // Test that the MTU discovery packet is serialized correctly as a PING packet.

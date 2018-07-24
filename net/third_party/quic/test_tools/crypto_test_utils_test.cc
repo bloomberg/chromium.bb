@@ -13,7 +13,6 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 
-using std::string;
 
 namespace quic {
 namespace test {
@@ -74,7 +73,7 @@ class ShloVerifier {
         : shlo_verifier_(shlo_verifier) {}
     void Run(
         QuicErrorCode error,
-        const string& error_details,
+        const QuicString& error_details,
         std::unique_ptr<CryptoHandshakeMessage> message,
         std::unique_ptr<DiversificationNonce> diversification_nonce,
         std::unique_ptr<ProofSource::Details> proof_source_details) override {
@@ -137,17 +136,17 @@ TEST(CryptoTestUtilsTest, TestGenerateFullCHLO) {
       crypto_config.AddConfig(std::move(primary_config), clock.WallNow()));
   QuicStringPiece orbit;
   ASSERT_TRUE(msg->GetStringPiece(kORBT, &orbit));
-  string nonce;
+  QuicString nonce;
   CryptoUtils::GenerateNonce(
       clock.WallNow(), QuicRandom::GetInstance(),
       QuicStringPiece(reinterpret_cast<const char*>(orbit.data()),
                       sizeof(orbit.size())),
       &nonce);
-  string nonce_hex = "#" + QuicTextUtils::HexEncode(nonce);
+  QuicString nonce_hex = "#" + QuicTextUtils::HexEncode(nonce);
 
   char public_value[32];
   memset(public_value, 42, sizeof(public_value));
-  string pub_hex =
+  QuicString pub_hex =
       "#" + QuicTextUtils::HexEncode(public_value, sizeof(public_value));
 
   QuicTransportVersion version(AllSupportedTransportVersions().front());
