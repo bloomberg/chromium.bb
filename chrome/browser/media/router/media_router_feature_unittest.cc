@@ -30,4 +30,16 @@ TEST(MediaRouterFeatureTest, GetCastAllowAllIPsPref) {
   EXPECT_FALSE(GetCastAllowAllIPsPref(pref_service.get()));
 }
 
+TEST(MediaRouterFeatureTest, GetReceiverIdHashToken) {
+  auto pref_service = std::make_unique<TestingPrefServiceSimple>();
+  pref_service->registry()->RegisterStringPref(
+      prefs::kMediaRouterReceiverIdHashToken, "");
+
+  std::string token = GetReceiverIdHashToken(pref_service.get());
+  EXPECT_FALSE(token.empty());
+
+  // Token stays the same on subsequent invocation.
+  EXPECT_EQ(token, GetReceiverIdHashToken(pref_service.get()));
+}
+
 }  // namespace media_router

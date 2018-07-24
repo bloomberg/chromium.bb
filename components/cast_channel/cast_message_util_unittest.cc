@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_channel {
@@ -34,8 +35,7 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseOk) {
     }
   )";
 
-  std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(base::JSONReader::Read(payload));
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(payload);
   ASSERT_TRUE(value);
 
   LaunchSessionResponse response = GetLaunchSessionResponse(*value);
@@ -51,8 +51,7 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseError) {
     }
   )";
 
-  std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(base::JSONReader::Read(payload));
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(payload);
   ASSERT_TRUE(value);
 
   LaunchSessionResponse response = GetLaunchSessionResponse(*value);
@@ -70,13 +69,34 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseUnknown) {
     }
   )";
 
-  std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(base::JSONReader::Read(payload));
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(payload);
   ASSERT_TRUE(value);
 
   LaunchSessionResponse response = GetLaunchSessionResponse(*value);
   EXPECT_EQ(LaunchSessionResponse::Result::kUnknown, response.result);
   EXPECT_FALSE(response.receiver_status);
+}
+
+TEST(CastMessageUtilTest, CreateStopRequest) {
+  std::string expected_message = R"(
+    {
+      "type": "STOP",
+      "requestId": 123,
+      "sessionId": "sessionId"
+    }
+  )";
+
+  std::unique_ptr<base::Value> expected_value =
+      base::JSONReader::Read(expected_message);
+  ASSERT_TRUE(expected_value);
+
+  CastMessage message = CreateStopRequest("sourceId", 123, "sessionId");
+  ASSERT_TRUE(IsCastMessageValid(message));
+
+  std::unique_ptr<base::Value> actual_value =
+      base::JSONReader::Read(message.payload_utf8());
+  ASSERT_TRUE(actual_value);
+  EXPECT_EQ(*expected_value, *actual_value);
 }
 
 }  // namespace cast_channel

@@ -76,7 +76,7 @@ TEST_F(CastAppAvailabilityTrackerTest, RegisterSourceReturnsMultipleAppIds) {
 
 TEST_F(CastAppAvailabilityTrackerTest, MultipleAppIdsAlreadyTrackingOne) {
   // One of the mirroring app IDs.
-  auto source1 = CastMediaSource::From("cast:0F5096E8");
+  auto source1 = CastMediaSource::From("cast:0F5096E8?clientId=123");
   ASSERT_TRUE(source1);
 
   base::flat_set<std::string> new_app_ids = {"0F5096E8"};
