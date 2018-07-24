@@ -4058,6 +4058,21 @@
             ]
         }
     ],
+    "StopNonTimersInBackground": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "stop-non-timers-in-background"
+                    ]
+                }
+            ]
+        }
+    ],
     "SuperfishInterstitial": [
         {
             "platforms": [
