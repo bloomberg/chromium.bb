@@ -183,8 +183,8 @@ class CORE_EXPORT NGConstraintSpace final
   //
   // This value is calculated *after* an initial pass of the tree, and should
   // only be present during subsequent passes.
-  base::Optional<NGBfcOffset> FloatsBfcOffset() const {
-    return floats_bfc_offset_;
+  base::Optional<LayoutUnit> FloatsBfcBlockOffset() const {
+    return floats_bfc_block_offset_;
   }
 
   // Return the types (none, left, right, both) of preceding adjoining
@@ -260,7 +260,7 @@ class CORE_EXPORT NGConstraintSpace final
                     NGFloatTypes adjoining_floats,
                     const NGMarginStrut& margin_strut,
                     const NGBfcOffset& bfc_offset,
-                    const base::Optional<NGBfcOffset>& floats_bfc_offset,
+                    const base::Optional<LayoutUnit>& floats_bfc_block_offset,
                     const NGExclusionSpace& exclusion_space,
                     LayoutUnit clearance_offset,
                     Vector<NGBaselineRequest>& baseline_requests);
@@ -298,7 +298,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGMarginStrut margin_strut_;
   NGBfcOffset bfc_offset_;
-  base::Optional<NGBfcOffset> floats_bfc_offset_;
+  base::Optional<LayoutUnit> floats_bfc_block_offset_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   LayoutUnit clearance_offset_;

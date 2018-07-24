@@ -487,7 +487,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatInOneColumn) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:75x100
-        offset:0,0 size:0x0
+        offset:75,0 size:0x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -518,7 +518,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInOneColumn) {
       offset:0,0 size:100x100
         offset:0,0 size:15x100
         offset:84,0 size:16x100
-        offset:0,0 size:0x0
+        offset:15,0 size:0x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -549,7 +549,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
       offset:0,0 size:100x100
         offset:0,0 size:15x100
         offset:84,0 size:16x100
-        offset:0,0 size:0x0
+        offset:15,0 size:0x0
       offset:110,0 size:100x50
         offset:0,0 size:15x50
         offset:84,0 size:16x50

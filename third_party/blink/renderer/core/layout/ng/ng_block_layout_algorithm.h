@@ -63,8 +63,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Return the BFC offset of this block.
   LayoutUnit BfcBlockOffset() const {
     // If we have resolved our BFC offset, use that.
-    if (container_builder_.BfcOffset())
-      return container_builder_.BfcOffset()->block_offset;
+    if (container_builder_.BfcBlockOffset())
+      return *container_builder_.BfcBlockOffset();
     // Otherwise fall back to the BFC offset assigned by the parent algorithm.
     return ConstraintSpace().BfcOffset().block_offset;
   }
@@ -85,7 +85,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
       const NGLogicalSize child_available_size,
-      const base::Optional<NGBfcOffset> floats_bfc_offset = base::nullopt);
+      const base::Optional<LayoutUnit> floats_bfc_block_offset = base::nullopt);
 
   // @return Estimated BFC offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
@@ -94,13 +94,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                                      bool force_clearance);
 
   NGPreviousInflowPosition ComputeInflowPosition(
-      const NGPreviousInflowPosition& previous_inflow_position,
+      const NGPreviousInflowPosition&,
       const NGLayoutInputNode child,
-      const NGInflowChildData& child_data,
-      const base::Optional<NGBfcOffset>& child_bfc_offset,
-      const NGLogicalOffset& logical_offset,
-      const NGLayoutResult& layout_result,
-      const NGFragment& fragment,
+      const NGInflowChildData&,
+      const base::Optional<LayoutUnit>& child_bfc_block_offset,
+      const NGLogicalOffset&,
+      const NGLayoutResult&,
+      const NGFragment&,
       bool empty_block_affected_by_clearance);
 
   // Position an empty child using the parent BFC offset.
@@ -110,7 +110,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margin: 1px"></div>
-  NGBfcOffset PositionEmptyChildWithParentBfc(
+  LayoutUnit PositionEmptyChildWithParentBfc(
       const NGLayoutInputNode& child,
       const NGConstraintSpace& child_space,
       const NGInflowChildData& child_data,
@@ -248,10 +248,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // {@code known_fragment_offset} if the fragment knows it's offset
   // @return Fragment's offset relative to the fragment's parent.
   NGLogicalOffset CalculateLogicalOffset(
-      NGLayoutInputNode child,
-      const NGFragment&,
-      const NGBoxStrut& child_margins,
-      const base::Optional<NGBfcOffset>& known_fragment_offset);
+      const NGFragment& fragment,
+      LayoutUnit child_bfc_line_offset,
+      const base::Optional<LayoutUnit>& child_bfc_block_offset);
 
   // Computes default content size for HTML and BODY elements in quirks mode.
   // Returns NGSizeIndefinite in all other cases.

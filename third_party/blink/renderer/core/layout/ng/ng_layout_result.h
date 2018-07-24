@@ -71,7 +71,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return static_cast<NGLayoutResultStatus>(status_);
   }
 
-  const base::Optional<NGBfcOffset>& BfcOffset() const { return bfc_offset_; }
+  LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
+  const base::Optional<LayoutUnit>& BfcBlockOffset() const {
+    return bfc_block_offset_;
+  }
 
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
@@ -119,7 +122,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  Vector<NGPositionedFloat>& positioned_floats,
                  const NGUnpositionedListMarker& unpositioned_list_marker,
                  std::unique_ptr<const NGExclusionSpace> exclusion_space,
-                 const base::Optional<NGBfcOffset> bfc_offset,
+                 LayoutUnit bfc_line_offset,
+                 const base::Optional<LayoutUnit> bfc_block_offset,
                  const NGMarginStrut end_margin_strut,
                  const LayoutUnit intrinsic_block_size,
                  LayoutUnit minimal_space_shortage,
@@ -138,7 +142,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGUnpositionedListMarker unpositioned_list_marker_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
-  const base::Optional<NGBfcOffset> bfc_offset_;
+  const LayoutUnit bfc_line_offset_;
+  const base::Optional<LayoutUnit> bfc_block_offset_;
   const NGMarginStrut end_margin_strut_;
   const LayoutUnit intrinsic_block_size_;
   const LayoutUnit minimal_space_shortage_;
