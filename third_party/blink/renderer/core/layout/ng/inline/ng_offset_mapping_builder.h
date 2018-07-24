@@ -25,22 +25,6 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGOffsetMappingBuilder();
-
-  // Append an identity offset mapping of the specified length with null
-  // annotation to the builder.
-  void AppendIdentityMapping(unsigned length);
-
-  // Append a collapsed offset mapping from the specified length with null
-  // annotation to the builder.
-  void AppendCollapsedMapping(unsigned length);
-
-  // TODO(xiaochengh): Add the following API when we start to fix offset mapping
-  // for text-transform.
-  // Append an expanded offset mapping to the specified length with null
-  // annotation to the builder.
-  // void AppendExpandedMapping(unsigned length);
-
   // A scope-like object that, mappings appended inside the scope are marked as
   // from the given source node. When multiple scopes nest, only the inner-most
   // scope is effective. Note that at most one of the nested scopes may have a
@@ -88,6 +72,22 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
     DISALLOW_COPY_AND_ASSIGN(SourceNodeScope);
   };
+
+  NGOffsetMappingBuilder();
+
+  // Append an identity offset mapping of the specified length with null
+  // annotation to the builder.
+  void AppendIdentityMapping(unsigned length);
+
+  // Append a collapsed offset mapping from the specified length with null
+  // annotation to the builder.
+  void AppendCollapsedMapping(unsigned length);
+
+  // TODO(xiaochengh): Add the following API when we start to fix offset mapping
+  // for text-transform.
+  // Append an expanded offset mapping to the specified length with null
+  // annotation to the builder.
+  // void AppendExpandedMapping(unsigned length);
 
   // This function should only be called by NGInlineItemsBuilder during
   // whitespace collapsing, and in the case that the target string of the
