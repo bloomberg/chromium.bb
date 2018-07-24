@@ -331,9 +331,13 @@ FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
 
 // TODO(sync): The functions below badly need some cleanup.
 
-// Returns a pointer to a string with application lifetime that represents
-// the name of |model_type|.
+// Returns a string with application lifetime that represents the name of
+// |model_type|.
 const char* ModelTypeToString(ModelType model_type);
+
+// Returns a string with application lifetime that is used as the histogram
+// suffix for |model_type|.
+const char* ModelTypeToHistogramSuffix(ModelType model_type);
 
 // Some histograms take an integer parameter that represents a model type.
 // The mapping from ModelType to integer is defined here. It should match the

@@ -280,16 +280,14 @@ void UploadModelTypeEntryCount(const int total_specifics_copies,
                                const int (&entries_counts)[MODEL_TYPE_COUNT]) {
   int total_entry_counts = 0;
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    std::string model_type;
-    if (RealModelTypeToNotificationType((ModelType)i, &model_type)) {
-      std::string full_histogram_name = "Sync.ModelTypeCount." + model_type;
-      base::HistogramBase* histogram = base::Histogram::FactoryGet(
-          full_histogram_name, 1, 1000000, 50,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-      if (histogram)
-        histogram->Add(entries_counts[i]);
-      total_entry_counts += entries_counts[i];
-    }
+    std::string model_type = ModelTypeToHistogramSuffix((ModelType)i);
+    std::string full_histogram_name = "Sync.ModelTypeCount." + model_type;
+    base::HistogramBase* histogram = base::Histogram::FactoryGet(
+        full_histogram_name, 1, 1000000, 50,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    if (histogram)
+      histogram->Add(entries_counts[i]);
+    total_entry_counts += entries_counts[i];
   }
   UMA_HISTOGRAM_COUNTS("Sync.ModelTypeCount", total_entry_counts);
   UMA_HISTOGRAM_COUNTS("Sync.ExtraSyncDataCount",
