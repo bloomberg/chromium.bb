@@ -144,6 +144,20 @@
       dumpVisibleMessages();
       next();
     },
+    function checkStartEndLineRegex(next)
+    {
+      Console.ConsoleView.instance()._filter._textFilterUI.setValue("/^Hello\\s\\d$/");
+      Console.ConsoleView.instance()._filter._onFilterChanged();
+      dumpVisibleMessages();
+      next();
+    },
+    function checkStartEndLineRegexForAnchor(next)
+    {
+      Console.ConsoleView.instance()._filter._textFilterUI.setValue("/^log-source\\.js:\\d+$/");
+      Console.ConsoleView.instance()._filter._onFilterChanged();
+      dumpVisibleMessages();
+      next();
+    },
     function checkResetFilter(next) {
       Console.ConsoleView.instance()._filter.reset();
       dumpVisibleMessages();
