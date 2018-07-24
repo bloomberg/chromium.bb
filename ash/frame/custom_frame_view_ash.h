@@ -120,6 +120,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   SkColor GetActiveFrameColorForTest() const;
   SkColor GetInactiveFrameColorForTest() const;
 
+  views::Widget* frame() { return frame_; }
+
  protected:
   // Called when overview mode or split view state changed. If overview mode and
   // split view mode are both active at the same time, the header of the window
