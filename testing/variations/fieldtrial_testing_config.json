@@ -2816,25 +2816,6 @@
             ]
         }
     ],
-    "PWAFullCodeCache": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PWAFullCodeCache"
-                    ]
-                }
-            ]
-        }
-    ],
     "ParallelDownloading": [
         {
             "platforms": [
@@ -3742,31 +3723,6 @@
             ]
         }
     ],
-    "ServiceWorkerNavigationPreload": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerNavigationPreload"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "ServiceWorkerNavigationPreload"
-                    ]
-                }
-            ]
-        }
-    ],
     "ServiceWorkerPaymentApps": [
         {
             "platforms": [
@@ -3781,56 +3737,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ServiceWorkerPaymentApps"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerScriptFullCodeCache": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerScriptFullCodeCache"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "ServiceWorkerScriptFullCodeCache"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerScriptStreaming": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerScriptStreaming"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "ServiceWorkerScriptStreaming"
                     ]
                 }
             ]
@@ -4021,28 +3927,6 @@
                     "enable_features": [
                         "SocketReadIfReady"
                     ]
-                }
-            ]
-        }
-    ],
-    "SpeculativeLaunchServiceWorker": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SpeculativeLaunchServiceWorker"
-                    ]
-                },
-                {
-                    "name": "Disabled"
                 }
             ]
         }
