@@ -227,7 +227,7 @@ std::unique_ptr<InputController> InputController::Create(
 
 void InputController::Record() {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.RecordTime");
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.RecordTime");
 
   if (!stream_ || audio_callback_)
     return;
@@ -248,7 +248,7 @@ void InputController::Record() {
 
 void InputController::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.CloseTime");
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CloseTime");
 
   if (!stream_)
     return;
@@ -352,7 +352,7 @@ void InputController::DoCreate(media::AudioManager* audio_manager,
                                bool enable_agc) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(!stream_);
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.CreateTime");
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
   handler_->OnLog("AIC::DoCreate");
 
 #if defined(AUDIO_POWER_MONITORING)
