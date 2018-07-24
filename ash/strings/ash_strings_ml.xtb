@@ -191,6 +191,7 @@
 <translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്കുചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="4564869809620998694">ഫോണ്ട് സേവനം</translation>
 <translation id="4570957409596482333">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക ബട്ടൺ</translation>
+<translation id="4585337515783392668">അജ്ഞാത റിസീവറിൽ കാസ്‌റ്റ് ചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="4628757576491864469">ഉപകരണങ്ങൾ</translation>
 <translation id="4659419629803378708">ChromeVox പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="4734965478015604180">സമാന്തരം</translation>
@@ -237,6 +238,7 @@
 <translation id="5805697420284793859">വിൻഡോ മാനേജർ</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">വ്യക്തിയെ ചേർക്കുക</translation>
+<translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-ൽ <ph name="ROUTE_TITLE" /> നിർത്തുക</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -273,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">എല്ലാം ചെയ്‌തു</translation>
+<translation id="6445835306623867477"><ph name="RECEIVER_NAME" />-ൽ <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">നിരസിക്കുക</translation>
 <translation id="6453179446719226835">ഭാഷ മാറ്റിയിരിക്കുന്നു</translation>
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
@@ -369,6 +372,7 @@
 <translation id="8351131234907093545">കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനുള്ള ഓപ്‌ഷനുകൾ മെനു</translation>
 <translation id="8406981827175133772">പൂർണ്ണസ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
+<translation id="8427213022735114808">ഏതെങ്കിലും ടെക്‌സ്‌റ്റ് ഫീൽഡിൽ വോയ്‌സ് ടൈപ്പിംഗ് അനുവദിക്കുന്നതിന്, 'കേട്ടെഴുതൽ' നിങ്ങളുടെ വോയ്‌സ് Google-ലേക്ക് അയയ്ക്കുന്നു.</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8431190899827883166">ഷോ ടാപ്‌സ്</translation>
 <translation id="8433186206711564395">നെറ്റ്‍വര്‍ക്ക് ക്രമീകരണങ്ങള്‍</translation>
@@ -410,6 +414,7 @@
 <translation id="9111102763498581341">അണ്‍ലോക്ക് ചെയ്യുക</translation>
 <translation id="9151726767154816831">അപ്‌ഡേറ്റുചെയ്യാൻ, പുനരാരംഭിച്ച് പവർവാഷുചെയ്യുക</translation>
 <translation id="9179259655489829027">സൈൻ ഇൻ ചെയ്‌ത ഏതൊരു ഉപയോക്താവിനെയും പാസ്‌വേഡ് ഇല്ലാതെ തന്നെ വേഗത്തിൽ ആക്‌സസ് ചെയ്യാൻ ഈ ഫീച്ചർ നിങ്ങളെ അനുവദിക്കുന്നു. നിങ്ങൾക്ക് വിശ്വാസമുള്ള അക്കൗണ്ടുകളിൽ മാത്രം ഈ ഫീച്ചർ ഉപയോഗിക്കുക.</translation>
+<translation id="9193626018745640770">ഒരു അജ്ഞാത റിസീവറിൽ കാസ്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="9194617393863864469">മറ്റൊരു ഉപയോക്താവായി സൈൻ ഇൻ ചെയ്യുക...</translation>
 <translation id="9201131092683066720">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞു.</translation>
 <translation id="9210037371811586452">ഏകീകൃത ഡെസ്‌ക്‌ടോപ്പ് മോഡിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>

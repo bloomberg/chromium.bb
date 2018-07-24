@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">ተንሸራታች</translation>
 <translation id="1211441953136645838">የግርጌ ማስታወሻ</translation>
 <translation id="1281252709823657822">መገናኛ</translation>
+<translation id="1289247557029249093">ከሥዕል-ውስጥ-ሥዕል ሁነታ ውጣ</translation>
 <translation id="1335095011850992622">ክሬዲቶች</translation>
 <translation id="1342835525016946179">ጽሑፍ</translation>
 <translation id="1359897965706325498">ሰንደቅ</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2657045182931379222">ግራፊካዊ ነገር</translation>
 <translation id="2674318244760992338">ግርጌ</translation>
+<translation id="2706474812903655270">ይህ ቪዲዮ ስዕል-በስዕል ላይ እያጫወተ ነው</translation>
 <translation id="2709516037105925701">ራስ-ሙላ</translation>
 <translation id="2723001399770238859">ድምጽ</translation>
 <translation id="2746543609216772311">ዋጋ <ph name="MINIMUM_DATE_OR_TIME" /> ወይም ከዚያ በኋላ መሆን አለበት።</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">ቀሪ ጊዜ</translation>
 <translation id="7740016676195725605">የተዘጉ የስዕል መግለጫዎችን ማሳየት አቁም</translation>
 <translation id="7740050170769002709">የኤች ቲ ኤም ኤል ይዘት</translation>
+<translation id="7750228210027921155">በሥዕል ውስጥ ሥዕል</translation>
 <translation id="7789962463072032349">ላፍታ አቁም</translation>
 <translation id="7802800022689234070">ይፋ ማሳወቂያ ሶስት ማዕዘን</translation>
 <translation id="7888071071722539607">እባክዎ በኢሜይል አድራሻው ውስጥ «<ph name="ATSIGN" />» ያካትቱ። «<ph name="INVALIDADDRESS" />» ውስጥ «<ph name="ATSIGN" />» ይጎድላል።</translation>

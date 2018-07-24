@@ -240,6 +240,13 @@
       Om kompatibiliteten med en server med fel måste upprätthållas kan den ställas in på tls1.1. Det här är en nödlösning och servern bör snabbt åtgärdas.</translation>
 <translation id="1864269674877167562">Om policyn anges som en tom sträng eller inte har konfigurerats visar inte <ph name="PRODUCT_OS_NAME" /> alternativet för autoslutför under användarens inloggningsflöde.
       Om policyn är inställd på en sträng som motsvarar ett domännamn visar <ph name="PRODUCT_OS_NAME" /> ett alternativ för autoslutför under användarens inloggning så att användaren bara kan skriva sitt användarnamn utan domännamnstillägget. Användaren kan skriva över detta domännamnstillägg.</translation>
+<translation id="1864382791685519617">Principen aktiverar nätverksförslag i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
+
+      Detta styr DNS-förhämtning, TCP- och SSL-föranslutning och förrendering av webbsidor.
+
+      När principen har ställts in kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
+
+      Om principen lämnas utan inställning aktiveras nätverksförslag, men användaren kan ändra detta.</translation>
 <translation id="1865417998205858223">Nyckelbehörigheter</translation>
 <translation id="186719019195685253">Åtgärd som vidtas när fördröjning på grund av inaktivitet har uppnåtts vid anslutning till ett elnät</translation>
 <translation id="187819629719252111">Policyn tillåter åtkomst till lokala filer på datorn genom att tillåta att <ph name="PRODUCT_NAME" /> visar dialogrutor för filval.
@@ -717,6 +724,7 @@
       Om inget värde anges för principen används <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
+<translation id="2951386431828317490">Aktivera autofyll för profiler</translation>
 <translation id="2956777931324644324">Den här policyn har gäller inte för version 36 och senare av <ph name="PRODUCT_NAME" />.
 
       Anger om domänbundna TLS-certifikattillägg ska aktiveras.
@@ -725,6 +733,7 @@
 <translation id="2957506574938329824">Tillåt inte att webbplatser kan begära att få tillgång till Bluetooth-enheter via Web Bluetooth API</translation>
 <translation id="2957513448235202597">Kontotyp för autentisering av <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
+<translation id="2960128438010718932">Lanseringsschemat för att tillämpa en ny uppdatering</translation>
 <translation id="2960691910306063964">Aktivera eller inaktivera autentisering utan pinkod för fjärråtkomstvärdar</translation>
 <translation id="2976002782221275500">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska dämpas när enheten drivs av batteriet.
 
@@ -767,6 +776,7 @@
       Oavsett om eller hur principen har konfigurerats kan inte WPAD-optimeringen ändras av användare.</translation>
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="3072847235228302527">Ange användarvillkor för ett lokalt enhetskonto</translation>
+<translation id="3077183141551274418">Aktiverar eller inaktiverar en livscykel för flikar</translation>
 <translation id="3086995894968271156">Konfigurera cast-mottagaren i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Låter dig ange en lista med webbadressmönster som styr vilka webbplatser som får visa bilder.
 
@@ -1342,6 +1352,11 @@
       Förslagen fjärrhämtas från Googles servrar.
 
       Om principen är inställd på falskt kommer inte förslag att hämtas eller visas.</translation>
+<translation id="4788252609789586009">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med kreditkortsuppgifter som har sparats sedan tidigare.
+
+      Om inställningen inaktiveras visas inga förslag med Autofyll och inga kreditkortsuppgifter fylls i. Ytterligare kreditkortsuppgifter som användaren kan ange på webben sparas inte heller.
+
+      Om inställningen aktiveras eller lämnas utan värde kan användarna själva styra Autofyll för kreditkort i användargränssnittet.</translation>
 <translation id="4791031774429044540">Aktivera hjälpmedelsfunktionen stor markör.
 
           Om den här principen är sann är den stora markören alltid aktiverad.
@@ -1482,6 +1497,11 @@
       Om den här principen ges värdet Sant förhindrar <ph name="PRODUCT_OS_NAME" /> att enheten startas i utvecklarläge. Om utvecklarväxeln har aktiverats vägrar systemet att starta och en felskärm visas.
 
       Om principen inte anges eller om den ges värdet Falskt förblir utvecklarläget tillgängligt på enheten.</translation>
+<translation id="520403427390290017">Funktionen med en livscykel för flikar frigör CPU och på längre sikt minne för öppna flikar som inte har använts på länge genom att först strypa resurstilldelningen till flikarna, sedan pausa dem och slutligen ta bort dem.
+
+      Om principen har ställts in på falskt inaktiveras livscykeln för flikar och alla flikar får fortsätta att köras som vanligt.
+
+      Om principen har ställts in på sant eller lämnats utan inställning aktiveras livscykeln för flikar.</translation>
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1529,6 +1549,11 @@
 
           Om principen är inställd på falskt kan användarna inte casta till enheten. Om principen är inställd på sant får användarna casta innehåll. Om principen lämnas utan inställning får användarna inte casta till registrerade Chrome OS-enheter, men däremot till enheter som inte är registrerade.</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper</translation>
+<translation id="5360146044009867539">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med profil- och adressuppgifter som har sparats sedan tidigare.
+
+      Om inställningen inaktiveras visas inga förslag med Autofyll och inga adressuppgifter fylls i. Ytterligare adressuppgifter som användaren kan ange på webben sparas inte heller.
+
+      Om inställningen aktiveras eller lämnas utan värde kan användarna själva styra Autofyll för adresser i användargränssnittet.</translation>
 <translation id="5365946944967967336">Visa hemknappen i verktygsfältet</translation>
 <translation id="5366745336748853475">Låter dig ange en lista med webbadressmönster som anger webbplatser för vilka ett klientcertifikat väljs automatiskt på inloggningsskärmen i den ram som står värd för SAML-flödet, om webbplatsen kräver ett certifikat. Ett möjligt användningsområde är att konfigurera ett certifikat för hela enheten som ska uppvisas för SAML-identitetsleverantören.
 
@@ -2253,6 +2278,15 @@
 
           Om inställningen inaktiveras kommer inte funktionen att vara tillgänglig.</translation>
 <translation id="7275334191706090484">Hanterade bokmärken</translation>
+<translation id="729492886167634859">Med den här principen definieras en lista med procentvärden som anger hur stor andel av organisationsenhetens <ph name="PRODUCT_OS_NAME" />-enheter som ska uppdateras per vecka från den dag då uppdateringen hittades. Tiden när uppdateringen hittas är senare än uppdateringens publiceringsdatum, eftersom det kan dröja ett tag efter publiceringen innan enheten söker efter uppdateringar.
+
+      Värde nummer n i listan anger procentandelen enheter som ska uppdateras till nästa version under vecka n efter att uppdateringen hittades. Om en uppdatering hittas i dag, till exempel, anger det första värdet i listan procentandelen enheter i organisationsenheten som ska uppdateras till den versionen inom en vecka från och med i dag. Det andra värdet anger procentandelen enheter i organisationsenheten som ska uppdateras till den versionen inom två veckor från i dag, och så vidare.
+
+      Om ett värde har definierats för principen ignoreras principen <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> för uppdateringar och den här principen gäller i stället.
+
+      Om listan är tom görs ingen lansering i etapper och uppdateringarna tillämpas utifrån andra enhetsprinciper.
+
+      Principen gäller inte för kanalbyten.</translation>
 <translation id="7295019613773647480">Aktivera kontrollerade användare</translation>
 <translation id="7301543427086558500">Anger en lista med alternativa webbadresser som kan användas för att extrahera sökord från sökmotorn. Webbadresserna ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som används för att extrahera sökorden.
 
@@ -2717,6 +2751,12 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
+<translation id="8498293625012059298">Konfigurera webbadressen för att byta lösenord (endast HTTP och HTTPS). Användarna skickas till den här webbadressen av tjänsten för lösenordsskydd så att de kan byta lösenord efter att en varning visats i webbläsaren.
+      Se till att sidan för att byta lösenord följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.
+
+      Om inställningen är aktiverad skickas användarna till den här webbadressen där de får byta lösenord efter att en varning visats i webbläsaren.
+      Om inställningen är inaktiverad eller har lämnats utan inställning skickas användarna till https://myaccounts.google.com där de får byta lösenord.
+      Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="8499172469244085141">Standardinställningar (kan åsidosättas av användare)</translation>
 <translation id="8507835864888987300">Anger en målversion för automatiska uppdateringar.
 
@@ -2770,6 +2810,14 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       När principen ändras till falskt tillämpas den på nya virtuella maskiner, men virtuella maskiner som redan körs avslutas inte.
       Om principen lämnas utan inställning på en hanterad enhet får virtuella maskiner inte köras på den.
       Virtuella maskiner får köras på enheter som inte hanteras.</translation>
+<translation id="8669669491594628013">Låter dig styra vad som ska utlösa en varning från lösenordsskyddet. Lösenordsskyddet varnar användarna om de återanvänder ett skyddat lösenord på en webbplats som kan vara misstänkt.
+
+      Du kan konfigurera vilket lösenord som ska skyddas med principerna PasswordProtectionLoginURLs och PasswordProtectionChangePasswordURL.
+
+      När principen är inställd på PasswordProtectionWarningOff visas inga varningar.
+      När principen är inställd på PasswordProtectionWarningOnPasswordReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som inte står med på vitlistan.
+      När principen är inställd på PasswordProtectionWarningOnPhishingReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som används för nätfiske.
+      Om principen har lämnats utan inställning skyddas endast lösenord på Google av lösenordsskyddet, men användaren kan ändra inställningen.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Lösenordsskyddets varningar utlöses av att lösenordet återanvänds</translation>

@@ -191,6 +191,7 @@
 <translation id="4544944664594876241">የመቆለፊያ ገጹ የሚቆለፍበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="4564869809620998694">የቅርጸ-ቁምፊ አገልግሎት</translation>
 <translation id="4570957409596482333">ለመናገር-ይምረጡ አዝራር</translation>
+<translation id="4585337515783392668">ወደ ያልታወቀ ተቀባይ cast ማድረግን አስቁም</translation>
 <translation id="4628757576491864469">መሣሪያዎች</translation>
 <translation id="4659419629803378708">ChromeVox ነቅቷል</translation>
 <translation id="4734965478015604180">አግድማዊ</translation>
@@ -237,6 +238,7 @@
 <translation id="5805697420284793859">የWindow አስተዳዳሪ</translation>
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
 <translation id="5832805196449965646">ሰው አክል</translation>
+<translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> ላይ <ph name="ROUTE_TITLE" />ን አስቁም</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -273,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK ጠፍቷል</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">ሁሉም ተከናውኗል</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> በ<ph name="RECEIVER_NAME" /> ላይ</translation>
 <translation id="6452181791372256707">አይቀበሉ</translation>
 <translation id="6453179446719226835">ቋንቋ ተለውጧል</translation>
 <translation id="6459472438155181876">ማያ ገጽ ወደ <ph name="DISPLAY_NAME" /> በመቀጠል ላይ</translation>
@@ -369,6 +372,7 @@
 <translation id="8351131234907093545">ማስታወሻን ይፍጠሩ</translation>
 <translation id="8392451568018454956">የ<ph name="USER_EMAIL_ADDRESS" /> አማራጮች ምናሌ</translation>
 <translation id="8406981827175133772">የሙሉ ማያ ገጽ ማጉያ</translation>
+<translation id="8427213022735114808">በቃል ማስጻፍ በማንኛውም የጽሑፍ መስክ ውስጥ የድምጽ ትየባን ለመፍቀድ ድምጽዎን ወደ Google ይልካል።</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8431190899827883166">መታ ማድረጎችን አሳይ</translation>
 <translation id="8433186206711564395">የአውታረ መረብ ቅንብሮች</translation>
@@ -410,6 +414,7 @@
 <translation id="9111102763498581341">ክፈት</translation>
 <translation id="9151726767154816831">እንደገና ያስጀምሩ እና ለማዘመን powerwash ያድርጉ</translation>
 <translation id="9179259655489829027">ይህ ባህሪ የይለፍ ቃል ሳያስፈልገዎት ማንኛውም ወደ መለያ የገባ ተጠቃሚን በፍጥነት እንዲደርሱ ያስችልዎታል። ይህን ባህሪ በሚያምኗቸው መለያዎች ላይ ብቻ ይጠቀሙበት።</translation>
+<translation id="9193626018745640770">በማይታወቅ ተቀባይ ላይ Cast በማድረግ ላይ</translation>
 <translation id="9194617393863864469">ሌላ ተጠቃሚ በመለያ አስገባ...</translation>
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ነው።</translation>
 <translation id="9210037371811586452">ከተዋሃደ የዴስክቶፕ ሁነታ በመውጣት ላይ</translation>

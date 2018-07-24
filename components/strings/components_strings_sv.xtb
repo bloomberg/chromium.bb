@@ -584,6 +584,7 @@
 <translation id="5089810972385038852">Delstat</translation>
 <translation id="5094747076828555589">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chromium inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="5095208057601539847">Provins</translation>
+<translation id="5098332213681597508">Det här namnet har hämtats från Google-kontot.</translation>
 <translation id="5115563688576182185">(64 bitar)</translation>
 <translation id="5121084798328133320">När du bekräftar delas kortuppgifter från Google Payments-konto med webbplatsen.</translation>
 <translation id="5128122789703661928">Sessionen med det här namnet går inte att radera.</translation>
@@ -669,6 +670,7 @@
 <translation id="5633066919399395251">Angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan försöka installera skadliga program som stjäl eller raderar information (t.ex. foton, lösenord, meddelanden och kreditkortsuppgifter) på datorn. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Bedrägligt innehåll har blockerats.</translation>
 <translation id="5659593005791499971">E-post</translation>
+<translation id="5666899935841546222">Vill du samla alla kort på ett ställe?</translation>
 <translation id="5675650730144413517">Sidan fungerar inte</translation>
 <translation id="5685654322157854305">Lägg till leveransadress</translation>
 <translation id="5689199277474810259">Exportera som JSON</translation>
