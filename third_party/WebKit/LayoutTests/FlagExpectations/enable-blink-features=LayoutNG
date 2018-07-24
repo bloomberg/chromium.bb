@@ -488,7 +488,6 @@ crbug.com/591099 fast/block/float/overlapping-floats-paint-hittest-order-1.html 
 crbug.com/591099 fast/block/positioning/positioned-child-inside-relative-positioned-anonymous-block.html [ Failure ]
 crbug.com/591099 fast/borders/bidi-002.html [ Failure ]
 crbug.com/859497 fast/borders/bidi-009a.html [ Failure ]
-crbug.com/591099 fast/borders/border-image-border-radius.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/591099 fast/box-shadow/box-shadow.html [ Failure ]
 crbug.com/591099 fast/box-sizing/replaced.html [ Failure ]
