@@ -27,9 +27,7 @@ class WMState;
 }
 #endif
 
-#if !defined(OS_CHROMEOS)
 class RelaunchNotificationController;
-#endif
 
 class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
  public:
@@ -60,11 +58,9 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   std::unique_ptr<views::MusClient> mus_client_;
 #endif
 
-#if !defined(OS_CHROMEOS)
   // Manages the relaunch notification prompts.
   std::unique_ptr<RelaunchNotificationController>
       relaunch_notification_controller_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);
 };

@@ -1474,6 +1474,8 @@ test("browser_tests") {
         "../browser/ui/views/payments/shipping_address_editor_view_controller_browsertest.cc",
         "../browser/ui/views/payments/shipping_option_view_controller_browsertest.cc",
         "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
+        "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
+        "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
         "../browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog_browsertest.cc",
         "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
@@ -1525,12 +1527,6 @@ test("browser_tests") {
           "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
           "../browser/ui/views/translate/translate_language_browsertest.cc",
           "../browser/ui/views/web_dialog_view_browsertest.cc",
-        ]
-      }
-      if (!is_chromeos) {
-        sources += [
-          "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
-          "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
         ]
       }
     }
@@ -4361,14 +4357,11 @@ test("unit_tests") {
       "../browser/ui/views/payments/payment_request_item_list_unittest.cc",
       "../browser/ui/views/payments/validating_textfield_unittest.cc",
       "../browser/ui/views/payments/view_stack_unittest.cc",
+      "../browser/ui/views/relaunch_notification/relaunch_notification_controller_unittest.cc",
+      "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_unittest.cc",
     ]
     if (is_chromeos) {
       sources += [ "../browser/ui/views/ime_driver/input_method_bridge_chromeos_unittest.cc" ]
-    } else {
-      sources += [
-        "../browser/ui/views/relaunch_notification/relaunch_notification_controller_unittest.cc",
-        "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_unittest.cc",
-      ]
     }
     if (!is_chromeos && (!is_mac || mac_views_browser)) {
       sources += [

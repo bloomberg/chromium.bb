@@ -2453,7 +2453,7 @@
   },
 
   "RelaunchNotification": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "RelaunchNotification": 1 },
     "pref_mappings": [
       { "pref": "browser.relaunch_notification",
