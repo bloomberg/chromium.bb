@@ -2537,6 +2537,9 @@ void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
 void LayoutBlockFlow::SetPaintFragment(
     scoped_refptr<const NGPhysicalFragment>) {}
 
+void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
+    scoped_refptr<const NGPhysicalFragment>) {}
+
 void LayoutBlockFlow::ComputeOverflow(LayoutUnit old_client_after_edge,
                                       bool recompute_floats) {
   LayoutBlock::ComputeOverflow(old_client_after_edge, recompute_floats);

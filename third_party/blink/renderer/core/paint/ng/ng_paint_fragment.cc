@@ -164,6 +164,8 @@ NGPaintFragment::~NGPaintFragment() {
 
 std::unique_ptr<NGPaintFragment> NGPaintFragment::Create(
     scoped_refptr<const NGPhysicalFragment> fragment) {
+  DCHECK(fragment);
+
   std::unique_ptr<NGPaintFragment> paint_fragment =
       std::make_unique<NGPaintFragment>(std::move(fragment), nullptr);
 
@@ -173,6 +175,25 @@ std::unique_ptr<NGPaintFragment> NGPaintFragment::Create(
                                       &last_fragment_map);
 
   return paint_fragment;
+}
+
+void NGPaintFragment::UpdatePhysicalFragmentFromCachedLayoutResult(
+    scoped_refptr<const NGPhysicalFragment> fragment) {
+  DCHECK(fragment);
+
+#if DCHECK_IS_ON()
+  // When updating to a cached layout result, only offset can change. Check
+  // children do not change.
+  const NGPhysicalContainerFragment& container_fragment =
+      ToNGPhysicalContainerFragment(*fragment);
+  DCHECK_EQ(Children().size(), container_fragment.Children().size());
+  for (unsigned i = 0; i < container_fragment.Children().size(); i++) {
+    DCHECK_EQ(Children()[i]->physical_fragment_.get(),
+              container_fragment.Children()[i].get());
+  }
+#endif
+
+  physical_fragment_ = fragment;
 }
 
 bool NGPaintFragment::IsDescendantOfNotSelf(

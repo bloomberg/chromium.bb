@@ -68,8 +68,10 @@ class LayoutNGMixin : public Base {
   NGPaintFragment* PaintFragment() const override {
     return paint_fragment_.get();
   }
-  void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) override;
-  void ClearPaintFragment() override;
+  void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) final;
+  void UpdatePaintFragmentFromCachedLayoutResult(
+      scoped_refptr<const NGPhysicalFragment>) final;
+  void ClearPaintFragment() final;
 
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;

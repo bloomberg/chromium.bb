@@ -18,19 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
-          "reason": "chunk appeared"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='t'",
+          "rect": [8, 176, 100, 100],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
-          "reason": "chunk disappeared"
+          "object": "NGPhysicalTextFragment '\u00A0'",
+          "rect": [8, 156, 4, 19],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 193, 178, 19],
-          "reason": "chunk disappeared"
+          "object": "NGPhysicalTextFragment '\u00A0'",
+          "rect": [8, 156, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }
@@ -41,15 +41,15 @@
       "reason": "subtree"
     },
     {
-      "object": "LayoutNGBlockFlow DIV",
+      "object": "NGPhysicalBoxFragment LayoutInline (relative positioned) SPAN id='p'",
       "reason": "subtree"
     },
     {
-      "object": "NGPhysicalTextFragment ' '",
+      "object": "NGPhysicalTextFragment '\u00A0'",
       "reason": "subtree"
     },
     {
-      "object": "LayoutNGBlockFlow DIV",
+      "object": "LayoutNGBlockFlow (positioned) DIV id='t'",
       "reason": "subtree"
     }
   ]

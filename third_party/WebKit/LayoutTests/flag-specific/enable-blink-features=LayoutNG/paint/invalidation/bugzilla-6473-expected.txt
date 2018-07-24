@@ -18,38 +18,29 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutNGBlockFlow (relative positioned) P",
+          "rect": [8, 152, 784, 20],
+          "reason": "chunk disappeared"
+        },
+        {
           "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
+          "rect": [8, 136, 784, 20],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 193, 178, 19],
-          "reason": "chunk disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
+      "object": "LayoutNGBlockFlow DIV id='allcontent'",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) P",
       "reason": "subtree"
     },
     {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' '",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
+      "object": "NGPhysicalTextFragment 'SUCCESS'",
       "reason": "subtree"
     }
   ]

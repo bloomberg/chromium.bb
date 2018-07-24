@@ -18,19 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
-          "reason": "chunk appeared"
+          "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
+          "rect": [8, 132, 214, 232],
+          "reason": "subtree"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 193, 178, 19],
-          "reason": "chunk disappeared"
+          "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
+          "rect": [8, 52, 214, 232],
+          "reason": "subtree"
         }
       ]
     }
@@ -41,15 +36,7 @@
       "reason": "subtree"
     },
     {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' '",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
+      "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
       "reason": "subtree"
     }
   ]

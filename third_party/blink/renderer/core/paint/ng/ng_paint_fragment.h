@@ -46,6 +46,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
     return *physical_fragment_;
   }
 
+  void UpdatePhysicalFragmentFromCachedLayoutResult(
+      scoped_refptr<const NGPhysicalFragment>);
+
   // The parent NGPaintFragment. This is nullptr for a root; i.e., when parent
   // is not for NGPaint. In the first phase, this means that this is a root of
   // an inline formatting context.

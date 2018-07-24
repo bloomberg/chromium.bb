@@ -47,18 +47,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'This is a test for regression against '",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'https://bugs.webkit.org/show_bug.cgi?id=40142'",
-      "reason": "subtree"
-    },
-    {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
       "reason": "subtree"
     },
