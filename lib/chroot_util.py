@@ -64,7 +64,7 @@ def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
 
   modified_packages = workon.ListModifiedWorkonPackages(
       sysroot_lib.Sysroot(sysroot))
-  if modified_packages:
+  if modified_packages is not None:
     mod_pkg_list = ' '.join(modified_packages)
     cmd += ['--reinstall-atoms=' + mod_pkg_list,
             '--usepkg-exclude=' + mod_pkg_list]
