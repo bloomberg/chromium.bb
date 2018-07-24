@@ -32,9 +32,11 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -260,6 +262,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);
+  } else if (IsDraggingWindowFromTopOfDisplay()) {
+    SetState(SHELF_VISIBLE);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
@@ -407,6 +411,20 @@ bool ShelfLayoutManager::ProcessGestureEvent(
 
   // Unexpected event. Reset the state and let the event fall through.
   CancelGestureDrag();
+  return false;
+}
+
+bool ShelfLayoutManager::IsDraggingWindowFromTopOfDisplay() const {
+  // TODO(minch): Check active window directly if removed search field
+  // in overview mode. http://crbug.com/866679
+  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  for (auto* window : windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (window_state && window_state->is_dragged() &&
+        window_state->drag_details()->window_component == HTCLIENT) {
+      return true;
+    }
+  }
   return false;
 }
 

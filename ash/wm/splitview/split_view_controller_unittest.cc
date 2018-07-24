@@ -12,6 +12,7 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
@@ -2198,11 +2199,16 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   void EndScrollSequence(const gfx::Point& start,
                          float scroll_delta,
                          base::TimeTicks& timestamp,
-                         aura::Window* window) {
+                         aura::Window* window,
+                         bool is_fling = false,
+                         float velocity_y = 0.f) {
     timestamp += base::TimeDelta::FromMilliseconds(100);
-    SendGestureEventToController(
-        start.x(), start.y() + scroll_delta, timestamp,
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END), window);
+    ui::GestureEventDetails details =
+        is_fling
+            ? ui::GestureEventDetails(ui::ET_SCROLL_FLING_START, 0, velocity_y)
+            : ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END);
+    SendGestureEventToController(start.x(), start.y() + scroll_delta, timestamp,
+                                 details, window);
   }
 
  private:
@@ -2235,14 +2241,14 @@ TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
 
   // Move the window by a small amount of distance will maximize the window
   // again.
-  SendGestureEvents(gfx::Point(0, 0), 10, window.get());
+  gfx::Point start = gfx::Point(0, 0);
+  SendGestureEvents(start, 10, window.get());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
 
   // Drag the window long enough (pass one fourth of the screen vertical
   // height) to snap the window to splitscreen.
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
   base::TimeTicks timestamp = base::TimeTicks::Now();
-  gfx::Point start = gfx::Point(0, 0);
   SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
   WindowSelectorController* window_selector_controller =
       Shell::Get()->window_selector_controller();
@@ -2275,6 +2281,68 @@ TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
   EXPECT_FALSE(window_selector_controller->IsSelecting());
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // FLING the window with small velocity (smaller than
+  // kFlingToOverviewThreshold) will not able to drop the window into overview.
+  timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(start, 10, timestamp, window.get());
+  window_selector_controller = Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EndScrollSequence(
+      start, 10, timestamp, window.get(), /*is_fling=*/true,
+      /*velocity_y=*/
+      TabletModeAppWindowDragController::kFlingToOverviewThreshold - 10.f);
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
+
+  // FLING the window with large veloicty (larger than
+  // kFlingToOverviewThreshold) will drop the window into overview.
+  timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(start, 10, timestamp, window.get());
+  window_selector_controller = Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EndScrollSequence(
+      start, 10, timestamp, window.get(), /*is_fling=*/true,
+      /*velocity_y=*/
+      TabletModeAppWindowDragController::kFlingToOverviewThreshold + 10.f);
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+}
+
+// Tests the shelf visibility when a fullscreened window is being dragged.
+TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
+  UpdateDisplay("800x600");
+  std::unique_ptr<aura::Window> window(
+      CreateAppWindow(gfx::Rect(0, 0, 500, 500)));
+  ShelfLayoutManager* shelf_layout_manager =
+      AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
+  gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+
+  // Shelf will be auto-hidden if the winodw requests to be fullscreened.
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  const wm::WMEvent fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&fullscreen_event);
+  window_state->SetHideShelfWhenFullscreen(false);
+  window_state->SetInImmersiveFullscreen(true);
+  shelf_layout_manager->UpdateVisibilityState();
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_FALSE(shelf_layout_manager->IsVisible());
+
+  // Drag the window by a small amount of distance, the window will back to
+  // fullscreened, and shelf will be hidden again.
+  gfx::Point start = gfx::Point(0, 0);
+  SendGestureEvents(start, 10, window.get());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsFullscreen());
+  EXPECT_FALSE(shelf_layout_manager->IsVisible());
+
+  // Shelf is visible during dragging.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  const float long_scroll_delta = display_bounds.height() / 4 + 5;
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_TRUE(shelf_layout_manager->IsVisible());
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  EXPECT_TRUE(shelf_layout_manager->IsVisible());
 }
 
 }  // namespace ash

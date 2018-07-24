@@ -138,6 +138,9 @@ class ASH_EXPORT ShelfLayoutManager
   // be processed any further, false otherwise.
   bool ProcessGestureEvent(const ui::GestureEvent& event_in_screen);
 
+  // Returns true if a window is being dragged from the top of the display.
+  bool IsDraggingWindowFromTopOfDisplay() const;
+
   // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,

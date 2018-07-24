@@ -18,8 +18,8 @@ class TabletModeAppWindowDragController;
 
 // ImmersiveGestureHandler is responsible for calling
 // ImmersiveFullscreenController::OnGestureEvent() to show/hide the title bar or
-// TabletModeWindowDragController::DragWindowFromTop() to drag the window from
-// the top if CanDrag is true when a gesture is received.
+// TabletAppModeWindowDragController::DragWindowFromTop() to drag the window
+// from the top if CanDrag is true when a gesture is received.
 class ASH_EXPORT ImmersiveGestureHandlerClassic
     : public ImmersiveGestureHandler,
       public ui::EventHandler {
