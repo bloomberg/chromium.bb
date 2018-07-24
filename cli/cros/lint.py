@@ -25,8 +25,8 @@ import os
 import re
 import sys
 
-from logilab.common.configuration import Configuration
 from pylint.checkers import BaseChecker
+from pylint.config import ConfigurationMixIn
 from pylint.interfaces import IAstroidChecker
 
 
@@ -72,6 +72,40 @@ class DocStringSectionDetails(object):
         self.lines == other.lines and
         self.lineno == other.lineno
     )
+
+
+def _PylintrcConfig(config_file, section, opts):
+  """Read specific pylintrc settings.
+
+  This is a bit hacky.  The pylint framework doesn't allow us to access options
+  outside of a Checker's own namespace (self.name), and multiple linters may not
+  have the same name/options values (since they get globally registered).  So we
+  have to re-read the registered config file and pull out the value we want.
+
+  The other option would be to force people to duplicate settings in the config
+  files and that's worse.  e.g.
+  [format]
+  indent-string = '  '
+  [doc_string_checker]
+  indent-string = '  '
+
+  Args:
+    config_file: Path to the pylintrc file to read.
+    section: The section to read.
+    opts: The specific settings to return.
+
+  Returns:
+    A pylint configuration object.  Use option_value('...') to read.
+  """
+  class ConfigReader(ConfigurationMixIn):
+    """Dynamic config file reader."""
+    name = section
+    options = opts
+
+  cfg = ConfigReader(config_file=config_file)
+  cfg.read_config_file()
+  cfg.load_config_file()
+  return cfg
 
 
 class DocStringChecker(BaseChecker):
@@ -162,19 +196,13 @@ class DocStringChecker(BaseChecker):
   def __init__(self, *args, **kwargs):
     BaseChecker.__init__(self, *args, **kwargs)
 
-    # This is a bit hacky.  The pylint framework doesn't allow us to access
-    # options outside of our own namespace (self.name), and multiple linters
-    # may not have the same name/options values (since they get registered).
-    # So re-read the registered config file and pull out the value we want.
-    # This way we don't force people to set the same value in two places.
     if self.linter is None:
       # Unit tests don't set this up.
       self._indent_string = '  '
     else:
-      cfg = Configuration(config_file=self.linter.config_file, name='format',
-                          options=(('indent-string', {'default': '    ',
-                                                      'type': 'string'}),))
-      cfg.load_file_configuration()
+      cfg = _PylintrcConfig(self.linter.config_file, 'format',
+                            (('indent-string', {'default': '    ',
+                                                'type': 'string'}),))
       self._indent_string = cfg.option_value('indent-string')
     self._indent_len = len(self._indent_string)
 

@@ -1,1 +1,1 @@
-F:  3: Unable to import 'lint_autotest_integration_test_example_module'
+E:  4: Unable to import 'lint_autotest_integration_test_example_module'
