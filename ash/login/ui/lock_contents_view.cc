@@ -46,8 +46,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label.h"
@@ -77,7 +79,15 @@ constexpr int kMediumDensityMarginLeftOfAuthUserPortraitDp = 0;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp = 220;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 
+// Spacing between the auth error text and the learn more button.
+constexpr int kLearnMoreButtonVerticalSpacingDp = 6;
+
+// Blue-ish color for the "learn more" button text.
+constexpr SkColor kLearnMoreButtonTextColor =
+    SkColorSetARGB(0xFF, 0x7B, 0xAA, 0xF7);
+
 constexpr char kLockContentsViewName[] = "LockContentsView";
+constexpr char kAuthErrorContainerName[] = "AuthErrorContainer";
 
 // A view which stores two preferred sizes. The embedder can control which one
 // is used.
@@ -98,6 +108,28 @@ class MultiSizedView : public views::View {
   gfx::Size b_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiSizedView);
+};
+
+class AuthErrorLearnMoreButton : public views::Button,
+                                 public views::ButtonListener {
+ public:
+  AuthErrorLearnMoreButton() : views::Button(this) {
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    auto* label =
+        new views::Label(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(kLearnMoreButtonTextColor);
+    label->SetSubpixelRenderingEnabled(false);
+    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
+                                             gfx::Font::Weight::NORMAL));
+    AddChildView(label);
+  }
+
+  void ButtonPressed(Button* sender, const ui::Event& event) override {
+    // TODO(qnnguyen): Launch the help app for signin trouble.
+  }
 };
 
 // Returns the first or last focusable child of |root|. If |reverse| is false,
@@ -1229,8 +1261,17 @@ void LockContentsView::ShowAuthErrorMessage() {
   MakeSectionBold(label, error_text, bold_start, bold_length);
   label->set_auto_color_readability_enabled(false);
 
+  auto* learn_more_button = new AuthErrorLearnMoreButton();
+
+  auto* container = new NonAccessibleView(kAuthErrorContainerName);
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      kLearnMoreButtonVerticalSpacingDp));
+  container->AddChildView(label);
+  container->AddChildView(learn_more_button);
+
   auth_error_bubble_->ShowErrorBubble(
-      label, big_view->auth_user()->password_view() /*anchor_view*/,
+      container, big_view->auth_user()->password_view() /*anchor_view*/,
       LoginBubble::kFlagsNone);
 }
 

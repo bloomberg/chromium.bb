@@ -50,7 +50,6 @@ enum {
   kGlobalCycleDetachableBaseStatus,
   kGlobalCycleDetachableBaseId,
   kGlobalCycleAuthErrorMessage,
-
   kPerUserTogglePin,
   kPerUserCycleEasyUnlockState,
   kPerUserForceOnlineSignIn,
@@ -583,7 +582,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
           data_dispatcher,
           base::BindRepeating(
               &LockDebugView::UpdatePerUserActionContainerAndLayout,
-              base::Unretained(this)))) {
+              base::Unretained(this)))),
+      next_auth_error_type_(AuthErrorType::kFirstUnlockFailed) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
