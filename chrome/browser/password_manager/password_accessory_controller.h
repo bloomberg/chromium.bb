@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/password_manager/password_accessory_view_interface.h"
 #include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -28,7 +29,6 @@ namespace password_manager {
 class PasswordManagerDriver;
 }  // namespace password_manager
 
-class PasswordAccessoryViewInterface;
 class PasswordGenerationDialogViewInterface;
 
 // The controller for the view located below the keyboard accessory.
@@ -91,8 +91,11 @@ class PasswordAccessoryController
   void OnFilledIntoFocusedField(autofill::FillingStatus status);
 
   // Makes sure, that all shown suggestions are appropriate for the currently
-  // focused field.
-  void RefreshSuggestionsForField(bool is_fillable, bool is_password_field);
+  // focused field and for fields that lost the focus. If a field lost focus,
+  // |is_fillable| will be false.
+  void RefreshSuggestionsForField(const url::Origin& origin,
+                                  bool is_fillable,
+                                  bool is_password_field);
 
   // The web page view containing the focused field.
   gfx::NativeView container_view() const;
@@ -129,10 +132,12 @@ class PasswordAccessoryController
       std::unique_ptr<PasswordAccessoryViewInterface> view,
       CreateDialogFactory create_dialog_callback);
 
-  // Creates the view items based on the |origin_suggestions_| and sends them to
-  // the view. If |is_password_field| is false, password suggestions won't be
-  // interactive.
-  void SendViewItems(bool is_password_field);
+  // Creates the view items based on the given |suggestions|.
+  // If |is_password_field| is false, password suggestions won't be interactive.
+  static std::vector<PasswordAccessoryViewInterface::AccessoryItem>
+  CreateViewItems(const url::Origin& origin,
+                  const std::vector<SuggestionElementData>& suggestions,
+                  bool is_password_field);
 
   // Contains the last set of credentials by origin.
   std::map<url::Origin, std::vector<SuggestionElementData>> origin_suggestions_;
