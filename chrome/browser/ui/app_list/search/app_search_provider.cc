@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -45,6 +46,9 @@
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
+#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -345,12 +349,23 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
 
-class InternalDataSource : public AppSearchProvider::DataSource {
+class InternalDataSource : public AppSearchProvider::DataSource,
+                           syncer::SyncServiceObserver {
  public:
   InternalDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {}
+      : AppSearchProvider::DataSource(profile, owner) {
+    browser_sync::ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+    if (service)
+      service->AddObserver(this);
+  }
 
-  ~InternalDataSource() override = default;
+  ~InternalDataSource() override {
+    browser_sync::ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
+    if (service)
+      service->RemoveObserver(this);
+  }
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
@@ -380,6 +395,11 @@ class InternalDataSource : public AppSearchProvider::DataSource {
       bool is_recommended) override {
     return std::make_unique<InternalAppResult>(profile(), app_id,
                                                list_controller, is_recommended);
+  }
+
+  // syncer::SyncServiceObserver overrides:
+  void OnForeignSessionUpdated(syncer::SyncService* sync) override {
+    owner()->RefreshAppsAndUpdateResults(/*force_inline=*/false);
   }
 
  private:
