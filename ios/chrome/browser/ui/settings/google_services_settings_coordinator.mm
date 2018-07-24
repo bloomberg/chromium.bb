@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
@@ -34,7 +35,8 @@
                    style:CollectionViewControllerStyleAppBar];
   controller.presentationDelegate = self;
   self.viewController = controller;
-  self.mediator = [[GoogleServicesSettingsMediator alloc] init];
+  self.mediator = [[GoogleServicesSettingsMediator alloc]
+      initWithPrefService:self.browserState->GetPrefs()];
   self.mediator.consumer = controller;
   self.mediator.authService =
       AuthenticationServiceFactory::GetForBrowserState(self.browserState);

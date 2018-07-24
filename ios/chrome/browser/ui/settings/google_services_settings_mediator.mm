@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 
+#include "components/prefs/pref_service.h"
+#include "components/unified_consent/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -20,6 +22,7 @@
 #endif
 
 using l10n_util::GetNSString;
+using unified_consent::prefs::kUnifiedConsentGiven;
 
 namespace {
 
@@ -67,6 +70,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Returns YES if the user is authenticated.
 @property(nonatomic, readonly) BOOL isAuthenticated;
+// Preference service.
+@property(nonatomic, readonly) PrefService* prefService;
 
 @end
 
@@ -74,8 +79,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @synthesize consumer = _consumer;
 @synthesize authService = _authService;
+@synthesize prefService = _prefService;
 
 #pragma mark - Load model
+
+- (instancetype)initWithPrefService:(PrefService*)prefService {
+  self = [super init];
+  if (self) {
+    DCHECK(prefService);
+    _prefService = prefService;
+  }
+  return self;
+}
 
 // Loads SyncEverythingSectionIdentifier section.
 - (void)loadSyncEverythingSection {
@@ -91,6 +106,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncEverythingItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING);
   item.enabled = YES;
+  item.on = [self isConsentGiven];
   return item;
 }
 
@@ -102,10 +118,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                  collapsedKey:kGoogleServicesSettingsPersonalizedSectionKey];
   SettingsCollapsibleItem* syncPersonalizationItem =
       [self syncPersonalizationItem];
-  syncPersonalizationItem.collapsed =
-      [model sectionIsCollapsed:PersonalizedSectionIdentifier];
   [model addItem:syncPersonalizationItem
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
+  BOOL collapsed = self.isAuthenticated ? [self isConsentGiven] : YES;
+  syncPersonalizationItem.collapsed = collapsed;
+  [model setSection:PersonalizedSectionIdentifier collapsed:collapsed];
   [model addItem:[self syncBookmarksItem]
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
   [model addItem:[self syncHistoryItem]
@@ -126,8 +143,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
   [model addItem:[self manageSyncedDataItem]
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model setSection:PersonalizedSectionIdentifier
-          collapsed:!self.isAuthenticated];
 }
 
 // Creates SyncPersonalizationItemType item.
@@ -260,10 +275,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                  collapsedKey:kGoogleServicesSettingsNonPersonalizedSectionKey];
   SettingsCollapsibleItem* nonPersonalizedServicesItem =
       [self nonPersonalizedServicesItem];
-  nonPersonalizedServicesItem.collapsed =
-      [model sectionIsCollapsed:NonPersonalizedSectionIdentifier];
   [model addItem:nonPersonalizedServicesItem
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
+  BOOL collapsed = self.isAuthenticated ? [self isConsentGiven] : NO;
+  nonPersonalizedServicesItem.collapsed = collapsed;
+  [model setSection:NonPersonalizedSectionIdentifier collapsed:collapsed];
   [model addItem:[self autocompleteSearchesAndURLsItem]
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
   [model addItem:[self preloadPagesItem]
@@ -272,7 +288,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
   [model addItem:[self betterSearchAndBrowsingItemType]
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  [model setSection:PersonalizedSectionIdentifier collapsed:YES];
 }
 
 // Creates NonPersonalizedServicesItemType item.
@@ -338,6 +353,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)isAuthenticated {
   return self.authService->IsAuthenticated();
+}
+
+- (BOOL)isConsentGiven {
+  return self.prefService->GetBoolean(kUnifiedConsentGiven);
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate
