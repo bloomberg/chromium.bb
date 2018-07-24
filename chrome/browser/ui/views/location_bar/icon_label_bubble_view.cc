@@ -50,6 +50,9 @@ constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
   DCHECK(owner);
   owner_ = owner;
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
@@ -63,14 +66,17 @@ void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
                    gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
 }
 
-void IconLabelBubbleView::SeparatorView::OnImplicitAnimationsCompleted() {
-  if (layer() && layer()->opacity() == 1.0f)
-    DestroyLayer();
-}
-
 void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
   if (!visible())
     return;
+
+  // When using focus rings are visible we should hide the separator instantly
+  // when the IconLabelBubbleView is focused. Otherwise we should follow the
+  // inkdrop.
+  if (views::PlatformStyle::kPreferFocusRings && owner_->HasFocus()) {
+    layer()->SetOpacity(0.0f);
+    return;
+  }
 
   views::InkDrop* ink_drop = owner_->GetInkDrop();
   DCHECK(ink_drop);
@@ -88,10 +94,6 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
     duration = kIconLabelBubbleFadeInDurationMs;
   }
 
-  if (!layer())
-    SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-
   if (disable_animation_for_test_) {
     layer()->SetOpacity(opacity);
   } else {
@@ -99,7 +101,6 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
     animation.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(duration));
     animation.SetTweenType(gfx::Tween::Type::EASE_IN);
-    animation.AddObserver(this);
     layer()->SetOpacity(opacity);
   }
 }
@@ -375,6 +376,16 @@ bool IconLabelBubbleView::ShouldUpdateInkDropOnClickCanceled() const {
 void IconLabelBubbleView::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
   OnActivate(event);
+}
+
+void IconLabelBubbleView::OnFocus() {
+  separator_view_->UpdateOpacity();
+  Button::OnFocus();
+}
+
+void IconLabelBubbleView::OnBlur() {
+  separator_view_->UpdateOpacity();
+  Button::OnBlur();
 }
 
 void IconLabelBubbleView::OnWidgetDestroying(views::Widget* widget) {
