@@ -164,6 +164,10 @@ void DesktopSessionDurationTracker::EndSession(
   // Note: This metric is recorded separately for Android in
   // UmaSessionStats::UmaEndSession.
   UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", delta);
+
+  UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", delta,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromHours(24), 50);
 }
 
 void DesktopSessionDurationTracker::InitInactivityTimeout() {
