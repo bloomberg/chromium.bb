@@ -4,12 +4,9 @@
 
 #include "chrome/browser/printing/print_view_manager_common.h"
 
-#include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/buildflags/buildflags.h"
-#include "extensions/common/constants.h"
 #include "printing/buildflags/buildflags.h"
-#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -118,14 +115,6 @@ content::RenderFrameHost* GetFrameToPrint(content::WebContents* contents) {
   return (focused_frame && focused_frame->HasSelection())
              ? focused_frame
              : contents->GetMainFrame();
-}
-
-bool PrintingPdfContent(content::RenderFrameHost* rfh) {
-  GURL url = rfh->GetLastCommittedURL();
-  // Whether it is inside print preview or pdf plugin extension.
-  return url.GetOrigin() == chrome::kChromeUIPrintURL ||
-         (url.SchemeIs(extensions::kExtensionScheme) &&
-          url.host_piece() == extension_misc::kPdfExtensionId);
 }
 
 }  // namespace printing

@@ -316,7 +316,7 @@ void PrintViewManagerBase::OnDidPrintDocument(
   }
 
   auto* client = PrintCompositeClient::FromWebContents(web_contents());
-  if (IsOopifEnabled() && !PrintingPdfContent(render_frame_host)) {
+  if (IsOopifEnabled() && print_job_->document()->settings().is_modifiable()) {
     client->DoCompositeDocumentToPdf(
         params.document_cookie, render_frame_host, content.metafile_data_handle,
         content.data_size, content.subframe_content_info,
