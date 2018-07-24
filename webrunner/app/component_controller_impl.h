@@ -59,8 +59,6 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
       override;
 
  private:
-  friend class WebContentRunner;
-
   ComponentControllerImpl(WebContentRunner* runner);
 
   // Binds |this| to a Runner::StartComponent() call. Returns false on failure
