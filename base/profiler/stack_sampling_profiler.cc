@@ -59,7 +59,17 @@ StackSamplingProfiler::InternalModule::InternalModule() : is_valid(false) {}
 StackSamplingProfiler::InternalModule::InternalModule(uintptr_t base_address,
                                                       const std::string& id,
                                                       const FilePath& filename)
-    : base_address(base_address), id(id), filename(filename), is_valid(true) {}
+    : InternalModule(base_address, id, filename, 0) {}
+
+StackSamplingProfiler::InternalModule::InternalModule(uintptr_t base_address,
+                                                      const std::string& id,
+                                                      const FilePath& filename,
+                                                      size_t size)
+    : base_address(base_address),
+      id(id),
+      filename(filename),
+      is_valid(true),
+      size(size) {}
 
 StackSamplingProfiler::InternalModule::~InternalModule() = default;
 
