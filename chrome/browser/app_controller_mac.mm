@@ -329,7 +329,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // This method is called very early in application startup (ie, before
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
-- (void)awakeFromNib {
+- (void)mainMenuCreated {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::AWAKE_FROM_NIB);
   // We need to register the handlers early to catch events fired on launch.
@@ -770,10 +770,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // notified when a profile is deleted.
   profileAttributesStorageObserver_.reset(new AppControllerProfileObserver(
       g_browser_process->profile_manager(), self));
-
-  // Since Chrome is localized to more languages than the OS, tell Cocoa which
-  // menu is the Help so it can add the search item to it.
-  [NSApp setHelpMenu:helpMenu_];
 
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.

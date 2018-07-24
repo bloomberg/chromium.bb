@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       [[NSApplication sharedApplication] delegate]);
   ASSERT_TRUE(ac);
 
-  [ac awakeFromNib];
+  [ac mainMenuCreated];
 
   // Constants for bookmarks that we will create later.
   const base::string16 title1(base::ASCIIToUTF16("Dinosaur Comics"));

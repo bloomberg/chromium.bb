@@ -2463,6 +2463,8 @@ jumbo_split_static_library("ui") {
       "cocoa/l10n_util.mm",
       "cocoa/last_active_browser_cocoa.cc",
       "cocoa/last_active_browser_cocoa.h",
+      "cocoa/main_menu_builder.h",
+      "cocoa/main_menu_builder.mm",
       "cocoa/md_hover_button.h",
       "cocoa/md_hover_button.mm",
       "cocoa/md_util.h",

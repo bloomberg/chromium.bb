@@ -83,10 +83,6 @@ class ScopedKeepAlive;
   IBOutlet NSMenuItem* closeTabMenuItem_;
   IBOutlet NSMenuItem* closeWindowMenuItem_;
 
-  // Outlet for the help menu so we can bless it so Cocoa adds the search item
-  // to it.
-  IBOutlet NSMenu* helpMenu_;
-
   // If we are expecting a workspace change in response to a reopen
   // event, the time we got the event. A null time otherwise.
   base::TimeTicks reopenTime_;
@@ -113,6 +109,10 @@ class ScopedKeepAlive;
 
 @property(readonly, nonatomic) BOOL startupComplete;
 @property(readonly, nonatomic) Profile* lastProfile;
+
+// This method is called very early in application startup after the main menu
+// has been created.
+- (void)mainMenuCreated;
 
 - (void)didEndMainMessageLoop;
 

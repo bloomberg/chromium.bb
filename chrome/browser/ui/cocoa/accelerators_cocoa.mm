@@ -54,7 +54,8 @@ const struct AcceleratorMapping {
     {IDC_ZOOM_MINUS, ui::EF_COMMAND_DOWN, ui::VKEY_OEM_MINUS},
     {IDC_ZOOM_PLUS, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::VKEY_OEM_PLUS},
 
-    // Accelerators used in MainMenu.xib, but not the toolbar menu.
+    // Accelerators used in the Main Menu, but not the toolbar menu.
+    {IDC_OPTIONS, ui::EF_COMMAND_DOWN, ui::VKEY_OEM_COMMA},
     {IDC_HIDE_APP, ui::EF_COMMAND_DOWN, ui::VKEY_H},
     {IDC_EXIT, ui::EF_COMMAND_DOWN, ui::VKEY_Q},
     {IDC_OPEN_FILE, ui::EF_COMMAND_DOWN, ui::VKEY_O},
