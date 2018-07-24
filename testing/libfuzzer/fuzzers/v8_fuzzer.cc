@@ -113,7 +113,11 @@ struct Environment {
   bool is_running;
 };
 
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+// Explicitly specify some attributes to avoid issues with the linker dead-
+// stripping the following function on macOS, as it is not called directly
+// by fuzz target. LibFuzzer runtime uses dlsym() to resolve that function.
+extern "C" __attribute__((used)) __attribute__((visibility("default"))) int
+LLVMFuzzerInitialize(int* argc, char*** argv) {
   v8::V8::InitializeICUDefaultLocation((*argv)[0]);
   v8::V8::InitializeExternalStartupData((*argv)[0]);
   v8::V8::SetFlagsFromCommandLine(argc, *argv, true);
