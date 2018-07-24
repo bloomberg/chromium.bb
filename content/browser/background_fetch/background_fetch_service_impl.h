@@ -47,7 +47,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   void UpdateUI(int64_t service_worker_registration_id,
                 const std::string& developer_id,
                 const std::string& unique_id,
-                const std::string& title,
+                const base::Optional<std::string>& title,
+                const SkBitmap& icon,
                 UpdateUICallback callback) override;
   void Abort(int64_t service_worker_registration_id,
              const std::string& developer_id,
