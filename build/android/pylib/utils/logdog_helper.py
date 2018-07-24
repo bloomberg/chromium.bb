@@ -92,4 +92,3 @@ def get_viewer_url(name):
 def get_logdog_client():
   logging.info('Getting logdog client.')
   return bootstrap.ButlerBootstrap.probe().stream_client()
-

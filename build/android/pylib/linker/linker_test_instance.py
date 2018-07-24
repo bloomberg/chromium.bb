@@ -48,4 +48,3 @@ class LinkerTestInstance(test_instance.TestInstance):
 
   def TestType(self):
     return 'linker'
-

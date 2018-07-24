@@ -175,4 +175,3 @@ def ParseResultsFromJson(json_results):
                                            duration=tr['elapsed_time_ms'])
           for tr in test_runs])
   return results_list
-

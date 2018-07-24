@@ -172,4 +172,3 @@ def _OnStaleMd5(proguard_cmd, main_dex_list_cmd, paths, main_dex_list_path,
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
-
