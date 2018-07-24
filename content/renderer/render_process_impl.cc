@@ -144,8 +144,10 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfFeature(features::kV8VmFuture, "--future");
   SetV8FlagIfNotFeature(features::kV8VmFuture, "--no-future");
 
-  SetV8FlagIfFeature(features::kWebAssemblyBaseline, "--wasm-tier-up");
-  SetV8FlagIfNotFeature(features::kWebAssemblyBaseline, "--no-wasm-tier-up");
+  SetV8FlagIfFeature(features::kWebAssemblyBaseline,
+                     "--liftoff --wasm-tier-up");
+  SetV8FlagIfNotFeature(features::kWebAssemblyBaseline,
+                        "--no-liftoff --no-wasm-tier-up");
 
   if (base::FeatureList::IsEnabled(features::kWebAssemblyThreads)) {
     constexpr char kFlags[] =
