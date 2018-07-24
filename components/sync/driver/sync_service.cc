@@ -17,11 +17,6 @@ bool SyncService::CanSyncStart() const {
   return GetDisableReasons() == DISABLE_REASON_NONE;
 }
 
-bool SyncService::IsSyncAllowed() const {
-  return !HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
-         !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY);
-}
-
 bool SyncService::IsEngineInitialized() const {
   switch (GetState()) {
     case State::DISABLED:

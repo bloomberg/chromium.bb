@@ -273,7 +273,12 @@ bool Profile::IsNewProfile() {
 
 bool Profile::IsSyncAllowed() {
   if (ProfileSyncServiceFactory::HasProfileSyncService(this)) {
-    return ProfileSyncServiceFactory::GetForProfile(this)->IsSyncAllowed();
+    browser_sync::ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(this);
+    return !sync_service->HasDisableReason(
+               syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) &&
+           !sync_service->HasDisableReason(
+               syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
   }
 
   // No ProfileSyncService created yet - we don't want to create one, so just

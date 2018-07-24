@@ -187,11 +187,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   bool IsEngineInitialized() const;
 
   // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
-  // Equivalent to "!HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
-  // !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)".
-  bool IsSyncAllowed() const;
-
-  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
   // Equivalent to having no disable reasons, i.e.
   // "GetDisableReasons() == DISABLE_REASON_NONE".
   bool CanSyncStart() const;
