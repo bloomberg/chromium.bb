@@ -78,14 +78,15 @@ class MEDIA_EXPORT HEVC {
       std::vector<uint8_t>* buffer,
       std::vector<SubsampleEntry>* subsamples);
 
-  // Verifies that the contents of |buffer| conform to
-  // Section 7.4.2.4.4 of ISO/IEC 23008-2.
+  // Analyzes the contents of |buffer| for conformance to
+  // Section 7.4.2.4.4 of ISO/IEC 23008-2, and if conformant, further inspects
+  // |buffer| to report whether or not it looks like a keyframe.
   // |subsamples| contains the information about what parts of the buffer are
   // encrypted and which parts are clear.
-  // Returns true if |buffer| contains conformant Annex B data
-  static bool IsValidAnnexB(const uint8_t* buffer,
-                            size_t size,
-                            const std::vector<SubsampleEntry>& subsamples);
+  static BitstreamConverter::AnalysisResult AnalyzeAnnexB(
+      const uint8_t* buffer,
+      size_t size,
+      const std::vector<SubsampleEntry>& subsamples);
 };
 
 class HEVCBitstreamConverter : public BitstreamConverter {
@@ -98,8 +99,9 @@ class HEVCBitstreamConverter : public BitstreamConverter {
                     bool is_keyframe,
                     std::vector<SubsampleEntry>* subsamples) const override;
 
-  bool IsValid(std::vector<uint8_t>* frame_buf,
-               std::vector<SubsampleEntry>* subsamples) const override;
+  AnalysisResult Analyze(
+      std::vector<uint8_t>* frame_buf,
+      std::vector<SubsampleEntry>* subsamples) const override;
 
  private:
   ~HEVCBitstreamConverter() override;

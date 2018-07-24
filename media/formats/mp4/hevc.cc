@@ -137,11 +137,13 @@ VideoCodecProfile HEVCDecoderConfigurationRecord::GetVideoProfile() const {
 static const uint8_t kAnnexBStartCode[] = {0, 0, 0, 1};
 static const int kAnnexBStartCodeSize = 4;
 
+// static
 bool HEVC::InsertParamSetsAnnexB(
     const HEVCDecoderConfigurationRecord& hevc_config,
     std::vector<uint8_t>* buffer,
     std::vector<SubsampleEntry>* subsamples) {
-  DCHECK(HEVC::IsValidAnnexB(buffer->data(), buffer->size(), *subsamples));
+  DCHECK(HEVC::AnalyzeAnnexB(buffer->data(), buffer->size(), *subsamples)
+             .is_conformant.value_or(true));
 
   std::unique_ptr<H265Parser> parser(new H265Parser());
   const uint8_t* start = buffer->data();
@@ -179,10 +181,12 @@ bool HEVC::InsertParamSetsAnnexB(
   buffer->insert(config_insert_point,
                  param_sets.begin(), param_sets.end());
 
-  DCHECK(HEVC::IsValidAnnexB(buffer->data(), buffer->size(), *subsamples));
+  DCHECK(HEVC::AnalyzeAnnexB(buffer->data(), buffer->size(), *subsamples)
+             .is_conformant.value_or(true));
   return true;
 }
 
+// static
 bool HEVC::ConvertConfigToAnnexB(
     const HEVCDecoderConfigurationRecord& hevc_config,
     std::vector<uint8_t>* buffer) {
@@ -204,17 +208,23 @@ bool HEVC::ConvertConfigToAnnexB(
   return true;
 }
 
-// Verifies AnnexB NALU order according to section 7.4.2.4.4 of ISO/IEC 23008-2.
-bool HEVC::IsValidAnnexB(const uint8_t* buffer,
-                         size_t size,
-                         const std::vector<SubsampleEntry>& subsamples) {
+// static
+BitstreamConverter::AnalysisResult HEVC::AnalyzeAnnexB(
+    const uint8_t* buffer,
+    size_t size,
+    const std::vector<SubsampleEntry>& subsamples) {
   DCHECK(buffer);
 
-  if (size == 0)
-    return true;
+  BitstreamConverter::AnalysisResult result;
 
-  // TODO(servolk): Implement this, see crbug.com/527595
-  return true;
+  if (size == 0) {
+    result.is_conformant = true;
+    return result;
+  }
+
+  // TODO(servolk): Implement this, see https://crbug.com/527595. For now, we
+  // report that neither conformance nor keyframe analyses were performed.
+  return result;
 }
 
 HEVCBitstreamConverter::HEVCBitstreamConverter(
@@ -243,10 +253,10 @@ bool HEVCBitstreamConverter::ConvertFrame(
   return true;
 }
 
-bool HEVCBitstreamConverter::IsValid(
+BitstreamConverter::AnalysisResult HEVCBitstreamConverter::Analyze(
     std::vector<uint8_t>* frame_buf,
     std::vector<SubsampleEntry>* subsamples) const {
-  return HEVC::IsValidAnnexB(frame_buf->data(), frame_buf->size(), *subsamples);
+  return HEVC::AnalyzeAnnexB(frame_buf->data(), frame_buf->size(), *subsamples);
 }
 
 }  // namespace mp4
