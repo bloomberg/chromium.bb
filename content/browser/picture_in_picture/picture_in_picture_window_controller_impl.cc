@@ -58,8 +58,7 @@ PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
 
   media_web_contents_observer_ = initiator_->media_web_contents_observer();
 
-  window_ =
-      GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
+  EnsureWindow();
   DCHECK(window_) << "Picture in Picture requires a valid window.";
 }
 
@@ -84,23 +83,25 @@ void PictureInPictureWindowControllerImpl::ClickCustomControl(
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
-  DCHECK(window_);
-
-  if (!window_->IsVisible())
+  if (!window_ || !window_->IsVisible())
     return;
 
   window_->Hide();
-  initiator_->SetHasPictureInPictureVideo(false);
+  CloseInternal(should_pause_video);
+}
 
-  surface_id_ = viz::SurfaceId();
-
-  OnLeavingPictureInPicture(should_pause_video);
+void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
+  window_ = nullptr;
+  embedder_ = nullptr;
+  CloseInternal(true /* should_pause_video */);
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
+  EnsureWindow();
   DCHECK(window_);
+
   DCHECK(surface_id.is_valid());
   surface_id_ = surface_id;
 
@@ -193,6 +194,23 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
             media_player_id_->render_frame_host->GetRoutingID(),
             media_player_id_->delegate_id));
   }
+}
+
+void PictureInPictureWindowControllerImpl::CloseInternal(
+    bool should_pause_video) {
+  initiator_->SetHasPictureInPictureVideo(false);
+
+  surface_id_ = viz::SurfaceId();
+
+  OnLeavingPictureInPicture(should_pause_video);
+}
+
+void PictureInPictureWindowControllerImpl::EnsureWindow() {
+  if (window_)
+    return;
+
+  window_ =
+      GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
 }
 
 }  // namespace content
