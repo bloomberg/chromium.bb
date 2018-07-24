@@ -38,7 +38,7 @@ ALWAYS_INLINE PartitionPage* PartitionDirectMap(PartitionRootBase* root,
   map_size &= kPageAllocationGranularityBaseMask;
 
   // TODO: these pages will be zero-filled. Consider internalizing an
-  // allocZeroed() API so we can avoid a memset() entirely in this case.
+  // AllocZeroed() API so we can avoid a memset() entirely in this case.
   char* ptr = reinterpret_cast<char*>(
       AllocPages(nullptr, map_size, kSuperPageSize, PageReadWrite));
   if (UNLIKELY(!ptr))
@@ -217,9 +217,9 @@ ALWAYS_INLINE void* PartitionBucket::AllocNewSlotSpan(
   // address region as much as possible. This is important for not causing
   // page table bloat and not fragmenting address spaces in 32 bit
   // architectures.
-  char* requestedAddress = root->next_super_page;
+  char* requested_address = root->next_super_page;
   char* super_page = reinterpret_cast<char*>(AllocPages(
-      requestedAddress, kSuperPageSize, kSuperPageSize, PageReadWrite));
+      requested_address, kSuperPageSize, kSuperPageSize, PageReadWrite));
   if (UNLIKELY(!super_page))
     return nullptr;
 
@@ -262,7 +262,7 @@ ALWAYS_INLINE void* PartitionBucket::AllocNewSlotSpan(
   // distributions will allocate the mapping directly before the last
   // successful mapping, which is far from random. So we just get fresh
   // randomness for the next mapping attempt.
-  if (requestedAddress && requestedAddress != super_page)
+  if (requested_address && requested_address != super_page)
     root->next_super_page = nullptr;
 
   // We allocated a new super page so update super page metadata.
@@ -281,8 +281,8 @@ ALWAYS_INLINE void* PartitionBucket::AllocNewSlotSpan(
   latest_extent->next = nullptr;
 
   PartitionSuperPageExtentEntry* current_extent = root->current_extent;
-  bool isNewExtent = (super_page != requestedAddress);
-  if (UNLIKELY(isNewExtent)) {
+  bool is_new_extent = (super_page != requested_address);
+  if (UNLIKELY(is_new_extent)) {
     if (UNLIKELY(!current_extent)) {
       DCHECK(!root->first_extent);
       root->first_extent = latest_extent;
@@ -512,9 +512,9 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
   } else {
     // Third. If we get here, we need a brand new page.
     uint16_t num_partition_pages = this->get_pages_per_slot_span();
-    void* rawPages = AllocNewSlotSpan(root, flags, num_partition_pages);
-    if (LIKELY(rawPages != nullptr)) {
-      new_page = PartitionPage::FromPointerNoAlignmentCheck(rawPages);
+    void* raw_pages = AllocNewSlotSpan(root, flags, num_partition_pages);
+    if (LIKELY(raw_pages != nullptr)) {
+      new_page = PartitionPage::FromPointerNoAlignmentCheck(raw_pages);
       InitializeSlotSpan(new_page);
     }
   }
