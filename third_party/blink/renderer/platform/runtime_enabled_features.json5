@@ -1118,6 +1118,9 @@
       name: "RTCUnifiedPlanByDefault",
     },
     {
+      name: "ScheduledScriptStreaming",
+    },
+    {
       name: "ScriptedSpeech",
       status: "stable",
     },

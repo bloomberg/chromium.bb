@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
@@ -22,19 +23,24 @@ static ScriptStreamerThread* g_shared_thread = nullptr;
 static Mutex* g_mutex = nullptr;
 
 void ScriptStreamerThread::Init() {
-  DCHECK(!g_shared_thread);
-  DCHECK(IsMainThread());
-  // This is called in the main thread before any tasks are created, so no
-  // locking is needed.
-  g_mutex = new Mutex();
-  g_shared_thread = new ScriptStreamerThread();
+  // Only enabled when ScheduledScriptStreaming is disabled.
+  if (!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
+    DCHECK(!g_shared_thread);
+    DCHECK(IsMainThread());
+    // This is called in the main thread before any tasks are created, so no
+    // locking is needed.
+    g_mutex = new Mutex();
+    g_shared_thread = new ScriptStreamerThread();
+  }
 }
 
 ScriptStreamerThread* ScriptStreamerThread::Shared() {
+  DCHECK(!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled());
   return g_shared_thread;
 }
 
 void ScriptStreamerThread::PostTask(CrossThreadClosure task) {
+  DCHECK(!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled());
   DCHECK(IsMainThread());
   MutexLocker locker(mutex_);
   DCHECK(!running_task_);
@@ -60,6 +66,7 @@ WebThread& ScriptStreamerThread::PlatformThread() {
 void ScriptStreamerThread::RunScriptStreamingTask(
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
     ScriptStreamer* streamer) {
+  DCHECK(!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled());
   TRACE_EVENT1(
       "v8,devtools.timeline", "v8.parseOnBackground", "data",
       InspectorParseScriptEvent::Data(streamer->ScriptResourceIdentifier(),

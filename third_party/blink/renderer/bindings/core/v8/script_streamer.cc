@@ -13,12 +13,15 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -392,6 +395,19 @@ void ScriptStreamer::SuppressStreaming() {
   streaming_suppressed_ = true;
 }
 
+static void RunScriptStreamingTask(
+    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
+    ScriptStreamer* streamer) {
+  TRACE_EVENT1(
+      "v8,devtools.timeline", "v8.parseOnBackground", "data",
+      InspectorParseScriptEvent::Data(streamer->ScriptResourceIdentifier(),
+                                      streamer->ScriptURLString()));
+  // Running the task can and will block: SourceStream::GetSomeData will get
+  // called and it will block and wait for data from the network.
+  task->Run();
+  streamer->StreamingCompleteOnBackgroundThread();
+}
+
 void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
   DCHECK(IsMainThread());
   if (streaming_suppressed_)
@@ -436,11 +452,12 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
       }
     }
 
-    if (ScriptStreamerThread::Shared()->IsRunningTask()) {
-      // At the moment we only have one thread for running the tasks. A
-      // new task shouldn't be queued before the running task completes,
-      // because the running task can block and wait for data from the
-      // network.
+    if (!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled() &&
+        ScriptStreamerThread::Shared()->IsRunningTask()) {
+      // If scheduled script streaming is disabled, we only have one thread for
+      // running the tasks. A new task shouldn't be queued before the running
+      // task completes, because the running task can block and wait for data
+      // from the network.
       SuppressStreaming();
       RecordNotStreamingReasonHistogram(script_type_, kThreadBusy);
       RecordStartedStreamingHistogram(script_type_, 0);
@@ -476,10 +493,24 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
       return;
     }
 
-    ScriptStreamerThread::Shared()->PostTask(
-        CrossThreadBind(&ScriptStreamerThread::RunScriptStreamingTask,
-                        WTF::Passed(std::move(script_streaming_task)),
-                        WrapCrossThreadPersistent(this)));
+    if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
+      // Script streaming tasks are high priority, as they can block the
+      // parser, and they can (and probably will) block during their own
+      // execution as they wait for more input.
+      //
+      // TODO(leszeks): Decrease the priority of these tasks where possible.
+      BackgroundScheduler::PostOnBackgroundThreadWithTraits(
+          FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+          CrossThreadBind(RunScriptStreamingTask,
+                          WTF::Passed(std::move(script_streaming_task)),
+                          WrapCrossThreadPersistent(this)));
+    } else {
+      ScriptStreamerThread::Shared()->PostTask(
+          CrossThreadBind(&ScriptStreamerThread::RunScriptStreamingTask,
+                          WTF::Passed(std::move(script_streaming_task)),
+                          WrapCrossThreadPersistent(this)));
+    }
+
     RecordStartedStreamingHistogram(script_type_, 1);
   }
   if (stream_)

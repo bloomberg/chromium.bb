@@ -524,6 +524,10 @@ void WebRuntimeFeatures::EnableWorkStealingInScriptRunner(bool enable) {
   RuntimeEnabledFeatures::SetWorkStealingInScriptRunnerEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableScheduledScriptStreaming(bool enable) {
+  RuntimeEnabledFeatures::SetScheduledScriptStreamingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableStopInBackground(bool enable) {
   RuntimeEnabledFeatures::SetStopInBackgroundEnabled(enable);
 }
