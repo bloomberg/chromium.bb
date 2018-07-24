@@ -180,7 +180,9 @@ DrawingBuffer::DrawingBuffer(
       sampler_color_space_(color_params.GetSamplerGfxColorSpace()),
       use_half_float_storage_(color_params.PixelFormat() ==
                               kF16CanvasPixelFormat),
-      chromium_image_usage_(chromium_image_usage) {
+      chromium_image_usage_(chromium_image_usage),
+      opengl_flip_y_extension_(
+          ContextProvider()->GetCapabilities().mesa_framebuffer_flip_y) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
@@ -804,10 +806,15 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   state_restorer_->SetFramebufferBindingDirty();
   gl_->GenFramebuffers(1, &fbo_);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  if (opengl_flip_y_extension_)
+    gl_->FramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_FLIP_Y_MESA, 1);
+
   if (WantExplicitResolve()) {
     gl_->GenFramebuffers(1, &multisample_fbo_);
     gl_->BindFramebuffer(GL_FRAMEBUFFER, multisample_fbo_);
     gl_->GenRenderbuffers(1, &multisample_renderbuffer_);
+    if (opengl_flip_y_extension_)
+      gl_->FramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_FLIP_Y_MESA, 1);
   }
   if (!ResizeFramebufferInternal(size)) {
     DLOG(ERROR) << "Initialization failed to allocate backbuffer.";
@@ -925,6 +932,9 @@ cc::Layer* DrawingBuffer::CcLayer() {
     layer_->SetPremultipliedAlpha(premultiplied_alpha_ ||
                                   premultiplied_alpha_false_texture_);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
+
+    if (opengl_flip_y_extension_)
+      layer_->SetFlipped(false);
 
     GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
