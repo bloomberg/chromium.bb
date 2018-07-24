@@ -23,6 +23,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
@@ -582,10 +583,14 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void UndoMostVisitedDeletion(v8::Isolate* isolate,
                                       v8::Local<v8::Value> rid);
 
-  // Handlers for JS functions visible only to the most visited iframe and/or
-  // the local NTP.
+  // Handlers for JS functions visible only to the most visited iframe, the edit
+  // custom links iframe, and/or the local NTP.
   static v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate,
                                                      int rid);
+  static void UpdateCustomLink(int rid,
+                               const std::string& url,
+                               const std::string& title);
+  static void ResetCustomLinks();
   static void LogEvent(int event);
   static void LogMostVisitedImpression(
       int position,
@@ -637,6 +642,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::UndoMostVisitedDeletion)
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
+      .SetMethod("updateCustomLink", &NewTabPageBindings::UpdateCustomLink)
+      .SetMethod("resetCustomLinks", &NewTabPageBindings::ResetCustomLinks)
       .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
       .SetMethod("logMostVisitedImpression",
                  &NewTabPageBindings::LogMostVisitedImpression)
@@ -741,7 +748,16 @@ void NewTabPageBindings::DeleteMostVisitedItem(v8::Isolate* isolate,
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->DeleteMostVisitedItem(*rid);
+
+  // Treat the Most Visited item as a custom link if called from the Most
+  // Visited or edit custom link iframes, and if custom links is enabled. This
+  // will initialize custom links if they have not already been initialized.
+  if (ntp_tiles::IsCustomLinksEnabled() &&
+      HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl))) {
+    search_box->DeleteCustomLink(*rid);
+  } else {
+    search_box->DeleteMostVisitedItem(*rid);
+  }
 }
 
 // static
@@ -763,7 +779,16 @@ void NewTabPageBindings::UndoMostVisitedDeletion(
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->UndoMostVisitedDeletion(*rid);
+
+  // Treat the Most Visited item as a custom link if called from the Most
+  // Visited or edit custom link iframes, and if custom links is enabled. This
+  // will not initialize custom links.
+  if (ntp_tiles::IsCustomLinksEnabled() &&
+      HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl))) {
+    search_box->UndoDeleteCustomLink();
+  } else {
+    search_box->UndoMostVisitedDeletion(*rid);
+  }
 }
 
 // static
@@ -781,6 +806,38 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
   int render_view_id =
       GetMainRenderFrameForCurrentContext()->GetRenderView()->GetRoutingID();
   return GenerateMostVisitedItemData(isolate, render_view_id, rid, item);
+}
+
+// static
+void NewTabPageBindings::UpdateCustomLink(int rid,
+                                          const std::string& url,
+                                          const std::string& title) {
+  if (!ntp_tiles::IsCustomLinksEnabled())
+    return;
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return;
+
+  // If rid is -1, adds a new link. Otherwise, updates the existing link
+  // indicated by the rid. This will initialize custom links if they have not
+  // already been initialized.
+  // TODO(856394): Add support for editing links when edit link API is complete.
+  if (rid == -1) {
+    const GURL gurl(url);
+    if (!gurl.is_valid())
+      return;
+    search_box->AddCustomLink(std::move(gurl), title);
+  }
+}
+
+// static
+void NewTabPageBindings::ResetCustomLinks() {
+  if (!ntp_tiles::IsCustomLinksEnabled())
+    return;
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return;
+  search_box->ResetCustomLinks();
 }
 
 // static

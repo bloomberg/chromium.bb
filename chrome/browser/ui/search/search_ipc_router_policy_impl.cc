@@ -38,6 +38,22 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessUndoAllMostVisitedDeletions() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessAddCustomLink() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteCustomLink() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessUndoDeleteCustomLink() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessResetCustomLinks() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessLogEvent() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }

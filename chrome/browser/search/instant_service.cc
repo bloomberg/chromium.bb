@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -186,6 +187,34 @@ void InstantService::UndoMostVisitedDeletion(const GURL& url) {
 void InstantService::UndoAllMostVisitedDeletions() {
   if (most_visited_sites_) {
     most_visited_sites_->ClearBlacklistedUrls();
+  }
+}
+
+void InstantService::AddCustomLink(const GURL& url, const std::string& title) {
+  if (most_visited_sites_) {
+    // Initialize custom links if they have not been initialized yet.
+    MaybeInitializeCustomLinks();
+    most_visited_sites_->AddCustomLink(url, base::UTF8ToUTF16(title));
+  }
+}
+
+void InstantService::DeleteCustomLink(const GURL& url) {
+  if (most_visited_sites_) {
+    // Initialize custom links if they have not been initialized yet.
+    MaybeInitializeCustomLinks();
+    most_visited_sites_->DeleteCustomLink(url);
+  }
+}
+
+void InstantService::UndoDeleteCustomLink() {
+  if (most_visited_sites_) {
+    most_visited_sites_->UndoDeleteCustomLink();
+  }
+}
+
+void InstantService::ResetCustomLinks() {
+  if (most_visited_sites_) {
+    most_visited_sites_->UninitializeCustomLinks();
   }
 }
 
@@ -522,6 +551,14 @@ void InstantService::ResetCustomBackgroundThemeInfo() {
   theme_info_->custom_background_attribution_action_url = GURL();
 }
 
+void InstantService::MaybeInitializeCustomLinks() {
+  DCHECK(most_visited_sites_);
+  if (!most_visited_sites_->IsCustomLinksInitialized()) {
+    most_visited_sites_->InitializeCustomLinks();
+  }
+}
+
+// static
 void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kNtpCustomBackgroundDict,
                                    NtpCustomBackgroundDefaults());

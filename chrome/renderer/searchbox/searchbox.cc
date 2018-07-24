@@ -314,6 +314,35 @@ void SearchBox::UndoAllMostVisitedDeletions() {
   embedded_search_service_->UndoAllMostVisitedDeletions(page_seq_no_);
 }
 
+void SearchBox::UndoMostVisitedDeletion(
+    InstantRestrictedID most_visited_item_id) {
+  GURL url = GetURLForMostVisitedItem(most_visited_item_id);
+  if (!url.is_valid())
+    return;
+  embedded_search_service_->UndoMostVisitedDeletion(page_seq_no_, url);
+}
+
+void SearchBox::AddCustomLink(const GURL& url, const std::string& title) {
+  if (!url.is_valid())
+    return;
+  embedded_search_service_->AddCustomLink(page_seq_no_, url, title);
+}
+
+void SearchBox::DeleteCustomLink(InstantRestrictedID most_visited_item_id) {
+  GURL url = GetURLForMostVisitedItem(most_visited_item_id);
+  if (!url.is_valid())
+    return;
+  embedded_search_service_->DeleteCustomLink(page_seq_no_, url);
+}
+
+void SearchBox::UndoDeleteCustomLink() {
+  embedded_search_service_->UndoDeleteCustomLink(page_seq_no_);
+}
+
+void SearchBox::ResetCustomLinks() {
+  embedded_search_service_->ResetCustomLinks(page_seq_no_);
+}
+
 void SearchBox::SetCustomBackgroundURL(const GURL& background_url) {
   embedded_search_service_->SetCustomBackgroundURL(background_url);
 }
@@ -329,14 +358,6 @@ void SearchBox::SetCustomBackgroundURLWithAttributions(
 
 void SearchBox::SelectLocalBackgroundImage() {
   embedded_search_service_->SelectLocalBackgroundImage();
-}
-
-void SearchBox::UndoMostVisitedDeletion(
-    InstantRestrictedID most_visited_item_id) {
-  GURL url = GetURLForMostVisitedItem(most_visited_item_id);
-  if (!url.is_valid())
-    return;
-  embedded_search_service_->UndoMostVisitedDeletion(page_seq_no_, url);
 }
 
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {

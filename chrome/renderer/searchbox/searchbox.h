@@ -119,6 +119,18 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends UndoMostVisitedDeletion to the browser.
   void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
 
+  // Sends AddCustomLink to the browser.
+  void AddCustomLink(const GURL& url, const std::string& title);
+
+  // Sends DeleteCustomLink to the browser.
+  void DeleteCustomLink(InstantRestrictedID most_visited_item_id);
+
+  // Sends UndoDeleteCustomLink to the browser.
+  void UndoDeleteCustomLink();
+
+  // Sends ResetCustomLinks to the browser.
+  void ResetCustomLinks();
+
   // Updates the NTP custom background preferences, sometimes this includes
   // image attributions.
   void SetCustomBackgroundURL(const GURL& background_url);

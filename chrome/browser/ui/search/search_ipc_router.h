@@ -55,6 +55,20 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when the EmbeddedSearch wants to undo all Most Visited deletions.
     virtual void OnUndoAllMostVisitedDeletions() = 0;
 
+    // Called when the EmbeddedSearch wants to add a custom link.
+    virtual void OnAddCustomLink(const GURL& url, const std::string& title) = 0;
+
+    // Called when the EmbeddedSearch wants to delete a custom link.
+    virtual void OnDeleteCustomLink(const GURL& url) = 0;
+
+    // Called when the EmbeddedSearch wants to restore the previously deleted
+    // custom link.
+    virtual void OnUndoDeleteCustomLink() = 0;
+
+    // Called when the EmbeddedSearch wants to delete all custom links and
+    // use Most Visited sites instead.
+    virtual void OnResetCustomLinks() = 0;
+
     // Called to signal that an event has occurred on the New Tab Page at a
     // particular time since navigation start.
     virtual void OnLogEvent(NTPLoggingEventType event,
@@ -112,6 +126,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
+    virtual bool ShouldProcessAddCustomLink() = 0;
+    virtual bool ShouldProcessDeleteCustomLink() = 0;
+    virtual bool ShouldProcessUndoDeleteCustomLink() = 0;
+    virtual bool ShouldProcessResetCustomLinks() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
@@ -170,6 +188,12 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
   void UndoAllMostVisitedDeletions(int page_seq_no) override;
+  void AddCustomLink(int page_seq_no,
+                     const GURL& url,
+                     const std::string& title) override;
+  void DeleteCustomLink(int page_seq_no, const GURL& url) override;
+  void UndoDeleteCustomLink(int page_seq_no) override;
+  void ResetCustomLinks(int page_seq_no) override;
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;

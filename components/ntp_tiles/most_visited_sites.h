@@ -166,12 +166,17 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Uninitializes custom links and reverts back to regular MV tiles. The
   // current custom links will be deleted.
   void UninitializeCustomLinks();
+  // Returns true if custom links has been initialized, false otherwise.
+  bool IsCustomLinksInitialized();
   // Adds a custom link. If the number of current links is maxed, does nothing.
   // Custom links must be enabled.
   void AddCustomLink(const GURL& url, const base::string16& title);
   // Deletes the custom link with the specified |url|. If |url| does not exist
   // in the custom link list, does nothing. Custom links must be enabled.
   void DeleteCustomLink(const GURL& url);
+  // Restores the previously deleted custom link. If there is no such link, does
+  // nothing. Custom links must be enabled.
+  void UndoDeleteCustomLink();
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void ClearBlacklistedUrls();
