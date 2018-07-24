@@ -33,7 +33,8 @@
 
 - (instancetype)initWithText:(NSString*)labelText
                  destructive:(BOOL)isDestructive
-                    position:(ButtonPositioning)position {
+                    position:(ButtonPositioning)position
+                  identifier:(NSString*)identifier {
   self = [super init];
   if (!self) {
     return self;
@@ -43,6 +44,7 @@
                      destructive:isDestructive
                         position:position];
   _button.translatesAutoresizingMaskIntoConstraints = NO;
+  _button.accessibilityIdentifier = identifier;
   [self addSubview:_button];
 
   NSDictionary* views = @{@"button" : _button};
