@@ -3469,7 +3469,6 @@ test("unit_tests") {
       "../browser/extensions/api/signed_in_devices/id_mapping_helper_unittest.cc",
       "../browser/extensions/api/signed_in_devices/signed_in_devices_api_unittest.cc",
       "../browser/extensions/api/signed_in_devices/signed_in_devices_manager_unittest.cc",
-      "../browser/extensions/api/socket/combined_socket_unittest.cc",
       "../browser/extensions/api/socket/socket_api_unittest.cc",
       "../browser/extensions/api/socket/tcp_socket_unittest.cc",
       "../browser/extensions/api/socket/tls_socket_unittest.cc",
