@@ -16,11 +16,6 @@ class WebState;
 
 #import <UIKit/UIKit.h>
 
-// Block type to indicate that a FormInputAccessoryViewProvider has an accessory
-// view to provide.
-typedef void (^AccessoryViewAvailableCompletion)(
-    BOOL inputAccessoryViewAvailable);
-
 // Block type to provide an accessory view asynchronously.
 typedef void (^AccessoryViewReadyCompletion)(
     UIView* view,
@@ -33,16 +28,9 @@ typedef void (^AccessoryViewReadyCompletion)(
 @property(nonatomic, assign) id<FormInputAccessoryViewDelegate>
     accessoryViewDelegate;
 
-// Determines asynchronously if this provider has a view available for the
-// specified form/field and invokes |completionHandler| with the answer.
-- (void)
-checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
-                              webState:(web::WebState*)webState
-                     completionHandler:
-                         (AccessoryViewAvailableCompletion)completionHandler;
-
 // Asynchronously retrieves an accessory view from this provider for the
-// specified form/field and returns it via |accessoryViewUpdateBlock|.
+// specified form/field and returns it via |accessoryViewUpdateBlock|. View
+// will be nil if no accessories are available from this provider.
 - (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
                             webState:(web::WebState*)webState
             accessoryViewUpdateBlock:
