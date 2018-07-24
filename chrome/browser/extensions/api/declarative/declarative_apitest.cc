@@ -150,7 +150,13 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PRE_PersistRules) {
   ASSERT_TRUE(RunExtensionTest("declarative/redirect_to_data")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PersistRules) {
+// Disabled on Linux for flakiness: https://crbug.com/347159
+#if defined(OS_LINUX)
+#define MAYBE_PersistRules DISABLED_PersistRules
+#else
+#define MAYBE_PersistRules PersistRules
+#endif
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, MAYBE_PersistRules) {
   ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
   EXPECT_EQ(kTestTitle, GetTitle());
 }
