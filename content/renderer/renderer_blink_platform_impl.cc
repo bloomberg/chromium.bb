@@ -776,11 +776,6 @@ WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
 
 //------------------------------------------------------------------------------
 
-void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
-}
-
-//------------------------------------------------------------------------------
-
 std::unique_ptr<WebMediaRecorderHandler>
 RendererBlinkPlatformImpl::CreateMediaRecorderHandler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

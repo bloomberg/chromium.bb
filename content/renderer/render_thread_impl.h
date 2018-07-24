@@ -89,10 +89,6 @@ class SyntheticBeginFrameSource;
 class TaskGraphRunner;
 }
 
-namespace device {
-class Gamepads;
-}
-
 namespace discardable_memory {
 class ClientDiscardableSharedMemoryManager;
 }
@@ -481,9 +477,6 @@ class CONTENT_EXPORT RenderThreadImpl
   HistogramCustomizer* histogram_customizer() {
     return &histogram_customizer_;
   }
-
-  // Retrieve current gamepad data.
-  void SampleGamepads(device::Gamepads* data);
 
   // Called by a RenderWidget when it is created or destroyed. This
   // allows the process to know when there are no visible widgets.
