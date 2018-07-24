@@ -85,7 +85,7 @@ TEST(WarningBadgeServiceTest, SuppressBadgeForCurrentWarnings) {
   EXPECT_FALSE(HasBadge(&profile));
 
   // Set second warning and verify that it shows a badge.
-  warnings.AddWarning(Warning::CreateNetworkConflictWarning(ext2_id));
+  warnings.AddWarning(Warning::CreateRepeatedCacheFlushesWarning(ext2_id));
   EXPECT_TRUE(HasBadge(&profile));
 
   warnings.RemoveObserver(&badge_service);

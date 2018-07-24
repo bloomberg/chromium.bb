@@ -57,8 +57,6 @@ class Warning {
   // Factory methods for various warning types.
   static Warning CreateNetworkDelayWarning(
       const std::string& extension_id);
-  static Warning CreateNetworkConflictWarning(
-      const std::string& extension_id);
   static Warning CreateRedirectConflictWarning(
       const std::string& extension_id,
       const std::string& winning_extension_id,

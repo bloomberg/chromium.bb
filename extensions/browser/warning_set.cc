@@ -78,16 +78,6 @@ Warning Warning::CreateNetworkDelayWarning(
 }
 
 // static
-Warning Warning::CreateNetworkConflictWarning(const std::string& extension_id) {
-  std::vector<std::string> message_parameters;
-  return Warning(
-      kNetworkConflict,
-      extension_id,
-      IDS_EXTENSION_WARNINGS_NETWORK_CONFLICT,
-      message_parameters);
-}
-
-// static
 Warning Warning::CreateRedirectConflictWarning(
     const std::string& extension_id,
     const std::string& winning_extension_id,
