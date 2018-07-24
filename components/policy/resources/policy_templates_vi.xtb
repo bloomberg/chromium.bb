@@ -240,6 +240,13 @@
        Ngoài ra, nếu phải duy trì khả năng tương thích với máy chủ bị lỗi thì chính sách này có thể được đặt thành "tls1.1". Đây là một giải pháp tạm thời và máy chủ cần được khắc phục nhanh chóng.</translation>
 <translation id="1864269674877167562">Nếu chính sách này được đặt thành chuỗi trống hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị tùy chọn tự động hoàn thành trong luồng đăng nhập của người dùng.
       Nếu chính sách này được đặt thành chuỗi đại diện cho tên miền, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị tùy chọn tự động hoàn thành trong lần đăng nhập của người dùng nhằm cho phép người dùng chỉ nhập tên người dùng của mình mà không có phần mở rộng tên miền. Người dùng có thể ghi đè phần mở rộng tên miền này.</translation>
+<translation id="1864382791685519617">Bật tùy chọn gợi ý mạng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
+
+      Tùy chọn này kiểm soát việc tìm nạp trước DNS, kết nối trước TCP và SSL, cũng như hiển thị trước các trang web.
+
+      Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè tùy chọn cài đặt này trong <ph name="PRODUCT_NAME" />.
+
+      Nếu bạn không đặt chính sách này, thì tùy chọn gợi ý mạng sẽ bật nhưng người dùng có thể thay đổi tùy chọn này.</translation>
 <translation id="1865417998205858223">Quyền khóa</translation>
 <translation id="186719019195685253">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn AC</translation>
 <translation id="187819629719252111">Cho phép truy cập các tệp cục bộ trên máy bằng cách cho phép <ph name="PRODUCT_NAME" /> hiển thị các hộp thoại chọn tệp. Nếu bạn bật cài đặt này, người dùng có thể mở các hộp thoại chọn tệp như bình thường. Nếu bạn tắt cài đặt này, bất cứ khi nào người dùng thực hiện tác vụ kích hoạt hộp thoại chọn tệp (như nhập dấu trang, tải lên tệp, lưu liên kết, v.v..), một thông báo sẽ được hiển thị thay vào đó và người dùng được coi như đã nhấp Hủy trên hộp thoại chọn tệp. Nếu không thiết lập cài đặt này, người dùng có thể mở hộp thoại chọn tệp như bình thường.</translation>
@@ -717,6 +724,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn chưa đặt chính sách này, thì <ph name="PRINTERS_ALLOW_ALL" /> sẽ là tùy chọn mặc định.
       </translation>
 <translation id="2908277604670530363">Số lượng tối đa kết nối đồng thời tới máy chủ proxy</translation>
+<translation id="2951386431828317490">Bật tính năng Tự động điền cho hồ sơ</translation>
 <translation id="2956777931324644324">Chính sách này ngừng hoạt động kể từ phiên bản 36 của <ph name="PRODUCT_NAME" />.
 
       Chỉ định xem có cần bật tiện ích chứng chỉ giới hạn miền TLS hay không.
@@ -725,6 +733,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2957506574938329824">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị Bluetooth qua API Web Bluetooth</translation>
 <translation id="2957513448235202597">Loại tài khoản để xác thực <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Quy tắc bỏ qua proxy</translation>
+<translation id="2960128438010718932">Lịch biểu áp dụng bản cập nhật mới theo giai đoạn</translation>
 <translation id="2960691910306063964">Bật hoặc tắt xác thực không có mã PIN cho các máy chủ truy cập từ xa</translation>
 <translation id="2976002782221275500">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn pin.
 
@@ -766,6 +775,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Bất kể bạn có đặt chính sách này hay không hoặc cách bạn đặt chính sách này, người dùng cũng không thể thay đổi cài đặt tối ưu hóa WPAD.</translation>
 <translation id="3072045631333522102">Trình bảo vệ màn hình được sử dụng trên màn hình đăng nhập ở chế độ bán lẻ</translation>
 <translation id="3072847235228302527">Đặt Điều khoản dịch vụ cho một tài khoản cục bộ trên thiết bị</translation>
+<translation id="3077183141551274418">Bật hoặc tắt tính năng chu kỳ sử dụng tab</translation>
 <translation id="3086995894968271156">Định cấu hình Bộ thu Google Cast trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web được phép hiển thị hình ảnh.
 
@@ -1334,6 +1344,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Những nội dung đề xuất này sẽ được tìm nạp từ xa từ máy chủ của Google.
 
       Nếu bạn đặt mục cài đặt này thành false, thì nội dung đề xuất sẽ không được tìm nạp hoặc hiển thị.</translation>
+<translation id="4788252609789586009">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin thẻ tín dụng trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin thẻ tín dụng, đồng thời sẽ không lưu thông tin thẻ tín dụng bổ sung mà người dùng có thể gửi trong khi duyệt web.
+
+      Nếu bạn bật hoặc không đặt giá trị nào cho tùy chọn cài đặt này, thì người dùng có thể kiểm soát tính năng Tự động điền cho thẻ tín dụng trong giao diện người dùng.</translation>
 <translation id="4791031774429044540">Bật tính năng trợ năng con trỏ lớn.
 
           Nếu chính sách này được đặt thành true, con trỏ lớn sẽ luôn được bật.
@@ -1469,6 +1484,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành Đúng, <ph name="PRODUCT_OS_NAME" /> sẽ ngăn thiết bị khởi động vào chế độ của nhà phát triển. Hệ thống sẽ từ chốii khởi động và hiển thị màn hình lỗi khi công tắc của nhà phát triển được bật.
 
       Nếu chính sách này không được đặt hoặc được đặt thành Sai, chế độ của nhà phát triển vẫn sẽ khả dụng cho thiết bị.</translation>
+<translation id="520403427390290017">Tính năng chu kỳ sử dụng tab sẽ lấy lại CPU, sau cùng là bộ nhớ liên kết với các tab đang chạy không được dùng trong khoảng thời gian dài, trước tiên là bằng cách điều chỉnh tốc độ, sau đó là đóng băng và cuối cùng là hủy các tab này.
+
+      Nếu bạn đặt chính sách này thành false, thì tính năng chu kỳ sử dụng tab sẽ tắt và tất cả các tab sẽ chạy bình thường.
+
+      Nếu bạn đặt chính sách này thành true hoặc không chỉ rõ, thì tính năng chu kỳ sử dụng tab sẽ bật.</translation>
 <translation id="5208240613060747912">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web không được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -1520,6 +1540,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn đặt chính sách này thành False, người dùng sẽ không thể truyền nội dung đến thiết bị của họ. Nếu bạn đặt chính sách này thành True, người dùng sẽ được phép truyền nội dung. Nếu bạn không đặt chính sách này, người dùng sẽ không được phép truyền nội dung đến thiết bị Chrome OS đã đăng ký, nhưng có thể truyền đến các thiết bị không được đăng ký.</translation>
 <translation id="5330684698007383292">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau</translation>
+<translation id="5360146044009867539">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin địa chỉ và hồ sơ trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin địa chỉ, đồng thời sẽ không lưu thông tin địa chỉ bổ sung mà người dùng có thể gửi trong khi duyệt web.
+
+      Nếu bạn bật hoặc không đặt giá trị nào cho tùy chọn cài đặt này, thì người dùng có thể kiểm soát tính năng Tự động điền cho địa chỉ trong giao diện người dùng.</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
 <translation id="5366745336748853475">Cho phép bạn chỉ định danh sách mẫu url. Những mẫu url này chỉ định các trang web có chứng chỉ ứng dụng được chọn tự động trên màn hình đăng nhập trong khung lưu trữ luồng SAML nếu trang web yêu cầu chứng chỉ. Việc sử dụng mẫu là để định cấu hình chứng chỉ sẽ được hiển thị cho SAML IdP cho toàn bộ thiết bị.
 
@@ -2238,6 +2263,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu vô hiệu hóa cài đặt này thì tính năng này sẽ không khả dụng.</translation>
 <translation id="7275334191706090484">Dấu trang được quản lý</translation>
+<translation id="729492886167634859">Chính sách này xác định danh sách tỷ lệ phần trăm để xác định tỷ lệ thiết bị <ph name="PRODUCT_OS_NAME" /> trong đơn vị tổ chức sẽ cập nhật mỗi tuần, bắt đầu từ ngày phát hiện bản cập nhật lần đầu tiên. Thời điểm phát hiện muộn hơn thời điểm phát hành bản cập nhật vì sẽ mất một thời gian từ khi phát hành bản cập nhật đến khi thiết bị kiểm tra các bản cập nhật.
+
+      Giá trị thứ n trong danh sách này sẽ dùng làm tỷ lệ phần trăm thiết bị sẽ hoàn thành việc cập nhật lên phiên bản mới trong tuần thứ n sau khi phát hiện bản cập nhật. Ví dụ: Nếu phát hiện bản cập nhật hôm nay, thì giá trị đầu tiên trong danh sách sẽ xác định tỷ lệ phần trăm thiết bị trong đơn vị tổ chức sẽ cập nhật lên phiên bản mới đó sau 1 tuần kể từ hôm nay. Giá trị thứ hai sẽ xác định tỷ lệ phần trăm thiết bị trong đơn vị tổ chức sẽ cập nhật lên phiên bản mới đó sau 2 tuần kể từ hôm nay, v.v.
+
+      Nếu có một giá trị xác định cho chính sách này, thì các bản cập nhật sẽ bỏ qua chính sách <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> và tuân theo chính sách này.
+
+      Nếu danh sách này trống, thì sẽ không có quy trình theo giai đoạn nào và các bản cập nhật sẽ được áp dụng theo những chính sách thiết bị khác.
+
+      Chính sách này không áp dụng cho quá trình chuyển đổi giữa các kênh.</translation>
 <translation id="7295019613773647480">Bật người dùng được giám sát</translation>
 <translation id="7301543427086558500">Chỉ định danh sách các URL thay thế có thể được sử dụng để trích xuất cụm từ tìm kiếm từ công cụ tìm kiếm. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER" />, sẽ được sử dụng để trích xuất cụm từ tìm kiếm.
 
@@ -2696,6 +2730,12 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
+<translation id="8498293625012059298">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để họ thay đổi mật khẩu của mình sau khi thấy cảnh báo trên trình duyệt.
+      Để <ph name="PRODUCT_NAME" /> quét chính xác dấu vân tay của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân thủ nguyên tắc tại https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để họ thay đổi mật khẩu của mình sau khi thấy cảnh báo trên trình duyệt.
+      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến https://myaccounts.google.com để họ thay đổi mật khẩu của mình.
+      Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Cài đặt mặc định (người dùng có thể ghi đè)</translation>
 <translation id="8507835864888987300">Đặt phiên bản đích cho Cập nhật tự động.
 
@@ -2749,6 +2789,14 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Khi bạn đổi chính sách này thành False, chính sách này sẽ áp dụng cho thao tác khởi động các máy ảo mới nhưng không tắt các máy ảo đang chạy.
       Khi bạn chưa đặt chính sách này trên một thiết bị được quản lý, thì thiết bị đó sẽ được phép chạy máy ảo.
        Thiết bị không được quản lý sẽ được phép chạy máy ảo.</translation>
+<translation id="8669669491594628013">Cho phép bạn kiểm soát việc kích hoạt cảnh báo bảo vệ mật khẩu. Dịch vụ bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
+
+      Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu cần bảo vệ.
+
+      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOff', thì sẽ không có cảnh báo bảo vệ mật khẩu nào hiển thị.
+      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPasswordReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ trên trang web nằm ngoài danh sách cho phép.
+      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPhishingReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ trên trang web lừa đảo.
+      Nếu bạn không đặt chính sách này, thì dịch vụ bảo vệ mật khẩu sẽ chỉ bảo vệ mật khẩu của Google nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
 <translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>

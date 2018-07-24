@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Lokalisering används, men default_locale specificeras inte i manifestet.</translation>
 <translation id="2576842806987913196">Det finns redan en CRX-fil med det här namnet.</translation>
 <translation id="2753617847762399167">Illegal sökväg (absolut eller relativ med ".."): <ph name="IMAGE_PATH" /></translation>
-<translation id="27822970480436970">Tillägget misslyckades att ändra en nätverksbegäran eftersom ändringen står i konflikt med ett annat tillägg.</translation>
 <translation id="2785530881066938471">Det gick inte att läsa in filen <ph name="RELATIVE_PATH" /> för innehållsskriptet. Den har inte kodats i UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (tilläggs-id <ph name="EXTENSION_ID" />) har blockerats av administratören. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Det gick inte att installera paketet <ph name="ERROR_CODE" /></translation>

@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Lokalisierung wurde verwendet, in der Manifest-Datei war jedoch kein Wert für "default_locale" angegeben.</translation>
 <translation id="2576842806987913196">Es ist bereits eine CRX-Datei mit diesem Namen vorhanden.</translation>
 <translation id="2753617847762399167">Unzulässiger Pfad (absolut oder relativ mit ".."): "<ph name="IMAGE_PATH" />"</translation>
-<translation id="27822970480436970">Die Erweiterung konnte eine Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung verursacht.</translation>
 <translation id="2785530881066938471">Datei "<ph name="RELATIVE_PATH" />" konnte nicht für das Content-Skript geladen werden. Sie ist nicht UTF-8-codiert.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (Erweiterungs-ID "<ph name="EXTENSION_ID" />") wurde vom Administrator blockiert. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paket konnte nicht installiert werden: "<ph name="ERROR_CODE" />".</translation>

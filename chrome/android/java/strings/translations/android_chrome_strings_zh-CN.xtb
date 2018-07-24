@@ -29,6 +29,7 @@
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1204037785786432551">下载链接</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
+<translation id="1208340532756947324">要在您的所有设备上保持同步并进行个性化设置，请开启同步功能</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
 <translation id="124116460088058876">更多语言</translation>
@@ -129,6 +130,7 @@
 <translation id="1989112275319619282">浏览</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> 希望与以下所选设备配对：</translation>
 <translation id="1994173015038366702">网站网址</translation>
+<translation id="2002537628803770967">Google Pay 中存储的信用卡和地址信息</translation>
 <translation id="200815880754187296">其他应用已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
 <translation id="2021896219286479412">全屏网站控件</translation>
@@ -225,6 +227,7 @@
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
 <translation id="2810645512293415242">简化版网页不仅可节省数据流量，还可更快速地进行加载。</translation>
+<translation id="2818669890320396765">要将您的书签同步到您的所有设备上，请登录您的帐号并开启同步功能</translation>
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
@@ -303,6 +306,7 @@
 <translation id="3549657413697417275">搜索您的历史记录</translation>
 <translation id="3552151358455404883">在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中管理 Chrome 同步和个性化</translation>
 <translation id="3557336313807607643">添加到通讯录</translation>
+<translation id="3568688522516854065">要访问您在其他设备上打开的标签页，请登录您的帐号并开启同步功能</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
@@ -375,6 +379,7 @@
 <translation id="4192273449750167573">在下一个屏幕上查看您的设置</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4198423547019359126">没有可用的下载内容保存位置</translation>
+<translation id="4209895695669353772">要获取 Google 推荐的个性化内容，请开启同步功能</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
@@ -400,6 +405,7 @@
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4453340223357552416">已在 <ph name="PRODUCT_NAME" /> 中下载 <ph name="FILE_NAME" /></translation>
 <translation id="4468959413250150279">将某个特定网站静音。</translation>
+<translation id="4472118726404937099">要在您的所有设备上保持同步并进行个性化设置，请登录您的帐号并开启同步功能</translation>
 <translation id="4479647676395637221">在允许网站使用您的摄像头前先询问（推荐）</translation>
 <translation id="4487967297491345095">Chrome 的所有应用数据都将被永久删除，其中包括所有文件、设置、帐号、数据库等。</translation>
 <translation id="4508440807153586353">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
@@ -584,6 +590,7 @@
 <translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5858741533101922242">Chrome 无法开启蓝牙适配器</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="5862731021271217234">要访问您在其他设备上打开的标签页，请开启同步功能</translation>
 <translation id="5864174910718532887">详细信息：按网站名称排序</translation>
 <translation id="5864419784173784555">正在等待完成另一项下载…</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
@@ -862,6 +869,7 @@
 <translation id="8100932616285851614">已关闭导航面板</translation>
 <translation id="8103578431304235997">隐身标签页</translation>
 <translation id="8105951947646329362">提供相关页面建议</translation>
+<translation id="8109613176066109935">要将您的书签同步到您的所有设备上，请开启同步功能</translation>
 <translation id="8116925261070264013">已静音的网站</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8168435359814927499">内容</translation>
@@ -966,6 +974,7 @@
 <translation id="9065203028668620118">修改</translation>
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="9071742570345586758">要查看虚拟实境内容，请安装 Google VR 服务</translation>
+<translation id="9074336505530349563">要获取 Google 推荐的个性化内容，请登录您的帐号并开启同步功能</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">询问是否使用简化版视图显示受支持的文章</translation>

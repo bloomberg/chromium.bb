@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Localizzazione utilizzata, ma default_locale non era specificato nel file manifest.</translation>
 <translation id="2576842806987913196">Esiste già un file CRX con questo nome.</translation>
 <translation id="2753617847762399167">Percorso non valido (assoluto o relativo con ".."): "<ph name="IMAGE_PATH" />"</translation>
-<translation id="27822970480436970">Questa estensione non è riuscita a modificare una richiesta di rete perché la modifica era in conflitto con un'altra estensione.</translation>
 <translation id="2785530881066938471">Impossibile caricare il file "<ph name="RELATIVE_PATH" />" per la trascrizione dei contenuti. Non è codificato in UTF-8.</translation>
 <translation id="2903070246402204397">L'estensione <ph name="EXTENSION_NAME" /> (ID "<ph name="EXTENSION_ID" />") è stata bloccata dall'amministratore. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Impossibile installare il pacchetto: "<ph name="ERROR_CODE" />"</translation>

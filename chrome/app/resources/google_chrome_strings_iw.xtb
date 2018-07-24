@@ -38,11 +38,9 @@
 <translation id="1874309113135274312">‏גרסת הביטא של Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
 <translation id="1915828456209461693">‏יש עדכון בשביל Chrome והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש.</translation>
-<translation id="2007150628464581396">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד # דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
 <translation id="2084710999043359739">‏הוסף ל-Chrome</translation>
 <translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
-<translation id="210890598424854131">{0,plural, =0{‏Chrome יופעל מחדש עכשיו}=1{‏Chrome יופעל מחדש בעוד שנייה}two{‏Chrome יופעל מחדש בעוד # שניות}many{‏Chrome יופעל מחדש בעוד # שניות}other{‏Chrome יופעל מחדש בעוד # שניות}}</translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chrome</translation>
 <translation id="216054706567564023">‏התקן את Chrome בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון.</translation>
@@ -144,7 +142,6 @@
 <translation id="4771048833395599659">‏Chrome‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
 <translation id="4794050651896644714">‏שמור פרטים ב-Chrome</translation>
 <translation id="4804732725083176494">‏מנהל המערכת של המכשיר הזה השבית את הכניסה אל Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{‏הפעלה מחדש של Chrome בתוך יום}two{‏הפעלה מחדש של Chrome בתוך # ימים}many{‏הפעלה מחדש של Chrome בתוך # ימים}other{‏הפעלה מחדש של Chrome בתוך # ימים}}</translation>
 <translation id="4891791193823137474">‏אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="4895437082222824641">‏פתח את הקישור ב&amp;כרטיסיית Chrome חדשה</translation>
 <translation id="4921569541910214635">‏משתף את המחשב? עכשיו תוכל להגדיר את Chrome בדיוק כמו שאתה אוהב.</translation>
@@ -152,7 +149,6 @@
 <translation id="495931528404527476">‏ב-Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה שלך עבור סנכרון.</translation>
-<translation id="5131923704757666404">{0,plural, =1{‏Chrome יופעל מחדש בעוד שעה}two{‏Chrome יופעל מחדש בעוד # שעות}many{‏Chrome יופעל מחדש בעוד # שעות}other{‏Chrome יופעל מחדש בעוד # שעות}}</translation>
 <translation id="5132929315877954718">‏גלה יישומים, משחקים, תוספים ועיצובים מעולים עבור Google Chrome.</translation>
 <translation id="5166975452760862670">‏Google Chrome מוצג בשפה זו</translation>
 <translation id="5170938038195470297">‏לא ניתן להשתמש בפרופיל שלך משום שהוא מגרסה חדשה יותר של Google Chrome. ייתכן שחלק מהתכונות לא יהיו זמינות. ציין ספריית פרופיל אחרת או השתמש בגרסה חדשה יותר של Chrome.</translation>
@@ -254,7 +250,6 @@
 <translation id="8547799825197623713">‏מפעיל היישומים של Chrome - קאנארי</translation>
 <translation id="8556340503434111824">‏גרסה חדשה של Google Chrome זמינה, והיא מהירה יותר מאי פעם.</translation>
 <translation id="8568392309447938879">‏עליך להיות מחובר ל-Chrome כדי להשתמש ביישומים. כך Chrome יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
-<translation id="859960207076826247">{0,plural, =0{‏יש עדכון זמין בשביל Chrome}=1{‏יש עדכון זמין בשביל Chrome}two{‏יש עדכון זמין בשביל Chrome כבר יומיים}many{‏יש עדכון זמין בשביל Chrome כבר # ימים}other{‏יש עדכון זמין בשביל Chrome כבר # ימים}}</translation>
 <translation id="8606668294522778825">‏Google Chrome עשוי להשתמש בשירותי אינטרנט לשיפור חוויית הגלישה שלך. ניתן להשבית את השירותים האלה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">‏Google Chrome אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="8667808506758191620">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן.</translation>

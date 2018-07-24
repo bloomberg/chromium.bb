@@ -42,11 +42,9 @@
 <translation id="1874309113135274312">Chrome 베타(mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="1915828456209461693">Chrome 업데이트가 있습니다. 다시 시작하면 바로 업데이트됩니다.</translation>
-<translation id="2007150628464581396">{0,plural, =1{1분 후에 Chrome 다시 시작}other{#분 후에 Chrome 다시 시작}}</translation>
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
 <translation id="2094919256425865063">Chrome을 종료하시겠습니까?</translation>
-<translation id="210890598424854131">{0,plural, =0{곧 Chrome 다시 시작}=1{1초 후에 Chrome 다시 시작}other{#초 후에 Chrome 다시 시작}}</translation>
 <translation id="2120620239521071941">항목 <ph name="ITEMS_COUNT" />개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />현재 설정<ph name="END_LINK" />을 보고하여 Chrome 개선에 참여</translation>
 <translation id="216054706567564023">휴대전화에 Chrome을 설치하세요. 계정 복구 전화번호로 SMS를 보내 드리겠습니다.</translation>
@@ -136,6 +134,7 @@
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="4571503333518166079">Chrome 알림 설정으로 이동</translation>
+<translation id="459622048091363950">Chrome에 액세스 권한을 부여하면 웹사이트에서 액세스 권한을 요청할 수 있게 됩니다.</translation>
 <translation id="4600710005438004015">Chrome을 최신 버전으로 업데이트하지 못했기 때문에 새로운 기능과 보안 수정 사항이 적용되지 않았습니다.</translation>
 <translation id="4631713731678262610">Chrome 메뉴에서 숨기기</translation>
 <translation id="4633000520311261472">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
@@ -147,7 +146,6 @@
 <translation id="4771048833395599659">이 파일은 위험할 수있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
 <translation id="4804732725083176494">이 기기의 관리자에 의해 Chrome 로그인이 사용 중지되었습니다.</translation>
-<translation id="4833487314064352405">{0,plural, =1{하루 안에 Chrome 다시 시작}other{#일 안에 Chrome 다시 시작}}</translation>
 <translation id="4891791193823137474">백그라운드에서 Chrome을 실행</translation>
 <translation id="4895437082222824641">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
 <translation id="4921569541910214635">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
@@ -155,7 +153,6 @@
 <translation id="495931528404527476">Chrome</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="5028489144783860647">Chrome에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
-<translation id="5131923704757666404">{0,plural, =1{1시간 후에 Chrome 다시 시작}other{#시간 후에 Chrome 다시 시작}}</translation>
 <translation id="5132929315877954718">Chrome에 사용할 유용한 애플리케이션, 게임, 확장 프로그램 및 테마를 찾아보세요.</translation>
 <translation id="5166975452760862670">현재 Chrome에서 사용 중인 언어</translation>
 <translation id="5170938038195470297">최신 버전의 Chrome에서 가져온 사용자 프로필이기 때문에 사용할 수 없습니다.
@@ -261,7 +258,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8547799825197623713">Chrome 앱 런처 카나리아</translation>
 <translation id="8556340503434111824">이전보다 더 빨라진 Chrome 새 버전을 사용할 수 있습니다.</translation>
 <translation id="8568392309447938879">앱을 사용하려면 Chrome에 로그인해야 합니다. 로그인하면 Chrome이 기기 간에 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정을 동기화할 수 있습니다.</translation>
-<translation id="859960207076826247">{0,plural, =0{Chrome 업데이트 출시}=1{Chrome 업데이트 출시}other{#일 이상 Chrome 업데이트가 이루어지지 않았음}}</translation>
 <translation id="8606668294522778825">Chrome에서 사용자에게 더 나은 인터넷 사용 환경을 제공하기 위해 웹 서비스를 사용할 수 있습니다. 원하는 경우 서비스를 사용 중지하실 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Chrome이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" />이(가) 최신 버전입니다.</translation>

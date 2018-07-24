@@ -192,6 +192,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4544944664594876241">Se modificó el acceso directo para bloquear la pantalla. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Servicio de fuentes</translation>
 <translation id="4570957409596482333">Botón de Seleccionar para pronunciar</translation>
+<translation id="4585337515783392668">Dejar de transmitir en un receptor desconocido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">Se habilitó ChromeVox</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -238,6 +239,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5805697420284793859">Administrador de ventanas</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Agregar un usuario</translation>
+<translation id="5837036133683224804">Detener <ph name="ROUTE_TITLE" /> en <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
@@ -274,6 +276,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Todo listo</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> en <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6453179446719226835">Se cambió el idioma</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
@@ -370,6 +373,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8351131234907093545">Crear nota</translation>
 <translation id="8392451568018454956">Menú de opciones para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa de pantalla completa</translation>
+<translation id="8427213022735114808">Dictado envía tu voz a Google para habilitar el dictado por voz en cualquier campo de texto.</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8431190899827883166">Mostrar presiones</translation>
 <translation id="8433186206711564395">Opciones de red</translation>
@@ -411,6 +415,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reiniciar y aplicar Powerwash para actualizar</translation>
 <translation id="9179259655489829027">Esta función te permite alternar de forma rápida entre los usuarios que hayan accedido a su cuenta, sin necesidad de escribir la contraseña. Usa esta función solo con cuentas de confianza.</translation>
+<translation id="9193626018745640770">Transmitiendo en un receptor desconocido</translation>
 <translation id="9194617393863864469">Acceder con otro usuario…</translation>
 <translation id="9201131092683066720">La batería tiene un <ph name="PERCENTAGE" /> % de carga.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>

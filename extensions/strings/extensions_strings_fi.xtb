@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Lokalisaatiota käytetään, mutta default_locale ei ole määritetty luettelossa.</translation>
 <translation id="2576842806987913196">Tämän niminen CRX-tiedosto on jo olemassa.</translation>
 <translation id="2753617847762399167">Luvaton polku (absoluuttinen tai kohteeseen '..' liittyvä): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">Tämä laajennus ei voinut muuttaa verkkopyyntöä, koska muutos on ristiriidassa toisen laajennuksen kanssa.</translation>
 <translation id="2785530881066938471">Sisältökomentosarjan tiedoston <ph name="RELATIVE_PATH" /> lataus epäonnistui, sillä tiedoston merkistökoodaus ei ole UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (tunnus <ph name="EXTENSION_ID" />) on järjestelmänvalvojan estämä. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paketin <ph name="ERROR_CODE" /> asentaminen epäonnistui.</translation>

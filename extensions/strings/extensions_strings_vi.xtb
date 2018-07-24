@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Sử dụng bản địa hóa nhưng không chỉ định default_locale trong tệp kê khai.</translation>
 <translation id="2576842806987913196">Hiện có tệp CRX hiển thị với tên này.</translation>
 <translation id="2753617847762399167">Đường dẫn không hợp lệ (tuyệt đối hoặc tương đối với '..'): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">Tiện ích này không thể sửa đổi yêu cầu mạng vì việc sửa đổi xung đột với một tiện ích khác.</translation>
 <translation id="2785530881066938471">Không thể tải tệp '<ph name="RELATIVE_PATH" />' cho tập lệnh nội dung. Tệp không được mã hóa UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (ID tiện ích "<ph name="EXTENSION_ID" />") bị quản trị viên chặn. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Không thể cài đặt gói: '<ph name="ERROR_CODE" />'</translation>
@@ -57,6 +56,7 @@
 <translation id="7003844668372540529">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Tệp kê khai không hợp lệ</translation>
 <translation id="7217838517480956708">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME" />. Bạn không thể xóa hoặc sửa đổi tiện ích này.</translation>
+<translation id="7939686037314084444">Không tải được tiện ích đúng cách. Tiện ích này có thể không chặn được các yêu cầu mạng.</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Máy ảnh mặt trước</translation>
 <translation id="8047248493720652249">Tiện ích này không thể đặt tên cho bản tải xuống "<ph name="ATTEMPTED_FILENAME" />" vì một tiện ích khác (<ph name="EXTENSION_NAME" />) đã xác định tên tệp khác "<ph name="ACTUAL_FILENAME" />".</translation>

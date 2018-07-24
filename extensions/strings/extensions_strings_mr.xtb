@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">भाषांतर वापरले, परंतु मॅनिफेस्टमध्ये डीफॉल्ट_लोकॅल निर्दिष्ट नाही.</translation>
 <translation id="2576842806987913196">या नावाने आधीपासूनच CRX फाइल उपस्थित आहे.</translation>
 <translation id="2753617847762399167">बेकायदेशीर पथ ('..' सह अचूक किंवा संबंधित): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">हा विस्तार नेटवर्क विनंती सुधारण्‍यात अयशस्वी झाला कारण सुधारणेचा दुसर्‍या विस्ताराशी विवाद झाला.</translation>
 <translation id="2785530881066938471">सामग्री स्क्रिप्टसाठी '<ph name="RELATIVE_PATH" />' फाइल लोड करणे शक्य नाही. ही UTF-8 द्वारे एन्कोड केलेली नाही.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> विस्तार आयडी "<ph name="EXTENSION_ID" />") प्रशासकाने ब्लॉक केलेला आहे. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">हे पॅकेज इंस्टॉल करणे शक्य नाही: '<ph name="ERROR_CODE" />'</translation>

@@ -581,6 +581,7 @@
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5095208057601539847">省</translation>
+<translation id="5098332213681597508">此名称来自您的 Google 帐号。</translation>
 <translation id="5115563688576182185">（64 位）</translation>
 <translation id="5121084798328133320">在您确认之后，您的 Google Payments 帐号中的信用卡详细信息将会共享给该网站。</translation>
 <translation id="5128122789703661928">无法删除此会话，因为它的名称无效。</translation>
@@ -666,6 +667,7 @@
 <translation id="5633066919399395251">攻击者可能会试图通过 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 在您的计算机上安装危险程序，以窃取或删除您的信息（如照片、密码、通讯内容和信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">欺骗性内容已被拦截。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
+<translation id="5666899935841546222">想集中管理您的所有卡片吗？</translation>
 <translation id="5675650730144413517">该网页无法正常运作</translation>
 <translation id="5685654322157854305">添加送货地址</translation>
 <translation id="5689199277474810259">导出为 JSON 格式</translation>

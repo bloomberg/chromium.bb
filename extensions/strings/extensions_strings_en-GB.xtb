@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Localisation used, but default_locale wasn't specified in the manifest.</translation>
 <translation id="2576842806987913196">There is already a CRX file present with this name.</translation>
 <translation id="2753617847762399167">Illegal path (absolute or relative with '..'): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">This extension failed to modify a network request because the modification conflicted with another extension.</translation>
 <translation id="2785530881066938471">Could not load file '<ph name="RELATIVE_PATH" />' for content script. It isn't UTF-8 encoded.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is blocked by the administrator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Could not install package: '<ph name="ERROR_CODE" />'</translation>

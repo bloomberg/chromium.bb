@@ -17,7 +17,6 @@
 <translation id="1668054258064581266">Якщо видалити обліковий запис із Chromium, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
 <translation id="1688750314291223739">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Chromium на будь-якому комп’ютері.</translation>
 <translation id="1708666629004767631">Доступна нова, надійніша версія Chromium.</translation>
-<translation id="1716051742506968">{0,plural, =0{Доступне оновлення Chromium}=1{Доступне оновлення Chromium}one{Оновлення Chromium доступне вже # день}few{Оновлення Chromium доступне вже # дні}many{Оновлення Chromium доступне вже # днів}other{Оновлення Chromium доступне вже # дня}}</translation>
 <translation id="1766096484055239003">Адміністратор вимагає перезапустити Chromium, щоб застосувати оновлення</translation>
 <translation id="1774152462503052664">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="1779356040007214683">Щоб зробити Chromium безпечнішим, ми вимкнути деякі розширення, джерелом яких не є <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, і які, можливо, було додано без вашого відома.</translation>
@@ -50,7 +49,6 @@
 <translation id="2886012850691518054">Додатково: допоможіть покращити Chromium,  автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи в Google.</translation>
 <translation id="2898082584336937987">Установіть Chromium на телефоні. Ми надішлемо SMS на ваш телефон: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Про &amp;Chromium</translation>
-<translation id="2943431542152338750">{0,plural, =1{Перезапустіть Chromium упродовж дня}one{Перезапустіть Chromium упродовж # дня}few{Перезапустіть Chromium упродовж # днів}many{Перезапустіть Chromium упродовж # днів}other{Перезапустіть Chromium упродовж # дня}}</translation>
 <translation id="2977470724722393594">У вас остання версія Chromium</translation>
 <translation id="3032787606318309379">Додавання в Chromium...</translation>
 <translation id="3046695367536568084">Щоб користуватися додатками, потрібно ввійти в Chromium. Це дозволяє веб-переглядачу Chromium синхронізувати ваші додатки, закладки, історію, паролі й інші налаштування на різних пристроях.</translation>
@@ -95,10 +93,8 @@
 <translation id="4415566066719264597">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="4421155425831608516">Адміністратор цього пристрою вимкнув вхід у Chromium.</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
-<translation id="4449801103833300785">{0,plural, =1{Chromium перезапуститься через годину}one{Chromium перезапуститься через # годину}few{Chromium перезапуститься через # години}many{Chromium перезапуститься через # годин}other{Chromium перезапуститься через # години}}</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="459535195905078186">Програми Chromium</translation>
-<translation id="4604377857208775795">{0,plural, =1{Chromium перезапуститься через 1 хвилину}one{Chromium перезапуститься через # хвилину}few{Chromium перезапуститься через # хвилини}many{Chromium перезапуститься через # хвилин}other{Chromium перезапуститься через # хвилини}}</translation>
 <translation id="4621240073146040695">Майже оновлено. Перезапустіть Chromium, щоб завершити оновлення.</translation>
 <translation id="4677944499843243528">Схоже, профіль використовується іншим процесом Chromium (<ph name="PROCESS_ID" />) на іншому комп’ютері (<ph name="HOST_NAME" />). Chromium заблокував профіль, щоб запобігти його спотворенню. Якщо ви впевнені, що жоден інший процес не використовує цей профіль, розблокуйте профіль і перезапустіть Chromium.</translation>
 <translation id="469338717132742108">Отримати довідку щодо ОС Chromium</translation>
@@ -160,7 +156,6 @@
 <translation id="6510925080656968729">Видалити Chromium</translation>
 <translation id="6570579332384693436">Щоб виправляти орфографічні помилки, Chromium надсилає введений текст у Google</translation>
 <translation id="6598877126913850652">Перейти до налаштувань сповіщень Chromium</translation>
-<translation id="6664239887951090350">{0,plural, =0{Chromium перезапуститься зараз}=1{Chromium перезапуститься через 1 секунду}one{Chromium перезапуститься через # секунду}few{Chromium перезапуститься через # секунди}many{Chromium перезапуститься через # секунд}other{Chromium перезапуститься через # секунди}}</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
 <translation id="6717134281241384636">Ваш профіль не можна використовувати, оскільки він створений у новішій версії Chromium.
 
