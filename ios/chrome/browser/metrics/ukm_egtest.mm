@@ -38,6 +38,7 @@
 #endif
 
 using chrome_test_util::AccountsSyncButton;
+using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::GetIncognitoTabCount;
@@ -194,13 +195,17 @@ void UpdateMetricsConsent(bool new_state) {
 // Signs out of sync.
 void SignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  // Remove |identity| from the device.
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(identity.userEmail)]
       performAction:grey_tap()];
-  [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Remove account")]
       performAction:grey_tap()];
+
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
@@ -215,11 +220,6 @@ void SignOut() {
 @end
 
 @implementation UKMTestCase
-
-// Per crbug.com/853992, Entire test suite is failing regularly.
-+ (NSArray*)testInvocations {
-  return @[];
-}
 
 + (void)setUp {
   [super setUp];
@@ -466,7 +466,8 @@ void SignOut() {
 
 // testMetricsReporting not needed, since iOS doesn't use sampling.
 
-- (void)testHistoryDelete {
+// TODO(crbug.com/866598): Re-enable this test.
+- (void)DISABLED_testHistoryDelete {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   const ukm::SourceId kDummySourceId = 0x54321;
