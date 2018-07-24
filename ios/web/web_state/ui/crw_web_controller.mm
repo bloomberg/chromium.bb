@@ -568,14 +568,13 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)updateCurrentBackForwardListItemHolder;
 
 // Presents native content using the native controller for |item| without
-// notifying WebStateObservers. This is used when loading native view for a new
-// navigation to avoid the delay introduced by placeholder navigation.
+// notifying WebStateObservers. This method does not modify the underlying web
+// view. It simply covers the web view with the native content.
+// |-didLoadNativeContentForNavigationItem| must be called some time later
+// to notify WebStateObservers.
 - (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item;
-// Presents native content using the native controller for |item| and notifies
-// WebStateObservers the completion of this navigation. This method does not
-// modify the underlying web view. It simply covers the web view with the native
-// content.
-- (void)loadNativeContentForNavigationItem:(web::NavigationItem*)item;
+// Notifies WebStateObservers the completion of this navigation.
+- (void)didLoadNativeContentForNavigationItem:(web::NavigationItem*)item;
 // Loads a blank page directly into WKWebView as a placeholder for a Native View
 // or WebUI URL. This page has the URL about:blank?for=<encoded original URL>.
 // The completion handler is called in the |webView:didFinishNavigation|
@@ -1799,12 +1798,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // Free the web view.
     [self removeWebView];
-    [self loadNativeContentForNavigationItem:self.currentNavItem];
+    [self presentNativeContentForNavigationItem:self.currentNavItem];
+    [self didLoadNativeContentForNavigationItem:self.currentNavItem];
   } else {
     // Just present the native view now. Leave the rest of native content load
     // until the placeholder navigation finishes.
     [self presentNativeContentForNavigationItem:self.currentNavItem];
-    [self loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()];
+    web::NavigationContextImpl* context = [self
+        loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()];
+    context->SetIsNativeContentPresented(true);
   }
 }
 
@@ -1826,9 +1828,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (void)loadNativeContentForNavigationItem:(web::NavigationItem*)item {
-  [self presentNativeContentForNavigationItem:item];
-
+- (void)didLoadNativeContentForNavigationItem:(web::NavigationItem*)item {
   const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
@@ -4900,7 +4900,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
       }
 
       if ([self shouldLoadURLInNativeView:item->GetURL()]) {
-        [self loadNativeContentForNavigationItem:item];
+        // Native content may have already been presented if this navigation is
+        // started in |-loadCurrentURLInNativeView|. If not, present it now.
+        if (!context || !context->IsNativeContentPresented()) {
+          [self presentNativeContentForNavigationItem:item];
+        }
+        [self didLoadNativeContentForNavigationItem:item];
       } else if (isWebUIURL) {
         DCHECK(_webUIManager);
         [_webUIManager loadWebUIForURL:item->GetURL()];

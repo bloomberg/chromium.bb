@@ -158,6 +158,15 @@ void NavigationContextImpl::SetLoadingErrorPage(bool is_loading_error_page) {
   is_loading_error_page_ = is_loading_error_page;
 }
 
+bool NavigationContextImpl::IsNativeContentPresented() const {
+  return is_native_content_presented_;
+}
+
+void NavigationContextImpl::SetIsNativeContentPresented(
+    bool is_native_content_presented) {
+  is_native_content_presented_ = is_native_content_presented;
+}
+
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
                                              bool has_user_gesture,
