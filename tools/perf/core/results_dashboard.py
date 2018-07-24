@@ -52,7 +52,8 @@ class SendResultsFatalException(SendResultException):
   pass
 
 
-def SendResults(data, url, send_as_histograms=False, oauth_token=None):
+def SendResults(data, url, send_as_histograms=False, oauth_token=None,
+                num_retries=3):
   """Sends results to the Chrome Performance Dashboard.
 
   This function tries to send the given data to the dashboard.
@@ -61,72 +62,80 @@ def SendResults(data, url, send_as_histograms=False, oauth_token=None):
     data: The data to try to send. Must be JSON-serializable.
     url: Performance Dashboard URL (including schema).
     send_as_histograms: True if result is to be sent to /add_histograms.
-    oauth_token: string; used for flushing oauth uploads from cache.
+    oauth_token: string; used for flushing oauth uploads from cache. Note that
+      client is responsible for making sure that the oauth_token doesn't expire
+      when using this API.
+    num_retries: Number of times to retry uploading to the perf dashboard upon
+      recoverable error.
   """
   start = time.time()
 
   # Send all the results from this run and the previous cache to the
   # dashboard.
-  fatal_error, errors = _SendResultsToDashboard(
-      data, url, oauth_token, is_histogramset=send_as_histograms)
+  errors, all_data_uploaded = _SendResultsToDashboard(
+      data, url, oauth_token, is_histogramset=send_as_histograms,
+      num_retries=num_retries)
 
   print 'Time spent sending results to %s: %s' % (url, time.time() - start)
 
-  # Print any errors; if there was a fatal error, it should be an exception.
-  for error in errors:
-    print error
-  if fatal_error:
-    return False
-  return True
+  for err in errors:
+    print err
+
+  return all_data_uploaded
 
 
-def _SendResultsToDashboard(dashboard_data, url, oauth_token, is_histogramset):
+def _SendResultsToDashboard(
+    dashboard_data, url, oauth_token, is_histogramset, num_retries):
   """Tries to send perf dashboard data to |url|.
 
   Args:
     perf_results_file_path: A file name.
     url: The instance URL to which to post results.
     oauth_token: An oauth token to use for histogram uploads. Might be None.
+    num_retries: Number of time to retry uploading to the perf dashboard upon
+      recoverable error.
 
   Returns:
-    A pair (fatal_error, errors), where fatal_error is a boolean indicating
-    whether there there was a major error and the step should fail, and errors
-    is a list of error strings.
+    A tuple (errors, all_data_uploaded), whereas:
+      errors is a list of error strings.
+      all_data_uploaded is a boolean indicating whether all perf data was
+        succesfully uploaded.
   """
 
-  fatal_error = False
   errors = []
+  all_data_uploaded = False
 
   data_type = ('histogram' if is_histogramset else 'chartjson')
-  print 'Sending %s result to dashboard.' % data_type
 
-  try:
-    if is_histogramset:
-      # TODO(eakuefner): Remove this discard logic once all bots use
-      # histograms.
-      if oauth_token is None:
-        raise SendResultsFatalException(ERROR_NO_OAUTH_TOKEN)
+  for i in xrange(1, num_retries + 1):
+    try:
+      print 'Sending %s result to dashboard (attempt %i out of %i).' % (
+          data_type, i, num_retries)
+      if is_histogramset:
+        # TODO(eakuefner): Remove this discard logic once all bots use
+        # histograms.
+        if oauth_token is None:
+          raise SendResultsFatalException(ERROR_NO_OAUTH_TOKEN)
 
-      _SendHistogramJson(url, json.dumps(dashboard_data), oauth_token)
-    else:
-      _SendResultsJson(url, json.dumps(dashboard_data))
-  except SendResultsRetryException as e:
-    # TODO(crbug.com/864565): retry sending to the perf dashboard with this
-    # error.
-    error = 'Error while uploading %s data: %s' % (data_type, str(e))
-    fatal_error = True
-    errors.append(error)
-  except SendResultsFatalException as e:
-    error = 'Error uploading %s data: %s' % (data_type, str(e))
-    errors.append(error)
-    fatal_error = True
-  except Exception:
-    error = 'Unexpected error while uploading %s data: %s' % (
-        data_type, traceback.format_exc())
-    errors.append(error)
-    fatal_error = True
+        _SendHistogramJson(url, json.dumps(dashboard_data), oauth_token)
+      else:
+        _SendResultsJson(url, json.dumps(dashboard_data))
+      all_data_uploaded = True
+      break
+    except SendResultsRetryException as e:
+      error = 'Error while uploading %s data: %s' % (data_type, str(e))
+      errors.append(error)
+    except SendResultsFatalException as e:
+      error = 'Error uploading %s data: %s' % (data_type, str(e))
+      errors.append(error)
+      break
+    except Exception:
+      error = 'Unexpected error while uploading %s data: %s' % (
+          data_type, traceback.format_exc())
+      errors.append(error)
+      break
 
-  return fatal_error, errors
+  return errors, all_data_uploaded
 
 
 def MakeHistogramSetWithDiagnostics(histograms_file,
