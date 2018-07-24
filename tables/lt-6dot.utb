@@ -211,33 +211,9 @@ include braille-patterns.cti
 
 capsletter                    46                           Single capital letter indicator
 begcapsword                   456                          Capital letter word/block start indicator
+endcapsword                   56                           Capital letter block end indicator
 numsign                       3456                         Number start indicator in text
 
-# TODO: remove the block below and fully uncomment the next one when
-#       https://github.com/liblouis/liblouis/issues/439 is dealt with. This works arount the
-#       problem of numsign jumping in front of numericmodechars characters at the beginning
-#       of the number, but numericnocontractchars doesn't play well with midnum (see comments
-#       in https://github.com/liblouis/liblouis/pull/457) so it had to be emulated as well.
-midnum , 2
-midnum : 25
-midnum . 256
-class NNCC abcdefghij # numeric nocont chars
-class NMC ,:. # numeric mode chars
-noback context $d[]%NNCC @56
-noback context $d%NMC.[]%NNCC @56
-
-# TODO: see above.
-#numericmodechars       ,:.
 nocontractsign                56
-#numericnocontchars     abcdefghij
-
-# TODO: remove this after https://github.com/liblouis/liblouis/issues/400 gets fixed.
-#       This injects extra nocontractsigns after any numeric input and extra endcapswords
-#       (same dots) after uppercase input before back-translation.
-#       Even when repeated, these doesn't seem to cause any trouble, at least for now.
-class ANMC 1234567890,:.
-nofor pass2 @3456%ANMC.[]!%ANMC @56
-nofor pass2 @456$U.[]!$U @56
-
-# TODO: move this just below begcapsword after https://github.com/liblouis/liblouis/issues/401 is fixed.
-endcapsword                   56                           Capital letter block end indicator
+numericnocontchars     abcdefghij
+midendnumericmodechars .,:
