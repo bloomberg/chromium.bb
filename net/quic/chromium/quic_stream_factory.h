@@ -418,7 +418,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     base::TimeTicks dns_resolution_start_time,
                     base::TimeTicks dns_resolution_end_time,
                     const NetLogWithSource& net_log,
-                    QuicChromiumClientSession** session);
+                    QuicChromiumClientSession** session,
+                    NetworkChangeNotifier::NetworkHandle* network);
   void ActivateSession(const QuicSessionAliasKey& key,
                        QuicChromiumClientSession* session);
   void MarkAllActiveSessionsGoingAway();
