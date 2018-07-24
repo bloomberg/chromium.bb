@@ -8,8 +8,10 @@
 #include <OpenGL/CGLTypes.h>
 
 #include <memory>
+#include <sstream>
 #include <vector>
 
+#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -30,13 +32,6 @@ namespace gl {
 namespace {
 
 bool g_support_renderer_switching;
-
-struct CGLRendererInfoObjDeleter {
-  void operator()(CGLRendererInfoObj* x) {
-    if (x)
-      CGLDestroyRendererInfo(*x);
-  }
-};
 
 }  // namespace
 
@@ -83,14 +78,7 @@ static CGLPixelFormatObj GetPixelFormat() {
 }
 
 GLContextCGL::GLContextCGL(GLShareGroup* share_group)
-  : GLContextReal(share_group),
-    context_(nullptr),
-    gpu_preference_(PreferIntegratedGpu),
-    discrete_pixelformat_(nullptr),
-    screen_(-1),
-    renderer_id_(-1),
-    safe_to_force_gpu_switch_(true) {
-}
+    : GLContextReal(share_group) {}
 
 bool GLContextCGL::Initialize(GLSurface* compatible_surface,
                               const GLContextAttribs& attribs) {
@@ -221,6 +209,7 @@ bool GLContextCGL::ForceGpuSwitchIfNeeded() {
         }
       }
       renderer_id_ = renderer_id;
+      has_switched_gpus_ = true;
     }
   }
   return true;
@@ -246,10 +235,37 @@ uint64_t GLContextCGL::BackpressureFenceCreate() {
   // TODO(ccameron): Remove this CHECK.
   CHECK(CGLGetCurrentContext() == context_);
   CHECK(context_);
+
+  // Set a crash key before making any GL calls.
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "gl_context_cgl", base::debug::CrashKeySize::Size256);
+  std::stringstream crash_info;
+  crash_info << "fence:" << next_backpressure_fence_ << " ";
+  crash_info << "canswitch:" << g_support_renderer_switching << " ";
+  crash_info << "didswitch:" << has_switched_gpus_ << " ";
+  crash_info << "dgpu:" << !!discrete_pixelformat_ << " ";
+  base::debug::SetCrashKeyString(crash_key, crash_info.str());
+
+  // Query the CGL retain count of the context.
+  GLuint retain_count =
+      CGLGetContextRetainCount(static_cast<CGLContextObj>(context_));
+  crash_info << "cglret:" << retain_count << " ";
+  base::debug::SetCrashKeyString(crash_key, crash_info.str());
+
+  // Query for errors on the GL context.
+  GLenum error = glGetError();
+  crash_info << "glerr:" << error;
+  base::debug::SetCrashKeyString(crash_key, crash_info.str());
+
+  // This flush will trigger the crash.
+  glFlush();
+
   if (gl::GLFence::IsSupported()) {
     backpressure_fences_[next_backpressure_fence_] = GLFence::Create();
     return next_backpressure_fence_++;
   }
+
+  base::debug::ClearCrashKeyString(crash_key);
   return kFinishFenceId;
 }
 
