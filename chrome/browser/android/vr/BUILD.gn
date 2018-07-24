@@ -80,6 +80,7 @@ static_library("vr_android") {
     "//base",
     "//cc",
     "//chrome/browser/vr:vr_gl_utils",
+    "//chrome/browser/vr:vr_common",
     "//components/omnibox/browser",
     "//components/rappor",
     "//content/public/browser",
