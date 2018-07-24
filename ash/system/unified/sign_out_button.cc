@@ -26,6 +26,8 @@ RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
   label()->SetSubpixelRenderingEnabled(false);
+  label()->SetFontList(views::Label::GetDefaultFontList().Derive(
+      1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 

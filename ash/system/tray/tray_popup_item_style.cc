@@ -85,7 +85,8 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
   switch (font_style_) {
     case FontStyle::TITLE:
-      label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
+      label->SetFontList(base_font_list.Derive(use_unified_theme_ ? 8 : 1,
+                                               gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
       break;
     case FontStyle::DEFAULT_VIEW_LABEL:

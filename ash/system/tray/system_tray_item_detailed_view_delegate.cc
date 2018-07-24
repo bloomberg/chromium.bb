@@ -67,7 +67,8 @@ TriView* SystemTrayItemDetailedViewDelegate::CreateTitleRow(int string_id) {
 
   auto* label = TrayPopupUtils::CreateDefaultLabel();
   label->SetText(l10n_util::GetStringUTF16(string_id));
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE,
+                           false /* use_unified_theme */);
   style.SetupLabel(label);
   tri_view->AddView(TriView::Container::CENTER, label);
 
