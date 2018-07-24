@@ -849,12 +849,12 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     // and drop checking state.
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::BindOnce(&BookmarkBarViewTest7::Step3A, this)));
+        base::BindOnce(&BookmarkBarViewTest7::Step3A, base::Unretained(this))));
 #else
     // Start a drag.
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::BindOnce(&BookmarkBarViewTest7::Step4, this)));
+        base::BindOnce(&BookmarkBarViewTest7::Step4, base::Unretained(this))));
 
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
@@ -868,7 +868,8 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(other_button, &loc);
 
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(), base::BindOnce(&BookmarkBarViewTest7::Step4, this)));
+        loc.x(), loc.y(),
+        base::BindOnce(&BookmarkBarViewTest7::Step4, base::Unretained(this))));
   }
 
   void Step4() {
@@ -956,11 +957,11 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     // and drop checking state.
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::BindOnce(&BookmarkBarViewTest8::Step3A, this)));
+        base::BindOnce(&BookmarkBarViewTest8::Step3A, base::Unretained(this))));
 #else
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::BindOnce(&BookmarkBarViewTest8::Step4, this)));
+        base::BindOnce(&BookmarkBarViewTest8::Step4, base::Unretained(this))));
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
 #endif
@@ -974,7 +975,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::BindOnce(&BookmarkBarViewTest8::Step4, this)));
+        base::BindOnce(&BookmarkBarViewTest8::Step4, base::Unretained(this))));
   }
 
   void Step4() {
@@ -987,7 +988,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     gfx::Point loc(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &loc);
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(), base::BindOnce(&BookmarkBarViewTest8::Step5, this)));
+        loc.x(), loc.y(),
+        base::BindOnce(&BookmarkBarViewTest8::Step5, base::Unretained(this))));
   }
 
   void Step5() {
@@ -1066,7 +1068,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(&BookmarkBarViewTest9::Step4, this),
+        FROM_HERE,
+        base::BindOnce(&BookmarkBarViewTest9::Step4, base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(200));
   }
 
@@ -1082,7 +1085,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     // which can interfere with Done. We need to run Done in the
     // next execution loop.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ViewEventTestBase::Done, this));
+        FROM_HERE,
+        base::BindOnce(&ViewEventTestBase::Done, base::Unretained(this)));
   }
 
   int start_y_;
@@ -1338,11 +1342,9 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     // Click and wait until the dialog box appears.
     std::unique_ptr<DialogWaiter> dialog_waiter(new DialogWaiter());
     ui_test_utils::MoveMouseToCenterAndPress(
-        child_menu,
-        ui_controls::LEFT,
-        ui_controls::DOWN | ui_controls::UP,
-        base::Bind(
-            &BookmarkBarViewTest12::Step4, this, base::Passed(&dialog_waiter)));
+        child_menu, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        base::Bind(&BookmarkBarViewTest12::Step4, base::Unretained(this),
+                   base::Passed(&dialog_waiter)));
   }
 
   void Step4(std::unique_ptr<DialogWaiter> waiter) {
@@ -1359,7 +1361,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     // For some reason return isn't processed correctly unless we delay.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&BookmarkBarViewTest12::Step5, this,
+        base::BindOnce(&BookmarkBarViewTest12::Step5, base::Unretained(this),
                        base::Unretained(dialog)),
         base::TimeDelta::FromSeconds(1));
   }
@@ -2308,7 +2310,8 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
         WM_CANCELMODE, 0, 0);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BookmarkBarViewTest26::Step3, this));
+        FROM_HERE,
+        base::Bind(&BookmarkBarViewTest26::Step3, base::Unretained(this)));
   }
 
   void Step3() {
