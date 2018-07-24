@@ -31,7 +31,7 @@ enum class Feature {
   GOOGLE_LOCATION_SERVICE = 3,
   CHROME_UNIFIED_CONSENT = 4,
 
-  FEATURE_LAST = GOOGLE_LOCATION_SERVICE
+  FEATURE_LAST = CHROME_UNIFIED_CONSENT
 };
 
 // Whether a consent is given or not given.
