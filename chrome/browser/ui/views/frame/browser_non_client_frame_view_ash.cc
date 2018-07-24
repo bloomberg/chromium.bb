@@ -549,17 +549,19 @@ void BrowserNonClientFrameViewAsh::Layout() {
       LayoutIncognitoButton();
 
     if (hosted_app_extras_container_) {
-      // TODO(estade): can Ash tell us the bounds of the caption buttons so
-      // Chrome doesn't have to re-calculate them?
-      gfx::Size hosted_app_size =
-          hosted_app_extras_container_->GetPreferredSize();
-      gfx::Size caption_button_size =
-          GetAshLayoutSize(ash::AshLayoutSize::kNonBrowserCaption);
-      hosted_app_extras_container_->SetBounds(
-          width() -
-              (GetControlButtonSpacing() + caption_button_size.width()) * 3 -
-              hosted_app_size.width(),
-          0, hosted_app_size.width(), caption_button_size.height());
+      const gfx::Rect* inverted_caption_button_bounds =
+          frame()->GetNativeWindow()->GetRootWindow()->GetProperty(
+              ash::kCaptionButtonBoundsKey);
+      if (inverted_caption_button_bounds) {
+        gfx::Rect caption_button_bounds =
+            *inverted_caption_button_bounds + gfx::Vector2d(width(), 0);
+        gfx::Size hosted_app_size =
+            hosted_app_extras_container_->GetPreferredSize();
+        hosted_app_extras_container_->SetBounds(
+            caption_button_bounds.x() - hosted_app_size.width(),
+            caption_button_bounds.y(), hosted_app_size.width(),
+            caption_button_bounds.height());
+      }
     }
 
     BrowserNonClientFrameView::Layout();
@@ -910,6 +912,8 @@ AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
 // BrowserNonClientFrameViewAsh, private:
 
 bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
+  DCHECK(!IsMash());
+
   // In tablet mode, to prevent accidental taps of the window controls, and to
   // give more horizontal space for tabs and the new tab button especially in
   // splitscreen view, we hide the window controls. We only do this when the

@@ -229,6 +229,19 @@ void FrameHeader::LayoutHeaderInternal() {
 
   caption_button_container()->Layout();
 
+  // Update clients on the bounds of the caption button only if the bounds have
+  // changed.
+  const gfx::Rect* old_bounds_value =
+      target_widget()->GetNativeWindow()->GetProperty(
+          ash::kCaptionButtonBoundsKey);
+  // The bounds are relative to the top right, rather than the normal top left.
+  gfx::Rect new_bounds_value =
+      caption_button_container()->bounds() - gfx::Vector2d(view_->width(), 0);
+  if (!old_bounds_value || new_bounds_value != *old_bounds_value) {
+    target_widget()->GetNativeWindow()->SetProperty(
+        ash::kCaptionButtonBoundsKey, new gfx::Rect(new_bounds_value));
+  }
+
   int origin = 0;
   if (back_button_) {
     gfx::Size size = back_button_->GetPreferredSize();
