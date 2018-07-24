@@ -113,25 +113,6 @@ void ClearTick(base::TimeTicks* time) {
   *time = base::TimeTicks();
 }
 
-std::string VersionStatusToString(ServiceWorkerVersion::Status status) {
-  switch (status) {
-    case ServiceWorkerVersion::NEW:
-      return "new";
-    case ServiceWorkerVersion::INSTALLING:
-      return "installing";
-    case ServiceWorkerVersion::INSTALLED:
-      return "installed";
-    case ServiceWorkerVersion::ACTIVATING:
-      return "activating";
-    case ServiceWorkerVersion::ACTIVATED:
-      return "activated";
-    case ServiceWorkerVersion::REDUNDANT:
-      return "redundant";
-  }
-  NOTREACHED() << status;
-  return std::string();
-}
-
 const int kInvalidTraceId = -1;
 
 int NextTraceId() {
@@ -1347,6 +1328,7 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
     provider_host_by_uuid.second->CountFeature(feature);
 }
 
+// static
 bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
   switch (status) {
     case ServiceWorkerVersion::NEW:
@@ -1360,6 +1342,27 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
   }
   NOTREACHED() << "Unexpected status: " << status;
   return false;
+}
+
+// static
+std::string ServiceWorkerVersion::VersionStatusToString(
+    ServiceWorkerVersion::Status status) {
+  switch (status) {
+    case ServiceWorkerVersion::NEW:
+      return "new";
+    case ServiceWorkerVersion::INSTALLING:
+      return "installing";
+    case ServiceWorkerVersion::INSTALLED:
+      return "installed";
+    case ServiceWorkerVersion::ACTIVATING:
+      return "activating";
+    case ServiceWorkerVersion::ACTIVATED:
+      return "activated";
+    case ServiceWorkerVersion::REDUNDANT:
+      return "redundant";
+  }
+  NOTREACHED() << status;
+  return std::string();
 }
 
 void ServiceWorkerVersion::IncrementPendingUpdateHintCount() {

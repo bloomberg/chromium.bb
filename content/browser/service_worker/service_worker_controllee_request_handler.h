@@ -96,7 +96,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   void DidLookupRegistrationForMainResource(
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void OnVersionStatusChanged(
+  void ContinueWithInScopeMainResourceRequest(
       scoped_refptr<ServiceWorkerRegistration> registration,
       scoped_refptr<ServiceWorkerVersion> version);
 

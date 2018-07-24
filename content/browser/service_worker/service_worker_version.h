@@ -484,6 +484,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   static bool IsInstalled(ServiceWorkerVersion::Status status);
+  static std::string VersionStatusToString(ServiceWorkerVersion::Status status);
 
   // For scheduling Soft Update after main resource requests. We schedule
   // a Soft Update to happen "soon" after each main resource request, attempting
