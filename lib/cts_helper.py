@@ -30,8 +30,7 @@ def isCtsTest(test_name):
 
 def getXMLPattern(test_name):
   """Return CTS result XML file pattern string."""
-  for cts_prefix in constants.DEFAULT_CTS_TEST_XML_MAP.keys():
-    resultXML = constants.DEFAULT_CTS_TEST_XML_MAP[cts_prefix]
+  for cts_prefix, resultXML in constants.DEFAULT_CTS_TEST_XML_MAP.items():
     if test_name.startswith(cts_prefix):
       return resultXML
   return None

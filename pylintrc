@@ -50,6 +50,7 @@ enable=cros-logging-import
 # TODO: Re-enable redefined-variable-type.
 disable=
     broad-except,
+    consider-iterating-dictionary,
     fixme,
     file-ignored,
     invalid-name,
