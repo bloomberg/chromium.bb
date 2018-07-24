@@ -1553,12 +1553,6 @@ const char kSecondaryUiMdDescription[] =
     "browser dialogs. If --top-chrome-md is effectively Material Design "
     "refresh, this option is enabled.";
 
-const char kServiceWorkerNavigationPreloadName[] =
-    "Service worker navigation preload.";
-const char kServiceWorkerNavigationPreloadDescription[] =
-    "Enable web pages to use the experimental service worker navigation "
-    "preload API.";
-
 const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";
