@@ -93,12 +93,6 @@ cr.define('settings_personalization_options', function() {
             testElement.root.querySelectorAll('settings-toggle-button').length);
         testElement.unifiedConsentEnabled = true;
         Polymer.dom.flush();
-        // #spellCheckControl should be set to display: none by false dom-if.
-        assertTrue(
-            testElement.$$('#spellCheckControl').style.display === 'none');
-        assertTrue(!!testElement.$$('#spellCheckLinkBox'));
-        assertTrue(
-            testElement.$$('#spellCheckLinkBox').style.display !== 'none');
       });
     });
   }
