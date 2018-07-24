@@ -199,9 +199,6 @@ void XRDevice::OnRequestSessionReturned(
     return;
   }
 
-  if (session_ptr->magic_window_provider)
-    magic_window_provider_.Bind(std::move(session_ptr->magic_window_provider));
-
   XRPresentationContext* output_context = nullptr;
   if (options.hasOutputContext()) {
     output_context = options.outputContext();
@@ -218,8 +215,10 @@ void XRDevice::OnRequestSessionReturned(
   sessions_.insert(session);
 
   if (options.immersive()) {
-    frameProvider()->BeginImmersiveSession(session,
-                                           std::move(session_ptr->connection));
+    frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
+  } else {
+    magic_window_provider_.Bind(std::move(session_ptr->data_provider));
+    enviroment_provider_.Bind(std::move(session_ptr->enviroment_provider));
   }
 
   resolver->Resolve(session);

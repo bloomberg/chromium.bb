@@ -92,25 +92,29 @@ XRFrameProvider::XRFrameProvider(XRDevice* device)
 
 void XRFrameProvider::BeginImmersiveSession(
     XRSession* session,
-    device::mojom::blink::XRPresentationConnectionPtr connection) {
+    device::mojom::blink::XRSessionPtr session_ptr) {
   // Make sure the session is indeed an immersive one.
   DCHECK(session && session->immersive());
 
   // Ensure we can only have one immersive session at a time.
   DCHECK(!immersive_session_);
-  DCHECK(connection);
+  DCHECK(session_ptr->data_provider);
+  DCHECK(session_ptr->submit_frame_sink);
 
   immersive_session_ = session;
 
-  presentation_provider_.Bind(std::move(connection->provider));
+  immersive_data_provider_.Bind(std::move(session_ptr->data_provider));
+
+  presentation_provider_.Bind(
+      std::move(session_ptr->submit_frame_sink->provider));
   presentation_provider_.set_connection_error_handler(
       WTF::Bind(&XRFrameProvider::OnPresentationProviderConnectionError,
                 WrapWeakPersistent(this)));
 
   frame_transport_->BindSubmitFrameClient(
-      std::move(connection->client_request));
+      std::move(session_ptr->submit_frame_sink->client_request));
   frame_transport_->SetTransportOptions(
-      std::move(connection->transport_options));
+      std::move(session_ptr->submit_frame_sink->transport_options));
   frame_transport_->PresentChange();
 }
 
@@ -131,6 +135,7 @@ void XRFrameProvider::OnFocusChanged() {
 
 void XRFrameProvider::OnPresentationProviderConnectionError() {
   presentation_provider_.reset();
+  immersive_data_provider_.reset();
   if (vsync_connection_failed_)
     return;
   immersive_session_->ForceEnd();
@@ -147,10 +152,8 @@ void XRFrameProvider::OnImmersiveSessionEnded() {
   immersive_session_ = nullptr;
   pending_immersive_vsync_ = false;
   frame_id_ = -1;
-
-  if (presentation_provider_.is_bound()) {
-    presentation_provider_.reset();
-  }
+  presentation_provider_.reset();
+  immersive_data_provider_.reset();
 
   frame_transport_ = new XRFrameTransport();
 
@@ -200,7 +203,7 @@ void XRFrameProvider::ScheduleImmersiveFrame() {
 
   pending_immersive_vsync_ = true;
 
-  presentation_provider_->GetFrameData(WTF::Bind(
+  immersive_data_provider_->GetFrameData(WTF::Bind(
       &XRFrameProvider::OnImmersiveFrameData, WrapWeakPersistent(this)));
 }
 
@@ -527,6 +530,7 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
 
 void XRFrameProvider::Dispose() {
   presentation_provider_.reset();
+  immersive_data_provider_.reset();
   // TODO(bajones): Do something for outstanding frame requests?
 }
 

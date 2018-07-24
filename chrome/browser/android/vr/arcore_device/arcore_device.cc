@@ -277,7 +277,7 @@ bool ARCoreDevice::ShouldPauseTrackingWhenFrameDataRestricted() {
 }
 
 void ARCoreDevice::OnMagicWindowFrameDataRequest(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsOnMainThread());
   // We should not be able to reach this point if we are not initialized.
@@ -312,7 +312,7 @@ void ARCoreDevice::OnMagicWindowFrameDataRequest(
 
 void ARCoreDevice::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
   DCHECK(IsOnMainThread());
 
   PostTaskToGlThread(base::BindOnce(
@@ -441,16 +441,19 @@ void ARCoreDevice::OnARCoreGlInitializationComplete(
         &ARCoreGl::Resume, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr()));
   }
 
-  // TODO(offenwanger) When the XRMagicWindowProvider or equivalent is returned
-  // here, clean out this dummy code.
-  auto connection = mojom::XRPresentationConnection::New();
-  mojom::VRSubmitFrameClientPtr submit_client;
-  connection->client_request = mojo::MakeRequest(&submit_client);
-  mojom::VRPresentationProviderPtr provider;
-  mojo::MakeRequest(&provider);
-  connection->provider = provider.PassInterface();
-  connection->transport_options = mojom::VRDisplayFrameTransportOptions::New();
-  std::move(callback).Run(std::move(connection), nullptr);
+  auto session = mojom::XRSession::New();
+
+  mojom::XRFrameDataProviderPtr data_provider;
+  mojom::XREnviromentIntegrationProviderPtr enviroment_provider;
+  mojom::XRSessionControllerPtr controller;
+  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
+      this, mojo::MakeRequest(&data_provider),
+      mojo::MakeRequest(&enviroment_provider), mojo::MakeRequest(&controller)));
+
+  session->data_provider = data_provider.PassInterface();
+  session->enviroment_provider = enviroment_provider.PassInterface();
+
+  std::move(callback).Run(std::move(session), std::move(controller));
 }
 
 void ARCoreDevice::OnRequestAndroidCameraPermissionResult(

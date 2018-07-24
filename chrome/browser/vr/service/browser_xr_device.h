@@ -57,7 +57,7 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
       base::WeakPtr<VRDisplayHost> display,
       device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
-      device::mojom::XRPresentationConnectionPtr connection,
+      device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr immersive_session_controller);
 
   device::mojom::XRRuntimePtr device_;

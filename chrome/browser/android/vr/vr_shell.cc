@@ -751,17 +751,8 @@ void VrShell::GvrDelegateReady(gvr::ViewerType viewer_type) {
   delegate_provider_->SetDelegate(this, viewer_type);
 }
 
-void VrShell::SendRequestPresentReply(
-    bool success,
-    device::mojom::VRSubmitFrameClientRequest request,
-    device::mojom::VRPresentationProviderPtrInfo provider_info,
-    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
-  device::mojom::VRPresentationProviderPtr provider;
-  provider.Bind(std::move(provider_info));
-
-  delegate_provider_->SendRequestPresentReply(success, std::move(request),
-                                              std::move(provider),
-                                              std::move(transport_options));
+void VrShell::SendRequestPresentReply(device::mojom::XRSessionPtr session) {
+  delegate_provider_->SendRequestPresentReply(std::move(session));
 }
 
 void VrShell::BufferBoundsChanged(JNIEnv* env,

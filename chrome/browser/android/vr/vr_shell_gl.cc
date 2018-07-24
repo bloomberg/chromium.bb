@@ -338,7 +338,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       daydream_support_(daydream_support),
       content_paused_(pause_content),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this),
+      presentation_binding_(this),
+      frame_data_binding_(this),
       browser_(browser_interface),
       vr_ui_fps_meter_(),
       webvr_fps_meter_(),
@@ -681,7 +682,8 @@ bool VrShellGl::IsSubmitFrameExpected(int16_t frame_index) {
     DVLOG(1) << __FUNCTION__ << ": wrong frame index, got " << frame_index
              << ", expected " << animating_frame->index;
     mojo::ReportBadMessage("SubmitFrame called with wrong frame index");
-    binding_.Close();
+    presentation_binding_.Close();
+    frame_data_binding_.Close();
     return false;
   }
 
@@ -846,8 +848,10 @@ void VrShellGl::ConnectPresentingService(
     device::mojom::XRDeviceRuntimeSessionOptionsPtr options) {
   ClosePresentationBindings();
 
-  device::mojom::VRPresentationProviderPtr provider;
-  binding_.Bind(mojo::MakeRequest(&provider));
+  device::mojom::XRPresentationProviderPtr presentation_provider;
+  presentation_binding_.Bind(mojo::MakeRequest(&presentation_provider));
+  device::mojom::XRFrameDataProviderPtr frame_data_provider;
+  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
 
   gfx::Size webvr_size(
       display_info->leftEye->renderWidth + display_info->rightEye->renderWidth,
@@ -857,7 +861,7 @@ void VrShellGl::ConnectPresentingService(
 
   // Decide which transport mechanism we want to use. This sets
   // the webxr_use_* options as a side effect.
-  device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
+  device::mojom::XRPresentationTransportOptionsPtr transport_options =
       GetWebVrFrameTransportOptions(options);
 
   if (webxr_use_shared_buffer_draw_) {
@@ -877,9 +881,16 @@ void VrShellGl::ConnectPresentingService(
 
   ScheduleOrCancelWebVrFrameTimeout();
 
-  browser_->SendRequestPresentReply(true, mojo::MakeRequest(&submit_client_),
-                                    std::move(provider),
-                                    std::move(transport_options));
+  auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
+  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
+  submit_frame_sink->provider = presentation_provider.PassInterface();
+  submit_frame_sink->transport_options = std::move(transport_options);
+
+  auto session = device::mojom::XRSession::New();
+  session->data_provider = frame_data_provider.PassInterface();
+  session->submit_frame_sink = std::move(submit_frame_sink);
+
+  browser_->SendRequestPresentReply(std::move(session));
 }
 
 void VrShellGl::OnSwapContents(int new_content_id) {
@@ -1077,7 +1088,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
   }
 }
 
-device::mojom::VRDisplayFrameTransportOptionsPtr
+device::mojom::XRPresentationTransportOptionsPtr
 VrShellGl::GetWebVrFrameTransportOptions(
     const device::mojom::XRDeviceRuntimeSessionOptionsPtr& options) {
   DVLOG(1) << __FUNCTION__;
@@ -1120,19 +1131,19 @@ VrShellGl::GetWebVrFrameTransportOptions(
   DVLOG(1) << __FUNCTION__ << ": render_path=" << static_cast<int>(render_path);
   MetricsUtilAndroid::LogXrRenderPathUsed(render_path);
 
-  device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
-      device::mojom::VRDisplayFrameTransportOptions::New();
+  device::mojom::XRPresentationTransportOptionsPtr transport_options =
+      device::mojom::XRPresentationTransportOptions::New();
   // Only set boolean options that we need. Default is false, and we should be
   // able to safely ignore ones that our implementation doesn't care about.
   transport_options->wait_for_transfer_notification = true;
   if (webxr_use_shared_buffer_draw_) {
     transport_options->transport_method =
-        device::mojom::VRDisplayFrameTransportMethod::DRAW_INTO_TEXTURE_MAILBOX;
+        device::mojom::XRPresentationTransportMethod::DRAW_INTO_TEXTURE_MAILBOX;
     DCHECK(webxr_use_gpu_fence_);
     transport_options->wait_for_gpu_fence = true;
   } else {
     transport_options->transport_method =
-        device::mojom::VRDisplayFrameTransportMethod::SUBMIT_AS_MAILBOX_HOLDER;
+        device::mojom::XRPresentationTransportMethod::SUBMIT_AS_MAILBOX_HOLDER;
     transport_options->wait_for_transfer_notification = true;
     if (webxr_use_gpu_fence_) {
       transport_options->wait_for_gpu_fence = true;
@@ -2232,7 +2243,7 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
 }
 
 void VrShellGl::GetFrameData(
-    device::mojom::VRPresentationProvider::GetFrameDataCallback callback) {
+    device::mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   if (!get_frame_data_callback_.is_null()) {
     DLOG(WARNING) << ": previous get_frame_data_callback_ was not used yet";
@@ -2266,14 +2277,16 @@ void VrShellGl::UpdateLayerBounds(int16_t frame_index,
                                   const gfx::Size& source_size) {
   if (!ValidateRect(left_bounds) || !ValidateRect(right_bounds)) {
     mojo::ReportBadMessage("UpdateLayerBounds called with invalid bounds");
-    binding_.Close();
+    presentation_binding_.Close();
+    frame_data_binding_.Close();
     return;
   }
 
   if (frame_index >= 0 && !webxr_->HaveAnimatingFrame()) {
     // The optional UpdateLayerBounds call must happen before SubmitFrame.
     mojo::ReportBadMessage("UpdateLayerBounds called without animating frame");
-    binding_.Close();
+    presentation_binding_.Close();
+    frame_data_binding_.Close();
     return;
   }
 
@@ -2447,7 +2460,8 @@ void VrShellGl::ClosePresentationBindings() {
     // the connection is closing.
     base::ResetAndReturn(&get_frame_data_callback_).Run(nullptr);
   }
-  binding_.Close();
+  presentation_binding_.Close();
+  frame_data_binding_.Close();
 }
 
 device::mojom::XRInputSourceStatePtr VrShellGl::GetGazeInputSourceState() {

@@ -124,25 +124,11 @@ VRDisplayHost::VRDisplayHost(content::RenderFrameHost* render_frame_host,
                                      std::move(display_info));
 }
 
-void VRDisplayHost::OnARSessionCreated(
-    vr::BrowserXrDevice* device,
-    device::mojom::VRDisplayHost::RequestSessionCallback callback,
-    device::mojom::XRSessionPtr session) {
-  if (!session) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  device->GetRuntime()->RequestMagicWindowSession(
-      base::BindOnce(&VRDisplayHost::OnMagicWindowSessionCreated,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void VRDisplayHost::OnMagicWindowSessionCreated(
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
-    device::mojom::VRMagicWindowProviderPtr magic_window_provider,
+    device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr controller) {
-  if (!magic_window_provider) {
+  if (!session) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -152,10 +138,7 @@ void VRDisplayHost::OnMagicWindowSessionCreated(
 
   magic_window_controllers_.AddPtr(std::move(controller));
 
-  device::mojom::XRSessionPtr xr_session = device::mojom::XRSession::New();
-  xr_session->magic_window_provider = magic_window_provider.PassInterface();
-
-  std::move(callback).Run(std::move(xr_session));
+  std::move(callback).Run(std::move(session));
 }
 
 VRDisplayHost::~VRDisplayHost() {
@@ -214,28 +197,16 @@ void VRDisplayHost::RequestSession(
       ReportRequestPresent();
     }
 
-    // Ensure we will notify the immersive device when we are destroyed, so
-    // lingering presentation state will be cleaned up.
-    DCHECK(device == immersive_device_);
-
     device->RequestSession(this, std::move(runtime_options),
                            std::move(callback));
-  } else if (runtime_options->provide_passthrough_camera) {
-    // WebXrHitTest enabled means we are requesting an AR session.  This means
-    // we make two requests to the device - one to request permissions and start
-    // the runtime, then a followup to actually get the magic window provider.
-    // TODO(offenwanger): Clean this up and make only one request.
-    // base::Unretained(device) is safe because either device is alive when we
-    // are called back, or we are called back with failure.
-    device->RequestSession(
-        this, std::move(runtime_options),
-        base::BindOnce(&VRDisplayHost::OnARSessionCreated,
-                       weak_ptr_factory_.GetWeakPtr(), base::Unretained(device),
-                       std::move(callback)));
   } else {
-    device->GetRuntime()->RequestMagicWindowSession(
-        base::BindOnce(&VRDisplayHost::OnMagicWindowSessionCreated,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    base::OnceCallback<void(device::mojom::XRSessionPtr,
+                            device::mojom::XRSessionControllerPtr)>
+        magic_window_callback =
+            base::BindOnce(&VRDisplayHost::OnMagicWindowSessionCreated,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+    device->GetRuntime()->RequestSession(std::move(runtime_options),
+                                         std::move(magic_window_callback));
   }
 }
 

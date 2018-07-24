@@ -52,10 +52,11 @@ class ARCoreDevice : public VRDeviceBase {
   // VRDeviceBase implementation
   bool ShouldPauseTrackingWhenFrameDataRestricted() override;
   void OnMagicWindowFrameDataRequest(
-      mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
+      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
   void RequestHitTest(
       mojom::XRRayPtr ray,
-      mojom::VRMagicWindowProvider::RequestHitTestCallback callback) override;
+      mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback)
+      override;
 
   void OnMailboxBridgeReady();
   void OnARCoreGlThreadInitialized();

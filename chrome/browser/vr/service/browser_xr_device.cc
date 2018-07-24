@@ -113,21 +113,19 @@ void BrowserXrDevice::OnRequestSessionResult(
     base::WeakPtr<VRDisplayHost> display,
     device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
-    device::mojom::XRPresentationConnectionPtr connection,
+    device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr immersive_session_controller) {
-  if (connection && display) {
+  if (session && display) {
     if (options->immersive) {
       presenting_display_host_ = display.get();
       immersive_session_controller_ = std::move(immersive_session_controller);
     }
 
-    device::mojom::XRSessionPtr xr_session = device::mojom::XRSession::New();
-    xr_session->connection = std::move(connection);
-    std::move(callback).Run(std::move(xr_session));
+    std::move(callback).Run(std::move(session));
   } else {
     std::move(callback).Run(nullptr);
-    if (connection) {
-      // The device has been removed, but we still got a connection, so make
+    if (session) {
+      // The device has been removed, but we still got a session, so make
       // sure to clean up this weird state.
       immersive_session_controller_ = std::move(immersive_session_controller);
       StopImmersiveSession();

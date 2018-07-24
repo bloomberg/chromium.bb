@@ -54,9 +54,13 @@ class XRDevice final : public ScriptWrappable,
   const device::mojom::blink::VRDisplayHostPtr& xrDisplayHostPtr() const {
     return display_;
   }
-  const device::mojom::blink::VRMagicWindowProviderPtr&
-  xrMagicWindowProviderPtr() const {
+  const device::mojom::blink::XRFrameDataProviderPtr& xrMagicWindowProviderPtr()
+      const {
     return magic_window_provider_;
+  }
+  const device::mojom::blink::XREnviromentIntegrationProviderPtr&
+  xrEnviromentProviderPtr() const {
+    return enviroment_provider_;
   }
   const device::mojom::blink::VRDisplayInfoPtr& xrDisplayInfoPtr() const {
     return display_info_;
@@ -107,7 +111,8 @@ class XRDevice final : public ScriptWrappable,
   // Indicates whether we've already logged a request for an immersive session.
   bool did_log_request_immersive_session_ = false;
 
-  device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
+  device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
+  device::mojom::blink::XREnviromentIntegrationProviderPtr enviroment_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
   unsigned int display_info_id_ = 0;

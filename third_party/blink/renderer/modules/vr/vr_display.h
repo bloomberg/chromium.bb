@@ -217,14 +217,15 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool did_log_getFrameData_ = false;
   bool did_log_requestPresent_ = false;
 
-  device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
+  device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
 
   device::mojom::blink::VRDisplayHostPtr display_;
 
   bool present_image_needs_copy_ = false;
 
   mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
-  device::mojom::blink::VRPresentationProviderPtr vr_presentation_provider_;
+  device::mojom::blink::XRFrameDataProviderPtr vr_presentation_data_provider_;
+  device::mojom::blink::XRPresentationProviderPtr vr_presentation_provider_;
 
   HeapDeque<Member<ScriptPromiseResolver>> pending_present_resolvers_;
 };

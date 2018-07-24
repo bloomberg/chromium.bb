@@ -173,6 +173,11 @@ void OpenVRDevice::Shutdown() {
 void OpenVRDevice::RequestSession(
     mojom::XRDeviceRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
+  if (!options->immersive) {
+    ReturnNonImmersiveSession(std::move(callback));
+    return;
+  }
+
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
@@ -211,9 +216,7 @@ void OpenVRDevice::OnPresentationEnded() {
 void OpenVRDevice::OnRequestSessionResult(
     mojom::XRRuntime::RequestSessionCallback callback,
     bool result,
-    mojom::VRSubmitFrameClientRequest request,
-    mojom::VRPresentationProviderPtrInfo provider_info,
-    mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+    mojom::XRSessionPtr session) {
   if (!result) {
     OnPresentationEnded();
     std::move(callback).Run(nullptr, nullptr);
@@ -221,11 +224,6 @@ void OpenVRDevice::OnRequestSessionResult(
   }
 
   OnStartPresenting();
-
-  auto connection = mojom::XRPresentationConnection::New();
-  connection->client_request = std::move(request);
-  connection->provider = std::move(provider_info);
-  connection->transport_options = std::move(transport_options);
 
   mojom::XRSessionControllerPtr session_controller;
   exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
@@ -236,7 +234,7 @@ void OpenVRDevice::OnRequestSessionResult(
       base::BindOnce(&OpenVRDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
 
-  std::move(callback).Run(std::move(connection), std::move(session_controller));
+  std::move(callback).Run(std::move(session), std::move(session_controller));
 }
 
 // XRSessionController
@@ -255,7 +253,7 @@ void OpenVRDevice::OnPresentingControllerMojoConnectionError() {
 }
 
 void OpenVRDevice::OnMagicWindowFrameDataRequest(
-    mojom::VRPresentationProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (!openvr_) {
     std::move(callback).Run(nullptr);
     return;

@@ -36,19 +36,16 @@ class OpenVRDevice : public VRDeviceBase,
 
   void OnPollingEvents();
 
-  void OnRequestSessionResult(
-      mojom::XRRuntime::RequestSessionCallback callback,
-      bool result,
-      mojom::VRSubmitFrameClientRequest request,
-      mojom::VRPresentationProviderPtrInfo provider_info,
-      mojom::VRDisplayFrameTransportOptionsPtr transport_options);
+  void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
+                              bool result,
+                              mojom::XRSessionPtr session);
 
   bool IsInitialized() { return !!openvr_; }
 
  private:
   // VRDeviceBase
   void OnMagicWindowFrameDataRequest(
-      mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
+      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
 
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;

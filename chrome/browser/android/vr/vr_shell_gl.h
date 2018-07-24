@@ -264,7 +264,8 @@ class WebXrPresentationState {
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VrShellGl : public device::mojom::VRPresentationProvider {
+class VrShellGl : public device::mojom::XRPresentationProvider,
+                  public device::mojom::XRFrameDataProvider {
  public:
   VrShellGl(GlBrowserInterface* browser_interface,
             std::unique_ptr<UiInterface> ui,
@@ -331,7 +332,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
  private:
   void GvrInit(gvr_context* gvr_api);
 
-  device::mojom::VRDisplayFrameTransportOptionsPtr
+  device::mojom::XRPresentationTransportOptionsPtr
   GetWebVrFrameTransportOptions(
       const device::mojom::XRDeviceRuntimeSessionOptionsPtr&);
 
@@ -383,9 +384,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   bool IsSubmitFrameExpected(int16_t frame_index);
 
-  // VRPresentationProvider
-  void GetFrameData(device::mojom::VRPresentationProvider::GetFrameDataCallback
+  // XRFrameDataProvider
+  void GetFrameData(device::mojom::XRFrameDataProvider::GetFrameDataCallback
                         callback) override;
+
+  // XRPresentationProvider
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;
   void SubmitFrame(int16_t frame_index,
                    const gpu::MailboxHolder& mailbox,
@@ -546,11 +549,12 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // updated in OnVSync and used as the rAF animation timer in SendVSync.
   base::TimeTicks pending_time_;
   bool pending_vsync_ = false;
-  device::mojom::VRPresentationProvider::GetFrameDataCallback
+  device::mojom::XRFrameDataProvider::GetFrameDataCallback
       get_frame_data_callback_;
 
-  mojo::Binding<device::mojom::VRPresentationProvider> binding_;
-  device::mojom::VRSubmitFrameClientPtr submit_client_;
+  mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
+  mojo::Binding<device::mojom::XRFrameDataProvider> frame_data_binding_;
+  device::mojom::XRPresentationClientPtr submit_client_;
 
   GlBrowserInterface* browser_;
 

@@ -73,12 +73,8 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
   void OnMagicWindowSessionCreated(
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
-      device::mojom::VRMagicWindowProviderPtr session,
+      device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr controller);
-  void OnARSessionCreated(
-      vr::BrowserXrDevice* device,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback,
-      device::mojom::XRSessionPtr session);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.
