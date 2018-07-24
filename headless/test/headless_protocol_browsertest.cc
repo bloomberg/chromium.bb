@@ -33,6 +33,7 @@ namespace headless {
 
 namespace {
 static const char kResetResults[] = "reset-results";
+static const char kDumpDevToolsProtocol[] = "dump-devtools-protocol";
 }  // namespace
 
 class HeadlessProtocolBrowserTest
@@ -112,6 +113,10 @@ class HeadlessProtocolBrowserTest
     }
 
     if (method != "DONE") {
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              kDumpDevToolsProtocol)) {
+        LOG(INFO) << "FromJS: " << json_message;
+      }
       // Pass unhandled commands onto the inspector.
       browser_devtools_client_->SendRawDevToolsMessage(json_message);
       return;
@@ -156,6 +161,12 @@ class HeadlessProtocolBrowserTest
   void SendMessageToJS(const std::string& message) {
     if (test_finished_)
       return;
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            kDumpDevToolsProtocol)) {
+      LOG(INFO) << "ToJS: " << message;
+    }
+
     std::string encoded;
     base::Base64Encode(message, &encoded);
     devtools_client_->GetRuntime()->Evaluate("onmessage(atob(\"" + encoded +
