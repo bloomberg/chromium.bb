@@ -115,8 +115,8 @@ test(function () {
 }, "dir=auto the first character in the distributed content with multiple levels of shadow roots");
 
 function assert_direction(description, elementToTest) {
-    elementToTest.style.webkitBorderStart = "5px solid green";
-    elementToTest.style.webkitBorderEnd = "5px solid red";
+    elementToTest.style.borderInlineStart = "5px solid green";
+    elementToTest.style.borderInlineEnd = "5px solid red";
     var actualColor = document.defaultView.getComputedStyle(elementToTest).getPropertyValue("border-right-color");
     var dirExpected = elementToTest.dataset.dirExpected;
     switch (dirExpected) {

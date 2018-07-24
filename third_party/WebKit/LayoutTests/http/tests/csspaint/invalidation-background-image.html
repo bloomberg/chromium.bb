@@ -46,6 +46,6 @@ testRunnerInvalidationLogging('background-image', [
     { property: '-webkit-border-radius', invalidationProperty: 'border-radius', prevValue: '', value: '25px' },
     { property: 'border-radius', invalidationProperty: '-webkit-border-radius', prevValue: '25px', value: '' },
     { property: '-webkit-border-radius', prevValue: '100px', value: 'calc(50px + 50px)', noInvalidation: true },
-    { property: '-webkit-margin-start', invalidationProperty: 'margin-left', prevValue: 'calc(50px + 50px)', value: '100px', noInvalidation: true },
+    { property: 'margin-inline-start', invalidationProperty: 'margin-left', prevValue: 'calc(50px + 50px)', value: '100px', noInvalidation: true },
 ]);
 </script>

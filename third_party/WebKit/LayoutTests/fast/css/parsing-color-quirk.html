@@ -14,10 +14,10 @@
 #t10 { box-shadow: 1px 1px ff0000 }
 #t11 { background-image: linear-gradient(ff0000, blue); }
 
-#t12 { -webkit-border-start-color: ff0000 }
-#t13 { -webkit-border-end-color: ff0000 }
-#t14 { -webkit-border-before-color: ff0000 }
-#t15 { -webkit-border-after-color: ff0000 }
+#t12 { border-inline-start-color: ff0000 }
+#t13 { border-inline-end-color: ff0000 }
+#t14 { border-block-start-color: ff0000 }
+#t15 { border-block-end-color: ff0000 }
 
 #t16 { -webkit-column-rule-color: ff0000 }
 
@@ -113,20 +113,20 @@ test(function(){
 }, "No hashless color quirk for linear-gradient colors");
 
 test(function(){
-    assert_equals(sheet.cssRules[11].style.WebkitBorderStartColor, "");
-}, "No hashless color quirk for -webkit-border-start-color property");
+    assert_equals(sheet.cssRules[11].style.borderInlineStartColor, "");
+}, "No hashless color quirk for border-inline-start-color property");
 
 test(function(){
-    assert_equals(sheet.cssRules[12].style.WebkitBorderEndColor, "");
-}, "No hashless color quirk for -webkit-border-end-color property");
+    assert_equals(sheet.cssRules[12].style.borderInlineEndColor, "");
+}, "No hashless color quirk for border-inline-end-color property");
 
 test(function(){
-    assert_equals(sheet.cssRules[13].style.WebkitBorderBeforeColor, "");
-}, "No hashless color quirk for -webkit-border-before-property");
+    assert_equals(sheet.cssRules[13].style.borderBlockStartColor, "");
+}, "No hashless color quirk for border-block-start-property");
 
 test(function(){
-    assert_equals(sheet.cssRules[14].style.WebkitBorderAfterColor, "");
-}, "No hashless color quirk for -webkit-border-after-color property");
+    assert_equals(sheet.cssRules[14].style.borderBlockEndColor, "");
+}, "No hashless color quirk for border-block-end-color property");
 
 test(function(){
     assert_equals(sheet.cssRules[15].style.WebkitColumnRuleColor, "");

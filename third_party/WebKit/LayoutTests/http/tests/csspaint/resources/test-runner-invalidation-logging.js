@@ -10,7 +10,7 @@
 // testRunnerInvalidationLogging('background-image', [
 //      { property: 'max-height', value: '100px' },
 //      { property: 'color', prevValue: '#00F', value: 'blue', noInvalidation: true },
-//      { property: '-webkit-margin-start', invalidationProperty: 'margin-left', prevValue: 'calc(50px + 50px)', value: '100px', noInvalidation: true }
+//      { property: 'margin-inline-start', invalidationProperty: 'margin-left', prevValue: 'calc(50px + 50px)', value: '100px', noInvalidation: true }
 // ]);
 
 function testRunnerInvalidationLogging(imageType, tests) {
