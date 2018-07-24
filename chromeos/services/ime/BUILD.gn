@@ -45,9 +45,9 @@ source_set("unit_tests") {
     ":lib",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
+    "//testing/gmock",
   ]
   sources = [
     "ime_service_unittest.cc",

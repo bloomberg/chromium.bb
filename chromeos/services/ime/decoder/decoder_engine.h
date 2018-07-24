@@ -28,10 +28,11 @@ class DecoderEngine : public InputEngine {
   ~DecoderEngine() override;
 
   // InputEngine overrides:
-  void BindRequest(const std::string& ime_spec,
+  bool BindRequest(const std::string& ime_spec,
                    mojom::InputChannelRequest request,
                    mojom::InputChannelPtr client,
                    const std::vector<uint8_t>& extra) override;
+  bool IsImeSupported(const std::string& ime_spec) override;
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
 

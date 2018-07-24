@@ -50,8 +50,9 @@ void ImeService::ConnectToImeEngine(
     const std::vector<uint8_t>& extra,
     ConnectToImeEngineCallback callback) {
   DCHECK(input_engine_);
-  input_engine_->BindRequest(ime_spec, std::move(to_engine_request),
-                             std::move(from_engine), extra);
+  bool bound = input_engine_->BindRequest(
+      ime_spec, std::move(to_engine_request), std::move(from_engine), extra);
+  std::move(callback).Run(bound);
 }
 
 void ImeService::BindInputEngineManagerRequest(

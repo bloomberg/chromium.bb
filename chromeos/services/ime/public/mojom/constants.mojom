@@ -4,4 +4,4 @@
 
 module chromeos.ime.mojom;
 
-const string kServiceName = "ime_service";
+const string kServiceName = "ime";

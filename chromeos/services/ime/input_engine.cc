@@ -14,12 +14,21 @@ InputEngine::InputEngine() {}
 
 InputEngine::~InputEngine() {}
 
-void InputEngine::BindRequest(const std::string& ime_spec,
+bool InputEngine::BindRequest(const std::string& ime_spec,
                               mojom::InputChannelRequest request,
                               mojom::InputChannelPtr client,
                               const std::vector<uint8_t>& extra) {
+  if (!IsImeSupported(ime_spec))
+    return false;
+
   channel_bindings_.AddBinding(this, std::move(request), ime_spec);
+  return true;
   // TODO(https://crbug.com/837156): Registry connection error handler.
+}
+
+bool InputEngine::IsImeSupported(const std::string& ime_spec) {
+  // TODO(https://crbug.com/837156): Add all supported IME tpyes.
+  return false;
 }
 
 void InputEngine::ProcessText(const std::string& message,
@@ -31,7 +40,7 @@ void InputEngine::ProcessText(const std::string& message,
 
 void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
                                  ProcessMessageCallback callback) {
-  NOTREACHED() << "No defined protobuf message in this implementation";
+  NOTIMPLEMENTED();  // Protobuf message is not used in the basic engine.
 }
 
 const std::string& InputEngine::Process(const std::string& message,

@@ -17,11 +17,15 @@ class InputEngine : public mojom::InputChannel {
   InputEngine();
   ~InputEngine() override;
 
-  // Binds the mojom::InputChannel interface to this object.
-  virtual void BindRequest(const std::string& ime_spec,
+  // Binds the mojom::InputChannel interface to this object and returns true if
+  // the given ime_spec is supported by the engine.
+  virtual bool BindRequest(const std::string& ime_spec,
                            mojom::InputChannelRequest request,
                            mojom::InputChannelPtr client,
                            const std::vector<uint8_t>& extra);
+
+  // Returns whether the given ime_spec is supported by this engine.
+  virtual bool IsImeSupported(const std::string& ime_spec);
 
   // mojom::MessageChannel overrides:
   void ProcessText(const std::string& message,

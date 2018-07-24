@@ -23,7 +23,7 @@ class ImeService : public service_manager::Service,
   ~ImeService() override;
 
  private:
-  // service_manager::Service:
+  // service_manager::Service overrides:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
