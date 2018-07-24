@@ -419,6 +419,9 @@ interface NetworkContext {
   // filter.
   ClearNetworkErrorLogging(ClearDataFilter? filter) => ();
 
+  // Closes all open connections within this context.
+  CloseAllConnections() => ();
+
   // Configures network conditions for the specified throttling profile.
   // The throttling will be applied only to requests that have maching
   // throttling_profile_id.

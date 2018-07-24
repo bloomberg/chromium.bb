@@ -676,6 +676,16 @@ void NetworkContext::ClearNetworkErrorLogging(
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+void NetworkContext::CloseAllConnections(CloseAllConnectionsCallback callback) {
+  net::HttpNetworkSession* http_session =
+      url_request_context_->http_transaction_factory()->GetSession();
+  DCHECK(http_session);
+
+  http_session->CloseAllConnections();
+
+  std::move(callback).Run();
+}
+
 void NetworkContext::SetNetworkConditions(
     const base::UnguessableToken& throttling_profile_id,
     mojom::NetworkConditionsPtr conditions) {
