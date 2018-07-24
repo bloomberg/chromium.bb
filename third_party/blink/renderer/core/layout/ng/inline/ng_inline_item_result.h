@@ -160,13 +160,16 @@ class CORE_EXPORT NGLineInfo {
 
   LayoutUnit TextIndent() const { return text_indent_; }
 
-  NGBfcOffset LineBfcOffset() const { return line_bfc_offset_; }
+  NGBfcOffset BfcOffset() const { return bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
   LayoutUnit Width() const { return width_; }
   LayoutUnit ComputeWidth() const;
-  void SetLineBfcOffset(NGBfcOffset line_bfc_offset,
-                        LayoutUnit available_width,
-                        LayoutUnit width);
+
+  void SetBfcOffset(const NGBfcOffset& bfc_offset) { bfc_offset_ = bfc_offset; }
+  void SetWidth(LayoutUnit available_width, LayoutUnit width) {
+    available_width_ = available_width;
+    width_ = width;
+  }
 
   // Start text offset of this line.
   unsigned StartOffset() const { return start_offset_; }
@@ -190,7 +193,8 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults results_;
   scoped_refptr<NGPhysicalTextFragment> line_end_fragment_;
 
-  NGBfcOffset line_bfc_offset_;
+  NGBfcOffset bfc_offset_;
+
   LayoutUnit available_width_;
   LayoutUnit width_;
   LayoutUnit text_indent_;

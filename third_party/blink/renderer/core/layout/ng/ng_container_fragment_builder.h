@@ -37,12 +37,23 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   NGContainerFragmentBuilder& SetInlineSize(LayoutUnit);
   void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
+  LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
+  NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
+    bfc_line_offset_ = bfc_line_offset;
+    return *this;
+  }
+
   // The NGBfcOffset is where this fragment was positioned within the BFC. If
   // it is not set, this fragment may be placed anywhere within the BFC.
-  const base::Optional<NGBfcOffset>& BfcOffset() const { return bfc_offset_; }
-  NGContainerFragmentBuilder& SetBfcOffset(const NGBfcOffset&);
-  NGContainerFragmentBuilder& ResetBfcOffset() {
-    bfc_offset_.reset();
+  const base::Optional<LayoutUnit>& BfcBlockOffset() const {
+    return bfc_block_offset_;
+  }
+  NGContainerFragmentBuilder& SetBfcBlockOffset(LayoutUnit bfc_block_offset) {
+    bfc_block_offset_ = bfc_block_offset;
+    return *this;
+  }
+  NGContainerFragmentBuilder& ResetBfcBlockOffset() {
+    bfc_block_offset_.reset();
     return *this;
   }
 
@@ -185,7 +196,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   NGLogicalSize size_;
 
-  base::Optional<NGBfcOffset> bfc_offset_;
+  LayoutUnit bfc_line_offset_;
+  base::Optional<LayoutUnit> bfc_block_offset_;
   NGMarginStrut end_margin_strut_;
   std::unique_ptr<const NGExclusionSpace> exclusion_space_;
 

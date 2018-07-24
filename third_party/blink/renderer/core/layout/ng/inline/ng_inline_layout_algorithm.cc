@@ -256,11 +256,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                           IsLtr(line_info->BaseDirection()) ? 0 : 1, box);
   }
 
-  // We can return early if we don't have any children (and don't need to
-  // create a line-box for a list marker, etc).
-  if (line_box_.IsEmpty() && line_info->IsEmptyLine())
-    return;
-
   box_states_->OnEndPlaceItems(&line_box_, baseline_type_);
 
   // TODO(kojii): For LTR, we can optimize ComputeInlinePositions() to compute
@@ -288,6 +283,17 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   const NGLineHeightMetrics& line_box_metrics =
       box_states_->LineBoxState().metrics;
 
+  // Other 'text-align' values than 'justify' move line boxes as a whole, but
+  // indivisual items do not change their relative position to the line box.
+  LayoutUnit bfc_line_offset = line_info->BfcOffset().line_offset;
+  if (text_align != ETextAlign::kJustify)
+    bfc_line_offset += OffsetForTextAlign(*line_info, text_align);
+
+  if (IsLtr(line_info->BaseDirection()))
+    bfc_line_offset += line_info->TextIndent();
+
+  container_builder_.SetBfcLineOffset(bfc_line_offset);
+
   // Handle out-of-flow positioned objects. They need inline offsets for their
   // static positions.
   PlaceOutOfFlowObjects(*line_info, line_box_metrics);
@@ -299,8 +305,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   DCHECK(!line_box_metrics.IsEmpty());
 
-  NGBfcOffset line_bfc_offset(line_info->LineBfcOffset());
-
   // Up until this point, children are placed so that the dominant baseline is
   // at 0. Move them to the final baseline position, and set the logical top of
   // the line box to the line top.
@@ -310,21 +314,13 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   // always positive or 0.
   inline_size = inline_size.ClampNegativeToZero();
 
-  // Other 'text-align' values than 'justify' move line boxes as a whole, but
-  // indivisual items do not change their relative position to the line box.
-  if (text_align != ETextAlign::kJustify)
-    line_bfc_offset.line_offset += OffsetForTextAlign(*line_info, text_align);
-
-  if (IsLtr(line_info->BaseDirection()))
-    line_bfc_offset.line_offset += line_info->TextIndent();
-
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
   container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetBaseDirection(line_info->BaseDirection());
   container_builder_.SetMetrics(line_box_metrics);
-  container_builder_.SetBfcOffset(line_bfc_offset);
+  container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset);
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
@@ -442,6 +438,8 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
 void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     const NGLineInfo& line_info,
     const NGLineHeightMetrics& line_box_metrics) {
+  TextDirection line_direction = line_info.BaseDirection();
+
   for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
     if (LayoutObject* box = child.out_of_flow_positioned_box) {
       // The static position is at the line-top. Ignore the block_offset.
@@ -450,11 +448,15 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
       // If a block-level box appears in the middle of a line, move the static
       // position to where the next block will be placed.
       if (!box->StyleRef().IsOriginalDisplayInlineType()) {
-        LayoutUnit line_offset;
-        if (!line_info.IsEmptyLine()) {
-          line_offset = line_info.LineBfcOffset().line_offset -
-                        ConstraintSpace().BfcOffset().line_offset;
+        LayoutUnit line_offset = line_info.BfcOffset().line_offset -
+                                 ConstraintSpace().BfcOffset().line_offset;
+        if (IsRtl(line_direction)) {
+          LayoutUnit container_inline_size =
+              ConstraintSpace().AvailableSize().inline_size;
+          LayoutUnit line_end_offset = line_offset + line_info.AvailableWidth();
+          line_offset = container_inline_size - line_end_offset;
         }
+
         line_offset += line_info.TextIndent();
 
         // We need to subtract the line offset, in order to ignore
@@ -463,16 +465,16 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
 
         if (child.offset.inline_offset && !line_box_metrics.IsEmpty())
           static_offset.block_offset = line_box_metrics.LineHeight();
+      } else {
+        // Our child offset is line-relative, but the static offset is
+        // flow-relative, using the direction we give to
+        // |AddInlineOutOfFlowChildCandidate|.
+        if (IsRtl(line_direction)) {
+          static_offset.inline_offset =
+              line_info.Width() - static_offset.inline_offset;
+        }
       }
 
-      // Our child offset is line-relative, but the static offset is
-      // flow-relative, using the direction we give to
-      // |AddInlineOutOfFlowChildCandidate|.
-      TextDirection line_direction = line_info.BaseDirection();
-      if (IsRtl(line_direction)) {
-        static_offset.inline_offset =
-            line_info.Width() - static_offset.inline_offset;
-      }
 
       container_builder_.AddInlineOutOfFlowChildCandidate(
           NGBlockNode(ToLayoutBox(box)), static_offset, line_direction,
@@ -623,7 +625,11 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // path than to create a fast code path for the stability.
   } else {
     DCHECK(ConstraintSpace().MarginStrut().IsEmpty());
-    container_builder_.SetBfcOffset(ConstraintSpace().BfcOffset());
+
+    // We need to pre-emptively set the BFC block offset in order for leading
+    // floats to be positioned correctly.
+    container_builder_.SetBfcBlockOffset(
+        ConstraintSpace().BfcOffset().block_offset);
 
     // The BFC offset was determined before entering this algorithm. This means
     // that there should be no adjoining floats.
@@ -633,7 +639,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // In order to get the correct list of layout opportunities, we need to
   // position any "leading" items (floats) within the exclusion space first.
   unsigned handled_item_index =
-      PositionLeadingItems(initial_exclusion_space.get());
+      PositionLeadingFloats(initial_exclusion_space.get());
 
   // We query all the layout opportunities on the initial exclusion space up
   // front, as if the line breaker may add floats and change the opportunities.
@@ -792,7 +798,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
 // This positions any "leading" floats within the given exclusion space.
 // If we are also an empty inline, it will add any out-of-flow descendants.
-unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
+unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     NGExclusionSpace* exclusion_space) {
   const Vector<NGInlineItem>& items = Node().ItemsData(false).items;
   LayoutUnit bfc_line_offset = ConstraintSpace().BfcOffset().line_offset;
@@ -820,7 +826,8 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
     }
   }
 
-  if (ConstraintSpace().FloatsBfcOffset() || container_builder_.BfcOffset())
+  if (container_builder_.BfcBlockOffset() ||
+      ConstraintSpace().FloatsBfcBlockOffset())
     PositionPendingFloats(/* content_size */ LayoutUnit(), exclusion_space);
 
   return index;
@@ -829,23 +836,24 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
 void NGInlineLayoutAlgorithm::PositionPendingFloats(
     LayoutUnit content_size,
     NGExclusionSpace* exclusion_space) {
-  DCHECK(container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset())
-      << "The parent BFC offset should be known here";
+  DCHECK(container_builder_.BfcBlockOffset() ||
+         ConstraintSpace().FloatsBfcBlockOffset())
+      << "The floats BFC block offset should be known here";
 
   if (BreakToken() && BreakToken()->IgnoreFloats()) {
     unpositioned_floats_.clear();
     return;
   }
 
-  NGBfcOffset bfc_offset = container_builder_.BfcOffset()
-                               ? container_builder_.BfcOffset().value()
-                               : ConstraintSpace().FloatsBfcOffset().value();
+  LayoutUnit bfc_block_offset =
+      container_builder_.BfcBlockOffset()
+          ? container_builder_.BfcBlockOffset().value()
+          : ConstraintSpace().FloatsBfcBlockOffset().value();
 
-  LayoutUnit origin_block_offset = bfc_offset.block_offset + content_size;
-  LayoutUnit from_block_offset = bfc_offset.block_offset;
+  LayoutUnit origin_block_offset = bfc_block_offset + content_size;
 
   const Vector<NGPositionedFloat> positioned_floats =
-      PositionFloats(origin_block_offset, from_block_offset,
+      PositionFloats(origin_block_offset, bfc_block_offset,
                      unpositioned_floats_, ConstraintSpace(), exclusion_space);
 
   positioned_floats_.AppendVector(positioned_floats);

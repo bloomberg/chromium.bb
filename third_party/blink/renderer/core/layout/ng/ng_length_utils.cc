@@ -359,14 +359,14 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     if (constraint_space) {
       // TODO(layout-ng): Check if our constraint space produces spec-compliant
       // outputs.
-      // It is important to set a floats bfc offset so that we don't get a
+      // It is important to set a floats bfc block offset so that we don't get a
       // partial layout. It is also important that we shrink to fit, by
       // definition.
       NGConstraintSpaceBuilder builder(*constraint_space);
       builder.SetAvailableSize(constraint_space->AvailableSize())
           .SetPercentageResolutionSize(
               constraint_space->PercentageResolutionSize())
-          .SetFloatsBfcOffset(NGBfcOffset())
+          .SetFloatsBfcBlockOffset(LayoutUnit())
           .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
           .SetIsShrinkToFit(true);
       adjusted_constraint_space =

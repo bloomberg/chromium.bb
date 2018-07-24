@@ -51,9 +51,9 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetBfcOffset(
   return *this;
 }
 
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcOffset(
-    const base::Optional<NGBfcOffset>& floats_bfc_offset) {
-  floats_bfc_offset_ = floats_bfc_offset;
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcBlockOffset(
+    const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
+  floats_bfc_block_offset_ = floats_bfc_block_offset;
   return *this;
 }
 
@@ -194,13 +194,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   LayoutUnit clearance_offset =
       is_new_fc_ ? LayoutUnit::Min() : clearance_offset_;
-  base::Optional<NGBfcOffset> floats_bfc_offset =
-      is_new_fc_ ? base::nullopt : floats_bfc_offset_;
-
-  if (floats_bfc_offset) {
-    floats_bfc_offset = NGBfcOffset(
-        {bfc_offset.line_offset, floats_bfc_offset.value().block_offset});
-  }
+  base::Optional<LayoutUnit> floats_bfc_block_offset =
+      is_new_fc_ ? base::nullopt : floats_bfc_block_offset_;
 
   return base::AdoptRef(new NGConstraintSpace(
       out_writing_mode, !is_in_parallel_flow, text_direction_, available_size,
@@ -211,7 +206,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_intermediate_layout_, fragmentation_type_,
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
       use_first_line_style_, should_force_clearance_, adjoining_floats_,
-      margin_strut, bfc_offset, floats_bfc_offset, exclusion_space,
+      margin_strut, bfc_offset, floats_bfc_block_offset, exclusion_space,
       clearance_offset, baseline_requests_));
 }
 

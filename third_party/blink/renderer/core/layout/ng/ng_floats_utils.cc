@@ -299,7 +299,7 @@ void AddUnpositionedFloat(
   DCHECK(
       !RemoveUnpositionedFloat(unpositioned_floats, unpositioned_float->node));
 
-  if (fragment_builder && !fragment_builder->BfcOffset()) {
+  if (fragment_builder && !fragment_builder->BfcBlockOffset()) {
     fragment_builder->AddAdjoiningFloatTypes(
         unpositioned_float->IsLeft() ? kFloatTypeLeft : kFloatTypeRight);
   }

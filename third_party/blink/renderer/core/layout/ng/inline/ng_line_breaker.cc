@@ -187,12 +187,15 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
   //
   // TODO(kojii): There are cases where we need to PlaceItems() without creating
   // line boxes. These cases need to be reviewed.
-  if (ShouldCreateLineBox(*item_results_) ||
+  bool should_create_line_box =
+      ShouldCreateLineBox(*item_results_) ||
       (has_list_marker_ && line_info_->IsLastLine()) ||
-      mode_ != NGLineBreakerMode::kContent)
-    ComputeLineLocation();
-  else
+      mode_ != NGLineBreakerMode::kContent;
+
+  if (!should_create_line_box)
     line_info_->SetIsEmptyLine();
+
+  ComputeLineLocation();
 
   line_info_ = nullptr;
   item_results_ = nullptr;
@@ -288,15 +291,14 @@ void NGLineBreaker::UpdatePosition() {
 }
 
 void NGLineBreaker::ComputeLineLocation() const {
-  LayoutUnit bfc_line_offset = line_opportunity_.line_left_offset;
+  // Negative margins can make the position negative, but the inline size is
+  // always positive or 0.
   LayoutUnit available_width = AvailableWidth();
   DCHECK_EQ(position_, line_info_->ComputeWidth());
 
-  // Negative margins can make the position negative, but the inline size is
-  // always positive or 0.
-  line_info_->SetLineBfcOffset(
-      {bfc_line_offset, line_opportunity_.bfc_block_offset}, available_width,
-      position_.ClampNegativeToZero());
+  line_info_->SetWidth(available_width, position_.ClampNegativeToZero());
+  line_info_->SetBfcOffset(
+      {line_opportunity_.line_left_offset, line_opportunity_.bfc_block_offset});
 }
 
 void NGLineBreaker::HandleText(const NGInlineItem& item) {

@@ -80,14 +80,6 @@ LayoutUnit NGLineInfo::ComputeWidth() const {
   return inline_size;
 }
 
-void NGLineInfo::SetLineBfcOffset(NGBfcOffset line_bfc_offset,
-                                  LayoutUnit available_width,
-                                  LayoutUnit width) {
-  line_bfc_offset_ = line_bfc_offset;
-  available_width_ = available_width;
-  width_ = width;
-}
-
 void NGLineInfo::SetLineEndFragment(
     scoped_refptr<NGPhysicalTextFragment> fragment) {
   line_end_fragment_ = std::move(fragment);

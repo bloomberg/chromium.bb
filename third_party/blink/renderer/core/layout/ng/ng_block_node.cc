@@ -172,7 +172,7 @@ NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
       .SetTextDirection(node.Style().Direction())
       .SetIsIntermediateLayout(true)
       .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
-      .SetFloatsBfcOffset(NGBfcOffset());
+      .SetFloatsBfcBlockOffset(LayoutUnit());
 }
 
 }  // namespace

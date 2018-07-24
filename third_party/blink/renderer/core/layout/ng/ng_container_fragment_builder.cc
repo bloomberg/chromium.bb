@@ -27,12 +27,6 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetInlineSize(
   return *this;
 }
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetBfcOffset(
-    const NGBfcOffset& bfc_offset) {
-  bfc_offset_ = bfc_offset;
-  return *this;
-}
-
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetEndMarginStrut(
     const NGMarginStrut& end_margin_strut) {
   end_margin_strut_ = end_margin_strut;
