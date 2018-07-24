@@ -424,6 +424,8 @@ void AutofillPopupSeparatorView::CreateContent() {
       /*bottom=*/0,
       /*right=*/0));
   AddChildView(separator);
+
+  SetBackground(CreateBackground());
 }
 
 void AutofillPopupSeparatorView::RefreshStyle() {
