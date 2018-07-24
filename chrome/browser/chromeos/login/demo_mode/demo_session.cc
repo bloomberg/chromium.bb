@@ -37,6 +37,9 @@ constexpr base::FilePath::CharType kOfflineResourcesComponentPath[] =
 constexpr base::FilePath::CharType kDemoAppsPath[] =
     FILE_PATH_LITERAL("android_demo_apps.squash");
 
+constexpr base::FilePath::CharType kExternalExtensionsPrefsPath[] =
+    FILE_PATH_LITERAL("demo_extensions.json");
+
 bool IsDemoModeOfflineEnrolled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(DemoSession::IsDeviceInDemoMode());
@@ -129,6 +132,21 @@ base::FilePath DemoSession::GetDemoAppsPath() const {
   if (offline_resources_path_.empty())
     return base::FilePath();
   return offline_resources_path_.Append(kDemoAppsPath);
+}
+
+base::FilePath DemoSession::GetExternalExtensionsPrefsPath() const {
+  if (offline_resources_path_.empty())
+    return base::FilePath();
+  return offline_resources_path_.Append(kExternalExtensionsPrefsPath);
+}
+
+base::FilePath DemoSession::GetOfflineResourceAbsolutePath(
+    const base::FilePath& relative_path) const {
+  if (offline_resources_path_.empty())
+    return base::FilePath();
+  if (relative_path.ReferencesParent())
+    return base::FilePath();
+  return offline_resources_path_.Append(relative_path);
 }
 
 DemoSession::DemoSession()

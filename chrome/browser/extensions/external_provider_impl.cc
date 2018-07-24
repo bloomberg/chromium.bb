@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -689,6 +690,20 @@ void ExternalProviderImpl::CreateExternalProviders(
         Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         oem_extension_creation_flags));
   }
+
+  // For Chrome OS demo sessions, add pre-installed demo extensions and apps.
+  if (chromeos::DemoExtensionsExternalLoader::SupportedForProfile(profile)) {
+    std::unique_ptr<ExternalProviderImpl> demo_apps_provider =
+        std::make_unique<ExternalProviderImpl>(
+            service,
+            base::MakeRefCounted<chromeos::DemoExtensionsExternalLoader>(),
+            profile, Manifest::EXTERNAL_PREF, Manifest::INVALID_LOCATION,
+            Extension::NO_FLAGS);
+    demo_apps_provider->set_auto_acknowledge(true);
+    demo_apps_provider->set_install_immediately(true);
+    provider_list->push_back(std::move(demo_apps_provider));
+  }
+
 #elif defined(OS_LINUX)
   if (!profile->IsLegacySupervised()) {
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(

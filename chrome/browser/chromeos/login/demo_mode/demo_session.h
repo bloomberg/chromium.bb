@@ -62,6 +62,18 @@ class DemoSession {
   // will be set when the offline resources get loaded.
   base::FilePath GetDemoAppsPath() const;
 
+  // Gets the path under offline demo resources mount point that contains
+  // external extensions prefs (JSON containing set of extensions to be loaded
+  // as external extensions into demo sessions - expected to map extension IDs
+  // to the associated CRX path and version).
+  base::FilePath GetExternalExtensionsPrefsPath() const;
+
+  // Converts a relative path to an absolute path under the offline demo
+  // resources mount. Returns an empty string if the offline demo resources are
+  // not loaded.
+  base::FilePath GetOfflineResourceAbsolutePath(
+      const base::FilePath& relative_path) const;
+
   bool offline_enrolled() const { return offline_enrolled_; }
 
   bool started() const { return started_; }
