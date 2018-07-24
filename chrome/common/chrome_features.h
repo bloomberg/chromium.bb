@@ -209,6 +209,8 @@ extern const base::Feature kWarnBeforeQuitting;
 
 extern const base::Feature kMaterialDesignIncognitoNTP;
 
+extern const base::Feature kMirroringService;
+
 extern const base::Feature kModalPermissionPrompts;
 
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)

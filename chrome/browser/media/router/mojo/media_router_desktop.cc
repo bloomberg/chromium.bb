@@ -103,6 +103,7 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   config->enable_dial_sink_query = !DialMediaRouteProviderEnabled();
   config->enable_cast_sink_query = !CastMediaRouteProviderEnabled();
   config->use_views_dialog = ShouldUseViewsDialog();
+  config->use_mirroring_service = ShouldUseMirroringService();
   std::move(callback).Run(instance_id(), std::move(config));
 
   SyncStateToMediaRouteProvider(provider_id);

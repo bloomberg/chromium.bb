@@ -74,6 +74,9 @@ bool PresentationReceiverWindowEnabled();
 // Returns false if the WebUI implementation should be used.
 bool ShouldUseViewsDialog();
 
+// Returns true if Mirroring Service should be used for mirroring.
+bool ShouldUseMirroringService();
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

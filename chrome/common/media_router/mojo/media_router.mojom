@@ -236,6 +236,9 @@ struct MediaRouteProviderConfig {
 
   // If the Views dialog is being used.
   bool use_views_dialog;
+
+  // If Mirroring Service is being used.
+  bool use_mirroring_service;
 };
 
 // Modeled after the MediaRouter interface defined in
