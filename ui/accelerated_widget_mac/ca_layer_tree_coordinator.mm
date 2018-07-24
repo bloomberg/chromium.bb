@@ -48,7 +48,7 @@ void CALayerTreeCoordinator::CommitPendingTreesToCA(
   if (pending_ca_renderer_layer_tree_) {
     pending_ca_renderer_layer_tree_->CommitScheduledCALayers(
         root_ca_layer_.get(), std::move(current_ca_renderer_layer_tree_),
-        scale_factor_);
+        pixel_size_, scale_factor_);
     current_ca_renderer_layer_tree_.swap(pending_ca_renderer_layer_tree_);
   } else {
     TRACE_EVENT0("gpu", "Blank frame: No overlays or CALayers");

@@ -80,7 +80,8 @@ void UpdateCALayerTree(std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
   bool result = ScheduleCALayer(new_ca_layer_tree.get(), properties);
   EXPECT_TRUE(result);
   new_ca_layer_tree->CommitScheduledCALayers(
-      superlayer, std::move(ca_layer_tree), properties->scale_factor);
+      superlayer, std::move(ca_layer_tree), properties->rect.size(),
+      properties->scale_factor);
   std::swap(new_ca_layer_tree, ca_layer_tree);
 }
 
@@ -508,8 +509,8 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
     bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
   }
-  ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr,
-                                         properties.scale_factor);
+  ca_layer_tree->CommitScheduledCALayers(
+      superlayer_, nullptr, properties.rect.size(), properties.scale_factor);
 
   // Validate the root layer.
   EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -588,8 +589,8 @@ TEST_F(CALayerTreeTest, SortingContexts) {
     bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
   }
-  ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr,
-                                         properties.scale_factor);
+  ca_layer_tree->CommitScheduledCALayers(
+      superlayer_, nullptr, properties.rect.size(), properties.scale_factor);
 
   // Validate the root layer.
   EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -882,7 +883,8 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.rect.size(),
+        properties.scale_factor);
     std::swap(new_ca_layer_tree, ca_layer_tree);
 
     // Validate the tree structure.
@@ -896,7 +898,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     EXPECT_EQ(1u, [[transform_layer sublayers] count]);
 
     // Validate the content layer and fullscreen low power mode.
-    EXPECT_TRUE(CGRectEqualToRect([root_layer frame], CGRectZero));
+    EXPECT_FALSE(CGRectEqualToRect([root_layer frame], CGRectZero));
     EXPECT_NE([root_layer backgroundColor], nil);
   }
 
@@ -909,7 +911,8 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.rect.size(),
+        properties.scale_factor);
     std::swap(new_ca_layer_tree, ca_layer_tree);
 
     // Validate the tree structure.
@@ -936,7 +939,8 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.rect.size(),
+        properties.scale_factor);
     std::swap(new_ca_layer_tree, ca_layer_tree);
 
     // Validate the tree structure.
@@ -963,7 +967,8 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.rect.size(),
+        properties.scale_factor);
     std::swap(new_ca_layer_tree, ca_layer_tree);
 
     // Validate the tree structure.
