@@ -49,6 +49,7 @@ enum {
   kGlobalToggleDebugDetachableBase,
   kGlobalCycleDetachableBaseStatus,
   kGlobalCycleDetachableBaseId,
+  kGlobalCycleAuthErrorMessage,
 
   kPerUserTogglePin,
   kPerUserCycleEasyUnlockState,
@@ -630,6 +631,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
             toggle_container);
   global_action_toggle_auth_ = AddButton(
       "Auth (allowed)", ButtonId::kGlobalToggleAuth, toggle_container);
+  AddButton("Cycle auth error", ButtonId::kGlobalCycleAuthErrorMessage,
+            toggle_container);
 
   auto* kiosk_container = add_horizontal_container();
   AddButton("Add kiosk app", ButtonId::kGlobalAddKioskApp, kiosk_container);
@@ -674,6 +677,46 @@ void LockDebugView::Layout() {
   lock_->SetBoundsRect(GetLocalBounds());
   container_->SetPosition(gfx::Point());
   container_->SizeToPreferredSize();
+}
+
+void LockDebugView::CycleAuthErrorMessage() {
+  switch (next_auth_error_type_) {
+    case AuthErrorType::kFirstUnlockFailed:
+      next_auth_error_type_ = AuthErrorType::kFirstUnlockFailedCapsLockOn;
+      Shell::Get()->ime_controller()->UpdateCapsLockState(
+          false /*caps_enabled*/);
+      debug_detachable_base_model_->SetPairingState(
+          DetachableBasePairingStatus::kNone,
+          DebugLoginDetachableBaseModel::kNullBaseId);
+      lock_->ShowAuthErrorMessageForDebug(1 /*unlock_attempt*/);
+      return;
+    case AuthErrorType::kFirstUnlockFailedCapsLockOn:
+      next_auth_error_type_ = AuthErrorType::kSecondUnlockFailed;
+      Shell::Get()->ime_controller()->UpdateCapsLockState(
+          true /*caps_enabled*/);
+      lock_->ShowAuthErrorMessageForDebug(1 /*unlock_attempt*/);
+      return;
+    case AuthErrorType::kSecondUnlockFailed:
+      next_auth_error_type_ = AuthErrorType::kSecondUnlockFailedCapsLockOn;
+      Shell::Get()->ime_controller()->UpdateCapsLockState(
+          false /*caps_enabled*/);
+      lock_->ShowAuthErrorMessageForDebug(2 /*unlock_attempt*/);
+      return;
+    case AuthErrorType::kSecondUnlockFailedCapsLockOn:
+      next_auth_error_type_ = AuthErrorType::kDetachableBaseFailed;
+      Shell::Get()->ime_controller()->UpdateCapsLockState(
+          true /*caps_enabled*/);
+      lock_->ShowAuthErrorMessageForDebug(2 /*unlock_attempt*/);
+      return;
+    case AuthErrorType::kDetachableBaseFailed:
+      next_auth_error_type_ = AuthErrorType::kFirstUnlockFailed;
+      debug_detachable_base_model_->SetPairingState(
+          DetachableBasePairingStatus::kNotAuthenticated,
+          DebugLoginDetachableBaseModel::kNullBaseId);
+      return;
+    default:
+      NOTREACHED();
+  }
 }
 
 void LockDebugView::ButtonPressed(views::Button* sender,
@@ -814,6 +857,11 @@ void LockDebugView::ButtonPressed(views::Button* sender,
         debug_detachable_base_model_->NextBaseId());
     UpdateDetachableBaseColumn();
     Layout();
+    return;
+  }
+
+  if (sender->id() == ButtonId::kGlobalCycleAuthErrorMessage) {
+    CycleAuthErrorMessage();
     return;
   }
 

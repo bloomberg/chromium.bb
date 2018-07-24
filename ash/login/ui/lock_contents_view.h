@@ -192,6 +192,8 @@ class ASH_EXPORT LockContentsView
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
+  void ShowAuthErrorMessageForDebug(int unlock_attempt);
+
  private:
   class UserState {
    public:

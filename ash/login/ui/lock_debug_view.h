@@ -47,6 +47,17 @@ class LockDebugView : public views::View, public views::ButtonListener {
  private:
   class DebugDataDispatcherTransformer;
   class DebugLoginDetachableBaseModel;
+  enum class AuthErrorType {
+    kFirstUnlockFailed,
+    kFirstUnlockFailedCapsLockOn,
+    kSecondUnlockFailed,
+    kSecondUnlockFailedCapsLockOn,
+    kDetachableBaseFailed,
+  };
+
+  // Cycle through the various types of auth error bubbles that can be shown on
+  // the login screen.
+  void CycleAuthErrorMessage();
 
   // Rebuilds the debug user column which contains per-user actions.
   void UpdatePerUserActionContainer();
@@ -88,6 +99,10 @@ class LockDebugView : public views::View, public views::ButtonListener {
   size_t num_dev_channel_info_clicks_ = 0u;
   LoginScreenController::ForceFailAuth force_fail_auth_ =
       LoginScreenController::ForceFailAuth::kOff;
+
+  // The next type of authentication error bubble to show when the "Cycle auth
+  // error" button is clicked.
+  AuthErrorType next_auth_error_type_ = AuthErrorType::kFirstUnlockFailed;
 
   DISALLOW_COPY_AND_ASSIGN(LockDebugView);
 };
