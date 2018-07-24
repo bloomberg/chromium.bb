@@ -260,9 +260,9 @@ void IdentityManager::WillFireGoogleSignedOut(const AccountInfo& account_info) {
   // TODO(843510): Consider setting this info and notifying observers
   // asynchronously in response to GoogleSigninSucceeded() once there are no
   // direct clients of SigninManager.
-  DCHECK(account_info.account_id == primary_account_info_.account_id);
-  DCHECK(account_info.gaia == primary_account_info_.gaia);
-  DCHECK(account_info.email == primary_account_info_.email);
+  DCHECK_EQ(account_info.account_id, primary_account_info_.account_id);
+  DCHECK_EQ(account_info.gaia, primary_account_info_.gaia);
+  DCHECK(gaia::AreEmailsSame(account_info.email, primary_account_info_.email));
   primary_account_info_ = AccountInfo();
 }
 #endif
