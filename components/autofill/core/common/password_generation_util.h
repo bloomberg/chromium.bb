@@ -97,6 +97,7 @@ struct PasswordGenerationUIData {
   PasswordGenerationUIData(const gfx::RectF& bounds,
                            int max_length,
                            const base::string16& generation_element,
+                           base::i18n::TextDirection text_direction,
                            const autofill::PasswordForm& password_form);
   PasswordGenerationUIData();
   ~PasswordGenerationUIData();
@@ -111,6 +112,9 @@ struct PasswordGenerationUIData {
 
   // Name of the password field to which the generation popup is attached.
   base::string16 generation_element;
+
+  // Direction of the text for |generation_element|.
+  base::i18n::TextDirection text_direction;
 
   // The form associated with the password field.
   autofill::PasswordForm password_form;

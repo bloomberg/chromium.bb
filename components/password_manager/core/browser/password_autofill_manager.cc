@@ -256,21 +256,19 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 }
 
 bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
-    const gfx::RectF& bounds) {
+    const gfx::RectF& bounds,
+    base::i18n::TextDirection text_direction) {
   if (login_to_password_info_.empty())
     return false;
-  // TODO(crbug.com/865469): Get text direction from the renderer.
-  OnShowPasswordSuggestions(login_to_password_info_.begin()->first,
-                            base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT
-                                                : base::i18n::LEFT_TO_RIGHT,
-                            base::string16(),
-                            autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD,
-                            bounds);
+  OnShowPasswordSuggestions(
+      login_to_password_info_.begin()->first, text_direction, base::string16(),
+      autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD, bounds);
   return true;
 }
 
 bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
-    const gfx::RectF& bounds) {
+    const gfx::RectF& bounds,
+    base::i18n::TextDirection text_direction) {
   if (login_to_password_info_.empty())
     return false;
   std::vector<autofill::Suggestion> suggestions;
@@ -299,11 +297,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
   }
 
-  autofill_client_->ShowAutofillPopup(
-      bounds,
-      base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT
-                          : base::i18n::LEFT_TO_RIGHT,
-      suggestions, false, weak_ptr_factory_.GetWeakPtr());
+  autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
+                                      false, weak_ptr_factory_.GetWeakPtr());
   return true;
 }
 

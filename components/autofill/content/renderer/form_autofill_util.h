@@ -123,6 +123,10 @@ bool IsWebElementVisible(const blink::WebElement& element);
 // attribute.
 const base::string16 GetFormIdentifier(const blink::WebFormElement& form);
 
+// Returns text alignment for |element|.
+base::i18n::TextDirection GetTextDirectionForElement(
+    const blink::WebFormControlElement& element);
+
 // Returns all the auto-fillable form control elements in |control_elements|.
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
     const blink::WebVector<blink::WebFormControlElement>& control_elements);

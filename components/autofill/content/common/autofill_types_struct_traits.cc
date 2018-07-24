@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "mojo/public/cpp/base/text_direction_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "url/mojom/origin_mojom_traits.h"
@@ -758,6 +757,7 @@ bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
   out->max_length = data.max_length();
 
   if (!data.ReadGenerationElement(&out->generation_element) ||
+      !data.ReadTextDirection(&out->text_direction) ||
       !data.ReadPasswordForm(&out->password_form))
     return false;
 

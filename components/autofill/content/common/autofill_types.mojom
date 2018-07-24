@@ -206,6 +206,7 @@ struct PasswordGenerationUIData {
   gfx.mojom.RectF bounds;
   int32 max_length;
   mojo_base.mojom.String16 generation_element;
+  mojo_base.mojom.TextDirection text_direction;
   PasswordForm password_form;
 };
 
