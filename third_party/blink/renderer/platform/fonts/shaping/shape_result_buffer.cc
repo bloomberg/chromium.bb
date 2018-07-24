@@ -138,10 +138,13 @@ void ShapeResultBuffer::AddRunInfoRanges(const ShapeResult::RunInfo& run_info,
   for (const auto& glyph : run_info.glyph_data_)
     character_widths[glyph.character_index] += glyph.advance;
 
+  if (run_info.Rtl())
+    offset += run_info.width_;
+
   for (unsigned character_index = 0; character_index < run_info.num_characters_;
        character_index++) {
     float start = offset;
-    offset += character_widths[character_index];
+    offset += character_widths[character_index] * (run_info.Rtl() ? -1 : 1);
     float end = offset;
 
     // To match getCharacterRange we flip ranges to ensure start <= end.
@@ -158,17 +161,19 @@ Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
   Vector<CharacterRange> ranges;
   float current_x = direction == TextDirection::kRtl ? total_width : 0;
   for (const scoped_refptr<const ShapeResult> result : results_) {
-    if (direction == TextDirection::kRtl)
-      current_x -= result->Width();
     unsigned run_count = result->runs_.size();
-    for (unsigned index = 0; index < run_count; index++) {
-      unsigned run_index =
-          direction == TextDirection::kRtl ? run_count - 1 - index : index;
-      AddRunInfoRanges(*result->runs_[run_index], current_x, ranges);
-      current_x += result->runs_[run_index]->width_;
+
+    if (result->Rtl()) {
+      for (int index = run_count - 1; index >= 0; index--) {
+        current_x -= result->runs_[index]->width_;
+        AddRunInfoRanges(*result->runs_[index], current_x, ranges);
+      }
+    } else {
+      for (unsigned index = 0; index < run_count; index++) {
+        AddRunInfoRanges(*result->runs_[index], current_x, ranges);
+        current_x += result->runs_[index]->width_;
+      }
     }
-    if (direction == TextDirection::kRtl)
-      current_x -= result->Width();
   }
   return ranges;
 }
