@@ -94,11 +94,6 @@ TEST(SetupUtilTest, DeleteFileFromTempProcess) {
   EXPECT_FALSE(base::PathExists(test_file)) << test_file.value();
 }
 
-TEST(SetupUtilTest, GuidToSquid) {
-  ASSERT_EQ(installer::GuidToSquid(L"EDA620E3-AA98-3846-B81E-3493CB2E0E02"),
-            L"3E026ADE89AA64838BE14339BCE2E020");
-}
-
 TEST(SetupUtilTest, RegisterEventLogProvider) {
   registry_util::RegistryOverrideManager registry_override_manager;
   ASSERT_NO_FATAL_FAILURE(

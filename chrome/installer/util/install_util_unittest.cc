@@ -572,3 +572,8 @@ TEST_F(InstallUtilTest, GetToastActivatorRegistryPath) {
 
   EXPECT_EQ('}', toast_activator_reg_path.back());
 }
+
+TEST_F(InstallUtilTest, GuidToSquid) {
+  ASSERT_EQ(InstallUtil::GuidToSquid(L"EDA620E3-AA98-3846-B81E-3493CB2E0E02"),
+            L"3E026ADE89AA64838BE14339BCE2E020");
+}

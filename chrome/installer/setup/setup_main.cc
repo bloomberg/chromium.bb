@@ -135,8 +135,8 @@ LONG OverwriteDisplayVersions(const base::string16& product,
   // registry entry.  It is held under a "squashed guid" key.
   base::string16 reg_path = base::StringPrintf(
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\"
-      L"%ls\\Products\\%ls\\InstallProperties", kSystemPrincipalSid,
-      installer::GuidToSquid(product).c_str());
+      L"%ls\\Products\\%ls\\InstallProperties",
+      kSystemPrincipalSid, InstallUtil::GuidToSquid(product).c_str());
   LONG result1 = OverwriteDisplayVersion(reg_path, value, KEY_WOW64_64KEY);
 
   // The display version also exists under the Unininstall registry key with

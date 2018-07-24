@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
@@ -230,6 +231,10 @@ class InstallUtil {
    private:
     DISALLOW_COPY_AND_ASSIGN(ProgramCompare);
   };  // class ProgramCompare
+
+  // Converts a product GUID into a SQuished gUID that is used for MSI installer
+  // registry entries.
+  static base::string16 GuidToSquid(base::StringPiece16 guid);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);

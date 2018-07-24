@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/msi_util_win.h"
 
@@ -66,12 +67,13 @@ bool IsRegistryComponentPath(const base::string16& component_path) {
 bool GetInstalledFilesUsingMsiGuid(
     const base::string16& product_guid,
     const MsiUtil& msi_util,
+    const base::string16& user_sid,
     std::vector<base::FilePath>* installed_files) {
   // An invalid product guid may have been passed to this function. In this
   // case, GetMsiComponentPaths() will return false so it is not necessary to
   // specifically filter those out.
   std::vector<base::string16> component_paths;
-  if (!msi_util.GetMsiComponentPaths(product_guid, &component_paths))
+  if (!msi_util.GetMsiComponentPaths(product_guid, user_sid, &component_paths))
     return false;
 
   for (auto& component_path : component_paths) {
@@ -140,13 +142,21 @@ InstalledApplications::InstalledApplications(
     registry_key_combinations.emplace_back(HKEY_LOCAL_MACHINE, KEY_WOW64_64KEY);
   }
 
+  // Retrieve the current user's Security Identifier. If it fails, |user_sid|
+  // will stay empty.
+  base::string16 user_sid;
+  bool got_user_sid_string = base::win::GetUserSidString(&user_sid);
+  UMA_HISTOGRAM_BOOLEAN(
+      "ThirdPartyModules.InstalledApplications.GotUserSidString",
+      got_user_sid_string);
+
   for (const auto& combination : registry_key_combinations) {
     for (base::win::RegistryKeyIterator i(combination.first, kUninstallKeyPath,
                                           combination.second);
          i.Valid(); ++i) {
       CheckRegistryKeyForInstalledApplication(
           combination.first, kUninstallKeyPath, combination.second, i.Name(),
-          *msi_util);
+          *msi_util, user_sid);
     }
   }
 
@@ -161,7 +171,8 @@ void InstalledApplications::CheckRegistryKeyForInstalledApplication(
     const base::string16& key_path,
     REGSAM wow64access,
     const base::string16& key_name,
-    const MsiUtil& msi_util) {
+    const MsiUtil& msi_util,
+    const base::string16& user_sid) {
   base::string16 candidate_key_path =
       base::StringPrintf(L"%ls\\%ls", key_path.c_str(), key_name.c_str());
   base::win::RegKey candidate(hkey, candidate_key_path.c_str(),
@@ -205,7 +216,8 @@ void InstalledApplications::CheckRegistryKeyForInstalledApplication(
   }
 
   std::vector<base::FilePath> installed_files;
-  if (GetInstalledFilesUsingMsiGuid(key_name, msi_util, &installed_files)) {
+  if (GetInstalledFilesUsingMsiGuid(key_name, msi_util, user_sid,
+                                    &installed_files)) {
     applications_.push_back({std::move(display_name), hkey,
                              std::move(candidate_key_path), wow64access});
 

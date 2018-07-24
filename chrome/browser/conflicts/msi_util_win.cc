@@ -16,8 +16,12 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/registry.h"
+#include "chrome/installer/util/install_util.h"
 
 namespace {
 
@@ -104,26 +108,53 @@ bool GetMsiComponentGuids(const base::string16& msi_database_path,
 }
 
 // Retrieves the |path| to the given component.
-bool GetMsiComponentPath(const base::string16& product_guid,
-                         const base::string16& component_guid,
+// This function basically mimics the functionality of ::MsiGetComponentPath(),
+// but without directly calling it. This is because that function can trigger
+// the configuration of a product in some rare cases.
+// See https://crbug.com/860537.
+bool GetMsiComponentPath(base::StringPiece16 product_guid,
+                         base::StringPiece16 component_guid,
+                         const base::string16& user_sid,
                          base::string16* path) {
-  DWORD buffer_size = kBufferInitialSize;
-  INSTALLSTATE ret =
-      ::MsiGetComponentPath(product_guid.c_str(), component_guid.c_str(),
-                            base::WriteInto(path, buffer_size), &buffer_size);
-  if (ret == INSTALLSTATE_MOREDATA) {
-    // Must account for the null terminator.
-    buffer_size++;
+  constexpr wchar_t kRegistryKeyPathFormat[] =
+      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\"
+      L"%ls\\Components\\%ls";
 
-    ret =
-        ::MsiGetComponentPath(product_guid.c_str(), component_guid.c_str(),
-                              base::WriteInto(path, buffer_size), &buffer_size);
+  // Internally, the Microsoft Installer uses a special formatting of the guids
+  // to store the information in the registry.
+  product_guid = product_guid.substr(1, 36);
+  if (!base::IsValidGUID(product_guid))
+    return false;
+  base::string16 product_squid = InstallUtil::GuidToSquid(product_guid);
+
+  component_guid = component_guid.substr(1, 36);
+  if (!base::IsValidGUID(component_guid))
+    return false;
+  base::string16 component_squid = InstallUtil::GuidToSquid(component_guid);
+
+  std::vector<base::string16> sids = {
+      L"S-1-5-18",
+  };
+  if (!user_sid.empty())
+    sids.push_back(user_sid);
+
+  for (const auto& sid : sids) {
+    base::string16 value;
+    base::win::RegKey registry_key(
+        HKEY_LOCAL_MACHINE,
+        base::StringPrintf(kRegistryKeyPathFormat, sid.c_str(),
+                           component_squid.c_str())
+            .c_str(),
+        KEY_QUERY_VALUE | KEY_WOW64_64KEY);
+    if (registry_key.Valid() &&
+        registry_key.ReadValue(product_squid.c_str(), &value) ==
+            ERROR_SUCCESS &&
+        !value.empty()) {
+      *path = std::move(value);
+      return true;
+    }
   }
 
-  if (ret == INSTALLSTATE_LOCAL) {
-    path->resize(buffer_size);
-    return true;
-  }
   return false;
 }
 
@@ -138,6 +169,7 @@ bool GetMsiComponentPath(const base::string16& product_guid,
 // GUIDS from it, and uses those to find the path of each component.
 bool MsiUtil::GetMsiComponentPaths(
     const base::string16& product_guid,
+    const base::string16& user_sid,
     std::vector<base::string16>* component_paths) const {
   base::AssertBlockingAllowed();
 
@@ -151,8 +183,10 @@ bool MsiUtil::GetMsiComponentPaths(
 
   for (const auto& component_guid : component_guids) {
     base::string16 component_path;
-    if (!GetMsiComponentPath(product_guid, component_guid, &component_path))
+    if (!GetMsiComponentPath(product_guid, component_guid, user_sid,
+                             &component_path)) {
       continue;
+    }
 
     component_paths->push_back(std::move(component_path));
   }

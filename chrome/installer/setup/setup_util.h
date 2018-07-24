@@ -117,10 +117,6 @@ void DeleteRegistryKeyPartial(
     const base::string16& path,
     const std::vector<base::string16>& keys_to_preserve);
 
-// Converts a product GUID into a SQuished gUID that is used for MSI installer
-// registry entries.
-base::string16 GuidToSquid(const base::string16& guid);
-
 // Returns true if downgrade is allowed by installer data.
 bool IsDowngradeAllowed(const MasterPreferences& prefs);
 

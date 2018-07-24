@@ -88,7 +88,8 @@ class InstalledApplications {
                                                const base::string16& key_path,
                                                REGSAM wow64access,
                                                const base::string16& key_name,
-                                               const MsiUtil& msi_util);
+                                               const MsiUtil& msi_util,
+                                               const base::string16& user_sid);
 
   bool GetApplicationsFromInstalledFiles(
       const base::FilePath& file,
