@@ -178,12 +178,14 @@ void OmniboxResultView::Invalidate() {
                                          match_.contents_class);
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
-    // Explicitly re-apply default styling - high contrast modes use different
-    // text colors depending on selection state.
-    suggestion_view_->content()->ApplyTextColor(
-        OmniboxPart::RESULTS_TEXT_DEFAULT);
-    suggestion_view_->description()->ApplyTextColor(
-        OmniboxPart::RESULTS_TEXT_DEFAULT);
+
+    // Normally, OmniboxTextView caches its appearance, but in high contrast
+    // selected-ness changes the text colors, so the styling of the text part of
+    // the results needs to be recomputed.
+    if (high_contrast) {
+      suggestion_view_->content()->ReapplyStyling();
+      suggestion_view_->description()->ReapplyStyling();
+    }
   }
 
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();

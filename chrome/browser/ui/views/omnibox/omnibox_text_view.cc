@@ -224,36 +224,7 @@ void OmniboxTextView::SetText(const base::string16& text,
       std::make_unique<ACMatchClassifications>(classifications);
   render_text_ = CreateRenderText(text);
 
-  const size_t text_length = render_text_->text().length();
-  for (size_t i = 0; i < classifications.size(); ++i) {
-    const size_t text_start = classifications[i].offset;
-    if (text_start >= text_length)
-      break;
-
-    const size_t text_end =
-        (i < (classifications.size() - 1))
-            ? std::min(classifications[i + 1].offset, text_length)
-            : text_length;
-    const gfx::Range current_range(text_start, text_end);
-
-    // Calculate style-related data.
-    if (classifications[i].style & ACMatchClassification::MATCH)
-      render_text_->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
-
-    OmniboxPart part = OmniboxPart::RESULTS_TEXT_DEFAULT;
-    if (classifications[i].style & ACMatchClassification::URL) {
-      part = OmniboxPart::RESULTS_TEXT_URL;
-      render_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
-    } else if (classifications[i].style & ACMatchClassification::DIM) {
-      part = OmniboxPart::RESULTS_TEXT_DIMMED;
-    } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
-      part = OmniboxPart::RESULTS_TEXT_INVISIBLE;
-    }
-    render_text_->ApplyColor(result_view_->GetColor(part), current_range);
-  }
-
-  UpdateLineHeight();
-  SetPreferredSize(CalculatePreferredSize());
+  ReapplyStyling();
 }
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
@@ -307,6 +278,40 @@ void OmniboxTextView::AppendExtraText(const SuggestionAnswer::ImageLine& line) {
 
 int OmniboxTextView::GetLineHeight() const {
   return font_height_;
+}
+
+void OmniboxTextView::ReapplyStyling() {
+  const ACMatchClassifications& classifications = *cached_classifications_;
+  const size_t text_length = render_text_->text().length();
+  for (size_t i = 0; i < classifications.size(); ++i) {
+    const size_t text_start = classifications[i].offset;
+    if (text_start >= text_length)
+      break;
+
+    const size_t text_end =
+        (i < (classifications.size() - 1))
+            ? std::min(classifications[i + 1].offset, text_length)
+            : text_length;
+    const gfx::Range current_range(text_start, text_end);
+
+    // Calculate style-related data.
+    if (classifications[i].style & ACMatchClassification::MATCH)
+      render_text_->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
+
+    OmniboxPart part = OmniboxPart::RESULTS_TEXT_DEFAULT;
+    if (classifications[i].style & ACMatchClassification::URL) {
+      part = OmniboxPart::RESULTS_TEXT_URL;
+      render_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
+    } else if (classifications[i].style & ACMatchClassification::DIM) {
+      part = OmniboxPart::RESULTS_TEXT_DIMMED;
+    } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
+      part = OmniboxPart::RESULTS_TEXT_INVISIBLE;
+    }
+    render_text_->ApplyColor(result_view_->GetColor(part), current_range);
+  }
+
+  UpdateLineHeight();
+  SetPreferredSize(CalculatePreferredSize());
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
