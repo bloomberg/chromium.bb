@@ -5314,6 +5314,40 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsAsyncAsync) {
       /*write_error_mode_on_new_network*/ ASYNC);
 }
 
+// Verifies that a connection is closed when connection migration is triggered
+// on network being disconnected and the handshake is not confirmed.
+TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+
+  // Use unmocked crypto stream to do crypto connect.
+  crypto_client_stream_factory_.set_handshake_mode(
+      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+
+  // Add hanging socket data so that handshake is not confirmed when
+  // OnNetworkDisconnected is delivered.
+  // TODO(zhongyi): figure out how to add hanging data only.
+  MockQuicData socket_data;
+  socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  socket_data.AddWrite(ASYNC, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+  // Deliver the network notification, which should cause the connection to be
+  // closed.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+  EXPECT_EQ(ERR_NETWORK_CHANGED, callback_.WaitForResult());
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
+}
+
 // Sets up the connection migration test where network change notification is
 // queued BEFORE connection migration attempt on write error is posted.
 void QuicStreamFactoryTestBase::

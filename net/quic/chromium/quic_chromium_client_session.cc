@@ -1893,6 +1893,14 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
 
   current_connection_migration_cause_ = ON_NETWORK_DISCONNECTED;
   LogHandshakeStatusOnConnectionMigrationSignal();
+  if (!IsCryptoHandshakeConfirmed()) {
+    // Close the connection if handshake is not confirmed. Migration before
+    // handshake is not allowed.
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_HANDSHAKE_UNCONFIRMED);
+    return;
+  }
 
   // Attempt to find alternative network.
   NetworkChangeNotifier::NetworkHandle new_network =
