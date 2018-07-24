@@ -43,15 +43,26 @@ DecoderEngine::DecoderEngine(
 
 DecoderEngine::~DecoderEngine() {}
 
-void DecoderEngine::BindRequest(const std::string& ime_spec,
+bool DecoderEngine::BindRequest(const std::string& ime_spec,
                                 mojom::InputChannelRequest request,
                                 mojom::InputChannelPtr client,
                                 const std::vector<uint8_t>& extra) {
-  // TODO(https://crbug.com/837156): Build a ClientWrapper with the clientPtr,
-  // inside we ensure the clientPtr will run in the correct SequencedTaskRunner,
-  // then pass the wrapper to the native library instead of the clientPtr.
+  if (!IsImeSupported(ime_spec))
+    return false;
+  // TODO(https://crbug.com/837156): Notify the input logic loaded from the
+  // shared library about the change by forwarding the information received.
+  // Moreover, in order to make safe calls on the clientPtr inside the input
+  // logic with multiple threads, we will send a wrapper of the clientPtr,
+  // where we make sure it runs in the correct SequencedTaskRunner.
   channel_bindings_.AddBinding(this, std::move(request));
   // TODO(https://crbug.com/837156): Registry connection error handler.
+  return true;
+}
+
+bool DecoderEngine::IsImeSupported(const std::string& ime_spec) {
+  // TODO(https://crbug.com/837156): Check the capability of the loaded shared
+  // library first.
+  return InputEngine::IsImeSupported(ime_spec);
 }
 
 void DecoderEngine::ProcessMessage(const std::vector<uint8_t>& message,
