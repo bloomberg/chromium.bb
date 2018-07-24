@@ -468,7 +468,7 @@ scoped_refptr<ShaderDiskCache> ShaderCacheFactory::GetByPath(
   if (iter != shader_cache_map_.end())
     return iter->second;
 
-  ShaderDiskCache* cache = new ShaderDiskCache(this, path);
+  auto cache = base::WrapRefCounted(new ShaderDiskCache(this, path));
   cache->Init();
   return cache;
 }
