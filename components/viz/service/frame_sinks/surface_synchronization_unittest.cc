@@ -1646,7 +1646,7 @@ TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
   // while the parent CompositorFrame is blocked.
   parent_support().SubmitCompositorFrame(
       parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, {SurfaceRange(child_id1)},
+      MakeCompositorFrame({child_id2}, {SurfaceRange(child_id1, child_id2)},
                           std::vector<TransferableResource>(),
                           MakeDefaultDeadline()));
   EXPECT_TRUE(parent_surface()->has_deadline());

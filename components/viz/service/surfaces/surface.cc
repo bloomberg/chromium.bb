@@ -122,29 +122,19 @@ void Surface::UpdateSurfaceReferences() {
 }
 
 void Surface::RejectCompositorFramesToFallbackSurfaces() {
-  const std::vector<SurfaceId>& activation_dependencies =
-      GetPendingFrame().metadata.activation_dependencies;
-
   for (const SurfaceRange& surface_range :
        GetPendingFrame().metadata.referenced_surfaces) {
-    if (!surface_range.start())
+    // Only close the fallback surface if it exists, has a different
+    // LocalSurfaceId than the primary surface but has the same FrameSinkId
+    // as the primary surface.
+    if (!surface_range.start() ||
+        surface_range.start() == surface_range.end() ||
+        surface_range.start()->frame_sink_id() !=
+            surface_range.end().frame_sink_id()) {
       continue;
-    const SurfaceId& surface_id = *surface_range.start();
-    // A surface ID in |referenced_surfaces| that has a corresponding surface
-    // ID in |activation_dependencies| with the same frame sink ID is said to
-    // be a fallback surface that can be used in place of the primary surface
-    // if the deadline passes before the dependency becomes available.
-    auto it = std::find_if(
-        activation_dependencies.begin(), activation_dependencies.end(),
-        [surface_id](const SurfaceId& dependency) {
-          return dependency.frame_sink_id() == surface_id.frame_sink_id();
-        });
-    bool is_fallback_surface = it != activation_dependencies.end();
-    if (!is_fallback_surface)
-      continue;
-
-    Surface* fallback_surface =
-        surface_manager_->GetLatestInFlightSurface(*it, surface_id);
+    }
+    Surface* fallback_surface = surface_manager_->GetLatestInFlightSurface(
+        surface_range.end(), *surface_range.start());
 
     // A misbehaving client may report a non-existent surface ID as a
     // |referenced_surface|. In that case, |surface| would be nullptr, and
