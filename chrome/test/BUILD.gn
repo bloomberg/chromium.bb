@@ -4152,6 +4152,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/location_bar/page_info_bubble_decoration_unittest.mm",
         "../browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm",
         "../browser/ui/cocoa/location_bar/zoom_decoration_unittest.mm",
+        "../browser/ui/cocoa/main_menu_builder_unittest.mm",
         "../browser/ui/cocoa/md_hover_button_unittest.mm",
         "../browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm",
         "../browser/ui/cocoa/menu_button_unittest.mm",

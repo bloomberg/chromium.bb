@@ -15,7 +15,6 @@ translated_xibs = [
   "DownloadItem.xib",
   "DownloadShelf.xib",
   "HungRendererDialog.xib",
-  "MainMenu.xib",
   "OneClickSigninBubble.xib",
   "OneClickSigninDialog.xib",
   "SaveAccessoryView.xib",

@@ -27,6 +27,7 @@
 #include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
+#include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/content/app/crashpad.h"
@@ -129,18 +130,13 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
     }
   }
 
-  // Now load the nib (from the right bundle).
-  base::scoped_nsobject<NSNib> nib(
-      [[NSNib alloc] initWithNibNamed:@"MainMenu"
-                               bundle:base::mac::FrameworkBundle()]);
-  // TODO(viettrungluu): crbug.com/20504 - This currently leaks, so if you
-  // change this, you'll probably need to change the Valgrind suppression.
-  NSArray* top_level_objects = nil;
-  [nib instantiateWithOwner:NSApp topLevelObjects:&top_level_objects];
-  for (NSObject* object : top_level_objects)
-    [object retain];
-  // Make sure the app controller has been created.
-  DCHECK([NSApp delegate]);
+  // Create the app delegate. This object is intentionally leaked as a global
+  // singleton. It is accessed through -[NSApp delegate].
+  AppController* app_controller = [[AppController alloc] init];
+  [NSApp setDelegate:app_controller];
+
+  chrome::BuildMainMenu(NSApp, app_controller);
+  [app_controller mainMenuCreated];
 
   // Do Keychain reauthorization. This gets two chances to run. If the first
   // try doesn't complete successfully (crashes or is interrupted for any
