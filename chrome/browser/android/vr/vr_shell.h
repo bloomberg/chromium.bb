@@ -302,8 +302,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   bool HasDaydreamSupport(JNIEnv* env);
 
-  void ExitVrDueToUnsupportedMode(UiUnsupportedMode mode);
-
   content::WebContents* GetNonNativePageWebContents() const;
 
   void LoadAssets();

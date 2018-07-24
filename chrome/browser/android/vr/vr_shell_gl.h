@@ -309,8 +309,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRDeviceRuntimeSessionOptionsPtr options);
 
-  void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
-
   void OnSwapContents(int new_content_id);
 
   void EnableAlertDialog(PlatformInputHandler* input_handler,
@@ -362,7 +360,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void UpdateController(const RenderInfo& render_info,
                         base::TimeTicks current_time);
 
-  void SendImmediateExitRequestIfNecessary();
   void HandleControllerInput(const gfx::Point3F& laser_origin,
                              const RenderInfo& render_info,
                              base::TimeTicks current_time);
@@ -530,7 +527,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool paused_ = true;
   const bool surfaceless_rendering_;
   bool daydream_support_;
-  bool is_exiting_ = false;
   bool content_paused_;
   bool cardboard_trigger_pressed_ = false;
   bool cardboard_trigger_clicked_ = false;
