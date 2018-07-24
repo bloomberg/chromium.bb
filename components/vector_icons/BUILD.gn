@@ -21,6 +21,7 @@ aggregate_vector_icons("components_vector_icons") {
     "folder_managed_touch.icon",
     "folder_touch.icon",
     "forward_arrow.icon",
+    "headset.icon",
     "help_outline.icon",
     "info_outline.icon",
     "location_on.icon",

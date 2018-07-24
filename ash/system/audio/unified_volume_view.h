@@ -35,7 +35,7 @@ class UnifiedVolumeView : public UnifiedSliderView,
   // UnifiedSliderView:
   void ChildVisibilityChanged(views::View* child) override;
 
-  TopShortcutButton* const more_button_;
+  views::Button* const more_button_;
   const bool is_main_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedVolumeView);
