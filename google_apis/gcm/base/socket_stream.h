@@ -23,6 +23,7 @@
 namespace net {
 class DrainableIOBuffer;
 class IOBuffer;
+class IOBufferWithSize;
 class StreamSocket;
 }  // namespace net
 
@@ -186,10 +187,10 @@ class GCM_EXPORT SocketOutputStream
 
   // Internal net components.
   net::StreamSocket* const socket_;
-  const scoped_refptr<net::IOBuffer> io_buffer_;
+  const scoped_refptr<net::IOBufferWithSize> io_buffer_;
   // IOBuffer implementation that wraps the data within |io_buffer_| that hasn't
   // been written to the socket yet.
-  const scoped_refptr<net::DrainableIOBuffer> write_buffer_;
+  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 
   // Starting position of the data within |io_buffer_| to consume on subsequent
   // Next(..) call.  0 <= write_buffer_.BytesConsumed() <= next_pos_
