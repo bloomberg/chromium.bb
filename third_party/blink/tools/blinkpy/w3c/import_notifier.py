@@ -190,7 +190,7 @@ class ImportNotifier(object):
             description = prologue + failure_list + epilogue + commit_list
 
             bug = MonorailIssue.new_chromium_issue(summary, description, cc, components)
-            _log.info(str(bug))
+            _log.info(unicode(bug))
 
             if is_wpt_notify_enabled:
                 _log.info("WPT-NOTIFY enabled in this directory; adding the bug to the pending list.")
