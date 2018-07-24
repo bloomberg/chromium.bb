@@ -40,6 +40,8 @@ bool DoesCastConfigFileExist() {
   base::MemoryMappedFile::Region config_region;
   int config_fd =
       base::android::OpenApkAsset(kCastConfigAssetPath, &config_region);
+  if (config_fd > 0)
+    close(config_fd);
   return config_fd > 0;
 }
 }  // namespace
