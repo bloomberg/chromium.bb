@@ -158,7 +158,7 @@ void WindowTree::SendEventToClient(aura::Window* window, const Event& event) {
   if (pointer_watcher_)
     pointer_watcher_->ClearPendingEvent();
   window_tree_client_->OnWindowInputEvent(
-      event_id, TransportIdForWindow(window), display_id, 0u, gfx::PointF(),
+      event_id, TransportIdForWindow(window), display_id,
       PointerWatcher::CreateEventForClient(event), matches_pointer_watcher);
 }
 
@@ -1662,11 +1662,6 @@ void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {
 }
 
 void WindowTree::PerformWmAction(Id window_id, const std::string& action) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
-void WindowTree::GetWindowManagerClient(
-    ::ui::mojom::WindowManagerClientAssociatedRequest internal) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

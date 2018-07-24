@@ -32,12 +32,9 @@ WindowTreeClientPrivate::~WindowTreeClientPrivate() {}
 // static
 std::unique_ptr<WindowTreeClient>
 WindowTreeClientPrivate::CreateWindowTreeClient(
-    WindowTreeClientDelegate* window_tree_delegate,
-    WindowManagerDelegate* window_manager_delegate,
-    WindowTreeClient::Config config) {
+    WindowTreeClientDelegate* window_tree_delegate) {
   std::unique_ptr<WindowTreeClient> wtc(new WindowTreeClient(
-      nullptr, window_tree_delegate, window_manager_delegate, nullptr, nullptr,
-      false, config));
+      nullptr, window_tree_delegate, nullptr, nullptr, false));
   return wtc;
 }
 
@@ -46,27 +43,6 @@ void WindowTreeClientPrivate::OnEmbed(ui::mojom::WindowTree* window_tree) {
   tree_client_impl_->OnEmbedImpl(window_tree, CreateWindowDataForEmbed(),
                                  kDisplayId, focused_window_id, true,
                                  base::nullopt);
-}
-
-WindowTreeHostMus* WindowTreeClientPrivate::CallWmNewDisplayAdded(
-    const display::Display& display) {
-  ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
-  root_data->parent_id = 0;
-  // Windows representing displays are owned by mus, which is identified by
-  // non-zero high word.
-  root_data->window_id = next_window_id_++ | 0x00010000;
-  root_data->visible = true;
-  root_data->bounds = gfx::Rect(display.bounds().size());
-  const bool parent_drawn = true;
-  return CallWmNewDisplayAdded(display, std::move(root_data), parent_drawn);
-}
-
-WindowTreeHostMus* WindowTreeClientPrivate::CallWmNewDisplayAdded(
-    const display::Display& display,
-    ui::mojom::WindowDataPtr root_data,
-    bool parent_drawn) {
-  return tree_client_impl_->WmNewDisplayAddedImpl(display, std::move(root_data),
-                                                  parent_drawn, base::nullopt);
 }
 
 void WindowTreeClientPrivate::CallOnPointerEventObserved(
@@ -86,10 +62,6 @@ void WindowTreeClientPrivate::CallOnCaptureChanged(Window* new_capture,
       old_capture ? WindowPortMus::Get(old_capture)->server_id() : 0);
 }
 
-void WindowTreeClientPrivate::CallOnConnect() {
-  tree_client_impl_->OnConnect();
-}
-
 void WindowTreeClientPrivate::CallOnEmbedFromToken(EmbedRoot* embed_root) {
   embed_root->OnScheduledEmbedForExistingClient(
       base::UnguessableToken::Create());
@@ -98,20 +70,8 @@ void WindowTreeClientPrivate::CallOnEmbedFromToken(EmbedRoot* embed_root) {
                                       base::Optional<viz::LocalSurfaceId>());
 }
 
-WindowTreeHostMusInitParams
-WindowTreeClientPrivate::CallCreateInitParamsForNewDisplay() {
-  return tree_client_impl_->CreateInitParamsForNewDisplay();
-}
-
 void WindowTreeClientPrivate::SetTree(ui::mojom::WindowTree* window_tree) {
   tree_client_impl_->WindowTreeConnectionEstablished(window_tree);
-}
-
-void WindowTreeClientPrivate::SetWindowManagerClient(
-    ui::mojom::WindowManagerClient* client) {
-  tree_client_impl_->window_manager_client_ = client;
-  // Mirrors what CreateForWindowManager() does.
-  tree_client_impl_->CreatePlatformEventSourceIfNecessary();
 }
 
 bool WindowTreeClientPrivate::HasPointerWatcher() {
@@ -139,10 +99,6 @@ bool WindowTreeClientPrivate::HasChangeInFlightOfType(ChangeType type) {
       return true;
   }
   return false;
-}
-
-void WindowTreeClientPrivate::WaitForInitialDisplays() {
-  tree_client_impl_->WaitForInitialDisplays();
 }
 
 ui::mojom::WindowDataPtr WindowTreeClientPrivate::CreateWindowDataForEmbed() {

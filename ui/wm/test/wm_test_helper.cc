@@ -76,8 +76,7 @@ void WMTestHelper::InitMusHost(service_manager::Connector* connector) {
   window_tree_client_ = aura::WindowTreeClient::CreateForWindowTreeHostFactory(
       connector, this, create_discardable_memory);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
-  aura::WindowTreeClientPrivate(window_tree_client_.get())
-      .WaitForInitialDisplays();
+  window_tree_client_->WaitForDisplays();
 
   // ConnectViaWindowTreeHostFactory() should callback to OnEmbed() and set
   // |host_|.

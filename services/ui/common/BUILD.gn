@@ -8,24 +8,10 @@ import("//testing/test.gni")
 # TODO(sky): move everything but switches to services/ui/public/cpp
 source_set("mus_common") {
   sources = [
-    "accelerator_util.cc",
-    "accelerator_util.h",
-    "image_cursors_set.cc",
-    "image_cursors_set.h",
     "switches.cc",
     "switches.h",
     "types.h",
     "util.h",
-  ]
-
-  deps = [
-    "//ui/events",
-    "//ui/gfx/ipc/geometry",
-  ]
-
-  public_deps = [
-    "//services/ui/public/interfaces",
-    "//ui/base",
   ]
 }
 

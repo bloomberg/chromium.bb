@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
@@ -137,7 +138,7 @@ TEST_F(AshServiceTest, MAYBE_OpenWindow) {
   std::unique_ptr<aura::WindowTreeClient> child_client =
       aura::WindowTreeClient::CreateForEmbedding(
           connector(), &window_tree_delegate, std::move(tree_client_request),
-          false, aura::WindowTreeClient::Config::kMus2);
+          false);
   window_tree_delegate.WaitForEmbed();
   ASSERT_TRUE(!child_client->GetRoots().empty());
   window_tree_delegate.DestroyWindowTreeHost();

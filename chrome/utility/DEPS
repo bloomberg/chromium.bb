@@ -55,7 +55,6 @@ specific_include_rules = {
     "+ash/components/tap_visualizer/tap_visualizer_app.h",
     "+ash/public/interfaces",
     "+ash/window_manager_service.h",
-    "+services/ui/common/image_cursors_set.h",
     "+services/ui/public",
     "+services/ui/service.h",
   ],

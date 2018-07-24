@@ -328,8 +328,6 @@ NonClientFrameController::NonClientFrameController(
       widget_, ShouldRemoveStandardFrame(*properties),
       ShouldEnableImmersive(*properties), GetWindowStyle(*properties));
   window_ = native_widget->GetNativeView();
-  window_->SetProperty(aura::client::kEmbedType,
-                       aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
   window_->SetProperty(kNonClientFrameControllerKey, this);
   window_->SetProperty(kWidgetCreationTypeKey, WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);

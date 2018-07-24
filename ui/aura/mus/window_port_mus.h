@@ -33,10 +33,6 @@ class AsyncLayerTreeFrameSink;
 }
 }
 
-namespace gfx {
-class Insets;
-}
-
 namespace aura {
 
 class ClientSurfaceEmbedder;
@@ -82,11 +78,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   // Sets whether this window can accept drops, defaults to false.
   void SetCanAcceptDrops(bool can_accept_drops);
-
-  // See description in mojom for details on this. Has no effect if not running
-  // in the window manager.
-  void SetExtendedHitRegionForChildren(const gfx::Insets& mouse_insets,
-                                       const gfx::Insets& touch_insets);
 
   // See description in mojom for details on this.
   void SetHitTestMask(const base::Optional<gfx::Rect>& rect);

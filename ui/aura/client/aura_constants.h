@@ -26,7 +26,6 @@ class FocusClient;
 enum class WindowEmbedType {
   NONE,
   EMBED_IN_OWNER,
-  TOP_LEVEL_IN_WM,
 };
 
 // Alphabetical sort.

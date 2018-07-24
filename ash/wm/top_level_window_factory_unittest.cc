@@ -16,6 +16,7 @@
 #include "ash/wm/window_properties.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/window_tree_test_helper.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"

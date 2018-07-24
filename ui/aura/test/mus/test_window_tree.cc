@@ -362,10 +362,6 @@ void TestWindowTree::PerformWmAction(ui::Id window_id,
   last_wm_action_ = action;
 }
 
-void TestWindowTree::GetWindowManagerClient(
-    mojo::AssociatedInterfaceRequest<ui::mojom::WindowManagerClient> internal) {
-}
-
 void TestWindowTree::GetCursorLocationMemory(
     GetCursorLocationMemoryCallback callback) {
   std::move(callback).Run(mojo::ScopedSharedBufferHandle());

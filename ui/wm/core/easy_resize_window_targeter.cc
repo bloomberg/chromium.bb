@@ -20,13 +20,6 @@
 namespace wm {
 namespace {
 
-// Returns an insets whose values are all negative or 0. Any positive value is
-// forced to 0.
-gfx::Insets InsetsWithOnlyNegativeValues(const gfx::Insets& insets) {
-  return gfx::Insets(std::min(0, insets.top()), std::min(0, insets.left()),
-                     std::min(0, insets.bottom()), std::min(0, insets.right()));
-}
-
 gfx::Insets InsetsWithOnlyPositiveValues(const gfx::Insets& insets) {
   return gfx::Insets(std::max(0, insets.top()), std::max(0, insets.left()),
                      std::max(0, insets.bottom()), std::max(0, insets.right()));
@@ -98,22 +91,6 @@ void EasyResizeWindowTargeter::OnSetInsets(
     const gfx::Insets& last_touch_extend) {
   if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS)
     return;
-
-  // Mus only accepts 0 or negative values, force all values to fit that.
-  const gfx::Insets effective_last_mouse_extend =
-      InsetsWithOnlyNegativeValues(last_mouse_extend);
-  const gfx::Insets effective_last_touch_extend =
-      InsetsWithOnlyNegativeValues(last_touch_extend);
-  const gfx::Insets effective_mouse_extend =
-      InsetsWithOnlyNegativeValues(mouse_extend());
-  const gfx::Insets effective_touch_extend =
-      InsetsWithOnlyNegativeValues(touch_extend());
-  if (effective_last_touch_extend != effective_touch_extend ||
-      effective_last_mouse_extend != effective_mouse_extend) {
-    aura::WindowPortMus::Get(container_)
-        ->SetExtendedHitRegionForChildren(effective_mouse_extend,
-                                          effective_touch_extend);
-  }
 
   // Positive values equate to a hit test mask.
   const gfx::Insets positive_mouse_insets =

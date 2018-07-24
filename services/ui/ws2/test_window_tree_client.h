@@ -127,10 +127,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowTransformChanged(Id window_id,
                                 const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
-  void OnClientAreaChanged(
-      Id window_id,
-      const gfx::Insets& new_client_area,
-      const std::vector<gfx::Rect>& new_additional_client_areas) override;
   void OnTransientWindowAdded(Id window_id, Id transient_window_id) override;
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id) override;
   void OnWindowHierarchyChanged(
@@ -151,8 +147,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       uint32_t event_id,
       Id window_id,
       int64_t display_id,
-      Id display_root_window_id,
-      const gfx::PointF& event_location_in_screen_pixel_layout,
       std::unique_ptr<ui::Event> event,
       bool matches_pointer_watcher) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
@@ -190,8 +184,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnDragDropDone() override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(Id window_id) override;
-  void GetWindowManager(
-      mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) override;
   void GetScreenProviderObserver(
       mojom::ScreenProviderObserverAssociatedRequest observer) override;
 

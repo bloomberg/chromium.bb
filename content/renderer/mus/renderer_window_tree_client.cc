@@ -269,11 +269,6 @@ void RendererWindowTreeClient::OnWindowTransformChanged(
     const gfx::Transform& old_transform,
     const gfx::Transform& new_transform) {}
 
-void RendererWindowTreeClient::OnClientAreaChanged(
-    ui::Id window_id,
-    const gfx::Insets& new_client_area,
-    const std::vector<gfx::Rect>& new_additional_client_areas) {}
-
 void RendererWindowTreeClient::OnTransientWindowAdded(
     ui::Id window_id,
     ui::Id transient_window_id) {}
@@ -316,8 +311,6 @@ void RendererWindowTreeClient::OnWindowInputEvent(
     uint32_t event_id,
     ui::Id window_id,
     int64_t display_id,
-    ui::Id display_root_window_id,
-    const gfx::PointF& event_location_in_screen_pixel_layout,
     std::unique_ptr<ui::Event> event,
     bool matches_pointer_watcher) {
   NOTREACHED();
@@ -387,11 +380,6 @@ void RendererWindowTreeClient::OnChangeCompleted(uint32_t change_id,
 }
 
 void RendererWindowTreeClient::RequestClose(ui::Id window_id) {}
-
-void RendererWindowTreeClient::GetWindowManager(
-    mojo::AssociatedInterfaceRequest<ui::mojom::WindowManager> internal) {
-  NOTREACHED();
-}
 
 void RendererWindowTreeClient::GetScreenProviderObserver(
     ui::mojom::ScreenProviderObserverAssociatedRequest observer) {}

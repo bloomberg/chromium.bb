@@ -137,11 +137,6 @@ void TestWindowTreeClient::OnWindowTransformChanged(
   tracker_.OnWindowTransformChanged(window_id);
 }
 
-void TestWindowTreeClient::OnClientAreaChanged(
-    Id window_id,
-    const gfx::Insets& new_client_area,
-    const std::vector<gfx::Rect>& new_additional_client_areas) {}
-
 void TestWindowTreeClient::OnTransientWindowAdded(Id window_id,
                                                   Id transient_window_id) {
   tracker_.OnTransientWindowAdded(window_id, transient_window_id);
@@ -190,12 +185,9 @@ void TestWindowTreeClient::OnWindowInputEvent(
     uint32_t event_id,
     Id window_id,
     int64_t display_id,
-    Id display_root_window_id,
-    const gfx::PointF& event_location_in_screen_pixel_layout,
     std::unique_ptr<ui::Event> event,
     bool matches_pointer_watcher) {
   tracker_.OnWindowInputEvent(window_id, *event, display_id,
-                              event_location_in_screen_pixel_layout,
                               matches_pointer_watcher);
 
   InputEvent input_event;
@@ -293,9 +285,6 @@ void TestWindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
 void TestWindowTreeClient::RequestClose(Id window_id) {
   tracker_.RequestClose(window_id);
 }
-
-void TestWindowTreeClient::GetWindowManager(
-    mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) {}
 
 void TestWindowTreeClient::GetScreenProviderObserver(
     mojom::ScreenProviderObserverAssociatedRequest observer) {

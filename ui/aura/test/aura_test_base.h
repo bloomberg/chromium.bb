@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
-#include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
 
@@ -26,7 +26,6 @@ class WindowTreeClient;
 namespace aura {
 class Window;
 class WindowDelegate;
-class WindowManagerDelegate;
 class WindowTreeClientDelegate;
 
 namespace client {
@@ -37,15 +36,9 @@ namespace test {
 
 class AuraTestContextFactory;
 
-// TODO(sky): remove MUS. https://crbug.com/842365.
-// MUS2 targets ws2. See WindowTreeClient::Config::kMus2 for details.
-enum class BackendType { CLASSIC, MUS, MUS2 };
-
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
-class AuraTestBase : public testing::Test,
-                     public WindowTreeClientDelegate,
-                     public WindowManagerDelegate {
+class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
  public:
   AuraTestBase();
   ~AuraTestBase() override;
@@ -59,11 +52,6 @@ class AuraTestBase : public testing::Test,
                                    aura::WindowDelegate* delegate);
 
  protected:
-  void set_window_manager_delegate(
-      WindowManagerDelegate* window_manager_delegate) {
-    window_manager_delegate_ = window_manager_delegate;
-  }
-
   void set_window_tree_client_delegate(
       WindowTreeClientDelegate* window_tree_client_delegate) {
     window_tree_client_delegate_ = window_tree_client_delegate;
@@ -79,7 +67,7 @@ class AuraTestBase : public testing::Test,
 
   // Used to configure the backend. This is exposed to make parameterized tests
   // easy to write. This *must* be called from SetUp().
-  void ConfigureBackend(BackendType type);
+  void ConfigureEnvMode(Env::Mode mode);
 
   void RunAllPendingInMessageLoop();
 
@@ -105,6 +93,10 @@ class AuraTestBase : public testing::Test,
     return observed_pointer_events_;
   }
 
+  // See AuraTestHelper for details on what this does. Must be called before
+  // SetUp().
+  void SetCreateHostForPrimaryDisplay(bool value);
+
   // WindowTreeClientDelegate:
   void OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) override;
   void OnUnembed(Window* root) override;
@@ -113,76 +105,29 @@ class AuraTestBase : public testing::Test,
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               int64_t display_id,
                               Window* target) override;
-
-  // WindowManagerDelegate:
-  void SetWindowManagerClient(WindowManagerClient* client) override;
-  void OnWmConnected() override;
-  void OnWmAcceleratedWidgetAvailableForDisplay(
-      int64_t display_id,
-      gfx::AcceleratedWidget widget) override {}
-  void OnWmSetBounds(Window* window, const gfx::Rect& bounds) override;
-  bool OnWmSetProperty(
-      Window* window,
-      const std::string& name,
-      std::unique_ptr<std::vector<uint8_t>>* new_data) override;
-  void OnWmSetModalType(Window* window, ui::ModalType type) override;
-  void OnWmSetCanFocus(Window* window, bool can_focus) override;
-  Window* OnWmCreateTopLevelWindow(
-      ui::mojom::WindowType window_type,
-      std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
-                                  bool janky) override;
-  void OnWmBuildDragImage(const gfx::Point& cursor_location,
-                          const gfx::ImageSkia& drag_image,
-                          const gfx::Vector2d& drag_image_offset,
-                          ui::mojom::PointerKind source) override {}
-  void OnWmMoveDragImage(const gfx::Point& cursor_location) override {}
-  void OnWmDestroyDragImage() override {}
-  void OnWmWillCreateDisplay(const display::Display& display) override;
-  void OnWmNewDisplay(std::unique_ptr<WindowTreeHostMus> window_tree_host,
-                      const display::Display& display) override;
-  void OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) override;
-  void OnWmDisplayModified(const display::Display& display) override;
-  ui::mojom::EventResult OnAccelerator(
-      uint32_t id,
-      const ui::Event& event,
-      base::flat_map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnCursorTouchVisibleChanged(bool enabled) override;
-  void OnWmPerformMoveLoop(Window* window,
-                           ui::mojom::MoveLoopSource source,
-                           const gfx::Point& cursor_location,
-                           const base::Callback<void(bool)>& on_done) override;
-  void OnWmCancelMoveLoop(Window* window) override;
-  void OnWmSetClientArea(
-      Window* window,
-      const gfx::Insets& insets,
-      const std::vector<gfx::Rect>& additional_client_areas) override;
-  bool IsWindowActive(aura::Window* window) override;
-  void OnWmDeactivateWindow(Window* window) override;
   PropertyConverter* GetPropertyConverter() override;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  // Only used for mus. Both are are initialized to this, but may be reset.
-  WindowManagerDelegate* window_manager_delegate_;
+  // Only used for mus, initially set to this, but may be reset.
   WindowTreeClientDelegate* window_tree_client_delegate_;
 
-  BackendType backend_type_ = BackendType::CLASSIC;
+  Env::Mode env_mode_ = Env::Mode::LOCAL;
   bool setup_called_ = false;
   bool teardown_called_ = false;
   PropertyConverter property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
   std::unique_ptr<AuraTestContextFactory> mus_context_factory_;
-  std::vector<std::unique_ptr<WindowTreeHostMus>> window_tree_hosts_;
   std::vector<std::unique_ptr<ui::PointerEvent>> observed_pointer_events_;
+  bool create_host_for_primary_display_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };
 
 // Use as a base class for tests that want to target both backends.
 class AuraTestBaseWithType : public AuraTestBase,
-                             public ::testing::WithParamInterface<BackendType> {
+                             public ::testing::WithParamInterface<Env::Mode> {
  public:
   AuraTestBaseWithType();
   ~AuraTestBaseWithType() override;
