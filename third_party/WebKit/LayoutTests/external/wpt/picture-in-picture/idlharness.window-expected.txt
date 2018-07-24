@@ -1,6 +1,5 @@
 This is a testharness.js-based test.
-PASS idlharness
-PASS picture-in-picture interfaces.
+FAIL picture-in-picture interfaces. promise_test: Unhandled rejection with value: object "NotSupportedError: Picture-in-Picture is not available."
 PASS Partial interface HTMLVideoElement: original interface defined
 PASS Partial interface Document: original interface defined
 PASS Partial interface DocumentOrShadowRoot: original interface defined
