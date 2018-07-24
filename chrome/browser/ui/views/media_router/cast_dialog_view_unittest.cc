@@ -134,6 +134,10 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     return dialog_->sources_menu_runner_for_test();
   }
 
+  views::LabelButton* main_button() {
+    return dialog_->GetDialogClientView()->ok_button();
+  }
+
   content::TestBrowserThreadBundle test_thread_bundle_;
   std::unique_ptr<views::Widget> anchor_widget_;
   MockCastDialogController controller_;
@@ -306,6 +310,35 @@ TEST_F(CastDialogViewTest, SwitchToNoDeviceView) {
   EXPECT_TRUE(no_sinks_view()->visible());
   EXPECT_FALSE(scroll_view());
   EXPECT_FALSE(dialog_->GetDialogClientView()->ok_button()->enabled());
+}
+
+TEST_F(CastDialogViewTest, ReenableStopButtonWithUpdate) {
+  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
+  media_sinks[0].state = UIMediaSinkState::DISCONNECTING;
+  CastDialogModel model = CreateModelWithSinks(media_sinks);
+  InitializeDialogWithModel(model);
+  // The main button should be disabled while the sink is disconnecting.
+  EXPECT_FALSE(main_button()->enabled());
+
+  // Updating the model should re-enable the main button.
+  media_sinks[0].state = UIMediaSinkState::AVAILABLE;
+  media_sinks[0].route_id = "";
+  model.set_media_sinks(std::move(media_sinks));
+  dialog_->OnModelUpdated(model);
+  EXPECT_TRUE(main_button()->enabled());
+}
+
+TEST_F(CastDialogViewTest, ReenableStopButtonWithSinkSelection) {
+  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink(),
+                                          CreateAvailableSink()};
+  media_sinks[0].state = UIMediaSinkState::DISCONNECTING;
+  InitializeDialogWithModel(CreateModelWithSinks(media_sinks));
+  // The main button should be disabled while the sink is disconnecting.
+  EXPECT_FALSE(main_button()->enabled());
+
+  // Selecting another sink should re-enable the main button.
+  SelectSinkAtIndex(1);
+  EXPECT_TRUE(main_button()->enabled());
 }
 
 }  // namespace media_router

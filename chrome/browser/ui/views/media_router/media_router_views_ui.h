@@ -34,6 +34,7 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, NotifyObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, RemovePseudoSink);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ConnectingState);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, DisconnectingState);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, AddAndRemoveIssue);
 
   // MediaRouterUIBase:
@@ -62,6 +63,10 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   // This value is set when the user opens a file picker, and used when a file
   // is selected and casting starts.
   base::Optional<MediaSink::Id> local_file_sink_id_;
+
+  // This value is set when the UI requests a route to be terminated, and gets
+  // reset when the route is removed.
+  base::Optional<MediaRoute::Id> terminating_route_id_;
 
   // Observers for dialog model updates.
   base::ObserverList<CastDialogController::Observer> observers_;
