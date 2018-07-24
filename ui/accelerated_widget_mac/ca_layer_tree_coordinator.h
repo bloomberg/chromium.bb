@@ -30,6 +30,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
   // The CARendererLayerTree for the pending frame. This is used to construct
   // the CALayer tree for the CoreAnimation renderer.
   CARendererLayerTree* GetPendingCARendererLayerTree();
+  bool HasPendingCARendererLayerTree() const {
+    return !!pending_ca_renderer_layer_tree_;
+  }
 
   // Commit the pending frame's OpenGL backbuffer or CALayer tree to be
   // attached to the root CALayer.

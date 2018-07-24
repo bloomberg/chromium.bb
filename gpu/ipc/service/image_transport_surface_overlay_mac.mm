@@ -4,8 +4,11 @@
 
 #include "gpu/ipc/service/image_transport_surface_overlay_mac.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -78,6 +81,15 @@ bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
 
 void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ApplyBackpressure");
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "mac_swap", base::debug::CrashKeySize::Size64);
+  std::stringstream crash_info;
+  crash_info << "pixel_size:" << pixel_size_.ToString() << " ";
+  crash_info << "scale:" << scale_factor_ << " ";
+  crash_info << "has_tree:"
+             << ca_layer_tree_coordinator_->HasPendingCARendererLayerTree();
+  base::debug::SetCrashKeyString(crash_key, crash_info.str());
+
   gl::GLContext* current_context = gl::GLContext::GetCurrent();
   // TODO(ccameron): Remove these CHECKs.
   CHECK(current_context);
@@ -88,6 +100,8 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
   uint64_t this_frame_fence = current_context->BackpressureFenceCreate();
   current_context->BackpressureFenceWait(previous_frame_fence_);
   previous_frame_fence_ = this_frame_fence;
+
+  base::debug::ClearCrashKeyString(crash_key);
 }
 
 void ImageTransportSurfaceOverlayMac::BufferPresented(
