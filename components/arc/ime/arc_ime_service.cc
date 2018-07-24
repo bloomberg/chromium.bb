@@ -31,9 +31,6 @@ namespace arc {
 
 namespace {
 
-constexpr char kArcNotificationAppId[] =
-    "org.chromium.arc.ArcNotificationService";
-
 base::Optional<double> g_override_default_device_scale_factor;
 
 double GetDefaultDeviceScaleFactor() {
@@ -51,29 +48,10 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
 
   ~ArcWindowDelegateImpl() override = default;
 
-  bool IsExoWindow(const aura::Window* window) const override {
-    return exo::Surface::AsSurface(window) ||
-           exo::ShellSurface::GetMainSurface(window);
-  }
-
-  bool IsArcWindow(const aura::Window* window) const override {
-    if (!IsExoWindow(window))
-      return false;
-
-    aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
-    if (!active || !active->Contains(window))
-      return false;
-    // If the ARC app is focused, the active window should be ARC app window.
-    if (IsArcAppWindow(active))
-      return true;
-
-    // If the ARC notification is focused, the active window is not ARC app
-    // window. Find an app id set to the window and check if it is the ARC
-    // notification app id.
-    for (; window && window != active; window = window->parent()) {
-      const std::string* app_id = exo::ShellSurface::GetApplicationId(window);
-      if (app_id)
-        return *app_id == kArcNotificationAppId;
+  bool IsInArcAppWindow(const aura::Window* window) const override {
+    for (; window; window = window->parent()) {
+      if (IsArcAppWindow(window))
+        return true;
     }
     return false;
   }
@@ -202,13 +180,10 @@ void ArcImeService::ReattachInputMethod(aura::Window* old_window,
 // Overridden from aura::EnvObserver:
 
 void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
-  // Register the focus observer when every exo window is created because an
-  // application id might not be set here yet.
-  if (arc_window_delegate_->IsExoWindow(new_window)) {
-    if (!is_focus_observer_installed_) {
-      arc_window_delegate_->RegisterFocusObserver();
-      is_focus_observer_installed_ = true;
-    }
+  if (arc_window_delegate_->IsInArcAppWindow(new_window) &&
+      !is_focus_observer_installed_) {
+    arc_window_delegate_->RegisterFocusObserver();
+    is_focus_observer_installed_ = true;
   }
 
   // TODO(mash): Support virtual keyboard under MASH. There is no
@@ -251,7 +226,7 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
 
   const bool detach = (lost_focus && focused_arc_window_ == lost_focus);
   const bool attach =
-      (gained_focus && arc_window_delegate_->IsArcWindow(gained_focus));
+      (gained_focus && arc_window_delegate_->IsInArcAppWindow(gained_focus));
 
   if (detach) {
     focused_arc_window_->RemoveObserver(this);
