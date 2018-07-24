@@ -543,8 +543,6 @@ jumbo_split_static_library("ui") {
       "cocoa/touchbar/web_textfield_touch_bar_controller.mm",
       "cocoa/translate/translate_bubble_bridge_views.h",
       "cocoa/translate/translate_bubble_bridge_views.mm",
-      "cocoa/translate/translate_bubble_controller.h",
-      "cocoa/translate/translate_bubble_controller.mm",
       "cocoa/url_drop_target.h",
       "cocoa/url_drop_target.mm",
       "cocoa/vertical_gradient_view.h",

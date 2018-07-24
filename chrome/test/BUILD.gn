@@ -4198,7 +4198,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller_unittest.mm",
-        "../browser/ui/cocoa/translate/translate_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
         "../browser/ui/cocoa/vertical_gradient_view_unittest.mm",
         "../browser/ui/cocoa/view_resizer_pong.h",
@@ -5101,10 +5100,6 @@ if (!is_android) {
         # toolkit-views secondary UI. It should not be deleted with the Cocoa
         # bubble (but it can be deleted with the Cocoa browser window).
         "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_interactive_uitest.mm",
-
-        # The translate bubble tests only obsolete Cocoa UI and doesn't link.
-        # Ensure the corresponding file is deleted when removing the next line.
-        # "../browser/ui/cocoa/translate/translate_bubble_test_utils_views_cocoa.mm",
       ]
     }
 

@@ -57,7 +57,6 @@ class StatusBubbleMac;
 @class TabStripControllerCocoa;
 @class TabStripView;
 @class ToolbarController;
-@class TranslateBubbleController;
 
 namespace content {
 class WebContents;
@@ -108,8 +107,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
-
-  TranslateBubbleController* translateBubbleController_;  // Weak.
 
   // The total amount by which we've grown the window up or down (to display a
   // bookmark bar and/or download shelf), respectively; reset to 0 when moved
