@@ -532,6 +532,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             mAnimDelegate.showSecurityButton();
         }
 
+        int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
+        String contentDescription = getContext().getString(contentDescriptionId);
+        mSecurityButton.setContentDescription(contentDescription);
+
         setUrlToPageUrl();
         mUrlBar.invalidate();
     }

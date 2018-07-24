@@ -1042,6 +1042,10 @@ public class LocationBarLayout extends FrameLayout
             mSecurityButton.setTint(mToolbarDataProvider.getSecurityIconColorStateList());
         }
 
+        int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
+        String contentDescription = getContext().getString(contentDescriptionId);
+        mSecurityButton.setContentDescription(contentDescription);
+
         updateVerboseStatusVisibility();
 
         if (mSecurityIconResource == id && mLocationBarButtonType == getLocationBarButtonToShow()) {
