@@ -81,6 +81,8 @@ DEFINE_VARIATION_PARAM(kIPHNewTabFeature, "IPH_NewTab");
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #if defined(OS_IOS)
 DEFINE_VARIATION_PARAM(kIPHBottomToolbarTipFeature, "IPH_BottomToolbarTip");
+DEFINE_VARIATION_PARAM(kIPHLongPressToolbarTipFeature,
+                       "IPH_LongPressToolbarTip");
 DEFINE_VARIATION_PARAM(kIPHNewTabTipFeature, "IPH_NewTabTip");
 DEFINE_VARIATION_PARAM(kIPHNewIncognitoTabTipFeature, "IPH_NewIncognitoTabTip");
 DEFINE_VARIATION_PARAM(kIPHBadgedReadingListFeature, "IPH_BadgedReadingList");
@@ -118,6 +120,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHNewTabFeature),
 #elif defined(OS_IOS)
         VARIATION_ENTRY(kIPHBottomToolbarTipFeature),
+        VARIATION_ENTRY(kIPHLongPressToolbarTipFeature),
         VARIATION_ENTRY(kIPHNewTabTipFeature),
         VARIATION_ENTRY(kIPHNewIncognitoTabTipFeature),
         VARIATION_ENTRY(kIPHBadgedReadingListFeature),

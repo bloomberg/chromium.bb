@@ -5338,6 +5338,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
     if (completion)
       completion();
+    [self.bubblePresenter presentLongPressBubbleIfEligible];
 
     if (self.foregroundTabWasAddedCompletionBlock) {
       self.foregroundTabWasAddedCompletionBlock();
