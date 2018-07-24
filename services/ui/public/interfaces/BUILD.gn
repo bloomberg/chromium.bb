@@ -9,7 +9,6 @@ mojom("interfaces") {
   sources = [
     "accessibility_manager.mojom",
     "event_injector.mojom",
-    "event_matcher.mojom",
     "gpu.mojom",
     "remoting_event_injector.mojom",
     "screen_provider.mojom",
@@ -17,7 +16,6 @@ mojom("interfaces") {
     "video_detector.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",
-    "window_manager_window_tree_factory.mojom",
     "window_server_test.mojom",
     "window_tree.mojom",
     "window_tree_constants.mojom",

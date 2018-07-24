@@ -87,7 +87,7 @@ void AshWindowTreeHostPlatform::SetCursorConfig(
   float scale = display.device_scale_factor();
 
   if (!display.IsInternal())
-    scale *= ui::mojom::kCursorMultiplierForExternalDisplays;
+    scale *= 1.2;
 
   ui::CursorController::GetInstance()->SetCursorConfigForWindow(
       GetAcceleratedWidget(), rotation, scale);

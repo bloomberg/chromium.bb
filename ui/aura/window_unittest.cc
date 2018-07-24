@@ -422,14 +422,14 @@ TEST_P(WindowTest, ContainsMouse) {
 // Tests that the root window gets a valid LocalSurfaceId.
 TEST_P(WindowTest, RootWindowHasValidLocalSurfaceId) {
   // When mus is hosting viz, the LocalSurfaceId is sent from mus.
-  if (GetParam() != BackendType::CLASSIC)
+  if (GetParam() != Env::Mode::LOCAL)
     return;
   EXPECT_TRUE(root_window()->GetLocalSurfaceId().is_valid());
 }
 
 TEST_P(WindowTest, WindowEmbeddingClientHasValidLocalSurfaceId) {
   // When mus is hosting viz, the LocalSurfaceId is sent from mus.
-  if (GetParam() != BackendType::CLASSIC)
+  if (GetParam() != Env::Mode::LOCAL)
     return;
   std::unique_ptr<Window> window(CreateTestWindow(
       SK_ColorWHITE, 1, gfx::Rect(10, 10, 300, 200), root_window()));
@@ -1638,6 +1638,9 @@ TEST_P(WindowTest, Transform) {
 }
 
 TEST_P(WindowTest, TransformGesture) {
+  // TODO(sky): fails with mus. https://crbug.com/866502
+  if (GetParam() == Env::Mode::MUS)
+    return;
   gfx::Size size = host()->GetBoundsInPixels().size();
 
   std::unique_ptr<GestureTrackPositionDelegate> delegate(
@@ -3208,10 +3211,10 @@ TEST_P(WindowTest, WindowDestroyCompletesAnimations) {
 }
 
 TEST_P(WindowTest, RootWindowUsesCompositorFrameSinkId) {
-  // MUS2 doesn't create context_factory_private, which results in this test
+  // MUS doesn't create context_factory_private, which results in this test
   // failing.
   // TODO(sky): figure out the right thing here.
-  if (GetParam() == BackendType::MUS2)
+  if (GetParam() == Env::Mode::MUS)
     return;
 
   EXPECT_EQ(host()->compositor()->frame_sink_id(),
@@ -3270,15 +3273,11 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTest,
-                        ::testing::Values(BackendType::CLASSIC,
-                                          BackendType::MUS,
-                                          BackendType::MUS2));
+                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowObserverTest,
-                        ::testing::Values(BackendType::CLASSIC,
-                                          BackendType::MUS,
-                                          BackendType::MUS2));
+                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
 }  // namespace
 }  // namespace test

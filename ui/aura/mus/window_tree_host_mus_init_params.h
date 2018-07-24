@@ -16,35 +16,10 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 
-namespace display {
-class Display;
-}
-
 namespace aura {
 
 class WindowPortMus;
 class WindowTreeClient;
-
-// Used for a WindowTreeHost that corresponds to a Display that is manually
-// created by the window manager.
-struct AURA_EXPORT DisplayInitParams {
-  DisplayInitParams();
-  ~DisplayInitParams();
-
-  // The display, if not provided then the Display identified by
-  // |WindowTreeHostMusInitParams::display_id| must be one of the Displays
-  // contained in Screen.
-  std::unique_ptr<display::Display> display;
-
-  ui::mojom::WmViewportMetrics viewport_metrics;
-
-  bool is_primary_display = false;
-
-  // |mirrors| contains a list of physical displays presenting contents mirrored
-  // from another physical display, or from part of a virtual unified display.
-  // See |display::DisplayManager::software_mirroring_display_list_| for info.
-  std::vector<display::Display> mirrors;
-};
 
 // Used to create a WindowTreeHostMus. The typical case is to use
 // CreateInitParamsForTopLevel().
@@ -66,10 +41,6 @@ struct AURA_EXPORT WindowTreeHostMusInitParams {
 
   // Id of the display the window should be created on.
   int64_t display_id = 0;
-
-  // Used when the WindowTreeHostMus corresponds to a new display manually
-  // created by the window manager.
-  std::unique_ptr<DisplayInitParams> display_init_params;
 
   // Use classic IME (i.e. InputMethodChromeOS) instead of servicified IME
   // (i.e. InputMethodMus).

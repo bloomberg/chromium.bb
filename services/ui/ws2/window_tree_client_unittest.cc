@@ -148,10 +148,9 @@ std::string WindowParentToString(Id window, Id parent) {
 
 // -----------------------------------------------------------------------------
 
-// Extends TestWindowTreeClient to also implement WindowManager as well as
-// adding functions to block until WindowTree acks the change.
-class TestWindowTreeClient2 : public TestWindowTreeClient,
-                              public mojom::WindowManager {
+// Extends TestWindowTreeClient, adding functions to block until WindowTree
+// acks the change.
+class TestWindowTreeClient2 : public TestWindowTreeClient {
  public:
   TestWindowTreeClient2()
       : binding_(this),
@@ -339,10 +338,6 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
                                 const gfx::Transform& new_transform) override {
     tracker()->OnWindowTransformChanged(window_id);
   }
-  void OnClientAreaChanged(
-      Id window_id,
-      const gfx::Insets& new_client_area,
-      const std::vector<gfx::Rect>& new_additional_client_areas) override {}
   void OnTransientWindowAdded(Id window_id, Id transient_window_id) override {
     tracker()->OnTransientWindowAdded(window_id, transient_window_id);
   }
@@ -379,8 +374,6 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
       uint32_t event_id,
       Id window_id,
       int64_t display_id,
-      Id display_root_window_id,
-      const gfx::PointF& event_location_in_screen_pixel_layout,
       std::unique_ptr<ui::Event> event,
       bool matches_pointer_watcher) override {
     // Ack input events to clear the state on the server. These can be received
@@ -443,70 +436,6 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
     }
   }
   void RequestClose(Id window_id) override {}
-  void GetWindowManager(mojo::AssociatedInterfaceRequest<mojom::WindowManager>
-                            internal) override {
-    window_manager_binding_ =
-        std::make_unique<mojo::AssociatedBinding<mojom::WindowManager>>(
-            this, std::move(internal));
-    tree_->GetWindowManagerClient(MakeRequest(&window_manager_client_));
-  }
-
-  // mojom::WindowManager:
-  void OnConnect() override {}
-  void WmOnAcceleratedWidgetForDisplay(
-      int64_t display,
-      gpu::SurfaceHandle surface_handle) override {}
-  void WmNewDisplayAdded(
-      const display::Display& display,
-      mojom::WindowDataPtr root_data,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {}
-  void WmDisplayRemoved(int64_t display_id) override {}
-  void WmDisplayModified(const display::Display& display) override {}
-  void WmSetBounds(uint32_t change_id,
-                   Id window_id,
-                   const gfx::Rect& bounds) override {
-    window_manager_client_->WmResponse(change_id, false);
-  }
-  void WmSetProperty(
-      uint32_t change_id,
-      Id window_id,
-      const std::string& name,
-      const base::Optional<std::vector<uint8_t>>& value) override {
-    window_manager_client_->WmResponse(change_id, false);
-  }
-  void WmSetModalType(Id window_id, ui::ModalType type) override {}
-  void WmSetCanFocus(Id window_id, bool can_focus) override {}
-  void WmCreateTopLevelWindow(
-      uint32_t change_id,
-      const viz::FrameSinkId& frame_sink_id,
-      const base::flat_map<std::string, std::vector<uint8_t>>& properties)
-      override {}
-  void WmClientJankinessChanged(ClientSpecificId client_id,
-                                bool janky) override {}
-  void WmBuildDragImage(const gfx::Point& screen_location,
-                        const gfx::ImageSkia& drag_image,
-                        const gfx::Vector2d& drag_image_offset,
-                        ui::mojom::PointerKind source) override {}
-  void WmMoveDragImage(const gfx::Point& screen_location,
-                       WmMoveDragImageCallback callback) override {
-    std::move(callback).Run();
-  }
-  void WmDestroyDragImage() override {}
-  void WmPerformMoveLoop(uint32_t change_id,
-                         Id window_id,
-                         mojom::MoveLoopSource source,
-                         const gfx::Point& cursor_location) override {}
-  void WmCancelMoveLoop(uint32_t change_id) override {}
-  void WmDeactivateWindow(Id window_id) override {}
-  void WmStackAbove(uint32_t change_id, Id above_id, Id below_id) override {}
-  void WmStackAtTop(uint32_t change_id, Id window_id) override {}
-  void WmPerformWmAction(Id window_id, const std::string& action) override {}
-  void OnAccelerator(uint32_t ack_id,
-                     uint32_t accelerator_id,
-                     std::unique_ptr<ui::Event> event) override {}
-  void OnCursorTouchVisibleChanged(bool enabled) override {}
-  void OnEventBlockedByModalWindow(Id window_id) override {}
 
   // If non-null we're waiting for OnEmbed() using this RunLoop.
   std::unique_ptr<base::RunLoop> embed_run_loop_;
@@ -520,10 +449,6 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
   uint32_t waiting_change_id_;
   bool on_change_completed_result_;
   std::unique_ptr<base::RunLoop> change_completed_run_loop_;
-
-  std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
-      window_manager_binding_;
-  mojom::WindowManagerClientAssociatedPtr window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient2);
 };

@@ -14,7 +14,6 @@
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/capture_synchronizer.h"

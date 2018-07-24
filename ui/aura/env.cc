@@ -101,9 +101,6 @@ std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
     case aura::client::WindowEmbedType::NONE:
       window_mus_type = WindowMusType::LOCAL;
       break;
-    case aura::client::WindowEmbedType::TOP_LEVEL_IN_WM:
-      window_mus_type = WindowMusType::TOP_LEVEL_IN_WM;
-      break;
     case aura::client::WindowEmbedType::EMBED_IN_OWNER:
       window_mus_type = WindowMusType::EMBED_IN_OWNER;
       break;

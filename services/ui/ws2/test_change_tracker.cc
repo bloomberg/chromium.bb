@@ -435,7 +435,6 @@ void TestChangeTracker::OnWindowInputEvent(
     Id window_id,
     const ui::Event& event,
     int64_t display_id,
-    const gfx::PointF& event_location_in_screen_pixel_layout,
     bool matches_pointer_watcher) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
@@ -445,7 +444,6 @@ void TestChangeTracker::OnWindowInputEvent(
   change.display_id = display_id;
   if (event.IsLocatedEvent())
     change.location1 = event.AsLocatedEvent()->root_location();
-  change.location2 = event_location_in_screen_pixel_layout;
   if (event.IsKeyEvent() && event.AsKeyEvent()->properties())
     change.key_event_properties = *event.AsKeyEvent()->properties();
   AddChange(change);

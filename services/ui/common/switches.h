@@ -5,7 +5,6 @@
 #ifndef SERVICES_UI_COMMON_SWITCHES_H_
 #define SERVICES_UI_COMMON_SWITCHES_H_
 
-
 namespace ui {
 namespace switches {
 

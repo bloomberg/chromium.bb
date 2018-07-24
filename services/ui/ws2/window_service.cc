@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/event_injector.mojom.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/remoting_event_injector.h"
 #include "services/ui/ws2/screen_provider.h"

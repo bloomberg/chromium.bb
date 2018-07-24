@@ -74,7 +74,7 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
 
     root_ = std::make_unique<Window>(nullptr);
     root_->SetProperty(aura::client::kEmbedType,
-                       aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
+                       aura::client::WindowEmbedType::EMBED_IN_OWNER);
     root_->Init(ui::LAYER_NOT_DRAWN);
     root_->SetEventTargeter(std::make_unique<WindowTargeter>());
     root_->SetBounds(gfx::Rect(0, 0, 300, 200));

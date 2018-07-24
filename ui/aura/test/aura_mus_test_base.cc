@@ -7,26 +7,18 @@
 namespace aura {
 namespace test {
 
-AuraMusWmTestBase::AuraMusWmTestBase() {}
+AuraMusClientTestBase::AuraMusClientTestBase() = default;
 
-AuraMusWmTestBase::~AuraMusWmTestBase() {}
-
-void AuraMusWmTestBase::SetUp() {
-  // Run AuraTestBase::SetUp() first because it puts an InProcessContextFactory
-  // in env.
-  EnableMusWithTestWindowTree();
-  AuraTestBase::SetUp();
-}
-
-AuraMusClientTestBase::AuraMusClientTestBase() {}
-
-AuraMusClientTestBase::~AuraMusClientTestBase() {}
+AuraMusClientTestBase::~AuraMusClientTestBase() = default;
 
 void AuraMusClientTestBase::SetUp() {
   // Run AuraTestBase::SetUp() first because it puts an InProcessContextFactory
   // in env.
-  ConfigureBackend(BackendType::MUS2);
-  set_window_manager_delegate(nullptr);
+  ConfigureEnvMode(Env::Mode::MUS);
+  // Don't create a WindowTreeHost by default.
+  // TODO(sky): update tests so that this isn't necessary (make the test code
+  // always create a host for the primary display). https://crbug.com/866634
+  SetCreateHostForPrimaryDisplay(false);
   AuraTestBase::SetUp();
 }
 

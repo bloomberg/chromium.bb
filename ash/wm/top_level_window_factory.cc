@@ -176,8 +176,6 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   aura::Window* window = new aura::Window(window_delegate);
   window_delegate->set_window(window);
   aura::SetWindowType(window, window_type);
-  window->SetProperty(aura::client::kEmbedType,
-                      aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
   ApplyProperties(window, property_converter, *properties);
   window->Init(ui::LAYER_TEXTURED);
 

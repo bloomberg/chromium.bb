@@ -85,13 +85,6 @@ void WindowPortMus::SetCanAcceptDrops(bool can_accept_drops) {
   window_tree_client_->SetCanAcceptDrops(this, can_accept_drops);
 }
 
-void WindowPortMus::SetExtendedHitRegionForChildren(
-    const gfx::Insets& mouse_insets,
-    const gfx::Insets& touch_insets) {
-  window_tree_client_->SetExtendedHitRegionForChildren(window_, mouse_insets,
-                                                       touch_insets);
-}
-
 void WindowPortMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
   window_tree_client_->SetHitTestMask(this, rect);
 }
@@ -312,8 +305,7 @@ void WindowPortMus::SetPropertyFromServer(
 
 void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
-  DCHECK(window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
-         window_mus_type() == WindowMusType::EMBED_IN_OWNER);
+  DCHECK(window_mus_type() == WindowMusType::EMBED_IN_OWNER);
   window_->SetEmbedFrameSinkId(frame_sink_id);
   UpdatePrimarySurfaceId();
 }
@@ -491,8 +483,6 @@ void WindowPortMus::OnDeviceScaleFactorChanged(float old_device_scale_factor,
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
     local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
   }
-  window_tree_client_->OnWindowMusDeviceScaleFactorChanged(
-      this, old_device_scale_factor, new_device_scale_factor);
 
   if (window_->delegate()) {
     window_->delegate()->OnDeviceScaleFactorChanged(old_device_scale_factor,
@@ -610,9 +600,7 @@ bool WindowPortMus::ShouldRestackTransientChildren() {
 }
 
 void WindowPortMus::UpdatePrimarySurfaceId() {
-  if (window_mus_type() != WindowMusType::TOP_LEVEL_IN_WM &&
-      window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
-      window_mus_type() != WindowMusType::DISPLAY_MANUALLY_CREATED &&
+  if (window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
       window_mus_type() != WindowMusType::LOCAL) {
     return;
   }
@@ -626,17 +614,14 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {
-  if (window_mus_type() != WindowMusType::TOP_LEVEL_IN_WM &&
-      window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
-      window_mus_type() != WindowMusType::DISPLAY_MANUALLY_CREATED &&
+  if (window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
       window_mus_type() != WindowMusType::LOCAL) {
     return;
   }
 
   if (!client_surface_embedder_) {
     client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
-        window_, window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM,
-        window_tree_client_->normal_client_area_insets_);
+        window_, /* inject_gutter */ false, gfx::Insets());
   }
 
   client_surface_embedder_->SetPrimarySurfaceId(primary_surface_id_);

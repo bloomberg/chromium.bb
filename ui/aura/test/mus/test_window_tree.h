@@ -49,9 +49,6 @@ class TestWindowTree : public ui::mojom::WindowTree {
   ~TestWindowTree() override;
 
   void set_client(ui::mojom::WindowTreeClient* client) { client_ = client; }
-  void set_window_manager(ui::mojom::WindowManager* window_manager) {
-    window_manager_ = window_manager;
-  }
 
   uint32_t window_id() const { return window_id_; }
 
@@ -225,9 +222,6 @@ class TestWindowTree : public ui::mojom::WindowTree {
                   ui::Id below_id) override;
   void StackAtTop(uint32_t change_id, ui::Id window_id) override;
   void PerformWmAction(ui::Id window_id, const std::string& action) override;
-  void GetWindowManagerClient(
-      mojo::AssociatedInterfaceRequest<ui::mojom::WindowManagerClient> internal)
-      override;
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformDragDrop(
@@ -258,7 +252,6 @@ class TestWindowTree : public ui::mojom::WindowTree {
   std::vector<Change> changes_;
 
   ui::mojom::WindowTreeClient* client_;
-  ui::mojom::WindowManager* window_manager_ = nullptr;
 
   base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       last_new_window_properties_;

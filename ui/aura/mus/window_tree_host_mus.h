@@ -27,7 +27,6 @@ class InputMethodMus;
 class WindowTreeClient;
 class WindowTreeHostMusDelegate;
 
-struct DisplayInitParams;
 struct WindowTreeHostMusInitParams;
 
 class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
@@ -82,21 +81,10 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   // PerformWindowMove().
   void CancelWindowMove();
 
-  // Tells the window manager to confine the cursor to these specific bounds.
-  void ConfineCursorToBounds(const gfx::Rect& pixel_bounds);
-
-  // Used during initial setup. Returns the DisplayInitParams
-  // supplied to the constructor.
-  std::unique_ptr<DisplayInitParams> ReleaseDisplayInitParams();
-
   // Intended only for WindowTreeClient to call.
   void set_display_id(int64_t id) { display_id_ = id; }
   int64_t display_id() const { return display_id_; }
   display::Display GetDisplay() const;
-
-  // Forces WindowTreeHost to re-setup the compositor to use the provided
-  // |widget|.
-  void OverrideAcceleratedWidget(gfx::AcceleratedWidget widget);
 
   // aura::WindowTreeHostPlatform:
   void HideImpl() override;
@@ -107,9 +95,6 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   void OnClosed() override;
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
-  void MoveCursorToScreenLocationInPixels(
-      const gfx::Point& location_in_pixels) override;
-  gfx::Transform GetRootTransformForLocalEventCoordinates() const override;
   int64_t GetDisplayId() override;
 
   // InputMethodMusDelegate:
@@ -125,8 +110,6 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   bool in_set_bounds_from_server_ = false;
 
   std::unique_ptr<InputMethodMus> input_method_;
-
-  std::unique_ptr<DisplayInitParams> display_init_params_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };

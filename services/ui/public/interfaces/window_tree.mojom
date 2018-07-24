@@ -6,9 +6,7 @@ module ui.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
-import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/screen_provider.mojom";
-import "services/ui/public/interfaces/window_manager.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
@@ -301,8 +299,6 @@ interface WindowTree {
   // Sets the cursor when the pointer is inside |window_id|.
   SetCursor(uint32 change_id, uint64 window_id, CursorData cursor);
 
-  // TODO(erg): Additional cursor methods. Visibility, and cursor locking.
-
   // Set text input state for the given window.
   SetWindowTextInputState(uint64 window_id, TextInputState state);
 
@@ -332,9 +328,6 @@ interface WindowTree {
 
   // Tells the window manager to perform |string_action| for |window_id|.
   PerformWmAction(uint64 window_id, string action);
-
-  // See description of WindowManager for details.
-  GetWindowManagerClient(associated WindowManagerClient& internal);
 
   // Returns a shared memory segment that contains two 16-bit ints packed into a
   // single Atomic32, which represent the current location of the mouse cursor
@@ -440,10 +433,6 @@ interface WindowTreeClient {
                            gfx.mojom.Transform old_transform,
                            gfx.mojom.Transform new_transform);
 
-  OnClientAreaChanged(uint64 window_id,
-                      gfx.mojom.Insets new_client_area,
-                      array<gfx.mojom.Rect> new_additional_client_areas);
-
   OnTransientWindowAdded(uint64 window_id,
                          uint64 transient_window_id);
 
@@ -505,13 +494,9 @@ interface WindowTreeClient {
   // specified by StartPointerWatcher(). The client will not receive farther
   // events until the event is ack'ed, regardless of the value of
   // |matches_pointer_watcher|.
-  // TODO(sky): remove |event_location_in_screen_pixel_layout| temporary until
-  // http://crbug.com/747465 is fixed.
   OnWindowInputEvent(uint32 event_id,
                      uint64 window,
                      int64 display_id,
-                     uint64 display_root_window,
-                     gfx.mojom.PointF event_location_in_screen_pixel_layout,
                      ui.mojom.Event event,
                      bool matches_pointer_watcher);
 
@@ -594,9 +579,6 @@ interface WindowTreeClient {
   // The WindowManager is requesting the specified window to close. If the
   // client allows the change it should delete the window.
   RequestClose(uint64 window_id);
-
-  // See description of WindowManager for details.
-  GetWindowManager(associated WindowManager& internal);
 
   // Requests the ScreenProviderObserver from the client. See
   // ScreenProviderObserver for details.

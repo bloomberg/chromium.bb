@@ -403,8 +403,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void StackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void StackAtTop(uint32_t change_id, Id window_id) override;
   void PerformWmAction(Id window_id, const std::string& action) override;
-  void GetWindowManagerClient(
-      ::ui::mojom::WindowManagerClientAssociatedRequest internal) override;
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformWindowMove(uint32_t change_id,
