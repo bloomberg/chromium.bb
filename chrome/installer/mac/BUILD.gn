@@ -109,7 +109,6 @@ copy("copies") {
       "internal/chrome_dmg_background.png",
       "internal/chrome_dmg_dsstore",
       "internal/chrome_dmg_icon.icns",
-      "internal/generate_diffs",
       "internal/generate_dmgs",
       "internal/signing_common.sh",
     ]
