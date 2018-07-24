@@ -473,7 +473,12 @@ void KeyboardController::HideAnimationFinished() {
 
 void KeyboardController::ShowAnimationFinished() {
   MarkKeyboardLoadFinished();
-  NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
+
+  // Notify observers after animation finished to prevent reveal desktop
+  // background during animation.
+  NotifyKeyboardBoundsChanging(GetKeyboardWindow()->bounds());
+  ui_->EnsureCaretInWorkArea(
+      container_behavior_->GetOccludedBounds(GetKeyboardWindow()->bounds()));
 }
 
 void KeyboardController::SetContainerBehaviorInternal(
@@ -696,15 +701,6 @@ bool KeyboardController::WillHideKeyboard() const {
   bool res = weak_factory_will_hide_.HasWeakPtrs();
   DCHECK_EQ(res, state_ == KeyboardControllerState::WILL_HIDE);
   return res;
-}
-
-void KeyboardController::
-    NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea() {
-  // Notify observers after animation finished to prevent reveal desktop
-  // background during animation.
-  NotifyKeyboardBoundsChanging(GetKeyboardWindow()->bounds());
-  ui_->EnsureCaretInWorkArea(
-      container_behavior_->GetOccludedBounds(GetKeyboardWindow()->bounds()));
 }
 
 void KeyboardController::NotifyKeyboardConfigChanged() {
