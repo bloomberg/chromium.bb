@@ -328,9 +328,9 @@ bool BadVulkanDllVersion(GPUInfo* gpu_info) {
   // 1.0.42.0 - # of crashes: 35749
   // 1.0.42.1 - # of crashes: 68214
   // 1.0.51.0 - # of crashes: 5152
-  // The GPU could be from any vendors, but only some certain models would
-  // crash. For those that don't crash, they usually return failures upon GPU
-  // vulkan support querying even though the GPU drivers can support it.
+  // The GPU could be from any vendor, but only some certain models would crash.
+  // For those that don't crash, they usually return failures upon GPU vulkan
+  // support querying even though the GPU drivers can support it.
   if ((major == 0 && minor == 0 && build_1 == 0 && build_2 == 0) ||
       (major == 1 && minor == 0 && build_1 == 26 && build_2 == 0) ||
       (major == 1 && minor == 0 && build_1 == 33 && build_2 == 0) ||
@@ -410,7 +410,7 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   gpu_info->vulkan_version = 0;
 
   // Skip if the system has an older AMD Vulkan driver amdvlk64.dll or
-  // amdvlk32.dll which crashes when vkCreateInstance() id called. This bug has
+  // amdvlk32.dll which crashes when vkCreateInstance() is called. This bug has
   // been fixed in the latest AMD driver.
   if (BadAMDVulkanDriverVersion(gpu_info)) {
     return;
