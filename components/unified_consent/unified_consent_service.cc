@@ -135,7 +135,10 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
     return;
   }
 
-  DCHECK(sync_service_->IsSyncAllowed());
+  DCHECK(!sync_service_->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE));
+  DCHECK(!sync_service_->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY));
   DCHECK(identity_manager_->HasPrimaryAccount());
   DCHECK_LT(MigrationState::NOT_INITIALIZED, GetMigrationState());
 

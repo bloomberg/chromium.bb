@@ -14,12 +14,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -93,16 +91,15 @@ bool IsEligibleForIOSPromotion(
   if (signin_error_controller && signin_error_controller->HasError())
     return false;
 
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
   // Promotion should only show for english locale.
   PrefService* local_state = g_browser_process->local_state();
   std::string locale = base::i18n::GetConfiguredLocale();
   if (locale != "en-US" && locale != "en-CA")
     return false;
   if (!base::FeatureList::IsEnabled(features::kDesktopIOSPromotion) ||
-      !sync_service || !sync_service->IsSyncAllowed())
+      !profile->IsSyncAllowed()) {
     return false;
+  }
 
   // Check if the specific entrypoint is enabled by Finch.
   std::string targeted_entry_point = base::GetFieldTrialParamValueByFeature(
