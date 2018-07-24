@@ -868,6 +868,11 @@ void LockContentsView::SuspendImminent(
     auth_user->password_view()->Clear();
 }
 
+void LockContentsView::ShowAuthErrorMessageForDebug(int unlock_attempt) {
+  unlock_attempt_ = unlock_attempt;
+  ShowAuthErrorMessage();
+}
+
 void LockContentsView::FocusNextWidget(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   // Tell the focus direction to the status area or the shelf so they can focus
