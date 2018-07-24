@@ -11,17 +11,13 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
 namespace gles2 {
 
 static GLsizei RoundUpToMultipleOf4(GLsizei size) {
   return (size + 3) & ~3;
-}
-
-// A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
-static GLuint ToGLuint(const void* ptr) {
-  return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
 // This class tracks VertexAttribPointers and helps emulate client side buffers.

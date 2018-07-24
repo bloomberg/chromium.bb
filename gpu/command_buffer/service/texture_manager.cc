@@ -387,11 +387,6 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
   return feature_info->IsWebGL2OrES3Context();
 }
 
-// A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
-GLuint ToGLuint(const void* ptr) {
-  return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
-}
-
 base::LazyInstance<const FormatTypeValidator>::Leaky g_format_type_validator =
     LAZY_INSTANCE_INITIALIZER;
 

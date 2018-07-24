@@ -41,6 +41,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -122,11 +123,6 @@ void CopyRectToBuffer(const void* pixels,
     uint32_t size = (height - 1) * pixels_padded_row_size + unpadded_row_size;
     memcpy(dest, source, size);
   }
-}
-
-// A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
-GLuint ToGLuint(const void* ptr) {
-  return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
 static base::AtomicSequenceNumber g_flush_id;
