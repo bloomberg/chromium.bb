@@ -398,6 +398,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
+  if (override_headers_)
+    current_response_.headers = override_headers_;
+
   std::string redirect_location;
   if (override_headers_ && override_headers_->IsRedirect(&redirect_location)) {
     // The response headers may have been overridden by an |onHeadersReceived|
@@ -415,8 +418,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     redirect_info.new_method = request_.method;
     redirect_info.new_url = new_url;
     redirect_info.new_site_for_cookies = new_url;
-
-    current_response_.headers = override_headers_;
 
     // These will get re-bound when a new request is initiated after Restart()
     // below.

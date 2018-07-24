@@ -27,6 +27,8 @@ var EditRequestCookie = chrome.declarativeWebRequest.EditRequestCookie;
 var EditResponseCookie = chrome.declarativeWebRequest.EditResponseCookie;
 var RemoveRequestCookie = chrome.declarativeWebRequest.RemoveRequestCookie;
 var RemoveResponseCookie = chrome.declarativeWebRequest.RemoveResponseCookie;
+var headerName = 'Foo';
+var headerValue = 'Bar';
 
 // Constants as functions, not to be called until after runTests.
 function getURLEchoUserAgent() {
@@ -37,14 +39,8 @@ function getURLHttpSimple() {
   return getServerURL("extensions/api_test/webrequest/simpleLoad/a.html");
 }
 
-function getURLOfHTMLWithThirdParty() {
-  // Returns the URL of a HTML document with a third-party resource.
-  return getServerURL(
-      "extensions/api_test/webrequest/declarative/third-party.html");
-}
-
-function getURLSetCookie() {
-  return getServerURL('set-cookie?Foo=Bar');
+function getURLSetHeader() {
+  return getServerURL('set-header?' + headerName + ': ' + headerValue);
 }
 
 function getURLSetCookie2() {
@@ -54,11 +50,6 @@ function getURLSetCookie2() {
 
 function getURLEchoCookie() {
   return getServerURL('echoheader?Cookie');
-}
-
-function getURLHttpXHRData() {
-  return getServerURL("extensions/api_test/webrequest/xhr/data.json",
-                      "b.com");
 }
 
 runTests([
@@ -90,21 +81,21 @@ runTests([
     expect();  // Used for initialization.
     onRequest.addRules(
       [{conditions: [new RequestMatcher()],
-        actions: [new RemoveRequestHeader({name: "user-AGENT"})]
+        actions: [new RemoveRequestHeader({name: headerName})]
        }],
-      function() {
-        // Check the page content for our modified User-Agent string.
-        navigateAndWait(getURLEchoUserAgent(), function() {
-          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
-            chrome.test.assertTrue(request.pass, "User-Agent was not removed.");
-          });
-          chrome.tabs.executeScript(tabId,
-            {
-              code: "chrome.extension.sendRequest(" +
-                    "{pass: document.body.innerText.indexOf('Mozilla') == -1});"
-            });
+      chrome.test.callbackPass(function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', getServerURL('echoheader?' + headerName));
+        xhr.setRequestHeader(headerName, headerValue);
+        xhr.onload = chrome.test.callbackPass(function() {
+          chrome.test.assertTrue(xhr.responseText.indexOf(headerValue) == -1,
+              'Header was not removed.');
         });
-      });
+        xhr.onerror = function() {
+          chrome.test.fail();
+        }
+        xhr.send();
+      }));
   },
 
   function testAddResponseHeader() {
@@ -112,20 +103,20 @@ runTests([
     expect();  // Used for initialization.
     onRequest.addRules(
       [{conditions: [new RequestMatcher()],
-        actions: [new AddResponseHeader({name: "Set-Cookie", value: "Bar=baz"})]
+        actions: [new AddResponseHeader({name: headerName, value: headerValue})]
        }],
-      function() {
-        navigateAndWait(getURLEchoUserAgent(), function() {
-          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
-            chrome.test.assertTrue(request.pass, "Cookie was not added.");
-          });
-          chrome.tabs.executeScript(tabId,
-            {
-              code: "chrome.extension.sendRequest(" +
-                    "{pass: document.cookie.indexOf('Bar') != -1});"
-            });
+      chrome.test.callbackPass(function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', getServerURL('echo'));
+        xhr.onload = chrome.test.callbackPass(function() {
+          chrome.test.assertTrue(xhr.getResponseHeader(headerName) == 'Bar',
+              'Header was not added.');
         });
-      });
+        xhr.onerror = function() {
+          chrome.test.fail();
+        }
+        xhr.send();
+      }));
   },
 
   function testRemoveResponseHeader() {
@@ -133,21 +124,21 @@ runTests([
     expect();  // Used for initialization.
     onRequest.addRules(
       [{conditions: [new RequestMatcher()],
-        actions: [new RemoveResponseHeader({name: "Set-Cookie",
-                                            value: "FoO=bAR"})]
+        actions: [new RemoveResponseHeader({name: headerName,
+                                            value: 'Bar'})]
        }],
-      function() {
-        navigateAndWait(getURLSetCookie(), function() {
-          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
-            chrome.test.assertTrue(request.pass, "Cookie was not removed.");
-          });
-          chrome.tabs.executeScript(tabId,
-            {
-              code: "chrome.extension.sendRequest(" +
-                    "{pass: document.cookie.indexOf('Foo') == -1});"
-            });
+      chrome.test.callbackPass(function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', getURLSetHeader());
+        xhr.onload = chrome.test.callbackPass(function() {
+          chrome.test.assertTrue(xhr.getResponseHeader(headerName) == null,
+              'Header was not removed.');
         });
-      });
+        xhr.onerror = function() {
+          chrome.test.fail();
+        }
+        xhr.send();
+      }));
   },
 
   function testPriorities() {
@@ -219,6 +210,13 @@ runTests([
   },
 
   function testEditResponseCookies() {
+    // TODO(crbug.com/827582): Editing response cookies through
+    // declarativeWebRequest is not supported with the network service.
+    if (networkServiceState == 'enabled') {
+      chrome.test.succeed();
+      return;
+    }
+
     ignoreUnexpected = true;
     expect();
     onRequest.addRules(

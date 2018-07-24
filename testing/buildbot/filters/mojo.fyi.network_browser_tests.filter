@@ -207,8 +207,6 @@
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
 -ExtensionWebRequestApiTest.WebRequestBlocking
--ExtensionWebRequestApiTest.WebRequestDeclarative2
--ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
 # Needs synchronization to wait until after URLLoaderFactories are rebound.
 -DevToolsFrontendInWebRequestApiTest.HiddenRequests
