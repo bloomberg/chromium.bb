@@ -1212,23 +1212,24 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
 
 std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
     const std::string& extension_id,
-    const base::DictionaryValue* extension) const {
+    const base::DictionaryValue* extension,
+    bool include_component_extensions) const {
   int location_value;
   if (!extension->GetInteger(kPrefLocation, &location_value))
     return std::unique_ptr<ExtensionInfo>();
 
   Manifest::Location location = static_cast<Manifest::Location>(location_value);
-  if (location == Manifest::COMPONENT) {
-    // Component extensions are ignored. Component extensions may have data
-    // saved in preferences, but they are already loaded at this point (by
-    // ComponentLoader) and shouldn't be populated into the result of
+  if (location == Manifest::COMPONENT && !include_component_extensions) {
+    // Component extensions are ignored by default. Component extensions may
+    // have data saved in preferences, but they are already loaded at this point
+    // (by ComponentLoader) and shouldn't be populated into the result of
     // GetInstalledExtensionsInfo, otherwise InstalledLoader would also want to
     // load them.
     return std::unique_ptr<ExtensionInfo>();
   }
 
   // Only the following extension types have data saved in the preferences.
-  if (location != Manifest::INTERNAL &&
+  if (location != Manifest::INTERNAL && location != Manifest::COMPONENT &&
       !Manifest::IsUnpackedLocation(location) &&
       !Manifest::IsExternalLocation(location)) {
     NOTREACHED();
@@ -1255,7 +1256,8 @@ std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
 }
 
 std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
-    const std::string& extension_id) const {
+    const std::string& extension_id,
+    bool include_component_extensions) const {
   const base::DictionaryValue* ext = NULL;
   const base::DictionaryValue* extensions =
       prefs_->GetDictionary(pref_names::kExtensions);
@@ -1268,11 +1270,13 @@ std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
     return std::unique_ptr<ExtensionInfo>();
   }
 
-  return GetInstalledInfoHelper(extension_id, ext);
+  return GetInstalledInfoHelper(extension_id, ext,
+                                include_component_extensions);
 }
 
 std::unique_ptr<ExtensionPrefs::ExtensionsInfo>
-ExtensionPrefs::GetInstalledExtensionsInfo() const {
+ExtensionPrefs::GetInstalledExtensionsInfo(
+    bool include_component_extensions) const {
   std::unique_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
   const base::DictionaryValue* extensions =
@@ -1282,8 +1286,8 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
     if (!crx_file::id_util::IdIsValid(extension_id.key()))
       continue;
 
-    std::unique_ptr<ExtensionInfo> info =
-        GetInstalledExtensionInfo(extension_id.key());
+    std::unique_ptr<ExtensionInfo> info = GetInstalledExtensionInfo(
+        extension_id.key(), include_component_extensions);
     if (info)
       extensions_info->push_back(std::move(info));
   }
@@ -1306,7 +1310,8 @@ ExtensionPrefs::GetUninstalledExtensionsInfo() const {
       continue;
 
     std::unique_ptr<ExtensionInfo> info =
-        GetInstalledInfoHelper(extension_id.key(), ext);
+        GetInstalledInfoHelper(extension_id.key(), ext,
+                               /*include_component_extensions = */ false);
     if (info)
       extensions_info->push_back(std::move(info));
   }
@@ -1401,7 +1406,8 @@ std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
   if (!extension_prefs->GetDictionary(kDelayedInstallInfo, &ext))
     return std::unique_ptr<ExtensionInfo>();
 
-  return GetInstalledInfoHelper(extension_id, ext);
+  return GetInstalledInfoHelper(extension_id, ext,
+                                /*include_component_extensions = */ false);
 }
 
 ExtensionPrefs::DelayReason ExtensionPrefs::GetDelayedInstallReason(
@@ -1609,7 +1615,8 @@ void ExtensionPrefs::InitPrefStore() {
   std::unique_ptr<ExtensionsInfo> extensions_info;
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefGetExtensionsTime");
-    extensions_info = GetInstalledExtensionsInfo();
+    extensions_info =
+        GetInstalledExtensionsInfo(/*include_component_extensions = */ true);
   }
 
   if (extensions_disabled_) {
@@ -1642,11 +1649,6 @@ void ExtensionPrefs::InitPrefStore() {
     };
     base::EraseIf(*extensions_info, predicate);
   }
-
-  // TODO(devlin): |extensions_info| won't contain records for component
-  // extensions (see GetInstalledInfoHelper()). It probably should, because
-  // otherwise component extensions using APIs that rely on extension-controlled
-  // prefs may crash.
 
   InitExtensionControlledPrefs(*extensions_info);
 

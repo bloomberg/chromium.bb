@@ -194,6 +194,36 @@ IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Get) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, PRE_Get_ComponentApp) {
+  EXPECT_FALSE(RunPlatformAppTestWithFlags(GetTestExtensionPath(), "{}",
+                                           kFlagLoadAsComponent))
+      << message_;
+}
+
+// A regression test for https://crbug.com/454513. Ensure that loading a
+// component extension with the same version as has previously loaded, correctly
+// sets up access to accessibility prefs. Otherwise,this is the same as the
+// |Get| test.
+IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Get_ComponentApp) {
+  // WARNING: Make sure that spoken feedback is not among enabled_features
+  // (see |AccessibilityFeaturesApiTest.Set| test for the reason).
+  std::vector<std::string> enabled_features = {"largeCursor", "stickyKeys",
+                                               "highContrast"};
+
+  std::vector<std::string> disabled_features = {
+      "spokenFeedback", "screenMagnifier", "autoclick", "virtualKeyboard"};
+
+  ASSERT_TRUE(
+      InitPrefServiceForTest(GetPrefs(), enabled_features, disabled_features));
+
+  std::string test_arg;
+  ASSERT_TRUE(GenerateTestArg("getterTest", enabled_features, disabled_features,
+                              &test_arg));
+  EXPECT_TRUE(RunPlatformAppTestWithFlags(
+      GetTestExtensionPath(), test_arg.c_str(), kFlagLoadAsComponent))
+      << message_;
+}
+
 // Tests that an extension with modify permission can modify accessibility
 // features, while an extension that doesn't have the permission can't.
 IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Set) {
