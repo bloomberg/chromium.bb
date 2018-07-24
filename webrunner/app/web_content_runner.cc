@@ -31,8 +31,6 @@ void WebContentRunner::StartComponent(
   auto controller = ComponentControllerImpl::CreateForRequest(
       this, std::move(package), std::move(startup_info),
       std::move(controller_request));
-  controller->BindToRequest(std::move(package), std::move(startup_info),
-                            std::move(controller_request));
   controllers_.insert(std::move(controller));
 }
 
