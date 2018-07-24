@@ -71,7 +71,7 @@ public class WebApkUtils {
         try {
             String hostPackage = getHostBrowserPackageName(context);
             return context.getApplicationContext().createPackageContext(
-                    hostPackage, Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+                    hostPackage, 0);
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
