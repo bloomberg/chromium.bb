@@ -389,6 +389,9 @@ class QuicStreamFactory::Job {
   const NetLogWithSource net_log_;
   int num_sent_client_hellos_;
   QuicChromiumClientSession* session_;
+  // If connection migraiton is supported, |network_| denotes the network on
+  // which |session_| is created.
+  NetworkChangeNotifier::NetworkHandle network_;
   CompletionOnceCallback host_resolution_callback_;
   CompletionOnceCallback callback_;
   AddressList address_list_;
@@ -422,6 +425,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                                  NetLogSourceType::QUIC_STREAM_FACTORY_JOB)),
       num_sent_client_hellos_(0),
       session_(nullptr),
+      network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       weak_factory_(this) {
   net_log_.BeginEvent(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB,
@@ -552,7 +556,7 @@ int QuicStreamFactory::Job::DoConnect() {
   int rv = factory_->CreateSession(
       key_, quic_version_, cert_verify_flags_, require_confirmation,
       address_list_, dns_resolution_start_time_, dns_resolution_end_time_,
-      net_log_, &session_);
+      net_log_, &session_, &network_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -1456,7 +1460,8 @@ int QuicStreamFactory::CreateSession(
     base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
     const NetLogWithSource& net_log,
-    QuicChromiumClientSession** session) {
+    QuicChromiumClientSession** session,
+    NetworkChangeNotifier::NetworkHandle* network) {
   TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   const quic::QuicServerId& server_id = key.server_id();
@@ -1471,14 +1476,15 @@ int QuicStreamFactory::CreateSession(
     return rv;
 
   if (migrate_sessions_on_network_change_v2_) {
+    *network = socket->GetBoundNetwork();
     if (default_network_ == NetworkChangeNotifier::kInvalidNetworkHandle) {
       // QuicStreamFactory may miss the default network signal before its
       // creation, update |default_network_| when the first socket is bound
       // to the default network.
-      default_network_ = socket->GetBoundNetwork();
+      default_network_ = *network;
     } else {
       UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.DefaultNetworkMatch",
-                            default_network_ == socket->GetBoundNetwork());
+                            default_network_ == *network);
     }
   }
 
