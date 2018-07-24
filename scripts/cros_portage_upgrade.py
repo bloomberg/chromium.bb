@@ -10,7 +10,6 @@ from __future__ import print_function
 import filecmp
 import fnmatch
 import os
-import parallel_emerge
 import portage  # pylint: disable=import-error
 import re
 import shutil
@@ -24,6 +23,7 @@ from chromite.lib import osutils
 from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
+from chromite.scripts import parallel_emerge
 
 
 oper = operation.Operation('cros_portage_upgrade')

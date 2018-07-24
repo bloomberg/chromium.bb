@@ -33,6 +33,7 @@ from chromite.lib import constants
 # we can use isolateserver for deduping.
 # TODO: If we ever sort out third_party/ handling and make it per-script opt-in,
 # we can purge this logic.
+# pylint: disable=ungrouped-imports
 third_party = os.path.join(constants.CHROMITE_DIR, 'third_party')
 while True:
   try:
