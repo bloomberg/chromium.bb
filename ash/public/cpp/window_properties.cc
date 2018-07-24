@@ -39,6 +39,8 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterRectProperty(
+      kCaptionButtonBoundsKey, mojom::kCaptionButtonBounds_Property);
   property_converter->RegisterPrimitiveProperty(
       kFrameBackButtonStateKey,
       ui::mojom::WindowManager::kFrameBackButtonState_Property,
@@ -89,9 +91,8 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterStringProperty(
       kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
-  property_converter->RegisterPrimitiveProperty(
-      kRestoreBoundsOverrideKey, mojom::kRestoreBoundsOverride_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterRectProperty(
+      kRestoreBoundsOverrideKey, mojom::kRestoreBoundsOverride_Property);
   property_converter->RegisterPrimitiveProperty(
       kRestoreWindowStateTypeOverrideKey,
       mojom::kRestoreWindowStateTypeOverride_Property,
@@ -108,6 +109,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kCaptionButtonBoundsKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(FrameBackButtonState,
                              kFrameBackButtonStateKey,
                              FrameBackButtonState::kNone);

@@ -76,6 +76,12 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
 
+// The bounds of the window control button container (min/max/restore) relative
+// to the window's frame.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
+    kCaptionButtonBoundsKey;
+
+// The state of the frame back button, whether it's visible and enabled.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<FrameBackButtonState>* const
     kFrameBackButtonStateKey;
 
