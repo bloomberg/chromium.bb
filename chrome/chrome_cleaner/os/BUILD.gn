@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common_os") {
+static_library("common_os") {
   sources = [
     "digest_verifier.cc",
     "digest_verifier.h",
@@ -74,6 +74,7 @@ source_set("common_os") {
     "ntdll.lib",  # For NtQueryKey
     "secur32.lib",  # For GetUserNameEx
     "taskschd.lib",  # For CLSID_TaskScheduler
+    "wintrust.lib",  # For WinVerifyTrust
   ]
 
   defines = [ "SECURITY_WIN32" ]  # For secur32.lib
@@ -90,7 +91,7 @@ source_set("file_remover_api") {
   ]
 }
 
-source_set("cleaner_os") {
+static_library("cleaner_os") {
   sources = [
     "file_removal_status_updater.cc",
     "file_removal_status_updater.h",
@@ -123,27 +124,11 @@ source_set("unittest_sources") {
 
   sources = [
     # TODO(joenotcharles): Copy unit tests from the internal repo.
-    "digest_verifier_unittest.cc",
-    "disk_util_unittest.cc",
-    "file_path_sanitization_unittest.cc",
-    "file_path_set_unittest.cc",
-    "file_removal_status_updater_unittest.cc",
-    "file_remover_unittest.cc",
   ]
 
   deps = [
     ":cleaner_os",
     ":common_os",
     ":file_remover_api",
-    "//base",
-    "//base/test:test_config",
-    "//base/test:test_support",
-    "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
-    "//chrome/chrome_cleaner/strings",
-    "//chrome/chrome_cleaner/test:test_executables",
-    "//chrome/chrome_cleaner/test:test_strings",
-    "//chrome/chrome_cleaner/test:test_util",
-    "//chrome/chrome_cleaner/test/resources:test_resources",
-    "//testing/gtest",
   ]
 }

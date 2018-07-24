@@ -22,14 +22,10 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/pup_data:unittest_sources",
     "//chrome/chrome_cleaner/settings:unittest_sources",
     "//chrome/chrome_cleaner/strings:unittest_sources",
-    "//chrome/chrome_cleaner/test:unittest_sources",
 
     # Dependencies of the test harness.
     "//base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/os:cleaner_os",
-    "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/test:test_util",
     "//sandbox/win:sandbox",
     "//testing/gtest",
   ]
