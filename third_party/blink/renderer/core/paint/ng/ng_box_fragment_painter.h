@@ -34,7 +34,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&);
-  void PaintInlineBox(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintObject(const PaintInfo&,
+                   const LayoutPoint&,
+                   bool suppress_box_decoration_background = false);
 
   // Hit tests this box fragment.
   // @param physical_offset Physical offset of this box fragment in paint layer.
@@ -82,9 +84,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const LayoutPoint& paint_offset);
   void PaintInlineChildBoxUsingLegacyFallback(const NGPhysicalFragment&,
                                               const PaintInfo&);
-  void PaintObject(const PaintInfo&,
-                   const LayoutPoint&,
-                   bool suppress_box_decoration_background = false);
   void PaintBlockFlowContents(const PaintInfo&,
                               const LayoutPoint& paint_offset);
   void PaintInlineChild(const NGPaintFragment&,
