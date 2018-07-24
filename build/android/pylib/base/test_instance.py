@@ -32,4 +32,3 @@ class TestInstance(object):
 
   def __exit__(self, _exc_type, _exc_val, _exc_tb):
     self.TearDown()
-

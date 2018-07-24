@@ -555,4 +555,3 @@ class GtestTestInstance(test_instance.TestInstance):
   def TearDown(self):
     """Do nothing."""
     pass
-

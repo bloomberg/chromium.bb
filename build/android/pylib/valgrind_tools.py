@@ -127,4 +127,3 @@ def PushFilesForTool(tool_name, device):
     print 'Unknown tool %s, available tools: %s' % (
         tool_name, ', '.join(sorted(TOOL_REGISTRY.keys())))
     sys.exit(1)
-

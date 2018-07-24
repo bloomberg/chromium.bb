@@ -167,4 +167,3 @@ def Initialize(output_directory=None, custom_deps=None, adb_path=None):
 
   devil_env.config.Initialize(
       configs=[devil_dynamic_config], config_files=[_DEVIL_CONFIG])
-

@@ -16,4 +16,3 @@ class TestServer(object):
 
   def TearDown(self):
     raise NotImplementedError
-

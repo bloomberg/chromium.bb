@@ -98,4 +98,3 @@ class LocalTestServerSpawner(test_server.TestServer):
     self.Reset()
     self._spawning_server.Stop()
     forwarder.Forwarder.UnmapDevicePort(self.port, self._device)
-
