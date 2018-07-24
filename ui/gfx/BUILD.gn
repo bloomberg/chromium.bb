@@ -258,29 +258,6 @@ jumbo_component("gfx") {
     "//third_party/zlib",
   ]
 
-  # Text rendering conditions (complicated so separated out).
-  if (use_aura || is_mac || is_android || is_fuchsia) {
-    # Mac doesn't use RenderTextHarfBuzz by default yet.
-    sources += [
-      "harfbuzz_font_skia.cc",
-      "harfbuzz_font_skia.h",
-      "render_text_harfbuzz.cc",
-      "render_text_harfbuzz.h",
-      "render_text_mac.h",
-      "render_text_mac.mm",
-      "text_utils_skia.cc",
-    ]
-
-    if (!is_ios) {
-      sources += [
-        "render_text.cc",
-        "render_text.h",
-      ]
-    }
-  } else {
-    # We don't support RenderText on these platforms.
-  }
-
   if (is_android) {
     set_sources_assignment_filter([])
     sources += [
@@ -316,8 +293,17 @@ jumbo_component("gfx") {
 
   if (!is_ios) {
     sources += [
+      "harfbuzz_font_skia.cc",
+      "harfbuzz_font_skia.h",
       "paint_vector_icon.cc",
       "paint_vector_icon.h",
+      "render_text.cc",
+      "render_text.h",
+      "render_text_harfbuzz.cc",
+      "render_text_harfbuzz.h",
+      "render_text_mac.h",
+      "render_text_mac.mm",
+      "text_utils_skia.cc",
       "vector_icon_types.h",
     ]
   }
