@@ -27,7 +27,7 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
   get extraLibraries() {
     return PolymerTest.getLibraries(ROOT_PATH).concat([
       ROOT_PATH + 'ui/webui/resources/js/assert.js',
-      'extension_test_util.js',
+      'test_util.js',
       '../mock_controller.js',
       '../../../../../ui/webui/resources/js/promise_resolver.js',
       '../../../../../ui/webui/resources/js/webui_resource_test.js',
@@ -78,7 +78,7 @@ CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_sidebar_test.js',
+      'sidebar_test.js',
     ]);
   }
 
@@ -103,7 +103,7 @@ CrExtensionsToolbarTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_toolbar_test.js',
+      'toolbar_test.js',
     ]);
   }
 
@@ -142,7 +142,7 @@ CrExtensionsItemsTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_item_test.js',
+      'item_test.js',
     ]);
   }
 
@@ -202,7 +202,7 @@ CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_detail_view_test.js',
+      'detail_view_test.js',
     ]);
   }
 
@@ -244,7 +244,7 @@ CrExtensionsItemListTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_item_list_test.js',
+      'item_list_test.js',
     ]);
   }
 
@@ -285,7 +285,7 @@ CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_load_error_test.js',
+      'load_error_test.js',
     ]);
   }
 
@@ -320,7 +320,7 @@ CrExtensionsManagerUnitTest = class extends CrExtensionsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       'test_kiosk_browser_proxy.js',
-      'extension_manager_unit_test.js',
+      'manager_unit_test.js',
     ]);
   }
 
@@ -370,7 +370,7 @@ CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_manager_test.js',
+      'manager_test.js',
     ]);
   }
 
@@ -416,7 +416,7 @@ CrExtensionsManagerTestWithIdQueryParam =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_manager_test.js',
+      'manager_test.js',
     ]);
   }
 
@@ -446,7 +446,7 @@ CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_keyboard_shortcuts_test.js',
+      'keyboard_shortcuts_test.js',
     ]);
   }
 
@@ -481,7 +481,7 @@ CrExtensionsShortcutInputTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_shortcut_input_test.js',
+      'shortcut_input_test.js',
     ]);
   }
 
@@ -502,7 +502,7 @@ CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_pack_dialog_test.js',
+      'pack_dialog_test.js',
     ]);
   }
 
@@ -548,7 +548,7 @@ CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '../settings/test_util.js',
-      'extension_options_dialog_test.js',
+      'options_dialog_test.js',
     ]);
   }
 
@@ -574,7 +574,7 @@ CrExtensionsErrorPageTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_error_page_test.js',
+      'error_page_test.js',
     ]);
   }
 
@@ -603,7 +603,7 @@ CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_code_section_test.js',
+      'code_section_test.js',
     ]);
   }
 
@@ -633,7 +633,7 @@ CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_navigation_helper_test.js',
+      'navigation_helper_test.js',
     ]);
   }
 
@@ -673,7 +673,7 @@ CrExtensionsViewManagerTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_view_manager_test.js',
+      'view_manager_test.js',
     ]);
   }
 
@@ -788,7 +788,7 @@ CrExtensionsKioskModeTest = class extends CrExtensionsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       'test_kiosk_browser_proxy.js',
-      'extension_kiosk_mode_test.js',
+      'kiosk_mode_test.js',
     ]);
   }
   /** @override */
@@ -834,7 +834,7 @@ CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
 
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_runtime_hosts_dialog_test.js',
+      'runtime_hosts_dialog_test.js',
     ]);
   }
 };
@@ -854,7 +854,7 @@ CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
 
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'extension_runtime_host_permissions_test.js',
+      'runtime_host_permissions_test.js',
     ]);
   }
 };
