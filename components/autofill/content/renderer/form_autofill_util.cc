@@ -1420,6 +1420,10 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
          IsSelectElement(element) || IsTextAreaElement(element);
 }
 
+bool IsWebElementVisible(const blink::WebElement& element) {
+  return element.IsFocusable();
+}
+
 const base::string16 GetFormIdentifier(const WebFormElement& form) {
   base::string16 identifier = form.GetName().Utf16();
   CR_DEFINE_STATIC_LOCAL(WebString, kId, ("id"));
@@ -1429,8 +1433,18 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
   return identifier;
 }
 
-bool IsWebElementVisible(const blink::WebElement& element) {
-  return element.IsFocusable();
+base::i18n::TextDirection GetTextDirectionForElement(
+    const blink::WebFormControlElement& element) {
+  // Use 'text-align: left|right' if set or 'direction' otherwise.
+  // See https://crbug.com/482339
+  base::i18n::TextDirection direction = element.DirectionForFormData() == "rtl"
+                                            ? base::i18n::RIGHT_TO_LEFT
+                                            : base::i18n::LEFT_TO_RIGHT;
+  if (element.AlignmentForFormData() == "left")
+    direction = base::i18n::LEFT_TO_RIGHT;
+  else if (element.AlignmentForFormData() == "right")
+    direction = base::i18n::RIGHT_TO_LEFT;
+  return direction;
 }
 
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
@@ -1511,15 +1525,7 @@ void WebFormControlElementToFormField(
     field->is_focusable = IsWebElementVisible(element);
     field->should_autocomplete = element.AutoComplete();
 
-    // Use 'text-align: left|right' if set or 'direction' otherwise.
-    // See crbug.com/482339
-    field->text_direction = element.DirectionForFormData() == "rtl"
-                                ? base::i18n::RIGHT_TO_LEFT
-                                : base::i18n::LEFT_TO_RIGHT;
-    if (element.AlignmentForFormData() == "left")
-      field->text_direction = base::i18n::LEFT_TO_RIGHT;
-    else if (element.AlignmentForFormData() == "right")
-      field->text_direction = base::i18n::RIGHT_TO_LEFT;
+    field->text_direction = GetTextDirectionForElement(element);
     field->is_enabled = element.IsEnabled();
     field->is_readonly = element.IsReadOnly();
     field->is_default = element.GetAttribute("value") == element.Value();

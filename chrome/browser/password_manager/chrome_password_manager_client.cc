@@ -722,7 +722,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
           password_manager_client_bindings_.GetCurrentTargetFrame(),
           ui_data.value().bounds);
       driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
-          element_bounds_in_screen_space);
+          element_bounds_in_screen_space, ui_data.value().text_direction);
     } else {
       PasswordAccessoryController::FromWebContents(web_contents())
           ->OnAutomaticGenerationStatusChanged(false, base::nullopt, nullptr);
@@ -1053,7 +1053,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   if (!is_manually_triggered &&
       driver->GetPasswordAutofillManager()
           ->MaybeShowPasswordSuggestionsWithGeneration(
-              element_bounds_in_screen_space))
+              element_bounds_in_screen_space, ui_data.text_direction))
     return;
 
   element_bounds_in_screen_space = GetBoundsInScreenSpace(ui_data.bounds);

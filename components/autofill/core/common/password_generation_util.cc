@@ -27,10 +27,12 @@ PasswordGenerationUIData::PasswordGenerationUIData(
     const gfx::RectF& bounds,
     int max_length,
     const base::string16& generation_element,
+    base::i18n::TextDirection text_direction,
     const autofill::PasswordForm& password_form)
     : bounds(bounds),
       max_length(max_length),
       generation_element(generation_element),
+      text_direction(text_direction),
       password_form(password_form) {}
 
 PasswordGenerationUIData::PasswordGenerationUIData() = default;

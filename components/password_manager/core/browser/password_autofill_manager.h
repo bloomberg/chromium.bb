@@ -69,12 +69,15 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // This is currently used for cases in which the automatic generation
   // option is offered through a different UI surface than the popup
   // (e.g. via the keyboard accessory on Android).
-  bool MaybeShowPasswordSuggestions(const gfx::RectF& bounds);
+  bool MaybeShowPasswordSuggestions(const gfx::RectF& bounds,
+                                    base::i18n::TextDirection text_direction);
 
   // If there are relevant credentials for the current frame, shows them with
   // an additional 'generation' option and returns true. Otherwise, does nothing
   // and returns false.
-  bool MaybeShowPasswordSuggestionsWithGeneration(const gfx::RectF& bounds);
+  bool MaybeShowPasswordSuggestionsWithGeneration(
+      const gfx::RectF& bounds,
+      base::i18n::TextDirection text_direction);
 
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();

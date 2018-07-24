@@ -741,7 +741,7 @@ TEST_F(PasswordAutofillManagerTest,
   gfx::RectF element_bounds;
   EXPECT_FALSE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
-          element_bounds));
+          element_bounds, base::i18n::RIGHT_TO_LEFT));
 }
 
 TEST_F(PasswordAutofillManagerTest,
@@ -764,13 +764,13 @@ TEST_F(PasswordAutofillManagerTest,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(
-                  element_bounds, _,
+                  element_bounds, base::i18n::RIGHT_TO_LEFT,
                   SuggestionVectorValuesAre(testing::ElementsAreArray(
                       GetSuggestionList({test_username_, generation_string}))),
                   false, _));
   EXPECT_TRUE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
-          element_bounds));
+          element_bounds, base::i18n::RIGHT_TO_LEFT));
 
   // Click "Generate password".
   EXPECT_CALL(*client, GeneratePassword());

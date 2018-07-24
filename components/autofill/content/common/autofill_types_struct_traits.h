@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/submission_source.h"
+#include "mojo/public/cpp/base/text_direction_mojom_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/origin.h"
@@ -462,6 +463,11 @@ struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
   static const base::string16& generation_element(
       const autofill::password_generation::PasswordGenerationUIData& r) {
     return r.generation_element;
+  }
+
+  static base::i18n::TextDirection text_direction(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.text_direction;
   }
 
   static const autofill::PasswordForm& password_form(

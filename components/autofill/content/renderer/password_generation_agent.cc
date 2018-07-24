@@ -42,6 +42,7 @@ namespace autofill {
 
 namespace {
 
+using autofill::form_util::GetTextDirectionForElement;
 using Logger = autofill::SavePasswordProgressLogger;
 
 // Returns pairs of |PasswordForm| and corresponding |WebFormElement| for all
@@ -451,6 +452,25 @@ void PasswordGenerationAgent::FoundFormsEligibleForGeneration(
   DetermineGenerationElement();
 }
 
+void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
+  if (SetUpUserTriggeredGeneration()) {
+    LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
+    autofill::password_generation::PasswordGenerationUIData
+        password_generation_ui_data(
+            render_frame()->GetRenderView()->ElementBoundsInWindow(
+                generation_element_),
+            generation_element_.MaxLength(),
+            generation_element_.NameForAutofill().Utf16(),
+            GetTextDirectionForElement(generation_element_),
+            *generation_form_data_->form);
+    // TODO(crbug.com/845458): remove it. The renderer should never invoke the
+    // prompt directly.
+    GetPasswordManagerClient()->ShowManualPasswordGenerationPopup(
+        password_generation_ui_data);
+    generation_popup_shown_ = true;
+  }
+}
+
 void PasswordGenerationAgent::DetermineGenerationElement() {
   if (generation_form_data_) {
     LogMessage(Logger::STRING_GENERATION_RENDERER_FORM_ALREADY_FOUND);
@@ -655,37 +675,27 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 void PasswordGenerationAgent::MaybeOfferAutomaticGeneration() {
   // TODO(crbug.com/852309): Add this check to the generation element class.
   if (!is_manually_triggered_) {
-    ShowGenerationPopup(false /* is_manual_generation */);
-  }
-}
-
-void PasswordGenerationAgent::ShowGenerationPopup(bool is_manual_generation) {
-  if (!render_frame() || generation_element_.IsNull())
-    return;
-  LogMessage(
-      is_manual_generation
-          ? Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP
-          : Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
-  autofill::password_generation::PasswordGenerationUIData
-      password_generation_ui_data(
-          render_frame()->GetRenderView()->ElementBoundsInWindow(
-              generation_element_),
-          generation_element_.MaxLength(),
-          generation_element_.NameForAutofill().Utf16(),
-          *generation_form_data_->form);
-  generation_popup_shown_ = true;
-  if (is_manual_generation) {
-    GetPasswordManagerClient()->ShowManualPasswordGenerationPopup(
-        password_generation_ui_data);
-  } else {
-    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(
-        true, password_generation_ui_data);
+    AutomaticGenerationStatusChanged(true /* available */);
   }
 }
 
 void PasswordGenerationAgent::AutomaticGenerationStatusChanged(bool available) {
   if (available) {
-    ShowGenerationPopup(false /* is_manual_generation */);
+    if (!render_frame() || generation_element_.IsNull())
+      return;
+    LogMessage(
+        Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
+    autofill::password_generation::PasswordGenerationUIData
+        password_generation_ui_data(
+            render_frame()->GetRenderView()->ElementBoundsInWindow(
+                generation_element_),
+            generation_element_.MaxLength(),
+            generation_element_.NameForAutofill().Utf16(),
+            GetTextDirectionForElement(generation_element_),
+            *generation_form_data_->form);
+    generation_popup_shown_ = true;
+    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(
+        true, password_generation_ui_data);
   } else {
     // Hide the generation popup.
     GetPasswordManagerClient()->AutomaticGenerationStatusChanged(false,
@@ -723,11 +733,6 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form)
     GetPasswordManagerClient()->PasswordNoLongerGenerated(*presaved_form);
-}
-
-void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
-  if (SetUpUserTriggeredGeneration())
-    ShowGenerationPopup(true /* is_manual_generation */);
 }
 
 const mojom::PasswordManagerDriverAssociatedPtr&
