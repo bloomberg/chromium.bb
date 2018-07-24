@@ -232,19 +232,6 @@ TEST_F('CrExtensionsDetailViewTest', 'Warnings', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.Warnings);
 });
 
-TEST_F(
-    'CrExtensionsDetailViewTest', 'RuntimeHostPermissionsDisplay', function() {
-      this.runMochaTest(
-          extension_detail_view_tests.TestNames.RuntimeHostPermissionsDisplay);
-    });
-
-TEST_F(
-    'CrExtensionsDetailViewTest', 'RuntimeHostPermissionsSelection',
-    function() {
-      this.runMochaTest(extension_detail_view_tests.TestNames
-                            .RuntimeHostPermissionsSelection);
-    });
-
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
 
@@ -853,5 +840,25 @@ CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
 };
 
 TEST_F('CrExtensionsRuntimeHostsDialogTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// RuntimeHostPermissions tests
+
+CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browserPreload() {
+    return 'chrome://extensions/runtime_host_permissions.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_runtime_host_permissions_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsRuntimeHostPermissionsTest', 'All', () => {
   mocha.run();
 });

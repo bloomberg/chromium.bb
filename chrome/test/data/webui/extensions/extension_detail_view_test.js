@@ -11,8 +11,6 @@ cr.define('extension_detail_view_tests', function() {
     ClickableElements: 'clickable elements',
     Indicator: 'indicator',
     Warnings: 'warnings',
-    RuntimeHostPermissionsDisplay: 'runtime host permissions display',
-    RuntimeHostPermissionsSelection: 'runtime host permissions selection',
   };
 
   const suiteName = 'ExtensionDetailViewTest';
@@ -98,7 +96,7 @@ cr.define('extension_detail_view_tests', function() {
 
       expectFalse(testIsVisible('#permissions-list'));
       expectFalse(testIsVisible('#host-access'));
-      expectFalse(testIsVisible('#runtime-hosts'));
+      expectFalse(testIsVisible('extensions-runtime-host-permissions'));
 
       expectTrue(testIsVisible('#no-permissions'));
       item.set(
@@ -110,7 +108,7 @@ cr.define('extension_detail_view_tests', function() {
           2, item.$$('#permissions-list').querySelectorAll('li').length);
       expectFalse(testIsVisible('#no-permissions'));
       expectFalse(testIsVisible('#host-access'));
-      expectFalse(testIsVisible('#runtime-hosts'));
+      expectFalse(testIsVisible('extensions-runtime-host-permissions'));
 
       const optionsUrl =
           'chrome-extension://' + extensionData.id + '/options.html';
@@ -160,6 +158,14 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.runtimeWarnings', ['Dummy warning']);
       Polymer.dom.flush();
       expectTrue(testIsVisible('.warning-icon'));
+
+      // Adding any runtime host permissions should result in the runtime host
+      // controls becoming visible.
+      item.set(
+          'data.permissions.hostAccess',
+          chrome.developerPrivate.HostAccess.ON_CLICK);
+      Polymer.dom.flush();
+      expectTrue(testIsVisible('extensions-runtime-host-permissions'));
     });
 
     test(assert(TestNames.LayoutSource), function() {
@@ -296,81 +302,6 @@ cr.define('extension_detail_view_tests', function() {
       testWarningVisible('#suspicious-warning', false);
       testWarningVisible('#blacklisted-warning', false);
       testWarningVisible('#update-required-warning', false);
-    });
-
-    test(assert(TestNames.RuntimeHostPermissionsDisplay), function() {
-      const HostAccess = chrome.developerPrivate.HostAccess;
-
-      const permissions = {
-        simplePermissions: ['permission 1', 'permission 2'],
-        hostAccess: HostAccess.ON_CLICK,
-        runtimeHostPermissions: [],
-      };
-
-      item.set('data.permissions', permissions);
-      Polymer.dom.flush();
-
-      const testIsVisible = extension_test_util.isVisible.bind(null, item);
-      expectTrue(testIsVisible('#host-access'));
-
-      // The host-access menu should be visible, since the data includes
-      // host access information.
-      const selectHostAccess = item.$$('#host-access');
-      expectEquals(HostAccess.ON_CLICK, selectHostAccess.value);
-      // For on-click mode, there should be no runtime hosts listed.
-      expectFalse(testIsVisible('#runtime-hosts'));
-
-      // Changing the data's access should change the UI appropriately.
-      item.set('data.permissions.hostAccess', HostAccess.ON_ALL_SITES);
-      Polymer.dom.flush();
-      expectEquals(HostAccess.ON_ALL_SITES, selectHostAccess.value);
-      expectFalse(testIsVisible('#runtime-hosts'));
-
-      // Setting the mode to on specific sites should display the runtime hosts
-      // list.
-      item.set('data.permissions.hostAccess', HostAccess.ON_SPECIFIC_SITES);
-      item.set(
-          'data.permissions.runtimeHostPermissions',
-          ['https://example.com', 'https://chromium.org']);
-      Polymer.dom.flush();
-      expectEquals(HostAccess.ON_SPECIFIC_SITES, selectHostAccess.value);
-      expectTrue(testIsVisible('#runtime-hosts'));
-      expectEquals(
-          2, item.$$('#runtime-hosts').getElementsByTagName('li').length);
-    });
-
-    test(assert(TestNames.RuntimeHostPermissionsSelection), function() {
-      const HostAccess = chrome.developerPrivate.HostAccess;
-
-      const permissions = {
-        simplePermissions: ['permission 1', 'permission 2'],
-        hostAccess: HostAccess.ON_CLICK,
-        runtimeHostPermissions: [],
-      };
-
-      item.set('data.permissions', permissions);
-      Polymer.dom.flush();
-
-      const selectHostAccess = item.$$('#host-access');
-
-      // Changes the value of the selectHostAccess menu and fires the change
-      // event, then verifies that the delegate was called with the correct
-      // value.
-      function expectDelegateCallOnAccessChange(newValue) {
-        const mock = new MockController();
-        const mockMethod =
-            mock.createFunctionMock(mockDelegate, 'setItemHostAccess');
-        mockMethod.addExpectation(extensionData.id, newValue);
-        selectHostAccess.value = newValue;
-        selectHostAccess.dispatchEvent(
-            new CustomEvent('change', {target: selectHostAccess}));
-        mock.verifyMocks();
-      }
-
-      // Check that selecting different values correctly notifies the delegate.
-      expectDelegateCallOnAccessChange(HostAccess.ON_SPECIFIC_SITES);
-      expectDelegateCallOnAccessChange(HostAccess.ON_ALL_SITES);
-      expectDelegateCallOnAccessChange(HostAccess.ON_CLICK);
     });
   });
 
