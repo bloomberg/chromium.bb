@@ -27,7 +27,7 @@ bool ValueNotificationConsolidator<T>::ShouldSendNotification(
 NotificationManager::NotificationManager() {}
 
 void NotificationManager::SendNotifications(
-    bool bounds_affect_layout,
+    bool does_occluded_bounds_affect_layout,
     bool is_locked,
     const gfx::Rect& visual_bounds,
     const gfx::Rect& occluded_bounds,
@@ -43,7 +43,7 @@ void NotificationManager::SendNotifications(
       ShouldSendOccludedBoundsNotification(occluded_bounds);
 
   const gfx::Rect workspace_layout_offset_region =
-      bounds_affect_layout ? visual_bounds : gfx::Rect();
+      does_occluded_bounds_affect_layout ? occluded_bounds : gfx::Rect();
   bool send_displaced_bounds_notification =
       ShouldSendWorkspaceDisplacementBoundsNotification(
           workspace_layout_offset_region);
