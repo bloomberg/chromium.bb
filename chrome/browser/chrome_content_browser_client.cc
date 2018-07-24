@@ -3453,13 +3453,13 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     auto* loading_predictor =
         predictors::LoadingPredictorFactory::GetForProfile(profile);
     auto* predictor = profile->GetNetworkPredictor();
-    net::URLRequestContextGetter* context =
-        render_process_host->GetStoragePartition()->GetURLRequestContext();
-    registry->AddInterface(base::Bind(
-        &NetBenchmarking::Create,
-        loading_predictor ? loading_predictor->GetWeakPtr() : nullptr,
-        predictor ? predictor->GetUIWeakPtr() : nullptr,
-        base::RetainedRef(context)));
+    registry->AddInterface(
+        base::BindRepeating(
+            &NetBenchmarking::Create,
+            loading_predictor ? loading_predictor->GetWeakPtr() : nullptr,
+            predictor ? predictor->GetUIWeakPtr() : nullptr,
+            render_process_host->GetID()),
+        ui_task_runner);
   }
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

@@ -194,6 +194,20 @@ class NetworkContextTest : public testing::Test,
 
   void OnSSLConfigChanged() override { ++ssl_config_changed_count_; }
 
+  // Looks up a value with the given name from the NetworkContext's
+  // TransportSocketPool info dictionary.
+  int GetSocketPoolInfo(NetworkContext* context, base::StringPiece name) {
+    int value;
+    context->url_request_context()
+        ->http_transaction_factory()
+        ->GetSession()
+        ->GetTransportSocketPool(
+            net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+        ->GetInfoAsValue("", "", false)
+        ->GetInteger(name, &value);
+    return value;
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkService> network_service_;
@@ -2504,7 +2518,7 @@ class ConnectionListener
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was read from.
   void ReadFromSocket(const net::StreamSocket& connection, int rv) override {
-    NOTREACHED();
+    EXPECT_EQ(net::OK, rv);
   }
 
   // Wait for exactly |n| items in |sockets_|. |n| must be greater than 0.
@@ -2611,23 +2625,11 @@ TEST_F(NetworkContextTest, PreconnectZero) {
                                      net::LOAD_NORMAL, true);
   base::RunLoop().RunUntilIdle();
 
-  int num_sockets;
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("idle_socket_count", &num_sockets);
+  int num_sockets =
+      GetSocketPoolInfo(network_context.get(), "idle_socket_count");
   ASSERT_EQ(num_sockets, 0);
-  int num_connecting_sockets;
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("connecting_socket_count", &num_connecting_sockets);
+  int num_connecting_sockets =
+      GetSocketPoolInfo(network_context.get(), "connecting_socket_count");
   ASSERT_EQ(num_connecting_sockets, 0);
 }
 
@@ -2644,14 +2646,8 @@ TEST_F(NetworkContextTest, PreconnectTwo) {
                                      net::LOAD_NORMAL, true);
   connection_listener.WaitForAcceptedConnections(2u);
 
-  int num_sockets;
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("idle_socket_count", &num_sockets);
+  int num_sockets =
+      GetSocketPoolInfo(network_context.get(), "idle_socket_count");
   ASSERT_EQ(num_sockets, 2);
 }
 
@@ -2669,14 +2665,8 @@ TEST_F(NetworkContextTest, PreconnectFour) {
 
   connection_listener.WaitForAcceptedConnections(4u);
 
-  int num_sockets;
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("idle_socket_count", &num_sockets);
+  int num_sockets =
+      GetSocketPoolInfo(network_context.get(), "idle_socket_count");
   ASSERT_EQ(num_sockets, 4);
 }
 
@@ -2689,28 +2679,42 @@ TEST_F(NetworkContextTest, PreconnectMax) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  int num_sockets, max_num_sockets;
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("max_sockets_per_group", &max_num_sockets);
+  int max_num_sockets =
+      GetSocketPoolInfo(network_context.get(), "max_sockets_per_group");
   EXPECT_GT(76, max_num_sockets);
 
   network_context->PreconnectSockets(76, test_server.base_url(),
                                      net::LOAD_NORMAL, true);
   base::RunLoop().RunUntilIdle();
 
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("idle_socket_count", &num_sockets);
+  int num_sockets =
+      GetSocketPoolInfo(network_context.get(), "idle_socket_count");
   ASSERT_EQ(num_sockets, max_num_sockets);
+}
+
+TEST_F(NetworkContextTest, CloseAllConnections) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  network_context->PreconnectSockets(2, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  connection_listener.WaitForAcceptedConnections(2u);
+
+  int num_sockets =
+      GetSocketPoolInfo(network_context.get(), "idle_socket_count");
+  EXPECT_EQ(num_sockets, 2);
+
+  base::RunLoop run_loop;
+  network_context->CloseAllConnections(run_loop.QuitClosure());
+  run_loop.Run();
+
+  num_sockets = GetSocketPoolInfo(network_context.get(), "idle_socket_count");
+  EXPECT_EQ(num_sockets, 0);
 }
 
 }  // namespace
