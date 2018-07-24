@@ -858,6 +858,7 @@ source_set("unit_tests") {
     "engine/ui_model_worker_unittest.cc",
     "engine_impl/apply_control_data_updates_unittest.cc",
     "engine_impl/backoff_delay_provider_unittest.cc",
+    "engine_impl/cycle/data_type_debug_info_emitter_unittest.cc",
     "engine_impl/cycle/nudge_tracker_unittest.cc",
     "engine_impl/cycle/status_controller_unittest.cc",
     "engine_impl/debug_info_event_listener_unittest.cc",

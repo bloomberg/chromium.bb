@@ -32,7 +32,9 @@ namespace syncer {
 struct ModelTypeInfo {
   ModelType model_type;
   // Model Type notification string.
-  // This needs to match the corresponding proto message name in sync.proto
+  // This needs to match the corresponding proto message name in sync.proto. It
+  // is also used to identify the model type in the SyncModelType
+  // histogram_suffix in histograms.xml. Must always be kept in sync.
   const char* notification_type;
   // Root tag for Model Type
   // This should be the same as the model type but all lowercase.
@@ -49,8 +51,10 @@ struct ModelTypeInfo {
 };
 
 // Below struct entries are in the same order as their definition in the
-// ModelType enum. Don't forget to update the ModelType enum when you make
-// changes to this list.
+// ModelType enum. When making changes to this list, don't forget to
+//  - update the ModelType enum,
+//  - update the SyncModelTypes enum in enums.xml, and
+//  - update the SyncModelType histogram suffix in histograms.xml.
 // Struct field values should be unique across the entire map.
 const ModelTypeInfo kModelTypeInfoMap[] = {
     {UNSPECIFIED, "", "", "Unspecified", -1, 0},
@@ -490,6 +494,17 @@ const char* ModelTypeToString(ModelType model_type) {
   if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
     return kModelTypeInfoMap[model_type].model_type_string;
   NOTREACHED() << "No known extension for model type.";
+  return "Invalid";
+}
+
+const char* ModelTypeToHistogramSuffix(ModelType model_type) {
+  if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT) {
+    // We use the same string that is used for notification types because they
+    // satisfy all we need (being stable and explanatory).
+    return kModelTypeInfoMap[model_type].notification_type;
+  }
+  NOTREACHED() << "No known suffix for model type "
+               << static_cast<int>(model_type) << ".";
   return "Invalid";
 }
 

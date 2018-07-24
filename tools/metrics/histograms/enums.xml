@@ -45705,6 +45705,18 @@ would be helpful to identify which type is being sent.
   <int value="2" label="EMPTY_FIELD"/>
 </enum>
 
+<enum name="SyncEntityChange">
+  <summary>
+    Type of change of a sync entity. Recorded once for every sync entity
+    whenever it is commited to the server or updated from the server.
+  </summary>
+  <int value="0" label="Local deletion (commited upstream)"/>
+  <int value="1" label="Local creation (commited upstream)"/>
+  <int value="2" label="Local update (commited upstream)"/>
+  <int value="3" label="Remote deletion (updated downstream)"/>
+  <int value="4" label="Remote update (updated downstream)"/>
+</enum>
+
 <enum name="SyncErrorInfobarTypes">
   <summary>Possible errors that can trigger a sync error infobar.</summary>
   <int value="1" label="Sign in needs update"/>

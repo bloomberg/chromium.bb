@@ -11,9 +11,7 @@ const char kModelTypeMemoryHistogramPrefix[] = "Sync.ModelTypeMemoryKB.";
 void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
                                  syncer::ModelType model_type,
                                  size_t value) {
-  std::string type_string;
-  if (RealModelTypeToNotificationType(model_type, &type_string)) {
-    std::string full_histogram_name = histogram_name_prefix + type_string;
-    base::UmaHistogramCounts1M(full_histogram_name, value / 1024);
-  }
+  std::string type_string = ModelTypeToHistogramSuffix(model_type);
+  std::string full_histogram_name = histogram_name_prefix + type_string;
+  base::UmaHistogramCounts1M(full_histogram_name, value / 1024);
 }
