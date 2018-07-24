@@ -341,6 +341,13 @@ void* PartitionRootGeneric::Realloc(void* ptr,
   return PartitionReallocGenericFlags(this, 0, ptr, new_size, type_name);
 }
 
+void* PartitionRootGeneric::TryRealloc(void* ptr,
+                                       size_t new_size,
+                                       const char* type_name) {
+  return PartitionReallocGenericFlags(this, PartitionAllocReturnNull, ptr,
+                                      new_size, type_name);
+}
+
 static size_t PartitionPurgePage(internal::PartitionPage* page, bool discard) {
   const internal::PartitionBucket* bucket = page->bucket;
   size_t slot_size = bucket->slot_size;

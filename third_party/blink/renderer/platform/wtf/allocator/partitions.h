@@ -101,6 +101,11 @@ class WTF_EXPORT Partitions {
                                            const char* type_name) {
     return BufferPartition()->Realloc(p, n, type_name);
   }
+  ALWAYS_INLINE static void* BufferTryRealloc(void* p,
+                                              size_t n,
+                                              const char* type_name) {
+    return BufferPartition()->TryRealloc(p, n, type_name);
+  }
   ALWAYS_INLINE static void BufferFree(void* p) { BufferPartition()->Free(p); }
   ALWAYS_INLINE static size_t BufferActualSize(size_t n) {
     return BufferPartition()->ActualSize(n);

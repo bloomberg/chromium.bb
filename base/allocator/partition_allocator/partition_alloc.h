@@ -148,6 +148,9 @@ struct BASE_EXPORT PartitionRootGeneric : public internal::PartitionRootBase {
   ALWAYS_INLINE void Free(void* ptr);
 
   NOINLINE void* Realloc(void* ptr, size_t new_size, const char* type_name);
+  // Overload that may return nullptr if reallocation isn't possible. In this
+  // case, |ptr| remains valid.
+  NOINLINE void* TryRealloc(void* ptr, size_t new_size, const char* type_name);
 
   ALWAYS_INLINE size_t ActualSize(size_t size);
 
