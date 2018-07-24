@@ -5,6 +5,7 @@
 #include "base/process/process.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <sys/resource.h>
 
 #include "base/files/file_util.h"
@@ -74,12 +75,25 @@ struct CGroups {
 const int kBackgroundPriority = 5;
 #endif  // defined(OS_CHROMEOS)
 
+// NZERO should be defined in <limits.h> per POSIX, and should be at least
+// 20. (NZERO-1) is the highest possible niceness value (i.e. lowest process
+// priority). Most platforms use NZERO=20.
+//
+// RLIMIT_NICE tells us how much we can reduce niceness (increase priority) if
+// we start at NZERO.
+//
+// e.g. if NZERO is 20 and the rlimit is 30, we can lower niceness anywhere
+// within the [-10, 19] range (20 - 30 = -10).
+//
+// So, to re-raise priority to kForegroundPriority, we need at least this much:
+constexpr int kMinNiceRLimitForReraising = NZERO - kForegroundPriority;
+
 bool CanReraisePriority() {
   // We won't be able to raise the priority if we don't have the right rlimit.
   // The limit may be adjusted in /etc/security/limits.conf for PAM systems.
   struct rlimit rlim;
   return (getrlimit(RLIMIT_NICE, &rlim) == 0) &&
-         (20 - kForegroundPriority) <= static_cast<int>(rlim.rlim_cur);
+         static_cast<int>(rlim.rlim_cur) >= kMinNiceRLimitForReraising;
 }
 
 }  // namespace
