@@ -31,7 +31,8 @@
         "filename": "arm64/O/android-cts-arm_64-4666824.zip",
         "apkdir": "arm64/O/4666824/",
         "tests": [
-                {"android-cts/testcases/CtsWebkitTestCases.apk": ""}
+                {"android-cts/testcases/CtsWebkitTestCases.apk": ""},
+                {"android-cts/testcases/CtsWebViewStartupApp.apk": ""}
         ],
         "_origin": "aosp-oreo-cts-release@4666824"
     }
