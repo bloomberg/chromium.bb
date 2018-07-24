@@ -30,5 +30,15 @@ const base::Feature kNestedWorkers{"NestedWorkers",
 const base::Feature kServiceWorkerServicification{
     "ServiceWorkerServicification", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Used to control the collection of anchor element metrics (crbug.com/856683).
+// If kRecordAnchorMetricsClicked is enabled, then metrics of anchor elements
+// clicked by the user will be extracted and recorded.
+// If kRecordAnchorMetricsVisible is enabled, then metrics of anchor elements
+// in the first viewport after the page load will be extracted and recorded.
+const base::Feature kRecordAnchorMetricsClicked{
+    "RecordAnchorMetricsClicked", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRecordAnchorMetricsVisible{
+    "RecordAnchorMetricsVisible", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

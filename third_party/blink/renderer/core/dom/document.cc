@@ -148,6 +148,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -3454,6 +3455,8 @@ bool Document::CheckCompletedInternal() {
       DCHECK(ukm_binding.is_bound());
       ukm_binding->SetDocumentSourceId(ukm_source_id_);
     }
+
+    AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(*this);
   }
 
   return true;

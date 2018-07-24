@@ -5,32 +5,32 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_ANCHOR_ELEMENT_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_ANCHOR_ELEMENT_METRICS_H_
 
-#include "base/feature_list.h"
 #include "base/optional.h"
+#include "third_party/blink/public/mojom/loader/navigation_predictor.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-CORE_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
-
+class Document;
 class HTMLAnchorElement;
 
+// This class is used to hold metrics of an html anchor element. Metrics are
+// extracted via static methods. Metrics can be recorded and converted to mojom
+// message used to send to the browser process.
 class CORE_EXPORT AnchorElementMetrics {
   STACK_ALLOCATED();
 
  public:
   // Creates AnchorElementMetrics from anchor element if possible. Then records
   // the metrics, and sends them to the browser process.
-  static base::Optional<AnchorElementMetrics> MaybeExtractMetricsClicked(
+  static base::Optional<AnchorElementMetrics> MaybeReportClickedMetricsOnClick(
       const HTMLAnchorElement*);
 
-  // Upload anchor element features.
-  void RecordMetrics() const;
-
-  // Send anchor element features to browser process.
-  void SendMetricsToBrowser() const;
+  // Gets anchor elements from |document|, extracts features of valid anchor
+  // elements and sends to the browser process.
+  static void MaybeReportViewportMetricsOnLoad(Document& document);
 
   // Getters of anchor element features.
   float GetRatioArea() const { return ratio_area_; }
@@ -51,8 +51,19 @@ class CORE_EXPORT AnchorElementMetrics {
   bool GetIsUrlIncrementedByOne() const { return is_url_incremented_by_one_; }
 
  private:
+  // The maximum number of anchor element metrics allowed to report to the
+  // browser on page load.
+  static const int kMaxAnchorElementMetricsSize;
+
   // Extract features of the anchor element.
   static base::Optional<AnchorElementMetrics> Create(const HTMLAnchorElement*);
+
+  // Returns the mojom struct used to send metrics to the browser process.
+  mojom::blink::AnchorElementMetricsPtr CreateMetricsPtr() const;
+
+  // Record metrics of |anchor_element_|. Function is called when the anchor
+  // element is clicked by the user.
+  void RecordMetricsOnClick() const;
 
   // The anchor element that this class is associated with.
   Member<const HTMLAnchorElement> anchor_element_;

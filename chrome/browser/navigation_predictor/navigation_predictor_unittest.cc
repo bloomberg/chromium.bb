@@ -19,12 +19,21 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-
     NavigationPredictor::Create(mojo::MakeRequest(&predictor_service_),
                                 main_rfh());
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
+
+  // Helper function to generate mojom metrics.
+  blink::mojom::AnchorElementMetricsPtr CreateMetricsPtr(
+      const std::string& source_url,
+      const std::string& target_url) const {
+    auto metrics = blink::mojom::AnchorElementMetrics::New();
+    metrics->source_url = GURL(source_url);
+    metrics->target_url = GURL(target_url);
+    return metrics;
+  }
 
   blink::mojom::AnchorElementMetricsHost* predictor_service() const {
     return predictor_service_.get();
@@ -36,28 +45,59 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
 }  // namespace
 
-// Basic test to check the UpdateAnchorElementMetrics method can be called.
-TEST_F(NavigationPredictorTest, UpdateAnchorElementMetrics) {
+// Basic test to check the ReportAnchorElementMetricsOnClick method can be
+// called.
+TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnClick) {
   base::HistogramTester histogram_tester;
 
-  auto metrics = blink::mojom::AnchorElementMetrics::New();
-  metrics->target_url = GURL("https://example.com");
-  predictor_service()->UpdateAnchorElementMetrics(std::move(metrics));
+  auto metrics = CreateMetricsPtr("http://example.com", "https://google.com");
+  predictor_service()->ReportAnchorElementMetricsOnClick(std::move(metrics));
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
 }
 
-// Test that if source url is not http or https, no score will be calculated.
-TEST_F(NavigationPredictorTest, BadUrlUpdateAnchorElementMetrics) {
+// Test that ReportAnchorElementMetricsOnLoad method can be called.
+TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnLoad) {
   base::HistogramTester histogram_tester;
 
-  auto metrics = blink::mojom::AnchorElementMetrics::New();
-  metrics->target_url = GURL("ftp://example.com");
-  predictor_service()->UpdateAnchorElementMetrics(std::move(metrics));
+  auto metrics = CreateMetricsPtr("https://example.com", "http://google.com");
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics_vector;
+  metrics_vector.push_back(std::move(metrics));
+  predictor_service()->ReportAnchorElementMetricsOnLoad(
+      std::move(metrics_vector));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 1);
+}
+
+// Test that if source/target url is not http or https, no score will be
+// calculated.
+TEST_F(NavigationPredictorTest, BadUrlReportAnchorElementMetricsOnClick) {
+  base::HistogramTester histogram_tester;
+
+  auto metrics = CreateMetricsPtr("ftp://example.com", "https://google.com");
+  predictor_service()->ReportAnchorElementMetricsOnClick(std::move(metrics));
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
+}
+
+// Test that if source/target url is not http or https, no navigation score will
+// be calculated.
+TEST_F(NavigationPredictorTest, BadUrlReportAnchorElementMetricsOnLoad) {
+  base::HistogramTester histogram_tester;
+
+  auto metrics = CreateMetricsPtr("https://example.com", "ftp://google.com");
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics_vector;
+  metrics_vector.push_back(std::move(metrics));
+  predictor_service()->ReportAnchorElementMetricsOnLoad(
+      std::move(metrics_vector));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
 }
