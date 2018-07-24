@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+
 import mock
 
 from chromite.cbuildbot import cbuildbot_unittest

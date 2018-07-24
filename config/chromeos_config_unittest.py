@@ -9,10 +9,11 @@ from __future__ import print_function
 
 import copy
 import json
-import mock
 import os
 import re
 import unittest
+
+import mock
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config

@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import contextlib
-import mock
 import os
+
+import mock
 
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import validation_pool_unittest

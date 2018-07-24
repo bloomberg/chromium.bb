@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import ast
-import pyparsing
 import re
+
+import pyparsing
 
 
 class BoolParseError(Exception):

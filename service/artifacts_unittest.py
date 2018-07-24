@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import json
-import mock
 import os
 import shutil
+
+import mock
 
 from chromite.lib import autotest_util
 from chromite.lib import build_target_util

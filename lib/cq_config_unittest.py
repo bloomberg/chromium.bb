@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import ConfigParser
-import mock
 import os
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cq_config

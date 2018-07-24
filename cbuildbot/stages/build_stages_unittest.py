@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import contextlib
-import mock
 import os
 import tempfile
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands

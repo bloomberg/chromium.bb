@@ -16,7 +16,6 @@ import httplib
 import itertools
 import json
 import os
-import requests
 import socket
 import sys
 import textwrap
@@ -24,6 +23,8 @@ import tempfile
 import time
 import urllib2
 import urlparse
+
+import requests
 
 from chromite.lib import constants
 

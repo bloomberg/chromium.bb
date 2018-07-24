@@ -7,10 +7,11 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import socket
 import stat
+
+import mock
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import constants

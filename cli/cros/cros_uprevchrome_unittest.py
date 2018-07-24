@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import mock
-import time
 import copy
+import time
+
+import mock
 
 from chromite.lib import cidb
 from chromite.lib import fake_cidb

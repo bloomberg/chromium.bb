@@ -10,10 +10,11 @@ from __future__ import print_function
 import filecmp
 import fnmatch
 import os
-import portage  # pylint: disable=import-error
 import re
 import shutil
 import tempfile
+
+import portage  # pylint: disable=import-error
 
 from chromite.lib import config_lib
 from chromite.lib import constants

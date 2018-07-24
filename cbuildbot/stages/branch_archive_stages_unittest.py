@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import shutil
+
+import mock
 
 from chromite.cbuildbot.builders import workspace_builders_unittest
 from chromite.cbuildbot import commands

@@ -12,11 +12,12 @@ import contextlib
 import copy
 import httplib
 import itertools
-import mock
 import os
 import pickle
 import tempfile
 import time
+
+import mock
 
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository

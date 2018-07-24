@@ -19,7 +19,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import partition_lib

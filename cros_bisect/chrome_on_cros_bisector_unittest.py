@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import copy
-import mock
 import itertools
 import os
+
+import mock
 
 from chromite.cli import flash
 from chromite.cros_bisect import common

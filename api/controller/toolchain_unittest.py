@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.api import api_config
 from chromite.api.controller import toolchain

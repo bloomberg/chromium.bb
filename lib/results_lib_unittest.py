@@ -7,11 +7,12 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import signal
 import StringIO
 import time
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import config_lib_unittest

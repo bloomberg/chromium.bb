@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import cPickle
-import mock
 import time
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import config_lib

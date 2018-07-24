@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import sys
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands

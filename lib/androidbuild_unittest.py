@@ -7,12 +7,13 @@
 
 from __future__ import print_function
 
+import os
+import pwd
+
 import apiclient
 import httplib2
 import mock
 import oauth2client
-import os
-import pwd
 
 from chromite.lib import androidbuild
 from chromite.lib import cros_test_lib

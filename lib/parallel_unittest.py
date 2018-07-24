@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import contextlib
 import cPickle
-import mock
 import multiprocessing
 import numbers
 import os
@@ -25,6 +24,8 @@ except ImportError:
   # with naming variables as "queue".  Maybe we'll transition at some point.
   # pylint: disable=import-error
   import queue as Queue
+
+import mock
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib

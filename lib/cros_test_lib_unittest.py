@@ -7,11 +7,12 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import sys
 import time
 import unittest
+
+import mock
 
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib

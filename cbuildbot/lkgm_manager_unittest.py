@@ -8,10 +8,11 @@
 from __future__ import print_function
 
 import contextlib
-import mock
 import os
 import tempfile
 from xml.dom import minidom
+
+import mock
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version

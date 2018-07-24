@@ -27,6 +27,7 @@ from chromite.lib import portage_util
 # where yaml may not be there, so we don't error on that since it's not needed
 # in that case.
 try:
+  # pylint: disable=wrong-import-order
   import yaml
 except ImportError:
   yaml = None

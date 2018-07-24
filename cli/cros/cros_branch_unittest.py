@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.cbuildbot.manifest_version import VersionInfo
 from chromite.cli import command_unittest

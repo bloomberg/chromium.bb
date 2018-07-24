@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import copy
-import mock
 import os
 import shutil
+
+import mock
 
 from chromite.lib import constants
 from chromite.cli import command_unittest

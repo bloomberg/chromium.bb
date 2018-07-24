@@ -9,10 +9,11 @@ from __future__ import print_function
 
 import collections
 import datetime
-import dateutil
-import dateutil.parser
 import os
 import re
+
+import dateutil
+import dateutil.parser
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging

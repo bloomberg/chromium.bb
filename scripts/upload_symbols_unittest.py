@@ -10,7 +10,6 @@ from __future__ import print_function
 import BaseHTTPServer
 import errno
 import itertools
-import mock
 import os
 import signal
 import socket
@@ -18,6 +17,8 @@ import SocketServer
 import sys
 import time
 import urllib2
+
+import mock
 
 # We specifically set up a local server to connect to, so make sure we
 # delete any proxy settings that might screw that up.  We also need to

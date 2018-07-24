@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.lib import binpkg
 from chromite.lib import build_target_util

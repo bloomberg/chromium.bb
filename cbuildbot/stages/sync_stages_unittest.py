@@ -11,10 +11,11 @@ import cPickle
 import datetime
 import itertools
 import json
-import mock
 import os
 import time
 import tempfile
+
+import mock
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version

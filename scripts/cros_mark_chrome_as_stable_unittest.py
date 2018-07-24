@@ -9,9 +9,10 @@ from __future__ import print_function
 
 import base64
 import cStringIO
-import mock
 import os
 from textwrap import dedent
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib

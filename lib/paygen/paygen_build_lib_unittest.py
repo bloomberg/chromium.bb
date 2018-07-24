@@ -9,8 +9,9 @@ from __future__ import print_function
 
 import json
 import os
-import mock
 import tarfile
+
+import mock
 
 from chromite.lib import config_lib_unittest
 from chromite.lib import cros_test_lib

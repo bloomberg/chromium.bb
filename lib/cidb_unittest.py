@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import exceptions
-import mock
 import os
+
+import mock
 import sqlalchemy
 
 from chromite.lib import constants

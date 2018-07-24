@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import collections
-import mock
 import os
 import re
+
+import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

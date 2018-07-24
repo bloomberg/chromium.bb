@@ -15,7 +15,6 @@ from datetime import date
 from datetime import time
 from datetime import timedelta
 from email import utils as email_utils
-from google.protobuf import timestamp_pb2
 import binascii
 import functools
 import hashlib
@@ -24,6 +23,8 @@ import os
 import sys
 import threading
 import urlparse
+
+from google.protobuf import timestamp_pb2
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 

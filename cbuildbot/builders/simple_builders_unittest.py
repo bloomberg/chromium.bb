@@ -7,8 +7,9 @@
 from __future__ import print_function
 
 import copy
-import mock
 import os
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import generic_builders

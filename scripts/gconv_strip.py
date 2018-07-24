@@ -7,13 +7,14 @@
 
 from __future__ import print_function
 
-import ahocorasick
 import functools
 import glob
-import lddtree
 import operator
 import os
 import stat
+
+import ahocorasick
+import lddtree
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

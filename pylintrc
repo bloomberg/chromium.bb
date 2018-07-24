@@ -108,7 +108,7 @@ enable=
 # --disable=W".
 # We leave many of the style warnings to judgement/peer review.
 # TODO: We need to re-enable broad-except, but requires cleaning up our code.
-# TODO: Re-enable wrong-import-order/wrong-import-position.
+# TODO: Re-enable wrong-import-position.
 # TODO: Re-enable redefined-variable-type.
 disable=
     broad-except,
@@ -134,7 +134,6 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
-    wrong-import-order,
     wrong-import-position,
 
 

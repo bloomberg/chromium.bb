@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.cli import flash
 from chromite.lib import auto_updater

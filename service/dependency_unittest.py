@@ -7,13 +7,12 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.service import dependency
-
-import os
-from os.path import join
 
 
 class DependencyTests(cros_test_lib.TestCase):
@@ -36,10 +35,10 @@ class DependencyTests(cros_test_lib.TestCase):
 
   def testNormalizeSourcePathsFormatingDirectoryPaths(self):
     with osutils.TempDir() as tempdir:
-      foo_dir = join(tempdir, 'foo')
-      bar_baz_dir = join(tempdir, 'bar', 'baz')
-      osutils.SafeMakedirs(join(tempdir, 'ab'))
-      ab_cd_file = join(tempdir, 'ab', 'cd')
+      foo_dir = os.path.join(tempdir, 'foo')
+      bar_baz_dir = os.path.join(tempdir, 'bar', 'baz')
+      osutils.SafeMakedirs(os.path.join(tempdir, 'ab'))
+      ab_cd_file = os.path.join(tempdir, 'ab', 'cd')
 
       osutils.SafeMakedirs(foo_dir)
       osutils.SafeMakedirs(bar_baz_dir)

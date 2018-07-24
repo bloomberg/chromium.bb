@@ -12,10 +12,11 @@ import collections
 import datetime as dt
 import json
 import hashlib
-import mock
 import os
 import struct
 from StringIO import StringIO
+
+import mock
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib

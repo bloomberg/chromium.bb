@@ -7,11 +7,12 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import shutil
 import socket
 import tempfile
+
+import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -19,7 +20,6 @@ from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths

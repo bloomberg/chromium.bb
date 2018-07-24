@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import json
-import mock
 import os
+
+import mock
 
 from chromite.api.gen.chromite.api import artifacts_pb2
 

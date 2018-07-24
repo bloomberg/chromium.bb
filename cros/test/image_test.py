@@ -15,8 +15,6 @@ import collections
 import errno
 import fnmatch
 import itertools
-import lddtree
-import magic
 import mimetypes
 import os
 import re
@@ -25,6 +23,8 @@ import unittest
 
 from elftools.elf import elffile
 from elftools.common import exceptions
+import lddtree
+import magic
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

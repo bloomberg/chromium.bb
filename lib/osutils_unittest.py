@@ -10,9 +10,10 @@ from __future__ import print_function
 import collections
 import glob
 import grp
-import mock
 import os
 import pwd
+
+import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib

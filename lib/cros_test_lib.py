@@ -12,13 +12,13 @@ import contextlib
 import cStringIO
 import exceptions
 import functools
-import mock
 import os
 import re
 import sys
 import time
 import unittest
 
+import mock
 import six
 
 from chromite.lib import cache

@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import httplib
-import httplib2
 import json
 import socket
+
+import httplib2
 
 from chromite.lib import auth
 from chromite.lib import cros_logging as logging

@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib

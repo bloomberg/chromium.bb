@@ -10,9 +10,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import mock
 import socket
 
+import mock
 import psutil
 
 from chromite.lib import cros_test_lib

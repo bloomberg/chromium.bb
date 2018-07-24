@@ -13,7 +13,6 @@ import difflib
 import errno
 import functools
 import itertools
-import mock
 import os
 import signal
 import socket
@@ -21,6 +20,7 @@ import StringIO
 import sys
 import __builtin__
 
+import mock
 import six
 
 from chromite.lib import constants

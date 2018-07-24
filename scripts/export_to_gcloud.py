@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-from gcloud import datastore  # pylint: disable=import-error
 import ast
 import json
+
+from gcloud import datastore  # pylint: disable=import-error
 
 from chromite.lib import commandline
 from chromite.lib import dslib

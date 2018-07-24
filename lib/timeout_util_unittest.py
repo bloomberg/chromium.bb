@@ -8,12 +8,12 @@
 from __future__ import print_function
 
 import datetime
+from multiprocessing.pool import ThreadPool
 import signal
 import time
 
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
-from multiprocessing.pool import ThreadPool
 
 
 class TestTimeouts(cros_test_lib.MockTestCase):

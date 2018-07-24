@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import datetime
-import mock
 import time
+
+import mock
 
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import relevant_changes
