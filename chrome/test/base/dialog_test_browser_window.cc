@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/dialog_test_browser_window.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -52,6 +53,10 @@ gfx::Point DialogTestBrowserWindow::GetDialogPosition(const gfx::Size& size) {
 }
 
 gfx::Size DialogTestBrowserWindow::GetMaximumDialogSize() {
+#if defined(OS_MACOSX)
+  // Zero-size windows aren't allowed on Mac.
+  return gfx::Size(1, 1);
+#endif
   return gfx::Size();
 }
 
