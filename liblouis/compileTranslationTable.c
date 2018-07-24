@@ -121,7 +121,7 @@ static const char *opcodeNames[CTO_None] = {
 	"include", "locale", "undefined", "capsletter", "begcapsword", "endcapsword",
 	"begcaps", "endcaps", "begcapsphrase", "endcapsphrase", "lencapsphrase", "letsign",
 	"noletsignbefore", "noletsign", "noletsignafter", "numsign", "numericmodechars",
-	"midnumericmodechars", "numericnocontchars", "seqdelimiter", "seqbeforechars",
+	"midendnumericmodechars", "numericnocontchars", "seqdelimiter", "seqbeforechars",
 	"seqafterchars", "seqafterpattern", "seqafterexpression", "emphclass", "emphletter",
 	"begemphword", "endemphword", "begemph", "endemph", "begemphphrase", "endemphphrase",
 	"lenemphphrase", "capsmodechars",
@@ -3046,7 +3046,7 @@ doOpcode:
 		}
 		break;
 
-	case CTO_MidNumericModeChars:
+	case CTO_MidEndNumericModeChars:
 
 		c = NULL;
 		ok = 1;
@@ -3054,9 +3054,9 @@ doOpcode:
 			for (k = 0; k < ruleChars.length; k++) {
 				c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
 				if (c)
-					c->attributes |= CTC_MidNumericMode;
+					c->attributes |= CTC_MidEndNumericMode;
 				else {
-					compileError(nested, "Midnumeric mode character undefined");
+					compileError(nested, "Midendnumeric mode character undefined");
 					ok = 0;
 					break;
 				}

@@ -3256,7 +3256,7 @@ checkNumericMode(const TranslationTableHeader *table, int pos, const InString *i
 	/* in numeric mode */
 	else {
 		if (!checkAttr(input->chars[pos],
-					CTC_Digit | CTC_LitDigit | CTC_NumericMode | CTC_MidNumericMode, 0,
+					CTC_Digit | CTC_LitDigit | CTC_NumericMode | CTC_MidEndNumericMode, 0,
 					table)) {
 			*numericMode = 0;
 			if (brailleIndicatorDefined(table->noContractSign, table, &indicRule))
