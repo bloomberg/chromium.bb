@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -30,7 +31,7 @@ class ServiceWorkerProviderHost;
 //
 // This factory creates either a ServiceWorkerNewScriptLoader or a
 // ServiceWorkerInstalledScriptLoader to load a script.
-class ServiceWorkerScriptLoaderFactory
+class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
   // |loader_factory| is used to load scripts. Typically
