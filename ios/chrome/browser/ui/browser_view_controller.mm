@@ -1753,6 +1753,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.primaryToolbarCoordinator.viewController.view setNeedsLayout];
     [self.primaryToolbarCoordinator.viewController.view layoutIfNeeded];
   }
+
+  // Native content pages depend on |self.view|'s safeArea.  If the BVC is
+  // presented underneath another view (such as the first time welcome view),
+  // the BVC has no safe area set during webController's layout initial, and
+  // won't automatically get another layout without forcing it here.
+  Tab* currentTab = [_model currentTab];
+  if ([self isTabNativePage:currentTab]) {
+    [currentTab.webController.view setNeedsLayout];
+  }
 }
 
 - (void)viewDidLayoutSubviews {
