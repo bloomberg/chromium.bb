@@ -256,6 +256,15 @@ class GIT(object):
     return upstream_branch
 
   @staticmethod
+  def IsAncestor(cwd, maybe_ancestor, ref):
+    """Verifies if |maybe_ancestor| is an ancestor of |ref|."""
+    try:
+      GIT.Capture(['merge-base', '--is-ancestor', maybe_ancestor, ref], cwd=cwd)
+      return True
+    except subprocess2.CalledProcessError:
+      return False
+
+  @staticmethod
   def GetOldContents(cwd, filename, branch=None):
     if not branch:
       branch = GIT.GetUpstreamBranch(cwd)

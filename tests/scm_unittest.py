@@ -90,6 +90,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'GetOldContents',
         'GetPatchName',
         'GetUpstreamBranch',
+        'IsAncestor',
         'IsDirectoryVersioned',
         'IsInsideWorkTree',
         'IsValidRevision',
@@ -169,6 +170,16 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     first_rev = self.githash('repo_1', 1)
     self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev=first_rev))
     self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='HEAD'))
+
+  def testIsAncestor(self):
+    if not self.enabled:
+      return
+    self.assertTrue(scm.GIT.IsAncestor(
+        self.clone_dir, self.githash('repo_1', 1), self.githash('repo_1', 2)))
+    self.assertFalse(scm.GIT.IsAncestor(
+        self.clone_dir, self.githash('repo_1', 2), self.githash('repo_1', 1)))
+    self.assertFalse(scm.GIT.IsAncestor(
+        self.clone_dir, self.githash('repo_1', 1), 'zebra'))
 
 
 if __name__ == '__main__':
