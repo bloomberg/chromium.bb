@@ -27724,6 +27724,7 @@ from previous Chrome versions.
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
   <int value="-1594298767" label="FullscreenToolbarReveal:enabled"/>
   <int value="-1586642651" label="MaterialDesignExtensions:disabled"/>
+  <int value="-1585733447" label="ContextualSearchUnityIntegration:disabled"/>
   <int value="-1584944853" label="TrilinearFiltering:enabled"/>
   <int value="-1584499823" label="EnableZeroStateSuggestions:enabled"/>
   <int value="-1583728573" label="AutofillCreditCardSigninPromo:disabled"/>
@@ -29145,6 +29146,7 @@ from previous Chrome versions.
   <int value="1338864675" label="EnableTouchableAppContextMenu:disabled"/>
   <int value="1339426771" label="TopSitesFromSiteEngagement:disabled"/>
   <int value="1340690624" label="WebPaymentsMethodSectionOrderV2:disabled"/>
+  <int value="1343050930" label="ContextualSearchUnityIntegration:enabled"/>
   <int value="1343516821" label="ignore-previews-blocklist"/>
   <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
