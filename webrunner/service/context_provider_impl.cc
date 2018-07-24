@@ -17,6 +17,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "content/public/common/content_switches.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -25,6 +26,8 @@ namespace {
 // Relaunches the current executable as a Context process.
 base::Process LaunchContextProcess(const base::LaunchOptions& launch_options) {
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
+  // TODO(crbug.com/867052): Remove this flag when GPU process works on Fuchsia.
+  launch_command.AppendSwitch(switches::kDisableGpu);
   return base::LaunchProcess(launch_command, launch_options);
 }
 
