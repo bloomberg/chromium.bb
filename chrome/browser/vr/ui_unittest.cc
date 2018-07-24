@@ -467,17 +467,15 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   EXPECT_EQ(initial_position, content_group->LocalTransform());
 }
 
-TEST_F(UiTest, SecurityIconClickTriggersUnsupportedMode) {
+TEST_F(UiTest, SecurityIconClickShouldShowPageInfo) {
   CreateScene(kNotInWebVr);
 
   // Initial state.
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
-  // Clicking on security icon should trigger unsupported mode.
-  EXPECT_CALL(*browser_,
-              OnUnsupportedMode(UiUnsupportedMode::kUnhandledPageInfo));
-  browser_->OnUnsupportedMode(UiUnsupportedMode::kUnhandledPageInfo);
-  VerifyOnlyElementsVisible("Prompt invisible", kElementsVisibleInBrowsing);
+  EXPECT_CALL(*browser_, ShowPageInfo);
+  auto* security_icon = scene_->GetUiElementByName(kUrlBarSecurityButton);
+  ClickElement(security_icon);
 }
 
 TEST_F(UiTest, ClickingOmniboxTriggersUnsupportedMode) {

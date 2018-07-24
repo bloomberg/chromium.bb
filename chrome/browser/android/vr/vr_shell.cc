@@ -92,9 +92,6 @@ vr::VrShell* g_vr_shell_instance;
 constexpr base::TimeDelta kPollCapturingStateInterval =
     base::TimeDelta::FromSecondsD(0.2);
 
-constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
-    base::TimeDelta::FromSeconds(5);
-
 constexpr base::TimeDelta kAssetsComponentWaitDelay =
     base::TimeDelta::FromSeconds(2);
 
@@ -866,28 +863,15 @@ void VrShell::LogUnsupportedModeUserMetric(UiUnsupportedMode mode) {
                             UiUnsupportedMode::kCount);
 }
 
-void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
-  ui_->SetIsExiting();
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::set_is_exiting,
-                                           gl_thread_->GetVrShellGl(), true));
-  main_thread_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
-      kExitVrDueToUnsupportedModeDelay);
-  LogUnsupportedModeUserMetric(mode);
-}
-
 content::WebContents* VrShell::GetNonNativePageWebContents() const {
   return !web_contents_is_native_page_ ? web_contents_ : nullptr;
 }
 
 void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
   switch (mode) {
-    case UiUnsupportedMode::kUnhandledCodePoint:  // Fall through.
-    case UiUnsupportedMode::kUnhandledCertificateInfo:
-    case UiUnsupportedMode::kUnhandledConnectionSecurityInfo:
-    case UiUnsupportedMode::kGenericUnsupportedFeature:
-      ExitVrDueToUnsupportedMode(mode);
+    case UiUnsupportedMode::kUnhandledCodePoint:
+      // We should never have this case.
+      CHECK(false);
       return;
     case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission: {
       JNIEnv* env = base::android::AttachCurrentThread();
@@ -899,20 +883,21 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
       Java_VrShellImpl_onNeedsKeyboardUpdate(env, j_vr_shell_);
       return;
     }
-    // Is not sent by the UI anymore. Enum value still exists to show correct
-    // exit prompt if vr-browsing-native-android-ui flag is false.
+    // These modes are not sent by the UI anymore. Enum values still exist to
+    // show correct exit prompt if vr-browsing-native-android-ui flag is false.
     case UiUnsupportedMode::kUnhandledPageInfo:
+    case UiUnsupportedMode::kUnhandledCertificateInfo:
+    case UiUnsupportedMode::kUnhandledConnectionSecurityInfo:
+    case UiUnsupportedMode::kGenericUnsupportedFeature:
     // kSearchEnginePromo should directly DOFF without showing a promo. So it
     // should never be used from VR ui thread.
     case UiUnsupportedMode::kSearchEnginePromo:
-    // Should never be used as a mode.
     case UiUnsupportedMode::kCount:
       NOTREACHED();
       return;
   }
 
   NOTREACHED();
-  ExitVrDueToUnsupportedMode(mode);
 }
 
 void VrShell::OnExitVrPromptResult(UiUnsupportedMode reason,

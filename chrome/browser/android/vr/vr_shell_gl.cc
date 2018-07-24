@@ -1244,13 +1244,6 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
                                       const RenderInfo& render_info,
                                       base::TimeTicks current_time) {
   gfx::Vector3dF head_direction = GetForwardVector(render_info.head_pose);
-  if (is_exiting_) {
-    // When we're exiting, we don't show the reticle and the only input
-    // processing we do is to handle immediate exits.
-    SendImmediateExitRequestIfNecessary();
-    return;
-  }
-
   gfx::Vector3dF ergo_neutral_pose;
   if (!controller_->IsConnected()) {
     // No controller detected, set up a gaze cursor that tracks the
@@ -1321,19 +1314,6 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
                    &input_event_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
-}
-
-void VrShellGl::SendImmediateExitRequestIfNecessary() {
-  gvr::ControllerButton buttons[] = {
-      gvr::kControllerButtonClick, gvr::kControllerButtonApp,
-      gvr::kControllerButtonHome,
-  };
-  for (size_t i = 0; i < arraysize(buttons); ++i) {
-    if (controller_->ButtonUpHappened(buttons[i]) ||
-        controller_->ButtonDownHappened(buttons[i])) {
-      browser_->ForceExitVr();
-    }
-  }
 }
 
 bool VrShellGl::ResizeForWebVR(int16_t frame_index) {
