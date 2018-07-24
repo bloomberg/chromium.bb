@@ -1655,13 +1655,6 @@ bool Connection::OpenInternal(const std::string& file_name,
   }
 #endif  // defined(OS_POSIX)
 
-  // SQLite uses a lookaside buffer to improve performance of small mallocs.
-  // Chromium already depends on small mallocs being efficient, so we disable
-  // this to avoid the extra memory overhead.
-  // This must be called immediatly after opening the database before any SQL
-  // statements are run.
-  sqlite3_db_config(db_, SQLITE_DBCONFIG_LOOKASIDE, nullptr, 0, 0);
-
   // Enable extended result codes to provide more color on I/O errors.
   // Not having extended result codes is not a fatal problem, as
   // Chromium code does not attempt to handle I/O errors anyhow.  The
