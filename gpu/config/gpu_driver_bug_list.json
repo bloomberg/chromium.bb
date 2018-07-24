@@ -2866,8 +2866,8 @@
       "os": {
         "type": "linux"
       },
-      "vendor_id": "0x15ad",
-      "device_id": ["0x0405"],
+      "gl_vendor": "VMware.*",
+      "gl_renderer": "Gallium.*",
       "features": [
         "disable_timestamp_queries"
       ],
