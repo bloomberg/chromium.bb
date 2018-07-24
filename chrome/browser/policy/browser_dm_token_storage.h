@@ -23,7 +23,8 @@ namespace policy {
 // registry once and cached values are returned in subsequent calls.
 //
 // All calls to member functions must be sequenced. It is an error to attempt
-// concurrent store operations.
+// concurrent store operations. RetrieveClientId must be the first method
+// called.
 class BrowserDMTokenStorage {
  public:
   using StoreCallback = base::OnceCallback<void(bool success)>;
