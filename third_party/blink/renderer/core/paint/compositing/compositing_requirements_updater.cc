@@ -637,7 +637,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 
   // Layer assignment is needed for allocating or removing composited
   // layers related to this PaintLayer; hence the below conditions.
-  if (reasons_to_composite || layer->GetCompositingState() != kNotComposited)
+  if (reasons_to_composite || layer->GetCompositingState() != kNotComposited ||
+      layer->LostGroupedMapping())
     layer->SetNeedsCompositingLayerAssignment();
 
   // At this point we have finished collecting all reasons to composite this

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 
 namespace blink {
 
@@ -127,6 +128,52 @@ TEST_F(CompositingRequirementsUpdaterTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
             target->GetCompositingReasons());
+}
+
+// This test sets up a situation where a squashed PaintLayer loses its
+// backing, but does not change visual rect. Therefore the compositing system
+// must invalidate it because of change of backing.
+TEST_F(CompositingRequirementsUpdaterTest,
+       NeedsLayerAssignmentAfterSquashingRemoval) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0
+      }
+      #target {
+        width: 100px; height: 100px; backface-visibility: hidden
+      }
+      div {
+        width: 100px; height: 100px;
+        position: absolute;
+        background: lightblue;
+        top: 0px;
+      }
+    </style>
+    <div id=target></div>
+    <div id=squashed></div>
+  )HTML");
+
+  PaintLayer* squashed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+
+  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+                                                       "display: none");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(kNotComposited, squashed->GetCompositingState());
+  auto* tracking = GetDocument()
+                       .View()
+                       ->GetLayoutView()
+                       ->Layer()
+                       ->GraphicsLayerBacking()
+                       ->GetRasterInvalidationTracking();
+  EXPECT_TRUE(tracking->HasInvalidations());
+
+  EXPECT_EQ(IntRect(0, 0, 100, 100), tracking->Invalidations()[0].rect);
 }
 
 }  // namespace blink
