@@ -53,13 +53,3 @@ grit("test_resources") {
     ":compute_sample_dll_digest",
   ]
 }
-
-copy("signed_empty_dll") {
-  sources = [
-    "signed_dll/signed_empty_dll.dll",
-  ]
-
-  outputs = [
-    "$root_out_dir/signed_empty_dll.dll",
-  ]
-}
