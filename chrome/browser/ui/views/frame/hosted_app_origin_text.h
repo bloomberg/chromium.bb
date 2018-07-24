@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -40,8 +41,12 @@ class HostedAppOriginText : public views::View {
   // Owned by the views hierarchy.
   views::Label* label_ = nullptr;
 
+  void AnimationComplete();
+
   const SkColor active_color_;
   const SkColor inactive_color_;
+
+  base::WeakPtrFactory<HostedAppOriginText> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppOriginText);
 };
