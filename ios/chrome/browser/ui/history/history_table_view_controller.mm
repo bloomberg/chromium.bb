@@ -995,6 +995,13 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   [self.localDispatcher displayPrivacySettings];
 }
 
+#pragma mark - Accessibility
+
+- (BOOL)accessibilityPerformEscape {
+  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  return YES;
+}
+
 #pragma mark Setter & Getters
 
 - (UIBarButtonItem*)cancelButton {

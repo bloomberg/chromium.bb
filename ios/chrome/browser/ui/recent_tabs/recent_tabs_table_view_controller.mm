@@ -1128,6 +1128,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.dispatcher showSignin:command baseViewController:self];
 }
 
+#pragma mark - Accessibility
+
+- (BOOL)accessibilityPerformEscape {
+  [self.presentationDelegate showActiveRegularTabFromRecentTabs];
+  return YES;
+}
+
 #pragma mark - Private Helpers
 
 - (void)updateSyncState {
