@@ -64,11 +64,11 @@ DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(
   return nullptr;
 }
 
-DOMStorageNamespace* DOMStorageNamespace::Clone(
+scoped_refptr<DOMStorageNamespace> DOMStorageNamespace::Clone(
     const std::string& clone_namespace_id) {
   DCHECK(!namespace_id_.empty());
   DCHECK(!clone_namespace_id.empty());
-  DOMStorageNamespace* clone = new DOMStorageNamespace(
+  auto clone = base::MakeRefCounted<DOMStorageNamespace>(
       clone_namespace_id, session_storage_database_.get(), task_runner_.get());
   AreaMap::const_iterator it = areas_.begin();
   // Clone the in-memory structures.
