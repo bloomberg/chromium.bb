@@ -40,6 +40,7 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
  private:
   // PaymentRequestSheetController:
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  bool ShouldShowSecondaryButton() override;
   base::string16 GetSheetTitle() override;
   void FillContentView(views::View* content_view) override;
   void UpdatePayButtonState(bool enabled);

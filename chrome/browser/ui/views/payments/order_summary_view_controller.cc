@@ -151,6 +151,10 @@ OrderSummaryViewController::CreatePrimaryButton() {
   return button;
 }
 
+bool OrderSummaryViewController::ShouldShowSecondaryButton() {
+  return false;
+}
+
 base::string16 OrderSummaryViewController::GetSheetTitle() {
   return l10n_util::GetStringUTF16(IDS_PAYMENTS_ORDER_SUMMARY_LABEL);
 }
