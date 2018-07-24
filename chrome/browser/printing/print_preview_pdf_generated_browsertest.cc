@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -341,8 +342,10 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
     std::string pdf_data;
 
     ASSERT_TRUE(base::ReadFileToString(pdf_file_save_path_, &pdf_data));
-    ASSERT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_data.data(), pdf_data.size(),
-                                          &num_pages, &max_width_in_points));
+
+    auto pdf_span = base::as_bytes(base::make_span(pdf_data));
+    ASSERT_TRUE(
+        chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, &max_width_in_points));
 
     ASSERT_GT(num_pages, 0);
     double max_width_in_pixels =
@@ -351,8 +354,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
     for (int i = 0; i < num_pages; ++i) {
       double width_in_points, height_in_points;
       ASSERT_TRUE(chrome_pdf::GetPDFPageSizeByIndex(
-          pdf_data.data(), pdf_data.size(), i, &width_in_points,
-          &height_in_points));
+          pdf_span, i, &width_in_points, &height_in_points));
 
       double width_in_pixels = ConvertUnitDouble(
           width_in_points, kPointsPerInch, kDpi);
@@ -386,10 +388,9 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
                                             settings.area.size().GetArea());
 
       ASSERT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
-          pdf_data.data(), pdf_data.size(), i, page_bitmap_data.data(),
-          settings.area.size().width(), settings.area.size().height(),
-          settings.dpi.width(), settings.dpi.height(), settings.autorotate,
-          settings.use_color));
+          pdf_span, i, page_bitmap_data.data(), settings.area.size().width(),
+          settings.area.size().height(), settings.dpi.width(),
+          settings.dpi.height(), settings.autorotate, settings.use_color));
       FillPng(&page_bitmap_data, width_in_pixels, max_width_in_pixels,
               settings.area.size().height());
       bitmap_data.insert(bitmap_data.end(),
