@@ -1574,20 +1574,19 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
  public:
   typedef IndexedDBBackingStore::Transaction::WriteDescriptorVec
       WriteDescriptorVec;
-  ChainedBlobWriterImpl(
+  static scoped_refptr<ChainedBlobWriterImpl> Create(
       int64_t database_id,
       IndexedDBBackingStore* backing_store,
       WriteDescriptorVec* blobs,
-      scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback)
-      : waiting_for_callback_(false),
-        database_id_(database_id),
-        backing_store_(backing_store),
-        callback_(callback),
-        aborted_(false) {
-    blobs_.swap(*blobs);
-    iter_ = blobs_.begin();
+      scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback) {
+    auto writer = base::WrapRefCounted(new ChainedBlobWriterImpl(
+        database_id, backing_store, std::move(callback)));
+    writer->blobs_.swap(*blobs);
+    writer->iter_ = writer->blobs_.begin();
     backing_store->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&ChainedBlobWriterImpl::WriteNextFile, this));
+        FROM_HERE,
+        base::BindOnce(&ChainedBlobWriterImpl::WriteNextFile, writer));
+    return writer;
   }
 
   void set_delegate(std::unique_ptr<FileWriterDelegate> delegate) override {
@@ -1623,6 +1622,15 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
  private:
+  ChainedBlobWriterImpl(
+      int64_t database_id,
+      IndexedDBBackingStore* backing_store,
+      scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback)
+      : waiting_for_callback_(false),
+        database_id_(database_id),
+        backing_store_(backing_store),
+        callback_(callback),
+        aborted_(false) {}
   ~ChainedBlobWriterImpl() override {}
 
   void WriteNextFile() {
@@ -3404,7 +3412,7 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
   }
   // Creating the writer will start it going asynchronously. The transaction
   // can be destructed before the callback is triggered.
-  chained_blob_writer_ = new ChainedBlobWriterImpl(
+  chained_blob_writer_ = ChainedBlobWriterImpl::Create(
       database_id_, backing_store_, new_files_to_write,
       new BlobWriteCallbackWrapper(ptr_factory_.GetWeakPtr(), this, callback));
 }
