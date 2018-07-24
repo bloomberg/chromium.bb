@@ -1207,10 +1207,6 @@ void DocumentThreadableLoader::LoadRequest(
   }
 
   FetchParameters new_params(request, resource_loader_options);
-  if (request.GetFetchRequestMode() ==
-      network::mojom::FetchRequestMode::kNoCORS) {
-    new_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
-  }
   DCHECK(!GetResource());
 
   checker_.WillAddClient();

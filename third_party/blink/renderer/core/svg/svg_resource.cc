@@ -128,6 +128,8 @@ void ExternalSVGResource::Load(const Document& document) {
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::css;
   FetchParameters params(ResourceRequest(url_), options);
+  params.MutableResourceRequest().SetFetchRequestMode(
+      network::mojom::FetchRequestMode::kSameOrigin);
   resource_document_ =
       DocumentResource::FetchSVGDocument(params, document.Fetcher(), this);
   target_ = ResolveTarget();

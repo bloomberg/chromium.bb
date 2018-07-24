@@ -260,7 +260,9 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   DCHECK(web_request.GetSkipServiceWorker());
 
   WebAssociatedURLLoaderOptions options;
-  if (!has_universal_access_) {
+  if (has_universal_access_) {
+    options.grant_universal_access = true;
+  } else {
     // All other HTTP requests are untrusted.
     options.untrusted_http = true;
     if (filled_in_request_data.allow_cross_origin_requests) {

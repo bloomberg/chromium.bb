@@ -1528,7 +1528,6 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     const KURL& url,
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
-    FetchParameters::OriginRestriction origin_restriction,
     ResourceRequest::RedirectStatus redirect_status) const {
   if (document_ && document_->IsFreezingInProgress() &&
       !resource_request.GetKeepalive()) {
@@ -1538,8 +1537,7 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     return ResourceRequestBlockedReason::kOther;
   }
   return BaseFetchContext::CanRequest(type, resource_request, url, options,
-                                      reporting_policy, origin_restriction,
-                                      redirect_status);
+                                      reporting_policy, redirect_status);
 }
 
 }  // namespace blink

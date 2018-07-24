@@ -305,7 +305,6 @@ bool ResourceLoader::WillFollowRedirect(
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
         Context().CanRequest(
             resource_type, *new_request, new_url, options, reporting_policy,
-            FetchParameters::kUseDefaultOriginRestrictionForType,
             ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     if (Context().IsAdResource(new_url, resource_type,
@@ -601,7 +600,6 @@ void ResourceLoader::DidReceiveResponse(
           Context().CanRequest(
               resource_type, initial_request, original_url, options,
               SecurityViolationReportingPolicy::kReport,
-              FetchParameters::kUseDefaultOriginRestrictionForType,
               ResourceRequest::RedirectStatus::kFollowedRedirect);
       if (blocked_reason) {
         HandleError(ResourceError::CancelledDueToAccessCheckError(
