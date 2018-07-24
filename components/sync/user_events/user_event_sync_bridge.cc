@@ -59,15 +59,6 @@ std::unique_ptr<EntityData> MoveToEntityData(
   return entity_data;
 }
 
-std::unique_ptr<EntityData> CopyToEntityData(
-    const UserEventSpecifics specifics) {
-  auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
-      base::Int64ToString(specifics.event_time_usec());
-  *entity_data->specifics.mutable_user_event() = specifics;
-  return entity_data;
-}
-
 }  // namespace
 
 UserEventSyncBridge::UserEventSyncBridge(
@@ -358,11 +349,12 @@ void UserEventSyncBridge::OnReadAllData(
   }
 
   auto batch = std::make_unique<MutableDataBatch>();
-  UserEventSpecifics specifics;
   for (const Record& r : *data_records) {
-    if (specifics.ParseFromString(r.value)) {
-      DCHECK_EQ(r.id, GetStorageKeyFromSpecifics(specifics));
-      batch->Put(r.id, CopyToEntityData(specifics));
+    auto specifics = std::make_unique<UserEventSpecifics>();
+
+    if (specifics->ParseFromString(r.value)) {
+      DCHECK_EQ(r.id, GetStorageKeyFromSpecifics(*specifics));
+      batch->Put(r.id, MoveToEntityData(std::move(specifics)));
     } else {
       change_processor()->ReportError(
           {FROM_HERE, "Failed deserializing user events."});
