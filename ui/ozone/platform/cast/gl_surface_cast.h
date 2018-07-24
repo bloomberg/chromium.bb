@@ -25,7 +25,6 @@ class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
 
   // gl::GLSurface:
   bool SupportsSwapBuffersWithBounds() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
   gfx::SwapResult SwapBuffersWithBounds(
       const std::vector<gfx::Rect>& rects,
       const PresentationCallback& callback) override;

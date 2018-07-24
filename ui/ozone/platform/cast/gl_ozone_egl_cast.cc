@@ -86,31 +86,6 @@ void GLOzoneEglCast::TerminateDisplay() {
   DCHECK_EQ(terminate_result, static_cast<EGLBoolean>(EGL_TRUE));
 }
 
-void GLOzoneEglCast::OnSwapBuffers() {
-  DCHECK(overlay_count_ == 0 || overlay_count_ == 1);
-
-  // Logging for overlays to help diagnose bugs when nothing is visible on
-  // screen.  Logging this every frame would be overwhelming, so we just
-  // log on the transitions from 0 overlays -> 1 overlay and vice versa.
-  if (overlay_count_ == 0 && previous_frame_overlay_count_ != 0) {
-    LOG(INFO) << "Overlays deactivated";
-  } else if (overlay_count_ != 0 && previous_frame_overlay_count_ == 0) {
-    LOG(INFO) << "Overlays activated: " << overlay_bounds_.ToString();
-  } else if (overlay_count_ == previous_frame_overlay_count_ &&
-             overlay_bounds_ != previous_frame_overlay_bounds_) {
-    LOG(INFO) << "Overlay geometry changed to " << overlay_bounds_.ToString();
-  }
-
-  previous_frame_overlay_count_ = overlay_count_;
-  previous_frame_overlay_bounds_ = overlay_bounds_;
-  overlay_count_ = 0;
-}
-
-void GLOzoneEglCast::OnOverlayScheduled(const gfx::Rect& display_bounds) {
-  ++overlay_count_;
-  overlay_bounds_ = display_bounds;
-}
-
 scoped_refptr<gl::GLSurface> GLOzoneEglCast::CreateViewGLSurface(
     gfx::AcceleratedWidget widget) {
   // Verify requested widget dimensions match our current display size.

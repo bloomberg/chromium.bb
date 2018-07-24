@@ -47,7 +47,7 @@ class DummySurface : public SurfaceOzoneCanvas {
 
 class CastPixmap : public gfx::NativePixmap {
  public:
-  explicit CastPixmap(GLOzoneEglCast* parent) : parent_(parent) {}
+  CastPixmap() {}
 
   bool AreDmaBufFdsValid() const override { return false; }
   size_t GetDmaBufFdCount() const override { return 0; }
@@ -68,8 +68,7 @@ class CastPixmap : public gfx::NativePixmap {
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override {
-    parent_->OnOverlayScheduled(display_bounds);
-    return true;
+    return false;
   }
   gfx::NativePixmapHandle ExportHandle() override {
     return gfx::NativePixmapHandle();
@@ -77,8 +76,6 @@ class CastPixmap : public gfx::NativePixmap {
 
  private:
   ~CastPixmap() override {}
-
-  GLOzoneEglCast* parent_;
 
   DISALLOW_COPY_AND_ASSIGN(CastPixmap);
 };
@@ -131,7 +128,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return base::MakeRefCounted<CastPixmap>(egl_implementation_.get());
+  return base::MakeRefCounted<CastPixmap>();
 }
 
 }  // namespace ui

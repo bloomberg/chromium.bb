@@ -60,15 +60,6 @@ bool GLSurfaceCast::SupportsSwapBuffersWithBounds() {
   return supports_swap_buffer_with_bounds_;
 }
 
-gfx::SwapResult GLSurfaceCast::SwapBuffers(
-    const PresentationCallback& callback) {
-  gfx::SwapResult result = NativeViewGLSurfaceEGL::SwapBuffers(callback);
-  if (result == gfx::SwapResult::SWAP_ACK)
-    parent_->OnSwapBuffers();
-
-  return result;
-}
-
 gfx::SwapResult GLSurfaceCast::SwapBuffersWithBounds(
     const std::vector<gfx::Rect>& rects,
     const PresentationCallback& callback) {
@@ -83,11 +74,8 @@ gfx::SwapResult GLSurfaceCast::SwapBuffersWithBounds(
     rects_data[i * 4 + 2] = rects[i].width();
     rects_data[i * 4 + 3] = rects[i].height();
   }
-  gfx::SwapResult result =
-      NativeViewGLSurfaceEGL::SwapBuffersWithDamage(rects_data, callback);
-  if (result == gfx::SwapResult::SWAP_ACK)
-    parent_->OnSwapBuffers();
-  return result;
+
+  return NativeViewGLSurfaceEGL::SwapBuffersWithDamage(rects_data, callback);
 }
 
 bool GLSurfaceCast::Resize(const gfx::Size& size,
