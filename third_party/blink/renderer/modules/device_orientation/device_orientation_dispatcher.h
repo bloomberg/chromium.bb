@@ -33,7 +33,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
-#include "third_party/blink/public/platform/web_platform_event_type.h"
 #include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -73,8 +72,6 @@ class DeviceOrientationDispatcher final
   // Inherited from PlatformEventDispatcher.
   void StartListening(LocalFrame* frame) override;
   void StopListening() override;
-
-  WebPlatformEventType GetWebPlatformEventType() const;
 
   const bool absolute_;
   Member<DeviceOrientationData> last_device_orientation_data_;

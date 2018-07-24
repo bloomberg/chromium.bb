@@ -88,10 +88,4 @@ DeviceOrientationDispatcher::LatestDeviceOrientationData() {
   return last_device_orientation_data_.Get();
 }
 
-WebPlatformEventType DeviceOrientationDispatcher::GetWebPlatformEventType()
-    const {
-  return (absolute_) ? kWebPlatformEventTypeDeviceOrientationAbsolute
-                     : kWebPlatformEventTypeDeviceOrientation;
-}
-
 }  // namespace blink
