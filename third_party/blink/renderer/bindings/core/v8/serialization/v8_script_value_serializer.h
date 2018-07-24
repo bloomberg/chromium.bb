@@ -93,6 +93,9 @@ class CORE_EXPORT V8ScriptValueSerializer
   v8::Maybe<uint32_t> GetWasmModuleTransferId(
       v8::Isolate*,
       v8::Local<v8::WasmCompiledModule>) override;
+  // Reallocates memory at |ptr| to the new size and returns the new pointer or
+  // nullptr on failure. |actual_size| will hold the actual size of allocation
+  // requested.
   void* ReallocateBufferMemory(void* old_buffer,
                                size_t,
                                size_t* actual_size) override;

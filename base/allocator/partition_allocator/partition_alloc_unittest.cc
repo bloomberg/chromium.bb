@@ -182,7 +182,13 @@ class PartitionAllocTest : public testing::Test {
     }
   }
 
-  void DoReturnNullTest(size_t allocSize, bool use_realloc) {
+  enum ReturnNullTestMode {
+    kPartitionAllocGenericFlags,
+    kPartitionReallocGenericFlags,
+    kPartitionRootGenericTryRealloc,
+  };
+
+  void DoReturnNullTest(size_t allocSize, ReturnNullTestMode mode) {
     // TODO(crbug.com/678782): Where necessary and possible, disable the
     // platform's OOM-killing behavior. OOM-killing makes this test flaky on
     // low-memory devices.
@@ -202,17 +208,29 @@ class PartitionAllocTest : public testing::Test {
     int i;
 
     for (i = 0; i < numAllocations; ++i) {
-      if (use_realloc) {
-        ptrs[i] = PartitionAllocGenericFlags(
-            generic_allocator.root(), PartitionAllocReturnNull, 1, type_name);
-        ptrs[i] = PartitionReallocGenericFlags(generic_allocator.root(),
+      switch (mode) {
+        case kPartitionAllocGenericFlags: {
+          ptrs[i] = PartitionAllocGenericFlags(generic_allocator.root(),
                                                PartitionAllocReturnNull,
-                                               ptrs[i], allocSize, type_name);
-      } else {
-        ptrs[i] = PartitionAllocGenericFlags(generic_allocator.root(),
-                                             PartitionAllocReturnNull,
-                                             allocSize, type_name);
+                                               allocSize, type_name);
+          break;
+        }
+        case kPartitionReallocGenericFlags: {
+          ptrs[i] = PartitionAllocGenericFlags(
+              generic_allocator.root(), PartitionAllocReturnNull, 1, type_name);
+          ptrs[i] = PartitionReallocGenericFlags(generic_allocator.root(),
+                                                 PartitionAllocReturnNull,
+                                                 ptrs[i], allocSize, type_name);
+          break;
+        }
+        case kPartitionRootGenericTryRealloc: {
+          ptrs[i] = PartitionAllocGenericFlags(
+              generic_allocator.root(), PartitionAllocReturnNull, 1, type_name);
+          ptrs[i] = generic_allocator.root()->TryRealloc(ptrs[i], allocSize,
+                                                         type_name);
+        }
       }
+
       if (!i)
         EXPECT_TRUE(ptrs[0]);
       if (!ptrs[i]) {
@@ -1315,23 +1333,41 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 // process, so they won't pollute other tests.
 TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNullDirect) {
   // A direct-mapped allocation size.
-  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, false), "DoReturnNullTest");
+  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionAllocGenericFlags),
+               "DoReturnNullTest");
 }
 
 // Repeating above test with Realloc
 TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNullDirect) {
-  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, true), "DoReturnNullTest");
+  EXPECT_DEATH(
+      DoReturnNullTest(32 * 1024 * 1024, kPartitionReallocGenericFlags),
+      "DoReturnNullTest");
+}
+
+// Repeating above test with TryRealloc
+TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNullDirect) {
+  EXPECT_DEATH(
+      DoReturnNullTest(32 * 1024 * 1024, kPartitionRootGenericTryRealloc),
+      "DoReturnNullTest");
 }
 
 // Test "return null" with a 512 kB block size.
 TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, false), "DoReturnNullTest");
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionAllocGenericFlags),
+               "DoReturnNullTest");
 }
 
 // Repeating above test with Realloc.
 TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNull) {
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, true), "DoReturnNullTest");
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionReallocGenericFlags),
+               "DoReturnNullTest");
+}
+
+// Repeating above test with TryRealloc.
+TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNull) {
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionRootGenericTryRealloc),
+               "DoReturnNullTest");
 }
 
 #endif  // !defined(ARCH_CPU_64_BITS) || (defined(OS_POSIX) &&
