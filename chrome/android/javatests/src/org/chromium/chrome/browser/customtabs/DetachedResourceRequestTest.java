@@ -99,13 +99,13 @@ public class DetachedResourceRequestTest {
         CustomTabsSessionToken session = prepareSession();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            int expected = CustomTabsConnection.PARALLEL_REQUEST_NO_REQUEST;
+            int expected = CustomTabsConnection.ParallelRequestStatus.NO_REQUEST;
             HistogramDelta histogram =
                     new HistogramDelta("CustomTabs.ParallelRequestStatusOnStart", expected);
             Assert.assertEquals(expected, mConnection.handleParallelRequest(session, new Intent()));
             Assert.assertEquals(1, histogram.getDelta());
 
-            expected = CustomTabsConnection.PARALLEL_REQUEST_FAILURE_INVALID_URL;
+            expected = CustomTabsConnection.ParallelRequestStatus.FAILURE_INVALID_URL;
             histogram = new HistogramDelta("CustomTabs.ParallelRequestStatusOnStart", expected);
             Intent intent =
                     prepareIntent(Uri.parse("android-app://this.is.an.android.app"), ORIGIN);
@@ -113,20 +113,21 @@ public class DetachedResourceRequestTest {
                     mConnection.handleParallelRequest(session, intent));
             Assert.assertEquals(1, histogram.getDelta());
 
-            expected = CustomTabsConnection.PARALLEL_REQUEST_FAILURE_INVALID_URL;
+            expected = CustomTabsConnection.ParallelRequestStatus.FAILURE_INVALID_URL;
             histogram = new HistogramDelta("CustomTabs.ParallelRequestStatusOnStart", expected);
             intent = prepareIntent(Uri.parse(""), ORIGIN);
             Assert.assertEquals("Should not allow an empty URL", expected,
                     mConnection.handleParallelRequest(session, intent));
             Assert.assertEquals(1, histogram.getDelta());
 
-            expected = CustomTabsConnection.PARALLEL_REQUEST_FAILURE_INVALID_REFERRER_FOR_SESSION;
+            expected =
+                    CustomTabsConnection.ParallelRequestStatus.FAILURE_INVALID_REFERRER_FOR_SESSION;
             histogram = new HistogramDelta("CustomTabs.ParallelRequestStatusOnStart", expected);
             intent = prepareIntent(Uri.parse("HTTPS://foo.bar"), Uri.parse("wrong://origin"));
             Assert.assertEquals("Should not allow an arbitrary origin", expected,
                     mConnection.handleParallelRequest(session, intent));
 
-            expected = CustomTabsConnection.PARALLEL_REQUEST_SUCCESS;
+            expected = CustomTabsConnection.ParallelRequestStatus.SUCCESS;
             histogram = new HistogramDelta("CustomTabs.ParallelRequestStatusOnStart", expected);
             intent = prepareIntent(Uri.parse("HTTPS://foo.bar"), ORIGIN);
             Assert.assertEquals(expected, mConnection.handleParallelRequest(session, intent));
@@ -149,7 +150,7 @@ public class DetachedResourceRequestTest {
 
         Uri url = Uri.parse(mServer.getURL("/echotitle"));
         ThreadUtils.runOnUiThread(() -> {
-            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
+            Assert.assertEquals(CustomTabsConnection.ParallelRequestStatus.SUCCESS,
                     mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
         });
         cb.waitForCallback(0, 1);
@@ -163,7 +164,7 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
+            Assert.assertEquals(CustomTabsConnection.ParallelRequestStatus.SUCCESS,
                     mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
         });
 
@@ -256,7 +257,7 @@ public class DetachedResourceRequestTest {
         });
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
+            Assert.assertEquals(CustomTabsConnection.ParallelRequestStatus.SUCCESS,
                     mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
         });
 
@@ -286,7 +287,7 @@ public class DetachedResourceRequestTest {
         CustomTabsSessionToken session = prepareSession(url);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
+            Assert.assertEquals(CustomTabsConnection.ParallelRequestStatus.SUCCESS,
                     mConnection.handleParallelRequest(session, prepareIntent(url, origin)));
         });
 
@@ -343,7 +344,7 @@ public class DetachedResourceRequestTest {
         Uri url = Uri.parse(mServer.getURL(relativeUrl));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
+            Assert.assertEquals(CustomTabsConnection.ParallelRequestStatus.SUCCESS,
                     mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
         });
         readFromSocketCallback.waitForCallback(0);
