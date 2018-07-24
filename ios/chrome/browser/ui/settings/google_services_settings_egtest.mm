@@ -5,9 +5,15 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "components/prefs/pref_service.h"
+#include "components/unified_consent/pref_names.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -19,20 +25,22 @@
 #endif
 
 using l10n_util::GetNSString;
+using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsDoneButton;
+using unified_consent::prefs::kUnifiedConsentGiven;
 
 // Integration tests using the Google services settings screen.
 @interface GoogleServicesSettingsTestCase : ChromeTestCase
 
-@property(nonatomic, strong) id<GREYMatcher> scollViewMatcher;
+@property(nonatomic, strong) id<GREYMatcher> scrollViewMatcher;
 
 @end
 
 @implementation GoogleServicesSettingsTestCase
 
-@synthesize scollViewMatcher = _scollViewMatcher;
+@synthesize scrollViewMatcher = _scrollViewMatcher;
 
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {
@@ -41,9 +49,7 @@ using chrome_test_util::SettingsDoneButton;
   [self openGoogleServicesSettings];
 
   // Assert title and accessibility.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   @"google_services_settings_view_controller")]
+  [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
       assertWithMatcher:grey_notNil()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
@@ -54,18 +60,75 @@ using chrome_test_util::SettingsDoneButton;
       performAction:grey_tap()];
 }
 
-// Tests if the Google Services settings contains only the non personalized
-// options when the user is not logged in.
-- (void)testServicesWhileSignedOut {
-  // TODO(crbug.com/863860): re-enable when fixed.
-  if (!IsIPadIdiom())
-    EARL_GREY_TEST_DISABLED(@"Fails on iPhones.");
-
+// Tests the Google Services settings, when the user is not logged in.
+// The personalized section is expect to be collapsed and the non-personalized
+// section is expected to be expanded.
+- (void)testOpeningServicesWhileSignedOut {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
-  [self assertSyncPersonalizedServicesCollapsed:YES];
+  [self assertPersonalizedServicesCollapsed:YES];
   [self assertNonPersonalizedServicesCollapsed:NO];
+}
+
+// Tests the Google Services settings, when the user is logged in without user
+// consent.
+// The "Sync Everything" section is expected to be visible.
+// The personalized section and the non-personalized section are expected to be
+// expanded.
+- (void)testOpeningServicesWhileSignedIn {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
+  prefService->SetBoolean(kUnifiedConsentGiven, false);
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [self openGoogleServicesSettings];
+  [self assertSyncEverythingSection];
+  [self assertPersonalizedServicesCollapsed:NO];
+  [self assertNonPersonalizedServicesCollapsed:NO];
+}
+
+// Tests the Google Services settings, when the user is logged in with user
+// consent.
+// The "Sync Everything" section is expected to be visible.
+// The personalized section and the non-personalized section are expected to be
+// collapsed.
+- (void)testOpeningServicesWhileSignedInAndConsentGiven {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
+  prefService->SetBoolean(kUnifiedConsentGiven, true);
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [self openGoogleServicesSettings];
+  [self assertSyncEverythingSection];
+  [self assertPersonalizedServicesCollapsed:YES];
+  [self assertNonPersonalizedServicesCollapsed:YES];
+}
+
+// Tests to expand/collapse the personalized section.
+- (void)testTogglePersonalizedServices {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  [self openGoogleServicesSettings];
+  [self assertPersonalizedServicesCollapsed:YES];
+  [self togglePersonalizedServicesSection];
+  [self assertPersonalizedServicesCollapsed:NO];
+  [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
+      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
+                                                           0.1f, 0.1f)];
+  [self togglePersonalizedServicesSection];
+  [self assertPersonalizedServicesCollapsed:YES];
+}
+
+// Tests to expand/collapse the non-personalized section.
+- (void)testToggleNonPersonalizedServices {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  [self openGoogleServicesSettings];
+  [self assertNonPersonalizedServicesCollapsed:NO];
+  [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
+      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
+                                                           0.1f, 0.1f)];
   [self toggleNonPersonalizedServicesSection];
   [self assertNonPersonalizedServicesCollapsed:YES];
   [self toggleNonPersonalizedServicesSection];
@@ -77,10 +140,18 @@ using chrome_test_util::SettingsDoneButton;
 - (void)openGoogleServicesSettings {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
-  self.scollViewMatcher =
+  self.scrollViewMatcher =
       grey_accessibilityID(@"google_services_settings_view_controller");
-  [[EarlGrey selectElementWithMatcher:self.scollViewMatcher]
+  [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
       assertWithMatcher:grey_notNil()];
+}
+
+- (void)togglePersonalizedServicesSection {
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityLabel(GetNSString(
+              IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_TEXT))]
+      performAction:grey_tap()];
 }
 
 - (void)toggleNonPersonalizedServicesSection {
@@ -92,18 +163,21 @@ using chrome_test_util::SettingsDoneButton;
 }
 
 - (void)assertCellWithTitleID:(int)titleID detailTextID:(int)detailTextID {
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(GetNSString(titleID))]
-         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
-      onElementWithMatcher:self.scollViewMatcher]
-      assertWithMatcher:grey_notNil()];
+  NSString* accessibilityLabel = GetNSString(titleID);
   if (detailTextID) {
-    [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                             GetNSString(detailTextID))]
-           usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
-        onElementWithMatcher:self.scollViewMatcher]
-        assertWithMatcher:grey_notNil()];
+    accessibilityLabel =
+        [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
+                                   GetNSString(detailTextID)];
   }
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityLabel(accessibilityLabel),
+                                   grey_kindOfClass(
+                                       [UICollectionViewCell class]),
+                                   grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
+      onElementWithMatcher:self.scrollViewMatcher]
+      assertWithMatcher:grey_notNil()];
 }
 
 - (void)assertSyncEverythingSection {
@@ -111,7 +185,7 @@ using chrome_test_util::SettingsDoneButton;
                  detailTextID:0];
 }
 
-- (void)assertSyncPersonalizedServicesCollapsed:(BOOL)collapsed {
+- (void)assertPersonalizedServicesCollapsed:(BOOL)collapsed {
   [self
       assertCellWithTitleID:
           IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_TEXT

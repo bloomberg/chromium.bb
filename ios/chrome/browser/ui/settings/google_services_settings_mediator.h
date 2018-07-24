@@ -13,10 +13,17 @@
 
 class AuthenticationService;
 @class GoogleServicesSettingsViewController;
+class PrefService;
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
     : NSObject<GoogleServicesSettingsViewControllerModelDelegate>
+
+// Designated initializer. |prefService| should not be null.
+- (instancetype)initWithPrefService:(PrefService*)prefService
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // View controller.
 @property(nonatomic, weak) id<GoogleServicesSettingsConsumer> consumer;
