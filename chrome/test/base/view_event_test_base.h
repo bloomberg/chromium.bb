@@ -100,10 +100,6 @@ class ViewEventTestBase : public views::WidgetDelegate,
   const views::Widget* GetWidget() const override;
   views::Widget* GetWidget() override;
 
-  // Overridden to do nothing so that this class can be used in runnable tasks.
-  void AddRef() {}
-  void Release() {}
-
  protected:
   ~ViewEventTestBase() override;
 
@@ -122,8 +118,8 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // Done is invoked.
   template <class T, class Method>
   base::Closure CreateEventTask(T* target, Method method) {
-    return base::Bind(&ViewEventTestBase::RunTestMethod, this,
-                      base::Bind(method, target));
+    return base::Bind(&ViewEventTestBase::RunTestMethod, base::Unretained(this),
+                      base::Bind(method, base::Unretained(target)));
   }
 
   // Spawns a new thread posts a MouseMove in the background.
