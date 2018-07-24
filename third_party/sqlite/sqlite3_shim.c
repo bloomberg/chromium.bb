@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_SQLITE_AMALGAMATION_CONFIG_H_
-#define THIRD_PARTY_SQLITE_AMALGAMATION_CONFIG_H_
-
-// This file is included by sqlite3.c fairly early.
+// This is a shim that injects Chrome-specific defitions into sqlite3.c
+// BUILD.gn uses this instead of building the sqlite3 amalgamation directly.
 
 // We prefix chrome_ to SQLite's exported symbols, so that we don't clash with
 // other SQLite libraries loaded by the system libraries. This only matters when
@@ -38,4 +36,4 @@
 
 #endif  // defined(__linux__)
 
-#endif  // THIRD_PARTY_SQLITE_AMALGAMATION_CONFIG_H_
+#include "third_party/sqlite/amalgamation/sqlite3.c"
