@@ -52,14 +52,14 @@ constexpr int kExpandArrowStrokeWidth = 2;
 
 // The three points of arrow in peeking and fullscreen state.
 constexpr size_t kPointCount = 3;
-constexpr gfx::Point kPeekingPoints[] = {
-    gfx::Point(0, kArrowDimension / 4 * 3),
-    gfx::Point(kArrowDimension / 2, kArrowDimension / 4),
-    gfx::Point(kArrowDimension, kArrowDimension / 4 * 3)};
-constexpr gfx::Point kFullscreenPoints[] = {
-    gfx::Point(0, kArrowDimension / 2),
-    gfx::Point(kArrowDimension / 2, kArrowDimension / 2),
-    gfx::Point(kArrowDimension, kArrowDimension / 2)};
+constexpr gfx::PointF kPeekingPoints[] = {
+    gfx::PointF(0, kArrowDimension / 4 * 3),
+    gfx::PointF(kArrowDimension / 2, kArrowDimension / 4),
+    gfx::PointF(kArrowDimension, kArrowDimension / 4 * 3)};
+constexpr gfx::PointF kFullscreenPoints[] = {
+    gfx::PointF(0, kArrowDimension / 2),
+    gfx::PointF(kArrowDimension / 2, kArrowDimension / 2),
+    gfx::PointF(kArrowDimension, kArrowDimension / 2)};
 
 // Arrow vertical transiton animation related constants.
 constexpr int kTotalArrowYOffset = 24;
@@ -118,9 +118,9 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   const int current_height = app_list_view_->GetCurrentAppListHeight();
   const int peeking_height =
       AppListConfig::instance().peeking_app_list_height();
-  gfx::Point circle_center(kTileWidth / 2, kCircleCenterPeekingY);
-  gfx::Point arrow_origin((kTileWidth - kArrowDimension) / 2, kArrowPeekingY);
-  gfx::Point arrow_points[kPointCount];
+  gfx::PointF circle_center(kTileWidth / 2, kCircleCenterPeekingY);
+  gfx::PointF arrow_origin((kTileWidth - kArrowDimension) / 2, kArrowPeekingY);
+  gfx::PointF arrow_points[kPointCount];
   for (size_t i = 0; i < kPointCount; ++i)
     arrow_points[i] = kPeekingPoints[i];
   SkColor circle_color =
@@ -135,12 +135,12 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
     DCHECK_GT(peeking_to_fullscreen_height, 0);
     const double progress =
         (current_height - peeking_height) / peeking_to_fullscreen_height;
-    circle_center.set_y(gfx::Tween::IntValueBetween(
+    circle_center.set_y(gfx::Tween::FloatValueBetween(
         progress, kCircleCenterPeekingY, kCircleCenterFullscreenY));
-    arrow_origin.set_y(gfx::Tween::IntValueBetween(progress, kArrowPeekingY,
-                                                   kArrowFullscreenY));
+    arrow_origin.set_y(gfx::Tween::FloatValueBetween(progress, kArrowPeekingY,
+                                                     kArrowFullscreenY));
     for (size_t i = 0; i < kPointCount; ++i) {
-      arrow_points[i].set_y(gfx::Tween::IntValueBetween(
+      arrow_points[i].set_y(gfx::Tween::FloatValueBetween(
           progress, kPeekingPoints[i].y(), kFullscreenPoints[i].y()));
     }
     circle_color = gfx::Tween::ColorValueBetween(progress, circle_color,
@@ -176,6 +176,8 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   arrow_flags.setAntiAlias(true);
   arrow_flags.setColor(kExpandArrowColor);
   arrow_flags.setStrokeWidth(kExpandArrowStrokeWidth);
+  arrow_flags.setStrokeCap(cc::PaintFlags::Cap::kRound_Cap);
+  arrow_flags.setStrokeJoin(cc::PaintFlags::Join::kRound_Join);
   arrow_flags.setStyle(cc::PaintFlags::kStroke_Style);
 
   gfx::Path arrow_path;
