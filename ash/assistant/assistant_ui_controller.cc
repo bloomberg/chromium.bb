@@ -211,6 +211,9 @@ void AssistantUiController::OnUiVisibilityChanged(bool visible,
 }
 
 void AssistantUiController::ShowUi(AssistantSource source) {
+  if (!Shell::Get()->voice_interaction_controller()->settings_enabled())
+    return;
+
   if (!assistant_) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;
