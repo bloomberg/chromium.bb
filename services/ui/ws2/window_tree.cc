@@ -24,6 +24,7 @@
 #include "services/ui/ws2/window_delegate_impl.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
+#include "services/ui/ws2/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
@@ -49,27 +50,31 @@ namespace ui {
 namespace ws2 {
 namespace {
 
-// Max number of KeyEvents we let a client queue before pruning. In general only
-// bad (or buggy) clients would hit this cap.
-constexpr size_t kMaxQueuedEvents = 20;
-
-// Event id used for events that a response from a client is not required.
-constexpr uint32_t kDefaultEventId = 1;
+// Max number of event we let a client queue before pruning. In general only
+// bad (or buggy) clients should hit this cap.
+#if defined(NDEBUG)
+constexpr size_t kMaxQueuedEvents = 100;
+#else
+constexpr size_t kMaxQueuedEvents = 1000;
+#endif
 
 uint32_t GenerateEventAckId() {
   // We do not want to create a sequential id for each event, because that can
   // leak some information to the client. So instead, manufacture the id
   // randomly.
-  uint32_t id = 0x1000000 | (rand() & 0xffffff);
-  return id == kDefaultEventId ? kDefaultEventId + 1 : id;
+  return 0x1000000 | (rand() & 0xffffff);
 }
 
 }  // namespace
 
-// This is used to track KeyEvents sent to the client. If a KeyEvent is not
-// handled by the client, it's processed locally for accelerators.
-struct WindowTree::InFlightKeyEvent {
+// Used to track events sent to the client.
+struct WindowTree::InFlightEvent {
+  // Unique identifier for the event. It is expected that the client respond
+  // with this id.
   uint32_t id;
+
+  // Only used for KeyEvents sent to the client. If a KeyEvent is not handled
+  // by the client, it's processed locally for accelerators.
   std::unique_ptr<Event> event;
 };
 
@@ -139,16 +144,19 @@ void WindowTree::InitFromFactory() {
 }
 
 void WindowTree::SendEventToClient(aura::Window* window, const Event& event) {
-  uint32_t event_id = kDefaultEventId;
+  const uint32_t event_id = GenerateEventAckId();
+  std::unique_ptr<InFlightEvent> in_flight_event =
+      std::make_unique<InFlightEvent>();
+  in_flight_event->id = event_id;
   if (event.type() == ui::ET_KEY_PRESSED ||
       event.type() == ui::ET_KEY_RELEASED) {
-    std::unique_ptr<InFlightKeyEvent> in_flight_key_event =
-        std::make_unique<InFlightKeyEvent>();
-    event_id = in_flight_key_event->id = GenerateEventAckId();
-    in_flight_key_event->event = Event::Clone(event);
-    in_flight_key_events_.push(std::move(in_flight_key_event));
-    if (in_flight_key_events_.size() == kMaxQueuedEvents)
-      in_flight_key_events_.pop();
+    in_flight_event->event = Event::Clone(event);
+  }
+  in_flight_events_.push(std::move(in_flight_event));
+  if (in_flight_events_.size() == kMaxQueuedEvents) {
+    DVLOG(1) << "client not responding to events in a timely manner, "
+             << "dropping event";
+    in_flight_events_.pop();
   }
   // Events should only come to windows connected to displays.
   DCHECK(window->GetHost());
@@ -157,6 +165,10 @@ void WindowTree::SendEventToClient(aura::Window* window, const Event& event) {
       pointer_watcher_ && pointer_watcher_->DoesEventMatch(event);
   if (pointer_watcher_)
     pointer_watcher_->ClearPendingEvent();
+
+  for (WindowServiceObserver& observer : window_service_->observers())
+    observer.OnWillSendEventToClient(client_id_, event_id);
+
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
       PointerWatcher::CreateEventForClient(event), matches_pointer_watcher);
@@ -1632,17 +1644,20 @@ void WindowTree::SetEventTargetingPolicy(
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
-  if (!in_flight_key_events_.empty() &&
-      in_flight_key_events_.front()->id == event_id) {
-    std::unique_ptr<InFlightKeyEvent> in_flight_event =
-        std::move(in_flight_key_events_.front());
-    in_flight_key_events_.pop();
-    if (result == mojom::EventResult::UNHANDLED) {
-      window_service_->delegate()->OnUnhandledKeyEvent(
-          *(in_flight_event->event->AsKeyEvent()));
-    }
-  } else if (event_id != kDefaultEventId) {
-    DVLOG(1) << "OnWindowInputEventAck supplied unexpected id " << event_id;
+  if (in_flight_events_.empty() || in_flight_events_.front()->id != event_id) {
+    DVLOG(1) << "client acked unknown event";
+    return;
+  }
+
+  for (WindowServiceObserver& observer : window_service_->observers())
+    observer.OnClientAckedEvent(client_id_, event_id);
+
+  std::unique_ptr<InFlightEvent> in_flight_event =
+      std::move(in_flight_events_.front());
+  in_flight_events_.pop();
+  if (in_flight_event->event && result == mojom::EventResult::UNHANDLED) {
+    window_service_->delegate()->OnUnhandledKeyEvent(
+        *(in_flight_event->event->AsKeyEvent()));
   }
 }
 

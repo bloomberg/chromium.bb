@@ -74,6 +74,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void InitForEmbed(aura::Window* root, mojom::WindowTreePtr window_tree_ptr);
   void InitFromFactory();
 
+  ClientSpecificId client_id() const { return client_id_; }
+
   // Notifies the client than an event has been received.
   void SendEventToClient(aura::Window* window, const ui::Event& event);
 
@@ -111,7 +113,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   friend class FocusHandler;
   friend class WindowTreeTestHelper;
 
-  struct InFlightKeyEvent;
+  struct InFlightEvent;
 
   using ClientRoots = std::vector<std::unique_ptr<ClientRoot>>;
 
@@ -479,8 +481,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       base::flat_map<base::UnguessableToken, ClientSpecificId>;
   ScheduledEmbedsForExistingClient scheduled_embeds_for_existing_client_;
 
-  // Events that an ack is expected from the client are added here.
-  std::queue<std::unique_ptr<InFlightKeyEvent>> in_flight_key_events_;
+  // Used to track events sent to the client.
+  std::queue<std::unique_ptr<InFlightEvent>> in_flight_events_;
 
   // Set while a window move loop is in progress.
   aura::Window* window_moving_ = nullptr;

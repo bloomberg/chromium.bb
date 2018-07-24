@@ -23,6 +23,10 @@ ASH_EXPORT void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
+// Registers mojo test interfaces on the WindowService.
+ASH_EXPORT void RegisterWindowServiceInterfaces(
+    service_manager::BinderRegistry* registry);
+
 }  // namespace mojo_test_interface_factory
 }  // namespace ash
 

@@ -830,6 +830,10 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
 
   if (!dispatch_details.dispatcher_destroyed) {
     dispatching_held_event_ = nullptr;
+    for (WindowEventDispatcherObserver& observer :
+         Env::GetInstance()->window_event_dispatcher_observers()) {
+      observer.OnWindowEventDispatcherDispatchedHeldEvents(this);
+    }
     if (did_dispatch_held_move_event_callback_)
       base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
   }

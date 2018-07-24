@@ -30,6 +30,7 @@
         ],
         "test": [
           "ui.mojom.EventInjector",
+          "ui.mojom.TestEventInjector",
           "ui.mojom.WindowServerTest"
         ],
         "discardable_memory": [

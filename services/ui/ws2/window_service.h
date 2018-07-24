@@ -13,6 +13,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ui/ime/ime_driver_bridge.h"
@@ -58,6 +59,7 @@ class ScreenProvider;
 class ServerWindow;
 class UserActivityMonitor;
 class WindowServiceDelegate;
+class WindowServiceObserver;
 class WindowTree;
 class WindowTreeFactory;
 
@@ -88,6 +90,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Whether |window| hosts a remote client.
   static bool HasRemoteClient(const aura::Window* window);
+
+  void AddObserver(WindowServiceObserver* observer);
+  void RemoveObserver(WindowServiceObserver* observer);
+  base::ObserverList<WindowServiceObserver>& observers() { return observers_; }
 
   WindowServiceDelegate* delegate() { return delegate_; }
 
@@ -195,6 +201,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // All WindowTrees created by the WindowService.
   std::set<WindowTree*> window_trees_;
+
+  base::ObserverList<WindowServiceObserver> observers_;
 
   // Returns true if various test interfaces are exposed.
   bool test_config_ = false;

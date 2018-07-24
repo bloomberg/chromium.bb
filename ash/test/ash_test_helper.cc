@@ -12,6 +12,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
+#include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -23,6 +24,7 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/ws/window_service_owner.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -80,6 +82,12 @@ class TestConnector : public service_manager::mojom::Connector {
         service_manager::Identity("TestConnectorFactory", test_user_id_),
         base::BindOnce(&TestConnector::OnStartCallback,
                        base::Unretained(this)));
+  }
+
+  std::unique_ptr<service_manager::Connector> CreateConnector() {
+    service_manager::mojom::ConnectorPtr proxy;
+    Clone(mojo::MakeRequest(&proxy));
+    return std::make_unique<service_manager::Connector>(std::move(proxy));
   }
 
  private:
@@ -331,7 +339,13 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
 }
 
+service_manager::Connector* AshTestHelper::GetWindowServiceConnector() {
+  return window_service_connector_.get();
+}
+
 void AshTestHelper::CreateWindowService() {
+  WindowServiceOwner::SetRegisterWindowServiceInterfacesCallback(base::Bind(
+      &mojo_test_interface_factory::RegisterWindowServiceInterfaces));
   test_connector_ = std::make_unique<TestConnector>();
   Shell::Get()->window_service_owner()->BindWindowService(
       test_connector_->GenerateServiceRequest());
@@ -342,6 +356,7 @@ void AshTestHelper::CreateWindowService() {
   // failures seem to be because spinning the messageloop causes some timers to
   // fire (perhaps animations too) the results in a slightly different Shell
   // state.
+  window_service_connector_ = test_connector_->CreateConnector();
 }
 
 void AshTestHelper::CreateShell() {

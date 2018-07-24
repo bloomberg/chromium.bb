@@ -19,6 +19,7 @@
 #include "services/ui/ws2/user_activity_monitor.h"
 #include "services/ui/ws2/window_server_test_impl.h"
 #include "services/ui/ws2/window_service_delegate.h"
+#include "services/ui/ws2/window_service_observer.h"
 #include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_factory.h"
 #include "ui/aura/env.h"
@@ -113,12 +114,23 @@ bool WindowService::HasRemoteClient(const aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
 }
 
+void WindowService::AddObserver(WindowServiceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowService::RemoveObserver(WindowServiceObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void WindowService::OnFirstSurfaceActivation(const std::string& client_name) {
   if (surface_activation_callback_)
     std::move(surface_activation_callback_).Run(client_name);
 }
 
 void WindowService::OnWillDestroyWindowTree(WindowTree* tree) {
+  for (WindowServiceObserver& observer : observers_)
+    observer.OnWillDestroyClient(tree->client_id());
+
   window_trees_.erase(tree);
 }
 
