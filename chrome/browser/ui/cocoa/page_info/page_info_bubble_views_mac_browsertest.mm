@@ -66,19 +66,13 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest, NoCrashOnFullScreenToggle) {
       access_manager->fullscreen_controller();
 
   fullscreen_controller->ToggleBrowserFullscreenMode();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    views::BubbleDialogDelegateView* page_info =
-        PageInfoBubbleView::GetPageInfoBubble();
-    EXPECT_TRUE(page_info);
-    views::Widget* page_info_bubble = page_info->GetWidget();
-    EXPECT_TRUE(page_info_bubble);
-    EXPECT_EQ(GetParam().bubble_type, PageInfoBubbleView::GetShownBubbleType());
-    EXPECT_TRUE(page_info_bubble->IsVisible());
-  } else {
-    EXPECT_TRUE([PageInfoBubbleController getPageInfoBubbleForTest]);
-    // In Cocoa, the crash occurs when the bubble tries to re-layout.
-    [[PageInfoBubbleController getPageInfoBubbleForTest] performLayout];
-  }
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleView::GetPageInfoBubble();
+  EXPECT_TRUE(page_info);
+  views::Widget* page_info_bubble = page_info->GetWidget();
+  EXPECT_TRUE(page_info_bubble);
+  EXPECT_EQ(GetParam().bubble_type, PageInfoBubbleView::GetShownBubbleType());
+  EXPECT_TRUE(page_info_bubble->IsVisible());
 
   // There should be no crash here from re-anchoring the Page Info bubble while
   // transitioning into full screen.
