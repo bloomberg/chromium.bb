@@ -133,6 +133,12 @@ crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 # Link highlights are no longer affected by ancestor effects.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 
+# Backdrop filters are experimental (behind a flag) and do not really work with
+# or without BlinkGenPropertyTrees. These tests are marked as failing because
+# the expectations differ, but these do not block BlinkGenPropertyTrees.
+crbug.com/854189 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
+crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
+
 # These animation/transition tests should pass.
 Bug(none) animations/ [ Pass ]
 Bug(none) transitions/ [ Pass ]
@@ -301,10 +307,6 @@ Bug(none) compositing/overflow/tiled-mask.html [ Failure ]
 
 # Subpixel differences on text. Likely benign.
 Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Failure ]
-
-# Backdrop filters are not working.
-crbug.com/854189 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
-crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
 
 # Incorrect clipping.
 crbug.com/844429 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
