@@ -52,7 +52,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
@@ -65,10 +64,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace device {
-class Gamepads;
 }
 
 namespace gpu {
@@ -265,10 +260,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Must return non-null.
   virtual WebIDBFactory* IdbFactory() { return nullptr; }
-
-  // Gamepad -------------------------------------------------------------
-
-  virtual void SampleGamepads(device::Gamepads& into) {}
 
   // History -------------------------------------------------------------
 

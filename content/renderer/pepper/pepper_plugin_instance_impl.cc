@@ -486,9 +486,8 @@ PPB_Gamepad_API* PepperPluginInstanceImpl::GamepadImpl::AsPPB_Gamepad_API() {
 void PepperPluginInstanceImpl::GamepadImpl::Sample(
     PP_Instance instance,
     PP_GamepadsSampleData* data) {
-  device::Gamepads gamepads_data;
-  RenderThreadImpl::current()->SampleGamepads(&gamepads_data);
-  ppapi::ConvertDeviceGamepadData(gamepads_data, data);
+  // This gamepad singleton resource method should not be called
+  NOTREACHED();
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(

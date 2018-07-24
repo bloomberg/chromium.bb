@@ -2411,10 +2411,6 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   return shared_worker_context_provider_;
 }
 
-void RenderThreadImpl::SampleGamepads(device::Gamepads* data) {
-  blink_platform_impl_->SampleGamepads(*data);
-}
-
 bool RenderThreadImpl::RendererIsHidden() const {
   return widget_count_ > 0 && hidden_widget_count_ == widget_count_;
 }
