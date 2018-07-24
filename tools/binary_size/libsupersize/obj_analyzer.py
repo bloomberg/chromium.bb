@@ -50,6 +50,7 @@ import sys
 import threading
 import traceback
 
+import bcanalyzer
 import concurrent
 import demangle
 import nm
@@ -81,9 +82,10 @@ def _MakeToolPrefixAbsolute(tool_prefix):
 
 
 class _PathsByType:
-  def __init__(self, arch, obj):
+  def __init__(self, arch, obj, bc):
     self.arch = arch
     self.obj = obj
+    self.bc = bc
 
 
 class _BulkObjectFileAnalyzerWorker(object):
@@ -93,6 +95,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     self._list_of_encoded_elf_string_ranges_by_path = None
     self._paths_by_name = collections.defaultdict(list)
     self._encoded_string_addresses_by_path_chunks = []
+    self._encoded_strings_by_path_chunks = []
 
   def _ClassifyPaths(self, paths):
     """Classifies |paths| (.o and .a files) by file type into separate lists.
@@ -102,12 +105,19 @@ class _BulkObjectFileAnalyzerWorker(object):
     """
     arch_paths = []
     obj_paths = []
+    bc_paths = []
     for path in paths:
       if path.endswith('.a'):
+        # .a files are typically system libraries containing .o files that are
+        # ELF files (and never BC files).
         arch_paths.append(path)
+      elif bcanalyzer.IsBitcodeFile(os.path.join(self._output_directory, path)):
+        # Chromium build tools create BC files with .o extension. As a result,
+        # IsBitcodeFile() is needed to distinguish BC files from ELF .o files.
+        bc_paths.append(path)
       else:
         obj_paths.append(path)
-    return _PathsByType(arch=arch_paths, obj=obj_paths)
+    return _PathsByType(arch=arch_paths, obj=obj_paths, bc=bc_paths)
 
   def _MakeBatches(self, paths, size=None):
     if size is None:
@@ -124,12 +134,13 @@ class _BulkObjectFileAnalyzerWorker(object):
         output_directory=self._output_directory)
 
   def _RunNm(self, paths_by_type):
-    """Calls nm to get symbols and string addresses."""
+    """Calls nm to get symbols and (for non-BC files) string addresses."""
     # Downstream functions rely upon .a not being grouped.
     batches = self._MakeBatches(paths_by_type.arch, None)
-    # Combine object files and Bitcode files for nm
+    # Combine object files and Bitcode files for nm.
     BATCH_SIZE = 50  # Arbitrarily chosen.
-    batches.extend(self._MakeBatches(paths_by_type.obj, BATCH_SIZE))
+    batches.extend(
+        self._MakeBatches(paths_by_type.obj + paths_by_type.bc, BATCH_SIZE))
     results = self._DoBulkFork(nm.RunNmOnIntermediates, batches)
 
     # Names are still mangled.
@@ -143,12 +154,24 @@ class _BulkObjectFileAnalyzerWorker(object):
       if encoded_strs != concurrent.EMPTY_ENCODED_DICT:
         self._encoded_string_addresses_by_path_chunks.append(encoded_strs)
 
+  def _RunLlvmBcAnalyzer(self, paths_by_type):
+    """Calls llvm-bcanalyzer to extract string data (for LLD-LTO)."""
+    BATCH_SIZE = 50  # Arbitrarily chosen.
+    batches = self._MakeBatches(paths_by_type.bc, BATCH_SIZE)
+    results = self._DoBulkFork(
+        bcanalyzer.RunBcAnalyzerOnIntermediates, batches)
+    for encoded_strs in results:
+      if encoded_strs != concurrent.EMPTY_ENCODED_DICT:
+        self._encoded_strings_by_path_chunks.append(encoded_strs);
+
   def AnalyzePaths(self, paths):
     logging.debug('worker: AnalyzePaths() started.')
     paths_by_type = self._ClassifyPaths(paths)
-    logging.info('File counts: {\'arch\': %d, \'obj\': %d}',
-                 len(paths_by_type.arch), len(paths_by_type.obj))
+    logging.info('File counts: {\'arch\': %d, \'obj\': %d, \'bc\': %d}',
+                 len(paths_by_type.arch), len(paths_by_type.obj),
+                 len(paths_by_type.bc))
     self._RunNm(paths_by_type)
+    self._RunLlvmBcAnalyzer(paths_by_type)
     logging.debug('worker: AnalyzePaths() completed.')
 
   def SortPaths(self):
@@ -179,6 +202,14 @@ class _BulkObjectFileAnalyzerWorker(object):
         output_directory=self._output_directory)
     return list(results)
 
+  def _GetEncodedRangesFromStrings(self, string_data):
+    params = ((chunk,) for chunk in self._encoded_strings_by_path_chunks)
+    # Order of the jobs doesn't matter since each job owns independent paths,
+    # and our output is a dict where paths are the key.
+    results = concurrent.BulkForkAndCall(
+        string_extract.ResolveStringPieces, params, string_data=string_data)
+    return list(results)
+
   def AnalyzeStringLiterals(self, elf_path, elf_string_ranges):
     logging.debug('worker: AnalyzeStringLiterals() started.')
     string_data = self._ReadElfStringData(elf_path, elf_string_ranges)
@@ -186,6 +217,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     # [source_idx][batch_idx][section_idx] -> Encoded {path: [string_ranges]}.
     encoded_ranges_sources = [
       self._GetEncodedRangesFromStringAddresses(string_data),
+      self._GetEncodedRangesFromStrings(string_data),
     ]
     # [section_idx] -> {path: [string_ranges]}.
     self._list_of_encoded_elf_string_ranges_by_path = []
