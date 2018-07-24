@@ -1521,6 +1521,26 @@
             ]
         }
     ],
+    "EnableEasterEggBdayMode": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "enabled",
+                    "enable_features": [
+                        "DinoEasterEggBdayMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableEmojiContextMenu": [
         {
             "platforms": [
