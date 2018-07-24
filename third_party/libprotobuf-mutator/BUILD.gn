@@ -98,13 +98,14 @@ fuzzable_proto_library("override_lite_runtime_plugin_test_fuzzer_proto") {
   ]
 }
 
-# Component that can provide protobuf_full to non-testonly targets
-component("protobuf_full") {
-  # Stop people from using me by accident.
-  if (!use_libfuzzer) {
-    testonly = true
+# Avoid CQ complaints on platforms we don't care about (ie: iOS).
+# Also prevent people from using this to include protobuf_full into a production
+# build of Chrome.
+if (use_libfuzzer) {
+  # Component that can provide protobuf_full to non-testonly targets
+  static_library("protobuf_full") {
+    public_deps = [
+      "//third_party/protobuf:protobuf_full",
+    ]
   }
-  public_deps = [
-    "//third_party/protobuf:protobuf_full",
-  ]
 }
