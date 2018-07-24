@@ -235,10 +235,8 @@ const QuicCryptoServerStreamBase* QuicServerSessionBase::GetCryptoStream()
 
 int32_t QuicServerSessionBase::BandwidthToCachedParameterBytesPerSecond(
     const QuicBandwidth& bandwidth) {
-  int64_t bytes_per_second = bandwidth.ToBytesPerSecond();
-  return (bytes_per_second > static_cast<int64_t>(INT32_MAX)
-              ? INT32_MAX
-              : static_cast<int32_t>(bytes_per_second));
+  return static_cast<int32_t>(std::min<int64_t>(
+      bandwidth.ToBytesPerSecond(), std::numeric_limits<uint32_t>::max()));
 }
 
 }  // namespace quic

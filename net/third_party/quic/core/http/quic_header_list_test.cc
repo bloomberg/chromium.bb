@@ -7,7 +7,6 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 

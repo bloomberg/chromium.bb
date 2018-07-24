@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-#include <sys/epoll.h>
 
 #include <cstdint>
 #include <list>
@@ -12,24 +11,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/singleton.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/platform_thread.h"
-#include "base/time/time.h"
-#include "net/base/ip_address.h"
-#include "net/base/ip_endpoint.h"
-#include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quic/core/http/quic_spdy_client_session_base.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_packet_creator.h"
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
 #include "net/third_party/quic/core/quic_packets.h"
-#include "net/third_party/quic/core/quic_server_id.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
@@ -65,11 +54,11 @@
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/server_thread.h"
 #include "net/third_party/quic/tools/quic_backend_response.h"
+#include "net/third_party/quic/tools/quic_client.h"
 #include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_server.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 #include "net/tools/epoll_server/epoll_server.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using net::EpollEvent;
 using net::EpollServer;
@@ -1166,8 +1155,8 @@ TEST_P(EndToEndTestWithTls, DoNotSetSendAlarmIfConnectionFlowControlBlocked) {
   // Regression test for b/14677858.
   // Test that the resume write alarm is not set in QuicConnection::OnCanWrite
   // if currently connection level flow control blocked. If set, this results in
-  // an infinite loop in the EpollServer, as the alarm fires and is
-  // immediately rescheduled.
+  // an infinite loop in the EpollServer, as the alarm fires and is immediately
+  // rescheduled.
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
