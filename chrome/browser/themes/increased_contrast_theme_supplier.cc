@@ -22,11 +22,10 @@ bool IncreasedContrastThemeSupplier::GetColor(int id, SkColor* color) const {
       *color = SK_ColorWHITE;
       return true;
     case ThemeProperties::COLOR_FRAME_INACTIVE:
+    case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
       *color = SK_ColorGRAY;
       return true;
     case ThemeProperties::COLOR_FRAME:
-      *color = SK_ColorDKGRAY;
-      return true;
     case ThemeProperties::COLOR_FRAME_INCOGNITO:
       *color = SK_ColorDKGRAY;
       return true;
