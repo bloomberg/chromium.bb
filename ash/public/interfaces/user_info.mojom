@@ -59,4 +59,6 @@ struct UserInfo {
   // True if the user's non-cryptohome data (wallpaper, avatar etc.) is
   // ephemeral. See |UserManager::IsUserNonCryptohomeDataEphemeral| for details.
   bool is_ephemeral;
+  // True if the user is also the device owner.
+  bool is_device_owner;
 };

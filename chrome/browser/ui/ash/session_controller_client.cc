@@ -99,6 +99,9 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->display_email = user.display_email();
   session->user_info->is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
+  const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
+  session->user_info->is_device_owner =
+      owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
     session->user_info->service_user_id =
         content::BrowserContext::GetServiceUserIdFor(profile);
@@ -169,6 +172,7 @@ SessionControllerClient::SessionControllerClient()
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
+  chromeos::LoginState::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -201,6 +205,7 @@ SessionControllerClient::~SessionControllerClient() {
         ->RemoveObserver(this);
   }
 
+  chromeos::LoginState::Get()->RemoveObserver(this);
   SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
@@ -482,6 +487,10 @@ void SessionControllerClient::OnCustodianInfoChanged() {
       supervised_user_profile_);
   if (user)
     SendUserSession(*user);
+}
+
+void SessionControllerClient::LoggedInStateChanged() {
+  SendUserSession(*UserManager::Get()->GetActiveUser());
 }
 
 void SessionControllerClient::Observe(

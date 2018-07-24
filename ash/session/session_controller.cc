@@ -534,6 +534,7 @@ void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
                    weak_ptr_factory_.GetWeakPtr(), account_id));
   }
 
+  UpdateLoginStatus();
   for (auto& observer : observers_)
     observer.OnUserSessionAdded(account_id);
 }
@@ -570,8 +571,8 @@ LoginStatus SessionController::CalculateLoginStatusForActiveSession() const {
 
   switch (user_sessions_[0]->user_info->type) {
     case user_manager::USER_TYPE_REGULAR:
-      // TODO: This needs to distinguish between owner and non-owner.
-      return LoginStatus::USER;
+      return user_sessions_[0]->user_info->is_device_owner ? LoginStatus::OWNER
+                                                           : LoginStatus::USER;
     case user_manager::USER_TYPE_GUEST:
       return LoginStatus::GUEST;
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:

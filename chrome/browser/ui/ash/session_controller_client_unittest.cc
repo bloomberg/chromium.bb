@@ -27,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/login/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -72,6 +73,7 @@ class TestChromeUserManager : public FakeChromeUserManager {
     FakeChromeUserManager::UserLoggedIn(account_id, user_id_hash,
                                         browser_restart, is_child);
     active_user_ = const_cast<user_manager::User*>(FindUser(account_id));
+    NotifyUserAddedToSession(active_user_, false);
     NotifyOnLogin();
   }
 
@@ -180,6 +182,7 @@ class SessionControllerClientTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
+    chromeos::LoginState::Initialize();
 
     // Initialize the UserManager singleton.
     user_manager_ = new TestChromeUserManager;
@@ -209,6 +212,7 @@ class SessionControllerClientTest : public testing::Test {
     // PolicyCertService::Shutdown()).
     base::RunLoop().RunUntilIdle();
 
+    chromeos::LoginState::Shutdown();
     testing::Test::TearDown();
   }
 
@@ -563,6 +567,50 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   // The updated custodian was sent over the mojo interface.
   EXPECT_EQ("parent3@test.com",
             session_controller.last_user_session()->custodian_email);
+}
+
+TEST_F(SessionControllerClientTest, DeviceOwner) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClient client;
+  TestSessionController session_controller;
+  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
+  client.Init();
+
+  const AccountId owner =
+      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
+  const AccountId normal_user =
+      AccountId::FromUserEmailGaiaId("user@test.com", "2222222222");
+  user_manager()->SetOwnerId(owner);
+  UserAddedToSession(owner);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_TRUE(
+      session_controller.last_user_session()->user_info->is_device_owner);
+
+  UserAddedToSession(normal_user);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_FALSE(
+      session_controller.last_user_session()->user_info->is_device_owner);
+}
+
+TEST_F(SessionControllerClientTest, UserBecomesDeviceOwner) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClient client;
+  TestSessionController session_controller;
+  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
+  client.Init();
+
+  const AccountId owner =
+      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
+  UserAddedToSession(owner);
+  SessionControllerClient::FlushForTesting();
+  // The device owner is empty, the current session shouldn't be the owner.
+  EXPECT_FALSE(
+      session_controller.last_user_session()->user_info->is_device_owner);
+
+  user_manager()->SetOwnerId(owner);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_TRUE(
+      session_controller.last_user_session()->user_info->is_device_owner);
 }
 
 TEST_F(SessionControllerClientTest, UserPrefsChange) {
