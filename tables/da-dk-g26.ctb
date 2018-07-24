@@ -132,7 +132,7 @@ letter \xf801 123f # Used to prevent word contractions in certain cases
 
 # Litdigits
 include litdigits6Dots.uti
-numericmodechars /,.:^
+midendnumericmodechars /,.:^
 
 undefined 26
 
@@ -233,12 +233,12 @@ noback correct $dy$Spm.[]$l "\xf800\xf801"
 ### Pass 1 - Forward and backward
 
 # Punctuations, math and numbers
-midnum , 2
-midnum . 3
+#midnum , 2
+#midnum . 3
 #midnum - 36
 endnum - 36
-midnum / 34
-midnum : 25
+#midnum / 34
+#midnum : 25
 nofor midnum ^ 346
 nofor midnum ^ 45-346
 
