@@ -2,28 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_FRAME_HEADER_ORIGIN_TEXT_H_
-#define ASH_FRAME_FRAME_HEADER_ORIGIN_TEXT_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
 
-#include "ash/ash_export.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
 
+class Browser;
+
 namespace views {
 class Label;
 }
 
-namespace ash {
-
 // A URL's origin text with a slide in/out animation.
-class ASH_EXPORT FrameHeaderOriginText : public views::View {
+class HostedAppOriginText : public views::View {
  public:
-  FrameHeaderOriginText(const base::string16& origin,
-                        SkColor active_color,
-                        SkColor inactive_color);
-  ~FrameHeaderOriginText() override;
+  HostedAppOriginText(Browser* browser,
+                      SkColor active_color,
+                      SkColor inactive_color);
+  ~HostedAppOriginText() override;
 
   // Sets whether to paint the text with the active/inactive color.
   void SetPaintAsActive(bool active);
@@ -44,9 +43,7 @@ class ASH_EXPORT FrameHeaderOriginText : public views::View {
   const SkColor active_color_;
   const SkColor inactive_color_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameHeaderOriginText);
+  DISALLOW_COPY_AND_ASSIGN(HostedAppOriginText);
 };
 
-}  // namespace ash
-
-#endif  // ASH_FRAME_FRAME_HEADER_ORIGIN_TEXT_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_

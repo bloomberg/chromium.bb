@@ -5,12 +5,15 @@
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
+#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -65,6 +68,9 @@ int HorizontalPaddingBetweenItems() {
 
 }  // namespace
 
+const base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay =
+    base::TimeDelta::FromMilliseconds(750);
+
 class HostedAppButtonContainer::ContentSettingsContainer
     : public views::View,
       public ContentSettingImageView::Delegate {
@@ -83,12 +89,27 @@ class HostedAppButtonContainer::ContentSettingsContainer
       v->SetIconColor(icon_color);
   }
 
+  void SetUpForFadeIn() {
+    SetVisible(false);
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(0);
+  }
+
   void FadeIn() {
+    if (visible())
+      return;
     SetVisible(true);
     DCHECK_EQ(layer()->opacity(), 0);
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.SetTransitionDuration(kContentSettingsFadeInDuration);
     layer()->SetOpacity(1);
+  }
+
+  void EnsureVisible() {
+    SetVisible(true);
+    if (layer())
+      layer()->SetOpacity(1);
   }
 
   const std::vector<ContentSettingImageView*>&
@@ -125,10 +146,6 @@ class HostedAppButtonContainer::ContentSettingsContainer
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsContainer);
 };
 
-void HostedAppButtonContainer::DisableAnimationForTesting() {
-  g_animation_disabled_for_testing = true;
-}
-
 views::View* HostedAppButtonContainer::GetContentSettingContainerForTesting() {
   return content_settings_container_;
 }
@@ -150,13 +167,6 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
-  if (!g_animation_disabled_for_testing) {
-    SetVisible(false);
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-    layer()->SetOpacity(0);
-  }
-
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
@@ -173,10 +183,15 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   }
 }
 
-HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
-                                                   SkColor active_icon_color,
-                                                   SkColor inactive_icon_color)
-    : browser_view_(browser_view),
+HostedAppButtonContainer::HostedAppButtonContainer(
+    views::Widget* widget,
+    BrowserView* browser_view,
+    HostedAppOriginText* hosted_app_origin_text,
+    SkColor active_icon_color,
+    SkColor inactive_icon_color)
+    : scoped_widget_observer_(this),
+      browser_view_(browser_view),
+      hosted_app_origin_text_(hosted_app_origin_text),
       active_icon_color_(active_icon_color),
       inactive_icon_color_(inactive_icon_color),
       content_settings_container_(new ContentSettingsContainer(browser_view)),
@@ -211,6 +226,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
 
   browser_view_->SetToolbarButtonProvider(this);
   browser_view_->immersive_mode_controller()->AddObserver(this);
+  scoped_widget_observer_.Add(widget);
 }
 
 HostedAppButtonContainer::~HostedAppButtonContainer() {
@@ -231,6 +247,31 @@ void HostedAppButtonContainer::SetPaintAsActive(bool active) {
   UpdateIconsColor();
 }
 
+bool HostedAppButtonContainer::ShouldAnimate() const {
+  return !g_animation_disabled_for_testing && hosted_app_origin_text_ &&
+         !browser_view_->immersive_mode_controller()->IsEnabled();
+}
+
+void HostedAppButtonContainer::StartTitlebarAnimation() {
+  if (!ShouldAnimate())
+    return;
+
+  hosted_app_origin_text_->StartSlideAnimation();
+  app_menu_button_->StartHighlightAnimation(
+      HostedAppOriginText::AnimationDuration());
+  icon_fade_in_delay_.Start(
+      FROM_HERE, HostedAppOriginText::AnimationDuration(), this,
+      &HostedAppButtonContainer::FadeInContentSettingIcons);
+}
+
+void HostedAppButtonContainer::FadeInContentSettingIcons() {
+  content_settings_container_->FadeIn();
+}
+
+void HostedAppButtonContainer::DisableAnimationForTesting() {
+  g_animation_disabled_for_testing = true;
+}
+
 void HostedAppButtonContainer::UpdateIconsColor() {
   SkColor icon_color =
       paint_as_active_ ? active_icon_color_ : inactive_icon_color_;
@@ -239,31 +280,14 @@ void HostedAppButtonContainer::UpdateIconsColor() {
   app_menu_button_->SetIconColor(icon_color);
 }
 
-void HostedAppButtonContainer::StartTitlebarAnimation(
-    base::TimeDelta origin_text_slide_duration) {
-  if (g_animation_disabled_for_testing ||
-      browser_view_->immersive_mode_controller()->IsEnabled()) {
-    return;
-  }
-
-  app_menu_button_->StartHighlightAnimation(origin_text_slide_duration);
-
-  fade_in_content_setting_buttons_timer_.Start(
-      FROM_HERE, origin_text_slide_duration, content_settings_container_,
-      &ContentSettingsContainer::FadeIn);
-}
-
 void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
 void HostedAppButtonContainer::OnImmersiveRevealStarted() {
-  // Cancel the content setting animation as icons need immediately show in
-  // immersive mode.
-  if (fade_in_content_setting_buttons_timer_.IsRunning()) {
-    fade_in_content_setting_buttons_timer_.AbandonAndStop();
-    content_settings_container_->SetVisible(true);
-  }
+  // Don't wait for the fade in animation to make content setting icons visible
+  // once in immersive mode.
+  content_settings_container_->EnsureVisible();
 }
 
 void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
@@ -338,4 +362,17 @@ void HostedAppButtonContainer::FocusToolbar() {
 
 views::AccessiblePaneView* HostedAppButtonContainer::GetAsAccessiblePaneView() {
   return this;
+}
+
+void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                         bool visibility) {
+  if (!visibility || !pending_widget_visibility_)
+    return;
+  pending_widget_visibility_ = false;
+  if (ShouldAnimate()) {
+    content_settings_container_->SetUpForFadeIn();
+    animation_start_delay_.Start(
+        FROM_HERE, kTitlebarAnimationDelay, this,
+        &HostedAppButtonContainer::StartTitlebarAnimation);
+  }
 }
