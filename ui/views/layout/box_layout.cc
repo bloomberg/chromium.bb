@@ -165,19 +165,19 @@ void BoxLayout::Layout(View* host) {
   total_main_axis_size -= between_child_spacing_;
   // Free space can be negative indicating that the views want to overflow.
   int main_free_space = MainAxisSize(child_area) - total_main_axis_size;
+  int main_position = MainAxisPosition(child_area);
   {
-    int position = MainAxisPosition(child_area);
     int size = MainAxisSize(child_area);
     if (!flex_sum) {
       switch (main_axis_alignment_) {
         case MAIN_AXIS_ALIGNMENT_START:
           break;
         case MAIN_AXIS_ALIGNMENT_CENTER:
-          position += main_free_space / 2;
+          main_position += main_free_space / 2;
           size = total_main_axis_size;
           break;
         case MAIN_AXIS_ALIGNMENT_END:
-          position += main_free_space;
+          main_position += main_free_space;
           size = total_main_axis_size;
           break;
         default:
@@ -186,12 +186,11 @@ void BoxLayout::Layout(View* host) {
       }
     }
     gfx::Rect new_child_area(child_area);
-    SetMainAxisPosition(position, &new_child_area);
+    SetMainAxisPosition(main_position, &new_child_area);
     SetMainAxisSize(size, &new_child_area);
     child_area.Intersect(new_child_area);
   }
 
-  int main_position = MainAxisPosition(child_area);
   int total_padding = 0;
   int current_flex = 0;
   for (int i = 0; i < host->child_count(); ++i) {

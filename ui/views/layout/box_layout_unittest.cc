@@ -102,29 +102,30 @@ TEST_F(BoxLayoutTest, Overflow) {
   host_->AddChildView(v1);
   View* v2 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v2);
-  host_->SetBounds(0, 0, 10, 10);
+  host_->SetBounds(0, 0, 15, 10);
 
   // Overflows by positioning views at the start and truncating anything that
   // doesn't fit.
   host_->Layout();
-  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), v1->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 15, 10), v1->bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), v2->bounds());
 
-  // All values of main axis alignment should overflow in the same manner.
+  // Clipping of children should occur at the opposite end(s) to the main axis
+  // alignment position.
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   host_->Layout();
-  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), v1->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 15, 10), v1->bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), v2->bounds());
 
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   host_->Layout();
-  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), v1->bounds());
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), v2->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 13, 10), v1->bounds());
+  EXPECT_EQ(gfx::Rect(13, 0, 2, 10), v2->bounds());
 
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   host_->Layout();
-  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), v1->bounds());
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), v2->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 10), v1->bounds());
+  EXPECT_EQ(gfx::Rect(5, 0, 10, 10), v2->bounds());
 }
 
 TEST_F(BoxLayoutTest, NoSpace) {

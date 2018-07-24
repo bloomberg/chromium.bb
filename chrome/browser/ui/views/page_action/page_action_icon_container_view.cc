@@ -18,8 +18,11 @@ PageActionIconContainerView::PageActionIconContainerView(
     PageActionIconView::Delegate* page_action_icon_delegate,
     LocationBarView::Delegate* location_bar_delegate)
     : zoom_observer_(this) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), between_icon_spacing));
+  views::BoxLayout& layout =
+      *SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, gfx::Insets(), between_icon_spacing));
+  // Right align to clip the leftmost items first when not enough space.
+  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
 
   for (PageActionIconType type : types_enabled) {
     switch (type) {

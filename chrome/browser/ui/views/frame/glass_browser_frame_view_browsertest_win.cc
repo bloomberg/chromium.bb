@@ -8,8 +8,11 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -80,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppGlassBrowserFrameViewTest, ThemeColor) {
   if (!InstallAndLaunchHostedApp())
     return;
 
-  DCHECK_EQ(glass_frame_view_->GetTitlebarColor(), *theme_color_);
+  EXPECT_EQ(glass_frame_view_->GetTitlebarColor(), *theme_color_);
 }
 
 IN_PROC_BROWSER_TEST_F(HostedAppGlassBrowserFrameViewTest, NoThemeColor) {
@@ -88,7 +91,48 @@ IN_PROC_BROWSER_TEST_F(HostedAppGlassBrowserFrameViewTest, NoThemeColor) {
   if (!InstallAndLaunchHostedApp())
     return;
 
-  DCHECK_EQ(
+  EXPECT_EQ(
       glass_frame_view_->GetTitlebarColor(),
       ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false));
+}
+
+IN_PROC_BROWSER_TEST_F(HostedAppGlassBrowserFrameViewTest, SpaceConstrained) {
+  theme_color_ = base::nullopt;
+  if (!InstallAndLaunchHostedApp())
+    return;
+
+  views::View* page_action_icon_container =
+      browser_view_->toolbar_button_provider()
+          ->GetPageActionIconContainerView();
+  EXPECT_EQ(page_action_icon_container->parent(), hosted_app_button_container_);
+
+  views::View* menu_button =
+      browser_view_->toolbar_button_provider()->GetAppMenuButton();
+  EXPECT_EQ(menu_button->parent(), hosted_app_button_container_);
+
+  // Initially the page action icons are not visible, just the menu button has
+  // width.
+  EXPECT_EQ(page_action_icon_container->width(), 0);
+  int original_menu_button_width = menu_button->width();
+  EXPECT_GT(original_menu_button_width, 0);
+
+  // Cause the zoom page action icon to be visible.
+  chrome::Zoom(app_browser_, content::PAGE_ZOOM_IN);
+
+  // The page action icons should now take up width.
+  EXPECT_GT(page_action_icon_container->width(), 0);
+  EXPECT_EQ(menu_button->width(), original_menu_button_width);
+
+  // Resize the HostedAppButtonContainer just enough to clip out the page action
+  // icons.
+  hosted_app_button_container_->SetSize(
+      gfx::Size(hosted_app_button_container_->width() -
+                    page_action_icon_container->bounds().right(),
+                hosted_app_button_container_->height()));
+  hosted_app_button_container_->Layout();
+
+  // The page action icons should be clipped to 0 width while the app menu
+  // button retains its full width.
+  EXPECT_EQ(page_action_icon_container->width(), 0);
+  EXPECT_EQ(menu_button->width(), original_menu_button_width);
 }

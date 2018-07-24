@@ -162,10 +162,13 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
       extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser_view->browser()));
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+  views::BoxLayout& layout =
+      *SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::LayoutProvider::Get()->GetDistanceMetric(
+              views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+  // Right align to clip the leftmost items first when not enough space.
+  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
@@ -209,13 +212,15 @@ HostedAppButtonContainer::HostedAppButtonContainer(
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
-      gfx::Insets(0, HorizontalPaddingBetweenItems()),
-      HorizontalPaddingBetweenItems());
-  layout->set_cross_axis_alignment(
+  views::BoxLayout& layout =
+      *SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal,
+          gfx::Insets(0, HorizontalPaddingBetweenItems()),
+          HorizontalPaddingBetweenItems()));
+  // Right align to clip the leftmost items first when not enough space.
+  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(std::move(layout));
 
   AddChildView(content_settings_container_);
   AddChildView(page_action_icon_container_view_);

@@ -33,9 +33,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     kVertical,
   };
 
-  // This specifies where along the main axis the children should be laid out.
-  // e.g. a horizontal layout of MAIN_AXIS_ALIGNMENT_END will result in the
-  // child views being right-aligned.
+  // This specifies that the start/center/end of the collective child views is
+  // aligned with the start/center/end of the host view. e.g. a horizontal
+  // layout of MAIN_AXIS_ALIGNMENT_END will result in the child views being
+  // right-aligned.
   enum MainAxisAlignment {
     MAIN_AXIS_ALIGNMENT_START,
     MAIN_AXIS_ALIGNMENT_CENTER,
