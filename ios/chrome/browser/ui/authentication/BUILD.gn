@@ -180,6 +180,7 @@ source_set("eg_test_support") {
     "//components/signin/core/browser",
     "//components/signin/core/browser:account_info",
     "//components/unified_consent",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/authentication/unified_consent:unified_consent_ui",
