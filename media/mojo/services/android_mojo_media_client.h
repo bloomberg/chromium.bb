@@ -20,7 +20,8 @@ class AndroidMojoMediaClient : public MojoMediaClient {
 
   // MojoMediaClient implementation.
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log) final;
 
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces) final;
