@@ -57,6 +57,7 @@
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/base/network_change_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -209,7 +210,8 @@ FileError InitializeMetadata(
 }  // namespace
 
 // Observes drive disable Preference's change.
-class DriveIntegrationService::PreferenceWatcher {
+class DriveIntegrationService::PreferenceWatcher
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   explicit PreferenceWatcher(PrefService* pref_service)
       : pref_service_(pref_service),
@@ -219,12 +221,29 @@ class DriveIntegrationService::PreferenceWatcher {
     pref_change_registrar_.Init(pref_service);
     pref_change_registrar_.Add(
         prefs::kDisableDrive,
-        base::Bind(&PreferenceWatcher::OnPreferenceChanged,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&PreferenceWatcher::OnPreferenceChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+    pref_change_registrar_.Add(
+        prefs::kDisableDriveOverCellular,
+        base::BindRepeating(&PreferenceWatcher::UpdateSyncPauseState,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  ~PreferenceWatcher() override {
+    if (integration_service_ && integration_service_->drivefs_holder_) {
+      net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+    }
   }
 
   void set_integration_service(DriveIntegrationService* integration_service) {
     integration_service_ = integration_service;
+    if (integration_service_->drivefs_holder_) {
+      net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+    }
+  }
+
+  void UpdateSyncPauseState() {
+    OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
   }
 
  private:
@@ -232,6 +251,17 @@ class DriveIntegrationService::PreferenceWatcher {
     DCHECK(integration_service_);
     integration_service_->SetEnabled(
         !pref_service_->GetBoolean(prefs::kDisableDrive));
+  }
+
+  // net::NetworkChangeNotifier::NetworkChangeObserver
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override {
+    if (!integration_service_->GetDriveFsInterface())
+      return;
+
+    integration_service_->GetDriveFsInterface()->SetPauseSyncing(
+        net::NetworkChangeNotifier::IsConnectionCellular(type) &&
+        pref_service_->GetBoolean(prefs::kDisableDriveOverCellular));
   }
 
   PrefService* pref_service_;
@@ -625,6 +655,10 @@ void DriveIntegrationService::AddDriveMountPointAfterMounted() {
     logger_->Log(logging::LOG_INFO, "Drive mount point is added");
     for (auto& observer : observers_)
       observer.OnFileSystemMounted();
+  }
+
+  if (drivefs_holder_ && preference_watcher_) {
+    preference_watcher_->UpdateSyncPauseState();
   }
 }
 

@@ -183,4 +183,6 @@ void FakeDriveFs::SetPinned(const base::FilePath& path,
   std::move(callback).Run(drive::FILE_ERROR_OK);
 }
 
+void FakeDriveFs::SetPauseSyncing(bool pause) {}
+
 }  // namespace drivefs
