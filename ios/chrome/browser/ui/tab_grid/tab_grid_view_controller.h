@@ -20,8 +20,9 @@
 // Delegate protocol for an object that can handle presenting ("opening") tabs
 // from the tab grid.
 @protocol TabPresentationDelegate<NSObject>
-// Show the active tab in |page|, presented on top of the tab grid.
-- (void)showActiveTabInPage:(TabGridPage)page;
+// Show the active tab in |page|, presented on top of the tab grid.  The
+// omnibox will be focused after the animation if |focusOmnibox| is YES.
+- (void)showActiveTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox;
 @end
 
 // View controller representing a tab switcher. The tab switcher has an

@@ -886,7 +886,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Tells the appropriate delegate to create a new item, and then tells the
 // presentation delegate to show the new item.
-- (void)openNewTabInPage:(TabGridPage)page {
+- (void)openNewTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox {
   switch (page) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsDelegate addNewItem];
@@ -907,22 +907,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       break;
   }
   self.activePage = page;
-  [self.tabPresentationDelegate showActiveTabInPage:page];
+  [self.tabPresentationDelegate showActiveTabInPage:page
+                                       focusOmnibox:focusOmnibox];
 }
 
 // Creates and shows a new regular tab.
-- (void)openNewRegularTab {
-  [self openNewTabInPage:TabGridPageRegularTabs];
+- (void)openNewRegularTabForKeyboardCommand {
+  [self openNewTabInPage:TabGridPageRegularTabs focusOmnibox:YES];
 }
 
 // Creates and shows a new incognito tab.
-- (void)openNewIncognitoTab {
-  [self openNewTabInPage:TabGridPageIncognitoTabs];
+- (void)openNewIncognitoTabForKeyboardCommand {
+  [self openNewTabInPage:TabGridPageIncognitoTabs focusOmnibox:YES];
 }
 
 // Creates and shows a new tab in the current page.
-- (void)openNewTabInCurrentPage {
-  [self openNewTabInPage:self.currentPage];
+- (void)openNewTabInCurrentPageForKeyboardCommand {
+  [self openNewTabInPage:self.currentPage focusOmnibox:YES];
 }
 
 // Broadcasts whether incognito tabs are showing.
@@ -957,7 +958,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         base::UserMetricsAction("MobileTabSwitcherOpenIncognitoTab"));
   }
   self.activePage = self.currentPage;
-  [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
+  [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
+                                       focusOmnibox:NO];
   gridViewController.showsSelectionUpdates = YES;
 }
 
@@ -1009,7 +1011,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // being triggered on release after tabs have been closed and the button
   // disabled. Ensure that action is only taken on a valid state.
   if (![[self gridViewControllerForPage:newActivePage] isGridEmpty]) {
-    [self.tabPresentationDelegate showActiveTabInPage:newActivePage];
+    [self.tabPresentationDelegate showActiveTabInPage:newActivePage
+                                         focusOmnibox:NO];
     // Record when users exit the tab grid to return to the current foreground
     // tab.
     // TODO(crbug.com/856965) : Rename metrics.
@@ -1041,7 +1044,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)newTabButtonTapped:(id)sender {
-  [self openNewTabInCurrentPage];
+  [self openNewTabInPage:self.currentPage focusOmnibox:NO];
   // Record only when a new tab is created through the + button.
   // TODO(crbug.com/856965) : Rename metrics.
   base::RecordAction(base::UserMetricsAction("MobileToolbarStackViewNewTab"));
@@ -1075,24 +1078,24 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
-  UIKeyCommand* newWindowShortcut =
-      [UIKeyCommand keyCommandWithInput:@"n"
-                          modifierFlags:UIKeyModifierCommand
-                                 action:@selector(openNewRegularTab)
-                   discoverabilityTitle:l10n_util::GetNSStringWithFixup(
-                                            IDS_IOS_TOOLS_MENU_NEW_TAB)];
+  UIKeyCommand* newWindowShortcut = [UIKeyCommand
+       keyCommandWithInput:@"n"
+             modifierFlags:UIKeyModifierCommand
+                    action:@selector(openNewRegularTabForKeyboardCommand)
+      discoverabilityTitle:l10n_util::GetNSStringWithFixup(
+                               IDS_IOS_TOOLS_MENU_NEW_TAB)];
   UIKeyCommand* newIncognitoWindowShortcut = [UIKeyCommand
        keyCommandWithInput:@"n"
              modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
-                    action:@selector(openNewIncognitoTab)
+                    action:@selector(openNewIncognitoTabForKeyboardCommand)
       discoverabilityTitle:l10n_util::GetNSStringWithFixup(
                                IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)];
-  UIKeyCommand* newTabShortcut =
-      [UIKeyCommand keyCommandWithInput:@"t"
-                          modifierFlags:UIKeyModifierCommand
-                                 action:@selector(openNewTabInCurrentPage)
-                   discoverabilityTitle:l10n_util::GetNSStringWithFixup(
-                                            IDS_IOS_TOOLS_MENU_NEW_TAB)];
+  UIKeyCommand* newTabShortcut = [UIKeyCommand
+       keyCommandWithInput:@"t"
+             modifierFlags:UIKeyModifierCommand
+                    action:@selector(openNewTabInCurrentPageForKeyboardCommand)
+      discoverabilityTitle:l10n_util::GetNSStringWithFixup(
+                               IDS_IOS_TOOLS_MENU_NEW_TAB)];
   return @[ newWindowShortcut, newIncognitoWindowShortcut, newTabShortcut ];
 }
 

@@ -872,7 +872,9 @@ enum class SnapshotViewOption {
   DCHECK(model);
   [[self presentedViewController] dismissViewControllerAnimated:NO
                                                      completion:nil];
-  [self.delegate tabSwitcher:self shouldFinishWithActiveModel:model];
+  [self.delegate tabSwitcher:self
+      shouldFinishWithActiveModel:model
+                     focusOmnibox:NO];
   [self performTabSwitcherTransition:TransitionType::TRANSITION_DISMISS
                            withModel:model
                             animated:animated

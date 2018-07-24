@@ -338,7 +338,7 @@
 
 #pragma mark - TabPresentationDelegate
 
-- (void)showActiveTabInPage:(TabGridPage)page {
+- (void)showActiveTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(self.regularTabModel && self.incognitoTabModel);
   TabModel* activeTabModel;
   switch (page) {
@@ -357,7 +357,8 @@
   // Trigger the transition through the TabSwitcher delegate. This will in turn
   // call back into this coordinator via the ViewControllerSwapping protocol.
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:activeTabModel];
+             shouldFinishWithActiveModel:activeTabModel
+                            focusOmnibox:focusOmnibox];
 }
 
 #pragma mark - BrowserCommands
@@ -399,19 +400,22 @@
 
 - (void)showActiveRegularTabFromRecentTabs {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.regularTabModel];
+             shouldFinishWithActiveModel:self.regularTabModel
+                            focusOmnibox:NO];
 }
 
 #pragma mark - HistoryPresentationDelegate
 
 - (void)showActiveRegularTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.regularTabModel];
+             shouldFinishWithActiveModel:self.regularTabModel
+                            focusOmnibox:NO];
 }
 
 - (void)showActiveIncognitoTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.incognitoTabModel];
+             shouldFinishWithActiveModel:self.incognitoTabModel
+                            focusOmnibox:NO];
 }
 
 @end
