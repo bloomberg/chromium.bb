@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -174,16 +175,16 @@
       <div slot="dialog-title">$i18n{selectManufacturerAndModelTitle}</div>
       <div slot="dialog-body">
         <div class="settings-box two-line">
-          <drop-down-search-box items="[[manufacturerList]]"
+          <cr-searchable-drop-down items="[[manufacturerList]]"
               label="$i18n{printerManufacturer}"
               value="{{activePrinter.ppdManufacturer}}">
-          </drop-down-search-box>
+          </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
-          <drop-down-search-box items="[[modelList]]"
+          <cr-searchable-drop-down items="[[modelList]]"
               label="$i18n{printerModel}"
               value="{{activePrinter.ppdModel}}">
-          </drop-down-search-box>
+          </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line last">
           <cr-input class="browse-file-input" readonly value="[[newUserPPD_]]"
