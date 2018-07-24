@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//base/android/jni_generator/jni_exception_list.gni")
+import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
@@ -1200,6 +1201,7 @@ template("chrome_public_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "apk_name",
+                             "version_name",
                              "is_base_module",
                              "module_name",
                              "target_type",
@@ -1216,6 +1218,7 @@ template("chrome_public_apk_or_module_tmpl") {
 }
 
 chrome_public_apk_or_module_tmpl("chrome_public_apk") {
+  version_name = chrome_version_name
   apk_name = "ChromePublic"
   target_type = "android_apk"
 }
@@ -1254,6 +1257,7 @@ template("chrome_modern_public_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "apk_name",
+                             "version_name",
                              "is_base_module",
                              "module_name",
                              "target_type",
@@ -1277,6 +1281,7 @@ template("chrome_modern_public_apk_or_module_tmpl") {
 }
 
 chrome_modern_public_apk_or_module_tmpl("chrome_modern_public_apk") {
+  version_name = chrome_version_name
   apk_name = "ChromeModernPublic"
   target_type = "android_apk"
 }
@@ -1304,6 +1309,7 @@ template("monochrome_public_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "apk_name",
+                             "version_name",
                              "is_base_module",
                              "module_name",
                              "target_type",
@@ -1334,6 +1340,7 @@ template("monochrome_public_apk_or_module_tmpl") {
 }
 
 monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
+  version_name = chrome_version_name
   apk_name = "MonochromePublic"
   target_type = "android_apk"
 }

@@ -5,6 +5,7 @@
 import("//android_webview/system_webview_apk_tmpl.gni")
 import("//android_webview/webview_repack_locales.gni")
 import("//android_webview/variables.gni")
+import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -1067,6 +1068,7 @@ android_aidl("aw_variations_seed_server_aidl") {
 
 if (public_android_sdk) {
   system_webview_apk_tmpl("system_webview_apk") {
+    version_name = chrome_version_name
     android_manifest = system_webview_android_manifest
     android_manifest_dep = ":system_webview_manifest"
     deps = [
