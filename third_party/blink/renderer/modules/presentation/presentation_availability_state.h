@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"

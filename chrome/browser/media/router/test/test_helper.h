@@ -19,7 +19,7 @@
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 #if !defined(OS_ANDROID)
 

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_PRESENTATION_SERVICE_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 
 namespace blink {
 
