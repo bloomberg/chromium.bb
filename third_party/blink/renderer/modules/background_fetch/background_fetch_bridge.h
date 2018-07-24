@@ -60,11 +60,12 @@ class BackgroundFetchBridge final
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback);
 
   // Updates the user interface for the Background Fetch identified by
-  // |unique_id| with the updated |title|. Will invoke the |callback| when the
-  // interface has been requested to update.
+  // |unique_id| with the updated |title| or |icon|. Will invoke the |callback|
+  // when the interface has been requested to update.
   void UpdateUI(const String& developer_id,
                 const String& unique_id,
                 const String& title,
+                const SkBitmap& icon,
                 UpdateUICallback callback);
 
   // Aborts the active Background Fetch for |unique_id|. Will invoke the

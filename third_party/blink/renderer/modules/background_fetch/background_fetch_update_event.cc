@@ -7,10 +7,13 @@
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_settled_fetch.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_options.h"
 #include "third_party/blink/renderer/modules/event_modules_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -29,17 +32,20 @@ BackgroundFetchUpdateEvent::BackgroundFetchUpdateEvent(
     WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
     : BackgroundFetchSettledEvent(type, initializer, unique_id, observer),
-      registration_(registration) {}
+      registration_(registration),
+      loader_(new BackgroundFetchIconLoader) {}
 
 BackgroundFetchUpdateEvent::~BackgroundFetchUpdateEvent() = default;
 
 void BackgroundFetchUpdateEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(loader_);
   BackgroundFetchSettledEvent::Trace(visitor);
 }
 
-ScriptPromise BackgroundFetchUpdateEvent::updateUI(ScriptState* script_state,
-                                                   const String& title) {
+ScriptPromise BackgroundFetchUpdateEvent::updateUI(
+    ScriptState* script_state,
+    const BackgroundFetchUpdateUIOptions& ui_options) {
   if (!registration_) {
     // Return a Promise that will never settle when a developer calls this
     // method on a BackgroundFetchedEvent instance they created themselves.
@@ -47,15 +53,34 @@ ScriptPromise BackgroundFetchUpdateEvent::updateUI(ScriptState* script_state,
   }
   DCHECK(!unique_id_.IsEmpty());
 
+  if (!ui_options.hasTitle() && ui_options.icons().IsEmpty()) {
+    // Nothing to update, just return a resolved promise.
+    ScriptPromise::CastUndefined(script_state);
+  }
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  BackgroundFetchBridge::From(registration_)
-      ->UpdateUI(id(), unique_id_, title,
-                 WTF::Bind(&BackgroundFetchUpdateEvent::DidUpdateUI,
-                           WrapPersistent(this), WrapPersistent(resolver)));
+  if (ui_options.icons().IsEmpty()) {
+    DidGetIcon(resolver, ui_options.title(), SkBitmap());
+  } else {
+    loader_->Start(
+        BackgroundFetchBridge::From(registration_),
+        ExecutionContext::From(script_state), ui_options.icons(),
+        WTF::Bind(&BackgroundFetchUpdateEvent::DidGetIcon, WrapPersistent(this),
+                  WrapPersistent(resolver), ui_options.title()));
+  }
 
   return promise;
+}
+
+void BackgroundFetchUpdateEvent::DidGetIcon(ScriptPromiseResolver* resolver,
+                                            const String& title,
+                                            const SkBitmap& icon) {
+  BackgroundFetchBridge::From(registration_)
+      ->UpdateUI(id(), unique_id_, title, icon,
+                 WTF::Bind(&BackgroundFetchUpdateEvent::DidUpdateUI,
+                           WrapPersistent(this), WrapPersistent(resolver)));
 }
 
 void BackgroundFetchUpdateEvent::DidUpdateUI(
