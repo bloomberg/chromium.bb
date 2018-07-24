@@ -10081,45 +10081,6 @@ class MockDocumentThreadableLoaderClient
   bool failed_;
 };
 
-// FIXME: This would be better as a unittest on DocumentThreadableLoader but it
-// requires spin-up of a frame. It may be possible to remove that requirement
-// and convert it to a unittest.
-TEST_F(WebFrameTest, LoaderOriginAccess) {
-  FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank");
-
-  SchemeRegistry::RegisterURLSchemeAsDisplayIsolated("chrome");
-
-  // Cross-origin request.
-  KURL resource_url("chrome://test.pdf");
-  ResourceRequest request(resource_url);
-  request.SetRequestContext(WebURLRequest::kRequestContextObject);
-  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
-  RegisterMockedChromeURLLoad("test.pdf");
-
-  LocalFrame* frame(
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame()));
-
-  MockDocumentThreadableLoaderClient client;
-  ThreadableLoaderOptions options;
-
-  // First try to load the request with regular access. Should fail.
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
-  ResourceLoaderOptions resource_loader_options;
-  DocumentThreadableLoader::LoadResourceSynchronously(
-      *ThreadableLoadingContext::Create(*frame->GetDocument()), request, client,
-      options, resource_loader_options);
-  EXPECT_TRUE(client.Failed());
-
-  client.Reset();
-  // Try to load the request with cross origin access. Should succeed.
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
-  DocumentThreadableLoader::LoadResourceSynchronously(
-      *ThreadableLoadingContext::Create(*frame->GetDocument()), request, client,
-      options, resource_loader_options);
-  EXPECT_FALSE(client.Failed());
-}
-
 TEST_F(WebFrameTest, DetachRemoteFrame) {
   FrameTestHelpers::WebViewHelper helper;
   helper.InitializeRemote();

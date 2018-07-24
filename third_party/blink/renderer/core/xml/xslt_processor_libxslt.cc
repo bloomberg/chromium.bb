@@ -109,7 +109,6 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
       ResourceLoaderOptions fetch_options;
       fetch_options.initiator_info.name = FetchInitiatorTypeNames::xml;
       FetchParameters params(ResourceRequest(url), fetch_options);
-      params.SetOriginRestriction(FetchParameters::kRestrictToSameOrigin);
       params.MutableResourceRequest().SetFetchRequestMode(
           network::mojom::FetchRequestMode::kSameOrigin);
       Resource* resource =

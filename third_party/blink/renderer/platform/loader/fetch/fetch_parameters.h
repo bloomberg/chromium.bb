@@ -61,11 +61,6 @@ class PLATFORM_EXPORT FetchParameters {
     kInDocument,  // The request was discovered in the main document
     kInserted     // The request was discovered in a document.write()
   };
-  enum OriginRestriction {
-    kUseDefaultOriginRestrictionForType,
-    kRestrictToSameOrigin,
-    kNoOriginRestriction
-  };
   enum PlaceholderImageRequestType {
     kDisallowPlaceholder = 0,  // The requested image must not be a placeholder.
     kAllowPlaceholder,         // The image is allowed to be a placeholder.
@@ -156,10 +151,6 @@ class PLATFORM_EXPORT FetchParameters {
   // credentials mode.
   void SetCrossOriginAccessControl(const SecurityOrigin*,
                                    network::mojom::FetchCredentialsMode);
-  OriginRestriction GetOriginRestriction() const { return origin_restriction_; }
-  void SetOriginRestriction(OriginRestriction restriction) {
-    origin_restriction_ = restriction;
-  }
   const IntegrityMetadataSet IntegrityMetadata() const {
     return options_.integrity_metadata;
   }
@@ -207,7 +198,6 @@ class PLATFORM_EXPORT FetchParameters {
   ResourceLoaderOptions options_;
   SpeculativePreloadType speculative_preload_type_;
   DeferOption defer_;
-  OriginRestriction origin_restriction_;
   ResourceWidth resource_width_;
   ClientHintsPreferences client_hint_preferences_;
   PlaceholderImageRequestType placeholder_image_request_type_;
@@ -236,7 +226,6 @@ struct CrossThreadFetchParametersData {
   CrossThreadResourceLoaderOptionsData options;
   FetchParameters::SpeculativePreloadType speculative_preload_type;
   FetchParameters::DeferOption defer;
-  FetchParameters::OriginRestriction origin_restriction;
   FetchParameters::ResourceWidth resource_width;
   ClientHintsPreferences client_hint_preferences;
   FetchParameters::PlaceholderImageRequestType placeholder_image_request_type;

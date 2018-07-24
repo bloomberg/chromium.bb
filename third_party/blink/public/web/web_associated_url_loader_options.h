@@ -36,21 +36,19 @@
 namespace blink {
 
 struct WebAssociatedURLLoaderOptions {
-  WebAssociatedURLLoaderOptions()
-      : untrusted_http(false),
-        expose_all_response_headers(false),
-        preflight_policy(
-            network::mojom::CORSPreflightPolicy::kConsiderPreflight) {}
-
   // Whether to validate the method and headers as if this was an
   // XMLHttpRequest.
-  bool untrusted_http;
+  bool untrusted_http = false;
 
   // If policy is to use access control, whether to expose non-whitelisted
   // response headers to the client.
-  bool expose_all_response_headers;
+  bool expose_all_response_headers = false;
 
-  network::mojom::CORSPreflightPolicy preflight_policy;
+  // When true, omit origin related checks. USE WITH CARE.
+  bool grant_universal_access = false;
+
+  network::mojom::CORSPreflightPolicy preflight_policy =
+      network::mojom::CORSPreflightPolicy::kConsiderPreflight;
 };
 
 }  // namespace blink

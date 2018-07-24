@@ -414,6 +414,16 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     ResourceLoaderOptions resource_loader_options;
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
+    if (options_.grant_universal_access) {
+      const auto mode = new_request.GetFetchRequestMode();
+      DCHECK(mode == network::mojom::FetchRequestMode::kNoCORS ||
+             mode == network::mojom::FetchRequestMode::kNavigate);
+      scoped_refptr<SecurityOrigin> origin =
+          SecurityOrigin::CreateUniqueOpaque();
+      origin->GrantUniversalAccess();
+      resource_loader_options.security_origin = std::move(origin);
+    }
+
     const ResourceRequest& webcore_request = new_request.ToResourceRequest();
     WebURLRequest::RequestContext context = webcore_request.GetRequestContext();
     if (context == WebURLRequest::kRequestContextUnspecified) {

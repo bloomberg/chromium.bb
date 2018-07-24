@@ -38,7 +38,6 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request)
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      origin_restriction_(kUseDefaultOriginRestrictionForType),
       placeholder_image_request_type_(kDisallowPlaceholder) {}
 
 FetchParameters::FetchParameters(
@@ -48,7 +47,6 @@ FetchParameters::FetchParameters(
       options_(data->options),
       speculative_preload_type_(data->speculative_preload_type),
       defer_(data->defer),
-      origin_restriction_(data->origin_restriction),
       resource_width_(data->resource_width),
       client_hint_preferences_(data->client_hint_preferences),
       placeholder_image_request_type_(data->placeholder_image_request_type) {}
@@ -60,7 +58,6 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
       options_(options),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      origin_restriction_(kUseDefaultOriginRestrictionForType),
       placeholder_image_request_type_(kDisallowPlaceholder) {}
 
 FetchParameters::~FetchParameters() = default;
@@ -158,7 +155,6 @@ std::unique_ptr<CrossThreadFetchParametersData> FetchParameters::CopyData()
   data->options = CrossThreadResourceLoaderOptionsData(options_);
   data->speculative_preload_type = speculative_preload_type_;
   data->defer = defer_;
-  data->origin_restriction = origin_restriction_;
   data->resource_width = resource_width_;
   data->client_hint_preferences = client_hint_preferences_;
   data->placeholder_image_request_type = placeholder_image_request_type_;
