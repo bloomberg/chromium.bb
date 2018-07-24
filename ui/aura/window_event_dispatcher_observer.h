@@ -32,6 +32,11 @@ class AURA_EXPORT WindowEventDispatcherObserver {
   virtual void OnWindowEventDispatcherFinishedProcessingEvent(
       WindowEventDispatcher* dispatcher) {}
 
+  // Called when the WindowEventDispatcher dispatches held events. See
+  // WindowEventDispatcher::HoldMouseMoves() for more details.
+  virtual void OnWindowEventDispatcherDispatchedHeldEvents(
+      WindowEventDispatcher* dispatcher) {}
+
  protected:
   virtual ~WindowEventDispatcherObserver() {}
 };

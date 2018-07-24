@@ -46,6 +46,7 @@
 #include "ash/mojo_interface_factory.h"
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/test/ui_controls_factory_ash.h"
+#include "ash/ws/window_service_owner.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -165,6 +166,9 @@ int LaunchChromeTests(size_t parallel_jobs,
   // interface support into production code.
   ash::mojo_interface_factory::SetRegisterInterfacesCallback(
       base::Bind(&ash::mojo_test_interface_factory::RegisterInterfaces));
+  ash::WindowServiceOwner::SetRegisterWindowServiceInterfacesCallback(
+      base::Bind(
+          &ash::mojo_test_interface_factory::RegisterWindowServiceInterfaces));
 #endif
 
   return content::LaunchTests(delegate, parallel_jobs, argc, argv);

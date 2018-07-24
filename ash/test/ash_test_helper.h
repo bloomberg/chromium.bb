@@ -27,6 +27,10 @@ namespace display {
 class Display;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ui {
 class ScopedAnimationDurationScaleMode;
 }
@@ -92,6 +96,9 @@ class AshTestHelper {
 
   void reset_commandline() { command_line_.reset(); }
 
+  // Gets a Connector that talks directly to the WindowService.
+  service_manager::Connector* GetWindowServiceConnector();
+
  private:
   // Forces creation of the WindowService. The WindowService is normally created
   // on demand, this force the creation.
@@ -123,6 +130,8 @@ class AshTestHelper {
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
 
   std::unique_ptr<TestConnector> test_connector_;
+
+  std::unique_ptr<service_manager::Connector> window_service_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

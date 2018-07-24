@@ -9,7 +9,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_init_params.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
@@ -35,6 +37,14 @@ class ASH_EXPORT WindowServiceOwner {
   explicit WindowServiceOwner(
       std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider);
   ~WindowServiceOwner();
+
+  using RegisterInterfacesCallback =
+      base::OnceCallback<void(service_manager::BinderRegistry*)>;
+  // Sets a callback used to register test only interfaces on the WindowService.
+  // The callback is run once the WindowService is created (this must be called
+  // before the WindowService is created).
+  static void SetRegisterWindowServiceInterfacesCallback(
+      RegisterInterfacesCallback cb);
 
   // Called from the ServiceManager when a request is made for the
   // WindowService.
