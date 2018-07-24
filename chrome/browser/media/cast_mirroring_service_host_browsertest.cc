@@ -166,8 +166,7 @@ class CastMirroringServiceHostBrowserTest : public InProcessBrowserTest,
   // InProcessBrowserTest override.
   void SetUp() override {
 #if defined(OS_CHROMEOS)
-    scoped_feature_list_.InitWithFeatures(
-        {}, {features::kMash, features::kMashDeprecated});
+    scoped_feature_list_.InitWithFeatures({}, {features::kMash});
 #endif
     InProcessBrowserTest::SetUp();
   }

@@ -51,9 +51,6 @@ UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 // TODO(jamescook): Make flag only available in Chrome OS.
 UI_BASE_EXPORT extern const base::Feature kMash;
 
-// Deprecated. Use |kMash|.
-UI_BASE_EXPORT extern const base::Feature kMashDeprecated;
-
 // Returns true if ash is in process (the default). A value of false means ash
 // is running in a separate process (and is hosting the UI Service and Viz).
 UI_BASE_EXPORT bool IsAshInBrowserProcess();
