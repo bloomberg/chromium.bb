@@ -117,6 +117,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   NSCandidateListTouchBarItem* candidateListItem =
       [[NSCandidateListTouchBarItem alloc]
           initWithIdentifier:kSuggestedTextItemsTouchId];
+
   [candidateListItem setCandidates:suggestions_
                   forSelectedRange:selectionRange_
                           inString:text_];
@@ -169,6 +170,12 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   // The cursor should not be off the end of the text.
   DCHECK(cursor <= text.length());
 
+  // Default range is just the cursor position. This is used if BreakIterator
+  // cannot be initialized, there is no text in the textfield, or the cursor is
+  // at the front of a word.
+  size_t location = cursor;
+  size_t length = 0;
+
   base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
 
   if (iter.Init()) {
@@ -178,14 +185,22 @@ class WebContentsTextObserver : public content::WebContentsObserver {
     }
 
     // If BreakIterator stopped at the end of a word, the cursor is in/at the
-    // end of a word so we return [word start, word end]
-    if (iter.IsWord())
-      return NSMakeRange(iter.prev(), iter.pos() - iter.prev());
+    // end of a word so the editing word range is [word start, word end].
+    if (iter.IsWord()) {
+      location = iter.prev();
+      length = iter.pos() - iter.prev();
+    }
+
+    // The suggestion text returned by AppKit has the necessary trailing
+    // whitespace which should replace the existing trailing whitespace.
+    // If the BreakIterator just iterated over whitespace or iterates over
+    // whitespace when it advances, modify the length of the editing word
+    // range to include the whitespace.
+    if ((iter.pos() && !iter.IsWord()) || (iter.Advance() && !iter.IsWord()))
+      length = iter.pos() - location;
   }
 
-  // Otherwise, we are not currently in a word, so we return
-  // [cursor position, cursor position]
-  return NSMakeRange(cursor, 0);
+  return NSMakeRange(location, length);
 }
 
 - (void)requestSuggestionsForText:(NSString*)text inRange:(NSRange)range {
