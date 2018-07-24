@@ -148,7 +148,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/payments/payment_app.mojom.h",
   "+third_party/blink/public/platform/modules/permissions/permission.mojom.h",
   "+third_party/blink/public/platform/modules/permissions/permission_status.mojom.h",
-  "+third_party/blink/public/platform/modules/presentation/presentation.mojom.h",
   "+third_party/blink/public/platform/modules/webauth/authenticator.mojom.h",
   "+third_party/blink/public/platform/modules/webauth/virtual_authenticator.mojom.h",
   "+third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h",

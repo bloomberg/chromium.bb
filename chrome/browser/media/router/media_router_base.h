@@ -17,7 +17,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/common/media_router/media_route.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace media_router {
 

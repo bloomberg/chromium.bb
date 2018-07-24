@@ -24,7 +24,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

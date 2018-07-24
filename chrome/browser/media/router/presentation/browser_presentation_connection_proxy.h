@@ -11,7 +11,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace media_router {
 

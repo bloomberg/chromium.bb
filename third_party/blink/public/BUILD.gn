@@ -681,7 +681,7 @@ repack("scaled_resources_200_percent") {
   ]
 }
 
-# TODO: Move these into WebKit/public/mojom.
+# TODO: Move these into blink/public/mojom.
 mojom("mojo_bindings") {
   visibility = [
     "//content/*",
@@ -714,7 +714,6 @@ mojom("mojo_bindings") {
     "platform/modules/payments/payment_app.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
-    "platform/modules/presentation/presentation.mojom",
     "platform/modules/webauth/virtual_authenticator.mojom",
     "platform/modules/webdatabase/web_database.mojom",
     "platform/oom_intervention.mojom",

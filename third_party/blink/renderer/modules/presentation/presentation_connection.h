@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"

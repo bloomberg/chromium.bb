@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "media/base/flinging_controller.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
 

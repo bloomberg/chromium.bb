@@ -8,7 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace cast_channel {
 class CastMessage;

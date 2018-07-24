@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
