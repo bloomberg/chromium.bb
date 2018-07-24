@@ -61,10 +61,6 @@ class IOSChromeSigninClient : public SigninClient,
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
-  std::unique_ptr<CookieChangeSubscription> AddCookieChangeCallback(
-      const GURL& url,
-      const std::string& name,
-      net::CookieChangeCallback callback) override;
   void DelayNetworkCall(const base::Closure& callback) override;
 
   // SigninErrorController::Observer implementation.

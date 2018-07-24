@@ -11,15 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
 // The subscription for cookie changes. This class lives on the main thread.
 class SigninCookieChangeSubscription
-    : public SigninClient::CookieChangeSubscription,
-      public base::SupportsWeakPtr<SigninCookieChangeSubscription> {
+    : public base::SupportsWeakPtr<SigninCookieChangeSubscription> {
  public:
   // Creates a cookie change subscription and registers for cookie changed
   // events.
@@ -28,7 +27,7 @@ class SigninCookieChangeSubscription
       const GURL& url,
       const std::string& name,
       net::CookieChangeCallback callback);
-  ~SigninCookieChangeSubscription() override;
+  ~SigninCookieChangeSubscription();
 
  private:
   // Holder of a cookie store cookie changed subscription.

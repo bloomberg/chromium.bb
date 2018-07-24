@@ -5,7 +5,6 @@
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/core/browser/signin_cookie_change_subscription.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -96,18 +95,6 @@ void IOSWebViewSigninClient::AddContentSettingsObserver(
 void IOSWebViewSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
   host_content_settings_map_->RemoveObserver(observer);
-}
-
-std::unique_ptr<SigninClient::CookieChangeSubscription>
-IOSWebViewSigninClient::AddCookieChangeCallback(
-    const GURL& url,
-    const std::string& name,
-    net::CookieChangeCallback callback) {
-  scoped_refptr<net::URLRequestContextGetter> context_getter =
-      GetURLRequestContext();
-  DCHECK(context_getter.get());
-  return std::make_unique<SigninCookieChangeSubscription>(
-      context_getter, url, name, std::move(callback));
 }
 
 void IOSWebViewSigninClient::DelayNetworkCall(const base::Closure& callback) {

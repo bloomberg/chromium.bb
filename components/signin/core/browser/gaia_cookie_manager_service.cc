@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_cookie_change_subscription.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -350,10 +351,19 @@ GaiaCookieManagerService::~GaiaCookieManagerService() {
 }
 
 void GaiaCookieManagerService::Init() {
-  cookie_change_subscription_ = signin_client_->AddCookieChangeCallback(
-      GaiaUrls::GetInstance()->google_url(), kGaiaCookieName,
-      base::BindRepeating(&GaiaCookieManagerService::OnCookieChange,
-                          base::Unretained(this)));
+  scoped_refptr<net::URLRequestContextGetter> context_getter =
+      signin_client_->GetURLRequestContext();
+
+  // NOTE: |context_getter| can be nullptr when TestSigninClient is used in
+  // testing contexts.
+  if (context_getter) {
+    cookie_change_subscription_ =
+        std::make_unique<SigninCookieChangeSubscription>(
+            context_getter, GaiaUrls::GetInstance()->google_url(),
+            kGaiaCookieName,
+            base::BindRepeating(&GaiaCookieManagerService::OnCookieChange,
+                                base::Unretained(this)));
+  }
 }
 
 void GaiaCookieManagerService::Shutdown() {
