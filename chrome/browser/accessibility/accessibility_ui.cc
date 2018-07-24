@@ -14,8 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
@@ -56,8 +60,6 @@ static const char kOn[] = "on";
 static const char kDisabled[] = "disabled";
 
 namespace {
-
-bool g_show_internal_accessibility_tree = false;
 
 std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
     const GURL& url,
@@ -163,7 +165,9 @@ bool HandleAccessibilityRequestCallback(
   data.SetString(kScreenReader, web ? (screenreader ? kOn : kOff) : kDisabled);
   data.SetString(kHTML, web ? (html ? kOn : kOff) : kDisabled);
 
-  data.SetString(kInternal, g_show_internal_accessibility_tree ? kOn : kOff);
+  PrefService* pref = Profile::FromBrowserContext(current_context)->GetPrefs();
+  bool show_internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
+  data.SetString(kInternal, show_internal ? kOn : kOff);
 
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
@@ -291,8 +295,8 @@ void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
 
   AllowJavascript();
   if (flag_name_str == kInternal) {
-    g_show_internal_accessibility_tree = enabled;
-    LOG(ERROR) << "INTERNAL: " << g_show_internal_accessibility_tree;
+    PrefService* pref = Profile::FromWebUI(web_ui())->GetPrefs();
+    pref->SetBoolean(prefs::kShowInternalAccessibilityTree, enabled);
     return;
   }
 
@@ -368,8 +372,10 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   web_contents->SetAccessibilityMode(
       ui::AXMode(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents));
 
+  PrefService* pref = Profile::FromWebUI(web_ui())->GetPrefs();
+  bool internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
   base::string16 accessibility_contents_utf16 =
-      web_contents->DumpAccessibilityTree(g_show_internal_accessibility_tree);
+      web_contents->DumpAccessibilityTree(internal);
   result->SetString("tree", base::UTF16ToUTF8(accessibility_contents_utf16));
   CallJavascriptFunction("accessibility.showTree", *(result.get()));
 }
@@ -386,4 +392,10 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetString("tree", str);
   CallJavascriptFunction("accessibility.showNativeUITree", *(result.get()));
+}
+
+// static
+void AccessibilityUIMessageHandler::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
 }

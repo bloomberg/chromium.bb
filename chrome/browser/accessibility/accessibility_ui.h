@@ -14,6 +14,10 @@ namespace base {
 class ListValue;
 }  // namespace base
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 class AccessibilityUI : public content::WebUIController {
  public:
   explicit AccessibilityUI(content::WebUI* web_ui);
@@ -26,6 +30,8 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
   ~AccessibilityUIMessageHandler() override;
 
   void RegisterMessages() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   void ToggleAccessibility(const base::ListValue* args);

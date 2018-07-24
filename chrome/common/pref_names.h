@@ -169,6 +169,7 @@ extern const char kContextualSearchEnabled[];
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 extern const char kConfirmToQuitEnabled[];
 #endif
+extern const char kShowInternalAccessibilityTree[];
 #if defined(OS_MACOSX)
 extern const char kShowFullscreenToolbar[];
 extern const char kAllowJavascriptAppleEvents[];
