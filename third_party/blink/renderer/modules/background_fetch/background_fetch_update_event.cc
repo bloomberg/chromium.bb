@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetched_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
