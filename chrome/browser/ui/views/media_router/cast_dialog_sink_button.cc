@@ -76,7 +76,8 @@ std::unique_ptr<views::View> CreateSecondaryIconForSink(
         CastDialogSinkButton::kSecondaryIconSize, gfx::kChromeIconGrey));
     icon_view->SetTooltipText(base::UTF8ToUTF16(sink.issue->info().title));
     return icon_view;
-  } else if (sink.state == UIMediaSinkState::CONNECTED) {
+  } else if (sink.state == UIMediaSinkState::CONNECTED ||
+             sink.state == UIMediaSinkState::DISCONNECTING) {
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(CreateVectorIcon(
         views::kMenuCheckIcon, CastDialogSinkButton::kSecondaryIconSize,
@@ -167,7 +168,9 @@ std::unique_ptr<views::InkDrop> CastDialogSinkButton::CreateInkDrop() {
 }
 
 base::string16 CastDialogSinkButton::GetActionText() const {
-  return l10n_util::GetStringUTF16(sink_.state == UIMediaSinkState::CONNECTED
+  return l10n_util::GetStringUTF16(sink_.state == UIMediaSinkState::CONNECTED ||
+                                           sink_.state ==
+                                               UIMediaSinkState::DISCONNECTING
                                        ? IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON
                                        : IDS_MEDIA_ROUTER_START_CASTING_BUTTON);
 }

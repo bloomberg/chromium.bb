@@ -123,7 +123,8 @@ int CastDialogView::GetDialogButtons() const {
 
 bool CastDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return !sink_buttons_.empty() &&
-         GetSelectedSink().state != UIMediaSinkState::CONNECTING;
+         GetSelectedSink().state != UIMediaSinkState::CONNECTING &&
+         GetSelectedSink().state != UIMediaSinkState::DISCONNECTING;
 }
 
 views::View* CastDialogView::CreateExtraView() {

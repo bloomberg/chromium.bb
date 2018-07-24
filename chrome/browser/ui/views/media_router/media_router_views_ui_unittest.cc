@@ -170,7 +170,7 @@ TEST_F(MediaRouterViewsUITest, ConnectingState) {
   // When a request to Cast to a sink is made, its state should become
   // CONNECTING.
   EXPECT_CALL(observer, OnModelUpdated(_))
-      .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
+      .WillOnce(WithArg<0>(Invoke([](const CastDialogModel& model) {
         ASSERT_EQ(1u, model.media_sinks().size());
         EXPECT_EQ(UIMediaSinkState::CONNECTING, model.media_sinks()[0].state);
       })));
@@ -178,12 +178,42 @@ TEST_F(MediaRouterViewsUITest, ConnectingState) {
 
   // Once a route is created for the sink, its state should become CONNECTED.
   EXPECT_CALL(observer, OnModelUpdated(_))
-      .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
+      .WillOnce(WithArg<0>(Invoke([](const CastDialogModel& model) {
         ASSERT_EQ(1u, model.media_sinks().size());
         EXPECT_EQ(UIMediaSinkState::CONNECTED, model.media_sinks()[0].state);
       })));
   MediaRoute route(kRouteId, MediaSource(kSourceId), kSinkId, "", true, true);
   ui_->OnRoutesUpdated({route}, {});
+  ui_->RemoveObserver(&observer);
+}
+
+TEST_F(MediaRouterViewsUITest, DisconnectingState) {
+  MockControllerObserver observer;
+  ui_->AddObserver(&observer);
+
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::GENERIC);
+  MediaRoute route(kRouteId, MediaSource(kSourceId), kSinkId, "", true, true);
+  for (MediaSinksObserver* sinks_observer : media_sinks_observers_)
+    sinks_observer->OnSinksUpdated({sink}, std::vector<url::Origin>());
+  ui_->OnRoutesUpdated({route}, {});
+
+  // When a request to stop casting to a sink is made, its state should become
+  // DISCONNECTING.
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(Invoke([](const CastDialogModel& model) {
+        ASSERT_EQ(1u, model.media_sinks().size());
+        EXPECT_EQ(UIMediaSinkState::DISCONNECTING,
+                  model.media_sinks()[0].state);
+      })));
+  ui_->StopCasting(kRouteId);
+
+  // Once the route is removed, the sink's state should become AVAILABLE.
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(Invoke([](const CastDialogModel& model) {
+        ASSERT_EQ(1u, model.media_sinks().size());
+        EXPECT_EQ(UIMediaSinkState::AVAILABLE, model.media_sinks()[0].state);
+      })));
+  ui_->OnRoutesUpdated({}, {});
   ui_->RemoveObserver(&observer);
 }
 

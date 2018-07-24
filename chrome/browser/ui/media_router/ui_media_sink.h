@@ -17,10 +17,14 @@ enum class UIMediaSinkState {
   // Sink is available to be Cast to.
   AVAILABLE,
   // Sink is starting a new Casting activity. A sink temporarily enters this
-  // state when transitioning from AVAILABLE to CONNECTED (or to ERROR_STATE).
+  // state when transitioning from AVAILABLE to CONNECTED.
   CONNECTING,
   // Sink has a media route.
   CONNECTED,
+  // Sink is still connected but is in the process of disconnecting. A sink
+  // temporarily enters this state when transitioning from CONNECTED to
+  // AVAILABLE.
+  DISCONNECTING,
   // Sink is disconnected/cached (not available right now).
   UNAVAILABLE
 };
