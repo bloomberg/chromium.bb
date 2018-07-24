@@ -195,17 +195,20 @@ bool ClientDiscardableManager::FindAllocation(CommandBuffer* command_buffer,
                                               uint32_t* offset) {
   CheckPending(command_buffer);
 
-  for (auto& allocation : allocations_) {
-    if (!allocation->free_offsets.HasFreeOffset())
-      continue;
-
-    *offset = allocation->free_offsets.TakeFreeOffset();
-    *shm_id = allocation->shm_id;
-    *buffer = allocation->buffer;
+  if (FindExistingAllocation(command_buffer, buffer, shm_id, offset))
     return true;
+
+  // We couldn't find an existing free entry and are about to allocate more
+  // space. Check whether any handles have been deleted on the service side.
+  if (CheckDeleted(command_buffer)) {
+    // We deleted at least one entry, try to find an allocaiton. If the entry
+    // we deleted was the last one in an allocation, it's possbile that we
+    // *still* won't have allocaitons, so this isn't guaranteed to succeed.
+    if (FindExistingAllocation(command_buffer, buffer, shm_id, offset))
+      return true;
   }
 
-  // We couldn't find an existing free entry. Allocate more space.
+  // Allocate more space.
   auto allocation = std::make_unique<Allocation>(elements_per_allocation_);
   allocation->buffer = command_buffer->CreateTransferBuffer(
       allocation_size_, &allocation->shm_id);
@@ -217,6 +220,24 @@ bool ClientDiscardableManager::FindAllocation(CommandBuffer* command_buffer,
   *buffer = allocation->buffer;
   allocations_.push_back(std::move(allocation));
   return true;
+}
+
+bool ClientDiscardableManager::FindExistingAllocation(
+    CommandBuffer* command_buffer,
+    scoped_refptr<Buffer>* buffer,
+    int32_t* shm_id,
+    uint32_t* offset) {
+  for (auto& allocation : allocations_) {
+    if (!allocation->free_offsets.HasFreeOffset())
+      continue;
+
+    *offset = allocation->free_offsets.TakeFreeOffset();
+    *shm_id = allocation->shm_id;
+    *buffer = allocation->buffer;
+    return true;
+  }
+
+  return false;
 }
 
 void ClientDiscardableManager::ReturnAllocation(
@@ -244,6 +265,20 @@ void ClientDiscardableManager::CheckPending(CommandBuffer* command_buffer) {
     ReturnAllocation(command_buffer, pending_handles_.front());
     pending_handles_.pop();
   }
+}
+
+bool ClientDiscardableManager::CheckDeleted(CommandBuffer* command_buffer) {
+  bool freed_entry = false;
+  for (auto it = handles_.begin(); it != handles_.end();) {
+    if (it->second.CanBeReUsed()) {
+      ReturnAllocation(command_buffer, it->second);
+      it = handles_.erase(it);
+      freed_entry = true;
+    } else {
+      ++it;
+    }
+  }
+  return freed_entry;
 }
 
 }  // namespace gpu

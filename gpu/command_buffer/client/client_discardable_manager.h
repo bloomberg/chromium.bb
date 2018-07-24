@@ -45,9 +45,16 @@ class GPU_EXPORT ClientDiscardableManager {
                       scoped_refptr<Buffer>* buffer,
                       int32_t* shm_id,
                       uint32_t* offset);
+  bool FindExistingAllocation(CommandBuffer* command_buffer,
+                              scoped_refptr<Buffer>* buffer,
+                              int32_t* shm_id,
+                              uint32_t* offset);
   void ReturnAllocation(CommandBuffer* command_buffer,
                         const ClientDiscardableHandle& handle);
   void CheckPending(CommandBuffer* command_buffer);
+  // Return true if we found at least one deleted entry.
+  bool CheckDeleted(CommandBuffer* command_buffer);
+  bool CreateNewAllocation(CommandBuffer* command_buffer);
 
  private:
   size_t allocation_size_;
