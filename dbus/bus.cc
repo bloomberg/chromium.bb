@@ -311,7 +311,7 @@ ObjectManager* Bus::GetObjectManager(const std::string& service_name,
   }
 
   scoped_refptr<ObjectManager> object_manager =
-      new ObjectManager(this, service_name, object_path);
+      ObjectManager::Create(this, service_name, object_path);
   object_manager_table_[key] = object_manager;
 
   return object_manager.get();

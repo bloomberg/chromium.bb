@@ -136,9 +136,9 @@ class Signal;
 // ObjectManager implements both the D-Bus client components of the D-Bus
 // Object Manager interface, as internal methods, and a public API for
 // client classes to utilize.
-class CHROME_DBUS_EXPORT ObjectManager
+class CHROME_DBUS_EXPORT ObjectManager final
     : public base::RefCountedThreadSafe<ObjectManager> {
-public:
+ public:
   // ObjectManager::Interface must be implemented by any class wishing to have
   // its remote objects managed by an ObjectManager.
   class Interface {
@@ -184,43 +184,43 @@ public:
   };
 
   // Client code should use Bus::GetObjectManager() instead of this constructor.
-  ObjectManager(Bus* bus,
-                const std::string& service_name,
-                const ObjectPath& object_path);
+  static scoped_refptr<ObjectManager> Create(Bus* bus,
+                                             const std::string& service_name,
+                                             const ObjectPath& object_path);
 
   // Register a client implementation class |interface| for the given D-Bus
   // interface named in |interface_name|. That object's CreateProperties()
   // method will be used to create instances of dbus::PropertySet* when
   // required.
-  virtual void RegisterInterface(const std::string& interface_name,
-                                 Interface* interface);
+  void RegisterInterface(const std::string& interface_name,
+                         Interface* interface);
 
   // Unregister the implementation class for the D-Bus interface named in
   // |interface_name|, objects and properties of this interface will be
   // ignored.
-  virtual void UnregisterInterface(const std::string& interface_name);
+  void UnregisterInterface(const std::string& interface_name);
 
   // Returns a list of object paths, in an undefined order, of objects known
   // to this manager.
-  virtual std::vector<ObjectPath> GetObjects();
+  std::vector<ObjectPath> GetObjects();
 
   // Returns the list of object paths, in an undefined order, of objects
   // implementing the interface named in |interface_name| known to this manager.
-  virtual std::vector<ObjectPath> GetObjectsWithInterface(
+  std::vector<ObjectPath> GetObjectsWithInterface(
       const std::string& interface_name);
 
   // Returns a ObjectProxy pointer for the given |object_path|. Unlike
   // the equivalent method on Bus this will return NULL if the object
   // manager has not been informed of that object's existence.
-  virtual ObjectProxy* GetObjectProxy(const ObjectPath& object_path);
+  ObjectProxy* GetObjectProxy(const ObjectPath& object_path);
 
   // Returns a PropertySet* pointer for the given |object_path| and
   // |interface_name|, or NULL if the object manager has not been informed of
   // that object's existence or the interface's properties. The caller should
   // cast the returned pointer to the appropriate type, e.g.:
   //   static_cast<Properties*>(GetProperties(object_path, my_interface));
-  virtual PropertySet* GetProperties(const ObjectPath& object_path,
-                                     const std::string& interface_name);
+  PropertySet* GetProperties(const ObjectPath& object_path,
+                             const std::string& interface_name);
 
   // Instructs the object manager to refresh its list of managed objects;
   // automatically called by the D-Bus thread manager, there should never be
@@ -233,11 +233,13 @@ public:
   // BLOCKING CALL.
   void CleanUp();
 
- protected:
-  virtual ~ObjectManager();
-
  private:
   friend class base::RefCountedThreadSafe<ObjectManager>;
+
+  ObjectManager(Bus* bus,
+                const std::string& service_name,
+                const ObjectPath& object_path);
+  ~ObjectManager();
 
   // Called from the constructor to add a match rule for PropertiesChanged
   // signals on the D-Bus thread and set up a corresponding filter function.

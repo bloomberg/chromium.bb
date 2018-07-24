@@ -28,6 +28,25 @@ ObjectManager::Object::Object()
 
 ObjectManager::Object::~Object() = default;
 
+scoped_refptr<ObjectManager> ObjectManager::Create(
+    Bus* bus,
+    const std::string& service_name,
+    const ObjectPath& object_path) {
+  auto object_manager =
+      base::WrapRefCounted(new ObjectManager(bus, service_name, object_path));
+
+  // Set up a match rule and a filter function to handle PropertiesChanged
+  // signals from the service. This is important to avoid any race conditions
+  // that might cause us to miss PropertiesChanged signals once all objects are
+  // initialized via GetManagedObjects.
+  base::PostTaskAndReplyWithResult(
+      bus->GetDBusTaskRunner(), FROM_HERE,
+      base::BindOnce(&ObjectManager::SetupMatchRuleAndFilter, object_manager),
+      base::BindOnce(&ObjectManager::OnSetupMatchRuleAndFilterComplete,
+                     object_manager));
+  return object_manager;
+}
+
 ObjectManager::ObjectManager(Bus* bus,
                              const std::string& service_name,
                              const ObjectPath& object_path)
@@ -46,16 +65,6 @@ ObjectManager::ObjectManager(Bus* bus,
   object_proxy_->SetNameOwnerChangedCallback(
       base::Bind(&ObjectManager::NameOwnerChanged,
                  weak_ptr_factory_.GetWeakPtr()));
-
-  // Set up a match rule and a filter function to handle PropertiesChanged
-  // signals from the service. This is important to avoid any race conditions
-  // that might cause us to miss PropertiesChanged signals once all objects are
-  // initialized via GetManagedObjects.
-  base::PostTaskAndReplyWithResult(
-      bus_->GetDBusTaskRunner(),
-      FROM_HERE,
-      base::Bind(&ObjectManager::SetupMatchRuleAndFilter, this),
-      base::Bind(&ObjectManager::OnSetupMatchRuleAndFilterComplete, this));
 }
 
 ObjectManager::~ObjectManager() {
