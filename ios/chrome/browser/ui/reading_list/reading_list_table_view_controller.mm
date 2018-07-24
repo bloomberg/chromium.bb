@@ -868,4 +868,11 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
                                        atPoint:location];
 }
 
+#pragma mark - Accessibility
+
+- (BOOL)accessibilityPerformEscape {
+  [self.delegate dismissReadingListListViewController:self];
+  return YES;
+}
+
 @end
