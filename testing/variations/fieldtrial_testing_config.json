@@ -3222,7 +3222,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled"
+                    "name": "Enabled",
+                    "params": {
+                        "connection_options": "NSTP"
+                    }
                 }
             ]
         }
