@@ -216,9 +216,7 @@ SocketOutputStream::SocketOutputStream(
     net::StreamSocket* socket,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : socket_(socket),
-      io_buffer_(new net::IOBuffer(kDefaultBufferSize)),
-      write_buffer_(
-          new net::DrainableIOBuffer(io_buffer_.get(), kDefaultBufferSize)),
+      io_buffer_(new net::IOBufferWithSize(kDefaultBufferSize)),
       next_pos_(0),
       last_error_(net::OK),
       traffic_annotation_(traffic_annotation),
@@ -232,12 +230,12 @@ SocketOutputStream::~SocketOutputStream() {
 bool SocketOutputStream::Next(void** data, int* size) {
   DCHECK_NE(GetState(), CLOSED);
   DCHECK_NE(GetState(), FLUSHING);
-  if (next_pos_ == write_buffer_->size())
+  if (next_pos_ == io_buffer_->size())
     return false;
 
-  *data = write_buffer_->data() + next_pos_;
-  *size = write_buffer_->size() - next_pos_;
-  next_pos_ = write_buffer_->size();
+  *data = io_buffer_->data() + next_pos_;
+  *size = io_buffer_->size() - next_pos_;
+  next_pos_ = io_buffer_->size();
   return true;
 }
 
@@ -259,15 +257,21 @@ int64_t SocketOutputStream::ByteCount() const {
 net::Error SocketOutputStream::Flush(const base::Closure& callback) {
   DCHECK_EQ(GetState(), READY);
 
+  if (!write_buffer_) {
+    write_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(
+        io_buffer_.get(), next_pos_);
+  }
+
   if (!socket_->IsConnected()) {
     LOG(ERROR) << "Socket was disconnected, closing output stream";
     last_error_ = net::ERR_CONNECTION_CLOSED;
     return net::OK;
   }
 
-  DVLOG(1) << "Flushing " << next_pos_ << " bytes into socket.";
+  DVLOG(1) << "Flushing " << write_buffer_->BytesRemaining()
+           << " bytes into socket.";
   int result =
-      socket_->Write(write_buffer_.get(), next_pos_,
+      socket_->Write(write_buffer_.get(), write_buffer_->BytesRemaining(),
                      base::Bind(&SocketOutputStream::FlushCompletionCallback,
                                 weak_ptr_factory_.GetWeakPtr(), callback),
                      traffic_annotation_);
@@ -322,17 +326,17 @@ void SocketOutputStream::FlushCompletionCallback(
 
   DCHECK_GT(result, net::OK);
   last_error_ = net::OK;
+  write_buffer_->DidConsume(result);
 
-  if (write_buffer_->BytesConsumed() + result < next_pos_) {
+  if (write_buffer_->BytesRemaining() > 0) {
     DVLOG(1) << "Partial flush complete. Retrying.";
-     // Only a partial write was completed. Flush again to finish the write.
-    write_buffer_->DidConsume(result);
+    // Only a partial write was completed. Flush again to finish the write.
     Flush(callback);
     return;
   }
 
   DVLOG(1) << "Socket flush complete.";
-  write_buffer_->SetOffset(0);
+  write_buffer_ = nullptr;
   next_pos_ = 0;
   if (!callback.is_null())
     callback.Run();
