@@ -8,6 +8,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
@@ -111,7 +112,9 @@ void PdfToEmfConverter::LoadPdf(base::ReadOnlySharedMemoryRegion pdf_region) {
     return;
 
   int page_count = 0;
-  chrome_pdf::GetPDFDocInfo(pdf_mapping_.memory(), size, &page_count, nullptr);
+  auto pdf_span = base::make_span(
+      reinterpret_cast<const uint8_t*>(pdf_mapping_.memory()), size);
+  chrome_pdf::GetPDFDocInfo(pdf_span, &page_count, nullptr);
   total_page_count_ = page_count;
 }
 
@@ -149,10 +152,12 @@ base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
   int offset_y = postscript ? pdf_render_settings_.offsets.y() : 0;
 
   base::ReadOnlySharedMemoryRegion invalid_emf_region;
+  auto pdf_span =
+      base::make_span(reinterpret_cast<const uint8_t*>(pdf_mapping_.memory()),
+                      pdf_mapping_.size());
   if (!chrome_pdf::RenderPDFPageToDC(
-          pdf_mapping_.memory(), pdf_mapping_.size(), page_number,
-          metafile.context(), pdf_render_settings_.dpi.width(),
-          pdf_render_settings_.dpi.height(),
+          pdf_span, page_number, metafile.context(),
+          pdf_render_settings_.dpi.width(), pdf_render_settings_.dpi.height(),
           pdf_render_settings_.area.x() - offset_x,
           pdf_render_settings_.area.y() - offset_y,
           pdf_render_settings_.area.width(), pdf_render_settings_.area.height(),

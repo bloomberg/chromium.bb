@@ -8,10 +8,6 @@
 
 #include <utility>
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "pdf/out_of_process_instance.h"
@@ -51,8 +47,7 @@ class ScopedSdkInitializer {
 }  // namespace
 
 #if defined(OS_WIN)
-bool RenderPDFPageToDC(const void* pdf_buffer,
-                       int buffer_size,
+bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                        int page_number,
                        HDC dc,
                        int dpi_x,
@@ -77,8 +72,8 @@ bool RenderPDFPageToDC(const void* pdf_buffer,
       pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width, bounds_height),
       fit_to_bounds, stretch_to_bounds, keep_aspect_ratio, center_in_bounds,
       autorotate, use_color);
-  return engine_exports->RenderPDFPageToDC(pdf_buffer, buffer_size, page_number,
-                                           settings, dc);
+  return engine_exports->RenderPDFPageToDC(pdf_buffer, page_number, settings,
+                                           dc);
 }
 
 void SetPDFEnsureTypefaceCharactersAccessible(
@@ -95,8 +90,7 @@ void SetPDFUsePrintMode(int mode) {
 }
 #endif  // defined(OS_WIN)
 
-bool GetPDFDocInfo(const void* pdf_buffer,
-                   int buffer_size,
+bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                    int* page_count,
                    double* max_page_width) {
   ScopedSdkInitializer scoped_sdk_initializer;
@@ -104,12 +98,10 @@ bool GetPDFDocInfo(const void* pdf_buffer,
     return false;
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
-  return engine_exports->GetPDFDocInfo(pdf_buffer, buffer_size, page_count,
-                                       max_page_width);
+  return engine_exports->GetPDFDocInfo(pdf_buffer, page_count, max_page_width);
 }
 
-bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                           int pdf_buffer_size,
+bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                            int page_number,
                            double* width,
                            double* height) {
@@ -119,12 +111,11 @@ bool GetPDFPageSizeByIndex(const void* pdf_buffer,
 
   chrome_pdf::PDFEngineExports* engine_exports =
       chrome_pdf::PDFEngineExports::Get();
-  return engine_exports->GetPDFPageSizeByIndex(pdf_buffer, pdf_buffer_size,
-                                               page_number, width, height);
+  return engine_exports->GetPDFPageSizeByIndex(pdf_buffer, page_number, width,
+                                               height);
 }
 
-bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                           int pdf_buffer_size,
+bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                            int page_number,
                            void* bitmap_buffer,
                            int bitmap_width,
@@ -141,8 +132,8 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
   PDFEngineExports::RenderingSettings settings(
       dpi_x, dpi_y, pp::Rect(bitmap_width, bitmap_height), true, false, true,
       true, autorotate, use_color);
-  return engine_exports->RenderPDFPageToBitmap(
-      pdf_buffer, pdf_buffer_size, page_number, settings, bitmap_buffer);
+  return engine_exports->RenderPDFPageToBitmap(pdf_buffer, page_number,
+                                               settings, bitmap_buffer);
 }
 
 bool ConvertPdfPagesToNupPdf(

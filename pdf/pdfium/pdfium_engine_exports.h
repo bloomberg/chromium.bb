@@ -21,8 +21,7 @@ class PDFiumEngineExports : public PDFEngineExports {
 
 // PDFEngineExports:
 #if defined(OS_WIN)
-  bool RenderPDFPageToDC(const void* pdf_buffer,
-                         int buffer_size,
+  bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                          int page_number,
                          const RenderingSettings& settings,
                          HDC dc) override;
@@ -32,8 +31,7 @@ class PDFiumEngineExports : public PDFEngineExports {
   void SetPDFUseGDIPrinting(bool enable) override;
   void SetPDFUsePrintMode(int mode) override;
 #endif  // defined(OS_WIN)
-  bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                             int pdf_buffer_size,
+  bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                              int page_number,
                              const RenderingSettings& settings,
                              void* bitmap_buffer) override;
@@ -50,12 +48,10 @@ class PDFiumEngineExports : public PDFEngineExports {
                                   size_t page_size_height,
                                   void** dest_pdf_buffer,
                                   size_t* dest_pdf_buffer_size) override;
-  bool GetPDFDocInfo(const void* pdf_buffer,
-                     int buffer_size,
+  bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                      int* page_count,
                      double* max_page_width) override;
-  bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                             int pdf_buffer_size,
+  bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                              int page_number,
                              double* width,
                              double* height) override;

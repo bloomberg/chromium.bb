@@ -61,15 +61,12 @@ TEST_F(PDFiumEngineExportsTest, GetPDFDocInfo) {
   std::string pdf_data;
   ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
 
-  EXPECT_FALSE(GetPDFDocInfo(nullptr, 0, nullptr, nullptr));
-
-  ASSERT_TRUE(
-      GetPDFDocInfo(pdf_data.data(), pdf_data.size(), nullptr, nullptr));
+  auto pdf_span = base::as_bytes(base::make_span(pdf_data));
+  ASSERT_TRUE(GetPDFDocInfo(pdf_span, nullptr, nullptr));
 
   int page_count;
   double max_page_width;
-  ASSERT_TRUE(GetPDFDocInfo(pdf_data.data(), pdf_data.size(), &page_count,
-                            &max_page_width));
+  ASSERT_TRUE(GetPDFDocInfo(pdf_span, &page_count, &max_page_width));
   EXPECT_EQ(2, page_count);
   EXPECT_DOUBLE_EQ(200.0, max_page_width);
 }
@@ -82,17 +79,16 @@ TEST_F(PDFiumEngineExportsTest, GetPDFPageSizeByIndex) {
   std::string pdf_data;
   ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
 
-  EXPECT_FALSE(GetPDFPageSizeByIndex(nullptr, 0, 0, nullptr, nullptr));
+  auto pdf_span = base::as_bytes(base::make_span(pdf_data));
+  EXPECT_FALSE(GetPDFPageSizeByIndex(pdf_span, 0, nullptr, nullptr));
 
   int page_count;
-  ASSERT_TRUE(
-      GetPDFDocInfo(pdf_data.data(), pdf_data.size(), &page_count, nullptr));
+  ASSERT_TRUE(GetPDFDocInfo(pdf_span, &page_count, nullptr));
   ASSERT_EQ(2, page_count);
   for (int page_number = 0; page_number < page_count; ++page_number) {
     double width;
     double height;
-    ASSERT_TRUE(GetPDFPageSizeByIndex(pdf_data.data(), pdf_data.size(),
-                                      page_number, &width, &height));
+    ASSERT_TRUE(GetPDFPageSizeByIndex(pdf_span, page_number, &width, &height));
     EXPECT_DOUBLE_EQ(200.0, width);
     EXPECT_DOUBLE_EQ(200.0, height);
   }
@@ -118,15 +114,16 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
       pdf_buffers, 2, 512, 792, &output_pdf_buffer, &output_pdf_buffer_size));
   ASSERT_GT(output_pdf_buffer_size, 0U);
   ASSERT_NE(output_pdf_buffer, nullptr);
+
+  base::span<const uint8_t> output_pdf_span = base::make_span(
+      reinterpret_cast<uint8_t*>(output_pdf_buffer), output_pdf_buffer_size);
   int page_count;
-  ASSERT_TRUE(GetPDFDocInfo(output_pdf_buffer, output_pdf_buffer_size,
-                            &page_count, nullptr));
+  ASSERT_TRUE(GetPDFDocInfo(output_pdf_span, &page_count, nullptr));
   ASSERT_EQ(1, page_count);
 
   double width;
   double height;
-  ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_buffer, output_pdf_buffer_size,
-                                    0, &width, &height));
+  ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_span, 0, &width, &height));
   EXPECT_DOUBLE_EQ(792.0, width);
   EXPECT_DOUBLE_EQ(512.0, height);
 
@@ -152,15 +149,17 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
       pdf_buffer, 4, 512, 792, &output_pdf_buffer, &output_pdf_buffer_size));
   ASSERT_GT(output_pdf_buffer_size, 0U);
   ASSERT_NE(output_pdf_buffer, nullptr);
+
+  base::span<const uint8_t> output_pdf_span = base::make_span(
+      reinterpret_cast<uint8_t*>(output_pdf_buffer), output_pdf_buffer_size);
   int page_count;
-  ASSERT_TRUE(GetPDFDocInfo(output_pdf_buffer, output_pdf_buffer_size,
-                            &page_count, nullptr));
+  ASSERT_TRUE(GetPDFDocInfo(output_pdf_span, &page_count, nullptr));
   ASSERT_EQ(2, page_count);
   for (int page_number = 0; page_number < page_count; ++page_number) {
     double width;
     double height;
-    ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_buffer, output_pdf_buffer_size,
-                                      page_number, &width, &height));
+    ASSERT_TRUE(
+        GetPDFPageSizeByIndex(output_pdf_span, page_number, &width, &height));
     EXPECT_DOUBLE_EQ(512.0, width);
     EXPECT_DOUBLE_EQ(792.0, height);
   }

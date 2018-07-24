@@ -7,12 +7,6 @@
 
 #include <stdint.h>
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include <memory>
 #include <set>
 #include <string>
@@ -22,6 +16,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_input_event.h"
@@ -33,6 +28,10 @@
 #include "ppapi/cpp/var_array.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point_f.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #if defined(OS_WIN)
 typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
@@ -445,8 +444,7 @@ class PDFEngineExports {
 
 #if defined(OS_WIN)
   // See the definition of RenderPDFPageToDC in pdf.cc for details.
-  virtual bool RenderPDFPageToDC(const void* pdf_buffer,
-                                 int buffer_size,
+  virtual bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                                  int page_number,
                                  const RenderingSettings& settings,
                                  HDC dc) = 0;
@@ -459,8 +457,7 @@ class PDFEngineExports {
 #endif  // defined(OS_WIN)
 
   // See the definition of RenderPDFPageToBitmap in pdf.cc for details.
-  virtual bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                                     int pdf_buffer_size,
+  virtual bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                                      int page_number,
                                      const RenderingSettings& settings,
                                      void* bitmap_buffer) = 0;
@@ -483,14 +480,12 @@ class PDFEngineExports {
       void** dest_pdf_buffer,
       size_t* dest_pdf_buffer_size) = 0;
 
-  virtual bool GetPDFDocInfo(const void* pdf_buffer,
-                             int buffer_size,
+  virtual bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                              int* page_count,
                              double* max_page_width) = 0;
 
   // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
-  virtual bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                                     int pdf_buffer_size,
+  virtual bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                                      int page_number,
                                      double* width,
                                      double* height) = 0;

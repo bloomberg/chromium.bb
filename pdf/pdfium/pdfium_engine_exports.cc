@@ -95,12 +95,10 @@ int CalculatePosition(FPDF_PAGE page,
 }
 
 ScopedFPDFDocument LoadPdfData(base::span<const uint8_t> pdf_buffer) {
-  ScopedFPDFDocument doc;
-  if (base::IsValueInRangeForNumericType<int>(pdf_buffer.size())) {
-    doc.reset(
-        FPDF_LoadMemDocument(pdf_buffer.data(), pdf_buffer.size(), nullptr));
-  }
-  return doc;
+  if (!base::IsValueInRangeForNumericType<int>(pdf_buffer.size()))
+    return nullptr;
+  return ScopedFPDFDocument(
+      FPDF_LoadMemDocument(pdf_buffer.data(), pdf_buffer.size(), nullptr));
 }
 
 ScopedFPDFDocument CreatePdfDoc(
@@ -188,13 +186,12 @@ PDFiumEngineExports::PDFiumEngineExports() {}
 PDFiumEngineExports::~PDFiumEngineExports() {}
 
 #if defined(OS_WIN)
-bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
-                                            int buffer_size,
-                                            int page_number,
-                                            const RenderingSettings& settings,
-                                            HDC dc) {
-  ScopedFPDFDocument doc(
-      FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
+bool PDFiumEngineExports::RenderPDFPageToDC(
+    base::span<const uint8_t> pdf_buffer,
+    int page_number,
+    const RenderingSettings& settings,
+    HDC dc) {
+  ScopedFPDFDocument doc = LoadPdfData(pdf_buffer);
   if (!doc)
     return false;
   ScopedFPDFPage page(FPDF_LoadPage(doc.get(), page_number));
@@ -276,13 +273,11 @@ void PDFiumEngineExports::SetPDFUsePrintMode(int mode) {
 #endif  // defined(OS_WIN)
 
 bool PDFiumEngineExports::RenderPDFPageToBitmap(
-    const void* pdf_buffer,
-    int pdf_buffer_size,
+    base::span<const uint8_t> pdf_buffer,
     int page_number,
     const RenderingSettings& settings,
     void* bitmap_buffer) {
-  ScopedFPDFDocument doc(
-      FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
+  ScopedFPDFDocument doc = LoadPdfData(pdf_buffer);
   if (!doc)
     return false;
   ScopedFPDFPage page(FPDF_LoadPage(doc.get(), page_number));
@@ -342,12 +337,10 @@ bool PDFiumEngineExports::ConvertPdfDocumentToNupPdf(
                               dest_pdf_buffer_size);
 }
 
-bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,
-                                        int buffer_size,
+bool PDFiumEngineExports::GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                                         int* page_count,
                                         double* max_page_width) {
-  ScopedFPDFDocument doc(
-      FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
+  ScopedFPDFDocument doc = LoadPdfData(pdf_buffer);
   if (!doc)
     return false;
 
@@ -373,13 +366,12 @@ bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,
   return true;
 }
 
-bool PDFiumEngineExports::GetPDFPageSizeByIndex(const void* pdf_buffer,
-                                                int pdf_buffer_size,
-                                                int page_number,
-                                                double* width,
-                                                double* height) {
-  ScopedFPDFDocument doc(
-      FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
+bool PDFiumEngineExports::GetPDFPageSizeByIndex(
+    base::span<const uint8_t> pdf_buffer,
+    int page_number,
+    double* width,
+    double* height) {
+  ScopedFPDFDocument doc = LoadPdfData(pdf_buffer);
   if (!doc)
     return false;
   return FPDF_GetPageSizeByIndex(doc.get(), page_number, width, height) != 0;

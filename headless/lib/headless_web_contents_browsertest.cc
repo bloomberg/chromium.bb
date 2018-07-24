@@ -313,17 +313,16 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
     std::string pdf_data;
     EXPECT_TRUE(base::Base64Decode(base64, &pdf_data));
 
+    auto pdf_span = base::as_bytes(base::make_span(pdf_data));
     int num_pages;
-    EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_data.data(), pdf_data.size(),
-                                          &num_pages, nullptr));
+    EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(std::ceil(kDocHeight / kPaperHeight), num_pages);
 
     for (int i = 0; i < num_pages; i++) {
       double width_in_points;
       double height_in_points;
       EXPECT_TRUE(chrome_pdf::GetPDFPageSizeByIndex(
-          pdf_data.data(), pdf_data.size(), i, &width_in_points,
-          &height_in_points));
+          pdf_span, i, &width_in_points, &height_in_points));
       EXPECT_EQ(static_cast<int>(width_in_points),
                 static_cast<int>(kPaperWidth * printing::kPointsPerInch));
       EXPECT_EQ(static_cast<int>(height_in_points),
@@ -336,10 +335,9 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
       std::vector<uint8_t> page_bitmap_data(kColorChannels *
                                             settings.area.size().GetArea());
       EXPECT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
-          pdf_data.data(), pdf_data.size(), i, page_bitmap_data.data(),
-          settings.area.size().width(), settings.area.size().height(),
-          settings.dpi.width(), settings.dpi.height(), settings.autorotate,
-          settings.use_color));
+          pdf_span, i, page_bitmap_data.data(), settings.area.size().width(),
+          settings.area.size().height(), settings.dpi.width(),
+          settings.dpi.height(), settings.autorotate, settings.use_color));
       EXPECT_EQ(0x56, page_bitmap_data[0]);  // B
       EXPECT_EQ(0x34, page_bitmap_data[1]);  // G
       EXPECT_EQ(0x12, page_bitmap_data[2]);  // R
