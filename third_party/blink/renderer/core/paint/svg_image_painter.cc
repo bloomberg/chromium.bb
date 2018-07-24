@@ -4,20 +4,15 @@
 
 #include "third_party/blink/renderer/core/paint/svg_image_painter.h"
 
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
 namespace blink {
@@ -28,13 +23,14 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
       !layout_svg_image_.ImageResource()->HasImage())
     return;
 
-  FloatRect bounding_box = layout_svg_image_.VisualRectInLocalSVGCoordinates();
-  if (!paint_info.GetCullRect().IntersectsCullRect(
-          layout_svg_image_.LocalToSVGParentTransform(), bounding_box))
-    return;
-
   PaintInfo paint_info_before_filtering(paint_info);
-  // Images cannot have children so do not call updateCullRect.
+
+  if (SVGModelObjectPainter(layout_svg_image_)
+          .CullRectSkipsPainting(paint_info_before_filtering)) {
+    return;
+  }
+  // Images cannot have children so do not call UpdateCullRect.
+
   SVGTransformContext transform_context(
       paint_info_before_filtering, layout_svg_image_,
       layout_svg_image_.LocalToSVGParentTransform());
@@ -52,12 +48,8 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
     }
   }
 
-  if (layout_svg_image_.Style()->OutlineWidth()) {
-    PaintInfo outline_paint_info(paint_info_before_filtering);
-    outline_paint_info.phase = PaintPhase::kSelfOutlineOnly;
-    ObjectPainter(layout_svg_image_)
-        .PaintOutline(outline_paint_info, LayoutPoint(bounding_box.Location()));
-  }
+  SVGModelObjectPainter(layout_svg_image_)
+      .PaintOutline(paint_info_before_filtering);
 }
 
 void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {

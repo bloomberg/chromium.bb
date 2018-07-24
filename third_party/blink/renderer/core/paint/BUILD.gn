@@ -216,6 +216,8 @@ blink_core_sources("paint") {
     "svg_inline_text_box_painter.h",
     "svg_mask_painter.cc",
     "svg_mask_painter.h",
+    "svg_model_object_painter.cc",
+    "svg_model_object_painter.h",
     "svg_paint_context.cc",
     "svg_paint_context.h",
     "svg_root_inline_box_painter.cc",
