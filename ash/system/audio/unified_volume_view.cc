@@ -7,7 +7,19 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
-#include "ash/system/unified/top_shortcut_button.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_utils.h"
+#include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/layout/box_layout.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -41,6 +53,71 @@ const gfx::VectorIcon& GetVolumeIconForLevel(float level) {
   return *kVolumeLevelIcons[index];
 }
 
+class MoreButton : public views::Button {
+ public:
+  explicit MoreButton(views::ButtonListener* listener)
+      : views::Button(listener) {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal,
+        gfx::Insets((kTrayItemSize -
+                     GetDefaultSizeOfVectorIcon(vector_icons::kHeadsetIcon)) /
+                    2),
+        2));
+
+    auto* headset = new views::ImageView();
+    headset->set_can_process_events_within_subtree(false);
+    headset->SetImage(
+        CreateVectorIcon(vector_icons::kHeadsetIcon, kUnifiedMenuIconColor));
+    AddChildView(headset);
+
+    auto* more = new views::ImageView();
+    more->set_can_process_events_within_subtree(false);
+    more->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
+        CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor),
+        SkBitmapOperations::ROTATION_90_CW));
+    AddChildView(more);
+
+    SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
+    TrayPopupUtils::ConfigureTrayPopupButton(this);
+  }
+
+  ~MoreButton() override = default;
+
+  // views::Button:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    gfx::Rect rect(GetContentsBounds());
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kUnifiedMenuButtonColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawRoundRect(rect, kTrayItemSize / 2, flags);
+  }
+
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    return TrayPopupUtils::CreateInkDrop(this);
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return TrayPopupUtils::CreateInkDropRipple(
+        TrayPopupInkDropStyle::FILL_BOUNDS, this,
+        GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+  }
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return TrayPopupUtils::CreateInkDropHighlight(
+        TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
+                                                         kTrayItemSize / 2);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MoreButton);
+};
+
 }  // namespace
 
 UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
@@ -48,9 +125,7 @@ UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
     : UnifiedSliderView(controller,
                         kSystemMenuVolumeHighIcon,
                         IDS_ASH_STATUS_TRAY_VOLUME),
-      more_button_(new TopShortcutButton(controller,
-                                         kSystemMenuArrowRightIcon,
-                                         IDS_ASH_STATUS_TRAY_AUDIO)),
+      more_button_(new MoreButton(controller)),
       is_main_view_(is_main_view) {
   DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
