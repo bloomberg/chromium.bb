@@ -220,7 +220,7 @@ class LocalDeviceTestRun(test_run.TestRun):
         if hash(self._GetUniqueTestName(t)) % total_shards == shard_index]
 
   def GetTool(self, device):
-    if not str(device) in self._tools:
+    if str(device) not in self._tools:
       self._tools[str(device)] = valgrind_tools.CreateTool(
           self._env.tool, device)
     return self._tools[str(device)]

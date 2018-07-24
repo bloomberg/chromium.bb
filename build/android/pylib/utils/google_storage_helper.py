@@ -79,10 +79,7 @@ def exists(name, bucket):
 
   cmd = [_GSUTIL_PATH, '-q', 'stat', gs_path]
   return_code = cmd_helper.RunCmd(cmd)
-  if return_code == 0:
-    return True
-  else:
-    return False
+  return return_code == 0
 
 
 # TODO(jbudorick): Delete this function. Only one user of it.

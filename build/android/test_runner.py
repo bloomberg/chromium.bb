@@ -25,6 +25,7 @@ import unittest
 # See http://crbug.com/724524 and https://bugs.python.org/issue7980.
 import _strptime  # pylint: disable=unused-import
 
+# pylint: disable=ungrouped-imports
 from pylib.constants import host_paths
 
 if host_paths.DEVIL_PATH not in sys.path:
@@ -48,7 +49,6 @@ from pylib.utils import logdog_helper
 from pylib.utils import logging_utils
 
 from py_utils import contextlib_ext
-
 
 _DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
@@ -212,10 +212,12 @@ def AddCommonOptions(parser):
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""
   run_tests_helper.SetLogLevel(args.verbose_count, add_handler=False)
+  # pylint: disable=redefined-variable-type
   if args.verbose_count > 0:
     handler = logging_utils.ColorStreamHandler()
   else:
     handler = logging.StreamHandler(sys.stdout)
+  # pylint: enable=redefined-variable-type
   handler.setFormatter(run_tests_helper.CustomFormatter())
   logging.getLogger().addHandler(handler)
 
@@ -429,6 +431,7 @@ def AddInstrumentationTestOptions(parser):
     split_arg = arg.split(',')
     if len(split_arg) != 2:
       raise argparse.ArgumentError(
+          arg,
           'Expected two comma-separated strings for --replace-system-package, '
           'received %d' % len(split_arg))
     PackageReplacement = collections.namedtuple('PackageReplacement',

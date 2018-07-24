@@ -104,7 +104,7 @@ class LighttpdServer(object):
         break
       self.process.close()
 
-      if self.fixed_port or not 'in use' in server_error:
+      if self.fixed_port or 'in use' not in server_error:
         print 'Client error:', client_error
         print 'Server error:', server_error
         return False
