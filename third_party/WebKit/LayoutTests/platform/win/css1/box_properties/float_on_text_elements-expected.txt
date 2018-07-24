@@ -25,7 +25,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,80) size 15x15
         LayoutText {#text} at (15,80) size 4x19
           text run at (15,80) width 4: " "
-        LayoutBR {BR} at (19,80) size 0x19
+        LayoutBR {BR} at (19,95) size 0x0
       LayoutBlockFlow (anonymous) at (0,236) size 769x100
         LayoutBlockFlow (floating) {P} at (0,0) size 384.50x100 [bgcolor=#FFFF00]
           LayoutText {#text} at (0,0) size 384x99
@@ -37,7 +37,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (384.50,0) size 15x15
         LayoutText {#text} at (399,0) size 5x19
           text run at (399,0) width 5: " "
-        LayoutBR {BR} at (403,0) size 1x19
+        LayoutBR {BR} at (403,15) size 1x0
       LayoutBlockFlow (anonymous) at (0,354) size 769x120
         LayoutBlockFlow (floating) {P} at (384.50,0) size 384.50x120 [bgcolor=#FFFF00]
           LayoutText {#text} at (0,0) size 384x119
@@ -50,7 +50,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,0) size 15x15
         LayoutText {#text} at (15,0) size 4x19
           text run at (15,0) width 4: " "
-        LayoutBR {BR} at (19,0) size 0x19
+        LayoutBR {BR} at (19,15) size 0x0
       LayoutBlockFlow {P} at (0,492) size 769x60
         LayoutBlockFlow (floating) {SPAN} at (0,0) size 48x37 [bgcolor=#C0C0C0]
           LayoutText {#text} at (0,0) size 21x36
@@ -192,7 +192,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (0,80) size 15x15
                 LayoutText {#text} at (15,80) size 4x19
                   text run at (15,80) width 4: " "
-                LayoutBR {BR} at (19,80) size 0x19
+                LayoutBR {BR} at (19,95) size 0x0
               LayoutBlockFlow (anonymous) at (4,240) size 747x120
                 LayoutBlockFlow (floating) {P} at (0,0) size 373.50x120 [bgcolor=#FFFF00]
                   LayoutText {#text} at (0,0) size 373x119
@@ -205,7 +205,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (373.50,0) size 15x15
                 LayoutText {#text} at (388,0) size 5x19
                   text run at (388,0) width 5: " "
-                LayoutBR {BR} at (392,0) size 1x19
+                LayoutBR {BR} at (392,15) size 1x0
               LayoutBlockFlow (anonymous) at (4,378) size 747x120
                 LayoutBlockFlow (floating) {P} at (373.50,0) size 373.50x120 [bgcolor=#FFFF00]
                   LayoutText {#text} at (0,0) size 373x119
@@ -218,7 +218,7 @@ layer at (0,0) size 785x2846 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (0,0) size 15x15
                 LayoutText {#text} at (15,0) size 4x19
                   text run at (15,0) width 4: " "
-                LayoutBR {BR} at (19,0) size 0x19
+                LayoutBR {BR} at (19,15) size 0x0
               LayoutBlockFlow {P} at (4,516) size 747x60
                 LayoutBlockFlow (floating) {SPAN} at (0,0) size 48x37 [bgcolor=#C0C0C0]
                   LayoutText {#text} at (0,0) size 21x36
