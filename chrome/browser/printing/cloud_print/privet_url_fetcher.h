@@ -105,6 +105,17 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
     return url_fetcher_ ? url_fetcher_->GetResponseCode() : -1;
   }
 
+  // A class that can be used in tests that want to bypass the delay when
+  // retrying loading a URL. Create one of this object in your test, it will
+  // disable the delay for retry on construction and revert it back on
+  // destruction.
+  // Note that you should not have more than one of these allocated at a time.
+  class RetryImmediatelyForTest final {
+   public:
+    RetryImmediatelyForTest();
+    ~RetryImmediatelyForTest();
+  };
+
  private:
   void OnURLFetchCompleteParseData(const net::URLFetcher* source);
   bool OnURLFetchCompleteDoNotParseData(const net::URLFetcher* source);
@@ -131,6 +142,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   bool send_empty_privet_token_ = false;
   bool has_byte_range_ = false;
   bool make_response_file_ = false;
+  static bool skip_retry_timeouts_for_tests_;
 
   int byte_range_start_ = 0;
   int byte_range_end_ = 0;

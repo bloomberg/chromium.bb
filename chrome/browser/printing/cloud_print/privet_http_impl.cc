@@ -124,6 +124,21 @@ void PrivetInfoOperationImpl::OnParsedJson(int response_code,
   callback_.Run(&value);
 }
 
+// static
+bool PrivetRegisterOperationImpl::run_tasks_immediately_for_testing_ = false;
+
+PrivetRegisterOperationImpl::RunTasksImmediatelyForTesting::
+    RunTasksImmediatelyForTesting() {
+  DCHECK(!run_tasks_immediately_for_testing_);
+  run_tasks_immediately_for_testing_ = true;
+}
+
+PrivetRegisterOperationImpl::RunTasksImmediatelyForTesting::
+    ~RunTasksImmediatelyForTesting() {
+  DCHECK(run_tasks_immediately_for_testing_);
+  run_tasks_immediately_for_testing_ = false;
+}
+
 PrivetRegisterOperationImpl::PrivetRegisterOperationImpl(
     PrivetHTTPClient* privet_client,
     const std::string& user,
@@ -146,11 +161,14 @@ void PrivetRegisterOperationImpl::Cancel() {
   if (!ongoing_)
     return;
 
+  int delay_seconds =
+      run_tasks_immediately_for_testing_ ? 0 : kPrivetCancelationTimeoutSeconds;
+
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PrivetRegisterOperationImpl::Cancelation::Cleanup,
                      base::Owned(new Cancelation(privet_client_, user_))),
-      base::TimeDelta::FromSeconds(kPrivetCancelationTimeoutSeconds));
+      base::TimeDelta::FromSeconds(delay_seconds));
   ongoing_ = false;
 }
 
@@ -227,12 +245,12 @@ void PrivetRegisterOperationImpl::StartResponse(
 
 void PrivetRegisterOperationImpl::GetClaimTokenResponse(
     const base::DictionaryValue& value) {
-  std::string claimUrl;
-  std::string claimToken;
-  bool got_url = value.GetString(kPrivetKeyClaimURL, &claimUrl);
-  bool got_token = value.GetString(kPrivetKeyClaimToken, &claimToken);
+  std::string claim_url;
+  std::string claim_token;
+  bool got_url = value.GetString(kPrivetKeyClaimURL, &claim_url);
+  bool got_token = value.GetString(kPrivetKeyClaimToken, &claim_token);
   if (got_url || got_token) {
-    delegate_->OnPrivetRegisterClaimToken(this, claimToken, GURL(claimUrl));
+    delegate_->OnPrivetRegisterClaimToken(this, claim_token, GURL(claim_url));
   } else {
     delegate_->OnPrivetRegisterError(this, current_action_,
                                      FAILURE_MALFORMED_RESPONSE, -1, nullptr);
@@ -359,6 +377,21 @@ void PrivetJSONOperationImpl::OnNeedPrivetToken(
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// static
+bool PrivetLocalPrintOperationImpl::run_tasks_immediately_for_testing_ = false;
+
+PrivetLocalPrintOperationImpl::RunTasksImmediatelyForTesting::
+    RunTasksImmediatelyForTesting() {
+  DCHECK(!run_tasks_immediately_for_testing_);
+  run_tasks_immediately_for_testing_ = true;
+}
+
+PrivetLocalPrintOperationImpl::RunTasksImmediatelyForTesting::
+    ~RunTasksImmediatelyForTesting() {
+  DCHECK(run_tasks_immediately_for_testing_);
+  run_tasks_immediately_for_testing_ = false;
+}
+
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetHTTPClient* privet_client,
     PrivetLocalPrintOperation::Delegate* delegate)
@@ -531,7 +564,10 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
       double random_scaling_factor =
           1 + base::RandDouble() * kPrivetMaximumTimeRandomAddition;
 
-      timeout = std::max(static_cast<int>(timeout * random_scaling_factor),
+      timeout =
+          run_tasks_immediately_for_testing_
+              ? 0
+              : std::max(static_cast<int>(timeout * random_scaling_factor),
                          kPrivetMinimumTimeout);
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,

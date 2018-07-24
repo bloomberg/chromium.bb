@@ -51,6 +51,19 @@ std::string MakeRangeHeader(int start, int end) {
 
 }  // namespace
 
+// static
+bool PrivetURLFetcher::skip_retry_timeouts_for_tests_ = false;
+
+PrivetURLFetcher::RetryImmediatelyForTest::RetryImmediatelyForTest() {
+  DCHECK(!skip_retry_timeouts_for_tests_);
+  skip_retry_timeouts_for_tests_ = true;
+}
+
+PrivetURLFetcher::RetryImmediatelyForTest::~RetryImmediatelyForTest() {
+  DCHECK(skip_retry_timeouts_for_tests_);
+  skip_retry_timeouts_for_tests_ = false;
+}
+
 void PrivetURLFetcher::Delegate::OnNeedPrivetToken(TokenCallback callback) {
   OnError(0, TOKEN_ERROR);
 }
@@ -313,6 +326,9 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
 
   // Don't wait because only error callback is going to be called.
   if (tries_ >= max_retries_)
+    timeout_seconds_randomized = 0;
+
+  if (skip_retry_timeouts_for_tests_)
     timeout_seconds_randomized = 0;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
