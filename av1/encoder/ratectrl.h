@@ -30,8 +30,12 @@ extern "C" {
 #if FIX_GF_INTERVAL_LENGTH
 #define FIXED_GF_LENGTH 16
 #define USE_SYMM_MULTI_LAYER 1
+#define REDUCE_LAST_ALT_BOOST 0
+#define REDUCE_LAST_GF_LENGTH 1
 #else
 #define USE_SYMM_MULTI_LAYER 0
+#define REDUCE_LAST_ALT_BOOST 0
+#define REDUCE_LAST_GF_LENGTH 0
 #endif
 
 #if USE_SYMM_MULTI_LAYER
@@ -159,6 +163,7 @@ typedef struct {
 
   // Auto frame-scaling variables.
   int rf_level_maxq[RATE_FACTOR_LEVELS];
+  float_t arf_boost_factor;
   // Q index used for ALT frame
   int arf_q;
 } RATE_CONTROL;

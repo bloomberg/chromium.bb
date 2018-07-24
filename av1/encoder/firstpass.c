@@ -3030,12 +3030,31 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   assert(num_mbs > 0);
   if (i) avg_sr_coded_error /= i;
 
+#if REDUCE_LAST_GF_LENGTH
+  int alt_offset = 0;
+  // We are going to have an alt ref.
+  if (allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
+      (i >= rc->min_gf_interval)) {
+    // If the last gf is too long, then we have to reduce
+    // the current gf length
+    if (rc->frames_to_key - i < 9 && i > 10) {
+      // too long, reduce the length by one
+      alt_offset = -1;
+      i -= 1;
+    }
+  }
+#endif
+
   // Should we use the alternate reference frame.
   if (allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
       (i >= rc->min_gf_interval)) {
     // Calculate the boost for alt ref.
     rc->gfu_boost =
+#if REDUCE_LAST_GF_LENGTH
+        calc_arf_boost(cpi, alt_offset, (i - 1), (i - 1), &f_boost, &b_boost);
+#else
         calc_arf_boost(cpi, 0, (i - 1), (i - 1), &f_boost, &b_boost);
+#endif
     rc->source_alt_ref_pending = 1;
   } else {
     rc->gfu_boost = AOMMAX((int)boost_score, MIN_ARF_GF_BOOST);
@@ -3055,6 +3074,18 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   } else {
     rc->baseline_gf_interval = i - (is_key_frame || rc->source_alt_ref_pending);
   }
+
+#if REDUCE_LAST_ALT_BOOST
+  rc->arf_boost_factor = 1.0;
+  if (rc->source_alt_ref_pending) {
+    // If the last gf is too long, then we have to reduce
+    // the boost factor on current alt ref
+    if (rc->frames_to_key - i == 0 && i > 10) {
+      rc->arf_boost_factor = 0;
+    }
+  }
+#endif
+
   if (non_zero_stdev_count) avg_raw_err_stdev /= non_zero_stdev_count;
 
   // Disable extra altrefs and backward refs for "still" gf group:
