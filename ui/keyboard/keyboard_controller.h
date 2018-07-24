@@ -300,8 +300,6 @@ class KEYBOARD_EXPORT KeyboardController
   // Called when the show animation finished.
   void ShowAnimationFinished();
 
-  void NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
-
   // Notifies keyboard config change to the observers.
   // Only called from |UpdateKeyboardConfig| in keyboard_util.
   void NotifyKeyboardConfigChanged();
