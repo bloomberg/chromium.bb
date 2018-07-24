@@ -2657,6 +2657,8 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
+crbug.com/626703 external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-lists/content-property/marker-text-matches-armenian.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/content-property/marker-text-matches-upper-latin.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/content-property/marker-text-matches-disc.html [ Failure ]
