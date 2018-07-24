@@ -183,7 +183,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     base::RunLoop run_loop;
     service_->UpdateUI(service_worker_registration_id, unique_id, developer_id,
-                       title,
+                       title, SkBitmap(),
                        base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
                                       base::Unretained(this),
                                       run_loop.QuitClosure(), out_error));

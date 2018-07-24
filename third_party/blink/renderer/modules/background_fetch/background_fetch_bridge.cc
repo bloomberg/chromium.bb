@@ -79,7 +79,7 @@ void BackgroundFetchBridge::UpdateUI(const String& developer_id,
 
   GetService()->UpdateUI(
       GetSupplementable()->WebRegistration()->RegistrationId(), developer_id,
-      unique_id, title, std::move(callback));
+      unique_id, title, icon, std::move(callback));
 }
 
 void BackgroundFetchBridge::GetRegistration(const String& developer_id,
