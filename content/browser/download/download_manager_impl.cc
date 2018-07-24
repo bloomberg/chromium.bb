@@ -44,6 +44,7 @@
 #include "content/browser/download/download_url_loader_factory_getter_impl.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/file_download_url_loader_factory_getter.h"
+#include "content/browser/download/file_system_download_url_loader_factory_getter.h"
 #include "content/browser/download/network_download_url_loader_factory_getter.h"
 #include "content/browser/download/url_downloader.h"
 #include "content/browser/download/url_downloader_factory.h"
@@ -1140,6 +1141,24 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     url_loader_factory_getter =
         base::MakeRefCounted<WebUIDownloadURLLoaderFactoryGetter>(
             rfh, params->url());
+  } else if (rfh && params->url().SchemeIsFileSystem()) {
+    StoragePartitionImpl* storage_partition =
+        static_cast<StoragePartitionImpl*>(
+            BrowserContext::GetStoragePartitionForSite(browser_context_,
+                                                       site_url));
+    std::string storage_domain;
+    auto* site_instance = rfh->GetSiteInstance();
+    if (site_instance) {
+      std::string partition_name;
+      bool in_memory;
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          browser_context_, site_url, true, &storage_domain, &partition_name,
+          &in_memory);
+    }
+    url_loader_factory_getter =
+        base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
+            params->url(), rfh, /*is_navigation=*/false,
+            storage_partition->GetFileSystemContext(), storage_domain);
   } else {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(
@@ -1210,7 +1229,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
                        std::move(blob_data_handle),
                        browser_context_->GetResourceContext(), is_new_download,
                        weak_factory_.GetWeakPtr()));
-   }
+  }
 }
 
 }  // namespace content
