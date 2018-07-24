@@ -4583,10 +4583,10 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
-  // TODO(wjmaclean): Remove this check as a pre-condition to closing the bug.
+  // TODO(wjmaclean): Remove this DCHECK as a pre-condition to closing the bug.
   // https://crbug.com/845097
-  CHECK(!settings().is_layer_tree_for_subframe ||
-        scroll_info->page_scale_delta == 1.f);
+  DCHECK(!settings().is_layer_tree_for_subframe ||
+         scroll_info->page_scale_delta == 1.f);
   scroll_info->top_controls_delta =
       active_tree()->top_controls_shown_ratio()->PullDeltaForMainThread();
   scroll_info->elastic_overscroll_delta =
