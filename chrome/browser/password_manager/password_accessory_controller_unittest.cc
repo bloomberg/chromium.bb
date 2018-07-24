@@ -245,7 +245,6 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<StrictMock<MockPasswordAccessoryView>>(),
         mock_dialog_factory_.Get());
     NavigateAndCommit(GURL("https://example.com"));
-    FocusWebContentsOnMainFrame();
   }
 
   PasswordAccessoryController* controller() {
@@ -287,8 +286,10 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
@@ -304,8 +305,10 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 
   controller()->SavePasswordsForOrigin({CreateEntry("", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
@@ -338,8 +341,10 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
       {CreateEntry("Ben", "S3cur3").first, CreateEntry("Zebra", "M3h").first,
        CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
       url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
@@ -357,8 +362,10 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
                                        url::Origin::Create(GURL(kExampleSite)));
 
   // Pretend that any input in the same frame was focused.
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_fillable=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_fillable=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
@@ -370,8 +377,10 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 
   controller()->SavePasswordsForOrigin({},
                                        url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, RelaysAutomaticGenerationAvailable) {
@@ -439,8 +448,10 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   // This should result in the non-interactive suggestion expected above.
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
 
   // Pretend that we focus a password field now: By triggering a refresh with
   // |is_password_field| set to true, all suggestions should become interactive.
@@ -452,8 +463,10 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
                   MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                               true, ItemType::SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/true);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/true);
 }
 
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
@@ -467,8 +480,10 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                   IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
 
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
@@ -480,6 +495,38 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                   IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  controller()->RefreshSuggestionsForField(/*is_fillable=*/true,
-                                           /*is_password_field=*/false);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
+}
+
+TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
+  EXPECT_CALL(*view(),
+              OnItemsAvailable(ElementsAre(
+                  MatchesLabel(passwords_title_str(kExampleDomain)),
+                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                              ItemType::SUGGESTION),
+                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  // Set any, non-empty password list and pretend a username field was focused.
+  // This should result in the non-emtpy suggestions expected above.
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
+
+  // Pretend that the focus was lost or moved to an unfillable field. Now, only
+  // the empty state message should be sent.
+  EXPECT_CALL(*view(),
+              OnItemsAvailable(ElementsAre(
+                  MatchesLabel(passwords_empty_str(kExampleDomain)),
+                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/false,
+      /*is_password_field=*/false);  // Unused.
 }

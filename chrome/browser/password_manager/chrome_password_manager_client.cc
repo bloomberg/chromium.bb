@@ -1084,7 +1084,10 @@ void ChromePasswordManagerClient::FocusedInputChanged(bool is_fillable,
       PasswordAccessoryController::FromWebContents(web_contents());
   if (!accessory)
     return;  // No accessory needs change here.
-  accessory->RefreshSuggestionsForField(is_fillable, is_password_field);
+  accessory->RefreshSuggestionsForField(
+      password_manager_driver_bindings_.GetCurrentTargetFrame()
+          ->GetLastCommittedOrigin(),
+      is_fillable, is_password_field);
 #endif  // defined(OS_ANDROID)
 }
 

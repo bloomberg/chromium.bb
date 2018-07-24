@@ -8,7 +8,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/preferences/preferences_launcher.h"
-#include "chrome/browser/password_manager/password_accessory_view_interface.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,8 +20,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#include "chrome/browser/android/preferences/preferences_launcher.h"
 
 using autofill::PasswordForm;
 using Item = PasswordAccessoryViewInterface::AccessoryItem;
@@ -210,10 +207,15 @@ void PasswordAccessoryController::OnFilledIntoFocusedField(
 }
 
 void PasswordAccessoryController::RefreshSuggestionsForField(
+    const url::Origin& origin,
     bool is_fillable,
     bool is_password_field) {
   // TODO(crbug/853766): Record CTR metric.
-  SendViewItems(is_password_field);
+  view_->OnItemsAvailable(
+      CreateViewItems(origin,
+                      is_fillable ? origin_suggestions_[origin]
+                                  : std::vector<SuggestionElementData>(),
+                      is_password_field));
 }
 
 gfx::NativeView PasswordAccessoryController::container_view() const {
@@ -224,13 +226,11 @@ gfx::NativeWindow PasswordAccessoryController::native_window() const {
   return web_contents_->GetTopLevelNativeWindow();
 }
 
-void PasswordAccessoryController::SendViewItems(bool is_password_field) {
-  DCHECK(view_);
-  last_focused_field_was_for_passwords_ = is_password_field;
-  const url::Origin& origin =
-      web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
-  const std::vector<SuggestionElementData>& suggestions =
-      origin_suggestions_[origin];
+// static
+std::vector<Item> PasswordAccessoryController::CreateViewItems(
+    const url::Origin& origin,
+    const std::vector<SuggestionElementData>& suggestions,
+    bool is_password_field) {
   std::vector<Item> items;
   base::string16 passwords_title_str;
 
@@ -266,7 +266,5 @@ void PasswordAccessoryController::SendViewItems(bool is_password_field) {
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
   items.emplace_back(manage_passwords_title, manage_passwords_title, false,
                      Item::Type::OPTION);
-
-  // Notify the view about all just created elements.
-  view_->OnItemsAvailable(items);
+  return items;
 }
