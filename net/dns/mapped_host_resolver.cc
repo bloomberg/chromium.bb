@@ -18,6 +18,14 @@ MappedHostResolver::MappedHostResolver(std::unique_ptr<HostResolver> impl)
 
 MappedHostResolver::~MappedHostResolver() = default;
 
+std::unique_ptr<HostResolver::ResolveHostRequest>
+MappedHostResolver::CreateRequest(const HostPortPair& host,
+                                  const NetLogWithSource& source_net_log) {
+  // TODO(crbug.com/821021): Implement.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 int MappedHostResolver::Resolve(const RequestInfo& original_info,
                                 RequestPriority priority,
                                 AddressList* addresses,

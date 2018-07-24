@@ -790,6 +790,13 @@ class BlockableHostResolver : public HostResolver {
   BlockableHostResolver()
       : num_cancelled_requests_(0), waiting_for_resolve_(false) {}
 
+  std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const HostPortPair& host,
+      const NetLogWithSource& net_log) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,

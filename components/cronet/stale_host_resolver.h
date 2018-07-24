@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRONET_STALE_HOST_RESOLVER_H_
 #define COMPONENTS_CRONET_STALE_HOST_RESOLVER_H_
 
+#include <memory>
 #include <unordered_set>
 
 #include "base/time/default_tick_clock.h"
@@ -60,6 +61,10 @@ class StaleHostResolver : public net::HostResolver {
   ~StaleHostResolver() override;
 
   // HostResolver implementation:
+
+  std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const net::HostPortPair& host,
+      const net::NetLogWithSource& net_log) override;
 
   // Resolves as a regular HostResolver, but if stale data is available and
   // usable (according to the options passed to the constructor), and fresh data
