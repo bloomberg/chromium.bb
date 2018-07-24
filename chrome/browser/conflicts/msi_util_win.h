@@ -19,9 +19,13 @@ class MsiUtil {
   // access to the file system. Returns false if any error occured, including if
   // the |product_guid| passed is not a GUID.
   //
+  // The |user_sid| is used to retrieve the path of applications that were
+  // installed with the MSIINSTALLPERUSER installation context.
+  //
   // Note: Marked virtual to allow mocking.
   virtual bool GetMsiComponentPaths(
       const base::string16& product_guid,
+      const base::string16& user_sid,
       std::vector<base::string16>* component_paths) const;
 };
 
