@@ -15,7 +15,7 @@
 #include "components/zucchini/buffer_source.h"
 #include "components/zucchini/rel32_finder.h"
 #include "components/zucchini/rel32_utils.h"
-#include "components/zucchini/reloc_utils.h"
+#include "components/zucchini/reloc_win32.h"
 
 namespace zucchini {
 
