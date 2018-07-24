@@ -205,10 +205,11 @@ def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
 def _get_benchmark_name(directory):
   return basename(directory).replace(" benchmark", "")
 
+
 def process_perf_results(output_json, configuration_name,
-                          service_account_file,
-                          build_properties, task_output_dir,
-                          smoke_test_mode):
+                         service_account_file,
+                         build_properties, task_output_dir,
+                         smoke_test_mode):
   """Process perf results.
 
   Consists of merging the json-test-format output, uploading the perf test
@@ -352,7 +353,8 @@ def _upload_individual(
     # We generate an oauth token for every benchmark upload in the event
     # the token could time out, see crbug.com/854162
     with oauth_api.with_access_token(
-        service_account_file, ("%s_tok" % benchmark_name)) as oauth_file:
+        service_account_file, ('%s_tok' % benchmark_name),
+        token_expiration_in_minutes=30) as oauth_file:
       with open(output_json_file, 'w') as oj:
         upload_fail = _upload_perf_results(
           results_filename,

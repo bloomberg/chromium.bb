@@ -13,17 +13,21 @@ import tempfile
 
 
 @contextlib.contextmanager
-def with_access_token(service_account_json, append):
+def with_access_token(
+    service_account_json, prefix, token_expiration_in_minutes):
   """Yields an access token for the service account.
 
   Args:
     service_account_json: The path to the service account JSON file.
+    prefix: the prefix of the token file
+    token_expiration_in_minutes: the integer expiration time of the token
   """
-  fd, path = tempfile.mkstemp(suffix='.json', prefix=append)
+  fd, path = tempfile.mkstemp(suffix='.json', prefix=prefix)
   try:
     args = ['luci-auth', 'token']
     if service_account_json:
       args += ['-service-account-json', service_account_json]
+    args += ['-lifetime', '%im' % token_expiration_in_minutes]
     subprocess.check_call(args, stdout=fd)
     os.close(fd)
     fd = None
