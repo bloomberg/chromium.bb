@@ -109,9 +109,9 @@ std::unique_ptr<quic::ProofVerifier> ProofVerifierForTesting() {
       std::make_unique<net::DefaultCTPolicyEnforcer>(), "quic-root.pem");
 }
 
-quic::ProofVerifyContext* ProofVerifyContextForTesting() {
-  return new net::ProofVerifyContextChromium(/*cert_verify_flags=*/0,
-                                             net::NetLogWithSource());
+std::unique_ptr<quic::ProofVerifyContext> ProofVerifyContextForTesting() {
+  return std::make_unique<net::ProofVerifyContextChromium>(
+      /*cert_verify_flags=*/0, net::NetLogWithSource());
 }
 
 }  // namespace crypto_test_utils

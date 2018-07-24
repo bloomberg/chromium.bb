@@ -294,9 +294,10 @@ void QuartcSession::StartCryptoHandshake() {
   if (perspective_ == Perspective::IS_CLIENT) {
     QuicServerId server_id(unique_remote_server_id_, kQuicServerPort,
                            /*privacy_mode_enabled=*/false);
-    QuicCryptoClientStream* crypto_stream =
-        new QuicCryptoClientStream(server_id, this, new ProofVerifyContext(),
-                                   quic_crypto_client_config_.get(), this);
+    QuicCryptoClientStream* crypto_stream = new QuicCryptoClientStream(
+        server_id, this,
+        quic_crypto_client_config_->proof_verifier()->CreateDefaultContext(),
+        quic_crypto_client_config_.get(), this);
     crypto_stream_.reset(crypto_stream);
     QuicSession::Initialize();
     crypto_stream->CryptoConnect();

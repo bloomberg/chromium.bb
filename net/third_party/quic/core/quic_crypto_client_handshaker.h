@@ -29,7 +29,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
       const QuicServerId& server_id,
       QuicCryptoClientStream* stream,
       QuicSession* session,
-      ProofVerifyContext* verify_context,
+      std::unique_ptr<ProofVerifyContext> verify_context,
       QuicCryptoClientConfig* crypto_config,
       QuicCryptoClientStream::ProofHandler* proof_handler);
 

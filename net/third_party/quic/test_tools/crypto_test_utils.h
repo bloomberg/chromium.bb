@@ -189,7 +189,7 @@ uint64_t LeafCertHashForTesting();
 
 // Returns a |ProofVerifyContext| that must be used with the verifier
 // returned by |ProofVerifierForTesting|.
-ProofVerifyContext* ProofVerifyContextForTesting();
+std::unique_ptr<ProofVerifyContext> ProofVerifyContextForTesting();
 
 // MockCommonCertSets returns a CommonCertSets that contains a single set with
 // hash |hash|, consisting of the certificate |cert| at index |index|.
