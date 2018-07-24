@@ -71,10 +71,10 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   if (window != immersive_fullscreen_controller_->widget()->GetNativeWindow())
     return false;
 
-  // TODO(minch): Also allow windows in fullscreen mode can be dragged.
-  // Only maximized none browser window in tablet mode allowed to be dragged.
+  // Only maximized or fullscreened none browser window in tablet mode allowed
+  // to be dragged.
   const views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  if (!widget || !widget->IsMaximized() ||
+  if (!widget || (!widget->IsMaximized() && !widget->IsFullscreen()) ||
       !Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled() ||
@@ -113,6 +113,8 @@ ImmersiveGestureHandlerClassic::~ImmersiveGestureHandlerClassic() {
 }
 
 void ImmersiveGestureHandlerClassic::OnGestureEvent(ui::GestureEvent* event) {
+  // TODO(minch): Make window can be dragged from top if docked magnifier is
+  // enabled. http://crbug.com/866680.
   if (CanDrag(event)) {
     DCHECK(tablet_mode_app_window_drag_controller_);
     if (tablet_mode_app_window_drag_controller_->DragWindowFromTop(event))

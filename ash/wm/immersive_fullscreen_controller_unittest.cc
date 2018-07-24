@@ -671,8 +671,10 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
-// Tests the top-of-window views for maximized window in tablet mode.
-TEST_F(ImmersiveFullscreenControllerTest, MaximizedWindowInTabletMode) {
+// Tests the top-of-window views for maximized/full-screened window in tablet
+// mode.
+TEST_F(ImmersiveFullscreenControllerTest,
+       MaximizedOrFullscreenedWindowInTabletMode) {
   SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
   EnableTabletMode(true);
   SetEnabled(true);
@@ -692,11 +694,12 @@ TEST_F(ImmersiveFullscreenControllerTest, MaximizedWindowInTabletMode) {
   AttemptUnreveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // Top-of-window views will be revealed for fullscreen window in tablet mode.
+  // Top-of-window views will not be revealed for full-screened window in tablet
+  // mode either.
   EnableTabletMode(true);
   SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
   AttemptReveal(MODALITY_GESTURE_SCROLL);
-  EXPECT_TRUE(controller()->IsRevealed());
+  EXPECT_FALSE(controller()->IsRevealed());
 }
 
 // Test when the SWIPE_CLOSE edge gesture closes the top-of-window views.
