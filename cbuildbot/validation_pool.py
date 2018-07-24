@@ -1643,6 +1643,9 @@ class ValidationPool(object):
                                            check_tree_open=check_tree_open,
                                            throttled_ok=throttled_ok)
     if errors:
+      logging.PrintBuildbotStepText(
+              'Submitted %d of %d verified CLs.'
+              % (len(submitted), len(verified_cls)))
       raise FailedToSubmitAllChangesException(errors, len(submitted))
 
     if self.changes_that_failed_to_apply_earlier:
