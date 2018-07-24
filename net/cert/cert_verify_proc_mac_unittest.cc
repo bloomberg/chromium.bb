@@ -135,7 +135,8 @@ TEST(CertVerifyProcMacTest, MacCRLIntermediate) {
 // Test that if a keychain is present which trusts a less-desirable root (ex,
 // one using SHA1), that the keychain reordering hack will cause the better
 // root in the System Roots to be used instead.
-TEST(CertVerifyProcMacTest, MacKeychainReordering) {
+// TODO(crbug.com/867174): Re-enable this test.
+TEST(CertVerifyProcMacTest, DISABLED_MacKeychainReordering) {
   // Note: target cert expires Dec 30 23:59:59 2019 GMT
   scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
       GetTestCertsDirectory(), "gms.hongleong.com.my-verisign-chain.pem",
