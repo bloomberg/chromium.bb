@@ -10,14 +10,17 @@
 Polymer({
   is: 'password-list-item',
 
-  behaviors: [FocusRowBehavior, ShowPasswordBehavior],
+  behaviors: [
+    FocusRowBehavior,
+    ShowPasswordBehavior,
+  ],
 
   /**
    * Selects the password on tap if revealed.
    * @private
    */
   onReadonlyInputTap_: function() {
-    if (this.password)
+    if (this.item.password)
       this.$$('#password').select();
   },
 

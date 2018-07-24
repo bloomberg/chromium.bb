@@ -150,25 +150,30 @@ Polymer({
 
   /** @override */
   attached: function() {
+    // The item uid is built from index, origin, and username for the
+    // following reasons: origin and username are enough to describe and
+    // uniquely identify an entry. It is impossible to have two entries
+    // that have the same origin and username, but different passwords,
+    // as the password update logic prevents these cases. The entry is
+    // required to force a refresh of entries, after a removal or undo of
+    // a removal has taken place. All entries before the point of
+    // modification are uneffected, but the ones following need to be
+    // refreshed. Including the index in the uid achieves this effect.
+    // See https://crbug.com/862119 how this could lead to bugs otherwise.
+    const getItemUid =
+        item => [item.entry.index, item.entry.loginPair.urls.origin,
+                 item.entry.loginPair.username]
+                    .join('_');
+
     // Create listener functions.
-    const setSavedPasswordsListener = list =>
-        this.updateList('savedPasswords', item => {
-          // The item uid is built from index, origin, and username for the
-          // following reasons: origin and username are enough to describe and
-          // uniquely identify an entry. It is impossible to have two entries
-          // that have the same origin and username, but different passwords,
-          // as the password update logic prevents these cases. The entry is
-          // required to force a refresh of entries, after a removal or undo of
-          // a removal has taken place. All entries before the point of
-          // modification are uneffected, but the ones following need to be
-          // refreshed. Including the index in the uid achieves this effect.
-          // See https://crbug.com/862119 how this could lead to bugs otherwise.
-          return item.entry.index + '_' + item.entry.loginPair.urls.origin +
-              '_' + item.entry.loginPair.username;
-        }, list.map(entry => ({
-                      entry: entry,
-                      password: '',
-                    })));
+    const setSavedPasswordsListener = list => {
+      const newList = list.map(entry => ({entry: entry, password: ''}));
+      this.updateList('savedPasswords', getItemUid, newList);
+      this.savedPasswords.forEach((item, index) => {
+        item.password = '';
+        this.$.passwordList.notifyPath(`items.${index}.password`);
+      });
+    };
 
     const setPasswordExceptionsListener = list => {
       this.passwordExceptions = list;
