@@ -63,6 +63,10 @@ class OmniboxTextView : public views::View {
   // multiple lines.
   int GetLineHeight() const;
 
+  // Reapplies text styling to the results text, based on the types of the match
+  // parts.
+  void ReapplyStyling();
+
  private:
   std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
