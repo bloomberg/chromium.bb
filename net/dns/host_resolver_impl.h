@@ -10,6 +10,9 @@
 
 #include <map>
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -125,10 +128,6 @@ class NET_EXPORT HostResolverImpl
   // be called.
   ~HostResolverImpl() override;
 
-  // Configures maximum number of Jobs in the queue. Exposed for testing.
-  // Only allowed when the queue is empty.
-  void SetMaxQueuedJobs(size_t value);
-
   // Set the DnsClient to be used for resolution. In case of failure, the
   // HostResolverProc from ProcTaskParams will be queried. If the DnsClient is
   // not pre-configured with a valid DnsConfig, a new config is fetched from
@@ -136,6 +135,9 @@ class NET_EXPORT HostResolverImpl
   void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 
   // HostResolver methods:
+  std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const HostPortPair& host,
+      const NetLogWithSource& net_log) override;
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
@@ -179,6 +181,10 @@ class NET_EXPORT HostResolverImpl
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
+  // Configures maximum number of Jobs in the queue. Exposed for testing.
+  // Only allowed when the queue is empty.
+  void SetMaxQueuedJobsForTesting(size_t value);
+
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
   void SetHaveOnlyLoopbackAddresses(bool result);
@@ -193,6 +199,7 @@ class NET_EXPORT HostResolverImpl
   class LoopbackProbeJob;
   class DnsTask;
   class RequestImpl;
+  class LegacyRequestImpl;
   using Key = HostCache::Key;
   using JobMap = std::map<Key, std::unique_ptr<Job>>;
 
@@ -200,11 +207,14 @@ class NET_EXPORT HostResolverImpl
   // ProcTask) before the DnsClient is disabled until the next DNS change.
   static const unsigned kMaximumDnsFailures;
 
-  // Helper used by |Resolve()| and |ResolveFromCache()|.  Performs IP
-  // literal, cache and HOSTS lookup (if enabled), returns OK if successful,
-  // ERR_NAME_NOT_RESOLVED if either hostname is invalid or IP literal is
-  // incompatible, ERR_DNS_CACHE_MISS if entry was not found in cache and
-  // HOSTS and is not localhost.
+  // Attempts host resolution for |request|. Generally only expected to be
+  // called from RequestImpl::Start().
+  int Resolve(RequestImpl* request);
+
+  // Attempts host resolution using fast local sources: IP literal resolution,
+  // cache lookup, HOSTS lookup (if enabled), and localhost. Returns OK if
+  // successful, ERR_NAME_NOT_RESOLVED if input is invalid, or
+  // ERR_DNS_CACHE_MISS if the host could not be resolved using local sources.
   //
   // On success, the resulting addresses are written to |addresses|.
   //
@@ -217,17 +227,25 @@ class NET_EXPORT HostResolverImpl
   //
   // If |allow_stale| is false, then stale cache entries will not be returned,
   // and |stale_info| must be null.
-  int ResolveHelper(const RequestInfo& info,
-                    bool allow_stale,
-                    HostCache::EntryStaleness* stale_info,
-                    const NetLogWithSource& request_net_log,
-                    AddressList* addresses,
-                    Key* key);
+  int ResolveLocally(const HostPortPair& host,
+                     AddressFamily requested_address_family,
+                     HostResolverFlags flags,
+                     bool allow_cache,
+                     bool allow_stale,
+                     HostCache::EntryStaleness* stale_info,
+                     const NetLogWithSource& request_net_log,
+                     AddressList* addresses,
+                     Key* key);
+
+  // Attempts to create and start a Job to asynchronously attempt to resolve
+  // |key|. On success, returns ERR_IO_PENDING and attaches the Job to
+  // |request|. On error, marks |request| completed and returns the error.
+  int CreateAndStartJob(const Key& key, RequestImpl* request);
 
   // Tries to resolve |key| as an IP, returns true and sets |net_error| if
   // succeeds, returns false otherwise.
   bool ResolveAsIP(const Key& key,
-                   const RequestInfo& info,
+                   uint16_t host_port,
                    const IPAddress* ip_address,
                    int* net_error,
                    AddressList* addresses);
@@ -243,7 +261,7 @@ class NET_EXPORT HostResolverImpl
   // If |allow_stale| is false, then stale cache entries will not be returned,
   // and |stale_info| must be null.
   bool ServeFromCache(const Key& key,
-                      const RequestInfo& info,
+                      uint16_t host_port,
                       int* net_error,
                       AddressList* addresses,
                       bool allow_stale,
@@ -252,19 +270,21 @@ class NET_EXPORT HostResolverImpl
   // If we have a DnsClient with a valid DnsConfig, and |key| is found in the
   // HOSTS file, returns true and fills |addresses|. Otherwise returns false.
   bool ServeFromHosts(const Key& key,
-                      const RequestInfo& info,
+                      uint16_t host_port,
                       AddressList* addresses);
 
   // If |key| is for a localhost name (RFC 6761), returns true and fills
   // |addresses| with the loopback IP. Otherwise returns false.
   bool ServeLocalhost(const Key& key,
-                      const RequestInfo& info,
+                      uint16_t host_port,
                       AddressList* addresses);
 
   // Returns the (hostname, address_family) key to use for |info|, choosing an
   // "effective" address family by inheriting the resolver's default address
   // family when the request leaves it unspecified.
-  Key GetEffectiveKeyForRequest(const RequestInfo& info,
+  Key GetEffectiveKeyForRequest(const std::string& hostname,
+                                AddressFamily requested_address_family,
+                                HostResolverFlags flags,
                                 const IPAddress* ip_address,
                                 const NetLogWithSource& net_log);
 
