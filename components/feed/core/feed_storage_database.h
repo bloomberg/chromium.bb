@@ -37,15 +37,14 @@ class FeedStorageDatabase {
   // Returns the content keys as a vector when calling loading all content keys.
   using ContentKeyCallback = base::OnceCallback<void(std::vector<std::string>)>;
 
-  // Returns the journal data as a vector of strings when calling loading data.
+  // Returns the journal data as a vector of strings when calling loading data
+  // or keys.
   using JournalLoadCallback =
       base::OnceCallback<void(std::vector<std::string>)>;
 
-  // Returns a vector of journal data when calling loading all journals.
-  using LoadAllJournalsCallback =
-      base::OnceCallback<void(std::vector<std::vector<std::string>>)>;
-
-  // Returns whether the commit operation succeeded.
+  // Returns whether the commit operation succeeded when calling for database
+  // operations, or return whether the entry exists when calling for checking
+  // the entry's existence.
   using ConfirmationCallback = base::OnceCallback<void(bool)>;
 
   // Initializes the database with |database_folder|.
@@ -100,8 +99,12 @@ class FeedStorageDatabase {
   // Loads the journal data for the |key| and passes it to |callback|.
   void LoadJournal(const std::string& key, JournalLoadCallback callback);
 
-  // Loads all journals in the storage, and passes them to |callback|.
-  void LoadAllJournals(LoadAllJournalsCallback callback);
+  // Checks if the journal for the |key| exists, and return the result to
+  // |callback|.
+  void DoesJournalExist(const std::string& key, ConfirmationCallback callback);
+
+  // Loads all journal keys in the storage, and passes them to |callback|.
+  void LoadAllJournalKeys(JournalLoadCallback callback);
 
   // Appends |entries| to a journal whose key is |key|, if there the journal do
   // not exist, create one. |callback| will be called when the data are saved or
@@ -139,6 +142,9 @@ class FeedStorageDatabase {
   void OnGetEntryForLoadJournal(JournalLoadCallback callback,
                                 bool success,
                                 std::unique_ptr<FeedStorageProto> journal);
+  void OnGetEntryForDoesJournalExist(ConfirmationCallback callback,
+                                     bool success,
+                                     std::unique_ptr<FeedStorageProto> journal);
   void OnGetEntryAppendToJournal(ConfirmationCallback callback,
                                  const std::string& key,
                                  std::vector<std::string> entries,
@@ -148,10 +154,10 @@ class FeedStorageDatabase {
                                 const std::string& to_key,
                                 bool success,
                                 std::unique_ptr<FeedStorageProto> journal);
-  void OnLoadEntriesForLoadAllJournals(
-      LoadAllJournalsCallback callback,
+  void OnLoadKeysForLoadAllJournalKeys(
+      JournalLoadCallback callback,
       bool success,
-      std::unique_ptr<std::vector<FeedStorageProto>> entries);
+      std::unique_ptr<std::vector<std::string>> keys);
   void OnStorageCommitted(ConfirmationCallback callback, bool success);
 
   State database_status_;
