@@ -108,12 +108,6 @@ class SQL_EXPORT Connection {
   // This must be called before Open() to have an effect.
   void set_exclusive_locking() { exclusive_locking_ = true; }
 
-  // Call to cause Open() to restrict access permissions of the
-  // database file to only the owner.
-  //
-  // This is only supported on OS_POSIX and is a noop on other platforms.
-  void set_restrict_to_user() { restrict_to_user_ = true; }
-
   // Call to use alternative status-tracking for mmap.  Usually this is tracked
   // in the meta table, but some databases have no meta table.
   // TODO(shess): Maybe just have all databases use the alt option?
@@ -469,6 +463,39 @@ class SQL_EXPORT Connection {
     clock_ = std::move(clock);
   }
 
+  // Computes the path of a database's rollback journal.
+  //
+  // The journal file is created at the beginning of the database's first
+  // transaction. The file may be removed and re-created between transactions,
+  // depending on whether the database is opened in exclusive mode, and on
+  // configuration options. The journal file does not exist when the database
+  // operates in WAL mode.
+  //
+  // This is intended for internal use and tests. To preserve our ability to
+  // iterate on our SQLite configuration, features must avoid relying on
+  // the existence of specific files.
+  static base::FilePath JournalPath(const base::FilePath& db_path);
+
+  // Computes the path of a database's write-ahead log (WAL).
+  //
+  // The WAL file exists while a database is opened in WAL mode.
+  //
+  // This is intended for internal use and tests. To preserve our ability to
+  // iterate on our SQLite configuration, features must avoid relying on
+  // the existence of specific files.
+  static base::FilePath WriteAheadLogPath(const base::FilePath& db_path);
+
+  // Computes the path of a database's shared memory (SHM) file.
+  //
+  // The SHM file is used to coordinate between multiple processes using the
+  // same database in WAL mode. Thus, this file only exists for databases using
+  // WAL and not opened in exclusive mode.
+  //
+  // This is intended for internal use and tests. To preserve our ability to
+  // iterate on our SQLite configuration, features must avoid relying on
+  // the existence of specific files.
+  static base::FilePath SharedMemoryFilePath(const base::FilePath& db_path);
+
  private:
   // For recovery module.
   friend class Recovery;
@@ -718,7 +745,6 @@ class SQL_EXPORT Connection {
   int page_size_;
   int cache_size_;
   bool exclusive_locking_;
-  bool restrict_to_user_;
 
   // Holds references to all cached statements so they remain active.
   //

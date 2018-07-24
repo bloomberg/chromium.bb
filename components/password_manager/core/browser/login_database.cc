@@ -533,7 +533,6 @@ bool LoginDatabase::Init() {
   db_.set_page_size(2048);
   db_.set_cache_size(32);
   db_.set_exclusive_locking();
-  db_.set_restrict_to_user();
   db_.set_histogram_tag("Passwords");
 
   if (!db_.Open(db_path_)) {

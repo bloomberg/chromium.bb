@@ -867,85 +867,74 @@ TEST_F(SQLConnectionTest, SetTempDirForSQL) {
 }
 #endif  // defined(OS_ANDROID)
 
-TEST_F(SQLConnectionTest, Delete) {
+TEST_F(SQLConnectionTest, DeleteNonWal) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
   db().Close();
 
   // Should have both a main database file and a journal file because
   // of journal_mode TRUNCATE.
-  base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
+  base::FilePath journal_path = sql::Connection::JournalPath(db_path());
   ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_TRUE(GetPathExists(journal));
+  ASSERT_TRUE(GetPathExists(journal_path));
 
   sql::Connection::Delete(db_path());
   EXPECT_FALSE(GetPathExists(db_path()));
-  EXPECT_FALSE(GetPathExists(journal));
+  EXPECT_FALSE(GetPathExists(journal_path));
 }
 
-// This test manually sets on disk permissions, these don't exist on Fuchsia.
-#if defined(OS_POSIX)
-// Test that set_restrict_to_user() trims database permissions so that
-// only the owner (and root) can read.
-TEST_F(SQLConnectionTest, UserPermission) {
-  // If the bots all had a restrictive umask setting such that
-  // databases are always created with only the owner able to read
-  // them, then the code could break without breaking the tests.
-  // Temporarily provide a more permissive umask.
+#if defined(OS_POSIX)  // This test operates on POSIX file permissions.
+TEST_F(SQLConnectionTest, PosixFilePermissions) {
   db().Close();
   sql::Connection::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
+
+  // If the bots all had a restrictive umask setting such that databases are
+  // always created with only the owner able to read them, then the code could
+  // break without breaking the tests. Temporarily provide a more permissive
+  // umask.
   ScopedUmaskSetter permissive_umask(S_IWGRP | S_IWOTH);
+
   ASSERT_TRUE(db().Open(db_path()));
 
-  // Cause the journal file to be created.  If the default
-  // journal_mode is changed back to DELETE, then parts of this test
-  // will need to be updated.
+  // Cause the journal file to be created. If the default journal_mode is
+  // changed back to DELETE, this test will need to be updated.
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
 
-  base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
   int mode;
-
-  // Given a permissive umask, the database is created with permissive
-  // read access for the database and journal.
   ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_TRUE(GetPathExists(journal));
-  mode = base::FILE_PERMISSION_MASK;
   EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
-  ASSERT_NE((mode & base::FILE_PERMISSION_USER_MASK), mode);
-  mode = base::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
-  ASSERT_NE((mode & base::FILE_PERMISSION_USER_MASK), mode);
+  ASSERT_EQ(mode, 0600);
 
-  // Re-open with restricted permissions and verify that the modes
-  // changed for both the main database and the journal.
-  db().Close();
-  db().set_restrict_to_user();
-  ASSERT_TRUE(db().Open(db_path()));
-  ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_TRUE(GetPathExists(journal));
-  mode = base::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
-  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
-  mode = base::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
-  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
+  {
+    base::FilePath journal_path = sql::Connection::JournalPath(db_path());
+    DLOG(ERROR) << "journal_path: " << journal_path;
+    ASSERT_TRUE(GetPathExists(journal_path));
+    EXPECT_TRUE(base::GetPosixFilePermissions(journal_path, &mode));
+    ASSERT_EQ(mode, 0600);
+  }
 
-  // Delete and re-create the database, the restriction should still apply.
+  // Reopen the database and turn on WAL mode.
   db().Close();
   sql::Connection::Delete(db_path());
+  ASSERT_FALSE(GetPathExists(db_path()));
   ASSERT_TRUE(db().Open(db_path()));
-  ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_FALSE(GetPathExists(journal));
-  mode = base::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
-  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
+  ASSERT_TRUE(db().Execute("PRAGMA journal_mode = WAL"));
+  ASSERT_EQ("wal", ExecuteWithResult(&db(), "PRAGMA journal_mode"));
 
-  // Verify that journal creation inherits the restriction.
-  EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
-  ASSERT_TRUE(GetPathExists(journal));
-  mode = base::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
-  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
+  // The WAL file is created lazily on first change.
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+
+  {
+    base::FilePath wal_path = sql::Connection::WriteAheadLogPath(db_path());
+    ASSERT_TRUE(GetPathExists(wal_path));
+    EXPECT_TRUE(base::GetPosixFilePermissions(wal_path, &mode));
+    ASSERT_EQ(mode, 0600);
+
+    base::FilePath shm_path = sql::Connection::SharedMemoryFilePath(db_path());
+    ASSERT_TRUE(GetPathExists(shm_path));
+    EXPECT_TRUE(base::GetPosixFilePermissions(shm_path, &mode));
+    ASSERT_EQ(mode, 0600);
+  }
 }
 #endif  // defined(OS_POSIX)
 
@@ -1439,8 +1428,8 @@ TEST_F(SQLConnectionTest, CollectDiagnosticInfo) {
 }
 
 TEST_F(SQLConnectionTest, RegisterIntentToUpload) {
-  base::FilePath breadcrumb_path(
-      db_path().DirName().Append(FILE_PATH_LITERAL("sqlite-diag")));
+  base::FilePath breadcrumb_path =
+      db_path().DirName().AppendASCII("sqlite-diag");
 
   // No stale diagnostic store.
   ASSERT_TRUE(!base::PathExists(breadcrumb_path));
