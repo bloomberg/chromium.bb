@@ -76,12 +76,6 @@ Tree: v2.0.1
 Revision: bfdf82f7c8eb4c205cb2d4af6996ffc98f41b1c1
 Tree link: https://github.com/PolymerElements/iron-icon/tree/v2.0.1
 
-Name: iron-icons
-Repository: https://github.com/PolymerElements/iron-icons.git
-Tree: v2.0.1
-Revision: 8d999f711c42366c7f81247eddbd11882b473533
-Tree link: https://github.com/PolymerElements/iron-icons/tree/v2.0.1
-
 Name: iron-iconset-svg
 Repository: https://github.com/PolymerElements/iron-iconset-svg.git
 Tree: v2.1.1
