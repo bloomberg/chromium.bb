@@ -26,10 +26,6 @@ class UkmDebugDataExtractor {
   // Returns UKM data structured in a DictionaryValue.
   static base::Value GetStructuredData(const UkmService* ukm_service);
 
-  // Returns UKM data as an HTML page.
-  // TODO(etiennep): Use GetStructuredData() instead.
-  static std::string GetHTMLData(const UkmService* ukm_service);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(UkmDebugDataExtractor);
 };

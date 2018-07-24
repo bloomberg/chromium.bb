@@ -56,6 +56,10 @@ class WebUIIOSImpl : public web::WebUIIOS,
   void CallJavascriptFunction(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) override;
+  void ResolveJavascriptCallback(const base::Value& callback_id,
+                                 const base::Value& response) override;
+  void RejectJavascriptCallback(const base::Value& callback_id,
+                                const base::Value& response) override;
 
  private:
   // Executes JavaScript asynchronously on the page.

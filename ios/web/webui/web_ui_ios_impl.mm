@@ -121,6 +121,20 @@ void WebUIIOSImpl::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
+void WebUIIOSImpl::ResolveJavascriptCallback(const base::Value& callback_id,
+                                             const base::Value& response) {
+  // cr.webUIResponse is a global JS function exposed from cr.js.
+  CallJavascriptFunction("cr.webUIResponse", callback_id, base::Value(true),
+                         response);
+}
+
+void WebUIIOSImpl::RejectJavascriptCallback(const base::Value& callback_id,
+                                            const base::Value& response) {
+  // cr.webUIResponse is a global JS function exposed from cr.js.
+  CallJavascriptFunction("cr.webUIResponse", callback_id, base::Value(false),
+                         response);
+}
+
 void WebUIIOSImpl::RegisterMessageCallback(const std::string& message,
                                            const MessageCallback& callback) {
   message_callbacks_.insert(std::make_pair(message, callback));
