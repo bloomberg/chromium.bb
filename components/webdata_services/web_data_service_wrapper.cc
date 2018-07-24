@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -71,6 +72,9 @@ void InitSyncableProfileServicesOnDBSequence(
   }
 }
 
+// TODO(jkrcal): Rename this function when the last webdata sync type get
+// converted to USS, e.g. to InitSyncBridgesOnDBSequence(). Check also other
+// related functions.
 void InitSyncableAccountServicesOnDBSequence(
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
     const syncer::SyncableService::StartSyncFlare& sync_flare,
@@ -79,15 +83,21 @@ void InitSyncableAccountServicesOnDBSequence(
     const std::string& app_locale,
     autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
-  autofill::AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data.get(), autofill_backend, app_locale);
+
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
+    autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
+        app_locale, autofill_backend, autofill_web_data.get());
+  } else {
+    autofill::AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
+        autofill_web_data.get(), autofill_backend, app_locale);
+    autofill::AutofillWalletSyncableService::FromWebDataService(
+        autofill_web_data.get())
+        ->InjectStartSyncFlare(sync_flare);
+  }
+
   autofill::AutofillWalletMetadataSyncableService::
       CreateForWebDataServiceAndBackend(autofill_web_data.get(),
                                         autofill_backend, app_locale);
-
-  autofill::AutofillWalletSyncableService::FromWebDataService(
-      autofill_web_data.get())
-      ->InjectStartSyncFlare(sync_flare);
 }
 
 }  // namespace
