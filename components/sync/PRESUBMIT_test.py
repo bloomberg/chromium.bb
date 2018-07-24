@@ -70,16 +70,19 @@ class MockFile(object):
 # test presubmit parsing of EntitySpecifics definition in that file.
 MOCK_PROTOFILE_CONTENTS = ('\n'
   'message EntitySpecifics {\n'
-  '//comment\n'
+  '  //comment\n'
   '\n'
-  'optional AutofillSpecifics autofill = 123;\n'
-  'optional AppSpecifics app = 456;\n'
-  'optional AppSettingSpecifics app_setting = 789;\n'
-  'optional ExtensionSettingSpecifics extension_setting = 910;\n'
-  'optional ManagedUserSharedSettingSpecifics managed_user_shared_setting'
+  '  oneof specifics_variant {\n'
+  '    AutofillSpecifics autofill = 123;\n'
+  '    AppSpecifics app = 456;\n'
+  '    AppSettingSpecifics app_setting = 789;\n'
+  '    ExtensionSettingSpecifics extension_setting = 910;\n'
+  '    ManagedUserSharedSettingSpecifics managed_user_shared_setting'
                                                                     ' = 915;\n'
-  '//comment\n'
-  '}\n')
+  '    //comment\n'
+  '  }\n'
+  '}\n'
+  )
 
 
 # Format string used as the contents of a mock model_type.cc

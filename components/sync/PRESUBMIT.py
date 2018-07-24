@@ -48,7 +48,7 @@ FIELD_NUMBER_PREFIX = 'sync_pb::EntitySpecifics::k'
 
 # Start and end regexes for finding the EntitySpecifics definition in
 # sync.proto.
-PROTO_DEFINITION_START_PATTERN = '^message EntitySpecifics'
+PROTO_DEFINITION_START_PATTERN = '^  oneof specifics_variant \{'
 PROTO_DEFINITION_END_PATTERN = '^\}'
 
 # Start and end regexes for finding the ModelTypeInfoMap definition
@@ -60,6 +60,7 @@ MODEL_TYPE_END_PATTERN = '^\};'
 # model_type.cc is where the ModelTypeInfoMap is
 # sync.proto is where the proto definitions for ModelTypes are.
 PROTO_FILE_PATH = './protocol/sync.proto'
+PROTO_FILE_NAME = 'sync.proto'
 MODEL_TYPE_FILE_NAME = 'model_type.cc'
 
 SYNC_SOURCE_FILES = (r'^components[\\/]sync[\\/].*\.(cc|h)$',)
@@ -214,11 +215,10 @@ def ParseSyncProtoFieldIdentifiers(input_api, sync_proto_path):
       if '//' in line or len(split_proto_line) < 3:
         continue
 
-      field_typename = split_proto_line[1]
-      field_identifier = split_proto_line[2]
+      field_typename = split_proto_line[0]
+      field_identifier = split_proto_line[1]
       proto_field_definitions[field_typename] = field_identifier
   return proto_field_definitions
-
 
 def StripTrailingS(string):
   return string.rstrip('sS')
@@ -384,8 +384,9 @@ def CheckChanges(input_api, output_api):
   results = []
   results += CheckChangeLintsClean(input_api, output_api)
   for f in input_api.AffectedFiles():
-    if f.LocalPath().endswith(MODEL_TYPE_FILE_NAME):
-      return CheckModelTypeInfoMap(input_api, output_api, f)
+    if (f.LocalPath().endswith(MODEL_TYPE_FILE_NAME) or
+        f.LocalPath().endswith(PROTO_FILE_NAME)):
+      results += CheckModelTypeInfoMap(input_api, output_api, f)
   return results
 
 def CheckChangeOnUpload(input_api, output_api):
