@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/android/proguard/proguard.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -53,8 +54,14 @@ template("system_webview_apk_tmpl") {
         "//android_webview/apk/java/proguard.flags",
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",
-        "//base/android/proguard/disable_all_obfuscation.flags",
       ]
+      if (enable_proguard_obfuscation) {
+        proguard_configs +=
+            [ "//base/android/proguard/enable_obfuscation.flags" ]
+      } else {
+        proguard_configs +=
+            [ "//base/android/proguard/disable_all_obfuscation.flags" ]
+      }
       png_to_webp = true
     }
     command_line_flags_file = "webview-command-line"
