@@ -73,6 +73,11 @@ class NavigationContextImpl : public NavigationContext {
   bool IsLoadingErrorPage() const;
   void SetLoadingErrorPage(bool is_loading_error_page);
 
+  // true if this navigation context is a placeholder navigation associated with
+  // a native view URL and the native content is already presented.
+  bool IsNativeContentPresented() const;
+  void SetIsNativeContentPresented(bool is_native_content_presented);
+
  private:
   NavigationContextImpl(WebState* web_state,
                         const GURL& url,
@@ -95,6 +100,7 @@ class NavigationContextImpl : public NavigationContext {
   int navigation_item_unique_id_ = -1;
   WKNavigationType wk_navigation_type_ = WKNavigationTypeOther;
   bool is_loading_error_page_ = false;
+  bool is_native_content_presented_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationContextImpl);
 };
