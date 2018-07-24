@@ -48,6 +48,8 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
                      QuicStreamOffset receive_window_offset,
                      bool should_auto_tune_receive_window,
                      QuicFlowControllerInterface* session_flow_controller);
+  QuicFlowController(const QuicFlowController&) = delete;
+  QuicFlowController& operator=(const QuicFlowController&) = delete;
 
   ~QuicFlowController() override {}
 
@@ -195,8 +197,6 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
   // Keep time of the last time a window update was sent.  We use this
   // as part of the receive window auto tuning.
   QuicTime prev_window_update_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicFlowController);
 };
 
 }  // namespace quic

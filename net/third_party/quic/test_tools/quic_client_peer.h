@@ -16,13 +16,12 @@ namespace test {
 
 class QuicClientPeer {
  public:
+  QuicClientPeer() = delete;
+
   static bool CreateUDPSocketAndBind(QuicClient* client);
   static void CleanUpUDPSocket(QuicClient* client, int fd);
   static void SetClientPort(QuicClient* client, int port);
   static void SetWriter(QuicClient* client, QuicPacketWriter* writer);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicClientPeer);
 };
 
 }  // namespace test

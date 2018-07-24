@@ -42,6 +42,8 @@ class QuicServer : public net::EpollCallbackInterface {
              const QuicCryptoServerConfig::ConfigOptions& server_config_options,
              const ParsedQuicVersionVector& supported_versions,
              QuicSimpleServerBackend* quic_simple_server_backend);
+  QuicServer(const QuicServer&) = delete;
+  QuicServer& operator=(const QuicServer&) = delete;
 
   ~QuicServer() override;
 
@@ -148,8 +150,6 @@ class QuicServer : public net::EpollCallbackInterface {
   QuicSimpleServerBackend* quic_simple_server_backend_;  // unowned.
 
   base::WeakPtrFactory<QuicServer> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };
 
 }  // namespace quic

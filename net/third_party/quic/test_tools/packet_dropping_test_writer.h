@@ -37,6 +37,8 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   };
 
   PacketDroppingTestWriter();
+  PacketDroppingTestWriter(const PacketDroppingTestWriter&) = delete;
+  PacketDroppingTestWriter& operator=(const PacketDroppingTestWriter&) = delete;
 
   ~PacketDroppingTestWriter() override;
 
@@ -138,6 +140,8 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
                  const QuicSocketAddress& peer_address,
                  std::unique_ptr<PerPacketOptions> options,
                  QuicTime send_time);
+    DelayedWrite(const DelayedWrite&) = delete;
+    DelayedWrite& operator=(const DelayedWrite&) = delete;
     // TODO(rtenneti): on windows RValue reference gives errors.
     DelayedWrite(DelayedWrite&& other);
     // TODO(rtenneti): on windows RValue reference gives errors.
@@ -149,9 +153,6 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
     const QuicSocketAddress peer_address;
     std::unique_ptr<PerPacketOptions> options;
     QuicTime send_time;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DelayedWrite);
   };
 
   typedef std::list<DelayedWrite> DelayedPacketList;
@@ -175,8 +176,6 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   QuicBandwidth fake_bandwidth_ GUARDED_BY(config_mutex_);
   QuicByteCount buffer_size_ GUARDED_BY(config_mutex_);
   int32_t num_consecutive_packet_lost_ GUARDED_BY(config_mutex_);
-
-  DISALLOW_COPY_AND_ASSIGN(PacketDroppingTestWriter);
 };
 
 }  // namespace test

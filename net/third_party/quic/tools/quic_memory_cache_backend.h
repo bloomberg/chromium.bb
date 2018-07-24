@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "net/third_party/quic/core/spdy_utils.h"
+#include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_mutex.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -33,6 +33,8 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   class ResourceFile {
    public:
     explicit ResourceFile(const QuicString& file_name);
+    ResourceFile(const ResourceFile&) = delete;
+    ResourceFile& operator=(const ResourceFile&) = delete;
     virtual ~ResourceFile();
 
     void Read();
@@ -68,11 +70,11 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
     QuicStringPiece host_;
     QuicStringPiece path_;
     QuicMemoryCacheBackend* cache_;
-
-    DISALLOW_COPY_AND_ASSIGN(ResourceFile);
   };
 
   QuicMemoryCacheBackend();
+  QuicMemoryCacheBackend(const QuicMemoryCacheBackend&) = delete;
+  QuicMemoryCacheBackend& operator=(const QuicMemoryCacheBackend&) = delete;
   ~QuicMemoryCacheBackend() override;
 
   // Retrieve a response from this cache for a given host and path..
@@ -184,8 +186,6 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   // server threads accessing those responses.
   mutable QuicMutex response_mutex_;
   bool cache_initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicMemoryCacheBackend);
 };
 
 }  // namespace quic

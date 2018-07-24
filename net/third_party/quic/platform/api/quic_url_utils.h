@@ -15,6 +15,8 @@ namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicUrlUtils {
  public:
+  QuicUrlUtils() = delete;
+
   // Returns hostname, or empty std::string if missing.
   static QuicString HostName(QuicStringPiece url);
 
@@ -29,9 +31,6 @@ class QUIC_EXPORT_PRIVATE QuicUrlUtils {
   static QuicString GetPushPromiseUrl(QuicStringPiece scheme,
                                       QuicStringPiece authority,
                                       QuicStringPiece path);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicUrlUtils);
 };
 
 }  // namespace quic

@@ -6,7 +6,7 @@
 #define NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_SESSION_HELPER_H_
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
-#include "net/third_party/quic/core/quic_server_session_base.h"
+#include "net/third_party/quic/core/http/quic_server_session_base.h"
 
 namespace net {
 

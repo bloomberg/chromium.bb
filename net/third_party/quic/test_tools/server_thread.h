@@ -23,6 +23,8 @@ namespace test {
 class ServerThread : public base::SimpleThread {
  public:
   ServerThread(QuicServer* server, const QuicSocketAddress& address);
+  ServerThread(const ServerThread&) = delete;
+  ServerThread& operator=(const ServerThread&) = delete;
 
   ~ServerThread() override;
 
@@ -80,8 +82,6 @@ class ServerThread : public base::SimpleThread {
   QuicMutex scheduled_actions_lock_;
   QuicDeque<std::function<void()>> scheduled_actions_
       GUARDED_BY(scheduled_actions_lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(ServerThread);
 };
 
 }  // namespace test

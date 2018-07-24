@@ -14,6 +14,9 @@ namespace test {
 class QuicStreamSequencerBufferPeer {
  public:
   explicit QuicStreamSequencerBufferPeer(QuicStreamSequencerBuffer* buffer);
+  QuicStreamSequencerBufferPeer(const QuicStreamSequencerBufferPeer&) = delete;
+  QuicStreamSequencerBufferPeer& operator=(
+      const QuicStreamSequencerBufferPeer&) = delete;
 
   // Read from this buffer_ into the given destination buffer_ up to the
   // size of the destination. Returns the number of bytes read. Reading from
@@ -52,7 +55,6 @@ class QuicStreamSequencerBufferPeer {
 
  private:
   QuicStreamSequencerBuffer* buffer_;
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerBufferPeer);
 };
 
 }  // namespace test

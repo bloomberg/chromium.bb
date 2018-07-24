@@ -31,7 +31,6 @@
 #include "net/third_party/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/third_party/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quic/test_tools/quic_spdy_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_sustained_bandwidth_recorder_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
@@ -88,7 +87,10 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
                 enable_quic_stateless_reject_support),  // NOLINT
             session,
             helper) {}
-  ~MockQuicCryptoServerStream() override = default;
+  MockQuicCryptoServerStream(const MockQuicCryptoServerStream&) = delete;
+  MockQuicCryptoServerStream& operator=(const MockQuicCryptoServerStream&) =
+      delete;
+  ~MockQuicCryptoServerStream() override {}
 
   MOCK_METHOD1(SendServerConfigUpdate,
                void(const CachedNetworkParameters* cached_network_parameters));
@@ -104,8 +106,6 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
 
  private:
   bool encryption_established_override_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockQuicCryptoServerStream);
 };
 
 class MockQuicConnectionWithSendStreamData : public MockQuicConnection {

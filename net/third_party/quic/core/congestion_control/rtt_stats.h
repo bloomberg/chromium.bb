@@ -25,6 +25,8 @@ class RttStatsPeer;
 class QUIC_EXPORT_PRIVATE RttStats {
  public:
   RttStats();
+  RttStats(const RttStats&) = delete;
+  RttStats& operator=(const RttStats&) = delete;
 
   // Updates the RTT from an incoming ack which is received |send_delta| after
   // the packet is sent and the peer reports the ack being delayed |ack_delay|.
@@ -101,8 +103,6 @@ class QUIC_EXPORT_PRIVATE RttStats {
   QuicTime::Delta max_ack_delay_;
   // Whether to ignore the peer's max ack delay.
   bool ignore_max_ack_delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(RttStats);
 };
 
 }  // namespace quic

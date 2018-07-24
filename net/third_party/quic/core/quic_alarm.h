@@ -28,6 +28,8 @@ class QUIC_EXPORT_PRIVATE QuicAlarm {
   };
 
   explicit QuicAlarm(QuicArenaScopedPtr<Delegate> delegate);
+  QuicAlarm(const QuicAlarm&) = delete;
+  QuicAlarm& operator=(const QuicAlarm&) = delete;
   virtual ~QuicAlarm();
 
   // Sets the alarm to fire at |deadline|.  Must not be called while
@@ -78,8 +80,6 @@ class QUIC_EXPORT_PRIVATE QuicAlarm {
  private:
   QuicArenaScopedPtr<Delegate> delegate_;
   QuicTime deadline_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicAlarm);
 };
 
 }  // namespace quic

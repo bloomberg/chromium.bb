@@ -22,6 +22,8 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
  public:
   explicit NullEncrypter(Perspective perspective);
+  NullEncrypter(const NullEncrypter&) = delete;
+  NullEncrypter& operator=(const NullEncrypter&) = delete;
   ~NullEncrypter() override {}
 
   // QuicEncrypter implementation
@@ -47,8 +49,6 @@ class QUIC_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
   size_t GetHashLength() const;
 
   Perspective perspective_;
-
-  DISALLOW_COPY_AND_ASSIGN(NullEncrypter);
 };
 
 }  // namespace quic

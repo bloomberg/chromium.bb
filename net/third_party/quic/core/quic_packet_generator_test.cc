@@ -40,6 +40,8 @@ namespace {
 class MockDelegate : public QuicPacketGenerator::DelegateInterface {
  public:
   MockDelegate() {}
+  MockDelegate(const MockDelegate&) = delete;
+  MockDelegate& operator=(const MockDelegate&) = delete;
   ~MockDelegate() override {}
 
   MOCK_METHOD2(ShouldGeneratePacket,
@@ -72,9 +74,6 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
     EXPECT_CALL(*this, ShouldGeneratePacket(NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(true));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 // Simple struct for describing the contents of a packet.

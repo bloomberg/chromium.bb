@@ -16,6 +16,8 @@ namespace test {
 
 class QuicPacketCreatorPeer {
  public:
+  QuicPacketCreatorPeer() = delete;
+
   static bool SendVersionInPacket(QuicPacketCreator* creator);
 
   static void SetSendVersionInPacket(QuicPacketCreator* creator,
@@ -43,9 +45,6 @@ class QuicPacketCreatorPeer {
       QuicPacketCreator* creator);
   static EncryptionLevel GetEncryptionLevel(QuicPacketCreator* creator);
   static QuicFramer* framer(QuicPacketCreator* creator);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);
 };
 
 }  // namespace test

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quic/core/quic_spdy_client_session_base.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_session_base.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/test_tools/mock_decrypter.h"
 #include "net/third_party/quic/test_tools/mock_encrypter.h"

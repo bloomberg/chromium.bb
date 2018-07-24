@@ -6,17 +6,16 @@
 #define NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_CLIENT_PROMISED_INFO_PEER_H_
 
 #include "base/macros.h"
-#include "net/third_party/quic/core/quic_client_promised_info.h"
+#include "net/third_party/quic/core/http/quic_client_promised_info.h"
 
 namespace quic {
 namespace test {
 
 class QuicClientPromisedInfoPeer {
  public:
-  static QuicAlarm* GetAlarm(QuicClientPromisedInfo* promised_stream);
+  QuicClientPromisedInfoPeer() = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicClientPromisedInfoPeer);
+  static QuicAlarm* GetAlarm(QuicClientPromisedInfo* promised_stream);
 };
 }  // namespace test
 }  // namespace quic

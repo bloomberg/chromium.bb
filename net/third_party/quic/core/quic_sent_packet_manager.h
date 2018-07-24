@@ -89,6 +89,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
                         LossDetectionType loss_type);
+  QuicSentPacketManager(const QuicSentPacketManager&) = delete;
+  QuicSentPacketManager& operator=(const QuicSentPacketManager&) = delete;
   virtual ~QuicSentPacketManager();
 
   virtual void SetFromConfig(const QuicConfig& config);
@@ -551,8 +553,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // A reverse iterator of last_ack_frame_.packets. This is reset in
   // OnAckRangeStart, and gradually moves in OnAckRange..
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };
 
 }  // namespace quic

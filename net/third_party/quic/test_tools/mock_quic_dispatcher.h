@@ -26,6 +26,8 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
       QuicSimpleServerBackend* quic_simple_server_backend);
+  MockQuicDispatcher(const MockQuicDispatcher&) = delete;
+  MockQuicDispatcher& operator=(const MockQuicDispatcher&) = delete;
 
   ~MockQuicDispatcher() override;
 
@@ -33,9 +35,6 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
                void(const QuicSocketAddress& server_address,
                     const QuicSocketAddress& client_address,
                     const QuicReceivedPacket& packet));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockQuicDispatcher);
 };
 
 }  // namespace test

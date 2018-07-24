@@ -127,6 +127,8 @@ class QUIC_EXPORT_PRIVATE QuicData {
  public:
   QuicData(const char* buffer, size_t length);
   QuicData(const char* buffer, size_t length, bool owns_buffer);
+  QuicData(const QuicData&) = delete;
+  QuicData& operator=(const QuicData&) = delete;
   virtual ~QuicData();
 
   QuicStringPiece AsStringPiece() const {
@@ -140,8 +142,6 @@ class QUIC_EXPORT_PRIVATE QuicData {
   const char* buffer_;
   size_t length_;
   bool owns_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicData);
 };
 
 class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
@@ -157,6 +157,8 @@ class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
              bool includes_version,
              bool includes_diversification_nonce,
              QuicPacketNumberLength packet_number_length);
+  QuicPacket(const QuicPacket&) = delete;
+  QuicPacket& operator=(const QuicPacket&) = delete;
 
   QuicStringPiece AssociatedData(QuicTransportVersion version) const;
   QuicStringPiece Plaintext(QuicTransportVersion version) const;
@@ -170,14 +172,14 @@ class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
   const bool includes_version_;
   const bool includes_diversification_nonce_;
   const QuicPacketNumberLength packet_number_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicPacket);
 };
 
 class QUIC_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
  public:
   QuicEncryptedPacket(const char* buffer, size_t length);
   QuicEncryptedPacket(const char* buffer, size_t length, bool owns_buffer);
+  QuicEncryptedPacket(const QuicEncryptedPacket&) = delete;
+  QuicEncryptedPacket& operator=(const QuicEncryptedPacket&) = delete;
 
   // Clones the packet into a new packet which owns the buffer.
   std::unique_ptr<QuicEncryptedPacket> Clone() const;
@@ -189,9 +191,6 @@ class QUIC_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os,
       const QuicEncryptedPacket& s);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicEncryptedPacket);
 };
 
 // A received encrypted QUIC packet, with a recorded time of receipt.
@@ -208,6 +207,8 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
                      bool owns_buffer,
                      int ttl,
                      bool ttl_valid);
+  QuicReceivedPacket(const QuicReceivedPacket&) = delete;
+  QuicReceivedPacket& operator=(const QuicReceivedPacket&) = delete;
 
   // Clones the packet into a new packet which owns the buffer.
   std::unique_ptr<QuicReceivedPacket> Clone() const;
@@ -229,8 +230,6 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
  private:
   const QuicTime receipt_time_;
   int ttl_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacket);
 };
 
 struct QUIC_EXPORT_PRIVATE SerializedPacket {

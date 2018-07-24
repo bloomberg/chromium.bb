@@ -14,6 +14,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoHandshaker
     : public CryptoFramerVisitorInterface {
  public:
   QuicCryptoHandshaker(QuicCryptoStream* stream, QuicSession* session);
+  QuicCryptoHandshaker(const QuicCryptoHandshaker&) = delete;
+  QuicCryptoHandshaker& operator=(const QuicCryptoHandshaker&) = delete;
 
   ~QuicCryptoHandshaker() override;
 
@@ -41,8 +43,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoHandshaker
 
   // Records last sent crypto handshake message tag.
   QuicTag last_sent_handshake_message_tag_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoHandshaker);
 };
 
 }  // namespace quic

@@ -34,6 +34,8 @@ class MockQuicCryptoStream : public QuicCryptoStream,
       : QuicCryptoStream(session),
         QuicCryptoHandshaker(this, session),
         params_(new QuicCryptoNegotiatedParameters) {}
+  MockQuicCryptoStream(const MockQuicCryptoStream&) = delete;
+  MockQuicCryptoStream& operator=(const MockQuicCryptoStream&) = delete;
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
     messages_.push_back(message);
@@ -60,8 +62,6 @@ class MockQuicCryptoStream : public QuicCryptoStream,
  private:
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
   std::vector<CryptoHandshakeMessage> messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockQuicCryptoStream);
 };
 
 class QuicCryptoStreamTest : public QuicTest {
@@ -79,6 +79,8 @@ class QuicCryptoStreamTest : public QuicTest {
     message_.SetStringPiece(2, "def");
     ConstructHandshakeMessage(Perspective::IS_SERVER);
   }
+  QuicCryptoStreamTest(const QuicCryptoStreamTest&) = delete;
+  QuicCryptoStreamTest& operator=(const QuicCryptoStreamTest&) = delete;
 
   void ConstructHandshakeMessage(Perspective perspective) {
     CryptoFramer framer;
@@ -94,9 +96,6 @@ class QuicCryptoStreamTest : public QuicTest {
   MockQuicCryptoStream* stream_;
   CryptoHandshakeMessage message_;
   std::unique_ptr<QuicData> message_data_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoStreamTest);
 };
 
 TEST_F(QuicCryptoStreamTest, NotInitiallyConected) {

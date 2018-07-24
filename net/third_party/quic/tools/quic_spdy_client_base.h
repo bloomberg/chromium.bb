@@ -12,10 +12,10 @@
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quic/core/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_session.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_config.h"
-#include "net/third_party/quic/core/quic_spdy_client_session.h"
-#include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/tools/quic_client_base.h"
@@ -53,6 +53,8 @@ class QuicSpdyClientBase : public QuicClientBase,
     QuicDataToResend(std::unique_ptr<spdy::SpdyHeaderBlock> headers,
                      QuicStringPiece body,
                      bool fin);
+    QuicDataToResend(const QuicDataToResend&) = delete;
+    QuicDataToResend& operator=(const QuicDataToResend&) = delete;
 
     virtual ~QuicDataToResend();
 
@@ -64,9 +66,6 @@ class QuicSpdyClientBase : public QuicClientBase,
     std::unique_ptr<spdy::SpdyHeaderBlock> headers_;
     QuicStringPiece body_;
     bool fin_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(QuicDataToResend);
   };
 
   QuicSpdyClientBase(const QuicServerId& server_id,
@@ -76,6 +75,8 @@ class QuicSpdyClientBase : public QuicClientBase,
                      QuicAlarmFactory* alarm_factory,
                      std::unique_ptr<NetworkHelper> network_helper,
                      std::unique_ptr<ProofVerifier> proof_verifier);
+  QuicSpdyClientBase(const QuicSpdyClientBase&) = delete;
+  QuicSpdyClientBase& operator=(const QuicSpdyClientBase&) = delete;
 
   ~QuicSpdyClientBase() override;
 
@@ -171,14 +172,14 @@ class QuicSpdyClientBase : public QuicClientBase,
       DCHECK(client);
     }
 
+    ClientQuicDataToResend(const ClientQuicDataToResend&) = delete;
+    ClientQuicDataToResend& operator=(const ClientQuicDataToResend&) = delete;
     ~ClientQuicDataToResend() override {}
 
     void Resend() override;
 
    private:
     QuicSpdyClientBase* client_;
-
-    DISALLOW_COPY_AND_ASSIGN(ClientQuicDataToResend);
   };
 
   // Index of pending promised streams. Must outlive |session_|.
@@ -207,8 +208,6 @@ class QuicSpdyClientBase : public QuicClientBase,
   std::vector<std::unique_ptr<QuicDataToResend>> data_to_resend_on_connect_;
 
   std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientBase);
 };
 
 }  // namespace quic

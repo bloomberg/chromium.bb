@@ -26,6 +26,8 @@ class QUIC_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
                     size_t auth_tag_size,
                     size_t nonce_size,
                     bool use_ietf_nonce_construction);
+  AeadBaseDecrypter(const AeadBaseDecrypter&) = delete;
+  AeadBaseDecrypter& operator=(const AeadBaseDecrypter&) = delete;
   ~AeadBaseDecrypter() override;
 
   // QuicDecrypter implementation
@@ -67,8 +69,6 @@ class QUIC_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
   unsigned char iv_[kMaxNonceSize];
 
   ScopedEVPAEADCtx ctx_;
-
-  DISALLOW_COPY_AND_ASSIGN(AeadBaseDecrypter);
 };
 
 }  // namespace quic

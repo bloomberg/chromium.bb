@@ -15,14 +15,14 @@ namespace quic {
 class ScopedEVPAEADCtx {
  public:
   ScopedEVPAEADCtx();
+  ScopedEVPAEADCtx(const ScopedEVPAEADCtx&) = delete;
+  ScopedEVPAEADCtx& operator=(const ScopedEVPAEADCtx&) = delete;
   ~ScopedEVPAEADCtx();
 
   EVP_AEAD_CTX* get();
 
  private:
   EVP_AEAD_CTX ctx_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedEVPAEADCtx);
 };
 
 }  // namespace quic

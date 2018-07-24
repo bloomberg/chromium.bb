@@ -12,10 +12,10 @@
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quic/core/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_session.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_config.h"
-#include "net/third_party/quic/core/quic_spdy_client_session.h"
-#include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
@@ -65,6 +65,8 @@ class QuicClientBase {
                  QuicAlarmFactory* alarm_factory,
                  std::unique_ptr<NetworkHelper> network_helper,
                  std::unique_ptr<ProofVerifier> proof_verifier);
+  QuicClientBase(const QuicClientBase&) = delete;
+  QuicClientBase& operator=(const QuicClientBase&) = delete;
 
   virtual ~QuicClientBase();
 
@@ -355,8 +357,6 @@ class QuicClientBase {
   // The network helper used to create sockets and manage the event loop.
   // Not owned by this class.
   std::unique_ptr<NetworkHelper> network_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicClientBase);
 };
 
 }  // namespace quic

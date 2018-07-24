@@ -50,6 +50,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
                  std::unique_ptr<QuicConnectionHelperInterface> helper,
                  std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
                  std::unique_ptr<QuicAlarmFactory> alarm_factory);
+  QuicDispatcher(const QuicDispatcher&) = delete;
+  QuicDispatcher& operator=(const QuicDispatcher&) = delete;
 
   ~QuicDispatcher() override;
 
@@ -446,8 +448,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // True if this dispatcher is not draining.
   bool accept_new_connections_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };
 
 }  // namespace quic

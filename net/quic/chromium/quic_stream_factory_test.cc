@@ -49,7 +49,7 @@
 #include "net/third_party/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quic/core/quic_client_promised_info.h"
+#include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/mock_random.h"

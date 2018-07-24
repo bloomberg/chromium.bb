@@ -25,6 +25,8 @@ class QuicRandom;
 class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
  public:
   CryptoSecretBoxer();
+  CryptoSecretBoxer(const CryptoSecretBoxer&) = delete;
+  CryptoSecretBoxer& operator=(const CryptoSecretBoxer&) = delete;
   ~CryptoSecretBoxer();
 
   // GetKeySize returns the number of bytes in a key.
@@ -59,8 +61,6 @@ class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
   // state_ is an opaque pointer to whatever additional state the concrete
   // implementation of CryptoSecretBoxer requires.
   std::unique_ptr<State> state_ GUARDED_BY(lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(CryptoSecretBoxer);
 };
 
 }  // namespace quic

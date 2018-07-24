@@ -14,12 +14,12 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "net/third_party/quic/core/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_session.h"
+#include "net/third_party/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_packet_reader.h"
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
-#include "net/third_party/quic/core/quic_spdy_client_session.h"
-#include "net/third_party/quic/core/quic_spdy_stream.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/tools/quic_client_base.h"
 #include "net/third_party/quic/tools/quic_client_epoll_network_helper.h"
@@ -56,6 +56,8 @@ class QuicClient : public QuicSpdyClientBase {
              net::EpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
              std::unique_ptr<ProofVerifier> proof_verifier);
+  QuicClient(const QuicClient&) = delete;
+  QuicClient& operator=(const QuicClient&) = delete;
 
   ~QuicClient() override;
 
@@ -75,8 +77,6 @@ class QuicClient : public QuicSpdyClientBase {
  private:
   friend class test::QuicClientPeer;
   bool drop_response_body_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };
 
 }  // namespace quic

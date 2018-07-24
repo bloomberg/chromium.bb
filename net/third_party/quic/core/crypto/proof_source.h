@@ -26,14 +26,13 @@ class QUIC_EXPORT_PRIVATE ProofSource {
   // certificates.
   struct QUIC_EXPORT_PRIVATE Chain : public QuicReferenceCounted {
     explicit Chain(const std::vector<QuicString>& certs);
+    Chain(const Chain&) = delete;
+    Chain& operator=(const Chain&) = delete;
 
     const std::vector<QuicString> certs;
 
    protected:
     ~Chain() override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Chain);
   };
 
   // Details is an abstract class which acts as a container for any

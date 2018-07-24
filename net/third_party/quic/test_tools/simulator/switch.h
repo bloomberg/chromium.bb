@@ -23,6 +23,8 @@ class Switch {
          std::string name,
          SwitchPortNumber port_count,
          QuicByteCount queue_capacity);
+  Switch(const Switch&) = delete;
+  Switch& operator=(const Switch&) = delete;
   ~Switch();
 
   // Returns Endpoint associated with the port under number |port_number|.  Just
@@ -45,6 +47,8 @@ class Switch {
          SwitchPortNumber port_number,
          QuicByteCount queue_capacity);
     Port(Port&&) = delete;
+    Port(const Port&) = delete;
+    Port& operator=(const Port&) = delete;
     ~Port() override {}
 
     // Accepts packet to be routed into the switch.
@@ -66,8 +70,6 @@ class Switch {
     bool connected_;
 
     Queue queue_;
-
-    DISALLOW_COPY_AND_ASSIGN(Port);
   };
 
   // Sends the packet to the appropriate port, or to all ports if the
@@ -79,8 +81,6 @@ class Switch {
   // assumed to be stable.
   std::deque<Port> ports_;
   QuicUnorderedMap<std::string, Port*> switching_table_;
-
-  DISALLOW_COPY_AND_ASSIGN(Switch);
 };
 
 }  // namespace simulator

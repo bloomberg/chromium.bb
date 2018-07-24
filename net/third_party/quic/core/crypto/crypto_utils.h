@@ -27,6 +27,8 @@ class QuicRandom;
 
 class QUIC_EXPORT_PRIVATE CryptoUtils {
  public:
+  CryptoUtils() = delete;
+
   // Diversification is a utility class that's used to act like a union type.
   // Values can be created by calling the functions like |NoDiversification|,
   // below.
@@ -218,9 +220,6 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   static void HashHandshakeMessage(const CryptoHandshakeMessage& message,
                                    QuicString* output,
                                    Perspective perspective);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CryptoUtils);
 };
 
 }  // namespace quic

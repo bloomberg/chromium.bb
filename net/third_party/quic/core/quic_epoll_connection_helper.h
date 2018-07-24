@@ -34,6 +34,9 @@ enum class QuicAllocator { SIMPLE, BUFFER_POOL };
 class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
  public:
   QuicEpollConnectionHelper(net::EpollServer* eps, QuicAllocator allocator);
+  QuicEpollConnectionHelper(const QuicEpollConnectionHelper&) = delete;
+  QuicEpollConnectionHelper& operator=(const QuicEpollConnectionHelper&) =
+      delete;
   ~QuicEpollConnectionHelper() override;
 
   // QuicEpollConnectionHelperInterface
@@ -51,8 +54,6 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
   QuicStreamBufferAllocator stream_buffer_allocator_;
   SimpleBufferAllocator simple_buffer_allocator_;
   QuicAllocator allocator_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicEpollConnectionHelper);
 };
 
 }  // namespace quic

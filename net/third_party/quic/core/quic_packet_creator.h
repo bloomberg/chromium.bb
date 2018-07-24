@@ -55,6 +55,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
                     DelegateInterface* delegate);
+  QuicPacketCreator(const QuicPacketCreator&) = delete;
+  QuicPacketCreator& operator=(const QuicPacketCreator&) = delete;
 
   ~QuicPacketCreator();
 
@@ -328,8 +330,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // If true, packet_'s transmission type is only set by
   // SetPacketTransmissionType and does not get cleared in ClearPacket.
   bool can_set_transmission_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicPacketCreator);
 };
 
 }  // namespace quic

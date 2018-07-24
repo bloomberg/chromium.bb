@@ -15,6 +15,8 @@ namespace simulator {
 class AlarmFactory : public QuicAlarmFactory {
  public:
   AlarmFactory(Simulator* simulator, std::string name);
+  AlarmFactory(const AlarmFactory&) = delete;
+  AlarmFactory& operator=(const AlarmFactory&) = delete;
   ~AlarmFactory() override;
 
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
@@ -29,8 +31,6 @@ class AlarmFactory : public QuicAlarmFactory {
   Simulator* simulator_;
   std::string name_;
   int counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlarmFactory);
 };
 
 }  // namespace simulator

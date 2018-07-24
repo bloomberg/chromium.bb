@@ -26,12 +26,12 @@ class QUIC_EXPORT_PRIVATE ChaCha20Poly1305TlsDecrypter
   };
 
   ChaCha20Poly1305TlsDecrypter();
+  ChaCha20Poly1305TlsDecrypter(const ChaCha20Poly1305TlsDecrypter&) = delete;
+  ChaCha20Poly1305TlsDecrypter& operator=(const ChaCha20Poly1305TlsDecrypter&) =
+      delete;
   ~ChaCha20Poly1305TlsDecrypter() override;
 
   uint32_t cipher_id() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChaCha20Poly1305TlsDecrypter);
 };
 
 }  // namespace quic

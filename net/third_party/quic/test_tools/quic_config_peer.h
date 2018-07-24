@@ -18,6 +18,8 @@ namespace test {
 
 class QuicConfigPeer {
  public:
+  QuicConfigPeer() = delete;
+
   static void SetReceivedInitialStreamFlowControlWindow(QuicConfig* config,
                                                         uint32_t window_bytes);
 
@@ -40,9 +42,6 @@ class QuicConfigPeer {
 
   static void SetReceivedStatelessResetToken(QuicConfig* config,
                                              QuicUint128 token);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
 };
 
 }  // namespace test

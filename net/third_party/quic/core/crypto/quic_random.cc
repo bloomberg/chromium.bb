@@ -23,10 +23,11 @@ class DefaultRandom : public QuicRandom {
 
  private:
   DefaultRandom() {}
+  DefaultRandom(const DefaultRandom&) = delete;
+  DefaultRandom& operator=(const DefaultRandom&) = delete;
   ~DefaultRandom() override {}
 
   friend QuicSingletonFriend<DefaultRandom>;
-  DISALLOW_COPY_AND_ASSIGN(DefaultRandom);
 };
 
 DefaultRandom* DefaultRandom::GetInstance() {

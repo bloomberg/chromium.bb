@@ -28,9 +28,9 @@ class QUIC_EXPORT_PRIVATE PerPacketOptions {
 
  private:
   PerPacketOptions(PerPacketOptions&& other) = delete;
+  PerPacketOptions(const PerPacketOptions&) = delete;
+  PerPacketOptions& operator=(const PerPacketOptions&) = delete;
   PerPacketOptions& operator=(PerPacketOptions&& other) = delete;
-
-  DISALLOW_COPY_AND_ASSIGN(PerPacketOptions);
 };
 
 // An interface between writers and the entity managing the

@@ -58,6 +58,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     };
 
     CachedState();
+    CachedState(const CachedState&) = delete;
+    CachedState& operator=(const CachedState&) = delete;
     ~CachedState();
 
     // IsComplete returns true if this object contains enough information to
@@ -192,8 +194,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // nonces and connection_ids together in one queue.
     QuicQueue<QuicConnectionId> server_designated_connection_ids_;
     QuicQueue<QuicString> server_nonces_;
-
-    DISALLOW_COPY_AND_ASSIGN(CachedState);
   };
 
   // Used to filter server ids for partial config deletion.
@@ -207,6 +207,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   QuicCryptoClientConfig(std::unique_ptr<ProofVerifier> proof_verifier,
                          bssl::UniquePtr<SSL_CTX> ssl_ctx);
+  QuicCryptoClientConfig(const QuicCryptoClientConfig&) = delete;
+  QuicCryptoClientConfig& operator=(const QuicCryptoClientConfig&) = delete;
   ~QuicCryptoClientConfig();
 
   // LookupOrCreate returns a CachedState for the given |server_id|. If no such
@@ -405,8 +407,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // If non-empty, the client will operate in the pre-shared key mode by
   // incorporating |pre_shared_key_| into the key schedule.
   QuicString pre_shared_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfig);
 };
 
 }  // namespace quic

@@ -73,6 +73,8 @@ class QuicArenaScopedPtr {
 
   // Constructs a QuicArenaScopedPtr with the given representation.
   QuicArenaScopedPtr(void* value, ConstructFrom from);
+  QuicArenaScopedPtr(const QuicArenaScopedPtr&) = delete;
+  QuicArenaScopedPtr& operator=(const QuicArenaScopedPtr&) = delete;
 
   // Low-order bits of value_ that determine if the pointer came from an arena.
   static const uintptr_t kFromArenaMask = 0x1;
@@ -80,8 +82,6 @@ class QuicArenaScopedPtr {
   // Every platform we care about has at least 4B aligned integers, so store the
   // is_from_arena bit in the least significant bit.
   void* value_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicArenaScopedPtr);
 };
 
 template <typename T>

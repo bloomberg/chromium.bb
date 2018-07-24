@@ -27,12 +27,12 @@ class QUIC_EXPORT_PRIVATE ChaCha20Poly1305Decrypter : public AeadBaseDecrypter {
   };
 
   ChaCha20Poly1305Decrypter();
+  ChaCha20Poly1305Decrypter(const ChaCha20Poly1305Decrypter&) = delete;
+  ChaCha20Poly1305Decrypter& operator=(const ChaCha20Poly1305Decrypter&) =
+      delete;
   ~ChaCha20Poly1305Decrypter() override;
 
   uint32_t cipher_id() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChaCha20Poly1305Decrypter);
 };
 
 }  // namespace quic

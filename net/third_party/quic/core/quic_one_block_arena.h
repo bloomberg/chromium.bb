@@ -26,6 +26,8 @@ class QuicOneBlockArena {
 
  public:
   QuicOneBlockArena();
+  QuicOneBlockArena(const QuicOneBlockArena&) = delete;
+  QuicOneBlockArena& operator=(const QuicOneBlockArena&) = delete;
 
   // Instantiates an object of type |T| with |args|. |args| are perfectly
   // forwarded to |T|'s constructor. The returned pointer's lifetime is
@@ -46,8 +48,6 @@ class QuicOneBlockArena {
   QUIC_ALIGNED(8) char storage_[ArenaSize];
   // Current offset into the storage.
   uint32_t offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicOneBlockArena);
 };
 
 template <uint32_t ArenaSize>

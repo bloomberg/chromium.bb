@@ -134,6 +134,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
                          std::unique_ptr<ProofVerifyContext> verify_context,
                          QuicCryptoClientConfig* crypto_config,
                          ProofHandler* proof_handler);
+  QuicCryptoClientStream(const QuicCryptoClientStream&) = delete;
+  QuicCryptoClientStream& operator=(const QuicCryptoClientStream&) = delete;
 
   ~QuicCryptoClientStream() override;
 
@@ -162,8 +164,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
 
  private:
   std::unique_ptr<HandshakerDelegate> handshaker_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };
 
 }  // namespace quic

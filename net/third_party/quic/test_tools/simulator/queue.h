@@ -24,6 +24,8 @@ class Queue : public Actor, public UnconstrainedPortInterface {
   };
 
   Queue(Simulator* simulator, std::string name, QuicByteCount capacity);
+  Queue(const Queue&) = delete;
+  Queue& operator=(const Queue&) = delete;
   ~Queue() override;
 
   void set_tx_port(ConstrainedPortInterface* port);
@@ -110,8 +112,6 @@ class Queue : public Actor, public UnconstrainedPortInterface {
   QuicQueue<EnqueuedPacket> queue_;
 
   ListenerInterface* listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(Queue);
 };
 
 }  // namespace simulator

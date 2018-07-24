@@ -14,12 +14,11 @@ namespace test {
 
 class RttStatsPeer {
  public:
+  RttStatsPeer() = delete;
+
   static void SetSmoothedRtt(RttStats* rtt_stats, QuicTime::Delta rtt_ms);
 
   static void SetMinRtt(RttStats* rtt_stats, QuicTime::Delta rtt_ms);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RttStatsPeer);
 };
 
 }  // namespace test

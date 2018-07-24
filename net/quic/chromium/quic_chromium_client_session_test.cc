@@ -39,7 +39,7 @@
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quic/core/quic_client_promised_info.h"
+#include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"

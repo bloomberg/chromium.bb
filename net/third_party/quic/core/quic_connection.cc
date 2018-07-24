@@ -85,6 +85,8 @@ class AckAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit AckAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  AckAlarmDelegate(const AckAlarmDelegate&) = delete;
+  AckAlarmDelegate& operator=(const AckAlarmDelegate&) = delete;
 
   void OnAlarm() override {
     DCHECK(connection_->ack_frame_updated());
@@ -94,8 +96,6 @@ class AckAlarmDelegate : public QuicAlarm::Delegate {
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(AckAlarmDelegate);
 };
 
 // This alarm will be scheduled any time a data-bearing packet is sent out.
@@ -105,13 +105,14 @@ class RetransmissionAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit RetransmissionAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  RetransmissionAlarmDelegate(const RetransmissionAlarmDelegate&) = delete;
+  RetransmissionAlarmDelegate& operator=(const RetransmissionAlarmDelegate&) =
+      delete;
 
   void OnAlarm() override { connection_->OnRetransmissionTimeout(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(RetransmissionAlarmDelegate);
 };
 
 // An alarm that is scheduled when the SentPacketManager requires a delay
@@ -120,78 +121,82 @@ class SendAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit SendAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  SendAlarmDelegate(const SendAlarmDelegate&) = delete;
+  SendAlarmDelegate& operator=(const SendAlarmDelegate&) = delete;
 
   void OnAlarm() override { connection_->WriteAndBundleAcksIfNotBlocked(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(SendAlarmDelegate);
 };
 
 class PathDegradingAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit PathDegradingAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  PathDegradingAlarmDelegate(const PathDegradingAlarmDelegate&) = delete;
+  PathDegradingAlarmDelegate& operator=(const PathDegradingAlarmDelegate&) =
+      delete;
 
   void OnAlarm() override { connection_->OnPathDegradingTimeout(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(PathDegradingAlarmDelegate);
 };
 
 class TimeoutAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit TimeoutAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  TimeoutAlarmDelegate(const TimeoutAlarmDelegate&) = delete;
+  TimeoutAlarmDelegate& operator=(const TimeoutAlarmDelegate&) = delete;
 
   void OnAlarm() override { connection_->CheckForTimeout(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(TimeoutAlarmDelegate);
 };
 
 class PingAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit PingAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  PingAlarmDelegate(const PingAlarmDelegate&) = delete;
+  PingAlarmDelegate& operator=(const PingAlarmDelegate&) = delete;
 
   void OnAlarm() override { connection_->OnPingTimeout(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(PingAlarmDelegate);
 };
 
 class MtuDiscoveryAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit MtuDiscoveryAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  MtuDiscoveryAlarmDelegate(const MtuDiscoveryAlarmDelegate&) = delete;
+  MtuDiscoveryAlarmDelegate& operator=(const MtuDiscoveryAlarmDelegate&) =
+      delete;
 
   void OnAlarm() override { connection_->DiscoverMtu(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(MtuDiscoveryAlarmDelegate);
 };
 
 class RetransmittableOnWireAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit RetransmittableOnWireAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
+  RetransmittableOnWireAlarmDelegate(
+      const RetransmittableOnWireAlarmDelegate&) = delete;
+  RetransmittableOnWireAlarmDelegate& operator=(
+      const RetransmittableOnWireAlarmDelegate&) = delete;
 
   void OnAlarm() override { connection_->OnPingTimeout(); }
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(RetransmittableOnWireAlarmDelegate);
 };
 
 }  // namespace

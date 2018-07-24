@@ -31,6 +31,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
                              QuicCompressedCertsCache* compressed_certs_cache,
                              QuicSession* session,
                              QuicCryptoServerStream::Helper* helper);
+  QuicCryptoServerHandshaker(const QuicCryptoServerHandshaker&) = delete;
+  QuicCryptoServerHandshaker& operator=(const QuicCryptoServerHandshaker&) =
+      delete;
 
   ~QuicCryptoServerHandshaker() override;
 
@@ -79,6 +82,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   class ValidateCallback : public ValidateClientHelloResultCallback {
    public:
     explicit ValidateCallback(QuicCryptoServerHandshaker* parent);
+    ValidateCallback(const ValidateCallback&) = delete;
+    ValidateCallback& operator=(const ValidateCallback&) = delete;
     // To allow the parent to detach itself from the callback before deletion.
     void Cancel();
 
@@ -88,8 +93,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
 
    private:
     QuicCryptoServerHandshaker* parent_;
-
-    DISALLOW_COPY_AND_ASSIGN(ValidateCallback);
   };
 
   class SendServerConfigUpdateCallback
@@ -221,8 +224,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   bool handshake_confirmed_;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerHandshaker);
 };
 
 }  // namespace quic

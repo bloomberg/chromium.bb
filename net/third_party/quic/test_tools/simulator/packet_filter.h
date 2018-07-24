@@ -40,6 +40,8 @@ class PacketFilter : public Endpoint, public ConstrainedPortInterface {
   // Initialize the filter by wrapping around |input|.  Does not take the
   // ownership of |input|.
   PacketFilter(Simulator* simulator, std::string name, Endpoint* input);
+  PacketFilter(const PacketFilter&) = delete;
+  PacketFilter& operator=(const PacketFilter&) = delete;
   ~PacketFilter() override;
 
   // Implementation of ConstrainedPortInterface.
@@ -66,8 +68,6 @@ class PacketFilter : public Endpoint, public ConstrainedPortInterface {
 
   // The original network endpoint wrapped by the class.
   Endpoint* input_;
-
-  DISALLOW_COPY_AND_ASSIGN(PacketFilter);
 };
 
 }  // namespace simulator

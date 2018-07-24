@@ -17,10 +17,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "net/third_party/quic/core/http/quic_server_session_base.h"
+#include "net/third_party/quic/core/http/quic_spdy_session.h"
 #include "net/third_party/quic/core/quic_crypto_server_stream.h"
 #include "net/third_party/quic/core/quic_packets.h"
-#include "net/third_party/quic/core/quic_server_session_base.h"
-#include "net/third_party/quic/core/quic_spdy_session.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/tools/quic_backend_response.h"
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
@@ -60,6 +60,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
                           const QuicCryptoServerConfig* crypto_config,
                           QuicCompressedCertsCache* compressed_certs_cache,
                           QuicSimpleServerBackend* quic_simple_server_backend);
+  QuicSimpleServerSession(const QuicSimpleServerSession&) = delete;
+  QuicSimpleServerSession& operator=(const QuicSimpleServerSession&) = delete;
 
   ~QuicSimpleServerSession() override;
 
@@ -149,8 +151,6 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   QuicDeque<PromisedStreamInfo> promised_streams_;
 
   QuicSimpleServerBackend* quic_simple_server_backend_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerSession);
 };
 
 }  // namespace quic

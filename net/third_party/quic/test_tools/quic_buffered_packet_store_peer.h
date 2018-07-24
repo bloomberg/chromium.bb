@@ -18,12 +18,11 @@ namespace test {
 
 class QuicBufferedPacketStorePeer {
  public:
+  QuicBufferedPacketStorePeer() = delete;
+
   static QuicAlarm* expiration_alarm(QuicBufferedPacketStore* store);
 
   static void set_clock(QuicBufferedPacketStore* store, const QuicClock* clock);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicBufferedPacketStorePeer);
 };
 
 }  // namespace test

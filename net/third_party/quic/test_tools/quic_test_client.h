@@ -49,6 +49,8 @@ class MockableQuicClient : public QuicClient {
                      const ParsedQuicVersionVector& supported_versions,
                      net::EpollServer* epoll_server,
                      std::unique_ptr<ProofVerifier> proof_verifier);
+  MockableQuicClient(const MockableQuicClient&) = delete;
+  MockableQuicClient& operator=(const MockableQuicClient&) = delete;
 
   ~MockableQuicClient() override;
 
@@ -69,8 +71,6 @@ class MockableQuicClient : public QuicClient {
  private:
   QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
   CachedNetworkParameters cached_network_paramaters_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockableQuicClient);
 };
 
 // A toy QUIC client used for testing.
@@ -318,6 +318,8 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
  protected:
   QuicTestClient();
+  QuicTestClient(const QuicTestClient&) = delete;
+  QuicTestClient& operator=(const QuicTestClient&) = delete;
 
  private:
   class TestClientDataToResend : public QuicClient::QuicDataToResend {
@@ -395,8 +397,6 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // logic which extracts the SNI from the request URL.
   bool override_sni_set_ = false;
   QuicString override_sni_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicTestClient);
 };
 
 }  // namespace test

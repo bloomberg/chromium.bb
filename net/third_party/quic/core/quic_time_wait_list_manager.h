@@ -66,6 +66,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
                           Visitor* visitor,
                           const QuicClock* clock,
                           QuicAlarmFactory* alarm_factory);
+  QuicTimeWaitListManager(const QuicTimeWaitListManager&) = delete;
+  QuicTimeWaitListManager& operator=(const QuicTimeWaitListManager&) = delete;
   ~QuicTimeWaitListManager() override;
 
   // Adds the given connection_id to time wait state for time_wait_period_.
@@ -215,8 +217,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Interface that manages blocked writers.
   Visitor* visitor_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };
 
 }  // namespace quic

@@ -25,6 +25,8 @@ class TrafficPolicer : public PacketFilter {
                  QuicByteCount max_bucket_size,
                  QuicBandwidth target_bandwidth,
                  Endpoint* input);
+  TrafficPolicer(const TrafficPolicer&) = delete;
+  TrafficPolicer& operator=(const TrafficPolicer&) = delete;
   ~TrafficPolicer() override;
 
  protected:
@@ -44,8 +46,6 @@ class TrafficPolicer : public PacketFilter {
 
   // Maps each destination to the number of tokens it has left.
   QuicUnorderedMap<std::string, QuicByteCount> token_buckets_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrafficPolicer);
 };
 
 }  // namespace simulator

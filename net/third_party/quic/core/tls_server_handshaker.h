@@ -27,6 +27,8 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
                       QuicSession* session,
                       SSL_CTX* ssl_ctx,
                       ProofSource* proof_source);
+  TlsServerHandshaker(const TlsServerHandshaker&) = delete;
+  TlsServerHandshaker& operator=(const TlsServerHandshaker&) = delete;
 
   ~TlsServerHandshaker() override;
 
@@ -159,8 +161,6 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   bool handshake_confirmed_ = false;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(TlsServerHandshaker);
 };
 
 }  // namespace quic

@@ -66,6 +66,8 @@ class QUIC_EXPORT_PRIVATE ChannelIDSource {
 // ChannelIDVerifier verifies ChannelID signatures.
 class QUIC_EXPORT_PRIVATE ChannelIDVerifier {
  public:
+  ChannelIDVerifier() = delete;
+
   // kContextStr is prepended to the data to be signed in order to ensure that
   // a ChannelID signature cannot be used in a different context. (The
   // terminating NUL byte is inclued.)
@@ -89,9 +91,6 @@ class QUIC_EXPORT_PRIVATE ChannelIDVerifier {
                         QuicStringPiece signed_data,
                         QuicStringPiece signature,
                         bool is_channel_id_signature);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChannelIDVerifier);
 };
 
 }  // namespace quic

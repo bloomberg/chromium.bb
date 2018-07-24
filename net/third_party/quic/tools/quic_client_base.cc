@@ -5,8 +5,8 @@
 #include "net/third_party/quic/tools/quic_client_base.h"
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_server_id.h"
-#include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"

@@ -91,6 +91,8 @@ Perspective InvertPerspective(Perspective perspective) {
 class TaggingEncrypter : public QuicEncrypter {
  public:
   explicit TaggingEncrypter(uint8_t tag) : tag_(tag) {}
+  TaggingEncrypter(const TaggingEncrypter&) = delete;
+  TaggingEncrypter& operator=(const TaggingEncrypter&) = delete;
 
   ~TaggingEncrypter() override {}
 
@@ -142,8 +144,6 @@ class TaggingEncrypter : public QuicEncrypter {
   };
 
   const uint8_t tag_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaggingEncrypter);
 };
 
 // TaggingDecrypter ensures that the final kTagSize bytes of the message all
@@ -237,6 +237,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
       : clock_(clock), random_generator_(random_generator) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
+  TestConnectionHelper(const TestConnectionHelper&) = delete;
+  TestConnectionHelper& operator=(const TestConnectionHelper&) = delete;
 
   // QuicConnectionHelperInterface
   const QuicClock* GetClock() const override { return clock_; }
@@ -251,8 +253,6 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   MockClock* clock_;
   MockRandom* random_generator_;
   SimpleBufferAllocator buffer_allocator_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnectionHelper);
 };
 
 class TestAlarmFactory : public QuicAlarmFactory {
@@ -268,6 +268,8 @@ class TestAlarmFactory : public QuicAlarmFactory {
   };
 
   TestAlarmFactory() {}
+  TestAlarmFactory(const TestAlarmFactory&) = delete;
+  TestAlarmFactory& operator=(const TestAlarmFactory&) = delete;
 
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
     return new TestAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
@@ -278,9 +280,6 @@ class TestAlarmFactory : public QuicAlarmFactory {
       QuicConnectionArena* arena) override {
     return arena->New<TestAlarm>(std::move(delegate));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestAlarmFactory);
 };
 
 class TestPacketWriter : public QuicPacketWriter {
@@ -302,6 +301,8 @@ class TestPacketWriter : public QuicPacketWriter {
         clock_(clock),
         write_pause_time_delta_(QuicTime::Delta::Zero()),
         max_packet_size_(kMaxPacketSize) {}
+  TestPacketWriter(const TestPacketWriter&) = delete;
+  TestPacketWriter& operator=(const TestPacketWriter&) = delete;
 
   // QuicPacketWriter interface
   WriteResult WritePacket(const char* buffer,
@@ -492,8 +493,6 @@ class TestPacketWriter : public QuicPacketWriter {
   // time.
   QuicTime::Delta write_pause_time_delta_;
   QuicByteCount max_packet_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPacketWriter);
 };
 
 class TestConnection : public QuicConnection {
@@ -519,6 +518,8 @@ class TestConnection : public QuicConnection {
                  QuicMakeUnique<NullEncrypter>(perspective));
     SetDataProducer(&producer_);
   }
+  TestConnection(const TestConnection&) = delete;
+  TestConnection& operator=(const TestConnection&) = delete;
 
   void SendAck() { QuicConnectionPeer::SendAck(this); }
 
@@ -713,8 +714,6 @@ class TestConnection : public QuicConnection {
   SimpleSessionNotifier* notifier_;
 
   std::unique_ptr<QuicSocketAddress> next_effective_peer_addr_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnection);
 };
 
 enum class AckResponse { kDefer, kImmediate };
@@ -850,6 +849,9 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _))
         .Times(AnyNumber());
   }
+
+  QuicConnectionTest(const QuicConnectionTest&) = delete;
+  QuicConnectionTest& operator=(const QuicConnectionTest&) = delete;
 
   ParsedQuicVersion version() { return GetParam().version; }
 
@@ -1245,9 +1247,6 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   QuicConnectionIdLength connection_id_length_;
 
   SimpleSessionNotifier notifier_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicConnectionTest);
 };
 
 // Run all end to end tests with all supported versions.

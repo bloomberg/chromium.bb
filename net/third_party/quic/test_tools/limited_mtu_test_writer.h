@@ -17,6 +17,8 @@ namespace test {
 class LimitedMtuTestWriter : public QuicPacketWriterWrapper {
  public:
   explicit LimitedMtuTestWriter(QuicByteCount mtu);
+  LimitedMtuTestWriter(const LimitedMtuTestWriter&) = delete;
+  LimitedMtuTestWriter& operator=(const LimitedMtuTestWriter&) = delete;
   ~LimitedMtuTestWriter() override;
 
   // Inherited from QuicPacketWriterWrapper.
@@ -28,8 +30,6 @@ class LimitedMtuTestWriter : public QuicPacketWriterWrapper {
 
  private:
   QuicByteCount mtu_;
-
-  DISALLOW_COPY_AND_ASSIGN(LimitedMtuTestWriter);
 };
 
 }  // namespace test

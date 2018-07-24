@@ -54,12 +54,12 @@ class QUIC_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   // |kUncompressedP256PointBytes| bytes.
   P256KeyExchange(bssl::UniquePtr<EC_KEY> private_key,
                   const uint8_t* public_key);
+  P256KeyExchange(const P256KeyExchange&) = delete;
+  P256KeyExchange& operator=(const P256KeyExchange&) = delete;
 
   bssl::UniquePtr<EC_KEY> private_key_;
   // The public key stored as an uncompressed P-256 point.
   uint8_t public_key_[kUncompressedP256PointBytes];
-
-  DISALLOW_COPY_AND_ASSIGN(P256KeyExchange);
 };
 
 }  // namespace quic

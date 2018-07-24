@@ -25,6 +25,8 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
 
  public:
   explicit QuicWriteBlockedList();
+  QuicWriteBlockedList(const QuicWriteBlockedList&) = delete;
+  QuicWriteBlockedList& operator=(const QuicWriteBlockedList&) = delete;
   ~QuicWriteBlockedList();
 
   bool HasWriteBlockedDataStreams() const {
@@ -340,8 +342,6 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
 
   // Latched value of quic_use_static_stream_collection_in_write_blocked_list.
   const bool use_static_stream_collection_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicWriteBlockedList);
 };
 
 }  // namespace quic

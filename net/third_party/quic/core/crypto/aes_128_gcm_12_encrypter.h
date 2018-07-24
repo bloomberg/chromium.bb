@@ -25,10 +25,9 @@ class QUIC_EXPORT_PRIVATE Aes128Gcm12Encrypter : public AeadBaseEncrypter {
   };
 
   Aes128Gcm12Encrypter();
+  Aes128Gcm12Encrypter(const Aes128Gcm12Encrypter&) = delete;
+  Aes128Gcm12Encrypter& operator=(const Aes128Gcm12Encrypter&) = delete;
   ~Aes128Gcm12Encrypter() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Aes128Gcm12Encrypter);
 };
 
 }  // namespace quic

@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "net/third_party/quic/core/crypto/proof_verifier.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
+#include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
 #include "net/third_party/quic/core/quic_server_id.h"
-#include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"

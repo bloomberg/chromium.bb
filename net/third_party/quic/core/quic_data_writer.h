@@ -38,6 +38,8 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
  public:
   // Creates a QuicDataWriter where |buffer| is not owned.
   QuicDataWriter(size_t size, char* buffer, Endianness endianness);
+  QuicDataWriter(const QuicDataWriter&) = delete;
+  QuicDataWriter& operator=(const QuicDataWriter&) = delete;
 
   ~QuicDataWriter();
 
@@ -127,8 +129,6 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
 
   // The endianness to write integers and floating numbers.
   Endianness endianness_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicDataWriter);
 };
 
 }  // namespace quic

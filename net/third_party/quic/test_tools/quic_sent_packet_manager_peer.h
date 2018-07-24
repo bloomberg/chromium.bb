@@ -17,6 +17,8 @@ namespace test {
 
 class QuicSentPacketManagerPeer {
  public:
+  QuicSentPacketManagerPeer() = delete;
+
   static size_t GetMaxTailLossProbes(
       QuicSentPacketManager* sent_packet_manager);
 
@@ -104,9 +106,6 @@ class QuicSentPacketManagerPeer {
 
   static void SetNextPacedPacketTime(QuicSentPacketManager* sent_packet_manager,
                                      QuicTime time);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManagerPeer);
 };
 
 }  // namespace test

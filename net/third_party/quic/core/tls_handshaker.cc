@@ -38,11 +38,12 @@ class SslIndexSingleton {
     CHECK_LE(0, ssl_ex_data_index_handshaker_);
   }
 
+  SslIndexSingleton(const SslIndexSingleton&) = delete;
+  SslIndexSingleton& operator=(const SslIndexSingleton&) = delete;
+
   friend QuicSingletonFriend<SslIndexSingleton>;
 
   int ssl_ex_data_index_handshaker_;
-
-  DISALLOW_COPY_AND_ASSIGN(SslIndexSingleton);
 };
 
 }  // namespace
