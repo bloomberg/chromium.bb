@@ -1209,7 +1209,7 @@ void InterceptionJob::OnReceiveRedirect(
   response_metadata_->redirect_info =
       std::make_unique<net::RedirectInfo>(redirect_info);
 
-  if (!(stage_ & InterceptionStage::REQUEST)) {
+  if (!(stage_ & InterceptionStage::RESPONSE)) {
     client_->OnReceiveRedirect(redirect_info, head);
     return;
   }

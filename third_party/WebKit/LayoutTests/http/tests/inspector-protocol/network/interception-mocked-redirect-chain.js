@@ -10,11 +10,6 @@
 
   await dp.Network.setRequestInterception({patterns: [{}]});
 
-  // Automatically proceed with redirect interceptions.
-  dp.Network.onRequestIntercepted(event => {
-    if (event.params.request.redirectUrl)
-      dp.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId});
-  });
   session.navigate('http://test-url/');
 
   let params = (await dp.Network.onceRequestIntercepted()).params;

@@ -799,8 +799,7 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
 
   // If we're not intercepting results or are a response then cancel this
   // redirect and tell the parent request it was redirected through |redirect_|.
-  if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT ||
-      stage_to_intercept_ == InterceptionStage::RESPONSE) {
+  if (!(stage_to_intercept_ & InterceptionStage::RESPONSE)) {
     *defer_redirect = false;
     ProcessRedirect(redirectinfo.status_code, redirectinfo.new_url.spec());
     redirect_.reset();
