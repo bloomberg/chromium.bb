@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -13,6 +14,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/sha1.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
@@ -26,8 +28,8 @@ namespace policy {
 
 namespace {
 
-const char kDmTokenBaseDir[] = FILE_PATH_LITERAL("Policy/Enrollment/");
-const char kDmTokenFilename[] = FILE_PATH_LITERAL("token");
+const char kDmTokenBaseDir[] =
+    FILE_PATH_LITERAL("Google/Chrome Cloud Enrollment/");
 
 constexpr char kDMToken[] = "fake-dm-token";
 
@@ -92,8 +94,12 @@ TEST_F(BrowserDMTokenStorageMacTest, SaveDMToken) {
   base::FilePath app_data_dir_path;
   ASSERT_TRUE(base::PathService::Get(base::DIR_APP_DATA, &app_data_dir_path));
   base::FilePath dm_token_dir_path = app_data_dir_path.Append(kDmTokenBaseDir);
-  base::FilePath dm_token_file_path =
-      dm_token_dir_path.Append(kDmTokenFilename);
+
+  std::string filename;
+  base::Base64UrlEncode(base::SHA1HashString(storage.InitClientId()),
+                        base::Base64UrlEncodePolicy::OMIT_PADDING, &filename);
+
+  base::FilePath dm_token_file_path = dm_token_dir_path.Append(filename);
 
   std::string dm_token;
   ASSERT_TRUE(base::ReadFileToString(dm_token_file_path, &dm_token));

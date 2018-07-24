@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -18,6 +19,7 @@
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/sha1.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -33,12 +35,14 @@ namespace policy {
 
 namespace {
 
-const char kDmTokenBaseDir[] = FILE_PATH_LITERAL("Policy/Enrollment/");
+const char kDmTokenBaseDir[] =
+    FILE_PATH_LITERAL("Google/Chrome Cloud Enrollment/");
 NSString* const kEnrollmentTokenPolicyName =
     @"MachineLevelUserCloudPolicyEnrollmentToken";
-const char kDmTokenFilename[] = FILE_PATH_LITERAL("token");
 
-bool GetDmTokenFilePath(base::FilePath* token_file_path, bool create_dir) {
+bool GetDmTokenFilePath(base::FilePath* token_file_path,
+                        const std::string& client_id,
+                        bool create_dir) {
   if (!base::PathService::Get(base::DIR_APP_DATA, token_file_path))
     return false;
 
@@ -47,14 +51,18 @@ bool GetDmTokenFilePath(base::FilePath* token_file_path, bool create_dir) {
   if (create_dir && !base::CreateDirectory(*token_file_path))
     return false;
 
-  *token_file_path = token_file_path->Append(kDmTokenFilename);
+  std::string filename;
+  base::Base64UrlEncode(base::SHA1HashString(client_id),
+                        base::Base64UrlEncodePolicy::OMIT_PADDING, &filename);
+  *token_file_path = token_file_path->Append(filename.c_str());
 
   return true;
 }
 
-bool StoreDMTokenInDirAppDataDir(const std::string& token) {
+bool StoreDMTokenInDirAppDataDir(const std::string& token,
+                                 const std::string& client_id) {
   base::FilePath token_file_path;
-  if (!GetDmTokenFilePath(&token_file_path, true)) {
+  if (!GetDmTokenFilePath(&token_file_path, client_id, true)) {
     NOTREACHED();
     return false;
   }
@@ -117,7 +125,7 @@ std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {
 
 std::string BrowserDMTokenStorageMac::InitDMToken() {
   base::FilePath token_file_path;
-  if (!GetDmTokenFilePath(&token_file_path, true))
+  if (!GetDmTokenFilePath(&token_file_path, RetrieveClientId(), true))
     return std::string();
 
   std::string token;
@@ -131,7 +139,7 @@ void BrowserDMTokenStorageMac::SaveDMToken(const std::string& token) {
   std::string client_id = RetrieveClientId();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&StoreDMTokenInDirAppDataDir, token),
+      base::BindOnce(&StoreDMTokenInDirAppDataDir, token, client_id),
       base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
                      weak_factory_.GetWeakPtr()));
 }
