@@ -90,10 +90,10 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
                 fragment->ContentsProperties(), layout_replaced_,
                 DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
           } else if (layout_replaced_.Style()->HasBorderRadius()) {
-            DCHECK(paint_properties->InnerBorderRadiusClip());
+            DCHECK(paint_properties->OverflowClip());
             chunk_properties.emplace(
                 local_paint_info.context.GetPaintController(),
-                paint_properties->InnerBorderRadiusClip(), layout_replaced_,
+                paint_properties->OverflowClip(), layout_replaced_,
                 DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
           }
         }

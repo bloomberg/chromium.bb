@@ -27,7 +27,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
-      box_.PreviousContentBoxSize() != box_.ContentSize()) {
+      box_.PreviousContentBoxRect() != box_.ContentBoxRect()) {
     return PaintInvalidationReason::kGeometry;
   }
 
@@ -258,13 +258,18 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
 }
 
 bool BoxPaintInvalidator::
-    NeedsToSavePreviousContentBoxSizeOrLayoutOverflowRect() {
+    NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect() {
   // The LayoutView depends on the document element's layout overflow rect (see:
   // ViewBackgroundShouldFullyInvalidate) and needs to invalidate before the
   // document element invalidates. There are few document elements so the
   // previous layout overflow rect is always saved, rather than duplicating the
   // logic save-if-needed logic for this special case.
   if (box_.IsDocumentElement())
+    return true;
+
+  // Replaced elements are clipped to the content box thus we need to check
+  // for its size.
+  if (box_.IsLayoutReplaced())
     return true;
 
   // Don't save old box geometries if the paint rect is empty because we'll
@@ -294,12 +299,12 @@ bool BoxPaintInvalidator::
 void BoxPaintInvalidator::SavePreviousBoxGeometriesIfNeeded() {
   box_.GetMutableForPainting().SavePreviousSize();
 
-  if (NeedsToSavePreviousContentBoxSizeOrLayoutOverflowRect()) {
+  if (NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect()) {
     box_.GetMutableForPainting()
-        .SavePreviousContentBoxSizeAndLayoutOverflowRect();
+        .SavePreviousContentBoxRectAndLayoutOverflowRect();
   } else {
     box_.GetMutableForPainting()
-        .ClearPreviousContentBoxSizeAndLayoutOverflowRect();
+        .ClearPreviousContentBoxRectAndLayoutOverflowRect();
   }
 }
 

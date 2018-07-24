@@ -6038,10 +6038,10 @@ bool LayoutBox::ComputeShouldClipOverflow() const {
 }
 
 void LayoutBox::MutableForPainting::
-    SavePreviousContentBoxSizeAndLayoutOverflowRect() {
+    SavePreviousContentBoxRectAndLayoutOverflowRect() {
   auto& rare_data = GetLayoutBox().EnsureRareData();
-  rare_data.has_previous_content_box_size_and_layout_overflow_rect_ = true;
-  rare_data.previous_content_box_size_ = GetLayoutBox().ContentSize();
+  rare_data.has_previous_content_box_rect_and_layout_overflow_rect_ = true;
+  rare_data.previous_content_box_rect_ = GetLayoutBox().ContentBoxRect();
   rare_data.previous_physical_layout_overflow_rect_ =
       GetLayoutBox().PhysicalLayoutOverflowRect();
 }
