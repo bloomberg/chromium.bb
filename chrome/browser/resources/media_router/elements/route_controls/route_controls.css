@@ -89,7 +89,7 @@
 
 #hangouts-local-present-checkbox {
   --cr-checkbox-label-container: {
-    -webkit-padding-start: 14px;
+    padding-inline-start: 14px;
   }
   align-items: start;
 }
@@ -109,6 +109,6 @@
 }
 
 #mirroring-fullscreen-video-dropdown {
-  -webkit-margin-start: 8px;
+  margin-inline-start: 8px;
   width: auto;
 }

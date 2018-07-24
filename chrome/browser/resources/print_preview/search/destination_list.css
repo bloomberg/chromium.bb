@@ -3,15 +3,15 @@
  * found in the LICENSE file. */
 
 .destination-list > header {
-  -webkit-padding-start: 0;
   background-color: transparent;
   padding-bottom: 8px;
+  padding-inline-start: 0;
 }
 
 .destination-list .title {
-  -webkit-padding-end: 8px;
-  -webkit-padding-start: 4px;
   display: inline;
+  padding-inline-end: 8px;
+  padding-inline-start: 4px;
   vertical-align: middle;
 }
 
@@ -26,9 +26,9 @@
 }
 
 .destination-list .throbber-container {
-  -webkit-padding-end: 16px;
-  -webkit-padding-start: 8px;
   display: inline-block;
+  padding-inline-end: 16px;
+  padding-inline-start: 8px;
   position: relative;
   vertical-align: middle;
 }
@@ -38,14 +38,14 @@
 }
 
 .destination-list .no-destinations-message {
-  -webkit-padding-start: 18px;
   color: #999;
   padding-bottom: 8px;
+  padding-inline-start: 18px;
   padding-top: 8px;
 }
 
 .destination-list > footer {
-  -webkit-padding-start: 18px;
+  padding-inline-start: 18px;
   padding-top: 6px;
 }
 

@@ -60,7 +60,7 @@ Polymer({
 
   depthChanged: function() {
     this.childDepth = this.depth + 1;
-    this.$.item.style.webkitPaddingStart =
+    this.$.item.style.paddingInlineStart =
         (this.depth * BOOKMARK_INDENT) + 'px';
   },
 

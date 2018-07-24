@@ -34,11 +34,11 @@
 }
 
 oobe-text-button {
-  -webkit-margin-end: 16px;
   color: #5a5a5a;
   margin-bottom: 16px;
+  margin-inline-end: 16px;
 }
 
 #cancelButton {
-  -webkit-margin-end: 4px;
+  margin-inline-end: 4px;
 }

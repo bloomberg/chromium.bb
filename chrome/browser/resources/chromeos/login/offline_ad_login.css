@@ -13,9 +13,9 @@
 }
 
 iron-icon[icon='cr:warning'] {
-  -webkit-margin-end: 15px;
-  -webkit-margin-start: 0;
   color: var(--google-yellow-500);
   margin-bottom: 0;
+  margin-inline-end: 15px;
+  margin-inline-start: 0;
   margin-top: 0;
 }

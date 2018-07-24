@@ -15,21 +15,21 @@
   <template>
     <style include="settings-shared">
       h2 {
-        -webkit-padding-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--settings-box-row-padding);
       }
 
       .sub-item {
-        -webkit-margin-start: var(--settings-indent-width);
+        margin-inline-start: var(--settings-indent-width);
       }
 
       h2 ~ .settings-box,
       h2 ~ settings-toggle-button,
       iron-collapse .settings-box,
       iron-collapse settings-toggle-button {
-        -webkit-margin-end: var(--settings-box-row-padding);
-        -webkit-margin-start: var(--settings-box-row-indent);
-        -webkit-padding-end: 0;
-        -webkit-padding-start: 0;
+        margin-inline-end: var(--settings-box-row-padding);
+        margin-inline-start: var(--settings-box-row-indent);
+        padding-inline-end: 0;
+        padding-inline-start: 0;
       }
     </style>
     <div class="settings-box row first">

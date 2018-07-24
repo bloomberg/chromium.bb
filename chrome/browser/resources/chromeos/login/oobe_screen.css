@@ -60,7 +60,7 @@
 }
 
 html[dir=rtl] .step-controls {
-  /* Hack as -webkit-padding-end doesn't catch direction. crbug.com/363836 */
+  /* Hack as padding-inline-end doesn't catch direction. crbug.com/363836 */
   padding-left: 34px;
 }
 
@@ -155,7 +155,7 @@ html[dir=rtl] .step-extra-controls {
 #reset-button,
 #password-changed-back-button,
 #tos-back-button {
-  -webkit-margin-end: 8px;
+  margin-inline-end: 8px;
 }
 
 .menu-area {

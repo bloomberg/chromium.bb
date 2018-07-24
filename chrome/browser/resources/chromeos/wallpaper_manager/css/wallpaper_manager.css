@@ -142,9 +142,9 @@ body.v1 {
 }
 
 #wallpaper-set-by-message {
-  -webkit-padding-end: 5px;
-  -webkit-padding-start: 15px;
   height: 30px;
+  padding-inline-end: 5px;
+  padding-inline-start: 15px;
 }
 
 #wallpaper-set-by-message:empty {
@@ -152,8 +152,6 @@ body.v1 {
 }
 
 .image-picker {
-  -webkit-padding-end: 5px;
-  -webkit-padding-start: 15px;
   display: block;
   /* Set font size to 0 to remove the extra vertical margin between two rows of
    * thumbnails.
@@ -163,6 +161,8 @@ body.v1 {
   outline: none;
   overflow-y: auto;
   padding-bottom: 15px;
+  padding-inline-end: 5px;
+  padding-inline-start: 15px;
   padding-top: 5px;
 }
 
@@ -182,9 +182,9 @@ body.v1 {
 }
 
 .image-picker [role=listitem] {
-  -webkit-margin-end: 1px;
   height: 68px;
   margin-bottom: 1px;
+  margin-inline-end: 1px;
   position: relative;
   width: 108px;
 }
@@ -257,8 +257,8 @@ body.v1 {
 }
 
 #attribute-image {
-  -webkit-margin-end: 10px;
   height: 34px;
+  margin-inline-end: 10px;
   width: 54px;
 }
 
@@ -472,19 +472,19 @@ body.v2 {
 }
 
 .v2 .image-picker {
-  -webkit-padding-end: unset;
-  -webkit-padding-start: unset;
   height: 100%;
   padding-bottom: unset;
+  padding-inline-end: unset;
+  padding-inline-start: unset;
   padding-top: unset;
 }
 
 .v2 .image-picker [role=listitem] {
-  -webkit-margin-end: 8px;
   background-color: rgb(241, 243, 244);
   border-radius: 4px;
   height: 160px;
   margin-bottom: 8px;
+  margin-inline-end: 8px;
   outline: none;
   width: 160px;
 }
@@ -604,13 +604,13 @@ body.v2 {
 }
 
 .v2 .top-header-contents #cancel-preview-wallpaper {
-  -webkit-margin-start: 16px;
-  -webkit-padding-start: 32px;
   background-image: url(../images/ui/left_arrow.svg);
   background-repeat: no-repeat;
   background-size: 20px 20px;
   height: 4px;
+  margin-inline-start: 16px;
   margin-top: 12px;
+  padding-inline-start: 32px;
 }
 
 .v2 .top-header-contents #cancel-preview-wallpaper:focus {
@@ -618,10 +618,10 @@ body.v2 {
 }
 
 .v2 .top-header-contents #image-title {
-  -webkit-padding-end: 8px;
   color: rgb(32, 33, 36);
   max-width: 148px;
   overflow: hidden;
+  padding-inline-end: 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -633,10 +633,10 @@ body.v2 {
 }
 
 .v2 .top-header-contents #wallpaper-description {
-  -webkit-padding-start: 8px;
   color: rgb(128, 134, 139);
   max-width: 312px;
   overflow: hidden;
+  padding-inline-start: 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -660,7 +660,7 @@ body.v2 {
 }
 
 html[dir='rtl'] .v2 .top-header-contents .more-options {
-  -webkit-padding-start: 96px;
+  padding-inline-start: 96px;
   position: unset;
 }
 
@@ -686,16 +686,16 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 .top-header-contents .icon {
-  -webkit-padding-end: 8px;
   background-repeat: no-repeat;
+  padding-inline-end: 8px;
   width: 16px;
 }
 
 .v2 .top-header-contents .more-options .center-button,
 .v2 .top-header-contents .more-options .center-cropped-button {
-  -webkit-padding-start: 28px;
   background-color: #fff;
   color: rgb(128, 134, 139);
+  padding-inline-start: 28px;
   z-index: 0;
 }
 
@@ -708,11 +708,11 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 .top-header-contents .more-options .center-button {
-  -webkit-padding-end: 36px;
+  padding-inline-end: 36px;
 }
 
 .v2 .top-header-contents .more-options .center-cropped-button {
-  -webkit-margin-start: -24px;
+  margin-inline-start: -24px;
 }
 
 .v2 .top-header-contents .center-button .icon,
@@ -736,15 +736,15 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 .top-header-contents #confirm-preview-wallpaper {
-  -webkit-margin-start: 96px;
+  margin-inline-start: 96px;
 }
 
 .v2.daily-wallpaper .top-header-contents #confirm-preview-wallpaper {
-  -webkit-margin-start: 8px;
+  margin-inline-start: 8px;
 }
 
 .v2 .top-header-contents #refresh-wallpaper {
-  -webkit-margin-start: 16px;
+  margin-inline-start: 16px;
 }
 
 .v2.preview-mode.custom-wallpaper .more-options .custom-option,
@@ -908,9 +908,9 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 #current-wallpaper-image {
-  -webkit-margin-end: 16px;
   border-radius: 4px;
   height: 100px;
+  margin-inline-end: 16px;
   width: 100px;
 }
 
@@ -977,9 +977,9 @@ html[dir='rtl'] .v2 #current-wallpaper-more-options {
 }
 
 .v2 #current-wallpaper-more-options .icon {
-  -webkit-padding-end: 8px;
   background-repeat: no-repeat;
   height: 16px;
+  padding-inline-end: 8px;
   width: 16px;
 }
 

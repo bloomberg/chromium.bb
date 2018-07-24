@@ -17,7 +17,7 @@
 }
 
 #user-image-screen-curtain {
-  -webkit-margin-start: 8px;
+  margin-inline-start: 8px;
 }
 
 #user-image-screen-title {
@@ -26,8 +26,8 @@
 }
 
 #user-image .step-contents {
-  -webkit-margin-start: 31px;
   margin-bottom: 16px;
+  margin-inline-start: 31px;
 }
 
 .user-image-stream-area .spinner {
@@ -42,13 +42,13 @@
 }
 
 #user-image-logo {
-  -webkit-margin-start: 8px;
   height: 32px;
+  margin-inline-start: 8px;
   margin-top: 32px;
   width: auto;
 }
 
 #ok-button {
-  -webkit-margin-end: 16px;
+  margin-inline-end: 16px;
   margin-top: -6px;
 }

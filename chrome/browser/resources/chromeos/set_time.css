@@ -37,7 +37,7 @@ input[type='time']::-webkit-clear-button {
 }
 
 label {
-  -webkit-margin-end: 5px;
+  margin-inline-end: 5px;
 }
 
 #timezone-select {

@@ -14,12 +14,12 @@
   <template>
     <style include="shared-style">
       :host {
-        -webkit-padding-end: var(--card-padding-side);
-        -webkit-padding-start: calc(var(--card-padding-side) -
-            var(--splitter-width));
         min-width: 300px;
         overflow-y: auto;
         padding-bottom: 24px;
+        padding-inline-end: var(--card-padding-side);
+        padding-inline-start: calc(var(--card-padding-side) -
+            var(--splitter-width));
         padding-top: 24px;
       }
 

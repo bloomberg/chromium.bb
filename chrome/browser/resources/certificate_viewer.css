@@ -37,7 +37,7 @@ h3 {
 
 #usages,
 #cert-field-value {
-  -webkit-padding-start: 15px;
+  padding-inline-start: 15px;
   white-space: pre-wrap;
 }
 
@@ -56,9 +56,9 @@ h3 {
 
 #usages,
 .groups > div > div {
-  -webkit-padding-start: 20px;
   color: #787878;
   line-height: 18px;
+  padding-inline-start: 20px;
 }
 
 .attribute {
@@ -121,8 +121,8 @@ tabpanel {
 }
 
 #export {
-  -webkit-margin-start: 1px;
   float: right;
   margin-bottom: 20px;
+  margin-inline-start: 1px;
   margin-top: 10px;
 }

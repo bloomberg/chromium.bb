@@ -59,8 +59,8 @@ tbody tr:nth-child(odd) {
 }
 
 .file-icon-cell {
-  -webkit-padding-start: 0;
   display: inline-block; /* Makes the cell content start-align in RTL. */
+  padding-inline-start: 0;
 }
 
 .file-icon-cell > div {

@@ -26,8 +26,8 @@
 }
 
 .destination-settings-icon {
-  -webkit-margin-end: 8px;
   height: 24px;
+  margin-inline-end: 8px;
   vertical-align: middle;
   width: 24px;
 }
@@ -48,7 +48,7 @@
 }
 
 .throbber-container .throbber {
-  -webkit-margin-end: 8px;
+  margin-inline-end: 8px;
 }
 
 .destination-throbber-name-container {

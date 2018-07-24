@@ -38,7 +38,7 @@
       }
 
       iron-icon.policy {
-        -webkit-margin-end: var(--cr-controlled-by-spacing);
+        margin-inline-end: var(--cr-controlled-by-spacing);
       }
 
       iron-list {
@@ -61,7 +61,7 @@
       }
 
       .separator + paper-icon-button-light {
-        -webkit-margin-start: var(--cr-icon-ripple-margin);
+        margin-inline-start: var(--cr-icon-ripple-margin);
       }
 
       neon-animatable {
@@ -76,16 +76,16 @@
 
       /* Special case for buttons inside of toggle-buttons. */
       .settings-box settings-toggle-button paper-button:last-of-type {
-        -webkit-margin-end: 16px;
+        margin-inline-end: 16px;
       }
 
       /* Space out multiple buttons in the same row. */
       .settings-box paper-button + paper-button {
-        -webkit-margin-start: 16px;
+        margin-inline-start: 16px;
       }
 
       span ~ a {
-        -webkit-margin-start: 4px;
+        margin-inline-start: 4px;
       }
 
       a[href] {
@@ -241,7 +241,7 @@
       /* A settings-box that is embedded in another settings-box (e.g. a control
        * that is associated with a toggle button). */
       .settings-box.embedded {
-        -webkit-padding-start: var(--settings-box-row-indent);
+        padding-inline-start: var(--settings-box-row-indent);
       }
 
       /* The lower line of text in a two-line row. */
@@ -260,9 +260,9 @@
 
       /* The middle part (horizontally) of a row. */
       .settings-box .middle {
-        -webkit-padding-start: 16px;
         align-items: center;
         flex: auto;
+        padding-inline-start: 16px;
       }
 
       .settings-box .middle.two-line,
@@ -296,8 +296,8 @@
       iron-list,
       .list-item {
         --cr-paper-icon-button-margin: {
-          -webkit-margin-end: 0;
-          -webkit-margin-start: var(--cr-icon-button-margin-start);
+          margin-inline-end: 0;
+          margin-inline-start: var(--cr-icon-button-margin-start);
         };
       }
 
@@ -310,7 +310,7 @@
        * the other way. An example is near the |sign out| button on the People
        * settings. */
       .separator {
-        -webkit-border-start: var(--settings-separator-line);
+        border-inline-start: var(--settings-separator-line);
         flex-shrink: 0;
         /* Match paper-button's default height. */
         height: 32px;

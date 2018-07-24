@@ -22,18 +22,18 @@ html.starting-up #dot-list {
 }
 
 .dot {
-  -webkit-margin-end: 10px;
-  -webkit-padding-start: 2px;
   box-sizing: border-box;
   cursor: pointer;
   /* max-width: Set in new_tab.js. See measureNavDots() */
+  margin-inline-end: 10px;
   outline: none;
+  padding-inline-start: 2px;
   text-align: left;
-  transition: -webkit-margin-end 250ms, max-width 250ms, opacity 250ms;
+  transition: margin-inline-end 250ms, max-width 250ms, opacity 250ms;
 }
 
 .dot:last-child {
-  -webkit-margin-end: 0;
+  margin-inline-end: 0;
 }
 
 .dot:only-of-type {
@@ -43,7 +43,7 @@ html.starting-up #dot-list {
 }
 
 .dot.small {
-  -webkit-margin-end: 0;
+  margin-inline-end: 0;
   max-width: 0;
 }
 
@@ -56,11 +56,11 @@ html.starting-up #dot-list {
 
 .dot input {
   -webkit-appearance: caret;
-  -webkit-margin-start: 2px;
   background-color: transparent;
   cursor: inherit;
   font: inherit;
   height: auto;
+  margin-inline-start: 2px;
   margin-top: 2px;
   padding: 1px 0;
   transition: color 200ms;

@@ -68,14 +68,14 @@
       }
 
       #details {
-        -webkit-border-start: 1px #d8d8d8 solid;
-        -webkit-padding-end: 16px;
-        -webkit-padding-start: var(--downloads-card-margin);
+        border-inline-start: 1px #d8d8d8 solid;
         display: flex;
         flex: 1;
         flex-direction: column;
         min-width: 0;  /* This allows #url to ellide correctly. */
         padding-bottom: 12px;
+        padding-inline-end: 16px;
+        padding-inline-start: var(--downloads-card-margin);
         padding-top: 16px;
       }
 
@@ -138,7 +138,7 @@
       }
 
       #name {
-        -webkit-margin-end: 12px;  /* Only really affects #tag. */
+        margin-inline-end: 12px;  /* Only really affects #tag. */
       }
 
       #tag {
@@ -181,7 +181,7 @@
       }
 
       #controlled-by {
-        -webkit-margin-start: 8px;
+        margin-inline-start: 8px;
       }
 
       #controlled-by,
@@ -203,10 +203,10 @@
       }
 
       #remove-wrapper > paper-icon-button-light {
-        -webkit-margin-end: 0;
-        -webkit-margin-start: 0;
         color: var(--google-grey-refresh-700);
         height: 32px;
+        margin-inline-end: 0;
+        margin-inline-start: 0;
         width: 32px;
       }
 

@@ -35,7 +35,7 @@ body {
 
 .title-bar #page-title {
   -webkit-flex: 1 1 auto;
-  -webkit-margin-start: 20px;
+  margin-inline-start: 20px;
 }
 
 .title-bar .button-bar {
@@ -60,15 +60,15 @@ body {
 }
 
 .content #additional-info-label {
-  -webkit-margin-start: 10px;
+  margin-inline-start: 10px;
 }
 
 .content .text-field-container {
   -webkit-align-items: center;
-  -webkit-padding-start: 10px;
   display: -webkit-flex;
   height: 29px;
   margin-top: 10px;
+  padding-inline-start: 10px;
 }
 
 .content .text-field-container > label {
@@ -77,20 +77,20 @@ body {
 }
 
 .content .text-field-container > select {
-  -webkit-padding-start: 5px;
   border: 1px solid #c8c8c8;
   color: #585858;
   flex: 1 1 auto;
   height: 100%;
+  padding-inline-start: 5px;
 }
 
 .content .text-field-container > input[type=text] {
   -webkit-flex: 1 1 auto;
-  -webkit-padding-start: 5px;
   border: 1px solid;
   border-color: #c8c8c8;
   color: #585858;
   height: 100%;
+  padding-inline-start: 5px;
 }
 
 .content .text-field-container > input[type=checkbox] {
@@ -108,16 +108,16 @@ body {
 }
 
 .content #screenshot-image {
-  -webkit-margin-end: 25px;
   display: block;
   height: 60px;
+  margin-inline-end: 25px;
   margin-top: 40px;
   transition: all 250ms ease;
 }
 
 .content #screenshot-image:hover {
-  -webkit-margin-end: 0;
   height: 125px;
+  margin-inline-end: 0;
   margin-top: 80px;
   z-index: 1;
 }
@@ -160,7 +160,6 @@ body {
 }
 
 .content .remove-file-button {
-  -webkit-margin-start: 5px;
   background-color: transparent;
   background-image: -webkit-image-set(
       url(chrome://resources/images/apps/button_butter_bar_close.png) 1x,
@@ -169,6 +168,7 @@ body {
   background-repeat: no-repeat;
   border: none;
   height: 16px;
+  margin-inline-start: 5px;
   pointer-events: auto;
   width: 16px;
 }
@@ -186,8 +186,8 @@ body {
 }
 
 .content #attach-file-note {
-  -webkit-margin-start: 112px;
   margin-bottom: 10px;
+  margin-inline-start: 112px;
   margin-top: 10px;
 }
 
@@ -197,8 +197,8 @@ body {
 }
 
 button.white-button {
-  -webkit-margin-end: 10px;
   color: #000;
+  margin-inline-end: 10px;
 }
 
 button.blue-button {
@@ -207,11 +207,11 @@ button.blue-button {
 }
 
 .srt-image {
-  -webkit-margin-end: auto;
-  -webkit-margin-start: 40px;
   display: block;
   height: 50px;
   margin-bottom: 20px;
+  margin-inline-end: auto;
+  margin-inline-start: 40px;
   margin-top: 120px;
 }
 

@@ -55,15 +55,15 @@ body {
 }
 
 .step.dialog .topbutton-wrapper {
-  -webkit-padding-end: 10px;
   display: flex;
   justify-content: flex-end;
+  padding-inline-end: 10px;
 }
 
 .step.dialog .topbutton-bar button {
   -webkit-app-region: no-drag;
-  -webkit-margin-end: 0;
   display: inline;
+  margin-inline-end: 0;
 }
 
 .step.dialog .greeting-image {

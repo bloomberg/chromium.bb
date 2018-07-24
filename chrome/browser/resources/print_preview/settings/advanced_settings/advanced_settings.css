@@ -29,9 +29,9 @@
 }
 
 #advanced-settings .no-settings-match-hint {
-  -webkit-padding-start: 17px;
   color: #999;
   padding-bottom: 8px;
+  padding-inline-start: 17px;
   padding-top: 8px;
 }
 

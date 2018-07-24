@@ -3,11 +3,11 @@
    found in the LICENSE file. */
 
 paper-button {
-  -webkit-padding-end: 16px;
-  -webkit-padding-start: 8px;
+  padding-inline-end: 16px;
+  padding-inline-start: 8px;
 }
 
 hd-iron-icon {
-  -webkit-padding-start: 4px; /* transform(180deg) will make it padding-end. */
+  padding-inline-start: 4px; /* transform(180deg) will make it inline-end. */
   transform: rotate(180deg);
 }

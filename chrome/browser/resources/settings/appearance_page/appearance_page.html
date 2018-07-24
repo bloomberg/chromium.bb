@@ -23,7 +23,7 @@
   <template>
     <style include="settings-shared md-select iron-flex">
       .secondary-button ~ .secondary-button {
-        -webkit-margin-start: 12px;
+        margin-inline-start: 12px;
       }
 
       /* Lines up with cr-input. */
@@ -40,11 +40,11 @@
        * grit expressions and dom-if templates. That leads to a tricky thing
        * to style correctly, these are a workaround. */
       #themeRow paper-button {
-        -webkit-margin-end: 20px;
+        margin-inline-end: 20px;
       }
 
       #themeRow .separator {
-         -webkit-margin-start: 0;
+         margin-inline-start: 0;
       }
     </style>
     <settings-animated-pages id="pages" section="appearance"

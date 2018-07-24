@@ -28,13 +28,13 @@ a {
 }
 
 #installationSettings {
-  -webkit-margin-start: 20px;
+  margin-inline-start: 20px;
   margin-top: 31px; /* = 44 - font size */
 }
 
 #logging {
-  -webkit-margin-start: 20px;
   color: rgba(0, 0, 0, 0.54);
+  margin-inline-start: 20px;
   margin-top: 23px; /* = 36 - font size */
 }
 
@@ -44,12 +44,12 @@ cr-toggle {
 }
 
 #usageStatsLabelContainer {
-  -webkit-margin-start: 16px;
   line-height: 20px;
+  margin-inline-start: 16px;
 }
 
 #settings-close-button {
-  -webkit-padding-end: 18px;
+  padding-inline-end: 18px;
 }
 
 .tpm-password > div {
@@ -63,5 +63,5 @@ cr-toggle {
 }
 
 .installation-settings-spinner {
-  -webkit-margin-end: 5px;
+  margin-inline-end: 5px;
 }

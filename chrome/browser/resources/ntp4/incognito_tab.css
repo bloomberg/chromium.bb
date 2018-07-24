@@ -145,7 +145,7 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
   }
 
   .icon {
-    -webkit-margin-start: 0;
+    margin-inline-start: 0;
   }
 
   h1 {
@@ -161,8 +161,8 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
 /** Paddings and margins ---------------------------------------------------- */
 
 .bulletpoints ul {
-  -webkit-padding-start: 16px;
   margin: 4px 0 0;
+  padding-inline-start: 16px;
 }
 
 /* Margins of floating elements don't collapse. The margin for bulletpoints
@@ -172,11 +172,11 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
 }
 
 .bulletpoints + .bulletpoints {
-  -webkit-margin-start: 40px;
+  margin-inline-start: 40px;
 }
 
 .bulletpoints + .bulletpoints.too-wide {
-  -webkit-margin-start: 0;
+  margin-inline-start: 0;
   margin-top: 1.5rem;
 }
 
@@ -250,7 +250,7 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
 
   /* The two columns of bulletpoints are moved under each other. */
   .bulletpoints + .bulletpoints {
-    -webkit-margin-start: 0;
+    margin-inline-start: 0;
     margin-top: 1.5rem;
   }
 

@@ -24,7 +24,7 @@
       }
 
       #closeButton {
-        -webkit-margin-start: 8px;
+        margin-inline-start: 8px;
       }
 
       #normal-error-message p:empty,
@@ -37,11 +37,11 @@
       }
 
       #profile-blocking-error-message p {
-        -webkit-padding-start: 35px;
         background-position: 0 3px;
         background-repeat: no-repeat;
         background-size: 20px;
         line-height: 18px;
+        padding-inline-start: 35px;
       }
 
       html[dir=rtl] #profile-blocking-error-message p {
@@ -64,8 +64,8 @@
 
 <if expr="is_macosx or is_linux">
       #closeButton {
-        -webkit-margin-end: 8px;
-        -webkit-margin-start: 0;
+        margin-inline-end: 8px;
+        margin-inline-start: 0;
       }
 </if>
     </style>

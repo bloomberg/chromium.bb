@@ -593,18 +593,18 @@ html[dir=rtl] #mv-notice-x {
 
 /* Links in the notification. */
 #mv-notice-links span {
-  -webkit-margin-start: 6px;
   color: var(--text-color-link);
   cursor: pointer;
+  margin-inline-start: 6px;
   outline: none;
   padding: 0 4px;
 }
 
 .md-icons #mv-notice-links span {
-  -webkit-margin-start: 0;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
   color: rgb(26,115,232);
+  margin-inline-start: 0;
   padding: 0 16px;
 }
 

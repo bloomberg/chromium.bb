@@ -20,13 +20,13 @@
          separator lines can fill the entire width of the page. */
       #networkListDiv > * {
         /* cr-network-list is padded to the right to allow space for a ripple */
-        -webkit-padding-end: calc(var(--settings-box-row-padding) -
+        padding-inline-end: calc(var(--settings-box-row-padding) -
             var(--cr-icon-ripple-padding));
-        -webkit-padding-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--settings-box-row-padding);
       }
 
       #addButton {
-        -webkit-margin-end: var(--settings-control-label-spacing);
+        margin-inline-end: var(--settings-control-label-spacing);
       }
 
       #onOff {
@@ -38,9 +38,9 @@
       }
 
       .vpn-header {
-        -webkit-margin-end: 12px;
-        -webkit-margin-start: 4px;
         margin-bottom: 8px;
+        margin-inline-end: 12px;
+        margin-inline-start: 4px;
         margin-top: 8px;
       }
 
@@ -71,8 +71,8 @@
 
       #gmscore-notifications-instructions {
         @apply --cr-secondary-text;
-        -webkit-padding-start: 15px;
         margin: 0;
+        padding-inline-start: 15px;
       }
     </style>
 

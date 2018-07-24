@@ -98,12 +98,12 @@ list .spinner {
 
 /* Page container */
 #page-container {
-  -webkit-margin-start: var(--sidebar-width);
+  margin-inline-start: var(--sidebar-width);
 }
 
 @media screen and (max-width: 600px) {
   #page-container {
-    -webkit-margin-start: 0;
+    margin-inline-start: 0;
   }
 }
 
@@ -117,13 +117,13 @@ list .spinner {
 }
 
 #page-container .header-extras {
-  -webkit-margin-end: var(--section-padding);
-  -webkit-margin-start: var(--sidebar-width);
   align-items: flex-end;
   display: flex;
   height: var(--header-height);
   justify-content: flex-end;
   left: 0;
+  margin-inline-end: var(--section-padding);
+  margin-inline-start: var(--sidebar-width);
   position: fixed;
   right: 0;
   top: 0;
@@ -212,21 +212,21 @@ list .spinner {
 }
 
 .sidebar-content button {
-  -webkit-padding-start: var(--section-padding);
   background-color: transparent;
   border: 0;
   color: #999;
   cursor: pointer;
   font: inherit;
   height: 40px;
+  padding-inline-start: var(--section-padding);
   text-align: start;
   width: 100%;
 }
 
 .sidebar-content .selected button {
-  -webkit-border-start: 6px solid rgb(78, 87, 100);
-  -webkit-padding-start: 10px;
+  border-inline-start: 6px solid rgb(78, 87, 100);
   color: rgb(70, 78, 90);
+  padding-inline-start: 10px;
 }
 
 .sidebar-content button:hover {
@@ -347,10 +347,10 @@ table .removed {
 }
 
 .snackbar a {
-  -webkit-margin-start: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-inline-start: auto;
   text-transform: uppercase;
 }
 
@@ -370,8 +370,8 @@ table .removed {
 }
 
 .snackbar div {
-  -webkit-margin-end: 24px;
   align-self: flex-start;
+  margin-inline-end: 24px;
 }
 
 .snackbar a {
@@ -408,7 +408,7 @@ table .removed {
 }
 
 .object-fieldset .status div:first-child {
-  -webkit-margin-end: 1em;
+  margin-inline-end: 1em;
   white-space: nowrap;
 }
 
@@ -430,7 +430,7 @@ table .removed {
 /* Device Details Page */
 .device-details-page section,
 .info-container fieldset {
-  -webkit-margin-start: 1em;
+  margin-inline-start: 1em;
 }
 
 /* Value Control */

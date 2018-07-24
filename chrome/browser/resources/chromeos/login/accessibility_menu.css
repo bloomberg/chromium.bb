@@ -3,9 +3,9 @@
  * found in the LICENSE file. */
 
 #accessibility-menu {
-  -webkit-padding-end: 80px;
-  -webkit-padding-start: 25px;
   padding-bottom: 25px;
+  padding-inline-end: 80px;
+  padding-inline-start: 25px;
   padding-top: 15px;
   z-index: 1;
 }
@@ -16,7 +16,7 @@
 }
 
 .checkboxlabel {
-  -webkit-margin-start: 10px;
+  margin-inline-start: 10px;
 }
 
 .close-button {

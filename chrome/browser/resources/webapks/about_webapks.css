@@ -17,9 +17,9 @@ body {
 }
 
 .label {
-  -webkit-padding-end: 5px;
   font-size: 1.5em;
   font-weight: bold;
+  padding-inline-end: 5px;
   text-align: start;
   white-space: nowrap;
 }
@@ -32,17 +32,17 @@ body {
 }
 
 .app-name {
-  -webkit-padding-end: 5px;
   display: block;
   font-size: 1.2em;
   font-weight: bold;
   margin-top: 20px;
+  padding-inline-end: 5px;
   white-space: nowrap;
 }
 
 .app-property-label {
-  -webkit-padding-end: 5px;
   font-weight: bold;
+  padding-inline-end: 5px;
   text-align: start;
   white-space: nowrap;
 }

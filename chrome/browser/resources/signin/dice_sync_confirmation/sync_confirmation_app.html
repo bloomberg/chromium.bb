@@ -36,14 +36,14 @@
       }
 
       paper-button:not(.action-button) {
-        -webkit-margin-start: 16px;
+        margin-inline-start: 16px;
       }
 
 <if expr="is_macosx or is_linux">
       /* This works together with the button-flip in signin-dialog-shared. */
       paper-button:not(.action-button) {
-        -webkit-margin-end: 16px;
-        -webkit-margin-start: 0;
+        margin-inline-end: 16px;
+        margin-inline-start: 0;
       }
 </if>
 
@@ -107,10 +107,10 @@
       }
 
       .logo {
-        -webkit-margin-end: 16px;
         background-size: cover;
         flex-shrink: 0;
         height: 16px;
+        margin-inline-end: 16px;
         margin-top: 2px;
         position: relative;
         width: 16px;
@@ -118,9 +118,9 @@
 
       #personalize-logo {
         /* Need the following rules to adjust for white spacing in the svg. */
-        -webkit-margin-end: 14px;
         fill: var(--google-blue-700);
         height: 18px;
+        margin-inline-end: 14px;
         width: 18px;
       }
 
@@ -144,10 +144,10 @@
       }
 
       #options-container {
-        -webkit-margin-start: 16px;
         background: white;
         bottom: 0;
         left: 0;
+        margin-inline-start: 16px;
         position: absolute;
         right: 0;
         top: 0;
@@ -160,8 +160,8 @@
       }
 
       #options-description {
-        -webkit-padding-end: 24px;
         padding-bottom: 25px;
+        padding-inline-end: 24px;
       }
 
       cr-radio-button {

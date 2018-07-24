@@ -10,5 +10,5 @@
 hd-iron-icon {
   --iron-icon-height: 20px;
   --iron-icon-width: 20px;
-  -webkit-margin-end: 4px;
+  margin-inline-end: 4px;
 }

@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #reset-revert-spinner {
-  -webkit-margin-end: 5px;
+  margin-inline-end: 5px;
 }
 
 a {
@@ -19,9 +19,9 @@ a {
 }
 
 #tpmFirmwareUpdate {
-  -webkit-margin-start: 20px;
   font: 13px Roboto, sans-serif;
   margin-bottom: 20px;
+  margin-inline-start: 20px;
   margin-top: 23px; /* = 36 - font size */
   width: 100%;
 }

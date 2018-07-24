@@ -3,10 +3,10 @@
    found in the LICENSE file. */
 
 paper-button {
-  -webkit-padding-end: 8px;
-  -webkit-padding-start: 16px;
+  padding-inline-end: 8px;
+  padding-inline-start: 16px;
 }
 
 hd-iron-icon {
-  -webkit-padding-start: 4px;
+  padding-inline-start: 4px;
 }

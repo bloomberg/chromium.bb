@@ -85,12 +85,12 @@ p.title {
 #button-retry,
 #button-agree,
 #button-next {
-  -webkit-margin-end: 18px;
+  margin-inline-end: 18px;
 }
 
 #button-cancel,
 #button-send-feedback {
-  -webkit-margin-end: 6px;
+  margin-inline-end: 6px;
 }
 
 #overlay-text-content p {
@@ -120,8 +120,8 @@ p.title {
 }
 
 .controlled-setting-indicator {
-  -webkit-margin-end: 3px;
-  -webkit-margin-start: 2px;
+  margin-inline-end: 3px;
+  margin-inline-start: 2px;
 }
 
 .controlled-setting-indicator[controlled-by] > div {

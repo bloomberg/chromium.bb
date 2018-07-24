@@ -3,10 +3,10 @@
  * found in the LICENSE file. */
 
 .apps-menu-item {
-  -webkit-padding-start: 24px;
   background: no-repeat 4px 50%;
   background-size: 16px;
   overflow: hidden;
+  padding-inline-start: 24px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

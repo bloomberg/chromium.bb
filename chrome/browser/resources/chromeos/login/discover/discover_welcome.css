@@ -3,5 +3,5 @@
    found in the LICENSE file. */
 
 oobe-text-button {
-  -webkit-padding-start: 8px;
+  padding-inline-start: 8px;
 }

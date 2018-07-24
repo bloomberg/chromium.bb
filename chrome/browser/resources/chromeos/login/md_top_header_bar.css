@@ -61,8 +61,8 @@ html[dir=rtl] .new-note-action:focus {
 }
 
 .new-note-action-icon {
-  -webkit-padding-end: 11px;
   height: 16px;
+  padding-inline-end: 11px;
   padding-top: 12px;
   width: 16px;
 }

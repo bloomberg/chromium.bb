@@ -109,5 +109,5 @@ p {
 
 #arc-tos-back-button,
 #arc-tos-skip-button {
-  -webkit-padding-end: 6px;
+  padding-inline-end: 6px;
 }

@@ -15,7 +15,7 @@
 
 #keyboard-tick,
 #mouse-tick {
-  -webkit-margin-start: -28px;
+  margin-inline-start: -28px;
   position: relative;
   top: 4px;
 }
@@ -25,7 +25,7 @@
 };
 
 #hid-continue-button {
-  -webkit-padding-end: 18px;
+  padding-inline-end: 18px;
 }
 
 [slot='bottom-buttons'] {

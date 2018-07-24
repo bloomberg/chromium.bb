@@ -25,7 +25,7 @@
 }
 
 .overview-list-item-icon {
-  -webkit-padding-end: 16px;
+  padding-inline-end: 16px;
 }
 
 .overview-list-item-title {
@@ -35,9 +35,9 @@
 
 cr-checkbox {
   --cr-checkbox-label-container: {
-    -webkit-padding-start: 12px;
+    padding-inline-start: 12px;
   };
-  -webkit-padding-start: 8px;
+  padding-inline-start: 8px;
   padding-top: 28px; /* 40 to label base line => 40 - 16/2 - 13/3 = 28 */
 }
 
@@ -61,7 +61,7 @@ cr-checkbox {
 }
 
 #syncConsentNewDialog .sync-feature-item-icon {
-  -webkit-padding-end: 16px;
+  padding-inline-end: 16px;
 }
 
 #syncConsentNewDialog [slot='bottom-buttons'] {

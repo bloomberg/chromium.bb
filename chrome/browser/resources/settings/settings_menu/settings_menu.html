@@ -23,15 +23,15 @@
         --cr-selectable-focus: {
           outline: auto 5px -webkit-focus-ring-color;
         };
-        -webkit-margin-end: 2px;  /* Margin so selected outline is visible. */
-        -webkit-margin-start: 1px;
-        -webkit-padding-start: 23px;  /* 24px - 1px from margin for outline. */
         align-items: center;
         color: var(--settings-nav-grey);
         display: flex;
         font-weight: 500;
+        margin-inline-end: 2px;  /* Margin so selected outline is visible. */
+        margin-inline-start: 1px;
         min-height: 20px;
         padding-bottom: 10px;
+        padding-inline-start: 23px;  /* 24px - 1px from margin for outline. */
         padding-top: 10px;
       }
 
@@ -41,7 +41,7 @@
 
       iron-icon {
         --iron-icon-fill-color: var(--settings-nav-grey);
-        -webkit-margin-end: 24px;
+        margin-inline-end: 24px;
         pointer-events: none;
         vertical-align: top;
       }
@@ -51,12 +51,12 @@
       }
 
       #advancedButton {
-        -webkit-padding-end: 0;
         background-color: unset;
         border: none;
         border-radius: initial;
         height: unset;
         margin-top: 8px;
+        padding-inline-end: 0;
         text-transform: none;
       }
 
@@ -77,7 +77,7 @@
       #advancedButton > iron-icon,
       #extensionsLink > iron-icon {
         @apply --cr-icon-height-width;
-        -webkit-margin-end: 14px;  /* 16px - 2px from margin for outline. */
+        margin-inline-end: 14px;  /* 16px - 2px from margin for outline. */
       }
 
       #menuSeparator {

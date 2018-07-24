@@ -48,7 +48,7 @@
     <style include="settings-shared iron-flex">
       setting-box.middle {
         /* Per spec, middle text is indented 20px in this section. */
-        -webkit-margin-start: 20px;
+        margin-inline-start: 20px;
       }
 
       #profile-icon {
@@ -101,10 +101,10 @@
       }
 
       .delete-profile-warning {
-        -webkit-padding-end: var(--cr-section-padding);
-        /* In order to line up with the checkbox text. */
-        -webkit-padding-start: var(--cr-section-indent-padding);
         padding-bottom: 10px;
+        padding-inline-end: var(--cr-section-padding);
+        /* In order to line up with the checkbox text. */
+        padding-inline-start: var(--cr-section-indent-padding);
         padding-top: 10px;
       }
 
