@@ -438,6 +438,24 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseOutOfOrder) {
                                 QuicHeaderList());
 }
 
+TEST_P(QuicSpdyClientSessionTest, PushPromiseOutgoingStreamId) {
+  // Initialize crypto before the client session will create a stream.
+  CompleteCryptoHandshake();
+
+  MockQuicSpdyClientStream* stream = static_cast<MockQuicSpdyClientStream*>(
+      session_->CreateOutgoingDynamicStream());
+
+  // Promise an illegal (outgoing) stream id.
+  promised_stream_id_ = 1;
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_STREAM_ID,
+                      "Received push stream id for outgoing stream.", _));
+
+  session_->OnPromiseHeaderList(stream->id(), promised_stream_id_, 0,
+                                QuicHeaderList());
+}
+
 TEST_P(QuicSpdyClientSessionTest, PushPromiseHandlePromise) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
