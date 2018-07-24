@@ -584,6 +584,7 @@
 <translation id="5089810972385038852">Tiểu bang</translation>
 <translation id="5094747076828555589">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chromium tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="5095208057601539847">Tỉnh/thành phố</translation>
+<translation id="5098332213681597508">Tên này lấy từ Tài khoản Google của bạn.</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5121084798328133320">Sau khi bạn xác nhận, thông tin chi tiết thẻ từ tài khoản thanh toán Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="5128122789703661928">Không thể xóa phiên do tên phiên không hợp lệ.</translation>
@@ -669,6 +670,7 @@
 <translation id="5633066919399395251">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm vào máy tính của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Đã chặn nội dung lừa đảo.</translation>
 <translation id="5659593005791499971">Email</translation>
+<translation id="5666899935841546222">Bạn có muốn lưu tất cả các thẻ của mình ở cùng một nơi không?</translation>
 <translation id="5675650730144413517">Trang này hiện không hoạt động</translation>
 <translation id="5685654322157854305">Thêm địa chỉ giao hàng</translation>
 <translation id="5689199277474810259">Xuất sang định dạng JSON</translation>

@@ -40,11 +40,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="1915828456209461693">Υπάρχει νέα διαθέσιμη ενημέρωση για το Chrome και θα εφαρμοστεί μόλις κάνετε επανεκκίνηση.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chrome θα γίνει σε # λεπτά}}</translation>
 <translation id="2063848847527508675">Για να εφαρμοστεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση του Chrome OS.</translation>
 <translation id="2084710999043359739">Προσθήκη στο Chrome</translation>
 <translation id="2094919256425865063">Να τερματιστεί η λειτουργία του Chrome ούτως ή άλλως;</translation>
-<translation id="210890598424854131">{0,plural, =0{Η επανεκκίνηση του Chrome θα γίνει τώρα}=1{Η επανεκκίνηση του Chrome θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chrome θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="2120620239521071941">Με αυτήν την ενέργεια θα διαγραφούν <ph name="ITEMS_COUNT" /> στοιχεία από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Συμβάλετε στη βελτίωση του Chrome, αναφέροντας τις <ph name="BEGIN_LINK" />τρέχουσες ρυθμίσεις<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας.</translation>
@@ -146,7 +144,6 @@
 <translation id="4771048833395599659">Αυτό το αρχείο ενδέχεται να είναι επικίνδυνο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="4794050651896644714">Αποθήκευση λεπτομερειών στο Chrome</translation>
 <translation id="4804732725083176494">Η σύνδεση στο Chrome είναι απενεργοποιημένη από τον διαχειριστή αυτής της συσκευής.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Επανεκκίνηση του Chrome εντός μίας ημέρας}other{Επανεκκίνηση του Chrome εντός # ημερών}}</translation>
 <translation id="4891791193823137474">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="4895437082222824641">Άνοιγμα συνδέσμου σε νέα καρτέ&amp;λα Chrome</translation>
 <translation id="4921569541910214635">Μοιράζεστε έναν υπολογιστή; Τώρα μπορείτε να ρυθμίσετε το Chrome όπως ακριβώς σας αρέσει.</translation>
@@ -154,7 +151,6 @@
 <translation id="495931528404527476">Στο Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Το Chrome θα επανεκκινηθεί σε μία ώρα}other{Το Chrome θα επανεκκινηθεί σε # ώρες}}</translation>
 <translation id="5132929315877954718">Ανακαλύψτε υπέροχες εφαρμογές, παιχνίδια, επεκτάσεις και θέματα για το Google Chrome.</translation>
 <translation id="5166975452760862670">Το Google Chrome εμφανίζεται σε αυτήν τη γλώσσα</translation>
 <translation id="5170938038195470297">Το προφίλ σας δεν μπορεί να χρησιμοποιηθεί επειδή προέρχεται από μια νεότερη έκδοση του Google Chrome.
@@ -258,7 +254,6 @@
 <translation id="8547799825197623713">Λειτουργία εκκίνησης εφαρμογών Chrome Canary</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
 <translation id="8568392309447938879">Θα πρέπει να έχετε συνδεθεί στο Chrome για να χρησιμοποιείτε εφαρμογές. Αυτό δίνει τη δυνατότητα στο Chrome να συγχρονίσει τις εφαρμογές, τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και άλλες ρυθμίσεις στις συσκευές σας.</translation>
-<translation id="859960207076826247">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome για # ημέρες}}</translation>
 <translation id="8606668294522778825">Το Google Chrome ενδέχεται να χρησιμοποιεί υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας. Μπορείτε, εάν θέλετε, να απενεργοποιήσετε αυτές τις υπηρεσίες. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
 <translation id="8667808506758191620">Το <ph name="DEVICE_TYPE" /> είναι ενημερωμένο.</translation>

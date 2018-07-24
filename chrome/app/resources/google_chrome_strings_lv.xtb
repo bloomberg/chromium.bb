@@ -40,11 +40,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
 <translation id="1915828456209461693">Pieejams Chrome atjauninājums, un tas tiks lietots, tiklīdz restartēsiet pārlūku.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Pārlūks Chrome tiks restartēts pēc 1 minūtes}zero{Pārlūks Chrome tiks restartēts pēc # minūtēm}one{Pārlūks Chrome tiks restartēts pēc # minūtes}other{Pārlūks Chrome tiks restartēts pēc # minūtēm}}</translation>
 <translation id="2063848847527508675">Lai lietotu atjauninājumu, Chrome OS ir jārestartē.</translation>
 <translation id="2084710999043359739">Pievienot pārlūkam Chrome</translation>
 <translation id="2094919256425865063">Vai tik un tā aizvērt pārlūku Chrome?</translation>
-<translation id="210890598424854131">{0,plural, =0{Pārlūks Chrome tiks restartēts tūlīt}=1{Pārlūks Chrome tiks restartēts pēc 1 sekundes}zero{Pārlūks Chrome tiks restartēts pēc # sekundēm}one{Pārlūks Chrome tiks restartēts pēc # sekundes}other{Pārlūks Chrome tiks restartēts pēc # sekundēm}}</translation>
 <translation id="2120620239521071941">Veicot šo darbību, no šīs ierīces tiks dzēsts(-i) <ph name="ITEMS_COUNT" /> vienums(-i). Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chrome kā <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Palīdziet uzlabot pārlūku Chrome, ziņojot par <ph name="BEGIN_LINK" />pašreizējiem iestatījumiem<ph name="END_LINK" />.</translation>
 <translation id="216054706567564023">Instalējiet pārlūku Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu konta atkopšanas tālruņa numuru.</translation>
@@ -146,7 +144,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4771048833395599659">Šis fails var būt bīstams, tāpēc Chrome to bloķēja.</translation>
 <translation id="4794050651896644714">Saglabāt informāciju pārlūkā Chrome</translation>
 <translation id="4804732725083176494">Šīs ierīces administrators ir atspējojis pierakstīšanos pārlūkā Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Palaist Chrome atkārtoti dienas laikā}zero{Palaist Chrome atkārtoti # dienu laikā}one{Palaist Chrome atkārtoti # dienas laikā}other{Palaist Chrome atkārtoti # dienu laikā}}</translation>
 <translation id="4891791193823137474">Ļaut Google Chrome darboties fonā</translation>
 <translation id="4895437082222824641">Atvērt saiti jaunā Chrome &amp;cilnē</translation>
 <translation id="4921569541910214635">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chrome atbilstoši savām vajadzībām.</translation>
@@ -154,7 +151,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="495931528404527476">Pārlūkprogrammā Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome tiks palaists atkārtoti pēc stundas}zero{Chrome tiks palaists atkārtoti pēc # stundām}one{Chrome tiks palaists atkārtoti pēc # stundas}other{Chrome tiks palaists atkārtoti pēc # stundām}}</translation>
 <translation id="5132929315877954718">Atklājiet lieliskas lietotnes, spēles, paplašinājumus un motīvus, ko varat izmantot pārlūkā Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome tiek rādīts šajā valodā.</translation>
 <translation id="5170938038195470297">Jūsu profilu nevar lietot, jo tas ir veidots ar jaunāku Google Chrome versiju.
@@ -258,7 +254,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8547799825197623713">Chrome lietotņu palaišanas programma kanālam Canary</translation>
 <translation id="8556340503434111824">Ir pieejama jauna Google Chrome versija, un tā ir ātrāka nekā jebkad agrāk.</translation>
 <translation id="8568392309447938879">Lai izmantotu lietotnes, jums ir jāpierakstās pārlūkā Chrome. Tādējādi pārlūkā Chrome var sinhronizēt jūsu lietotnes, grāmatzīmes, vēsturi, paroles un citus iestatījumus dažādās ierīcēs.</translation>
-<translation id="859960207076826247">{0,plural, =0{Ir pieejams Chrome atjauninājums}=1{Ir pieejams Chrome atjauninājums}zero{Chrome atjauninājums ir pieejams # dienas}one{Chrome atjauninājums ir pieejams # dienu}other{Chrome atjauninājums ir pieejams # dienas}}</translation>
 <translation id="8606668294522778825">Google Chrome var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Jūs varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8614913330719544658">Google Chrome nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> ierīce ir atjaunināta.</translation>

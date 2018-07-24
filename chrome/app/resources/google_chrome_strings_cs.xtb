@@ -42,11 +42,9 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
 <translation id="1915828456209461693">Je k dispozici nová aktualizace Chromu, která bude použita po restartování.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome se za 1 minutu restartuje}few{Chrome se za # minuty restartuje}many{Chrome se za # minuty restartuje}other{Chrome se za # minut restartuje}}</translation>
 <translation id="2063848847527508675">Aktualizace se použije po restartování systému Chrome OS.</translation>
 <translation id="2084710999043359739">Přidat do prohlížeče Chrome</translation>
 <translation id="2094919256425865063">Přesto Chrome ukončit?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome se teď restartuje}=1{Chrome se za 1 sekundu restartuje}few{Chrome se za # sekundy restartuje}many{Chrome se za # sekundy restartuje}other{Chrome se za # sekund restartuje}}</translation>
 <translation id="2120620239521071941">Ze zařízení bude smazán následující počet položek: <ph name="ITEMS_COUNT" />. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomozte s vylepšováním prohlížeče Chrome tím, že nahlásíte <ph name="BEGIN_LINK" />aktuální nastavení<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Nainstalujte si Chrome do telefonu. Zašleme vám SMS na telefonní číslo pro obnovení účtu.</translation>
@@ -148,7 +146,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="4771048833395599659">Tento soubor může být nebezpečný, proto jej Chrome zablokoval.</translation>
 <translation id="4794050651896644714">Ukládat údaje do prohlížeče Chrome</translation>
 <translation id="4804732725083176494">Přihlášení do Chromu je administrátorem tohoto zařízení zakázáno.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Do jednoho dne Chrome restartujte}few{Do # dnů Chrome restartujte}many{Do # dne Chrome restartujte}other{Do # dnů Chrome restartujte}}</translation>
 <translation id="4891791193823137474">Nechat aplikaci Google Chrome spuštěnou na pozadí</translation>
 <translation id="4895437082222824641">Otevřít odkaz na nové kar&amp;tě Chrome</translation>
 <translation id="4921569541910214635">Sdílíte počítač s dalšími uživateli? Nyní si Chrome můžete nastavit podle svých představ.</translation>
@@ -156,7 +153,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="495931528404527476">V Chromu</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome se za hodinu restartuje}few{Chrome se za # hodiny restartuje}many{Chrome se za # hodiny restartuje}other{Chrome se za # hodin restartuje}}</translation>
 <translation id="5132929315877954718">Objevte skvělé aplikace, hry, rozšíření a motivy prohlížeče Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome se zobrazuje v tomto jazyce</translation>
 <translation id="5170938038195470297">Nelze použít váš profil, protože byl vytvořen v novější verzi aplikace Google Chrome.
@@ -262,7 +258,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="8547799825197623713">Spouštěč aplikací Chrome Canary</translation>
 <translation id="8556340503434111824">Je k dispozici nová verze prohlížeče Google Chrome, ještě rychlejší než ty předchozí.</translation>
 <translation id="8568392309447938879">Chcete-li používat aplikace, musíte být do Chromu přihlášeni. To Chromu umožňuje synchronizovat vaše aplikace, záložky, historii, hesla a další nastavení mezi zařízeními.</translation>
-<translation id="859960207076826247">{0,plural, =0{Je k dispozici aktualizace Chromu}=1{Je k dispozici aktualizace Chromu}few{Již # dny je k dispozici aktualizace Chromu}many{Již # dne je k dispozici aktualizace Chromu}other{Již # dní je k dispozici aktualizace Chromu}}</translation>
 <translation id="8606668294522778825">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb. Tyto služby můžete případně zakázat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome neodpovídá. Restartovat?</translation>
 <translation id="8667808506758191620">Vaše zařízení <ph name="DEVICE_TYPE" /> je aktuální.</translation>

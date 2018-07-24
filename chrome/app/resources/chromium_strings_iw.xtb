@@ -17,7 +17,6 @@
 <translation id="1668054258064581266">‏לאחר הסרת החשבון שלך מ-Chromeium, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="1688750314291223739">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Chromium בכל מחשב.</translation>
 <translation id="1708666629004767631">‏גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
-<translation id="1716051742506968">{0,plural, =0{‏יש עדכון זמין בשביל Chromium}=1{‏יש עדכון זמין בשביל Chromium}two{‏יש עדכון זמין בשביל Chromium כבר יומיים}many{‏יש עדכון זמין בשביל Chromium כבר # ימים}other{‏יש עדכון זמין בשביל Chromium כבר # ימים}}</translation>
 <translation id="1766096484055239003">‏לפי דרישת מנהל המערכת, יש להפעיל מחדש את Chromium כדי להחיל עדכון</translation>
 <translation id="1774152462503052664">‏אפשר ל-Chromium לפעול ברקע</translation>
 <translation id="1779356040007214683">‏כדי לשפר את האבטחה של Chromium, השבתנו חלק מהתוספים שלא רשומים ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוספו ללא ידיעתך.</translation>
@@ -50,7 +49,6 @@
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="2898082584336937987">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
-<translation id="2943431542152338750">{0,plural, =1{‏הפעלה מחדש של Chromium בתוך יום}two{‏הפעלה מחדש של Chromium בתוך # ימים}many{‏הפעלה מחדש של Chromium בתוך # ימים}other{‏הפעלה מחדש של Chromium בתוך # ימים}}</translation>
 <translation id="2977470724722393594">‏Chromium‏ מעודכן</translation>
 <translation id="3032787606318309379">‏הוספה ל-Chromium</translation>
 <translation id="3046695367536568084">‏עליך להיות מחובר ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
@@ -93,10 +91,8 @@
 <translation id="4415566066719264597">‏Chromium יכול לפעול ברקע</translation>
 <translation id="4421155425831608516">‏מנהל המערכת של המכשיר הזה השבית את הכניסה אל Chromium.</translation>
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
-<translation id="4449801103833300785">{0,plural, =1{‏Chromium יופעל מחדש בעוד שעה}two{‏Chromium יופעל מחדש בעוד # שעות}many{‏Chromium יופעל מחדש בעוד # שעות}other{‏Chromium יופעל מחדש בעוד # שעות}}</translation>
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="459535195905078186">‏יישומי Chromium</translation>
-<translation id="4604377857208775795">{0,plural, =1{‏Chromium יופעל מחדש בעוד דקה}two{‏Chromium יופעל מחדש בעוד # דקות}many{‏Chromium יופעל מחדש בעוד # דקות}other{‏Chromium יופעל מחדש בעוד # דקות}}</translation>
 <translation id="4621240073146040695">‏העדכון כמעט הושלם! הפעל מחדש את Chromium‏ כדי לסיים את העדכון.</translation>
 <translation id="4677944499843243528">‏נראה שהפרופיל נמצא בשימוש על ידי תהליך Chromium אחר (<ph name="PROCESS_ID" />) במחשב אחר (<ph name="HOST_NAME" />)‏. Chromium נעל את הפרופיל כדי שלא ייפגם. אם אתה משוכנע שאף תהליך אחר אינו משתמש בפרופיל זה, תוכל לבטל את נעילת הפרופיל ולהפעיל את Chromium מחדש.</translation>
 <translation id="469338717132742108">‏קבל עזרה בנושא Chromium OS</translation>
@@ -158,7 +154,6 @@
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
 <translation id="6570579332384693436">‏Chromium שולח את הטקסט שמוקלד בשדות טקסט ל-Google כדי לתקן שגיאות כתיב</translation>
 <translation id="6598877126913850652">‏מעבר אל הגדרות ההודעות של Chromium</translation>
-<translation id="6664239887951090350">{0,plural, =0{‏Chromium יופעל מחדש עכשיו}=1{‏Chromium יופעל מחדש בעוד שנייה}two{‏Chromium יופעל מחדש בעוד # שניות}many{‏Chromium יופעל מחדש בעוד # שניות}other{‏Chromium יופעל מחדש בעוד # שניות}}</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6717134281241384636">‏לא ניתן להשתמש בפרופיל שלך משום שהוא מגיע מגרסה חדשה יותר של Chromium.
 

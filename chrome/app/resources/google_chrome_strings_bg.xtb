@@ -40,11 +40,9 @@
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome не е актуален</translation>
 <translation id="1915828456209461693">Налице е актуализация за Chrome, която ще бъде приложена веднага щом рестартирате.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome ще се рестартира след 1 минута}other{Chrome ще се рестартира след # минути}}</translation>
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
 <translation id="2084710999043359739">Добавяне</translation>
 <translation id="2094919256425865063">Искате ли да затворите Chrome въпреки това?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome ще се рестартира сега}=1{Chrome ще се рестартира след 1 секунда}other{Chrome ще се рестартира след # секунди}}</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> елемента ще се изтрият от това устройство. За да извлечете данните си по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Помогнете за подобряването на Chrome, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Инсталирайте Chrome на телефона си. Ще изпратим SMS на телефонния номер за възстановяване на профила ви.</translation>
@@ -146,7 +144,6 @@
 <translation id="4771048833395599659">Chrome блокира този файл, тъй като може да е опасен.</translation>
 <translation id="4794050651896644714">Подробностите да се запазват в Chrome</translation>
 <translation id="4804732725083176494">Функцията за влизане в Chrome е деактивирана от администратора на това устройство.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Повторно стартиране на Chrome след един ден}other{Повторно стартиране на Chrome след # дни}}</translation>
 <translation id="4891791193823137474">Google Chrome да се изпълнява на заден план</translation>
 <translation id="4895437082222824641">Отваряне на връзката в нов &amp;раздел на Chrome</translation>
 <translation id="4921569541910214635">Споделяте компютър? Вече можете да настроите Chrome точно по свой вкус.</translation>
@@ -154,7 +151,6 @@
 <translation id="495931528404527476">В Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome ще стартира отново след един час}other{Chrome ще стартира отново след # часа}}</translation>
 <translation id="5132929315877954718">Открийте отлични приложения, игри, разширения и теми за Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome се показва на този език</translation>
 <translation id="5170938038195470297">Потребителският ви профил не може да се използва, защото е от по-нова версия на Google Chrome. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chrome.</translation>
@@ -256,7 +252,6 @@
 <translation id="8547799825197623713">Стартов панел за приложения в ранната версия на Chrome</translation>
 <translation id="8556340503434111824">Налице е нова версия на Google Chrome, която е по-бърза от всякога.</translation>
 <translation id="8568392309447938879">Трябва да сте влезли в Chrome, за да използвате приложения. Това разрешава на браузъра да синхронизира на устройствата вашите приложения, отметки, история, пароли и други настройки.</translation>
-<translation id="859960207076826247">{0,plural, =0{Налице е актуализация за Chrome}=1{Налице е актуализация за Chrome}other{Налице е актуализация за Chrome от # дни}}</translation>
 <translation id="8606668294522778825">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви. Ако искате, можете да ги деактивирате. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="8667808506758191620">Устройството ви <ph name="DEVICE_TYPE" /> е актуално.</translation>

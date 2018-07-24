@@ -29,6 +29,7 @@
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1204037785786432551">Descargar vínculo</translation>
 <translation id="1206892813135768548">Copiar texto del vínculo</translation>
+<translation id="1208340532756947324">Para sincronizar diferentes dispositivos y personalizar tu experiencia, activa la sincronización</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="123724288017357924">Volver a cargar página actual; ignorar contenido en caché</translation>
 <translation id="124116460088058876">Más idiomas</translation>
@@ -129,6 +130,7 @@
 <translation id="1989112275319619282">Navegar</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> desea sincronizarse</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
+<translation id="2002537628803770967">Tarjetas de crédito y direcciones con Google Pay</translation>
 <translation id="200815880754187296">Otras apps: <ph name="KILOBYTES" /> kilobytes</translation>
 <translation id="2017836877785168846">Borra el historial y las opciones de autocompletado en la barra de direcciones.</translation>
 <translation id="2021896219286479412">Controles en pantalla completa</translation>
@@ -225,6 +227,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2781151931089541271">1 segundo restante</translation>
 <translation id="2810645512293415242">La página se simplificó para ahorrar datos y acelerar la carga.</translation>
+<translation id="2818669890320396765">Para que tus favoritos estén en todos tus dispositivos, accede a tu cuenta y activa la sincronización</translation>
 <translation id="2836148919159985482">Toca el botón Atrás para salir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -303,6 +306,7 @@
 <translation id="3549657413697417275">Busca tu historial.</translation>
 <translation id="3552151358455404883">Administra Sincronización de Chrome y la personalización en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Agregar a contactos</translation>
+<translation id="3568688522516854065">Para obtener las pestañas de tus otros dispositivos, accede a tu cuenta y activa la sincronización</translation>
 <translation id="3587482841069643663">Todos</translation>
 <translation id="3590487821116122040">Almacenamiento de sitios que Chrome no considera importantes (por ejemplo, sitios que no visitas a menudo o sin configuración guardada)</translation>
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que accediste. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -375,6 +379,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4192273449750167573">Revisar tu configuración en la pantalla siguiente</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4198423547019359126">No hay ubicaciones de descarga disponibles</translation>
+<translation id="4209895695669353772">Para obtener contenido personalizado y sugerido por Google, activa la sincronización</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
@@ -400,6 +405,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Se descargó <ph name="FILE_NAME" /> en <ph name="PRODUCT_NAME" /></translation>
 <translation id="4468959413250150279">Silenciar un sitio específico.</translation>
+<translation id="4472118726404937099">Para sincronizar diferentes dispositivos y personalizar tu experiencia, accede a tu cuenta y activa la sincronización</translation>
 <translation id="4479647676395637221">Preguntar primero antes de permitir que los sitios usen tu cámara (recomendado)</translation>
 <translation id="4487967297491345095">Todos los datos de app de Chrome se borrarán de forma permanente. Esta información incluye todos los archivos, opciones de configuración, cuentas, bases de datos, etc.</translation>
 <translation id="4508440807153586353">Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -584,6 +590,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5858741533101922242">Chrome no puede activar el adaptador Bluetooth</translation>
 <translation id="5860033963881614850">Desactivado</translation>
+<translation id="5862731021271217234">Para obtener las pestañas de tus otros dispositivos, activa la sincronización</translation>
 <translation id="5864174910718532887">Detalles: Ordenados por nombre de sitio</translation>
 <translation id="5864419784173784555">Esperando que finalice otra descarga…</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
@@ -862,6 +869,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8100932616285851614">Se cerró el panel de navegación</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
 <translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
+<translation id="8109613176066109935">Para que tus favoritos estén en todos tus dispositivos, activa la sincronización</translation>
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="8168435359814927499">Contenido</translation>
@@ -966,6 +974,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070377983101773829">Iniciar búsqueda por voz</translation>
 <translation id="9071742570345586758">Para ver contenido de realidad virtual, instala los servicios de RV de Google</translation>
+<translation id="9074336505530349563">Para obtener contenido personalizado y sugerido por Google, accede a tu cuenta y activa la sincronización</translation>
 <translation id="9086455579313502267">No se puede acceder a la red</translation>
 <translation id="9099018167121903954">Contenido descargado: <ph name="KILOBYTES" /> kilobytes</translation>
 <translation id="9100505651305367705">Se ofrece mostrar artículos en una vista simplificada, cuando es compatible</translation>

@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Lokaliseerimist kasutatakse, kuid parameetrit default_locale ei olnud manifestis määratud.</translation>
 <translation id="2576842806987913196">Selle nimega CRX-fail on juba olemas.</translation>
 <translation id="2753617847762399167">Keelatud tee (absoluutne või suhteline üksusega '..'): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">Laiendusel ei õnnestunud võrgutaotlust muuta, kuna muutmisel tekkis vastuolu muu laiendusega.</translation>
 <translation id="2785530881066938471">Sisuskripti jaoks ei õnnestunud laadida faili <ph name="RELATIVE_PATH" />, kuna sellel ei ole UTF-8 kodeeringut.</translation>
 <translation id="2903070246402204397">Laienduse <ph name="EXTENSION_NAME" /> (laienduse ID „<ph name="EXTENSION_ID" />”) blokeeris administraator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paketti ei saanud installida: „<ph name="ERROR_CODE" />”</translation>

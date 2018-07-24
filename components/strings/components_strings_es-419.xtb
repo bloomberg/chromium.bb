@@ -585,6 +585,7 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="5095208057601539847">Provincia</translation>
+<translation id="5098332213681597508">Este nombre es de tu cuenta de Google.</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5121084798328133320">Después de que confirmes esta acción, los datos de tu cuenta de Google Payments se compartirán con este sitio.</translation>
 <translation id="5128122789703661928">La sesión con este nombre no se puede borrar.</translation>
@@ -670,6 +671,7 @@
 <translation id="5633066919399395251">Es posible que los atacantes que actualmente se encuentran en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten instalar programas peligrosos en tu computadora para robar o borrar información (p. ej., fotos, contraseñas, mensajes y tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Se bloqueó contenido engañoso.</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
+<translation id="5666899935841546222">¿Quieres tener todas tus tarjetas en un solo lugar?</translation>
 <translation id="5675650730144413517">Esta página no funciona</translation>
 <translation id="5685654322157854305">Agregar dirección de envío</translation>
 <translation id="5689199277474810259">Exportar a JSON</translation>

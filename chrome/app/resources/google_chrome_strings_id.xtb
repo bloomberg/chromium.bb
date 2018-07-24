@@ -38,11 +38,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="1915828456209461693">Update baru untuk Chrome telah tersedia dan akan diterapkan segera setelah diluncurkan ulang.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome akan diluncurkan ulang dalam 1 menit}other{Chrome akan diluncurkan ulang dalam # menit}}</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
 <translation id="2084710999043359739">Tambahkan ke Chrome</translation>
 <translation id="2094919256425865063">Tetap tutup Chrome?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome akan diluncurkan ulang sekarang}=1{Chrome akan diluncurkan ulang dalam 1 detik}other{Chrome akan diluncurkan ulang dalam # detik}}</translation>
 <translation id="2120620239521071941">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Bantu Chrome jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda.</translation>
@@ -144,7 +142,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4771048833395599659">File ini mungkin berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="4794050651896644714">Simpan detail di Chrome</translation>
 <translation id="4804732725083176494">Login ke Chrome dinonaktifkan oleh administrator perangkat ini.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Luncurkan ulang Chrome dalam satu hari}other{Luncurkan ulang Chrome dalam # hari}}</translation>
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="4895437082222824641">Buka link di &amp;tab Chrome baru</translation>
 <translation id="4921569541910214635">Membagikan komputer? Kini Anda dapat menyiapkan Chrome seperti yang Anda inginkan.</translation>
@@ -152,7 +149,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="495931528404527476">Di Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome akan diluncurkan ulang dalam satu jam}other{Chrome akan diluncurkan ulang dalam # jam}}</translation>
 <translation id="5132929315877954718">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome ditampilkan dalam bahasa ini</translation>
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
@@ -254,7 +250,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8547799825197623713">Peluncur Aplikasi Chrome Canary</translation>
 <translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="8568392309447938879">Anda perlu masuk ke Chrome untuk menggunakan aplikasi. Ini memungkinkan Chrome menyinkronkan aplikasi, bookmark, histori, sandi, dan setelan Anda yang lain di seluruh perangkat.</translation>
-<translation id="859960207076826247">{0,plural, =0{Update Chrome tersedia}=1{Update Chrome tersedia}other{Update Chrome telah tersedia selama # hari}}</translation>
 <translation id="8606668294522778825">Google Chrome dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>

@@ -237,6 +237,13 @@
       Caso contrario, si debe mantenerse la compatibilidad con un servidor con errores, esta política puede configurarse en "tls1.1". Esta es una medida provisoria, y el servidor debe arreglarse rápidamente.</translation>
 <translation id="1864269674877167562">Si esta política no se configura o se establece como un string en blanco, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción de autocompletar durante el flujo de acceso del usuario.
       Si esta política se establece como un string que representa un nombre de dominio, <ph name="PRODUCT_OS_NAME" /> mostrará una opción de autocompletar durante el acceso del usuario, lo que permitirá que el usuario escriba solamente el nombre de usuario sin la extensión del nombre de dominio. El usuario podrá sobrescribir esta extensión de nombre de dominio.</translation>
+<translation id="1864382791685519617">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
+
+      Controla la precarga de DNS y la preconexión a TCP y SSL, así como la representación previa de páginas web.
+
+      Si se establece esta política, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
+
+      Si no se establece, se habilitará la predicción de red y el usuario podrá cambiarla.</translation>
 <translation id="1865417998205858223">Permisos de clave</translation>
 <translation id="186719019195685253">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con alimentación de corriente</translation>
 <translation id="187819629719252111">Permite el acceso a archivos locales en la máquina al permitir que <ph name="PRODUCT_NAME" /> muestre los cuadros de diálogo de selección de archivos. Si se habilita esta configuración, los usuarios podrán abrir los cuadros de diálogo de selección de archivos como de costumbre. Si se inhabilita esta configuración, siempre que el usuario realice una acción que podría provocar un cuadro de diálogo de selección de archivos (como importar favoritos, cargar archivos, guardar enlaces, etc.), se mostrará un mensaje y se asumirá que el usuario ha hecho clic en Cancelar en el cuadro de diálogo de selección de archivos. Si esta opción no se configura, los usuarios podrán abrir cuadros de diálogo de selección de archivos como de costumbre.</translation>
@@ -686,6 +693,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, se utiliza <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Cantidad máxima de conexiones simultáneas con el servidor proxy</translation>
+<translation id="2951386431828317490">Habilitar la función "Autocompletar" para perfiles</translation>
 <translation id="2956777931324644324">Esta política cayó en desuso a partir de la versión 36 de <ph name="PRODUCT_NAME" />.
 
       Especifica si debe habilitarse la extensión TLS de certificados vinculados al dominio.
@@ -694,6 +702,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2957506574938329824">No permitir que ningún sitio solicite acceso a dispositivos Bluetooth mediante la API de Bluetooth web</translation>
 <translation id="2957513448235202597">Tipo de cuenta para la autenticación <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
+<translation id="2960128438010718932">El programa de etapas para aplicar una actualización nueva</translation>
 <translation id="2960691910306063964">Habilitar o inhabilitar la autenticación sin PIN para hosts de acceso remoto</translation>
 <translation id="2976002782221275500">Especifica el período de tiempo sin intervención del usuario luego del cual se atenúa la pantalla si se usa alimentación de la batería.
 
@@ -734,6 +743,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Independientemente de si se establece esta política o de cómo se configura, los usuarios no pueden cambiar la configuración de optimización de WPAD.</translation>
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones del servicio para la cuenta local del dispositivo</translation>
+<translation id="3077183141551274418">Habilitar o inhabilitar los ciclos de vida de las pestañas</translation>
 <translation id="3086995894968271156">Configura Cast Receiver en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Te permite configurar una lista de patrones de URL con los sitios que pueden mostrar imágenes.
 
@@ -1287,6 +1297,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Estas sugerencias se obtienen de forma remota de los servidores de Google.
 
       Si se establece como falsa, no se obtendrán ni mostrarán las sugerencias.</translation>
+<translation id="4788252609789586009">Habilita la función "Autocompletar" de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información ya almacenada de las tarjetas de crédito.
+
+      Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará información de tarjetas de crédito. Tampoco guardará información adicional de tarjetas que el usuario haya enviado cuando navegaba en la Web.
+
+      Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las tarjetas de crédito en la IU.</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si esta política se establece como verdadera, el cursor grande estará siempre habilitado.
@@ -1411,6 +1426,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si la política se establece en True, <ph name="PRODUCT_OS_NAME" /> impedirá que el dispositivo se inicie en modo de programador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de programador.
 
       Si la política se establece en False o no se establece, el modo de programador seguirá disponible para el dispositivo.</translation>
+<translation id="520403427390290017">Los ciclos de vida de las pestañas recuperan CPU y finalmente la memoria asociada a las pestañas que se estén ejecutando y no se hayan usado por mucho tiempo. Para lograrlo, las aceleran, luego las inmovilizan y, por último, las descartan.
+
+      Si se establece la política como falsa, se inhabilitarán los ciclos de vida de las pestañas y se permitirá que estas se ejecuten con normalidad.
+
+      Si se establece la política como verdadera o no se especifica, se inhabilitarán los ciclos de vida de las pestañas.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="5219844027738217407">Para las apps de Android, esta política solo afecta al micrófono. Cuando esta política se establece como falsa, se silencia el micrófono para todas las apps de Android, sin excepciones.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
@@ -1456,6 +1476,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si se establece esta política como falsa, los usuarios no podrán transmitir contenido al dispositivo. Si se establece como verdadera, los usuarios podrán transmitir contenido. Si no se establece, los usuarios no podrán transmitir contenido a dispositivos con Sistema operativo Chrome, pero sí podrán hacerlo a otros dispositivos.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los siguientes tipos de contenido</translation>
+<translation id="5360146044009867539">Habilita la función "Autocompletar" de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información ya almacenada de la dirección o el perfil.
+
+      Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará direcciones. Tampoco guardará información adicional de direcciones que el usuario haya enviado cuando navegaba en la Web.
+
+      Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las direcciones en la IU.</translation>
 <translation id="5365946944967967336">Mostrar el botón "Página principal" en la barra de herramientas</translation>
 <translation id="5366745336748853475">Te permite definir una lista de los patrones URL que especifican sitios para los que se selecciona automáticamente un certificado de cliente en la pantalla de acceso, en el marco que aloja el flujo de SAML, si el sitio lo solicita. Un ejemplo de uso es configurar un certificado en todo el dispositivo para presentarlo en el IdP de SAML.
 
@@ -2143,6 +2168,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no se habilita esta opción, esta función no estará disponible.</translation>
 <translation id="7275334191706090484">Favoritos administrados</translation>
+<translation id="729492886167634859">Esta política define una lista de porcentajes que determinará la fracción de dispositivos <ph name="PRODUCT_OS_NAME" /> en la UO que se actualizará por semana a partir del día en que se descubre la actualización (este momento es posterior a la publicación, conforme a lo que tarde el dispositivo en buscar actualizaciones).
+
+      En la lista, el valor "n-th" representará el porcentaje de dispositivos que debe completar la actualización a la siguiente versión en la "n-th" semana a partir de su descubrimiento. Por ejemplo, si se descubre una actualización hoy, el primer valor en la lista define el porcentaje de dispositivos en la UO que debe actualizarse a esa versión en una semana a partir de hoy. El segundo valor define el porcentaje de dispositivos en la UO que debe actualizarse a esa versión en 2 semanas a partir de hoy, y así sucesivamente.
+
+      Si hay un valor definido para esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y, en su lugar, seguirán esta.
+
+      Si esta lista está vacía, no se definirán etapas y se aplicarán las actualizaciones conforme a otras políticas de dispositivo.
+
+      No se aplica esta política para los cambios de canales.</translation>
 <translation id="7295019613773647480">Habilitar usuarios supervisados</translation>
 <translation id="7301543427086558500">Especifica una lista de URL alternativas que se pueden utilizar para extraer los términos de búsqueda del motor de búsqueda. Las URL deben contener la cadena <ph name="SEARCH_TERM_MARKER" />, que se usará para extraer los términos de búsqueda.
 
@@ -2609,6 +2643,12 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 
           Para ver ejemplos de patrones, visita  https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Inhabilitar el almacenamiento del historial del navegador</translation>
+<translation id="8498293625012059298">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
+      Para que <ph name="PRODUCT_NAME" /> capture la nueva huella digital de contraseña correctamente en esta página de cambio de contraseña, asegúrate de que la página cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si se habilita esta configuración, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
+      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccounts.google.com para que cambien sus contraseñas.
+      Esta política no está disponible en instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Configuración predeterminada (los usuarios pueden modificarla)</translation>
 <translation id="8507835864888987300">Establece una versión objetivo para las actualizaciones automáticas.
 
@@ -2662,6 +2702,14 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       Cuando esta política se cambia a falsa, se aplica a las máquinas virtuales que se inicien a partir de ese momento, pero no apaga las máquinas virtuales que ya estén en ejecución.
       Cuando no se establece esta política en un dispositivo administrado, el dispositivo no puede ejecutar máquinas virtuales.
       Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
+<translation id="8669669491594628013">Permite controlar la forma en que la protección de contraseñas envía advertencias a los usuarios para alertarlos cuando usan una contraseña protegida en sitios potencialmente peligrosos.
+
+      Puedes usar las políticas "PasswordProtectionLoginURLs" y "PasswordProtectionChangePasswordURL" para configurar qué contraseña deseas proteger.
+
+      Si se establece esta política como "PasswordProtectionWarningOff", no se mostrará ninguna advertencia de protección de contraseñas.
+      Si se establece como "PasswordProtectionWarningOnPasswordReuse", se mostrará la advertencia cuando los usuarios vuelvan a usar una contraseña protegida en los sitios que no están incluidos en la lista blanca.
+      Si se establece como "PasswordProtectionWarningOnPhishingReuse", se mostrará la advertencia cuando los usuarios vuelvan a usar una contraseña protegida en sitios de suplantación de identidad (phishing).
+      Si no se establece, el servicio solo protegerá las contraseñas de Google y el usuario podrá cambiar esta configuración.</translation>
 <translation id="8672321184841719703">Versión de destino para las actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (segundo factor universal)</translation>
 <translation id="8685024486845674965">La advertencia de la protección de la contraseña se activa cuando se vuelve a usar la contraseña</translation>

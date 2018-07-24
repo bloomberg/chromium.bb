@@ -17,7 +17,6 @@
 <translation id="1668054258064581266">Setelah membuang akun dari Chromium, Anda mungkin perlu memuat ulang tab terbuka untuk mulai menerapkannya.</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
-<translation id="1716051742506968">{0,plural, =0{Update Chromium tersedia}=1{Update Chromium tersedia}other{Update Chromium telah tersedia selama # hari}}</translation>
 <translation id="1766096484055239003">Administrator mengharuskan Anda meluncurkan ulang Chromium untuk menerapkan update</translation>
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
 <translation id="1779356040007214683">Agar Chromium lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
@@ -50,7 +49,6 @@
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2898082584336937987">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke ponsel Anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
-<translation id="2943431542152338750">{0,plural, =1{Luncurkan ulang Chromium dalam satu hari}other{Luncurkan ulang Chromium dalam # hari}}</translation>
 <translation id="2977470724722393594">Chromium sudah diperbarui</translation>
 <translation id="3032787606318309379">Menambahkan Chromium...</translation>
 <translation id="3046695367536568084">Anda harus masuk ke Chromium untuk menggunakan aplikasi. Ini memungkinkan Chromium menyinkronkan aplikasi, bookmark, histori, sandi, dan setelan lainnya antar perangkat.</translation>
@@ -95,10 +93,8 @@
 <translation id="4415566066719264597">Jalankan Chromium di Background</translation>
 <translation id="4421155425831608516">Login ke Chromium dinonaktifkan oleh administrator perangkat ini.</translation>
 <translation id="4423735387467980091">Menyesuaikan dan mengontrol Chromium</translation>
-<translation id="4449801103833300785">{0,plural, =1{Chromium akan diluncurkan ulang dalam satu jam}other{Chromium akan diluncurkan ulang dalam # jam}}</translation>
 <translation id="4567424176335768812">Anda masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Kini Anda dapat mengakses bookmark, histori, dan setelan lainnya pada seluruh perangkat yang Anda masuki.</translation>
 <translation id="459535195905078186">Aplikasi Chromium</translation>
-<translation id="4604377857208775795">{0,plural, =1{Chromium akan diluncurkan ulang dalam 1 menit}other{Chromium akan diluncurkan ulang dalam # menit}}</translation>
 <translation id="4621240073146040695">Hampir selesai diperbarui! Luncurkan ulang Chromium untuk menyelesaikan pembaruan.</translation>
 <translation id="4677944499843243528">Profil tersebut mungkin digunakan pada proses Chromium lainnya (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chromium telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil tersebut, Anda dapat membuka profil dan meluncurkan Chromium kembali.</translation>
 <translation id="469338717132742108">Dapatkan bantuan Chromium OS</translation>
@@ -160,7 +156,6 @@
 <translation id="6510925080656968729">Uninstal Chromium</translation>
 <translation id="6570579332384693436">Untuk memperbaiki kesalahan ejaan, Chromium mengirimkan teks yang Anda ketik di kolom teks ke Google</translation>
 <translation id="6598877126913850652">Buka setelan notifikasi Chromium</translation>
-<translation id="6664239887951090350">{0,plural, =0{Chromium akan diluncurkan ulang sekarang}=1{Chromium akan diluncurkan ulang dalam 1 detik}other{Chromium akan diluncurkan ulang dalam # detik}}</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
 

@@ -192,6 +192,7 @@
 <translation id="4544944664594876241">Phím tắt để khóa màn hình đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Dịch vụ phông chữ</translation>
 <translation id="4570957409596482333">Nút Chọn để nói</translation>
+<translation id="4585337515783392668">Dừng truyền trên bộ thu không xác định</translation>
 <translation id="4628757576491864469">Thiết bị</translation>
 <translation id="4659419629803378708">Đã bật ChromeVox</translation>
 <translation id="4734965478015604180">Ngang</translation>
@@ -238,6 +239,7 @@
 <translation id="5805697420284793859">Trình quản lý cửa sổ</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
 <translation id="5832805196449965646">Thêm người</translation>
+<translation id="5837036133683224804">Dừng <ph name="ROUTE_TITLE" /> trên <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -274,6 +276,7 @@
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Đã xong</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> trên <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Từ chối</translation>
 <translation id="6453179446719226835">Đã thay đổi ngôn ngữ</translation>
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME" /></translation>
@@ -370,6 +373,7 @@
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Phóng to toàn màn hình</translation>
+<translation id="8427213022735114808">Tính năng nhập bằng giọng nói gửi giọng nói của bạn tới Google để cho phép nhập liệu bằng giọng nói vào bất kỳ trường văn bản nào.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8431190899827883166">Hiển thị điểm khi nhấn</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
@@ -411,6 +415,7 @@
 <translation id="9111102763498581341">Mở khóa</translation>
 <translation id="9151726767154816831">Khởi động lại và powerwash để cập nhật</translation>
 <translation id="9179259655489829027">Tính năng này cho phép bạn truy cập nhanh vào bất kỳ người dùng đã đăng nhập nào mà không cần mật khẩu. Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởng.</translation>
+<translation id="9193626018745640770">Đang truyền trên bộ thu không xác định</translation>
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>

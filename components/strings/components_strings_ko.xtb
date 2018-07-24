@@ -584,6 +584,7 @@
 <translation id="5089810972385038852">시/도</translation>
 <translation id="5094747076828555589">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chromium에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5095208057601539847">주/도</translation>
+<translation id="5098332213681597508">Google 계정에 등록된 이름입니다.</translation>
 <translation id="5115563688576182185">(64비트)</translation>
 <translation id="5121084798328133320">카드를 확인하면 Google Payments 계정의 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="5128122789703661928">세션 이름이 잘못되어 삭제할 수 없습니다.</translation>
@@ -669,6 +670,7 @@
 <translation id="5633066919399395251">현재 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 사용자 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하거나 삭제하는 위험한 프로그램을 컴퓨터에 설치하려고 시도할 수 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">사기성 콘텐츠 차단됨</translation>
 <translation id="5659593005791499971">이메일</translation>
+<translation id="5666899935841546222">모든 카드를 한곳에 보관하시겠습니까?</translation>
 <translation id="5675650730144413517">페이지가 작동하지 않습니다.</translation>
 <translation id="5685654322157854305">배송지 주소 추가</translation>
 <translation id="5689199277474810259">JSON 형식으로 내보내기</translation>

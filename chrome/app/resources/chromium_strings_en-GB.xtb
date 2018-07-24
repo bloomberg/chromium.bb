@@ -19,7 +19,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1668054258064581266">After removing your account from Chromium, you may need to reload your open tabs to take effect.</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
-<translation id="1716051742506968">{0,plural, =0{A Chromium update is available}=1{A Chromium update is available}other{A Chromium update has been available for # days}}</translation>
 <translation id="1766096484055239003">Your administrator requires that you relaunch Chromium to apply an update</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
@@ -52,7 +51,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="2898082584336937987">Install Chromium on your phone. We’ll send an SMS to your phone: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
-<translation id="2943431542152338750">{0,plural, =1{Relaunch Chromium within a day}other{Relaunch Chromium within # days}}</translation>
 <translation id="2977470724722393594">Chromium is up to date</translation>
 <translation id="3032787606318309379">Adding to Chromium ...</translation>
 <translation id="3046695367536568084">You need to be signed in to Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
@@ -97,10 +95,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4415566066719264597">Let Chromium Run in the Background</translation>
 <translation id="4421155425831608516">Sign in to Chromium is disabled by the administrator of this device.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
-<translation id="4449801103833300785">{0,plural, =1{Chromium will relaunch in an hour}other{Chromium will relaunch in # hours}}</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
-<translation id="4604377857208775795">{0,plural, =1{Chromium will relaunch in 1 minute}other{Chromium will relaunch in # minutes}}</translation>
 <translation id="4621240073146040695">Nearly up to date! Relaunch Chromium to finish updating.</translation>
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="469338717132742108">Get help with Chromium OS</translation>
@@ -162,7 +158,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6510925080656968729">Uninstall Chromium</translation>
 <translation id="6570579332384693436">To fix spelling errors, Chromium sends the text that you type in text fields to Google</translation>
 <translation id="6598877126913850652">Go to Chromium notification settings</translation>
-<translation id="6664239887951090350">{0,plural, =0{Chromium will relaunch now}=1{Chromium will relaunch in 1 second}other{Chromium will relaunch in # seconds}}</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6717134281241384636">Your profile can not be used because it is from a newer version of Chromium.
 

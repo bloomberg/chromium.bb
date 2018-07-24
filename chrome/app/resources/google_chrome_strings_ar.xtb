@@ -40,11 +40,9 @@
 <translation id="1874309113135274312">‏الإصدار التجريبي من Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="1915828456209461693">‏يتوفر تحديث جديد لبرنامج Chrome وسيتم تطبيقه عند إعادة التشغيل.</translation>
-<translation id="2007150628464581396">{0,plural, =1{‏ستتم إعادة تشغيل Chrome خلال دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chrome خلال # دقيقة}two{‏ستتم إعادة تشغيل Chrome خلال دقيقتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # دقائق}many{‏ستتم إعادة تشغيل Chrome خلال # دقيقةً}other{‏ستتم إعادة تشغيل Chrome خلال # دقيقة}}</translation>
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
 <translation id="2094919256425865063">‏هل تريد الخروج من Chrome على أي حال؟</translation>
-<translation id="210890598424854131">{0,plural, =0{‏ستتم إعادة تشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل Chrome خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chrome خلال # ثانية}}</translation>
 <translation id="2120620239521071941">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">‏ساعد في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك.</translation>
@@ -145,7 +143,6 @@
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
 <translation id="4804732725083176494">‏أوقف مشرف هذا الجهاز تسجيل الدخول إلى Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{‏إعادة تشغيل Chrome خلال يوم واحد}zero{‏إعادة تشغيل Chrome خلال # يوم}two{‏إعادة تشغيل Chrome خلال يومين (#)}few{‏إعادة تشغيل Chrome خلال # أيام}many{‏إعادة تشغيل Chrome خلال # يومًا}other{‏إعادة تشغيل Chrome خلال # يوم}}</translation>
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="4895437082222824641">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="4921569541910214635">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chrome بالطريقة التي تعجبك تمامًا.</translation>
@@ -153,7 +150,6 @@
 <translation id="495931528404527476">‏في Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">‏تعذر على Google Chrome مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
-<translation id="5131923704757666404">{0,plural, =1{‏ستتم إعادة تشغيل Chrome خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل Chrome خلال # ساعة}two{‏ستتم إعادة تشغيل Chrome خلال ساعتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ساعات}many{‏ستتم إعادة تشغيل Chrome خلال # ساعةً}other{‏ستتم إعادة تشغيل Chrome خلال # ساعة}}</translation>
 <translation id="5132929315877954718">‏يمكنك اكتشاف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Google Chrome.</translation>
 <translation id="5166975452760862670">‏يتم عرض Google Chrome بهذه اللغة</translation>
 <translation id="5170938038195470297">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Google Chrome.
@@ -257,7 +253,6 @@
 <translation id="8547799825197623713">‏مشغل تطبيقات Chrome في Canary</translation>
 <translation id="8556340503434111824">‏يتوفر إصدار جديد من Google Chrome، وهو أسرع بكثير من ذي قبل.</translation>
 <translation id="8568392309447938879">‏يلزمك تسجيل الدخول إلى Chrome لتتمكن من استخدام التطبيقات. سيتيح هذا للمتصفح Chrome مزامنة تطبيقاتك والإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات على جميع الأجهزة.</translation>
-<translation id="859960207076826247">{0,plural, =0{‏هناك تحديث متاح لـ Chrome}=1{‏هناك تحديث واحد متاح لـ Chrome}two{‏هناك تحديث متاح لـ Chrome منذ يومين (#)}few{‏هناك تحديث متاح لـ Chrome منذ # أيام}many{‏هناك تحديث متاح لـ Chrome منذ # يومًا}other{‏هناك تحديث متاح لـ Chrome منذ # يوم}}</translation>
 <translation id="8606668294522778825">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح. ويمكنك بشكل اختياري إيقاف هذه الخدمات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">‏لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>

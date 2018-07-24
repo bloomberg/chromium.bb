@@ -17,7 +17,6 @@
 <translation id="1668054258064581266">Dopo avere rimosso il tuo account da Chromium, potresti dover ricaricare le schede aperte perché le modifiche vengano applicate.</translation>
 <translation id="1688750314291223739">Configura la sincronizzazione per salvare le funzioni personalizzate del browser sul Web e accedervi da Chromium su qualsiasi computer.</translation>
 <translation id="1708666629004767631">È disponibile una nuova versione più sicura di Chromium.</translation>
-<translation id="1716051742506968">{0,plural, =0{È disponibile un aggiornamento Chromium}=1{È disponibile un aggiornamento Chromium}other{È disponibile un aggiornamento Chromium da # giorni}}</translation>
 <translation id="1766096484055239003">L'amministratore richiede il riavvio di Chromium per installare un aggiornamento</translation>
 <translation id="1774152462503052664">Lascia Chromium in esecuzione in background</translation>
 <translation id="1779356040007214683">Per rendere Chromium più sicuro, abbiamo disattivato alcune estensioni che non sono elencate nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbero essere state aggiunte a tua insaputa.</translation>
@@ -50,7 +49,6 @@
 <translation id="2886012850691518054">Facoltativo: aiutaci a migliorare Chromium inviando automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="2898082584336937987">Installa Chromium sul telefono. Invieremo un SMS al tuo numero di telefono: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Informazioni su &amp;Chromium</translation>
-<translation id="2943431542152338750">{0,plural, =1{Riavvia Chromium tra un giorno}other{Riavvia Chromium tra # giorni}}</translation>
 <translation id="2977470724722393594">Chromium è aggiornato</translation>
 <translation id="3032787606318309379">Aggiunta a Chromium in corso...</translation>
 <translation id="3046695367536568084">Per poter utilizzare le app, devi eseguire l'accesso su Chromium. Chromium potrà così sincronizzare app, Preferiti, cronologia, password e altre impostazioni tra dispositivi.</translation>
@@ -95,10 +93,8 @@
 <translation id="4415566066719264597">Lascia Chromium in esecuzione in background</translation>
 <translation id="4421155425831608516">L'accesso a Chromium è disattivato dall'amministratore del dispositivo.</translation>
 <translation id="4423735387467980091">Personalizza e controlla Chromium</translation>
-<translation id="4449801103833300785">{0,plural, =1{Chromium verrà riavviato tra un'ora}other{Chromium verrà riavviato tra # ore}}</translation>
 <translation id="4567424176335768812">Hai eseguito l'accesso come <ph name="USER_EMAIL_ADDRESS" />. Ora puoi accedere ai tuoi Preferiti, alla tua cronologia e ad altre impostazioni su tutti i tuoi dispositivi su cui esegui l'accesso.</translation>
 <translation id="459535195905078186">Applicazioni Chromium</translation>
-<translation id="4604377857208775795">{0,plural, =1{Chromium verrà riavviato tra un minuto}other{Chromium verrà riavviato tra # minuti}}</translation>
 <translation id="4621240073146040695">Aggiornamento quasi completato. Riavvia Chromium per terminare l'aggiornamento.</translation>
 <translation id="4677944499843243528">Sembra che il profilo sia in uso in un altro processo Chromium (<ph name="PROCESS_ID" />) su un altro computer (<ph name="HOST_NAME" />). Chromium ha bloccato il profilo affinché non venga danneggiato. Se sei sicuro che nessun altro processo stia utilizzando questo profilo, puoi sbloccare il profilo e riavviare Chromium.</translation>
 <translation id="469338717132742108">Ricevi assistenza per Chromium OS</translation>
@@ -160,7 +156,6 @@
 <translation id="6510925080656968729">Disinstalla Chromium</translation>
 <translation id="6570579332384693436">Per correggere gli errori ortografici, Chromium invia a Google il testo digitato nei campi di testo</translation>
 <translation id="6598877126913850652">Vai alle impostazioni di notifica di Chromium</translation>
-<translation id="6664239887951090350">{0,plural, =0{Chromium verrà riavviato ora}=1{Chromium verrà riavviato tra un secondo}other{Chromium verrà riavviato tra # secondi}}</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
 <translation id="6717134281241384636">Impossibile utilizzare il tuo profilo perché proviene da una versione più recente di Chromium.
 

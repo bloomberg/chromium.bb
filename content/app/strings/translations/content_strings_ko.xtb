@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">슬라이더</translation>
 <translation id="1211441953136645838">미주</translation>
 <translation id="1281252709823657822">대화상자</translation>
+<translation id="1289247557029249093">PIP 모드 종료</translation>
 <translation id="1335095011850992622">저작권 표시</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">제출</translation>
 <translation id="2657045182931379222">그래픽 객체</translation>
 <translation id="2674318244760992338">바닥글</translation>
+<translation id="2706474812903655270">이 동영상은 PIP 모드에서 재생 중입니다.</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="2723001399770238859">오디오</translation>
 <translation id="2746543609216772311">값은 <ph name="MINIMUM_DATE_OR_TIME" /> 이후여야 합니다.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">남은 시간</translation>
 <translation id="7740016676195725605">캡션 표시 중지</translation>
 <translation id="7740050170769002709">HTML 콘텐츠</translation>
+<translation id="7750228210027921155">PIP 모드</translation>
 <translation id="7789962463072032349">일시중지</translation>
 <translation id="7802800022689234070">펼치기/접기 삼각형</translation>
 <translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN" />'를 포함해 주세요. '<ph name="INVALIDADDRESS" />'에 '<ph name="ATSIGN" />'가 없습니다.</translation>

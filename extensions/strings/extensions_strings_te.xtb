@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">స్థానీకరణ ఉపయోగించబడింది, కానీ మానిఫెస్ట్ లో default_locale పేర్కొనబడలేదు.</translation>
 <translation id="2576842806987913196">ఈ పేరుతో ఇప్పటికే CRX ఫైల్ ఉంది.</translation>
 <translation id="2753617847762399167">చట్టవిరుద్ధ పథం (ఖచ్చితంగా లేదా '..'కు సంబంధిత): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">నెట్‌వర్క్ అభ్యర్థనను సవరించడంలో ఈ పొడిగింపు విఫలమైంది ఎందుకంటే సవరణ మరొక పొడిగింపుతో వైరుధ్యంలో ఉంది.</translation>
 <translation id="2785530881066938471">కంటెంట్ స్క్రిప్ట్ కోసం '<ph name="RELATIVE_PATH" />' ఫైల్‌ను లోడ్ చేయలేకపోయింది. ఇది ఎన్‌కోడ్ చేయబడిన UTF-8 కాదు.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (పొడిగింపు ID "<ph name="EXTENSION_ID" />") నిర్వాహకుల ద్వారా బ్లాక్ చేయబడింది. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">ప్యాకేజీని వ్యవస్థాపించడం సాధ్యం కాలేదు: '<ph name="ERROR_CODE" />'</translation>

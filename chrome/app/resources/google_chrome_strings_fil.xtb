@@ -42,11 +42,9 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Luma na ang Chrome</translation>
 <translation id="1915828456209461693">May available na bagong update para sa Chrome at ilalapat ito sa sandaling muli kang maglunsad.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Muling ilulunsad ang Chrome sa loob ng 1 minuto}one{Muling ilulunsad ang Chrome sa loob ng # minuto}other{Muling ilulunsad ang Chrome sa loob ng # na minuto}}</translation>
 <translation id="2063848847527508675">Kailangang ma-restart ang Chrome OS upang mailapat ang update.</translation>
 <translation id="2084710999043359739">Idagdag sa Chrome</translation>
 <translation id="2094919256425865063">Umalis pa rin sa Chrome?</translation>
-<translation id="210890598424854131">{0,plural, =0{Muli nang ilulunsad ang Chrome}=1{Muling ilulunsad ang Chrome sa loob ng 1 segundo}one{Muling ilulunsad ang Chrome sa loob ng # segundo}other{Muling ilulunsad ang Chrome sa loob ng # na segundo}}</translation>
 <translation id="2120620239521071941">Magde-delete ito ng <ph name="ITEMS_COUNT" /> (na) item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Tulungang pahusayin ang Chrome sa pamamagitan ng pag-ulat sa <ph name="BEGIN_LINK" />mga kasalukuyang setting<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">I-install ang Chrome sa telepono mo. Magpapadala kami ng SMS sa iyong numero ng telepono para sa pag-recover ng account.</translation>
@@ -148,7 +146,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4771048833395599659">Maaaring mapanganib ang file na ito, kaya na-block ito ng Chrome.</translation>
 <translation id="4794050651896644714">I-save ang mga detalye sa Chrome</translation>
 <translation id="4804732725083176494">Na-disable ng administrator ng device na ito ang pag-sign in sa Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Ilunsad muli ang Chrome sa loob ng isang araw}one{Ilunsad muli ang Chrome sa loob ng # araw}other{Ilunsad muli ang Chrome sa loob ng # na araw}}</translation>
 <translation id="4891791193823137474">Hayaan ang Google Chrome na tumakbo sa background</translation>
 <translation id="4895437082222824641">Buksan ang link sa bagong &amp;tab ng Chrome</translation>
 <translation id="4921569541910214635">Magbabahagi ng computer? Ngayon, maaari mong i-set up ang Chrome sa paraang gusto mo.</translation>
@@ -156,7 +153,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="495931528404527476">Sa Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Hindi mai-sync ng Google Chrome ang iyong data. Paki-update ang iyong passphrase sa Pag-sync.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Malulunsad muli ang Chrome sa loob ng isang oras}one{Malulunsad muli ang Chrome sa loob ng # oras}other{Malulunsad muli ang Chrome sa loob ng # na oras}}</translation>
 <translation id="5132929315877954718">Tumuklas ng mahuhusay na app, laro, extension at tema para sa Google Chrome.</translation>
 <translation id="5166975452760862670">Ipinapakita ang Google Chrome sa wikang ito</translation>
 <translation id="5170938038195470297">Hindi magagamit ang iyong profile dahil mula ito sa isang mas bagong bersyon ng Google Chrome.
@@ -262,7 +258,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8547799825197623713">Canary ng App Launcher ng Chrome</translation>
 <translation id="8556340503434111824">May available na bagong bersyon ng Google Chrome, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="8568392309447938879">Kailangang naka-sign in ka sa Chrome upang makagamit ng mga app. Nagbibigay-daan ito sa Chrome na i-sync ang iyong mga app, bookmark, kasaysayan, password at iba pang mga setting sa mga device.</translation>
-<translation id="859960207076826247">{0,plural, =0{May available na update sa Chrome}=1{May available na update sa Chrome}one{# araw nang may available na update sa Chrome}other{# na araw nang may available na update sa Chrome}}</translation>
 <translation id="8606668294522778825">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse. Opsyonal mong madi-disable ang mga serbisyong ito. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Hindi gumagana ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="8667808506758191620">Napapanahon ang iyong <ph name="DEVICE_TYPE" />.</translation>

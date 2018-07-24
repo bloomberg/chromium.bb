@@ -38,11 +38,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
 <translation id="1915828456209461693">Dostępna jest aktualizacja Chrome, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome uruchomi się ponownie za minutę}few{Chrome uruchomi się ponownie za # minuty}many{Chrome uruchomi się ponownie za # minut}other{Chrome uruchomi się ponownie za # minuty}}</translation>
 <translation id="2063848847527508675">Żeby system operacyjny Chrome mógł zastosować aktualizacje, musisz go ponownie uruchomić.</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
 <translation id="2094919256425865063">Zamknąć Chrome mimo to?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome uruchomi się ponownie teraz}=1{Chrome uruchomi się ponownie za sekundę}few{Chrome uruchomi się ponownie za # sekundy}many{Chrome uruchomi się ponownie za # sekund}other{Chrome uruchomi się ponownie za # sekundy}}</translation>
 <translation id="2120620239521071941">Spowoduje to usunięcie <ph name="ITEMS_COUNT" /> elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chrome jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomóż udoskonalić Chrome, zgłaszając <ph name="BEGIN_LINK" />bieżące ustawienia<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Zainstaluj Chrome na telefonie. Wyślemy SMS-a pod numer telefonu do odzyskiwania konta.</translation>
@@ -145,7 +143,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="4771048833395599659">Ten plik może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="4794050651896644714">Zapisz szczegóły w Chrome</translation>
 <translation id="4804732725083176494">Logowanie się w Chrome zostało wyłączone przez administratora tego urządzenia.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Uruchom Chrome ponownie jutro}few{Uruchom Chrome ponownie za # dni}many{Uruchom Chrome ponownie za # dni}other{Uruchom Chrome ponownie za # dnia}}</translation>
 <translation id="4891791193823137474">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="4895437082222824641">O&amp;twórz link w nowej karcie Chrome</translation>
 <translation id="4921569541910214635">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chrome tak, jak chcesz.</translation>
@@ -153,7 +150,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="495931528404527476">W Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome uruchomi się ponownie za godzinę}few{Chrome uruchomi się ponownie za # godziny}many{Chrome uruchomi się ponownie za # godzin}other{Chrome uruchomi się ponownie za # godziny}}</translation>
 <translation id="5132929315877954718">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do przeglądarki Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome działa obecnie w tym języku</translation>
 <translation id="5170938038195470297">Nie można użyć Twojego profilu, ponieważ został utworzony w nowszej wersji Google Chrome. Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chrome.</translation>
@@ -255,7 +251,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8547799825197623713">Program uruchamiający aplikacje Chrome w wersji poglądowej</translation>
 <translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
 <translation id="8568392309447938879">Jeśli chcesz korzystać z aplikacji, musisz zalogować się w Chrome, by Twoje aplikacje, zakładki, historia, hasła i inne ustawienia były synchronizowane między urządzeniami.</translation>
-<translation id="859960207076826247">{0,plural, =0{Dostępna jest aktualizacja Chrome}=1{Dostępna jest aktualizacja Chrome}few{Aktualizacja Chrome jest dostępna od # dni}many{Aktualizacja Chrome jest dostępna od # dni}other{Aktualizacja Chrome jest dostępna od # dnia}}</translation>
 <translation id="8606668294522778825">Aby poprawić wygodę przeglądania, Google Chrome może korzystać z usług internetowych. Możesz je opcjonalnie wyłączyć. <ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Przeglądarka Google Chrome nie odpowiada. Uruchomić ją teraz ponownie?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> używa aktualnej wersji oprogramowania.</translation>

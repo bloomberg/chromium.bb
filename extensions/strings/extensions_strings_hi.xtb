@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">स्थानीयकरण का उपयोग किया गया, लेकिन default_locale को मालसूची में निर्दिष्ट नहीं किया गया था.</translation>
 <translation id="2576842806987913196">इस नाम वाली CRX फ़ाइल पहले से ही मौजूद है.</translation>
 <translation id="2753617847762399167">गलत पथ (पूर्ण या '..' से संबंधित): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">य‍ह एक्‍सटेंशन, नेटवर्क अनुरोध संशोधित करने में विफल रहा क्‍योंकि संशोधन का अन्‍य एक्‍सटेंशन के साथ विरोध हुआ.</translation>
 <translation id="2785530881066938471">सामग्री स्क्रिप्ट के लिए '<ph name="RELATIVE_PATH" />' फ़ाइल लोड नहीं कर सका. यह UTF-8 एनकोड नहीं है.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को व्यवस्थापक ने अवरोधित किया है. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">पैकेज इंस्टॉल नहीं कर सका: '<ph name="ERROR_CODE" />'</translation>

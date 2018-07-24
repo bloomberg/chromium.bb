@@ -38,11 +38,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS – inn)</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
 <translation id="1915828456209461693">En ny oppdatering for Chrome er tilgjengelig og tas i bruk når du starter Chrome på nytt.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome starter på nytt om 1 minutt}other{Chrome starter på nytt om # minutter}}</translation>
 <translation id="2063848847527508675">Chrome OS må startes på nytt for at oppdateringen skal tas i bruk.</translation>
 <translation id="2084710999043359739">Legg til i Chrome</translation>
 <translation id="2094919256425865063">Vil du avslutte Chrome likevel?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome starter på nytt nå}=1{Chrome starter på nytt om 1 sekund}other{Chrome starter på nytt om # sekunder}}</translation>
 <translation id="2120620239521071941">Dette sletter <ph name="ITEMS_COUNT" /> elementer fra denne enheten. For å hente dataene dine igjen senere må du logge på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Bidra til å gjøre Chrome bedre ved å rapportere de <ph name="BEGIN_LINK" />nåværende innstillingene<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Installer Chrome på telefonen din. Vi sender en SMS til telefonnummeret ditt for kontogjenoppretting.</translation>
@@ -143,7 +141,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="4771048833395599659">Denne filen kan være farlig, så Chrome har blokkert den.</translation>
 <translation id="4794050651896644714">Lagre detaljer i Chrome</translation>
 <translation id="4804732725083176494">Administratoren av denne enheten har deaktivert pålogging til Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Start Chrome på nytt innen én dag}other{Start Chrome på nytt innen # dager}}</translation>
 <translation id="4891791193823137474">La Google Chrome kjøre i bakgrunnen</translation>
 <translation id="4895437082222824641">Åpne linken i en ny &amp;fane i Chrome</translation>
 <translation id="4921569541910214635">Deler du datamaskinen din med andre? Nå kan du konfigurere Chrome akkurat slik du vil.</translation>
@@ -151,7 +148,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="495931528404527476">I Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome startes på nytt om én time}other{Chrome startes på nytt om # timer}}</translation>
 <translation id="5132929315877954718">Oppdag flotte apper, spill, utvidelser og temaer for Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome vises på dette språket</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
@@ -253,7 +249,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8547799825197623713">Chrome-appvelger – Canary</translation>
 <translation id="8556340503434111824">En ny versjon av Google Chrome er tilgjengelig, og den er nå raskere en noen sinne.</translation>
 <translation id="8568392309447938879">Du må være logget på Chrome for å bruke apper. På denne måten kan Chrome synkronisere appene, bokmerkene og passordene samt loggen din og andre innstillinger, på alle enhetene dine.</translation>
-<translation id="859960207076826247">{0,plural, =0{En Chrome-oppdatering er tilgjengelig}=1{En Chrome-oppdatering er tilgjengelig}other{En Chrome-oppdatering har vært tilgjengelig i # dager}}</translation>
 <translation id="8606668294522778825">Google Chrome bruker nettjenester for å forbedre nettopplevelsen din. Du kan deaktivere disse tjenestene. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du starte på nytt nå?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" />-enheten er oppdatert.</translation>

@@ -38,11 +38,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
 <translation id="1915828456209461693">Dostupno je novo ažuriranje za Chrome i primijenit će se nakon ponovnog pokretanja.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome će se ponovo pokrenuti za 1 minutu}one{Chrome će se ponovo pokrenuti za # minutu}few{Chrome će se ponovo pokrenuti za # minute}other{Chrome će se ponovo pokrenuti za # minuta}}</translation>
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
 <translation id="2084710999043359739">Dodajte u Chrome</translation>
 <translation id="2094919256425865063">Želite li ipak zatvoriti Chrome?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome će se sada ponovo pokrenuti}=1{Chrome će se ponovo pokrenuti za 1 sekundu}one{Chrome će se ponovo pokrenuti za # sekundu}few{Chrome će se ponovo pokrenuti za # sekunde}other{Chrome će se ponovo pokrenuti za # sekundi}}</translation>
 <translation id="2120620239521071941">Time će se izbrisati sljedeći broj stavki s uređaja: <ph name="ITEMS_COUNT" />. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomognite poboljšati Chrome tako što ćete prijaviti <ph name="BEGIN_LINK" />trenutačne postavke<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Instalirajte Chrome na telefon. Poslat ćemo vam SMS na telefonski broj za oporavak računa.</translation>
@@ -144,7 +142,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="4771048833395599659">Datoteka je možda opasna i Chrome ju je blokirao.</translation>
 <translation id="4794050651896644714">Spremi pojedinosti u sustavu Chrome</translation>
 <translation id="4804732725083176494">Administrator ovog uređaja onemogućio je prijavu na Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Ponovo pokrenite Chrome u roku od jednog dana}one{Ponovo pokrenite Chrome u roku od # dana}few{Ponovo pokrenite Chrome u roku od # dana}other{Ponovo pokrenite Chrome u roku od # dana}}</translation>
 <translation id="4891791193823137474">Neka Google Chrome radi u pozadini</translation>
 <translation id="4895437082222824641">Otvori vezu na novoj &amp;kartici Chromea</translation>
 <translation id="4921569541910214635">Dijelite računalo? Sada možete prilagoditi Chrome baš kako želite.</translation>
@@ -152,7 +149,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="495931528404527476">U Chromeu</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nije mogao sinkronizirati vaše podatke. Ažurirajte zaporku za sinkronizaciju.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome će se ponovo pokrenuti za sat vremena}one{Chrome će se ponovo pokrenuti za # sat}few{Chrome će se ponovo pokrenuti za # sata}other{Chrome će se ponovo pokrenuti za # sati}}</translation>
 <translation id="5132929315877954718">Otkrijte sjajne aplikacije, igre, proširenja i teme za Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome prikazuje se na tom jeziku</translation>
 <translation id="5170938038195470297">Vaš se profil ne može upotrijebiti jer pripada novijoj verziji proizvoda Google Chrome. Neke značajke možda nisu dostupne. Navedite drugi direktorij profila ili upotrijebite noviju verziju proizvoda Chrome.</translation>
@@ -254,7 +250,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8547799825197623713">Pokretač aplikacija za Chromeov kanal Canary</translation>
 <translation id="8556340503434111824">Dostupna je nova verzija preglednika Google Chrome, brža no ikad.</translation>
 <translation id="8568392309447938879">Morate se prijaviti na Chrome da biste upotrebljavali aplikacije. To omogućuje Chromeu sinkronizaciju vaših aplikacija, oznaka, povijesti, zaporki i ostalih postavki na različitim uređajima.</translation>
-<translation id="859960207076826247">{0,plural, =0{Dostupno je ažuriranje Chromea}=1{Dostupno je ažuriranje Chromea}one{Ažuriranje Chromea dostupno je # dan}few{Ažuriranje Chromea dostupno je # dana}other{Ažuriranje Chromea dostupno je # dana}}</translation>
 <translation id="8606668294522778825">Google Chrome može upotrebljavati web-usluge za poboljšanje pregledavanja. Ako želite, možete onemogućiti te usluge. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> je ažuriran.</translation>

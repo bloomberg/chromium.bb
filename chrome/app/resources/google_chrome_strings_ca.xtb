@@ -38,11 +38,9 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome no està actualitzat</translation>
 <translation id="1915828456209461693">Hi ha una nova actualització disponible per a Chrome i s'aplicarà tan aviat com el tornis a iniciar.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome es reiniciarà d'aquí a 1 minut}other{Chrome es reiniciarà d'aquí a # minuts}}</translation>
 <translation id="2063848847527508675">Cal reiniciar Chrome OS per aplicar l'actualització.</translation>
 <translation id="2084710999043359739">Afegeix a Chrome</translation>
 <translation id="2094919256425865063">Vols sortir de Chrome igualment?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome es reiniciarà ara}=1{Chrome es reiniciarà d'aquí a 1 segon}other{Chrome es reiniciarà d'aquí a # segons}}</translation>
 <translation id="2120620239521071941">Amb aquesta acció, se suprimiran <ph name="ITEMS_COUNT" /> elements d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chrome com a <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Informa de la <ph name="BEGIN_LINK" />configuració actual<ph name="END_LINK" /> per ajudar-nos a millorar Chrome</translation>
 <translation id="216054706567564023">Instal·la Chrome al telèfon. T'enviarem un SMS al número de telèfon de recuperació del compte.</translation>
@@ -144,7 +142,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="4771048833395599659">Chrome ha bloquejat aquest fitxer perquè pot ser perillós.</translation>
 <translation id="4794050651896644714">Desa els detalls a Chrome</translation>
 <translation id="4804732725083176494">L'administrador d'aquest dispositiu ha desactivat l'inici de sessió a Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Torna a iniciar Chrome d'aquí a un dia}other{Torna a iniciar Chrome d'aquí a # dies}}</translation>
 <translation id="4891791193823137474">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="4895437082222824641">Obre l'enllaç en una pes&amp;tanya nova a Chrome</translation>
 <translation id="4921569541910214635">Si compartiu un ordinador, ara podeu configurar Chrome com vulgueu.</translation>
@@ -152,7 +149,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="495931528404527476">A Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome no ha pogut sincronitzar les dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome es reiniciarà d'aquí a una hora}other{Chrome es reiniciarà d'aquí a # hores}}</translation>
 <translation id="5132929315877954718">Descobriu aplicacions, jocs, extensions i temes genials per a Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome es mostra en aquest idioma</translation>
 <translation id="5170938038195470297">El vostre perfil no es pot utilitzar perquè prové d'una versió més nova de Google Chrome. Pot ser que algunes funcions no estiguin disponibles. Especifiqueu un directori de perfil diferent o utilitzeu una versió més nova de Chrome.</translation>
@@ -254,7 +250,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
 <translation id="8568392309447938879">Heu de tenir la sessió iniciada a Chrome per utilitzar les aplicacions. Això permet que Chrome sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions a tots els dispositius.</translation>
-<translation id="859960207076826247">{0,plural, =0{Hi ha una actualització de Chrome disponible}=1{Hi ha una actualització de Chrome disponible}other{Fa # dies que hi ha una actualització de Chrome disponible}}</translation>
 <translation id="8606668294522778825">Google Chrome pot utilitzar serveis web per millorar la vostra experiència de  navegació, però podeu desactivar-los si voleu. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="8667808506758191620">El dispositiu <ph name="DEVICE_TYPE" /> està actualitzat.</translation>

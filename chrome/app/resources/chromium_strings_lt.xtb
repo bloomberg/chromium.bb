@@ -19,7 +19,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1668054258064581266">Pašalinus paskyrą iš „Chromium“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
 <translation id="1688750314291223739">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Chromium“ bet kuriuo kompiuteriu.</translation>
 <translation id="1708666629004767631">Pasiekiama nauja, saugesnė „Chromium“ versija.</translation>
-<translation id="1716051742506968">{0,plural, =0{Pasiekiamas „Chromium“ naujinys}=1{Pasiekiamas „Chromium“ naujinys}one{„Chromium“ naujinys pasiekiamas # dieną}few{„Chromium“ naujinys pasiekiamas # dienas}many{„Chromium“ naujinys pasiekiamas # dienos}other{„Chromium“ naujinys pasiekiamas # dienų}}</translation>
 <translation id="1766096484055239003">Administratorius reikalauja paleisti iš naujo „Chromium“, kad galėtų pritaikyti naujinį</translation>
 <translation id="1774152462503052664">Paleisti „Chromium“ fone</translation>
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
@@ -52,7 +51,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2886012850691518054">Pasirenkama: padėkite tobulinti „Chromium“ automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="2898082584336937987">Įdiekite „Chromium“ telefone. Išsiųsime SMS pranešimą jūsų telefono numeriu: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Apie &amp;„Chromium“</translation>
-<translation id="2943431542152338750">{0,plural, =1{„Chromium“ paleidimas iš naujo po dienos}one{„Chromium“ paleidimas iš naujo po # dienos}few{„Chromium“ paleidimas iš naujo po # dienų}many{„Chromium“ paleidimas iš naujo po # dienos}other{„Chromium“ paleidimas iš naujo po # dienų}}</translation>
 <translation id="2977470724722393594">„Chromium“ naujausios versijos</translation>
 <translation id="3032787606318309379">Pridedama prie „Chromium“...</translation>
 <translation id="3046695367536568084">Jei norite naudoti programas, turite būti prisijungę prie „Chromium“. Tada „Chromium“ galės sinchronizuoti jūsų programas, žymes, istoriją, slaptažodžius ir kitus nustatymus įrenginiuose.</translation>
@@ -97,10 +95,8 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4415566066719264597">„Chromium“ leidimas fone</translation>
 <translation id="4421155425831608516">Prisijungimo prie „Chromium“ funkciją išjungė šio įrenginio administratorius.</translation>
 <translation id="4423735387467980091">Tinkinkite ir valdykite „Chromium“</translation>
-<translation id="4449801103833300785">{0,plural, =1{„Chromium“ bus paleista iš naujo po valandos}one{„Chromium“ bus paleista iš naujo po # valandos}few{„Chromium“ bus paleista iš naujo po # valandų}many{„Chromium“ bus paleista iš naujo po # valandos}other{„Chromium“ bus paleista iš naujo po # valandų}}</translation>
 <translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS" />. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="459535195905078186">„Chromium“ programos</translation>
-<translation id="4604377857208775795">{0,plural, =1{„Chromium“ bus paleista iš naujo po 1 minutės}one{„Chromium“ bus paleista iš naujo po # minutės}few{„Chromium“ bus paleista iš naujo po # minučių}many{„Chromium“ bus paleista iš naujo po # minutės}other{„Chromium“ bus paleista iš naujo po # minučių}}</translation>
 <translation id="4621240073146040695">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="4677944499843243528">Atrodo, kad profilį naudoja kitas „Chromium“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chromium“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chromium“.</translation>
 <translation id="469338717132742108">Gaukite pagalbos dėl „Chromium“ OS</translation>
@@ -162,7 +158,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="6510925080656968729">Pašalinti „Chromium“</translation>
 <translation id="6570579332384693436">Kad ištaisytų rašybos klaidas, „Chromium“ siunčia „Google“ tekstą, kurį įvedate teksto laukuose</translation>
 <translation id="6598877126913850652">Eiti į „Chromium“ pranešimų nustatymus</translation>
-<translation id="6664239887951090350">{0,plural, =0{„Chromium“ bus paleista iš naujo dabar}=1{„Chromium“ bus paleista iš naujo po 1 sekundės}one{„Chromium“ bus paleista iš naujo po # sekundės}few{„Chromium“ bus paleista iš naujo po # sekundžių}many{„Chromium“ bus paleista iš naujo po # sekundės}other{„Chromium“ bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="6676384891291319759">Interneto prieiga</translation>
 <translation id="6717134281241384636">Jūsų profilis nenaudojamas, nes jis iš naujesnės versijos „Chromium“.
 

@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">‏بومی سازی استفاده شده است، اما default_locale در اظهارنامه مشخص نشده است.</translation>
 <translation id="2576842806987913196">‏یک فایل CRX در حال حاضر با این نام وجود دارد.</translation>
 <translation id="2753617847762399167">مسیر غیرمجاز (مطلق یا نسبی با «..»): «<ph name="IMAGE_PATH" />»</translation>
-<translation id="27822970480436970">این برنامهٔ افزودنی قادر به تغییر درخواست شبکه به دلیل تغییری متداخل با یک برنامهٔ افزودنی دیگر نیست.</translation>
 <translation id="2785530881066938471">‏بارگیری فایل "<ph name="RELATIVE_PATH" />" برای اسکریپت محتوا ممکن نیست. رمزگذاری آن UTF-8 نیست.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (شناسه افزونه «<ph name="EXTENSION_ID" />») توسط سرپرست مسدود شده است. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">بسته نصب نشد: "<ph name="ERROR_CODE" />"</translation>

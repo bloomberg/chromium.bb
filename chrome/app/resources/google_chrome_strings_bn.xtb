@@ -40,11 +40,9 @@
 <translation id="1874309113135274312">Google Chrome বিটা (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="1915828456209461693">Chrome-এর একটি নতুন আপডেট উপলভ্য আছে এবং আপনি আবার চালু করলে সেটি প্রয়োগ করা হবে।</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome ১ মিনিটের মধ্যে আবার চালু করা হবে}one{Chrome # মিনিটের মধ্যে আবার চালু করা হবে}other{Chrome # মিনিটের মধ্যে আবার চালু করা হবে}}</translation>
 <translation id="2063848847527508675">আপডেটটি প্রয়োগ করতে Chrome OS আবার চালু করা প্রয়োজন।</translation>
 <translation id="2084710999043359739">Chrome এ জুড়ুন</translation>
 <translation id="2094919256425865063">তা স্বত্তেও Chrome বন্ধ করবেন?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome এখনই আবার চালু করা হবে}=1{Chrome ১ সেকেন্ডের মধ্যে আবার চালু করা হবে}one{Chrome # সেকেন্ডের মধ্যে আবার চালু করা হবে}other{Chrome # সেকেন্ডের মধ্যে আবার চালু করা হবে}}</translation>
 <translation id="2120620239521071941">এটি এই ডিভাইস থেকে <ph name="ITEMS_COUNT" />টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />বর্তমান সেটিংসের<ph name="END_LINK" /> প্রতিবেদন করে Chrome কে আরও ভাল করে তুলতে সাহায্য করুন</translation>
 <translation id="216054706567564023">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট ফিরিয়ে আনার ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
@@ -145,7 +143,6 @@
 <translation id="4771048833395599659">এই ফাইলটি বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="4794050651896644714">Chrome এ বিবরণ সেভ করুন</translation>
 <translation id="4804732725083176494">এই ডিভাইসের প্রশাসক Chrome এ সাইন-ইন করা অক্ষম করেছেন।</translation>
-<translation id="4833487314064352405">{0,plural, =1{এক দিনের মধ্যে Chrome রিলঞ্চ করুন}one{# দিনের মধ্যে Chrome রিলঞ্চ করুন}other{# দিনের মধ্যে Chrome রিলঞ্চ করুন}}</translation>
 <translation id="4891791193823137474">Google Chrome-কে পশ্চাদপটে চালতে দিন</translation>
 <translation id="4895437082222824641">নতুন Chrome &amp;ট্যাবে লিঙ্ক খুলুন</translation>
 <translation id="4921569541910214635">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chrome কে সেট আপ করতে পারেন৷</translation>
@@ -153,7 +150,6 @@
 <translation id="495931528404527476">Chrome-এ</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
 <translation id="5028489144783860647">Google Chrome আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
-<translation id="5131923704757666404">{0,plural, =1{এক ঘণ্টার মধ্যে Chrome রিলঞ্চ করা হবে}one{# ঘণ্টার মধ্যে Chrome রিলঞ্চ করা হবে}other{# ঘণ্টার মধ্যে Chrome রিলঞ্চ করা হবে}}</translation>
 <translation id="5132929315877954718">Google Chrome-এর দুর্দান্ত অ্যাপ্লিকেশান, গেম, এক্সটেনশান এবং থিম আবিষ্কার করুন৷</translation>
 <translation id="5166975452760862670">Google Chrome এই ভাষায় প্রদর্শিত হচ্ছে</translation>
 <translation id="5170938038195470297">আপনার প্রোফাইল ব্যবহার করা যাবে কারণ এটি Google Chrome-এর একটি নতুন সংস্করণে গঠিত৷ 
@@ -256,7 +252,6 @@
 <translation id="8547799825197623713">Chrome অ্যাপ্লিকেশান লঞ্চার Canary</translation>
 <translation id="8556340503434111824">Google Chrome-এর একটি নতুন সংস্করণ উপলব্ধ এবং এটি আগের তুলনায় দ্রুততর৷</translation>
 <translation id="8568392309447938879">অ্যাপ্লিকেশানগুলি ব্যবহার করতে আপনাকে Chrome এ প্রবেশ করতে হবে৷ এটি Chrome কে আপনার অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ডগুলি এবং ডিভাইস জুড়ে অন্যান্য সেটিংস সিঙ্ক করার অনুমতি দেয়৷</translation>
-<translation id="859960207076826247">{0,plural, =0{Chrome-এর একটি আপডেট পাওয়া যাচ্ছে}=1{Chrome-এর একটি আপডেট পাওয়া যাচ্ছে}one{# দিন ধরে Chrome-এর একটি আপডেট পাওয়া যাচ্ছে}other{# দিন ধরে Chrome-এর একটি আপডেট পাওয়া যাচ্ছে}}</translation>
 <translation id="8606668294522778825">Google Chrome আপনার ব্রাউজিংয়ের অভিজ্ঞতাকে উন্নত করতে ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷ আপনি আপনার ইচ্ছা অনুযায়ী এই পরিষেবাগুলিকে অক্ষম করতে পারেন৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome প্রতিক্রিয়া করছে না৷ এখনই পুনঃলঞ্চ করবেন?</translation>
 <translation id="8667808506758191620">আপনার <ph name="DEVICE_TYPE" /> আপ টু ডেট রয়েছে।</translation>

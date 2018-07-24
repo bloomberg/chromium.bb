@@ -192,6 +192,7 @@
 <translation id="4544944664594876241">用于锁定屏幕的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="4564869809620998694">字体服务</translation>
 <translation id="4570957409596482333">随选朗读按钮</translation>
+<translation id="4585337515783392668">停止投射至不明接收器</translation>
 <translation id="4628757576491864469">设备</translation>
 <translation id="4659419629803378708">已启用 ChromeVox</translation>
 <translation id="4734965478015604180">横向</translation>
@@ -238,6 +239,7 @@
 <translation id="5805697420284793859">窗口管理器</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5832805196449965646">添加用户</translation>
+<translation id="5837036133683224804">停止将“<ph name="ROUTE_TITLE" />”投射至“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -274,6 +276,7 @@
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">大功告成</translation>
+<translation id="6445835306623867477">正在将“<ph name="ROUTE_TITLE" />”投射至“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="6452181791372256707">拒绝</translation>
 <translation id="6453179446719226835">语言已更改</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME" /></translation>
@@ -370,6 +373,7 @@
 <translation id="8351131234907093545">创建记事</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>
 <translation id="8406981827175133772">全屏放大镜</translation>
+<translation id="8427213022735114808">语音输入功能会将您的语音内容发送给 Google，以便能在任何文本字段中进行语音输入。</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8431190899827883166">显示点按操作反馈</translation>
 <translation id="8433186206711564395">网络设置</translation>
@@ -411,6 +415,7 @@
 <translation id="9111102763498581341">解锁</translation>
 <translation id="9151726767154816831">重新启动并通过 Powerwash 来进行更新</translation>
 <translation id="9179259655489829027">借助此功能，您无需使用密码即可快速访问任何已登录的用户。请仅对您信任的帐号使用此功能。</translation>
+<translation id="9193626018745640770">正在投射至不明接收器</translation>
 <translation id="9194617393863864469">登录其他用户帐号…</translation>
 <translation id="9201131092683066720">电池电量为<ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">正在退出统一桌面模式</translation>

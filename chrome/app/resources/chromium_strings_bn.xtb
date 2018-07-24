@@ -17,7 +17,6 @@
 <translation id="1668054258064581266">Chromium থেকে আপনার অ্যাকাউন্ট সরানোর পরে, কার্য়করী করতে আপনাকে খোলা ট্যাবগুলিকে  পুনরায় লোড করার প্রয়োজন হতে পারে।</translation>
 <translation id="1688750314291223739">ওয়েবে আপনার ব্যক্তিগতকৃত ব্রাউজার বিষয় সংরক্ষণ করতে সিঙ্ক সেট করুন এবং যেকোনো কম্পিউটারে Chromium থেকে সেগুলিতে অ্যাক্সেস করুন৷</translation>
 <translation id="1708666629004767631">Chromium-এর একটি নতুন, নিরাপদ সংস্করণ উপলব্ধ আছে৷</translation>
-<translation id="1716051742506968">{0,plural, =0{Chromium-এর একটি আপডেট পাওয়া যাচ্ছে}=1{Chromium-এর একটি আপডেট পাওয়া যাচ্ছে}one{# দিন ধরে Chromium-এর একটি আপডেট পাওয়া যাচ্ছে}other{# দিন ধরে Chromium-এর একটি আপডেট পাওয়া যাচ্ছে}}</translation>
 <translation id="1766096484055239003">একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chromium আবার চালু করুন</translation>
 <translation id="1774152462503052664">Chromium-কে পটভূমিতে চলতে দিন</translation>
 <translation id="1779356040007214683">Chromium কে আরও নিরাপদ করতে, আমরা কিছু এক্সটেনশান অক্ষম করেছি যা <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> এ তালিকাবদ্ধ করা হয়নি এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছে৷</translation>
@@ -50,7 +49,6 @@
 <translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্রিয়ভাবে Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium-কে আরও ভালো করতে সহায়তা করুন৷</translation>
 <translation id="2898082584336937987">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব।: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">&amp;Chromium সম্পর্কে</translation>
-<translation id="2943431542152338750">{0,plural, =1{একদিনের মধ্যে Chromium রিলঞ্চ করুন}one{# দিনের মধ্যে Chromium রিলঞ্চ করুন}other{# দিনের মধ্যে Chromium রিলঞ্চ করুন}}</translation>
 <translation id="2977470724722393594">Chromium আপ-টু-ডেট আছে</translation>
 <translation id="3032787606318309379">Chromium-এ জুড়ছে...</translation>
 <translation id="3046695367536568084">অ্যাপ্লিকেশানগুলি ব্যবহার করতে আপনাকে Chromium এ প্রবেশ করতে হবে৷ এটি Chromium কে ডিভাইসগুলি জুড়ে আপনার অ্যাপ্লিকেশান, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্য সেটিংসগুলিকে সিঙ্ক করতে অনুমতি দেয়৷</translation>
@@ -95,10 +93,8 @@
 <translation id="4415566066719264597">Chromium-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
 <translation id="4421155425831608516">এই ডিভাইসের প্রশাসক Chromium এর মাধ্যমে সাইন-ইন করা অক্ষম করেছেন।</translation>
 <translation id="4423735387467980091">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
-<translation id="4449801103833300785">{0,plural, =1{এক ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}one{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}other{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}}</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে প্রবেশ করেছেন৷ এখন আপনি আপনার সমস্ত প্রবেশ করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="459535195905078186">Chromium অ্যাপ্লিকেশানগুলি</translation>
-<translation id="4604377857208775795">{0,plural, =1{Chromium ১ মিনিটের মধ্যে আবার চালু করা হবে}one{Chromium # মিনিটের মধ্যে আবার চালু করা হবে}other{Chromium # মিনিটের মধ্যে আবার চালু করা হবে}}</translation>
 <translation id="4621240073146040695">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে Chromium আবার চালু করুন।</translation>
 <translation id="4677944499843243528">অন্য একটি কম্পিউটারে (<ph name="HOST_NAME" />) প্রোফাইলটি অন্য Chromium প্রক্রিয়া (<ph name="PROCESS_ID" />) দ্বারা ব্যবহৃত হচ্ছে বলে মনে হচ্ছে৷ Chromium প্রোফাইলটিকে লক করেছে যাতে এটি বিকৃত না হয়ে যায়৷ যদি আপনি নিশ্চিত হন যে আর কোনো প্রক্রিয়া এই প্রোফাইলটিকে ব্যবহার করছে না, তবে আপনি প্রোফাইলটিকে আনলক করতে পারেন এবং Chromium কে পুনরায় লঞ্চ করতে পারেন৷</translation>
 <translation id="469338717132742108">Chromium OS সম্পর্কে সহায়তা পান</translation>
@@ -158,7 +154,6 @@
 <translation id="6485906693002546646">আপনার Chromium জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chromium ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
 <translation id="6598877126913850652">Chromium বিজ্ঞপ্তি সেটিংসে যান</translation>
-<translation id="6664239887951090350">{0,plural, =0{Chromium আবার চালু করা হবে}=1{Chromium ১ সেকেন্ডের মধ্যে আবার চালু করা হবে}one{Chromium # সেকেন্ডের মধ্যে আবার চালু করা হবে}other{Chromium # সেকেন্ডের মধ্যে আবার চালু করা হবে}}</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
 <translation id="6717134281241384636">আপনার প্রোফাইলটি ব্যবহার করতে পারা যাবে না কারণ এটি একটি Chromium-এর নতুন সংস্করণ৷ কিছু বিষয় অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল ডিরেক্টরি উল্লেখ করুন অথবা Chromium-এর একটি নতুন সংস্করণ ব্যবহার করুন৷</translation>
 <translation id="6734080038664603509">&amp;Chromium আপডেট করুন</translation>

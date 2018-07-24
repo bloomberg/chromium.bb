@@ -13,7 +13,6 @@
 <translation id="2350172092385603347">Lokalizācija ir lietota, tomēr manifestā nav norādīta default_locale.</translation>
 <translation id="2576842806987913196">CRX fails ar šādu nosaukumu jau pastāv.</translation>
 <translation id="2753617847762399167">Nederīgs ceļš (pilnais vai relatīvais ar elementu “..”): <ph name="IMAGE_PATH" /></translation>
-<translation id="27822970480436970">Šim paplašinājumam neizdevās modificēt tīkla pieprasījumu, jo šī modifikācija bija pretrunā ar citu paplašinājumu.</translation>
 <translation id="2785530881066938471">Nevar ielādēt failu "<ph name="RELATIVE_PATH" />" satura skriptam. Tas nav UTF-8 kodēts.</translation>
 <translation id="2903070246402204397">Administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME" /> (paplašinājuma ID “<ph name="EXTENSION_ID" />”). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Nevarēja instalēt pakotni: <ph name="ERROR_CODE" />.</translation>

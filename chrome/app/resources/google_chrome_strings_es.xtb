@@ -42,11 +42,9 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="1915828456209461693">Hay una nueva actualización de Chrome disponible que se aplicará cuando reinicies el dispositivo.</translation>
-<translation id="2007150628464581396">{0,plural, =1{Chrome se volverá a iniciar en 1 minuto}other{Chrome se volverá a iniciar en # minutos}}</translation>
 <translation id="2063848847527508675">Chrome OS se debe reiniciar para que se aplique la actualización.</translation>
 <translation id="2084710999043359739">Añadir a Chrome</translation>
 <translation id="2094919256425865063">¿Quieres cerrar Chrome de todas formas?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome se volverá a iniciar ahora}=1{Chrome se volverá a iniciar en 1 segundo}other{Chrome se volverá a iniciar en # segundos}}</translation>
 <translation id="2120620239521071941">Se eliminarán <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Genera un informe de la <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para ayudar a mejorar Chrome</translation>
 <translation id="216054706567564023">Instala Chrome en tu teléfono. Te enviaremos un SMS al número de recuperación de la cuenta.</translation>
@@ -148,7 +146,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4771048833395599659">Es posible que este archivo sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="4794050651896644714">Guardar detalles en Chrome</translation>
 <translation id="4804732725083176494">El administrador de este dispositivo ha inhabilitado el inicio de sesión en Chrome.</translation>
-<translation id="4833487314064352405">{0,plural, =1{Volver a iniciar Chrome en un día}other{Volver a iniciar Chrome en # días}}</translation>
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="4895437082222824641">Abrir enlace en una pes&amp;taña nueva de Chrome</translation>
 <translation id="4921569541910214635">Si compartes un ordenador, ahora puedes configurar Chrome como quieras.</translation>
@@ -156,7 +153,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="495931528404527476">En Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
-<translation id="5131923704757666404">{0,plural, =1{Chrome se volverá a iniciar en una hora}other{Chrome se volverá a iniciar en # horas}}</translation>
 <translation id="5132929315877954718">Descubre formidables aplicaciones, juegos, extensiones y temas para Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome se muestra en este idioma</translation>
 <translation id="5170938038195470297">No se puede usar tu perfil porque se corresponde con una versión más reciente de Google Chrome.
@@ -262,7 +258,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8547799825197623713">Barra de aplicaciones de Google Chrome Canary</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible que funciona a una velocidad sin precedentes.</translation>
 <translation id="8568392309447938879">Para usar las aplicaciones, debes iniciar sesión en Chrome. De ese modo, Chrome podrá sincronizar tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones en distintos dispositivos.</translation>
-<translation id="859960207076826247">{0,plural, =0{Hay una actualización de Chrome disponible}=1{Hay una actualización de Chrome disponible}other{Hay una actualización de Chrome disponible desde hace # días}}</translation>
 <translation id="8606668294522778825">Google Chrome puede utilizar los servicios web para mejorar tu experiencia de navegación. Puedes habilitar o inhabilitar estos servicios. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="8667808506758191620">El dispositivo <ph name="DEVICE_TYPE" /> está actualizado.</translation>
