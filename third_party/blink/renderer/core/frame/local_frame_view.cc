@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
+#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
@@ -119,6 +120,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/link_highlight.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -2685,6 +2687,36 @@ static void CollectDrawableLayersForLayerListRecursively(
   CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
 }
 
+static void CollectLinkHighlightLayersForLayerListRecursively(
+    GraphicsContext& context,
+    const GraphicsLayer* layer) {
+  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
+
+  if (!layer || layer->Client().ShouldThrottleRendering())
+    return;
+
+  for (auto* highlight : layer->GetLinkHighlights()) {
+    DCHECK(highlight->effect())
+        << "Highlight effect node should have been created in PrePaint.";
+    auto* highlight_layer = highlight->Layer();
+    auto property_tree_state = layer->GetPropertyTreeState();
+    property_tree_state.SetEffect(highlight->effect());
+    ScopedPaintChunkProperties scope(context.GetPaintController(),
+                                     property_tree_state, *highlight,
+                                     DisplayItem::kForeignLayerLinkHighlight);
+    auto position = highlight_layer->position();
+    auto size = highlight_layer->bounds();
+    RecordForeignLayer(context, *highlight,
+                       DisplayItem::kForeignLayerLinkHighlight, highlight_layer,
+                       layer->GetOffsetFromTransformNode() +
+                           FloatSize(position.x(), position.y()),
+                       IntSize(size.width(), size.height()));
+  }
+
+  for (const auto* child : layer->Children())
+    CollectLinkHighlightLayersForLayerListRecursively(context, child);
+}
+
 static void PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
   layer->PaintRecursively();
 
@@ -2768,6 +2800,13 @@ void LocalFrameView::PaintTree() {
     }
   }
 
+  // TODO(chrishtr): Link highlights don't currently paint themselves,
+  // it's still driven by cc. Fix this.
+  // This uses an invalidation approach based on graphics layer raster
+  // invalidation so it must be after paint. This adds/removes link highlight
+  // layers so it must be before |CollectDrawableLayersForLayerListRecursively|.
+  frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
+
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     // BlinkGenPropertyTrees just needs a transient PaintController to
     // collect the foreign layers which doesn't need caching. It also
@@ -2790,8 +2829,11 @@ void LocalFrameView::PaintTree() {
     // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
     // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
     // so we do not need to collect scrollbars separately.
-    CollectDrawableLayersForLayerListRecursively(
-        context, layout_view->Compositor()->PaintRootGraphicsLayer());
+    auto* root = layout_view->Compositor()->PaintRootGraphicsLayer();
+    CollectDrawableLayersForLayerListRecursively(context, root);
+    // Link highlights paint after all other layers.
+    if (!frame_->GetPage()->GetLinkHighlights().IsEmpty())
+      CollectLinkHighlightLayersForLayerListRecursively(context, root);
     paint_controller_->CommitNewDisplayItems();
   }
 

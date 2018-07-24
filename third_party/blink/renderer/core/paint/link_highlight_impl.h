@@ -60,6 +60,11 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   ~LinkHighlightImpl() override;
 
   void StartHighlightAnimationIfNeeded();
+
+  // Recalculates |path_| based on |node_|'s geometry and updates the link
+  // highlight layer. To avoid re-computing |path_|, a dirty bit is used
+  // (see |geometry_needs_update_| and |Invalidate()|) which is based on raster
+  // invalidation of the owning graphics layer.
   void UpdateGeometry();
 
   // cc::ContentLayerClient implementation.
@@ -85,6 +90,12 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   GraphicsLayer* CurrentGraphicsLayerForTesting() const {
     return current_graphics_layer_;
   }
+
+  Node* GetNode() const { return node_; }
+
+  CompositorElementId element_id();
+
+  const EffectPaintPropertyNode* effect() override;
 
  private:
   LinkHighlightImpl(Node*);

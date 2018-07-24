@@ -245,9 +245,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void AddLinkHighlight(LinkHighlight*);
   void RemoveLinkHighlight(LinkHighlight*);
-  // Exposed for tests
-  unsigned NumLinkHighlights() { return link_highlights_.size(); }
-  LinkHighlight* GetLinkHighlight(int i) { return link_highlights_[i]; }
+  const Vector<LinkHighlight*>& GetLinkHighlights() const {
+    return link_highlights_;
+  }
 
   int GetRenderingContext3D() const { return rendering_context3d_; }
 

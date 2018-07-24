@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -18,6 +19,7 @@ class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class WebLayerTreeView;
 class LocalFrame;
+class LayoutObject;
 
 class CORE_EXPORT LinkHighlights final
     : public GarbageCollectedFinalized<LinkHighlights> {
@@ -31,6 +33,7 @@ class CORE_EXPORT LinkHighlights final
 
   void SetTapHighlights(HeapVector<Member<Node>>&);
 
+  // Updates geometry on all highlights. See: LinkHighlightImpl::UpdateGeometry.
   void UpdateGeometry();
 
   void StartHighlightAnimationIfNeeded();
@@ -38,11 +41,22 @@ class CORE_EXPORT LinkHighlights final
   void LayerTreeViewInitialized(WebLayerTreeView&);
   void WillCloseLayerTreeView(WebLayerTreeView&);
 
+  bool IsEmpty() const { return link_highlights_.IsEmpty(); }
+
+  bool NeedsHighlightEffect(const LayoutObject& object) const {
+    if (link_highlights_.IsEmpty())
+      return false;
+    return NeedsHighlightEffectInternal(object);
+  }
+
+  CompositorElementId element_id(const LayoutObject& object);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, verifyWebViewImplIntegration);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetDuringNodeRemoval);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetLayerTreeView);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, multipleHighlights);
+  FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightLayerEffectNode);
 
   explicit LinkHighlights(Page&);
 
@@ -54,6 +68,8 @@ class CORE_EXPORT LinkHighlights final
     DCHECK(page_);
     return *page_;
   }
+
+  bool NeedsHighlightEffectInternal(const LayoutObject& object) const;
 
   Member<Page> page_;
   Vector<std::unique_ptr<LinkHighlightImpl>> link_highlights_;

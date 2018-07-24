@@ -116,7 +116,8 @@ class PLATFORM_EXPORT DisplayItem {
     kForeignLayerVideo,
     kForeignLayerWrapper,
     kForeignLayerContentsWrapper,
-    kForeignLayerLast = kForeignLayerContentsWrapper,
+    kForeignLayerLinkHighlight,
+    kForeignLayerLast = kForeignLayerLinkHighlight,
 
     kClipPaintPhaseFirst,
     kClipPaintPhaseLast = kClipPaintPhaseFirst + kPaintPhaseMax,
