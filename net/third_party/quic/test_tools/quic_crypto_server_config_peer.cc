@@ -8,8 +8,6 @@
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-using std::string;
-
 namespace quic {
 namespace test {
 
@@ -21,7 +19,7 @@ QuicCryptoServerConfigPeer::GetPrimaryConfig() {
 }
 
 QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
-QuicCryptoServerConfigPeer::GetConfig(string config_id) {
+QuicCryptoServerConfigPeer::GetConfig(QuicString config_id) {
   QuicReaderMutexLock locked(&server_config_->configs_lock_);
   if (config_id == "<primary>") {
     return QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>(
@@ -40,8 +38,8 @@ void QuicCryptoServerConfigPeer::ResetProofSource(
   server_config_->proof_source_ = std::move(proof_source);
 }
 
-string QuicCryptoServerConfigPeer::NewSourceAddressToken(
-    string config_id,
+QuicString QuicCryptoServerConfigPeer::NewSourceAddressToken(
+    QuicString config_id,
     SourceAddressTokens previous_tokens,
     const QuicIpAddress& ip,
     QuicRandom* rand,
@@ -53,7 +51,7 @@ string QuicCryptoServerConfigPeer::NewSourceAddressToken(
 }
 
 HandshakeFailureReason QuicCryptoServerConfigPeer::ValidateSourceAddressTokens(
-    string config_id,
+    QuicString config_id,
     QuicStringPiece srct,
     const QuicIpAddress& ip,
     QuicWallTime now,
@@ -86,7 +84,7 @@ QuicCryptoServerConfigPeer::ValidateSingleSourceAddressToken(
 }
 
 void QuicCryptoServerConfigPeer::CheckConfigs(
-    std::vector<std::pair<string, bool>> expected_ids_and_status) {
+    std::vector<std::pair<QuicString, bool>> expected_ids_and_status) {
   QuicReaderMutexLock locked(&server_config_->configs_lock_);
 
   ASSERT_EQ(expected_ids_and_status.size(), server_config_->configs_.size())
@@ -111,14 +109,14 @@ void QuicCryptoServerConfigPeer::CheckConfigs(
   }
 }
 
-// ConfigsDebug returns a string that contains debugging information about
+// ConfigsDebug returns a QuicString that contains debugging information about
 // the set of Configs loaded in |server_config_| and their status.
-string QuicCryptoServerConfigPeer::ConfigsDebug() {
+QuicString QuicCryptoServerConfigPeer::ConfigsDebug() {
   if (server_config_->configs_.empty()) {
     return "No Configs in QuicCryptoServerConfig";
   }
 
-  string s;
+  QuicString s;
 
   for (const auto& i : server_config_->configs_) {
     const QuicReferenceCountedPointer<QuicCryptoServerConfig::Config> config =
@@ -141,11 +139,11 @@ void QuicCryptoServerConfigPeer::SelectNewPrimaryConfig(int seconds) {
       QuicWallTime::FromUNIXSeconds(seconds));
 }
 
-string QuicCryptoServerConfigPeer::CompressChain(
+QuicString QuicCryptoServerConfigPeer::CompressChain(
     QuicCompressedCertsCache* compressed_certs_cache,
     const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
-    const string& client_common_set_hashes,
-    const string& client_cached_cert_hashes,
+    const QuicString& client_common_set_hashes,
+    const QuicString& client_cached_cert_hashes,
     const CommonCertSets* common_sets) {
   return QuicCryptoServerConfig::CompressChain(
       compressed_certs_cache, chain, client_common_set_hashes,

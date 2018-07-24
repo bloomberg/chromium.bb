@@ -19,7 +19,7 @@ class MockQuicClientPromisedInfo : public QuicClientPromisedInfo {
  public:
   MockQuicClientPromisedInfo(QuicSpdyClientSessionBase* session,
                              QuicStreamId id,
-                             std::string url);
+                             QuicString url);
   ~MockQuicClientPromisedInfo() override;
 
   MOCK_METHOD2(HandleClientRequest,

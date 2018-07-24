@@ -20,7 +20,7 @@ class MockQuicSessionVisitor : public QuicTimeWaitListManager::Visitor {
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicConnectionId connection_id,
                     QuicErrorCode error,
-                    const std::string& error_details));
+                    const QuicString& error_details));
   MOCK_METHOD1(OnWriteBlocked,
                void(QuicBlockedWriterInterface* blocked_writer));
   MOCK_METHOD1(OnRstStreamReceived, void(const QuicRstStreamFrame& frame));
@@ -42,7 +42,7 @@ class MockQuicCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
                           const QuicSocketAddress& client_address,
                           const QuicSocketAddress& peer_address,
                           const QuicSocketAddress& self_address,
-                          std::string* error_details));
+                          QuicString* error_details));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicCryptoServerStreamHelper);

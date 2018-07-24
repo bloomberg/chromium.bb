@@ -8,7 +8,6 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 
-using std::string;
 
 namespace quic {
 namespace test {

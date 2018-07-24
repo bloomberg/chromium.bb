@@ -8,7 +8,6 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 
-using std::string;
 
 namespace quic {
 namespace test {
@@ -22,10 +21,10 @@ FakeProofSource::PendingOp::~PendingOp() = default;
 
 FakeProofSource::GetProofOp::GetProofOp(
     const QuicSocketAddress& server_addr,
-    string hostname,
-    string server_config,
+    QuicString hostname,
+    QuicString server_config,
     QuicTransportVersion transport_version,
-    string chlo_hash,
+    QuicString chlo_hash,
     std::unique_ptr<ProofSource::Callback> callback,
     ProofSource* delegate)
     : server_address_(server_addr),
@@ -46,7 +45,7 @@ void FakeProofSource::GetProofOp::Run() {
 
 FakeProofSource::ComputeSignatureOp::ComputeSignatureOp(
     const QuicSocketAddress& server_address,
-    string hostname,
+    QuicString hostname,
     uint16_t sig_alg,
     QuicStringPiece in,
     std::unique_ptr<ProofSource::SignatureCallback> callback,
@@ -71,8 +70,8 @@ void FakeProofSource::Activate() {
 
 void FakeProofSource::GetProof(
     const QuicSocketAddress& server_address,
-    const string& hostname,
-    const string& server_config,
+    const QuicString& hostname,
+    const QuicString& server_config,
     QuicTransportVersion transport_version,
     QuicStringPiece chlo_hash,
     std::unique_ptr<ProofSource::Callback> callback) {
@@ -84,18 +83,18 @@ void FakeProofSource::GetProof(
 
   pending_ops_.push_back(QuicMakeUnique<GetProofOp>(
       server_address, hostname, server_config, transport_version,
-      string(chlo_hash), std::move(callback), delegate_.get()));
+      QuicString(chlo_hash), std::move(callback), delegate_.get()));
 }
 
 QuicReferenceCountedPointer<ProofSource::Chain> FakeProofSource::GetCertChain(
     const QuicSocketAddress& server_address,
-    const string& hostname) {
+    const QuicString& hostname) {
   return delegate_->GetCertChain(server_address, hostname);
 }
 
 void FakeProofSource::ComputeTlsSignature(
     const QuicSocketAddress& server_address,
-    const string& hostname,
+    const QuicString& hostname,
     uint16_t signature_algorithm,
     QuicStringPiece in,
     std::unique_ptr<ProofSource::SignatureCallback> callback) {
