@@ -178,5 +178,3 @@ class IDLAst(IDLNode):
       errors = filenode.GetProperty('ERRORS')
       if errors:
         self.errors += errors
-
-
