@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -208,10 +209,10 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   enum BinaryType { kBinaryTypeBlob, kBinaryTypeArrayBuffer };
 
   // This function is virtual for unittests.
-  // FIXME: Move WebSocketChannel::create here.
   virtual WebSocketChannel* CreateChannel(ExecutionContext* context,
                                           WebSocketChannelClient* client) {
-    return WebSocketChannel::Create(context, client);
+    return WebSocketChannelImpl::Create(context, client,
+                                        SourceLocation::Capture(context));
   }
 
   // Adds a console message with JSMessageSource and ErrorMessageLevel.
