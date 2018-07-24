@@ -78,6 +78,9 @@ CastWebViewDefault::CastWebViewDefault(
   DCHECK(window_);
   content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
+#if defined(USE_AURA)
+  web_contents_->GetNativeView()->SetName(params.activity_id);
+#endif
 
 #if BUILDFLAG(IS_ANDROID_THINGS)
 // Configure the ducking multiplier for AThings speakers. When CMA backend is

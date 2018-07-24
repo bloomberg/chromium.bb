@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/net_errors.h"
+#include "ui/aura/window.h"
 
 namespace chromecast {
 
@@ -35,6 +36,7 @@ CastWebViewExtension::CastWebViewExtension(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()) {
   DCHECK(delegate_);
   content::WebContentsObserver::Observe(web_contents());
+  web_contents()->GetNativeView()->SetName(params.activity_id);
   // If this CastWebView is enabled for development, start the remote debugger.
   if (params.enabled_for_dev) {
     LOG(INFO) << "Enabling dev console for " << web_contents()->GetVisibleURL();
