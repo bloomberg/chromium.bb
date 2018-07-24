@@ -2349,14 +2349,11 @@ void Element::RecalcStyle(StyleRecalcChange change) {
   }
 
   if (ShouldCallRecalcStyleForChildren(change)) {
-    // TODO(futhark@chromium.org): Pseudo elements are feature-less and match
-    // the same features as their originating element. Move the filter scope
-    // inside the if-block for shadow-including descendants below.
-    SelectorFilterParentScope filter_scope(*this);
 
     UpdatePseudoElement(kPseudoIdBefore, change);
 
     if (change > kUpdatePseudoElements || ChildNeedsStyleRecalc()) {
+      SelectorFilterParentScope filter_scope(*this);
       if (ShadowRoot* root = GetShadowRoot()) {
         if (root->ShouldCallRecalcStyle(change))
           root->RecalcStyle(change);

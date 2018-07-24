@@ -1472,4 +1472,32 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
+TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      div::before { content: "" }
+      .not-in-filter div::before { color: red }
+    </style>
+    <div class='not-in-filter'></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetDocument().GetStyleEngine();
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+
+  Element* div = GetDocument().QuerySelector("div");
+  ASSERT_TRUE(div);
+  div->SetInlineStyleProperty(CSSPropertyColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().documentElement()->RecalcStyle(kNoChange);
+
+  // Should fast reject ".not-in-filter div::before {}" for both the div and its
+  // ::before pseudo element.
+  EXPECT_EQ(2u, stats->rules_fast_rejected);
+}
+
 }  // namespace blink
