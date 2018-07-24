@@ -19,38 +19,25 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 729, 204],
+          "rect": [18, 18, 22, 19],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 193, 178, 19],
-          "reason": "chunk disappeared"
+          "object": "NGPhysicalTextFragment 'abc'",
+          "rect": [8, 187, 22, 19],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inner-target'",
+      "reason": "appeared"
     },
     {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' '",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "subtree"
+      "object": "NGPhysicalTextFragment 'abc'",
+      "reason": "appeared"
     }
   ]
 }

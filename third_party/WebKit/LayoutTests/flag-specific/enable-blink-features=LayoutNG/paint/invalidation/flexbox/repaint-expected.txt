@@ -172,34 +172,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
       "object": "LayoutFlexibleBox DIV id='flexbox'",
       "reason": "geometry"
     },
@@ -233,34 +205,6 @@
     },
     {
       "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
       "reason": "subtree"
     },
     {

@@ -214,10 +214,10 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // don't re-set the result here.
       ToLayoutBlockFlow(box_)->SetCachedLayoutResult(
           constraint_space, break_token, layout_result);
-      if (!constraint_space.IsIntermediateLayout()) {
-        block_flow->ClearPaintFragment();
-        if (first_child && first_child.IsInline())
-          block_flow->SetPaintFragment(layout_result->PhysicalFragment());
+      if (!constraint_space.IsIntermediateLayout() && first_child &&
+          first_child.IsInline()) {
+        block_flow->UpdatePaintFragmentFromCachedLayoutResult(
+            layout_result->PhysicalFragment());
       }
       return layout_result;
     }

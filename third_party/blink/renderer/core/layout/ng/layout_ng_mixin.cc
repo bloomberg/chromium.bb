@@ -264,11 +264,24 @@ LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment) {
+  DCHECK(fragment);
+
   paint_fragment_ = NGPaintFragment::Create(std::move(fragment));
 
   // When paint fragment is replaced, the subtree needs paint invalidation to
   // re-compute paint properties in NGPaintFragment.
   Base::SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kSubtree);
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
+    scoped_refptr<const NGPhysicalFragment> fragment) {
+  DCHECK(fragment);
+
+  if (!paint_fragment_)
+    return SetPaintFragment(fragment);
+
+  paint_fragment_->UpdatePhysicalFragmentFromCachedLayoutResult(fragment);
 }
 
 template <typename Base>

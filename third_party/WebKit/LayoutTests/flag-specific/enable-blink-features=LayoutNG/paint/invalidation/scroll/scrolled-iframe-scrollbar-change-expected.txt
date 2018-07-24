@@ -17,12 +17,12 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutNGBlockFlow DIV id='container'",
-      "reason": "incremental"
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='container'",
+      "reason": "subtree"
     },
     {
       "object": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
-      "reason": "appeared"
+      "reason": "subtree"
     }
   ]
 }

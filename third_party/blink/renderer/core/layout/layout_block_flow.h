@@ -461,6 +461,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                      scoped_refptr<NGLayoutResult>);
   virtual void WillCollectInlines() {}
   virtual void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>);
+  virtual void UpdatePaintFragmentFromCachedLayoutResult(
+      scoped_refptr<const NGPhysicalFragment>);
   virtual void ClearPaintFragment() {}
   virtual const NGPhysicalBoxFragment* CurrentFragment() const {
     return nullptr;

@@ -858,6 +858,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/hide-b
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/list-item.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/orphans-and-widows-balance.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/table-cell.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/orphans-relayout.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/out-of-flow/abspos-auto-position-on-line-at-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/out-of-flow/abspos-auto-position-on-line.html [ Failure ]

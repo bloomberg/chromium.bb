@@ -1,0 +1,160 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalTextFragment 'velit. Integer sollicitudin nisi ut'",
+          "rect": [8, 182, 195, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'adipiscing, enim in scelerisque'",
+          "rect": [8, 102, 192, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'adipiscing, enim in scelerisque'",
+          "rect": [8, 102, 192, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'sollicitudin nisi ut urna blandit'",
+          "rect": [8, 182, 191, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'at sagittis eros leo pulvinar'",
+          "rect": [8, 162, 168, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'lacus, at sagittis eros leo'",
+          "rect": [8, 142, 151, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'urna blandit convallis.'",
+          "rect": [8, 202, 139, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'pulvinar velit. Integer'",
+          "rect": [8, 162, 136, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Cras faucibus. Nunc'",
+          "rect": [8, 82, 129, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Cras faucibus. Nunc'",
+          "rect": [8, 82, 129, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'convallis, augue '",
+          "rect": [8, 122, 106, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'convallis, augue'",
+          "rect": [8, 122, 102, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment ' eleifend lacus,'",
+          "rect": [103, 142, 94, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'convallis.'",
+          "rect": [8, 202, 60, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment ' eleifend'",
+          "rect": [149, 122, 54, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='t'",
+          "rect": [114, 92, 35, 49],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'purus'",
+          "rect": [114, 122, 35, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'purus'",
+          "rect": [38, 142, 35, 19],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'Cras faucibus. Nunc'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'adipiscing, enim in scelerisque'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'convallis, augue '",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutInline SPAN id='t'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'purus'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment ' eleifend'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'lacus, at sagittis eros leo'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'pulvinar velit. Integer'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'sollicitudin nisi ut urna blandit'",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalTextFragment 'convallis.'",
+      "reason": "subtree"
+    }
+  ]
+}
+
