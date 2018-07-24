@@ -5,6 +5,7 @@
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -298,16 +299,23 @@ void HostBackendDelegateImpl::OnSetSoftwareFeatureStateResult(
     cryptauth::RemoteDeviceRef device_for_request,
     bool attempted_to_enable,
     device_sync::mojom::NetworkRequestResult result_code) {
-  if (result_code == device_sync::mojom::NetworkRequestResult::kSuccess)
-    return;
+  bool success =
+      result_code == device_sync::mojom::NetworkRequestResult::kSuccess;
 
-  PA_LOG(WARNING) << "HostBackendDelegateImpl::"
-                  << "OnSetSoftwareFeatureStateResult(): Failure requesting "
-                  << "a host change. Device ID: "
-                  << device_for_request.GetTruncatedDeviceIdForLogs()
-                  << ", Attempted to enable: "
-                  << (attempted_to_enable ? "true" : "false")
-                  << ", Error code: " << result_code;
+  std::stringstream ss;
+  ss << "HostBackendDelegateImpl::OnSetSoftwareFeatureStateResult(): "
+     << (success ? "Completed successful" : "Failure requesting") << " "
+     << "host change. Device ID: "
+     << device_for_request.GetTruncatedDeviceIdForLogs()
+     << ", Attempted to enable: " << (attempted_to_enable ? "true" : "false");
+
+  if (success) {
+    PA_LOG(INFO) << ss.str();
+    return;
+  }
+
+  ss << ", Error code: " << result_code;
+  PA_LOG(WARNING) << ss.str();
 
   if (!HasPendingHostRequest())
     return;
