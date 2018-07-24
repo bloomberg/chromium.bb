@@ -118,6 +118,13 @@ _CONFIG = [
             # Base atomic utilities
             'base::AtomicSequenceNumber',
 
+            # Task traits
+            'base::TaskTraits',
+            'base::MayBlock',
+            'base::TaskPriority',
+            'base::TaskShutdownBehavior',
+            'base::WithBaseSyncPrimitives',
+
             # Byte order
             'base::ByteSwap',
             'base::NetToHost(16|32|64)',
