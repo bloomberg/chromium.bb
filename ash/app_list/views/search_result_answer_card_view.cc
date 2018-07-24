@@ -44,7 +44,7 @@ views::View* GetViewByToken(
 
   // Use RemoteViewHost to embed the answer card contents provided in the
   // browser process in Mash.
-  if (base::FeatureList::IsEnabled(features::kMashDeprecated)) {
+  if (!features::IsAshInBrowserProcess()) {
     views::RemoteViewHost* view = new views::RemoteViewHost();
     view->EmbedUsingToken(token.value(),
                           ui::mojom::kEmbedFlagEmbedderInterceptsEvents |

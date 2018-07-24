@@ -327,11 +327,8 @@ bool DisplayColorManager::LoadCalibrationForDisplay(
   // TODO: enable QuirksManager for mash. http://crbug.com/728748. Some tests
   // don't create the Shell when running this code, hence the
   // Shell::HasInstance() conditional.
-  if (Shell::HasInstance() &&
-      (base::FeatureList::IsEnabled(::features::kMashDeprecated) ||
-       base::FeatureList::IsEnabled(::features::kMash))) {
+  if (Shell::HasInstance() && !features::IsAshInBrowserProcess())
     return false;
-  }
 
   const bool valid_product_code =
       display->product_code() != display::DisplaySnapshot::kInvalidProductCode;
