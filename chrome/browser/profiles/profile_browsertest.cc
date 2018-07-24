@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
@@ -20,6 +22,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -35,6 +38,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -845,4 +849,158 @@ IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
       embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
       net::LOAD_ONLY_FROM_CACHE);
   url_fetcher_delegate3.WaitForCompletion();
+}
+
+namespace {
+
+// Watches for the destruction of the specified path (Which, in the tests that
+// use it, is typically a directory), and expects the parent directory not to be
+// deleted.
+//
+// This is used the the media cache deletion tests, so handles all the possible
+// orderings of events that could happen:
+//
+// * In PRE_* tests, the media cache could deleted before the test completes, by
+// the task posted on Profile / isolated app URLRequestContext creation.
+//
+// * In the followup test, the media cache could be deleted by the off-thread
+// delete media cache task before the FileDestructionWatcher starts watching for
+// deletion, or even before it's created.
+//
+// * In the followup test, the media cache could be deleted after the
+// FileDestructionWatcher starts watching.
+//
+// It also may be possible to get a notification of the media cache being
+// created from the the previous test, so this allows multiple watch events to
+// happen, before the path is actually deleted.
+//
+// The public methods are called on the UI thread, the private ones called on a
+// separate SequencedTaskRunner.
+class FileDestructionWatcher {
+ public:
+  explicit FileDestructionWatcher(const base::FilePath& watched_file_path)
+      : watched_file_path_(watched_file_path) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  }
+
+  void WaitForDestruction() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(!watcher_);
+    base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&FileDestructionWatcher::StartWatchingPath,
+                                  base::Unretained(this)));
+    run_loop_.Run();
+    // The watcher should be destroyed before quitting the run loop, once the
+    // file has been destroyed.
+    DCHECK(!watcher_);
+
+    // Double check that the file was destroyed, and that the parent directory
+    // was not.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_FALSE(base::PathExists(watched_file_path_));
+    EXPECT_TRUE(base::PathExists(watched_file_path_.DirName()));
+  }
+
+ private:
+  void StartWatchingPath() {
+    DCHECK(!watcher_);
+    watcher_ = std::make_unique<base::FilePathWatcher>();
+    // Start watching before checking if the file exists, as the file could be
+    // destroyed between the existence check and when we start watching, if the
+    // order were reversed.
+    EXPECT_TRUE(watcher_->Watch(
+        watched_file_path_, false /* recursive */,
+        base::BindRepeating(&FileDestructionWatcher::OnPathChanged,
+                            base::Unretained(this))));
+    CheckIfPathExists();
+  }
+
+  void OnPathChanged(const base::FilePath& path, bool error) {
+    EXPECT_EQ(watched_file_path_, path);
+    EXPECT_FALSE(error);
+    CheckIfPathExists();
+  }
+
+  // Checks if the path exists, and if so, destroys the watcher and quits
+  // |run_loop_|.
+  void CheckIfPathExists() {
+    if (!base::PathExists(watched_file_path_)) {
+      watcher_.reset();
+      run_loop_.Quit();
+      return;
+    }
+  }
+
+  base::RunLoop run_loop_;
+  const base::FilePath watched_file_path_;
+
+  // Created and destroyed off of the UI thread, on the sequence used to watch
+  // for changes.
+  std::unique_ptr<base::FilePathWatcher> watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileDestructionWatcher);
+};
+
+}  // namespace
+
+// Create a media cache file, and make sure it's deleted by the time the next
+// test runs.
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       PRE_DeleteMediaCache) {
+  base::FilePath media_cache_path =
+      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::CreateDirectory(media_cache_path));
+  std::string data = "foo";
+  base::WriteFile(media_cache_path.AppendASCII("foo"), data.c_str(),
+                  data.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest, DeleteMediaCache) {
+  base::FilePath media_cache_path =
+      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  FileDestructionWatcher destruction_watcher(media_cache_path);
+  destruction_watcher.WaitForDestruction();
+}
+
+// Create a media cache file, and make sure it's deleted by initializing an
+// extension browser context.
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       PRE_DeleteIsolatedAppMediaCache) {
+  scoped_refptr<const extensions::Extension> app =
+      BuildTestApp(browser()->profile());
+  content::StoragePartition* extension_partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          browser()->profile(),
+          extensions::Extension::GetBaseURLFromExtensionId(app->id()));
+
+  base::FilePath extension_media_cache_path =
+      extension_partition->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::CreateDirectory(extension_media_cache_path));
+  std::string data = "foo";
+  base::WriteFile(extension_media_cache_path.AppendASCII("foo"), data.c_str(),
+                  data.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       DeleteIsolatedAppMediaCache) {
+  scoped_refptr<const extensions::Extension> app =
+      BuildTestApp(browser()->profile());
+  content::StoragePartition* extension_partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          browser()->profile(),
+          extensions::Extension::GetBaseURLFromExtensionId(app->id()));
+
+  base::FilePath extension_media_cache_path =
+      extension_partition->GetPath().Append(chrome::kMediaCacheDirname);
+
+  FileDestructionWatcher destruction_watcher(extension_media_cache_path);
+  destruction_watcher.WaitForDestruction();
 }
