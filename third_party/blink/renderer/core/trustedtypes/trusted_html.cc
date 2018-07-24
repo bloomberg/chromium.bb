@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -28,6 +31,25 @@ TrustedHTML* TrustedHTML::escape(ScriptState* script_state,
 TrustedHTML* TrustedHTML::unsafelyCreate(ScriptState* script_state,
                                          const String& html) {
   return TrustedHTML::Create(html);
+}
+
+String TrustedHTML::GetString(StringOrTrustedHTML stringOrHTML,
+                              const Document* doc,
+                              ExceptionState& exception_state) {
+  DCHECK(stringOrHTML.IsString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(!stringOrHTML.IsNull());
+
+  if (!stringOrHTML.IsTrustedHTML() && doc && doc->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return g_empty_string;
+  }
+
+  String markup = stringOrHTML.IsString()
+                      ? stringOrHTML.GetAsString()
+                      : stringOrHTML.GetAsTrustedHTML()->toString();
+  return markup;
 }
 
 String TrustedHTML::toString() const {

@@ -32,21 +32,12 @@ namespace blink {
 Document* DOMParser::parseFromString(const StringOrTrustedHTML& stringOrHTML,
                                      const String& type,
                                      ExceptionState& exception_state) {
-  DCHECK(stringOrHTML.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  DCHECK(!stringOrHTML.IsNull());
-  if (context_document_ && stringOrHTML.IsString() &&
-      context_document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedHTML` assignment.");
-    return nullptr;
+  String value =
+      TrustedHTML::GetString(stringOrHTML, context_document_, exception_state);
+  if (!exception_state.HadException()) {
+    return parseFromStringInternal(value, type);
   }
-
-  String valueString = stringOrHTML.IsString()
-                           ? stringOrHTML.GetAsString()
-                           : stringOrHTML.GetAsTrustedHTML()->toString();
-
-  return parseFromStringInternal(valueString, type);
+  return nullptr;
 }
 
 Document* DOMParser::parseFromStringInternal(const String& str,

@@ -975,23 +975,16 @@ DocumentFragment* Range::createContextualFragment(
   // Algorithm:
   // http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
 
-  DCHECK(string_or_html.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
   DCHECK(!string_or_html.IsNull());
 
   Document& document = start_.Container().GetDocument();
 
-  if (string_or_html.IsString() && document.RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedHTML` assignment.");
-    return nullptr;
+  String markup =
+      TrustedHTML::GetString(string_or_html, &document, exception_state);
+  if (!exception_state.HadException()) {
+    return createContextualFragmentFromString(markup, exception_state);
   }
-
-  String markup = string_or_html.IsString()
-                      ? string_or_html.GetAsString()
-                      : string_or_html.GetAsTrustedHTML()->toString();
-
-  return createContextualFragmentFromString(markup, exception_state);
+  return nullptr;
 }
 
 DocumentFragment* Range::createContextualFragmentFromString(
