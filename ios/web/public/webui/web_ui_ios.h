@@ -81,6 +81,18 @@ class WebUIIOS {
   virtual void CallJavascriptFunction(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) = 0;
+
+  // Helper method for responding to Javascript requests initiated with
+  // cr.sendWithPromise() (defined in cr.js) for the case where the returned
+  // promise should be resolved (request succeeded).
+  virtual void ResolveJavascriptCallback(const base::Value& callback_id,
+                                         const base::Value& response) = 0;
+
+  // Helper method for responding to Javascript requests initiated with
+  // cr.sendWithPromise() (defined in cr.js), for the case where the returned
+  // promise should be rejected (request failed).
+  virtual void RejectJavascriptCallback(const base::Value& callback_id,
+                                        const base::Value& response) = 0;
 };
 
 }  // namespace web

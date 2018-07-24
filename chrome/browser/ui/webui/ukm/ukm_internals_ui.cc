@@ -85,6 +85,8 @@ void UkmMessageHandler::RegisterMessages() {
 
 }  // namespace
 
+// Changes to this class should be in sync with its iOS equivalent
+// ios/chrome/browser/ui/webui/ukm_internals_ui.cc
 UkmInternalsUI::UkmInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   ukm::UkmService* ukm_service =
