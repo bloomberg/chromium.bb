@@ -102,6 +102,7 @@ Polymer({
   },
 
   /**
+   * TODO(crbug.com/855945): Use this function for the spell check error hint
    * @param {!Event} e
    * @private
    */
