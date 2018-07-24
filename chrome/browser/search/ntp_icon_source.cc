@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
@@ -24,6 +25,7 @@
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
@@ -34,6 +36,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -255,18 +258,35 @@ void NtpIconSource::StartDataRequest(
   const ParsedNtpIconPath parsed = ParseNtpIconPath(path);
 
   if (parsed.url.is_valid()) {
+    int icon_size_in_pixels =
+        std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
+    NtpIconRequest request(callback, parsed.url, icon_size_in_pixels,
+                           parsed.device_scale_factor);
+
+    // Check if the requested URL is part of the prepopulated pages (currently,
+    // only the Web Store).
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile_);
+    if (top_sites) {
+      for (const auto& prepopulated_page : top_sites->GetPrepopulatedPages()) {
+        if (parsed.url == prepopulated_page.most_visited.url) {
+          gfx::Image& image =
+              ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                  prepopulated_page.favicon_id);
+          ReturnRenderedIconForRequest(request, image.AsBitmap());
+          return;
+        }
+      }
+    }
+
     // This will query for a local favicon. If not found, will take alternative
     // action in OnLocalFaviconAvailable.
     const bool fallback_to_host = true;
-    int icon_size_in_pixels =
-        std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     favicon_service->GetRawFaviconForPageURL(
         parsed.url, {favicon_base::IconType::kFavicon}, icon_size_in_pixels,
         fallback_to_host,
         base::Bind(&NtpIconSource::OnLocalFaviconAvailable,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   NtpIconRequest(callback, parsed.url, icon_size_in_pixels,
-                                  parsed.device_scale_factor)),
+                   weak_ptr_factory_.GetWeakPtr(), request),
         &cancelable_task_tracker_);
   } else {
     callback.Run(nullptr);

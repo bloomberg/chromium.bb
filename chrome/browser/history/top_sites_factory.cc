@@ -30,6 +30,7 @@
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,23 +45,22 @@ bool IsTopSitesDisabled() {
 }
 
 struct RawPrepopulatedPage {
-  int url_id;        // The resource for the page URL.
-  int title_id;      // The resource for the page title.
-  int favicon_id;    // The raw data resource for the favicon.
-  int thumbnail_id;  // The raw data resource for the thumbnail.
-  SkColor color;     // The best color to highlight the page (should roughly
-                     // match favicon).
+  int url_id;            // The resource for the page URL.
+  int title_id;          // The resource for the page title.
+  int favicon_id;        // The raw data resource for the favicon.
+  int large_favicon_id;  // The raw data resource for the larger favicon.
+  int thumbnail_id;      // The raw data resource for the thumbnail.
+  SkColor color;         // The best color to highlight the page (should
+                         // roughly match favicon).
 };
 
 #if !defined(OS_ANDROID)
 // Android does not use prepopulated pages.
 const RawPrepopulatedPage kRawPrepopulatedPages[] = {
     {
-     IDS_WEBSTORE_URL,
-     IDS_EXTENSION_WEB_STORE_TITLE,
-     IDR_WEBSTORE_ICON_16,
-     IDR_NEWTAB_WEBSTORE_THUMBNAIL,
-     SkColorSetRGB(63, 132, 197),
+        IDS_WEBSTORE_URL, IDS_EXTENSION_WEB_STORE_TITLE, IDR_WEBSTORE_ICON_16,
+        IDR_WEBSTORE_ICON_32, IDR_NEWTAB_WEBSTORE_THUMBNAIL,
+        SkColorSetRGB(63, 132, 197),
     },
 };
 #endif
@@ -74,7 +74,8 @@ void InitializePrepopulatedPageList(
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
-        l10n_util::GetStringUTF16(page.title_id), page.favicon_id,
+        l10n_util::GetStringUTF16(page.title_id),
+        ntp_tiles::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
         page.thumbnail_id, page.color));
   }
 #endif
