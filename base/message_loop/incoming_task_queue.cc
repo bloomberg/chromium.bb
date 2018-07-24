@@ -72,9 +72,6 @@ bool IncomingTaskQueue::AddToIncomingQueue(const Location& from_here,
   }
 #endif
 
-  if (!delay.is_zero())
-    UMA_HISTOGRAM_LONG_TIMES("MessageLoop.DelayedTaskQueue.PostedDelay", delay);
-
   return PostPendingTask(&pending_task);
 }
 
@@ -85,7 +82,7 @@ void IncomingTaskQueue::Shutdown() {
 
 void IncomingTaskQueue::ReportMetricsOnIdle() const {
   UMA_HISTOGRAM_COUNTS_1M(
-      "MessageLoop.DelayedTaskQueue.PendingTasksCountOnIdle",
+      "MessageLoop.DelayedTaskQueueForUI.PendingTasksCountOnIdle",
       delayed_tasks_.Size());
 }
 
