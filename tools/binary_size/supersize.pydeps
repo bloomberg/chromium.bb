@@ -42,6 +42,7 @@
 libsupersize/apkanalyzer.py
 libsupersize/ar.py
 libsupersize/archive.py
+libsupersize/bcanalyzer.py
 libsupersize/canned_queries.py
 libsupersize/concurrent.py
 libsupersize/console.py

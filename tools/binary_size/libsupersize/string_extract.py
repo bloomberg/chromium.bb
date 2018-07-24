@@ -18,8 +18,17 @@ ResolveStringPiecesIndirect():
     each string_section. If found, translates to string_range and annotates it
     to the string_section.
   - Returns [{path: [string_ranges]} for each string_section].
+
+ResolveStringPieces():
+  BulkForkAndCall() target: Given {path: [strings]} and
+  [raw_string_data for each string_section]:
+  - For each path, searches for src_strings in at most 1 raw_string_data over
+    each string_section. If found, translates to string_range and annotates it
+    to the string_section.
+  - Returns [{path: [string_ranges]} for each string_section].
 """
 
+import ast
 import collections
 import itertools
 import logging
@@ -262,6 +271,21 @@ def ResolveStringPiecesIndirect(encoded_string_addresses_by_path, string_data,
     for path, object_addresses in string_addresses_by_path.iteritems():
       for value in _IterStringLiterals(
           path, object_addresses, string_sections_by_path.get(path)):
+        yield path, value
+
+  ret = _AnnotateStringData(string_data, GeneratePathAndValues())
+  return [concurrent.EncodeDictOfLists(x) for x in ret]
+
+
+# This is a target for BulkForkAndCall().
+def ResolveStringPieces(encoded_strings_by_path, string_data):
+  # ast.literal_eval() undoes repr() applied to strings.
+  strings_by_path = concurrent.DecodeDictOfLists(
+      encoded_strings_by_path, value_transform=ast.literal_eval)
+
+  def GeneratePathAndValues():
+    for path, strings in strings_by_path.iteritems():
+      for value in strings:
         yield path, value
 
   ret = _AnnotateStringData(string_data, GeneratePathAndValues())
