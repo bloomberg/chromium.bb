@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_flattener.h"
@@ -14,7 +15,11 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::UnorderedElementsAre;
+using ::testing::IsEmpty;
 
 namespace {
 
@@ -74,7 +79,7 @@ class SubprocessMetricsProviderTest : public testing::Test {
             std::string(), false));
   }
 
-  size_t GetSnapshotHistogramCount() {
+  std::vector<std::string> GetSnapshotHistogramNames() {
     // Merge the data from the allocator into the StatisticsRecorder.
     provider_.MergeHistogramDeltas();
 
@@ -85,7 +90,7 @@ class SubprocessMetricsProviderTest : public testing::Test {
     base::StatisticsRecorder::PrepareDeltas(true, base::Histogram::kNoFlags,
                                             base::Histogram::kNoFlags,
                                             &snapshot_manager);
-    return flattener.GetRecordedDeltaHistogramNames().size();
+    return flattener.GetRecordedDeltaHistogramNames();
   }
 
   void EnableRecording() { provider_.OnRecordingEnabled(); }
@@ -113,8 +118,7 @@ class SubprocessMetricsProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SubprocessMetricsProviderTest);
 };
 
-// Temporarily disabled until someone can troubleshoot http://crbug.com/863262
-TEST_F(SubprocessMetricsProviderTest, DISABLED_SnapshotMetrics) {
+TEST_F(SubprocessMetricsProviderTest, SnapshotMetrics) {
   base::HistogramBase* foo = base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
   base::HistogramBase* bar = base::Histogram::FactoryGet("bar", 1, 100, 10, 0);
   base::HistogramBase* baz = base::Histogram::FactoryGet("baz", 1, 100, 10, 0);
@@ -130,25 +134,26 @@ TEST_F(SubprocessMetricsProviderTest, DISABLED_SnapshotMetrics) {
                               CreateDuplicateAllocator(global_allocator.get()));
 
   // Recording should find the two histograms created in persistent memory.
-  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  EXPECT_THAT(GetSnapshotHistogramNames(), UnorderedElementsAre("foo", "bar"));
 
   // A second run should have nothing to produce.
-  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+  EXPECT_THAT(GetSnapshotHistogramNames(), IsEmpty());
 
   // Create a new histogram and update existing ones. Should now report 3 items.
   baz->Add(1969);
   foo->Add(10);
   bar->Add(20);
-  EXPECT_EQ(3U, GetSnapshotHistogramCount());
+  EXPECT_THAT(GetSnapshotHistogramNames(),
+              UnorderedElementsAre("foo", "bar", "baz"));
 
   // Ensure that deregistering does a final merge of the data.
   foo->Add(10);
   bar->Add(20);
   DeregisterSubprocessAllocator(123);
-  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  EXPECT_THAT(GetSnapshotHistogramNames(), UnorderedElementsAre("foo", "bar"));
 
   // Further snapshots should be empty even if things have changed.
   foo->Add(10);
   bar->Add(20);
-  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+  EXPECT_THAT(GetSnapshotHistogramNames(), IsEmpty());
 }
