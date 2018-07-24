@@ -23,6 +23,3 @@ class PreProcessor(object):
       The processed text.
     '''
     raise NotImplementedError()
-
-
-

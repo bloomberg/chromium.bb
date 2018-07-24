@@ -76,4 +76,3 @@ to being one message for the whole menu.'''
 
     with util.WrapOutputStream(open(output_file, 'w')) as f:
       transl2tc.TranslationToTc.WriteTranslations(f, translations)
-

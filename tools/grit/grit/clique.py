@@ -483,4 +483,3 @@ class MessageClique(object):
         language, transl_msg.GetId())
 
     self.clique[language] = transl_msg
-

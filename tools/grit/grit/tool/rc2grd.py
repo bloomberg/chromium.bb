@@ -406,4 +406,3 @@ C preprocessor on the .rc file or manually edit it before using this tool.
     except:
       print 'Exception processing message with text "%s"' % text
       raise
-

@@ -125,4 +125,3 @@ def PseudoMessage(message):
       transl.AppendText(PseudoString(part))
 
   return transl
-

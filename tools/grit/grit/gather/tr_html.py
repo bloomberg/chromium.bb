@@ -742,4 +742,3 @@ class TrHtml(interface.GathererBase):
           continue
       new_skel.append(chunk)
     self.skeleton_ = new_skel
-

@@ -90,4 +90,3 @@ def GenerateDuplicateShortcutsWarnings(uberclique, tc_project):
   for group in groups.values():
     warnings += group.GenerateWarnings(tc_project)
   return warnings
-

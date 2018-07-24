@@ -60,4 +60,3 @@ class DummyPostProcessor(grit.tool.postprocess_interface.PostProcessor):
 
 if __name__ == '__main__':
   unittest.main()
-

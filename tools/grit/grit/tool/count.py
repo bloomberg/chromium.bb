@@ -32,4 +32,3 @@ class CountMessage(interface.Tool):
         count += 1
 
     print "There are %d occurrences of message %s." % (count, id)
-

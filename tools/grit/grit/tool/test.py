@@ -21,4 +21,3 @@ hence the name :)
     print 'Options: %s' % repr(global_options)
     print 'Arguments: %s' % repr(my_arguments)
     return 0
-
