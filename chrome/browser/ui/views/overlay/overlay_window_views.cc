@@ -604,6 +604,10 @@ void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   views::Widget::OnNativeWidgetSizeChanged(new_size);
 }
 
+void OverlayWindowViews::OnNativeWidgetDestroyed() {
+  controller_->OnWindowDestroyed();
+}
+
 void OverlayWindowViews::TogglePlayPause() {
   // Retrieve expected active state based on what command was sent in
   // TogglePlayPause() since the IPC message may not have been propogated

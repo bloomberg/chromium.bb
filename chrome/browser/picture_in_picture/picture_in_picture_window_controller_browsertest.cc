@@ -916,4 +916,27 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+// Tests that the Picture-in-Picture state is properly updated when the window
+// is closed at a system level.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       CloseWindowNotifiesController) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+  ASSERT_TRUE(overlay_window->IsVisible());
+
+  // Simulate closing from the system.
+  overlay_window->OnNativeWidgetDestroyed();
+
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_FALSE(in_picture_in_picture);
+}
+
 #endif  // !defined(OS_ANDROID)

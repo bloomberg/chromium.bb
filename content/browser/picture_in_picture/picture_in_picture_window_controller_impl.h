@@ -36,6 +36,7 @@ class PictureInPictureWindowControllerImpl
   // PictureInPictureWindowController:
   CONTENT_EXPORT gfx::Size Show() override;
   CONTENT_EXPORT void Close(bool should_pause_video) override;
+  CONTENT_EXPORT void OnWindowDestroyed() override;
   CONTENT_EXPORT void ClickCustomControl(
       const std::string& control_id) override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
@@ -58,6 +59,14 @@ class PictureInPictureWindowControllerImpl
 
   // Signal to the media player that |this| is leaving Picture-in-Picture mode.
   void OnLeavingPictureInPicture(bool should_pause_video);
+
+  // Internal method to set the states after the window was closed, whether via
+  // the system or Chromium.
+  void CloseInternal(bool should_pause_video);
+
+  // Creates a new window if the previous one was destroyed. It can happen
+  // because of the system control of the window.
+  void EnsureWindow();
 
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
