@@ -64,10 +64,9 @@ def _GetMachineGroup(build_properties):
 
 
 def _upload_perf_results(json_to_upload, name, configuration_name,
-    build_properties, oauth_file, tmp_dir, output_json_file):
+    build_properties, oauth_file, output_json_file):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   args= [
-      '--tmp-dir', tmp_dir,
       '--buildername', build_properties['buildername'],
       '--buildnumber', build_properties['buildnumber'],
       '--name', name,
@@ -331,7 +330,7 @@ def _merge_perf_results(benchmark_name, results_filename, directories):
 def _upload_individual(
     benchmark_name, directories, configuration_name,
     build_properties, output_json_file, service_account_file):
-  tmpfile_dir = tempfile.mkdtemp('resultscache')
+  tmpfile_dir = tempfile.mkdtemp()
   try:
     upload_begin_time = time.time()
     # There are potentially multiple directores with results, re-write and
@@ -358,7 +357,7 @@ def _upload_individual(
         upload_fail = _upload_perf_results(
           results_filename,
           benchmark_name, configuration_name, build_properties,
-          oauth_file, tmpfile_dir, oj)
+          oauth_file, oj)
         upload_end_time = time.time()
         print_duration(('%s upload time' % (benchmark_name)),
                        upload_begin_time, upload_end_time)
@@ -402,7 +401,7 @@ def _handle_perf_results(
       # Create a place to write the perf results that you will write out to
       # logdog.
       output_json_file = os.path.join(
-          os.path.abspath(tmpfile_dir), (str(uuid.uuid4()) + benchmark_name))
+          tmpfile_dir, (str(uuid.uuid4()) + benchmark_name))
       results_dict[benchmark_name] = output_json_file
       invocations.append((
           benchmark_name, directories, configuration_name,

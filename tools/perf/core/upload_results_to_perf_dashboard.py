@@ -89,7 +89,6 @@ def _CreateParser():
   parser = optparse.OptionParser()
   parser.add_option('--name')
   parser.add_option('--results-file')
-  parser.add_option('--tmp-dir')
   parser.add_option('--output-json-file')
   parser.add_option('--got-revision-cp')
   parser.add_option('--configuration-name')
@@ -148,7 +147,6 @@ def main(args):
     if not results_dashboard.SendResults(
         dashboard_json,
         options.results_url,
-        options.tmp_dir,
         send_as_histograms=options.send_as_histograms,
         oauth_token=oauth_token):
       return 1

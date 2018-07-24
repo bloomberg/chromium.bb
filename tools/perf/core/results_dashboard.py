@@ -20,7 +20,6 @@ import time
 import tempfile
 import urllib
 import urllib2
-import uuid
 import zlib
 
 import httplib2
@@ -36,10 +35,6 @@ psutil = external_modules.ImportOptionalModule('psutil')
 SEND_RESULTS_PATH = '/add_point'
 SEND_HISTOGRAMS_PATH = '/add_histograms'
 
-# CACHE_DIR/CACHE_FILENAME will be created in a tmp_dir to cache
-# results which need to be retried.
-CACHE_DIR = 'results_dashboard'
-CACHE_FILENAME = 'results_to_retry'
 
 ERROR_NO_OAUTH_TOKEN = (
     'No oauth token provided, cannot upload HistogramSet. Discarding.')
@@ -57,35 +52,23 @@ class SendResultsFatalException(SendResultException):
   pass
 
 
-def SendResults(data, url, tmp_dir,
-                send_as_histograms=False, oauth_token=None):
+def SendResults(data, url, send_as_histograms=False, oauth_token=None):
   """Sends results to the Chrome Performance Dashboard.
 
-  This function tries to send the given data to the dashboard, in addition to
-  any data from the cache file. The cache file contains any data that wasn't
-  successfully sent in a previous run.
+  This function tries to send the given data to the dashboard.
 
   Args:
     data: The data to try to send. Must be JSON-serializable.
     url: Performance Dashboard URL (including schema).
-    tmp_dir: Directory name, where the cache directory shall be.
-    json_url_file: Optional file to which to write the dashboard viewing URL.
     send_as_histograms: True if result is to be sent to /add_histograms.
     oauth_token: string; used for flushing oauth uploads from cache.
   """
   start = time.time()
-  results_json = json.dumps({
-      'is_histogramset': send_as_histograms,
-      'data': data
-  })
 
-  # Write the new request line to the cache file, which contains all lines
-  # that we shall try to send now.
-  cache_file_name = _GetCacheFileName(tmp_dir)
-  _AddLineToCacheFile(results_json, cache_file_name)
-
-  # Send all the results from this run and the previous cache to the dashboard.
-  fatal_error, errors = _SendResultsFromCache(cache_file_name, url, oauth_token)
+  # Send all the results from this run and the previous cache to the
+  # dashboard.
+  fatal_error, errors = _SendResultsToDashboard(
+      data, url, oauth_token, is_histogramset=send_as_histograms)
 
   print 'Time spent sending results to %s: %s' % (url, time.time() - start)
 
@@ -97,32 +80,11 @@ def SendResults(data, url, tmp_dir,
   return True
 
 
-def _GetCacheFileName(tmp_dir):
-  """Gets the cache filename, creating the file if it does not exist."""
-  cache_dir = os.path.join(os.path.abspath(tmp_dir), CACHE_DIR, str(uuid.uuid4()))
-  if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
-  # Since this is multi-processed, add a unique identifier to the cache dir
-  cache_filename = os.path.join(cache_dir, CACHE_FILENAME)
-  if not os.path.exists(cache_filename):
-    # Create the file.
-    open(cache_filename, 'wb').close()
-  return cache_filename
-
-
-def _AddLineToCacheFile(line, cache_file_name):
-  """Appends a line to the given file."""
-  with open(cache_file_name, 'ab') as cache:
-    cache.write('\n' + line)
-
-
-def _SendResultsFromCache(cache_file_name, url, oauth_token):
-  """Tries to send each line from the cache file in a separate request.
-
-  This also writes data which failed to send back to the cache file.
+def _SendResultsToDashboard(dashboard_data, url, oauth_token, is_histogramset):
+  """Tries to send perf dashboard data to |url|.
 
   Args:
-    cache_file_name: A file name.
+    perf_results_file_path: A file name.
     url: The instance URL to which to post results.
     oauth_token: An oauth token to use for histogram uploads. Might be None.
 
@@ -131,76 +93,40 @@ def _SendResultsFromCache(cache_file_name, url, oauth_token):
     whether there there was a major error and the step should fail, and errors
     is a list of error strings.
   """
-  with open(cache_file_name, 'rb') as cache:
-    cache_lines = cache.readlines()
-  total_results = len(cache_lines)
 
   fatal_error = False
   errors = []
 
-  lines_to_retry = []
-  for index, line in enumerate(cache_lines):
-    line = line.strip()
-    if not line:
-      continue
-    # We need to check whether we're trying to upload histograms. If the JSON
-    # is invalid, we should not try to send this data or re-try it later.
-    # Instead, we'll print an error.
-    try:
-      is_histogramset, data = _GetData(line)
-    except ValueError:
-      errors.append('Could not parse JSON: %s' % line)
-      continue
+  data_type = ('histogram' if is_histogramset else 'chartjson')
+  print 'Sending %s result to dashboard.' % data_type
 
-    data_type = ('histogram' if is_histogramset else 'chartjson')
-    print 'Sending %s result %d of %d to dashboard.' % (
-        data_type, index + 1, total_results)
+  try:
+    if is_histogramset:
+      # TODO(eakuefner): Remove this discard logic once all bots use
+      # histograms.
+      if oauth_token is None:
+        raise SendResultsFatalException(ERROR_NO_OAUTH_TOKEN)
 
-    try:
-      if is_histogramset:
-        # TODO(eakuefner): Remove this discard logic once all bots use
-        # histograms.
-        if oauth_token is None:
-          raise SendResultsFatalException(ERROR_NO_OAUTH_TOKEN)
-
-        _SendHistogramJson(url, json.dumps(data), oauth_token)
-      else:
-        _SendResultsJson(url, json.dumps(data))
-    except SendResultsRetryException as e:
-      error = 'Error while uploading %s data: %s' % (data_type, str(e))
-      if index != len(cache_lines) - 1:
-        # The very last item in the cache_lines list is the new results line.
-        # If this line is not the new results line, then this results line
-        # has already been tried before; now it's considered fatal.
-        fatal_error = True
-
-      # The lines to retry are all lines starting from the current one.
-      lines_to_retry = [l.strip() for l in cache_lines[index:] if l.strip()]
-      errors.append(error)
-      break
-    except SendResultsFatalException as e:
-      error = 'Error uploading %s data: %s' % (data_type, str(e))
-      errors.append(error)
-      fatal_error = True
-      break
-    except Exception:
-      error = 'Unexpected error while uploading %s data: %s' % (
-          data_type, traceback.format_exc())
-      errors.append(error)
-      fatal_error = True
-      break
-
-  # Write any failing requests to the cache file.
-  cache = open(cache_file_name, 'wb')
-  cache.write('\n'.join(set(lines_to_retry)))
-  cache.close()
+      _SendHistogramJson(url, json.dumps(dashboard_data), oauth_token)
+    else:
+      _SendResultsJson(url, json.dumps(dashboard_data))
+  except SendResultsRetryException as e:
+    # TODO(crbug.com/864565): retry sending to the perf dashboard with this
+    # error.
+    error = 'Error while uploading %s data: %s' % (data_type, str(e))
+    fatal_error = True
+    errors.append(error)
+  except SendResultsFatalException as e:
+    error = 'Error uploading %s data: %s' % (data_type, str(e))
+    errors.append(error)
+    fatal_error = True
+  except Exception:
+    error = 'Unexpected error while uploading %s data: %s' % (
+        data_type, traceback.format_exc())
+    errors.append(error)
+    fatal_error = True
 
   return fatal_error, errors
-
-
-def _GetData(line):
-  line_dict = json.loads(line)
-  return bool(line_dict.get('is_histogramset')), line_dict['data']
 
 
 def MakeHistogramSetWithDiagnostics(histograms_file,
