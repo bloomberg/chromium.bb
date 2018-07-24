@@ -66,7 +66,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   const user_manager::UserList& GetLoggedInUsers() const override;
   const user_manager::UserList& GetLRULoggedInUsers() const override;
   user_manager::UserList GetUnlockUsers() const override;
-  const AccountId& GetOwnerAccountId() const override;
   void UserLoggedIn(const AccountId& account_id,
                     const std::string& user_id_hash,
                     bool browser_restart,
@@ -162,6 +161,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   void UpdateLoginState(const user_manager::User* active_user,
                         const user_manager::User* primary_user,
                         bool is_current_user_owner) const override;
+  void SetOwnerId(const AccountId& account_id) override;
 
   // UserManagerInterface override.
   MultiProfileUserController* GetMultiProfileUserController() override;
@@ -184,8 +184,9 @@ class FakeChromeUserManager : public ChromeUserManager {
     fake_ephemeral_users_enabled_ = ephemeral_users_enabled;
   }
 
+  // TODO(mukai): remove this.
   void set_owner_id(const AccountId& owner_account_id) {
-    owner_account_id_ = owner_account_id;
+    SetOwnerId(owner_account_id);
   }
 
   void set_multi_profile_user_controller(
@@ -210,7 +211,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   user_manager::User* GetActiveUserInternal() const;
 
   std::unique_ptr<FakeSupervisedUserManager> supervised_user_manager_;
-  AccountId owner_account_id_ = EmptyAccountId();
   bool fake_ephemeral_users_enabled_ = false;
   bool current_user_new_ = false;
   bool current_user_ephemeral_ = false;

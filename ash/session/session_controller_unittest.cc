@@ -302,6 +302,26 @@ TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
   }
 }
 
+TEST_F(SessionControllerTest, GetLoginStateForOwner) {
+  // Simulate an active user session.
+  mojom::SessionInfo info;
+  FillDefaultSessionInfo(&info);
+  info.state = SessionState::ACTIVE;
+  SetSessionInfo(info);
+
+  mojom::UserSessionPtr session = mojom::UserSession::New();
+  session->session_id = 1u;
+  session->user_info = mojom::UserInfo::New();
+  session->user_info->type = user_manager::USER_TYPE_REGULAR;
+  session->user_info->account_id = AccountId::FromUserEmail("owner@test.com");
+  session->user_info->display_name = "Owner";
+  session->user_info->display_email = "owner@test.com";
+  session->user_info->is_device_owner = true;
+  controller()->UpdateUserSession(std::move(session));
+
+  EXPECT_EQ(LoginStatus::OWNER, controller()->login_status());
+}
+
 // Tests that user sessions can be set and updated.
 TEST_F(SessionControllerTest, UserSessions) {
   EXPECT_FALSE(controller()->IsActiveUserSessionStarted());

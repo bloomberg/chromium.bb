@@ -243,10 +243,6 @@ void FakeChromeUserManager::SwitchActiveUser(const AccountId& account_id) {
   }
 }
 
-const AccountId& FakeChromeUserManager::GetOwnerAccountId() const {
-  return owner_account_id_;
-}
-
 void FakeChromeUserManager::OnSessionStarted() {}
 
 void FakeChromeUserManager::OnProfileInitialized(user_manager::User* user) {
@@ -325,6 +321,10 @@ void FakeChromeUserManager::UpdateLoginState(
     bool is_current_user_owner) const {
   chrome_user_manager_util::UpdateLoginState(active_user, primary_user,
                                              is_current_user_owner);
+}
+
+void FakeChromeUserManager::SetOwnerId(const AccountId& account_id) {
+  UserManagerBase::SetOwnerId(account_id);
 }
 
 bool FakeChromeUserManager::GetPlatformKnownUserId(
@@ -531,7 +531,7 @@ void FakeChromeUserManager::UpdateUserAccountData(
 }
 
 bool FakeChromeUserManager::IsCurrentUserOwner() const {
-  return false;
+  return active_user_ && GetOwnerAccountId() == active_user_->GetAccountId();
 }
 
 bool FakeChromeUserManager::IsCurrentUserNew() const {
