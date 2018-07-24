@@ -416,6 +416,13 @@ https://www.polymer-project.org/2.0/docs/devguide/templates#dom-if):
     https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/hidden)
     yields better performance, than adding a custom `dom-if` element.
 
+* Do not add iron-icons dependency to third_party/polymer/.
+  * Polymer provides icons via the `iron-icons` library, but importing each of the iconsets means importing hundreds of SVGs, which is unnecessary because Chrome uses only a small subset.
+  * Alternatives:
+    * Include the SVG in a WebUI page-specific icon file. e.g. `chrome/browser/resources/settings/icons.html`.
+    * If reused across multiple WebUI pages, include the SVG in `ui/webui/resources/cr_elements/icons.html` .
+  * You may copy the SVG code from [iron-icons files](https://github.com/PolymerElements/iron-icons/blob/master/iron-icons.html).
+
 ## Grit processing
 
 Grit is a tool that runs at compile time to pack resources together into
