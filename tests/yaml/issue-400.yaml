@@ -245,6 +245,7 @@ table: |
   display ; 56
   display - 36
   display . 46
+  punctuation , 6
   punctuation - 36
   punctuation . 46
   include tables/latinLetterDef6Dots.uti
@@ -256,7 +257,7 @@ table: |
   nocontractsign 56
   numericnocontchars abcdefghij
   numericmodechars .
-  midnumericmodechars -
+  midendnumericmodechars -
 
 tests:
   - - "-1 .1"
