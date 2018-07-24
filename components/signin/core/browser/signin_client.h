@@ -42,12 +42,6 @@ class SharedURLLoaderFactory;
 // embedder.
 class SigninClient : public KeyedService {
  public:
-  // The subcription for cookie changed notifications.
-  class CookieChangeSubscription {
-   public:
-    virtual ~CookieChangeSubscription() = default;
-  };
-
   ~SigninClient() override = default;
 
   // If |for_ephemeral| is true, special kind of device ID for ephemeral users
@@ -89,15 +83,6 @@ class SigninClient : public KeyedService {
   // Returns a string containing the version info of the product in which the
   // Signin component is being used.
   virtual std::string GetProductVersion() = 0;
-
-  // Adds a callback to be called each time a cookie for |url| with name |name|
-  // changes.
-  // Note that |callback| will always be called on the thread that
-  // |AddCookieChangeCallback| was called on.
-  virtual std::unique_ptr<CookieChangeSubscription> AddCookieChangeCallback(
-      const GURL& url,
-      const std::string& name,
-      net::CookieChangeCallback callback) = 0;
 
   // Called after Google signin has succeeded.
   virtual void OnSignedIn(const std::string& account_id,

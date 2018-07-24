@@ -25,6 +25,7 @@ class GaiaAuthFetcher;
 class GaiaCookieRequest;
 class GoogleServiceAuthError;
 class OAuth2TokenService;
+class SigninCookieChangeSubscription;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -309,8 +310,7 @@ class GaiaCookieManagerService : public KeyedService,
   std::string access_token_;
 
   // Subscription to be called whenever the GAIA cookies change.
-  std::unique_ptr<SigninClient::CookieChangeSubscription>
-      cookie_change_subscription_;
+  std::unique_ptr<SigninCookieChangeSubscription> cookie_change_subscription_;
 
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be

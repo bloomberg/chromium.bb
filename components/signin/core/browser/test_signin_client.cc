@@ -79,13 +79,6 @@ void TestSigninClient::LoadTokenDatabase() {
   database_->Init();
 }
 
-std::unique_ptr<SigninClient::CookieChangeSubscription>
-TestSigninClient::AddCookieChangeCallback(const GURL& url,
-                                          const std::string& name,
-                                          net::CookieChangeCallback callback) {
-  return std::make_unique<SigninClient::CookieChangeSubscription>();
-}
-
 void TestSigninClient::SetNetworkCallsDelayed(bool value) {
   network_calls_delayed_ = value;
 

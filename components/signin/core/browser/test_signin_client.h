@@ -78,13 +78,6 @@ class TestSigninClient : public SigninClient {
     return &test_url_loader_factory_;
   }
 
-  // Registers |callback| and returns the subscription.
-  // Note that |callback| will never be called.
-  std::unique_ptr<SigninClient::CookieChangeSubscription>
-  AddCookieChangeCallback(const GURL& url,
-                          const std::string& name,
-                          net::CookieChangeCallback callback) override;
-
   void set_are_signin_cookies_allowed(bool value) {
     are_signin_cookies_allowed_ = value;
   }

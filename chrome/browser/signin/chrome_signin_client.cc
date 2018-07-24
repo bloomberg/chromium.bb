@@ -40,7 +40,6 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_cookie_change_subscription.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/signin_switches.h"
@@ -247,18 +246,6 @@ void ChromeSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->RemoveObserver(observer);
-}
-
-std::unique_ptr<SigninClient::CookieChangeSubscription>
-ChromeSigninClient::AddCookieChangeCallback(
-    const GURL& url,
-    const std::string& name,
-    net::CookieChangeCallback callback) {
-  scoped_refptr<net::URLRequestContextGetter> context_getter =
-      profile_->GetRequestContext();
-  DCHECK(context_getter.get());
-  return std::make_unique<SigninCookieChangeSubscription>(
-      context_getter, url, name, std::move(callback));
 }
 
 void ChromeSigninClient::OnSignedIn(const std::string& account_id,
