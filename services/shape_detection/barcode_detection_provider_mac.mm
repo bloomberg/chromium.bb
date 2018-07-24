@@ -30,9 +30,11 @@ void BarcodeDetectionProviderMac::CreateBarcodeDetection(
     mojom::BarcodeDetectorOptionsPtr options) {
   // Vision Framework needs at least MAC OS X 10.13.
   if (@available(macOS 10.13, *)) {
-    mojo::MakeStrongBinding(
-        std::make_unique<BarcodeDetectionImplMacVision>(std::move(options)),
-        std::move(request));
+    auto impl =
+        std::make_unique<BarcodeDetectionImplMacVision>(std::move(options));
+    auto* impl_ptr = impl.get();
+    impl_ptr->SetBinding(
+        mojo::MakeStrongBinding(std::move(impl), std::move(request)));
     return;
   }
 

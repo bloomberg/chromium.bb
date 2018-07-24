@@ -65,8 +65,7 @@ struct TestParams {
   BarcodeDetectorFactory factory;
 } kTestParams[] = {
     {1, kInfoString, base::Bind(&CreateBarcodeDetectorImplMac)},
-    // TODO(junwei.fu): add more tests https://crbug.com/848182.
-    {0, "", base::Bind(&CreateBarcodeDetectorImplMacVision)},
+    {1, kInfoString, base::Bind(&CreateBarcodeDetectorImplMacVision)},
 };
 }
 
