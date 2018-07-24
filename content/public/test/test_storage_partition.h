@@ -166,6 +166,8 @@ class TestStoragePartition : public StoragePartition {
 
   void Flush() override;
 
+  void ResetURLLoaderFactories() override;
+
   void ClearBluetoothAllowedDevicesMapForTesting() override;
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;

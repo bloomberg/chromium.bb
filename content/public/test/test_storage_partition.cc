@@ -131,6 +131,8 @@ void TestStoragePartition::ClearHttpAndMediaCaches(
 
 void TestStoragePartition::Flush() {}
 
+void TestStoragePartition::ResetURLLoaderFactories() {}
+
 void TestStoragePartition::ClearBluetoothAllowedDevicesMapForTesting() {}
 
 void TestStoragePartition::FlushNetworkInterfaceForTesting() {}

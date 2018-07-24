@@ -208,8 +208,6 @@
 # TODO(rockot): add support for webRequest API.
 -ExtensionWebRequestApiTest.WebRequestBlocking
 -ExtensionWebRequestApiTest.WebRequestTypes
-# Needs synchronization to wait until after URLLoaderFactories are rebound.
--DevToolsFrontendInWebRequestApiTest.HiddenRequests
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 

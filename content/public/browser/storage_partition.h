@@ -214,6 +214,9 @@ class CONTENT_EXPORT StoragePartition {
   // unwritten data has been written out to the filesystem.
   virtual void Flush() = 0;
 
+  // Resets all URLLoaderFactories bound to this partition's network context.
+  virtual void ResetURLLoaderFactories() = 0;
+
   // Clear the bluetooth allowed devices map. For test use only.
   virtual void ClearBluetoothAllowedDevicesMapForTesting() = 0;
 
@@ -223,10 +226,6 @@ class CONTENT_EXPORT StoragePartition {
 
   // Wait until all deletions tasks are finished. For test use only.
   virtual void WaitForDeletionTasksForTesting() = 0;
-
-  // Used in tests to force the cached SharedURLLoaderFactory to be dropped, as
-  // a way to work-around https://crbug.com/857577.
-  virtual void ResetURLLoaderFactoryForBrowserProcessForTesting() {}
 
  protected:
   virtual ~StoragePartition() {}
