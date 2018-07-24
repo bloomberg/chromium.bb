@@ -48,6 +48,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -597,6 +598,17 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
                  profile_web_data_service_.get())
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
+    case syncer::AUTOFILL_WALLET_DATA: {
+      // TODO(feuunk): This doesn't allow switching which database to use at
+      // runtime. This should be fixed as part of the USS migration for
+      // payments.
+      auto service = account_web_data_service_ ? account_web_data_service_
+                                               : profile_web_data_service_;
+      return autofill::AutofillWalletSyncBridge::FromWebDataService(
+                 service.get())
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
+    }
 #if defined(OS_CHROMEOS)
     case syncer::PRINTERS:
       return chromeos::SyncedPrintersManagerFactory::GetForBrowserContext(
