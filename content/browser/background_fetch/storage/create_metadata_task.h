@@ -41,7 +41,7 @@ class CreateMetadataTask : public DatabaseTask {
   void DidGetUniqueId(const std::vector<std::string>& data,
                       blink::ServiceWorkerStatusCode status);
 
-  void DidSerializeIcon(std::string serialized_icon);
+  void StoreIcon(std::string serialized_icon);
 
   void StoreMetadata();
 
@@ -59,8 +59,6 @@ class CreateMetadataTask : public DatabaseTask {
   CreateMetadataCallback callback_;
 
   std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto_;
-
-  std::string serialized_icon_;
 
   base::WeakPtrFactory<CreateMetadataTask> weak_factory_;  // Keep as last.
 
