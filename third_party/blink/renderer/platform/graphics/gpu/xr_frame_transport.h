@@ -30,25 +30,25 @@ class Image;
 
 class PLATFORM_EXPORT XRFrameTransport final
     : public GarbageCollectedFinalized<XRFrameTransport>,
-      public device::mojom::blink::VRSubmitFrameClient {
+      public device::mojom::blink::XRPresentationClient {
  public:
   explicit XRFrameTransport();
   ~XRFrameTransport() override;
 
   void BindSubmitFrameClient(
-      device::mojom::blink::VRSubmitFrameClientRequest request);
+      device::mojom::blink::XRPresentationClientRequest request);
 
   void PresentChange();
 
   void SetTransportOptions(
-      device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
+      device::mojom::blink::XRPresentationTransportOptionsPtr);
 
   bool DrawingIntoSharedBuffer();
 
   // Call before finalizing the frame's image snapshot.
   void FramePreImage(gpu::gles2::GLES2Interface*);
 
-  void FrameSubmit(device::mojom::blink::VRPresentationProvider*,
+  void FrameSubmit(device::mojom::blink::XRPresentationProvider*,
                    gpu::gles2::GLES2Interface*,
                    DrawingBuffer::Client*,
                    scoped_refptr<Image> image_ref,
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT XRFrameTransport final
                    int16_t vr_frame_id,
                    bool needs_copy);
 
-  void FrameSubmitMissing(device::mojom::blink::VRPresentationProvider*,
+  void FrameSubmitMissing(device::mojom::blink::XRPresentationProvider*,
                           gpu::gles2::GLES2Interface*,
                           int16_t vr_frame_id);
 
@@ -68,12 +68,12 @@ class PLATFORM_EXPORT XRFrameTransport final
   WTF::TimeDelta WaitForGpuFenceReceived();
   void CallPreviousFrameCallback();
 
-  // VRSubmitFrameClient
+  // XRPresentationClient
   void OnSubmitFrameTransferred(bool success) override;
   void OnSubmitFrameRendered() override;
   void OnSubmitFrameGpuFence(const gfx::GpuFenceHandle&) override;
 
-  mojo::Binding<device::mojom::blink::VRSubmitFrameClient>
+  mojo::Binding<device::mojom::blink::XRPresentationClient>
       submit_frame_client_binding_;
 
   // Used to keep the image alive until the next frame if using
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT XRFrameTransport final
   bool waiting_for_previous_frame_fence_ = false;
   std::unique_ptr<gfx::GpuFence> previous_frame_fence_;
 
-  device::mojom::blink::VRDisplayFrameTransportOptionsPtr transport_options_;
+  device::mojom::blink::XRPresentationTransportOptionsPtr transport_options_;
 
   std::unique_ptr<GpuMemoryBufferImageCopy> frame_copier_;
 };

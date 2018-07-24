@@ -6,10 +6,10 @@ module device.mojom;
 
 import "device/vr/public/mojom/vr_service.mojom";
 
-// The XRSessionController lives in the vr device service, and corresponds to a
-// VRPresentationProvider or a VRMagicWindowProvider.  The client is the browser
-// process, which will pause or stop sessions depending events/state such as
-// focus or other tabs requesting presentation.
+// The XRSessionController lives in the vr device service, and corresponds to
+// a set of the XRSession bindings.  The client is the browser process, which
+// will pause or stop sessions depending events/state such as focus or other
+// tabs requesting immersive sessions.
 // Sessions are stopped by closing the mojo connection.
 interface XRSessionController {
   // A session may be paused temporarily for example when a non-presenting
@@ -58,21 +58,13 @@ struct XRDeviceRuntimeSessionOptions {
 // browser process is the client, and may in turn expose device information to
 // render processes using vr_service interfaces, such as VRDisplayHost.
 interface XRRuntime {
-  // Attempt to start a presentation session.  Clients may submit graphics to be
-  // displayed in the headset.  Called by the browser process, but the
-  // VRPresentationProvider may be passed to the renderer process to allow
-  // submitting graphics without going through an extra IPC hop through the
-  // browser process.
+  // Attempt to start a session. Called by the browser process, but the result
+  // will probably be passed to the renderer process to allow getting data and
+  // possibly submitting graphics without going through an extra IPC hop through
+  // the browser process.
   RequestSession(XRDeviceRuntimeSessionOptions options) => (
-                     device.mojom.XRPresentationConnection? connection,
+                     XRSession? session,
                      XRSessionController? controller);
-
-  // Attempt to start a "magic window" session.  Magic window sessions allow
-  // Clients to obtain poses (device position and orientation), but rendering
-  // goes through the standard Chrome compositor.
-  RequestMagicWindowSession() =>
-      (device.mojom.VRMagicWindowProvider? session,
-       device.mojom.XRSessionController? controller);
 
   // The browser may register for changes to a device. Initial VRDisplayInfo
   // will immediately be returned to the listener to prevent races.

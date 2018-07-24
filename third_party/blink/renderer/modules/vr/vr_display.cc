@@ -244,7 +244,7 @@ void VRDisplay::RequestVSync() {
 
     pending_magic_window_vsync_ = false;
     pending_presenting_vsync_ = true;
-    vr_presentation_provider_->GetFrameData(
+    vr_presentation_data_provider_->GetFrameData(
         WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
 
     DVLOG(2) << __FUNCTION__ << " done: pending_presenting_vsync_="
@@ -502,17 +502,26 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 void VRDisplay::OnRequestSessionReturned(
     device::mojom::blink::XRSessionPtr session) {
   pending_present_request_ = false;
-  if (session && session->connection) {
-    vr_presentation_provider_.Bind(std::move(session->connection->provider));
+  if (session) {
+    DCHECK(session->submit_frame_sink);
+    vr_presentation_data_provider_.Bind(std::move(session->data_provider));
+    // The presentation provider error handler can trigger if a device is
+    // disconnected from the system. This can happen if, for example, an HMD is
+    // unplugged.
+    vr_presentation_data_provider_.set_connection_error_handler(
+        WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
+                  WrapWeakPersistent(this)));
+    vr_presentation_provider_.Bind(
+        std::move(session->submit_frame_sink->provider));
     vr_presentation_provider_.set_connection_error_handler(
         WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
                   WrapWeakPersistent(this)));
 
     frame_transport_ = new XRFrameTransport();
     frame_transport_->BindSubmitFrameClient(
-        std::move(session->connection->client_request));
+        std::move(session->submit_frame_sink->client_request));
     frame_transport_->SetTransportOptions(
-        std::move(session->connection->transport_options));
+        std::move(session->submit_frame_sink->transport_options));
 
     this->BeginPresent();
   } else {
@@ -529,11 +538,11 @@ void VRDisplay::OnRequestSessionReturned(
 
 void VRDisplay::OnMagicWindowRequestReturned(
     device::mojom::blink::XRSessionPtr session) {
-  if (!session || !session->magic_window_provider) {
-    // System does not support any kind of magic window.
+  if (!session) {
+    // System does not support any kind of session.
     return;
   }
-  magic_window_provider_.Bind(std::move(session->magic_window_provider));
+  magic_window_provider_.Bind(std::move(session->data_provider));
   RequestVSync();
 }
 
@@ -611,7 +620,7 @@ void VRDisplay::BeginPresent() {
   }
   is_presenting_ = true;
   // Call RequestVSync to switch from the (internal) document rAF to the
-  // VrPresentationProvider GetFrameData rate.
+  // XRPresentationProvider GetFrameData rate.
   RequestVSync();
   ReportPresentationResult(PresentationResult::kSuccess);
 
@@ -1038,6 +1047,7 @@ void VRDisplay::OnPresentationProviderConnectionError() {
            << " pending_magic_window_vsync_=" << pending_magic_window_vsync_
            << " pending_presenting_vsync_=" << pending_presenting_vsync_;
   vr_presentation_provider_.reset();
+  vr_presentation_data_provider_.reset();
   if (is_presenting_) {
     ForceExitPresent();
   }

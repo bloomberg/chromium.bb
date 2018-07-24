@@ -6,6 +6,24 @@ Some XRRuntimes must live in the browser process, while others must not live in
 the browser process.  The ones that cannot live in the browser, are hosted in a
 service.
 
+# Supported Session types
+
+## Magic-window:
+Magic window sessions are requested by sites that request poses, but render
+through the normal Chrome compositor pipeline.
+It serves as a basic mode that requires only some way to get orientation poses.
+
+## Immersive:
+Immersive sessions are where the site wishes to request poses, then render
+content back to a display other than chrome. The common case for this is Head
+Mounted Displays (HMD), like Vive, Oculus, or Daydream.
+
+## Enviroment Integration
+This type of session allows for enviroment integration by providing functions
+that allow the site to query the enviroment, such as HitTest. A Enviroment
+Integration session may also supply data in addition to the pose, such as a
+camera frame.
+
 # Renderer <-> Browser interfaces (defined in vr_service.mojom)
 VRService - lives in the browser process, corresponds to a single frame.  Root
 object to obtain other XR objects.
@@ -24,22 +42,22 @@ These interfaces allow communication betwee an XRRuntime and the renderer
 process.  They may live in the browser process or may live in the isolated
 service.
 
-## Presentation-related:
-Presentation is exclusive access to a headset where a site may display
-a stereo view to the user.
 
-VRPresentationProvider - lives in the XRDevice process.  Implements the details
+## Data related:
+All sessions need to be able to get data from a XR device.
+
+XRFrameDataProvider - lives in the XRDevice process.  Provides a way to obtain
+poses and other forms of data needed to render frames.
+
+## Presentation related:
+Presentation is exclusive access to a device, where the experience takes over
+the device's display, such as presenting a stereo view in an HMD.
+
+XRPresentationProvider - lives in the XRDevice process.  Implements the details
 for a presentation session, such as submitting frames to the underlying VR API.
 
-VRSubmitFrameClient - lives in the renderer process.  Is notified when various
+XRPresentationClient - lives in the renderer process.  Is notified when various
 rendering events occur, so it can reclaim/reuse textures.
-
-## Magic-window related:
-Magic window is a mode where a site may request poses, but renders through the
-normal Chrome compositor pipeline.
-
-VRMagicWindowProvider - lives in the XRDevice process.  Provides a way to obtain
-poses.
 
 # Browser <-> Device interfaces (defined in isolated_xr_service.mojom)
 The XRDevice process may be the browser process or an isolated service for

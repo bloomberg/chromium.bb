@@ -53,7 +53,7 @@ void VRDeviceBase::ListenToDeviceChanges(
 }
 
 void VRDeviceBase::GetFrameData(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (!magic_window_enabled_) {
     std::move(callback).Run(nullptr);
     return;
@@ -95,7 +95,7 @@ bool VRDeviceBase::ShouldPauseTrackingWhenFrameDataRestricted() {
 void VRDeviceBase::OnListeningForActivate(bool listening) {}
 
 void VRDeviceBase::OnMagicWindowFrameDataRequest(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   std::move(callback).Run(nullptr);
 }
 
@@ -105,18 +105,27 @@ void VRDeviceBase::SetListeningForActivate(bool is_listening) {
 
 void VRDeviceBase::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
   NOTREACHED() << "Unexpected call to a device without hit-test support";
   std::move(callback).Run(base::nullopt);
 }
 
-void VRDeviceBase::RequestMagicWindowSession(
-    mojom::XRRuntime::RequestMagicWindowSessionCallback callback) {
-  mojom::VRMagicWindowProviderPtr provider;
+void VRDeviceBase::ReturnNonImmersiveSession(
+    mojom::XRRuntime::RequestSessionCallback callback) {
+  mojom::XRFrameDataProviderPtr data_provider;
+  mojom::XREnviromentIntegrationProviderPtr enviroment_provider;
   mojom::XRSessionControllerPtr controller;
   magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
-      this, mojo::MakeRequest(&provider), mojo::MakeRequest(&controller)));
-  std::move(callback).Run(std::move(provider), std::move(controller));
+      this, mojo::MakeRequest(&data_provider),
+      mojo::MakeRequest(&enviroment_provider), mojo::MakeRequest(&controller)));
+
+  auto session = mojom::XRSession::New();
+  session->data_provider = data_provider.PassInterface();
+  // TODO(offenwanger) Not all session will want the enviroment provider. This
+  // should be refactored so it's only passed when it's requested.
+  session->enviroment_provider = enviroment_provider.PassInterface();
+
+  std::move(callback).Run(std::move(session), std::move(controller));
 }
 
 void VRDeviceBase::EndMagicWindowSession(VRDisplayImpl* session) {

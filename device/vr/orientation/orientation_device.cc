@@ -144,11 +144,11 @@ void VROrientationDevice::RequestSession(
   DCHECK(!options->immersive);
   // TODO(offenwanger): Perform a check to see if sensors are available when
   // RequestSession is called for non-immersive sessions.
-  std::move(callback).Run(nullptr, nullptr);
+  ReturnNonImmersiveSession(std::move(callback));
 }
 
 void VROrientationDevice::OnMagicWindowFrameDataRequest(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   mojom::VRPosePtr pose = mojom::VRPose::New();
   pose->orientation.emplace(4);
 

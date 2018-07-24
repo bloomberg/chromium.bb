@@ -187,7 +187,7 @@ void VrShellDelegate::OnPresentResult(
 
   if (!vr_shell_) {
     // We have to wait until the GL thread is ready since we have to get the
-    // VRSubmitFrameClient.
+    // XRPresentationClient.
     pending_successful_present_request_ = true;
     on_present_result_callback_ = base::BindOnce(
         &VrShellDelegate::OnPresentResult, base::Unretained(this),
@@ -211,30 +211,15 @@ void VrShellDelegate::OnPresentResult(
 }
 
 void VrShellDelegate::SendRequestPresentReply(
-    bool success,
-    device::mojom::VRSubmitFrameClientRequest request,
-    device::mojom::VRPresentationProviderPtr provider,
-    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+    device::mojom::XRSessionPtr session) {
   DVLOG(1) << __FUNCTION__;
   if (!request_present_response_callback_) {
     DLOG(ERROR) << __FUNCTION__ << ": ERROR: no callback";
     return;
   }
 
-  if (success) {
-    auto connection = device::mojom::XRPresentationConnection::New();
-    connection->client_request = std::move(request);
-    connection->provider = provider.PassInterface();
-    connection->transport_options = std::move(transport_options);
-
-    device::mojom::XRSessionPtr xr_session = device::mojom::XRSession::New();
-    xr_session->connection = std::move(connection);
-
-    base::ResetAndReturn(&request_present_response_callback_)
-        .Run(std::move(xr_session));
-  } else {
-    base::ResetAndReturn(&request_present_response_callback_).Run(nullptr);
-  }
+  base::ResetAndReturn(&request_present_response_callback_)
+      .Run(std::move(session));
 }
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,

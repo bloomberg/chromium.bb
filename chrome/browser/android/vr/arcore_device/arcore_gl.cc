@@ -83,7 +83,7 @@ struct ARCoreHitTestRequest {
   ARCoreHitTestRequest() = default;
   ~ARCoreHitTestRequest() = default;
   mojom::XRRayPtr ray;
-  mojom::VRMagicWindowProvider::RequestHitTestCallback callback;
+  mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ARCoreHitTestRequest);
@@ -176,7 +176,7 @@ bool ARCoreGl::InitializeGl() {
 void ARCoreGl::ProduceFrame(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation,
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
@@ -252,7 +252,7 @@ void ARCoreGl::ProduceFrame(
 
 void ARCoreGl::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
@@ -266,7 +266,7 @@ void ARCoreGl::RequestHitTest(
 void ARCoreGl::ProcessFrame(
     mojom::XRFrameDataPtr frame_data,
     const gfx::Size& frame_size,
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 

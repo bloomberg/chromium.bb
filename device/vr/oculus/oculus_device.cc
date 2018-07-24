@@ -113,6 +113,11 @@ OculusDevice::~OculusDevice() {
 void OculusDevice::RequestSession(
     mojom::XRDeviceRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
+  if (!options->immersive) {
+    ReturnNonImmersiveSession(std::move(callback));
+    return;
+  }
+
   StopOvrSession();
 
   if (!render_loop_->IsRunning())
@@ -137,9 +142,7 @@ void OculusDevice::RequestSession(
 void OculusDevice::OnRequestSessionResult(
     mojom::XRRuntime::RequestSessionCallback callback,
     bool result,
-    mojom::VRSubmitFrameClientRequest request,
-    mojom::VRPresentationProviderPtrInfo provider_info,
-    mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+    mojom::XRSessionPtr session) {
   if (!result) {
     std::move(callback).Run(nullptr, nullptr);
 
@@ -150,11 +153,6 @@ void OculusDevice::OnRequestSessionResult(
 
   OnStartPresenting();
 
-  auto connection = mojom::XRPresentationConnection::New();
-  connection->client_request = std::move(request);
-  connection->provider = std::move(provider_info);
-  connection->transport_options = std::move(transport_options);
-
   mojom::XRSessionControllerPtr session_controller;
   exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
 
@@ -164,7 +162,7 @@ void OculusDevice::OnRequestSessionResult(
       base::BindOnce(&OculusDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
 
-  std::move(callback).Run(std::move(connection), std::move(session_controller));
+  std::move(callback).Run(std::move(session), std::move(session_controller));
 
   if (!oculus_gamepad_factory_) {
     oculus_gamepad_factory_ =
@@ -227,7 +225,7 @@ void OculusDevice::StopOvrSession() {
 }
 
 void OculusDevice::OnMagicWindowFrameDataRequest(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (!session_) {
     std::move(callback).Run(nullptr);
     return;

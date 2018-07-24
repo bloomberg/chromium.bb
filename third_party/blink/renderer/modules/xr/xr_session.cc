@@ -312,7 +312,7 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   // TODO(https://crbug.com/845520): Promise should be rejected if session
   // is deleted.
-  device_->xrMagicWindowProviderPtr()->RequestHitTest(
+  device_->xrEnviromentProviderPtr()->RequestHitTest(
       std::move(ray),
       WTF::Bind(&XRSession::OnHitTestResults, WrapWeakPersistent(this),
                 WrapPersistent(resolver)));
@@ -550,8 +550,8 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
     DVLOG(2) << __FUNCTION__ << ": got angle=" << output_angle;
   }
 
-  if (device_->xrMagicWindowProviderPtr()) {
-    device_->xrMagicWindowProviderPtr()->UpdateSessionGeometry(
+  if (device_->xrEnviromentProviderPtr()) {
+    device_->xrEnviromentProviderPtr()->UpdateSessionGeometry(
         IntSize(output_width_, output_height_),
         display::Display::DegreesToRotation(output_angle));
   }

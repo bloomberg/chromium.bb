@@ -11,8 +11,8 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
-#include "device/vr/test/mock_vr_display_impl.h"
 #include "device/vr/vr_device_base.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -93,14 +93,6 @@ class VRDeviceTest : public testing::Test {
   void SetUp() override {
     mojom::VRServiceClientPtr proxy;
     client_ = std::make_unique<FakeVRServiceClient>(mojo::MakeRequest(&proxy));
-  }
-
-  std::unique_ptr<MockVRDisplayImpl> MakeMockDisplay(VRDeviceBase* device) {
-    mojom::VRMagicWindowProviderPtr session;
-    mojom::XRSessionControllerPtr controller;
-    return std::make_unique<testing::NiceMock<MockVRDisplayImpl>>(
-        device, mojo::MakeRequest(&session), mojo::MakeRequest(&controller),
-        false);
   }
 
   std::unique_ptr<VRDeviceBaseForTesting> MakeVRDevice() {

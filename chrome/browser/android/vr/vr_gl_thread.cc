@@ -131,17 +131,11 @@ void VrGLThread::GvrDelegateReady(gvr::ViewerType viewer_type) {
       base::BindOnce(&VrShell::GvrDelegateReady, weak_vr_shell_, viewer_type));
 }
 
-void VrGLThread::SendRequestPresentReply(
-    bool success,
-    device::mojom::VRSubmitFrameClientRequest request,
-    device::mojom::VRPresentationProviderPtr provider,
-    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+void VrGLThread::SendRequestPresentReply(device::mojom::XRSessionPtr session) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::SendRequestPresentReply, weak_vr_shell_, success,
-                     std::move(request), provider.PassInterface(),
-                     std::move(transport_options)));
+      FROM_HERE, base::BindOnce(&VrShell::SendRequestPresentReply,
+                                weak_vr_shell_, std::move(session)));
 }
 
 void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {

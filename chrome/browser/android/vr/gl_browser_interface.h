@@ -32,11 +32,8 @@ class GlBrowserInterface {
   virtual void ContentOverlaySurfaceCreated(jobject surface,
                                             gl::SurfaceTexture* texture) = 0;
   virtual void GvrDelegateReady(gvr::ViewerType viewer_type) = 0;
-  virtual void SendRequestPresentReply(
-      bool success,
-      device::mojom::VRSubmitFrameClientRequest,
-      device::mojom::VRPresentationProviderPtr,
-      device::mojom::VRDisplayFrameTransportOptionsPtr) = 0;
+  // XRSessionPtr is optional, if null, the request failed.
+  virtual void SendRequestPresentReply(device::mojom::XRSessionPtr) = 0;
   virtual void DialogSurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture) = 0;
   virtual void UpdateGamepadData(device::GvrGamepadData) = 0;

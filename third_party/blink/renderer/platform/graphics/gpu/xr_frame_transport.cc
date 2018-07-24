@@ -30,24 +30,24 @@ void XRFrameTransport::PresentChange() {
 }
 
 void XRFrameTransport::SetTransportOptions(
-    device::mojom::blink::VRDisplayFrameTransportOptionsPtr transport_options) {
+    device::mojom::blink::XRPresentationTransportOptionsPtr transport_options) {
   transport_options_ = std::move(transport_options);
 }
 
 void XRFrameTransport::BindSubmitFrameClient(
-    device::mojom::blink::VRSubmitFrameClientRequest request) {
+    device::mojom::blink::XRPresentationClientRequest request) {
   submit_frame_client_binding_.Close();
   submit_frame_client_binding_.Bind(std::move(request));
 }
 
 bool XRFrameTransport::DrawingIntoSharedBuffer() {
   switch (transport_options_->transport_method) {
-    case device::mojom::blink::VRDisplayFrameTransportMethod::
+    case device::mojom::blink::XRPresentationTransportMethod::
         SUBMIT_AS_TEXTURE_HANDLE:
-    case device::mojom::blink::VRDisplayFrameTransportMethod::
+    case device::mojom::blink::XRPresentationTransportMethod::
         SUBMIT_AS_MAILBOX_HOLDER:
       return false;
-    case device::mojom::blink::VRDisplayFrameTransportMethod::
+    case device::mojom::blink::XRPresentationTransportMethod::
         DRAW_INTO_TEXTURE_MAILBOX:
       return true;
     default:
@@ -85,7 +85,7 @@ void XRFrameTransport::CallPreviousFrameCallback() {
 }
 
 void XRFrameTransport::FrameSubmitMissing(
-    device::mojom::blink::VRPresentationProvider* vr_presentation_provider,
+    device::mojom::blink::XRPresentationProvider* vr_presentation_provider,
     gpu::gles2::GLES2Interface* gl,
     int16_t vr_frame_id) {
   TRACE_EVENT0("gpu", __FUNCTION__);
@@ -95,7 +95,7 @@ void XRFrameTransport::FrameSubmitMissing(
 }
 
 void XRFrameTransport::FrameSubmit(
-    device::mojom::blink::VRPresentationProvider* vr_presentation_provider,
+    device::mojom::blink::XRPresentationProvider* vr_presentation_provider,
     gpu::gles2::GLES2Interface* gl,
     DrawingBuffer::Client* drawing_buffer_client,
     scoped_refptr<Image> image_ref,
@@ -105,7 +105,7 @@ void XRFrameTransport::FrameSubmit(
   DCHECK(transport_options_);
 
   if (transport_options_->transport_method ==
-      device::mojom::blink::VRDisplayFrameTransportMethod::
+      device::mojom::blink::XRPresentationTransportMethod::
           SUBMIT_AS_TEXTURE_HANDLE) {
 #if defined(OS_WIN)
     // Currently, we assume that this transport needs a copy.
@@ -143,7 +143,7 @@ void XRFrameTransport::FrameSubmit(
     NOTIMPLEMENTED();
 #endif
   } else if (transport_options_->transport_method ==
-             device::mojom::blink::VRDisplayFrameTransportMethod::
+             device::mojom::blink::XRPresentationTransportMethod::
                  SUBMIT_AS_MAILBOX_HOLDER) {
     // Currently, this transport assumes we don't need to make a separate copy
     // of the canvas content.
@@ -188,7 +188,7 @@ void XRFrameTransport::FrameSubmit(
         frame_wait_time_);
     TRACE_EVENT_END0("gpu", "XRFrameTransport::SubmitFrame");
   } else if (transport_options_->transport_method ==
-             device::mojom::blink::VRDisplayFrameTransportMethod::
+             device::mojom::blink::XRPresentationTransportMethod::
                  DRAW_INTO_TEXTURE_MAILBOX) {
     TRACE_EVENT0("gpu", "XRFrameTransport::SubmitFrameDrawnIntoTexture");
     gpu::SyncToken sync_token;

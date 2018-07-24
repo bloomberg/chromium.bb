@@ -68,11 +68,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   device::GvrDevice* GetDevice();
 
-  void SendRequestPresentReply(
-      bool success,
-      device::mojom::VRSubmitFrameClientRequest request,
-      device::mojom::VRPresentationProviderPtr provider,
-      device::mojom::VRDisplayFrameTransportOptionsPtr);
+  void SendRequestPresentReply(device::mojom::XRSessionPtr session);
 
   // device::GvrDelegateProvider implementation.
   void ExitWebVRPresent() override;

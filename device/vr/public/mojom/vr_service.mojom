@@ -41,17 +41,25 @@ struct XRSessionOptions {
   bool use_legacy_webvr_render_path;
 };
 
-// TODO(offenwanger) Rearrange these two interfaces to merge duplicate
-// functionality.
+// This structure contains all the mojo interfaces for different kinds of
+// XRSession. The only interface required by all sessions is the
+// XRFrameDataProvider. It must always be present. Other interfaces are set as
+// apropriate based on the session creation options. (for example, an immersive
+// session ought to have a XRPresentationConnection to submit the frames to the
+// immersive enviroment).
 struct XRSession {
-  VRMagicWindowProvider? magic_window_provider;
-  XRPresentationConnection? connection;
+  XRFrameDataProvider data_provider;
+  XRPresentationConnection? submit_frame_sink;
+  XREnviromentIntegrationProvider? enviroment_provider;
 };
 
+// This structure contains the infomation and interfaces needed to create a two
+// way connection between the renderer and a device to synchronize and submit
+// frames to a sink outside of Chrome.
 struct XRPresentationConnection {
-  VRSubmitFrameClient& client_request;
-  VRPresentationProvider provider;
-  VRDisplayFrameTransportOptions transport_options;
+  XRPresentationProvider provider;
+  XRPresentationClient& client_request;
+  XRPresentationTransportOptions transport_options;
 };
 
 struct XRInputSourceDescription {
@@ -171,7 +179,7 @@ struct VRDisplayInfo {
 };
 
 // Frame transport method from the Renderer's point of view.
-enum VRDisplayFrameTransportMethod {
+enum XRPresentationTransportMethod {
   NONE = 0,
 
   // Renderer should create a new texture handle (Windows) or
@@ -185,10 +193,10 @@ enum VRDisplayFrameTransportMethod {
   DRAW_INTO_TEXTURE_MAILBOX = 3,
 };
 
-struct VRDisplayFrameTransportOptions {
-  VRDisplayFrameTransportMethod transport_method;
+struct XRPresentationTransportOptions {
+  XRPresentationTransportMethod transport_method;
 
-  // Booleans indicating which of the VRSubmitFrameClient callbacks
+  // Booleans indicating which of the XRPresentationClient callbacks
   // are in use. Default is false, the device implementation should set
   // the ones to true that it needs and can ignore the rest.
   bool wait_for_transfer_notification;
@@ -249,40 +257,6 @@ interface VRServiceClient {
                      VRDisplayInfo display_info);
 };
 
-// After submitting a frame, the VRPresentationProvider will notify the client
-// about several stages of the render pipeline.  This allows pipelining
-// efficiency.  Following VRPresentationProvider::Submit*, the submitted frame
-// will be transferred (read from, perhaps copied to another texture), and then
-// rendered (submitted to the underlying VR API).
-// The client lives in the render process, implemented by VRDisplay.
-//
-// See VRDisplayFrameTransportConfiguration which configures which of these
-// callbacks are in use.
-interface VRSubmitFrameClient {
-  // The VRPresentationProvider calls this to indicate that the submitted frame
-  // has been transferred, so the backing data (mailbox or GpuMemoryBuffer) can
-  // be reused or discarded.  Note that this is a convenience/optimization
-  // feature, not a security feature - if a site discards the data early we may
-  // drop a frame, but nothing will otherwise misbehave.
-  // When the frame wasn't successfully transferred, the client should create a
-  // new mailbox/GpuMemoryBuffer rather than reusing an existing one to recover
-  // for subsequent frames.
-  OnSubmitFrameTransferred(bool success);
-
-  // The VRPresentationProvider calls this after the frame was handed off to the
-  // underlying VR API. This allows some pipelining of CPU/GPU work, while
-  // delaying expensive tasks for a subsequent frame until the current frame has
-  // completed.
-  OnSubmitFrameRendered();
-
-  // This callback provides a GpuFence corresponding to the previous frame's
-  // rendering completion, intended for use with a server wait issued before
-  // the following wait to prevent its rendering work from competing with
-  // the previous frame.
-  OnSubmitFrameGpuFence(gfx.mojom.GpuFenceHandle gpu_fence_handle);
-};
-
-
 // Provides a communication channel from the renderer to the browser-side host
 // of a (device/) VrDisplayImpl.
 interface VRDisplayHost {
@@ -298,47 +272,44 @@ interface VRDisplayHost {
   ExitPresent();
 };
 
-// Provides the necessary functionality for a non-presenting WebXR session to
-// draw magic window content.
+// Provides the necessary functionality for a WebXR session to get data for
+// drawing frames. The kind of data it gets depends on what kind of session was
+// requested.
 // This interface is hosted in the Browser process, but will move to a sandboxed
 // utility process on Windows.  The render process communicates with it.
-// For AR displays (VRDisplayCapabilities.can_provide_pass_through_images
-// is true), clients can use GetFrameData to get images.
-// TODO(836478): rename VRMagicWindowProvider to NonImmersiveWindowProvider or
-// similar.
-interface VRMagicWindowProvider {
+interface XRFrameDataProvider {
   // frame_data is optional and will not be set if and only if the call fails
   // for some reason, such as device disconnection.
   GetFrameData() => (XRFrameData? frame_data);
+};
 
-  // Different devices can have different native orientations - 0
-  // is the native orientation, and then increments of 90 degrees
-  // from there.
+// Provides functionality for integrating enviroment information into an
+// XRSession. For example, some AR sessions would implement hit test to allow
+// developers to get the information about the world that its sensors supply.
+interface XREnviromentIntegrationProvider {
+  // Different devices can have different native orientations - 0 is the native
+  // orientation, and then increments of 90 degrees from there. Session geometry
+  // is needed by the device when integrating enviroment image data, i.e. camera
+  // feeds, into a session.
   UpdateSessionGeometry(
       gfx.mojom.Size frame_size,
       display.mojom.Rotation display_rotation);
 
-  // Performs a raycast into the magic window scene and returns a list of
-  // XRHitResults sorted from closest to furthest hit from the ray. Each
-  // hit result contains a hit_matrix containing the transform of the hit
-  // where the rotation represents the normal of the surface hit.
+  // Performs a raycast into the scene and returns a list of XRHitResults sorted
+  // from closest to furthest hit from the ray. Each hit result contains a
+  // hit_matrix containing the transform of the hit where the rotation
+  // represents the normal of the surface hit.
   // An empty result list means there were no hits. If a nullopt is returned,
   // there was an error.
-  // TODO(https://crbug.com/842025): have one "session" type, merging
-  // VRMagicWindowProvider and VRPresentationProvider because RequestHitTest
-  // makes sense for both types of sessions.
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
 };
 
-// Provides the necessary functionality for a presenting WebVR page to draw
-// frames for a VrDisplay.
+// Provides the necessary functionality for sending frames to a headset.
 // This interface is hosted in the Browser process, but will move to a sandboxed
 // utility process on Windows.  The render process communicates with it.
-interface VRPresentationProvider {
-  // frame_data is optional and will not be set if and only if the call fails
-  // for some reason, such as device disconnection.
-  GetFrameData() => (XRFrameData? frame_data);
-
+interface XRPresentationProvider {
+  // This function tells the device which parts of the canvas should be rendered
+  // to which view.
   UpdateLayerBounds(int16 frame_id, gfx.mojom.RectF left_bounds,
                     gfx.mojom.RectF right_bounds, gfx.mojom.Size source_size);
 
@@ -346,24 +317,57 @@ interface VRPresentationProvider {
   // ensure that every GetFrameData has a matching Submit call. This happens for
   // WebXR if there were no drawing operations to the opaque framebuffer, and
   // for WebVR 1.1 if the application didn't call SubmitFrame. Usable with any
-  // VRDisplayFrameTransportMethod. This path does *not* call the
+  // XRPresentationTransportMethod. This path does *not* call the
   // SubmitFrameClient methods such as OnSubmitFrameTransferred. This is
   // intended to help separate frames while presenting, it may or may not
   // be called for the last animating frame when presentation ends.
   SubmitFrameMissing(int16 frame_id, gpu.mojom.SyncToken sync_token);
 
-  // VRDisplayFrameTransportMethod SUBMIT_AS_MAILBOX_HOLDER
+  // XRPresentationTransportMethod SUBMIT_AS_MAILBOX_HOLDER
   SubmitFrame(int16 frame_id, gpu.mojom.MailboxHolder mailbox_holder,
               mojo_base.mojom.TimeDelta time_waited);
 
-  // VRDisplayFrameTransportMethod SUBMIT_AS_TEXTURE_HANDLE
+  // XRPresentationTransportMethod SUBMIT_AS_TEXTURE_HANDLE
   // TODO(https://crbug.com/676224): Support preprocessing of mojom files, since
   // this is Windows only.
   SubmitFrameWithTextureHandle(int16 frameId, handle texture);
 
-  // VRDisplayFrameTransportMethod DRAW_INTO_TEXTURE_MAILBOX
+  // XRPresentationTransportMethod DRAW_INTO_TEXTURE_MAILBOX
   SubmitFrameDrawnIntoTexture(int16 frameId, gpu.mojom.SyncToken sync_token,
                               mojo_base.mojom.TimeDelta time_waited);
+};
+
+// After submitting a frame, the XRPresentationProvider will notify the client
+// about several stages of the render pipeline.  This allows pipelining
+// efficiency.  Following XRPresentationProvider::Submit*, the submitted frame
+// will be transferred (read from, perhaps copied to another texture), and then
+// rendered (submitted to the underlying VR API).
+// The client lives in the render process.
+//
+// See XRPresentationTransportOptions which configures which of these
+// callbacks are in use.
+interface XRPresentationClient {
+  // The XRPresentationProvider calls this to indicate that the submitted frame
+  // has been transferred, so the backing data (mailbox or GpuMemoryBuffer) can
+  // be reused or discarded.  Note that this is a convenience/optimization
+  // feature, not a security feature - if a site discards the data early we may
+  // drop a frame, but nothing will otherwise misbehave.
+  // When the frame wasn't successfully transferred, the client should create a
+  // new mailbox/GpuMemoryBuffer rather than reusing an existing one to recover
+  // for subsequent frames.
+  OnSubmitFrameTransferred(bool success);
+
+  // The XRPresentationProvider calls this after the frame was handed off to the
+  // underlying VR API. This allows some pipelining of CPU/GPU work, while
+  // delaying expensive tasks for a subsequent frame until the current frame has
+  // completed.
+  OnSubmitFrameRendered();
+
+  // This callback provides a GpuFence corresponding to the previous frame's
+  // rendering completion, intended for use with a server wait issued before
+  // the following wait to prevent its rendering work from competing with
+  // the previous frame.
+  OnSubmitFrameGpuFence(gfx.mojom.GpuFenceHandle gpu_fence_handle);
 };
 
 interface VRDisplayClient {

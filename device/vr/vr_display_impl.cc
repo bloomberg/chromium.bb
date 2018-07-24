@@ -17,14 +17,13 @@ namespace device {
 
 VRDisplayImpl::VRDisplayImpl(
     VRDeviceBase* device,
-    mojom::VRMagicWindowProviderRequest magic_window_request,
+    mojom::XRFrameDataProviderRequest magic_window_request,
+    mojom::XREnviromentIntegrationProviderRequest enviroment_request,
     mojom::XRSessionControllerRequest session_request)
-    : magic_window_binding_(this),
-      session_controller_binding_(this),
+    : magic_window_binding_(this, std::move(magic_window_request)),
+      enviroment_binding_(this, std::move(enviroment_request)),
+      session_controller_binding_(this, std::move(session_request)),
       device_(device) {
-  magic_window_binding_.Bind(std::move(magic_window_request));
-  session_controller_binding_.Bind(std::move(session_request));
-
   // Unretained is safe because the binding will close when we are destroyed,
   // so we won't receive any more callbacks after that.
   session_controller_binding_.set_connection_error_handler(base::BindOnce(
@@ -35,7 +34,7 @@ VRDisplayImpl::~VRDisplayImpl() = default;
 
 // Gets frame data for sessions.
 void VRDisplayImpl::GetFrameData(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (device_->HasExclusiveSession() || restrict_frame_data_) {
     std::move(callback).Run(nullptr);
     return;
@@ -63,7 +62,7 @@ void VRDisplayImpl::UpdateSessionGeometry(const gfx::Size& frame_size,
 
 void VRDisplayImpl::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
   if (restrict_frame_data_) {
     std::move(callback).Run(base::nullopt);
     return;

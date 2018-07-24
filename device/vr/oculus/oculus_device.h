@@ -31,13 +31,10 @@ class OculusDevice : public VRDeviceBase,
       mojom::XRDeviceRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
   void OnMagicWindowFrameDataRequest(
-      mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
-  void OnRequestSessionResult(
-      mojom::XRRuntime::RequestSessionCallback callback,
-      bool result,
-      mojom::VRSubmitFrameClientRequest request,
-      mojom::VRPresentationProviderPtrInfo provider_info,
-      mojom::VRDisplayFrameTransportOptionsPtr transport_options);
+      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
+  void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
+                              bool result,
+                              mojom::XRSessionPtr session);
 
   bool IsInitialized() { return !!session_; }
 

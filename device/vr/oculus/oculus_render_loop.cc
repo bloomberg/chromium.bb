@@ -48,7 +48,8 @@ OculusRenderLoop::OculusRenderLoop(
         on_controller_updated)
     : base::Thread("OculusRenderLoop"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this),
+      presentation_binding_(this),
+      frame_data_binding_(this),
       on_presentation_ended_(on_presentation_ended),
       on_controller_updated_(on_controller_updated),
       weak_ptr_factory_(this) {
@@ -69,7 +70,8 @@ void OculusRenderLoop::ClearPendingFrame() {
 void OculusRenderLoop::CleanUp() {
   submit_client_ = nullptr;
   StopOvrSession();
-  binding_.Close();
+  presentation_binding_.Close();
+  frame_data_binding_.Close();
 }
 
 void OculusRenderLoop::SubmitFrameMissing(int16_t frame_index,
@@ -241,28 +243,36 @@ void OculusRenderLoop::RequestSession(
 #endif
           ) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), false, nullptr, nullptr, nullptr));
+        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
   }
 
-  binding_.Close();
-  device::mojom::VRPresentationProviderPtr provider;
-  binding_.Bind(mojo::MakeRequest(&provider));
+  presentation_binding_.Close();
+  frame_data_binding_.Close();
+  device::mojom::XRPresentationProviderPtr presentation_provider;
+  device::mojom::XRFrameDataProviderPtr frame_data_provider;
+  presentation_binding_.Bind(mojo::MakeRequest(&presentation_provider));
+  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
 
-  device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
-      device::mojom::VRDisplayFrameTransportOptions::New();
+  device::mojom::XRPresentationTransportOptionsPtr transport_options =
+      device::mojom::XRPresentationTransportOptions::New();
   transport_options->transport_method =
-      device::mojom::VRDisplayFrameTransportMethod::SUBMIT_AS_TEXTURE_HANDLE;
+      device::mojom::XRPresentationTransportMethod::SUBMIT_AS_TEXTURE_HANDLE;
   // Only set boolean options that we need. Default is false, and we should be
   // able to safely ignore ones that our implementation doesn't care about.
   transport_options->wait_for_transfer_notification = true;
 
+  auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
+  submit_frame_sink->provider = presentation_provider.PassInterface();
+  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
+  submit_frame_sink->transport_options = std::move(transport_options);
+
+  auto session = device::mojom::XRSession::New();
+  session->data_provider = frame_data_provider.PassInterface();
+  session->submit_frame_sink = std::move(submit_frame_sink);
+
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), true,
-                     mojo::MakeRequest(&submit_client_),
-                     provider.PassInterface(), std::move(transport_options)));
+      FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
   is_presenting_ = true;
 }
 
@@ -296,7 +306,8 @@ void OculusRenderLoop::StopOvrSession() {
 
 void OculusRenderLoop::ExitPresent() {
   is_presenting_ = false;
-  binding_.Close();
+  presentation_binding_.Close();
+  frame_data_binding_.Close();
   submit_client_ = nullptr;
   ClearPendingFrame();
 
@@ -312,7 +323,7 @@ base::WeakPtr<OculusRenderLoop> OculusRenderLoop::GetWeakPtr() {
 }
 
 void OculusRenderLoop::GetFrameData(
-    mojom::VRPresentationProvider::GetFrameDataCallback callback) {
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   DCHECK(is_presenting_);
 
   if (has_outstanding_frame_) {
