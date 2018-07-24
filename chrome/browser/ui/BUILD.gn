@@ -3212,6 +3212,8 @@ jumbo_split_static_library("ui") {
         "views/frame/hosted_app_button_container.h",
         "views/frame/hosted_app_menu_button.cc",
         "views/frame/hosted_app_menu_button.h",
+        "views/frame/hosted_app_origin_text.cc",
+        "views/frame/hosted_app_origin_text.h",
         "views/frame/immersive_mode_controller.cc",
         "views/frame/immersive_mode_controller.h",
         "views/frame/immersive_mode_controller_factory_views.cc",

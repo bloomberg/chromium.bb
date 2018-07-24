@@ -133,6 +133,9 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     return BrowserView::GetBrowserViewForBrowser(browser_);
   }
   ImmersiveModeController* controller() { return controller_; }
+  base::TimeDelta titlebar_animation_delay() {
+    return HostedAppButtonContainer::kTitlebarAnimationDelay;
+  }
 
  private:
   // Not owned.
@@ -331,8 +334,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
     frame_view = static_cast<BrowserNonClientFrameViewAsh*>(
         browser_view->GetWidget()->non_client_view()->frame_view());
 
-    task_runner->FastForwardBy(
-        BrowserNonClientFrameViewAsh::kTitlebarAnimationDelay);
+    task_runner->FastForwardBy(titlebar_animation_delay());
 
     VerifyButtonsInImmersiveMode(frame_view);
   }

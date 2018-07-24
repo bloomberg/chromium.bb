@@ -8,6 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
@@ -17,6 +20,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace {
 class HostedAppNonClientFrameViewAshTest;
@@ -24,10 +28,12 @@ class HostedAppNonClientFrameViewAshTest;
 
 class AppMenuButton;
 class BrowserView;
+class HostedAppOriginText;
 class HostedAppMenuButton;
 
 namespace views {
 class MenuButton;
+class Widget;
 }
 
 // A container for hosted app buttons in the title bar.
@@ -35,11 +41,14 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
                                  public PageActionIconView::Delegate,
                                  public ToolbarButtonProvider,
-                                 public ImmersiveModeController::Observer {
+                                 public ImmersiveModeController::Observer,
+                                 public views::WidgetObserver {
  public:
   // |active_icon_color| and |inactive_icon_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
-  HostedAppButtonContainer(BrowserView* browser_view,
+  HostedAppButtonContainer(views::Widget* widget,
+                           BrowserView* browser_view,
+                           HostedAppOriginText* hosted_app_origin_text,
                            SkColor active_icon_color,
                            SkColor inactive_icon_color);
   ~HostedAppButtonContainer() override;
@@ -49,15 +58,19 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
 
-  // Animates the menu button and content setting icons. Intended to run in sync
-  // with a FrameHeaderOriginText slide animation.
-  void StartTitlebarAnimation(base::TimeDelta origin_text_slide_duration);
-
  private:
   friend class HostedAppNonClientFrameViewAshTest;
   friend class HostedAppGlassBrowserFrameViewTest;
   friend class ImmersiveModeControllerAshHostedAppBrowserTest;
 
+  // Duration to wait before starting the opening animation.
+  static const base::TimeDelta kTitlebarAnimationDelay;
+
+  // Methods for coordinate the titlebar animation (origin text slide, menu
+  // highlight and icon fade in).
+  bool ShouldAnimate() const;
+  void StartTitlebarAnimation();
+  void FadeInContentSettingIcons();
   static void DisableAnimationForTesting();
 
   class ContentSettingsContainer;
@@ -66,8 +79,6 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
-
-  void FadeInContentSettingButtons();
 
   void UpdateIconsColor();
 
@@ -98,23 +109,34 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // ImmersiveModeController::Observer:
   void OnImmersiveRevealStarted() override;
 
+  // views::WidgetObserver:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+
+  // Whether we're waiting for the widget to become visible.
+  bool pending_widget_visibility_ = true;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_;
+
+  // Timers for synchronising their respective parts of the titlebar animation.
+  base::OneShotTimer animation_start_delay_;
+  base::OneShotTimer icon_fade_in_delay_;
+
   // The containing browser view.
   BrowserView* browser_view_;
+
+  // The origin text to coordinate the titlebar animation with.
+  HostedAppOriginText* hosted_app_origin_text_ = nullptr;
 
   // Button colors.
   bool paint_as_active_ = true;
   const SkColor active_icon_color_;
   const SkColor inactive_icon_color_;
 
-  base::OneShotTimer fade_in_content_setting_buttons_timer_;
-
   // Owned by the views hierarchy.
   ContentSettingsContainer* content_settings_container_ = nullptr;
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   HostedAppMenuButton* app_menu_button_ = nullptr;
-
-  base::OneShotTimer opening_animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppButtonContainer);
 };

@@ -10,7 +10,6 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"  // mash-ok
 #include "ash/frame/default_frame_header.h"      // mash-ok
 #include "ash/frame/frame_border_hit_test.h"     // mash-ok
-#include "ash/frame/frame_header_origin_text.h"  // mash-ok
 #include "ash/frame/frame_header_util.h"         // mash-ok
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
@@ -25,9 +24,6 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -39,6 +35,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -132,9 +129,6 @@ int GetControlButtonSpacing() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, public:
-
-const base::TimeDelta BrowserNonClientFrameViewAsh::kTitlebarAnimationDelay =
-    base::TimeDelta::FromMilliseconds(750);
 
 BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame,
@@ -523,8 +517,8 @@ void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
   if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
 
-  if (frame_header_origin_text_)
-    frame_header_origin_text_->SetPaintAsActive(should_paint_as_active);
+  if (hosted_app_origin_text_)
+    hosted_app_origin_text_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -596,11 +590,11 @@ void BrowserNonClientFrameViewAsh::Layout() {
       (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
 
-  if (frame_header_origin_text_) {
+  if (hosted_app_origin_text_) {
     // Align the right side of the text with the left side of the caption
     // buttons.
     gfx::Size origin_text_preferred_size =
-        frame_header_origin_text_->GetPreferredSize();
+        hosted_app_origin_text_->GetPreferredSize();
     int origin_text_width =
         std::min(width() - caption_button_container_->width(),
                  origin_text_preferred_size.width());
@@ -608,7 +602,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
                           origin_text_preferred_size.height());
     SetRightSide(&text_bounds, caption_button_container_->x());
     AlignVerticalCenterWith(&text_bounds, caption_button_container_->bounds());
-    frame_header_origin_text_->SetBoundsRect(text_bounds);
+    hosted_app_origin_text_->SetBoundsRect(text_bounds);
   }
 
   // The top right corner must be occupied by a caption button for easy mouse
@@ -1020,17 +1014,17 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
         ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
   }
 
-  // Add the container for extra hosted app buttons (e.g app menu button).
+  // Add the origin text.
   const float inactive_alpha_ratio =
       ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   SkColor inactive_color =
       SkColorSetA(active_color, 255 * inactive_alpha_ratio);
-  hosted_app_button_container_ = new HostedAppButtonContainer(
-      browser_view(), active_color, inactive_color);
+  hosted_app_origin_text_ =
+      new HostedAppOriginText(browser, active_color, inactive_color);
 
-  // Add the origin text.
-  frame_header_origin_text_ = new ash::FrameHeaderOriginText(
-      browser->hosted_app_controller()->GetFormattedUrlOrigin(), active_color,
+  // Add the container for extra hosted app buttons (e.g app menu button).
+  hosted_app_button_container_ = new HostedAppButtonContainer(
+      frame(), browser_view(), hosted_app_origin_text_, active_color,
       inactive_color);
 
   if (IsMash()) {
@@ -1044,25 +1038,12 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
     hosted_app_extras_container_->SetLayoutManager(std::move(layout));
     AddChildView(hosted_app_extras_container_);
 
-    hosted_app_extras_container_->AddChildView(frame_header_origin_text_);
+    hosted_app_extras_container_->AddChildView(hosted_app_origin_text_);
     hosted_app_extras_container_->AddChildView(hosted_app_button_container_);
   } else {
     caption_button_container_->AddChildViewAt(hosted_app_button_container_, 0);
-    AddChildView(frame_header_origin_text_);
+    AddChildView(hosted_app_origin_text_);
   }
-
-  // Schedule the title bar animation.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&BrowserNonClientFrameViewAsh::StartHostedAppAnimation,
-                     weak_factory_.GetWeakPtr()),
-      kTitlebarAnimationDelay);
-}
-
-void BrowserNonClientFrameViewAsh::StartHostedAppAnimation() {
-  frame_header_origin_text_->StartSlideAnimation();
-  hosted_app_button_container_->StartTitlebarAnimation(
-      frame_header_origin_text_->AnimationDuration());
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColors() {

@@ -118,11 +118,10 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     // here and call it on demand in
     // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
     hosted_app_button_container_ = new HostedAppButtonContainer(
-        browser_view, GetTitlebarFeatureColor(true),
+        frame, browser_view, nullptr, GetTitlebarFeatureColor(true),
         GetTitlebarFeatureColor(false));
     AddChildView(hosted_app_button_container_);
     // TODO(https://crbug.com/854479): Add FrameHeaderOriginText animation here.
-    hosted_app_button_container_->StartTitlebarAnimation(base::TimeDelta());
   }
 
   minimize_button_ =

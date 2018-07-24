@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/frame_header_origin_text.h"
+#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 
 #include "base/i18n/rtl.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-
-namespace ash {
 
 namespace {
 
@@ -27,13 +27,19 @@ constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 
 }  // namespace
 
-FrameHeaderOriginText::FrameHeaderOriginText(const base::string16& origin,
-                                             SkColor active_color,
-                                             SkColor inactive_color)
+HostedAppOriginText::HostedAppOriginText(Browser* browser,
+                                         SkColor active_color,
+                                         SkColor inactive_color)
     : active_color_(active_color), inactive_color_(inactive_color) {
+  DCHECK(
+      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser));
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  label_ = std::make_unique<views::Label>(origin).release();
+  label_ = std::make_unique<views::Label>(
+               browser->hosted_app_controller()->GetFormattedUrlOrigin())
+               .release();
   label_->SetElideBehavior(gfx::ELIDE_HEAD);
   label_->SetSubpixelRenderingEnabled(false);
   label_->SetEnabledColor(active_color);
@@ -51,13 +57,13 @@ FrameHeaderOriginText::FrameHeaderOriginText(const base::string16& origin,
   layer()->SetMasksToBounds(true);
 }
 
-FrameHeaderOriginText::~FrameHeaderOriginText() = default;
+HostedAppOriginText::~HostedAppOriginText() = default;
 
-void FrameHeaderOriginText::SetPaintAsActive(bool active) {
+void HostedAppOriginText::SetPaintAsActive(bool active) {
   label_->SetEnabledColor(active ? active_color_ : inactive_color_);
 }
 
-void FrameHeaderOriginText::StartSlideAnimation() {
+void HostedAppOriginText::StartSlideAnimation() {
   ui::Layer* label_layer = label_->layer();
 
   // Current state will become the first animation keyframe.
@@ -104,14 +110,12 @@ void FrameHeaderOriginText::StartSlideAnimation() {
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
-base::TimeDelta FrameHeaderOriginText::AnimationDuration() {
+base::TimeDelta HostedAppOriginText::AnimationDuration() {
   return kOriginSlideInDuration + kOriginPauseDuration +
          kOriginSlideOutDuration;
 }
 
-void FrameHeaderOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+void HostedAppOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kApplication;
   node_data->SetName(label_->text());
 }
-
-}  // namespace ash
