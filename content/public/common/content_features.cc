@@ -590,6 +590,10 @@ const base::Feature kWipeCorruptV2IDBDatabases{
 const base::Feature kWorkStealingInScriptRunner{
     "WorkStealingInScriptRunner", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enabled scheduler use for script streaming.
+const base::Feature kScheduledScriptStreaming{
+    "ScheduledScriptStreaming", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.
 // crbug.com/627860

@@ -108,8 +108,10 @@ class ScriptStreamingTest : public testing::Test {
   }
 
   void ProcessTasksUntilStreamingComplete() {
-    while (ScriptStreamerThread::Shared()->IsRunningTask()) {
-      test::RunPendingTasks();
+    if (!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
+      while (ScriptStreamerThread::Shared()->IsRunningTask()) {
+        test::RunPendingTasks();
+      }
     }
     // Once more, because the "streaming complete" notification might only
     // now be in the task queue.
