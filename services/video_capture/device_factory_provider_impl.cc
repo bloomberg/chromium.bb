@@ -113,6 +113,8 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
   std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
       media::CreateVideoCaptureDeviceFactory(
           base::ThreadTaskRunnerHandle::Get());
+  DCHECK(media_device_factory);
+
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));
 

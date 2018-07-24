@@ -270,6 +270,13 @@ component("capture_lib") {
       "//third_party/libsync",
     ]
   }
+
+  if (is_fuchsia) {
+    sources += [
+      "video/fuchsia/video_capture_device_factory_fuchsia.cc",
+      "video/fuchsia/video_capture_device_factory_fuchsia.h",
+    ]
+  }
 }
 
 source_set("test_support") {
