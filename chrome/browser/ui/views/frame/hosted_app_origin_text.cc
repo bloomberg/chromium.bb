@@ -107,7 +107,17 @@ void HostedAppOriginText::StartSlideAnimation() {
   label_layer->GetAnimator()->StartTogether(
       {opacity_sequence.release(), transform_sequence.release()});
 
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&HostedAppOriginText::AnimationComplete,
+                     weak_factory_.GetWeakPtr()),
+      AnimationDuration());
+
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+}
+
+void HostedAppOriginText::AnimationComplete() {
+  SetVisible(false);
 }
 
 base::TimeDelta HostedAppOriginText::AnimationDuration() {

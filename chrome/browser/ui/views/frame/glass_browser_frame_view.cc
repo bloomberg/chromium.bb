@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -65,6 +66,22 @@ base::win::ScopedHICON CreateHICONFromSkBitmapSizedTo(
           : skia::ImageOperations::Resize(*image.bitmap(),
                                           skia::ImageOperations::RESIZE_BEST,
                                           width, height));
+}
+
+int AlignRight(views::View* view,
+               int next_leading_x,
+               int next_trailing_x,
+               int available_height) {
+  gfx::Size view_size;
+  if (view->visible())
+    view_size = view->GetPreferredSize();
+  const int width = std::min(view_size.width(),
+                             std::max(0, next_trailing_x - next_leading_x));
+  const int height = view_size.height();
+  DCHECK_LE(height, available_height);
+  view->SetBounds(next_trailing_x - width, (available_height - height) / 2,
+                  width, height);
+  return view->bounds().x();
 }
 
 }  // namespace
@@ -117,11 +134,15 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     // TODO(alancutter): Avoid snapshotting GetTitlebarFeatureColor() values
     // here and call it on demand in
     // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
+    SkColor active_color = GetTitlebarFeatureColor(true);
+    SkColor inactive_color = GetTitlebarFeatureColor(false);
+    hosted_app_origin_text_ = new HostedAppOriginText(
+        browser_view->browser(), active_color, inactive_color);
+    AddChildView(hosted_app_origin_text_);
     hosted_app_button_container_ = new HostedAppButtonContainer(
-        frame, browser_view, nullptr, GetTitlebarFeatureColor(true),
-        GetTitlebarFeatureColor(false));
+        frame, browser_view, hosted_app_origin_text_, active_color,
+        inactive_color);
     AddChildView(hosted_app_button_container_);
-    // TODO(https://crbug.com/854479): Add FrameHeaderOriginText animation here.
   }
 
   minimize_button_ =
@@ -501,8 +522,10 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
 void GlassBrowserFrameView::ActivationChanged(bool active) {
   BrowserNonClientFrameView::ActivationChanged(active);
 
-  if (hosted_app_button_container_)
+  if (hosted_app_button_container_) {
     hosted_app_button_container_->SetPaintAsActive(active);
+    hosted_app_origin_text_->SetPaintAsActive(active);
+  }
 }
 
 int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
@@ -908,18 +931,13 @@ void GlassBrowserFrameView::LayoutTitleBar() {
 
   if (hosted_app_button_container_) {
     DCHECK(!GetProfileSwitcherButton());
-    gfx::Size container_size = hosted_app_button_container_->GetPreferredSize();
-    const int container_width = std::min(
-        container_size.width(), std::max(0, next_trailing_x - next_leading_x));
-    const int container_height = container_size.height();
-    DCHECK_LE(container_height, titlebar_visual_height);
-    // Align right.
-    hosted_app_button_container_->SetBounds(
-        next_trailing_x - container_width,
-        (titlebar_visual_height - container_height) / 2, container_width,
-        container_height);
+    next_trailing_x = AlignRight(hosted_app_button_container_, next_leading_x,
+                                 next_trailing_x, titlebar_visual_height);
     hosted_app_button_container_->Layout();
-    next_trailing_x = hosted_app_button_container_->bounds().x();
+
+    next_trailing_x = AlignRight(hosted_app_origin_text_, next_leading_x,
+                                 next_trailing_x, titlebar_visual_height);
+    hosted_app_origin_text_->Layout();
   }
 
   if (ShowCustomTitle()) {
