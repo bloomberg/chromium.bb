@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -357,7 +356,7 @@ void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
   if (!do_compact_)
     return;
 
-  Fixups().Add(slot);
+  traced_slots_.insert(slot);
 }
 
 void HeapCompact::RegisterMovingObjectCallback(MovableReference reference,
@@ -422,6 +421,13 @@ void HeapCompact::Relocate(Address from, Address to) {
 void HeapCompact::StartThreadCompaction() {
   if (!do_compact_)
     return;
+
+  DCHECK(fixups_);
+  // The mapping between the slots and the backing stores are created
+  for (auto** slot : traced_slots_) {
+    fixups_->Add(slot);
+  }
+  traced_slots_.clear();
 }
 
 void HeapCompact::FinishThreadCompaction() {
