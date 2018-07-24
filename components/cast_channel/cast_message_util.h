@@ -27,6 +27,7 @@ enum class CastMessageType {
   kConnect,    // Virtual connection request
   kBroadcast,  // Application broadcast / precache
   kLaunch,     // Session launch request
+  kStop,       // Session stop request
   kReceiverStatus,
   kLaunchError,
   kOther  // Add new types above |kOther|.
@@ -132,6 +133,10 @@ CastMessage CreateLaunchRequest(const std::string& source_id,
                                 const std::string& app_id,
                                 const std::string& locale);
 
+CastMessage CreateStopRequest(const std::string& source_id,
+                              int request_id,
+                              const std::string& session_id);
+
 // Creates a generic CastMessage with |message| as the string payload. Used for
 // app messages.
 CastMessage CreateCastMessage(const std::string& message_namespace,
@@ -168,16 +173,15 @@ struct LaunchSessionResponse {
   ~LaunchSessionResponse();
 
   Result result = Result::kUnknown;
-
   // Populated if |result| is |kOk|.
   base::Optional<base::Value> receiver_status;
 };
 
 // Parses |payload| into a LaunchSessionResponse. Returns an empty
 // LaunchSessionResponse if |payload| is not a properly formatted launch
-// response. |payload| must be from the string payload of a CastMessage.
-LaunchSessionResponse GetLaunchSessionResponse(
-    const base::DictionaryValue& payload);
+// response. |payload| must be a dictionary from the string payload of a
+// CastMessage.
+LaunchSessionResponse GetLaunchSessionResponse(const base::Value& payload);
 
 }  // namespace cast_channel
 

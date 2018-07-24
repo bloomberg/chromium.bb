@@ -4,10 +4,13 @@
 
 #include "chrome/browser/media/router/media_router_feature.h"
 
+#include "base/base64.h"
 #include "base/feature_list.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "crypto/random.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/ui_features.h"
 
@@ -73,6 +76,12 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 PrefRegistry::PUBLIC);
 }
 
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  // TODO(imcheng): Migrate existing Media Router prefs to here.
+  registry->RegisterStringPref(prefs::kMediaRouterReceiverIdHashToken, "",
+                               PrefRegistry::PUBLIC);
+}
+
 const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -88,6 +97,19 @@ bool GetCastAllowAllIPsPref(PrefService* pref_service) {
   }
 
   return allow_all_ips;
+}
+
+std::string GetReceiverIdHashToken(PrefService* pref_service) {
+  static constexpr size_t kHashTokenSize = 64;
+  std::string token =
+      pref_service->GetString(prefs::kMediaRouterReceiverIdHashToken);
+  if (token.empty()) {
+    crypto::RandBytes(base::WriteInto(&token, kHashTokenSize + 1),
+                      kHashTokenSize);
+    base::Base64Encode(token, &token);
+    pref_service->SetString(prefs::kMediaRouterReceiverIdHashToken, token);
+  }
+  return token;
 }
 
 bool DialMediaRouteProviderEnabled() {

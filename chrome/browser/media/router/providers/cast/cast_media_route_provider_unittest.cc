@@ -64,7 +64,7 @@ TEST_F(CastMediaRouteProviderTest, StartObservingMediaSinks) {
   EXPECT_CALL(app_discovery_service_, DoStartObservingMediaSinks(_)).Times(0);
   provider_->StartObservingMediaSinks(non_cast_source);
 
-  MediaSource::Id cast_source("cast:ABCDEFGH");
+  MediaSource::Id cast_source("cast:ABCDEFGH?clientId=123");
   EXPECT_CALL(app_discovery_service_, DoStartObservingMediaSinks(_));
   provider_->StartObservingMediaSinks(cast_source);
   EXPECT_FALSE(app_discovery_service_.callbacks().empty());
@@ -78,6 +78,7 @@ TEST_F(CastMediaRouteProviderTest, BroadcastRequest) {
   media_sink_service_.AddOrUpdateSink(CreateCastSink(2));
   MediaSource::Id source_id(
       "cast:ABCDEFAB?capabilities=video_out,audio_out"
+      "&clientId=123"
       "&broadcastNamespace=namespace"
       "&broadcastMessage=message");
 

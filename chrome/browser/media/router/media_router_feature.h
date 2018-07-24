@@ -25,10 +25,17 @@ namespace prefs {
 // Pref name for the enterprise policy for allowing Cast devices on all IPs.
 constexpr char kMediaRouterCastAllowAllIPs[] =
     "media_router.cast_allow_all_ips";
+// Pref name for the per-profile randomly generated token to include with the
+// hash when externalizing MediaSink IDs.
+constexpr char kMediaRouterReceiverIdHashToken[] =
+    "media_router.receiver_id_hash_token";
 }  // namespace prefs
 
 // Registers |kMediaRouterCastAllowAllIPs| with local state pref |registry|.
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+// Registers Media Router related preferences with per-profile pref |registry|.
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // If enabled, allows Media Router to connect to Cast devices on all IP
 // addresses, not just RFC1918/RFC4913 private addresses. Workaround for
@@ -38,6 +45,11 @@ extern const base::Feature kCastAllowAllIPsFeature;
 // Returns true if CastMediaSinkService can connect to Cast devices on
 // all IPs, as determined by local state |pref_service| / feature flag.
 bool GetCastAllowAllIPsPref(PrefService* pref_service);
+
+// Returns the hash token to use for externalizing MediaSink IDs from
+// |pref_service|. If the token does not exist, the token will be created from a
+// randomly generated string and stored in |pref_service|.
+std::string GetReceiverIdHashToken(PrefService* pref_service);
 
 extern const base::Feature kEnableDialSinkQuery;
 extern const base::Feature kEnableCastDiscovery;
