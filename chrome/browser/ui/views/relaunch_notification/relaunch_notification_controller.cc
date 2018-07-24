@@ -360,7 +360,7 @@ void RelaunchNotificationController::ShowRelaunchRecommendedBubble() {
 
   widget_ = RelaunchRecommendedBubbleView::ShowBubble(
       browser, upgrade_detector_->upgrade_detected_time(),
-      base::BindRepeating(&chrome::AttemptRestart));
+      base::BindRepeating(&chrome::AttemptRelaunch));
 
   // Monitor the widget so that |widget_| can be cleared on close.
   widget_->AddObserver(this);
@@ -384,7 +384,7 @@ void RelaunchNotificationController::ShowRelaunchRequiredDialog() {
 
   widget_ = RelaunchRequiredDialogView::Show(
       browser, timer_.desired_run_time(),
-      base::BindRepeating(&chrome::AttemptRestart));
+      base::BindRepeating(&chrome::AttemptRelaunch));
 
   // Monitor the widget so that |widget_| can be cleared on close.
   widget_->AddObserver(this);
@@ -396,5 +396,5 @@ void RelaunchNotificationController::CloseWidget() {
 }
 
 void RelaunchNotificationController::OnRelaunchDeadlineExpired() {
-  chrome::AttemptRestart();
+  chrome::AttemptRelaunch();
 }

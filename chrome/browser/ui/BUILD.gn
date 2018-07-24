@@ -3036,6 +3036,12 @@ jumbo_split_static_library("ui") {
       "views/permission_bubble/chooser_bubble_ui.h",
       "views/permission_bubble/permission_prompt_impl.cc",
       "views/permission_bubble/permission_prompt_impl.h",
+      "views/relaunch_notification/relaunch_notification_controller.cc",
+      "views/relaunch_notification/relaunch_notification_controller.h",
+      "views/relaunch_notification/relaunch_recommended_bubble_view.cc",
+      "views/relaunch_notification/relaunch_recommended_bubble_view.h",
+      "views/relaunch_notification/relaunch_required_dialog_view.cc",
+      "views/relaunch_notification/relaunch_required_dialog_view.h",
       "views/safe_browsing/password_reuse_modal_warning_dialog.cc",
       "views/safe_browsing/password_reuse_modal_warning_dialog.h",
       "views/session_crashed_bubble_view.cc",
@@ -3488,22 +3494,17 @@ jumbo_split_static_library("ui") {
 
     if (!is_chromeos) {
       sources += [
-        "views/relaunch_notification/relaunch_notification_controller.cc",
-        "views/relaunch_notification/relaunch_notification_controller.h",
-        "views/relaunch_notification/relaunch_recommended_bubble_view.cc",
-        "views/relaunch_notification/relaunch_recommended_bubble_view.h",
-        "views/relaunch_notification/relaunch_required_dialog_view.cc",
-        "views/relaunch_notification/relaunch_required_dialog_view.h",
         "views/screen_capture_notification_ui_views.cc",
       ]
-      if (is_mac) {
-        sources += [
-          "views/policy/enterprise_startup_dialog_mac_util.h",
-          "views/policy/enterprise_startup_dialog_mac_util.mm",
-          "views/relaunch_notification/get_app_menu_anchor_point.h",
-          "views/relaunch_notification/get_app_menu_anchor_point.mm",
-        ]
-      }
+    }
+
+    if (is_mac) {
+      sources += [
+        "views/policy/enterprise_startup_dialog_mac_util.h",
+        "views/policy/enterprise_startup_dialog_mac_util.mm",
+        "views/relaunch_notification/get_app_menu_anchor_point.h",
+        "views/relaunch_notification/get_app_menu_anchor_point.mm",
+      ]
     }
 
     if (is_chrome_branded) {
