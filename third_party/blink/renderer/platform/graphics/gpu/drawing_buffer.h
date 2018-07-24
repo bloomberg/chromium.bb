@@ -591,6 +591,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   ChromiumImageUsage chromium_image_usage_;
   bool ShouldUseChromiumImage();
 
+  bool opengl_flip_y_extension_;
+
   // A release callback that is run when the previouis image passed to
   // OffscreenCanvas::Commit() is no longer needed.
   std::unique_ptr<viz::SingleReleaseCallback> previous_image_release_callback_;
