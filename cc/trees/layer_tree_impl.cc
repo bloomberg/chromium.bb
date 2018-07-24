@@ -104,9 +104,6 @@ LayerTreeImpl::LayerTreeImpl(
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
-  BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
-                                   : SwapPromise::ACTIVATION_FAILS);
-
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
   DCHECK(LayerListIsEmpty());
@@ -115,6 +112,8 @@ LayerTreeImpl::~LayerTreeImpl() {
 
 void LayerTreeImpl::Shutdown() {
   DetachLayers();
+  BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
+                                   : SwapPromise::ACTIVATION_FAILS);
   DCHECK(LayerListIsEmpty());
 }
 
