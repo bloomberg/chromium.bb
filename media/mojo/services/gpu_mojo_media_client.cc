@@ -102,7 +102,8 @@ GpuMojoMediaClient::~GpuMojoMediaClient() = default;
 void GpuMojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
 std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaLog* media_log) {
 #if defined(OS_ANDROID)
   return std::make_unique<MediaCodecAudioDecoder>(task_runner);
 #else
