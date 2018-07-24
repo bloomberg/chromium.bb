@@ -558,6 +558,11 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
+    "prefix": "paint-touchaction-rects",
+    "base": "fast/events/touch",
+    "args": ["--enable-blink-features=PaintTouchActionRects"]
+  },
+  {
     "prefix": "cors-rfc1918",
     "base": "http/tests/security/cors-rfc1918",
     "args": ["--enable-blink-features=CorsRFC1918"]
