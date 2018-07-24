@@ -66,6 +66,7 @@ mr.Init.initProviderManager_ = function() {
           throw Error('Failed to get MR instance ID.');
         }
         mr.Init.logger_.info('MR instance ID: ' + mrInstanceId);
+        mr.Init.logDialogType_(result['mrConfig'].use_views_dialog);
         const mediaRouterService =
             /** @type {!mr.MediaRouterService} */ (result['mrService']);
         if (!mr.Init.providerManager_) {
@@ -138,6 +139,17 @@ mr.Init.addEventListeners_ = function() {
   // to connect to it.
 
   chrome.runtime.onStartup.addListener(() => {});
+};
+
+
+/**
+ * @param {boolean|undefined} useViewsDialog
+ * @private
+ */
+mr.Init.logDialogType_ = function(useViewsDialog) {
+  if (useViewsDialog === undefined) return;
+  const dialogType = useViewsDialog ? 'Views (Harmony)' : 'WebUI';
+  mr.Init.logger_.info(`Using the ${dialogType} dialog.`);
 };
 
 

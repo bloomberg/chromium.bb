@@ -154,6 +154,13 @@ mr.ProviderManager = class extends mr.Module {
     this.externalMessageHandler_ =
         mr.InitHelper.getExternalMessageHandler(this);
 
+    /**
+     * The type of the Cast dialog used (WebUI or Views). This value is
+     * submitted with feedback reports.
+     * @type {string}
+     */
+    this.dialogType = '';
+
     mr.ProviderManager.exportProperties_(this);
   }
 
@@ -222,6 +229,9 @@ mr.ProviderManager = class extends mr.Module {
         this.mediaRouterService_.onRouteMessagesReceived.bind(
             this.mediaRouterService_));
     this.registerAllProviders(providers, config);
+    if (config && config.use_views_dialog !== undefined) {
+      this.dialogType = config.use_views_dialog ? 'Views' : 'WebUI';
+    }
 
     mr.PersistentDataManager.register(this);
     mr.Module.onModuleLoaded(mr.ModuleId.PROVIDER_MANAGER, this);
