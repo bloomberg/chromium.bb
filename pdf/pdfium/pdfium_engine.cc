@@ -2714,7 +2714,13 @@ void PDFiumEngine::LoadForm() {
 }
 
 void PDFiumEngine::CalculateVisiblePages() {
-  if (!doc_loader_)
+  // Early return if the PDF isn't being loaded or if we don't have the document
+  // info yet. The latter is important because otherwise as the PDF is being
+  // initialized by the renderer there could be races that call this method
+  // before we get the initial network responses. The document loader depends on
+  // the list of pending requests to be valid for progressive loading to
+  // function.
+  if (!doc_loader_ || pages_.empty())
     return;
   // Clear pending requests queue, since it may contain requests to the pages
   // that are already invisible (after scrolling for example).
