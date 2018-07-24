@@ -152,6 +152,7 @@ class _ApkDelegate(object):
       extras[gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT] = int(
           kwargs['timeout'] * _SECONDS_TO_NANOS)
 
+    # pylint: disable=redefined-variable-type
     command_line_file = _NullContextManager()
     if flags:
       if len(flags) > _MAX_INLINE_FLAGS_LENGTH:
@@ -169,6 +170,7 @@ class _ApkDelegate(object):
         extras[_EXTRA_TEST_LIST] = test_list_file.name
       else:
         extras[_EXTRA_TEST] = test[0]
+    # pylint: enable=redefined-variable-type
 
     stdout_file = device_temp_file.DeviceTempFile(
         device.adb, dir=device.GetExternalStoragePath(), suffix='.gtest_out')
@@ -283,11 +285,13 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     assert isinstance(test_instance, gtest_test_instance.GtestTestInstance)
     super(LocalDeviceGtestRun, self).__init__(env, test_instance)
 
+    # pylint: disable=redefined-variable-type
     if self._test_instance.apk:
       self._delegate = _ApkDelegate(self._test_instance, env.tool)
     elif self._test_instance.exe_dist_dir:
       self._delegate = _ExeDelegate(self, self._test_instance.exe_dist_dir,
                                     self._env.tool)
+    # pylint: enable=redefined-variable-type
     self._crashes = set()
     self._servers = collections.defaultdict(list)
 

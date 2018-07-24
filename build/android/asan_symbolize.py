@@ -14,6 +14,7 @@ import sys
 from pylib import constants
 from pylib.constants import host_paths
 
+# pylint: disable=wrong-import-order
 # Uses symbol.py from third_party/android_platform, not python's.
 with host_paths.SysPath(
     host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH,
