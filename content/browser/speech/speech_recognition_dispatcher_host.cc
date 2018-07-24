@@ -201,7 +201,11 @@ SpeechRecognitionSession::SpeechRecognitionSession(
     : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
       client_(std::move(client_ptr_info)),
       stopped_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  client_.set_connection_error_handler(
+      base::BindOnce(&SpeechRecognitionSession::ConnectionErrorHandler,
+                     base::Unretained(this)));
+}
 
 SpeechRecognitionSession::~SpeechRecognitionSession() {
   // If a connection error happens and the session hasn't been stopped yet,
@@ -271,6 +275,11 @@ void SpeechRecognitionSession::OnAudioLevelsChange(int session_id,
                                                    float noise_volume) {}
 
 void SpeechRecognitionSession::OnEnvironmentEstimationComplete(int session_id) {
+}
+
+void SpeechRecognitionSession::ConnectionErrorHandler() {
+  if (!stopped_)
+    Abort();
 }
 
 }  // namespace content

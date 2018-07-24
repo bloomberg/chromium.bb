@@ -109,6 +109,8 @@ class SpeechRecognitionSession : public blink::mojom::SpeechRecognitionSession,
                            float noise_volume) override;
 
  private:
+  void ConnectionErrorHandler();
+
   int session_id_;
   blink::mojom::SpeechRecognitionSessionClientPtr client_;
   bool stopped_;
