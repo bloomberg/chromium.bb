@@ -10,8 +10,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/content_features.h"
 #include "crypto/random.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/ui_features.h"
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -146,6 +148,13 @@ bool ShouldUseViewsDialog() {
   return base::FeatureList::IsEnabled(features::kViewsCastDialog) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 #endif  // defined(OS_MACOSX)
+}
+
+bool ShouldUseMirroringService() {
+  return base::FeatureList::IsEnabled(features::kMirroringService) &&
+         base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
+         base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
+         base::FeatureList::IsEnabled(network::features::kNetworkService);
 }
 
 #endif  // !defined(OS_ANDROID)
