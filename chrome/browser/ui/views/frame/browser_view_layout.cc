@@ -323,15 +323,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   vertical_layout_rect_ = browser_view->GetLocalBounds();
   int top_inset = delegate_->GetTopInsetInBrowserView(false);
   int top = LayoutTabStripRegion(top_inset);
-  int possible_fullscreen_tab_strip_offset = 0;
   if (delegate_->IsTabStripVisible()) {
-#if defined(OS_MACOSX)
-    // Tab strip should always start from the top inset unless it is under the
-    // system menu bar during full screen mode on Mac. In this case, the tab
-    // strip and other top UI will move under the menu bar while the content
-    // should stay put.
-    possible_fullscreen_tab_strip_offset = tab_strip_->bounds().y() - top_inset;
-#endif
     // By passing true to GetTopInsetInBrowserView(), we position the tab
     // background to vertically align with the frame background image of a
     // restored-mode frame, even in a maximized window.  Then in the frame code,
@@ -354,7 +346,6 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   UpdateTopContainerBounds();
 
   int bottom = LayoutDownloadShelf(browser_view->height());
-  top -= possible_fullscreen_tab_strip_offset;
   // Treat a detached bookmark bar as if the web contents container is shifted
   // upwards and overlaps it.
   int active_top_margin = GetContentsOffsetForBookmarkBar();
