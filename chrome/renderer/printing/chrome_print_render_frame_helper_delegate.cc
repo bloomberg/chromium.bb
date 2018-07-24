@@ -53,7 +53,7 @@ blink::WebElement ChromePrintRenderFrameHelperDelegate::GetPdfElement(
       url.host_piece() == extension_misc::kPdfExtensionId;
   if (inside_print_preview || inside_pdf_extension) {
     // <object> with id="plugin" is created in
-    // chrome/browser/resources/pdf/pdf.js.
+    // chrome/browser/resources/pdf/pdf_viewer.js.
     auto plugin_element = frame->GetDocument().GetElementById("plugin");
     if (!plugin_element.IsNull()) {
       return plugin_element;
@@ -79,7 +79,7 @@ bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
       extensions::MimeHandlerViewContainer::FromRenderFrame(
           content::RenderFrame::FromWebFrame(frame));
   if (!mime_handlers.empty()) {
-    // This message is handled in chrome/browser/resources/pdf/pdf.js and
+    // This message is handled in chrome/browser/resources/pdf/pdf_viewer.js and
     // instructs the PDF plugin to print. This is to make window.print() on a
     // PDF plugin document correctly print the PDF. See
     // https://crbug.com/448720.
