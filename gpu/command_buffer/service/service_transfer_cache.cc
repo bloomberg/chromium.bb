@@ -24,8 +24,11 @@ static size_t kMaxCacheEntries = 2000;
 
 size_t CacheSizeLimit() {
   size_t memory_usage = 128 * 1024 * 1024;
-  if (base::SysInfo::IsLowEndDevice())
-    memory_usage = 4 * 1024 * 1024;
+  if (base::SysInfo::IsLowEndDevice()) {
+    // Based on the 512KB limit used for discardable images in non-OOP-R, but
+    // gives an extra 256KB to allow for additional (non-image) cache items.
+    memory_usage = 768 * 1024;
+  }
   return memory_usage;
 }
 
