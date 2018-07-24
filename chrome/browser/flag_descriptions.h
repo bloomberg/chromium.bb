@@ -711,6 +711,9 @@ extern const char kNewBookmarkAppsDescription[];
 extern const char kNewPasswordFormParsingName[];
 extern const char kNewPasswordFormParsingDescription[];
 
+extern const char kNewPasswordFormParsingForSavingName[];
+extern const char kNewPasswordFormParsingForSavingDescription[];
+
 extern const char kNewRemotePlaybackPipelineName[];
 extern const char kNewRemotePlaybackPipelineDescription[];
 

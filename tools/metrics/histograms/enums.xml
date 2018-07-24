@@ -28641,6 +28641,7 @@ from previous Chrome versions.
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
+  <int value="348115702" label="new-password-form-parsing-for-saving:enabled"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
   <int value="352191859" label="disabled-new-style-notification"/>
@@ -29065,6 +29066,8 @@ from previous Chrome versions.
   <int value="1194496204" label="NewWallpaperPicker:enabled"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
+  <int value="1201441984"
+      label="new-password-form-parsing-for-saving:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
   <int value="1209221384" label="enable-experimental-accessibility-features"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>

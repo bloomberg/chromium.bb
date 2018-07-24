@@ -1678,6 +1678,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewPasswordFormParsingName,
      flag_descriptions::kNewPasswordFormParsingDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kNewPasswordFormParsing)},
+    {"new-password-form-parsing-for-saving",
+     flag_descriptions::kNewPasswordFormParsingForSavingName,
+     flag_descriptions::kNewPasswordFormParsingForSavingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kNewPasswordFormParsingForSaving)},
     {"enable-show-autofill-signatures",
      flag_descriptions::kShowAutofillSignaturesName,
      flag_descriptions::kShowAutofillSignaturesDescription, kOsAll,
