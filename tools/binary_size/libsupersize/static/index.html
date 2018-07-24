@@ -7,9 +7,10 @@
 -->
 
 <head>
-    <title>Binary Size Analysis</title>
+    <title>Super Size Tiger View</title>
     <script src="start-worker.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4285f4">
     <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,500" rel="stylesheet">
     <style>
         body {
@@ -205,17 +206,23 @@
     </style>
     <link rel="stylesheet" href="options.css">
     <link rel="icon" href="favicon.ico" sizes="16x16 32x32 256x256" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
     <script defer src="shared.js"></script>
     <script defer src="state.js"></script>
     <script defer src="infocard-ui.js"></script>
     <script defer src="tree-ui.js"></script>
+    <script defer async>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </head>
 
 <body>
     <div class="scrim toggle-options" hidden></div>
     <header class="appbar">
         <div class="appbar-inner">
-            <h1 class="headline">Binary Size Analysis</h1>
+            <h1 class="headline">Super Size Tiger View</h1>
             <input type="file" name="upload" id="upload" accept=".ndjson" >
             <label for="upload" class="text-button filled-button with-icon">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#fff">
