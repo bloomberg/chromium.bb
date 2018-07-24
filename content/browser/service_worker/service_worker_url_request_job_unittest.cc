@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -60,6 +61,7 @@
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -195,6 +197,10 @@ class ServiceWorkerURLRequestJobTest
   ~ServiceWorkerURLRequestJobTest() override {}
 
   void SetUp() override {
+    // ServiceWorkerURLRequestJob is a non-S13nServiceWorker specific class
+    // and we don't use it when S13nServiceWorker is enabled.
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kServiceWorkerServicification);
     browser_context_.reset(new TestBrowserContext);
     InitializeResourceContext(browser_context_.get());
   }
@@ -405,6 +411,10 @@ class ServiceWorkerURLRequestJobTest
     provider_host_->NotifyControllerLost();
   }
   // ---------------------------------------------------------------------------
+
+  // |scoped_feature_list_| must be before |thread_bundle_|.
+  // See comments in ServiceWorkerProviderHostTest.
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   TestBrowserThreadBundle thread_bundle_;
   base::SimpleTestTickClock tick_clock_;
