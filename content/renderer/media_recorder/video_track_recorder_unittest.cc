@@ -137,7 +137,7 @@ class VideoTrackRecorderTest
   }
 
   uint32_t NumFramesInEncode() {
-    return video_track_recorder_->encoder_->num_frames_in_encode_;
+    return video_track_recorder_->encoder_->num_frames_in_encode_->count();
   }
 
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
