@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ZUCCHINI_RELOC_UTILS_H_
-#define COMPONENTS_ZUCCHINI_RELOC_UTILS_H_
+#ifndef COMPONENTS_ZUCCHINI_RELOC_WIN32_H_
+#define COMPONENTS_ZUCCHINI_RELOC_WIN32_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -137,4 +137,4 @@ class RelocWriterWin32 : public ReferenceWriter {
 
 }  // namespace zucchini
 
-#endif  // COMPONENTS_ZUCCHINI_RELOC_UTILS_H_
+#endif  // COMPONENTS_ZUCCHINI_RELOC_WIN32_H_
