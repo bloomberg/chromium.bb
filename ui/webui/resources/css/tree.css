@@ -96,9 +96,9 @@ tree:focus .tree-row[selected] {
 }
 
 .tree-label {
-  -webkit-padding-start: 20px;
   background-position: 0 50%;
   background-repeat: no-repeat;
+  padding-inline-start: 20px;
   white-space: pre;
 }
 
@@ -135,8 +135,8 @@ html[dir=rtl] .tree-item[expanded] > .tree-row > .tree-label {
 </if>
 
 tree[icon-visibility=hidden] .tree-label {
-  -webkit-padding-start: 0;
   background-image: none !important;
+  padding-inline-start: 0;
 }
 
 tree[icon-visibility=parent] .tree-label,

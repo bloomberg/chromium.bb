@@ -9,7 +9,6 @@
   <template>
     <style include="cr-icons paper-button-style">
       :host {
-        -webkit-padding-start: var(--cr-toolbar-field-margin, 0);
         background: white;
         border-bottom: 1px solid var(--google-grey-300);
         bottom: 0;
@@ -17,6 +16,7 @@
         display: flex;
         left: 0;
         opacity: 0;
+        padding-inline-start: var(--cr-toolbar-field-margin, 0);
         pointer-events: none;
         position: absolute;
         right: 0;
@@ -42,7 +42,7 @@
       }
 
       paper-button {
-        -webkit-margin-start: 8px;
+        margin-inline-start: 8px;
       }
 
       #number-selected {
@@ -50,9 +50,9 @@
       }
 
       paper-icon-button-light {
-        -webkit-margin-end: 24px;
-        -webkit-margin-start: 2px;
         height: 36px;
+        margin-inline-end: 24px;
+        margin-inline-start: 2px;
         width: 36px;
       }
 

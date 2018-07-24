@@ -13,13 +13,13 @@
   <template>
     <style include="network-shared md-select iron-flex">
       a {
-        -webkit-margin-start: 4px;
+        margin-inline-start: 4px;
       }
 
       cr-input {
-        /* Aligns with the start of cr-radio-button's text. */
-        -webkit-margin-start: 38px;
         margin-bottom: 4px;
+        /* Aligns with the start of cr-radio-button's text. */
+        margin-inline-start: 38px;
       }
 
       paper-radio-group {
@@ -29,14 +29,14 @@
 
       .nameservers {
         /* Aligns with the start of cr-radio-button's text. */
-        -webkit-margin-start: 38px;
+        margin-inline-start: 38px;
       }
 
       #radioGroupDiv {
-        -webkit-padding-end: var(--cr-section-padding);
-        -webkit-padding-start: var(--cr-section-padding);
         align-items: center;
         display: block;
+        padding-inline-end: var(--cr-section-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
     </style>

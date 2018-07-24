@@ -8,11 +8,11 @@ tabbox {
 }
 
 tabs {
-  -webkit-padding-start: 8px;
   background: -webkit-linear-gradient(white, rgb(243, 243, 243));
   border-bottom: 1px solid rgb(160, 160, 160);
   display: -webkit-box;
   margin: 0;
+  padding-inline-start: 8px;
 }
 
 /* New users of tabs.css should add 'new-style-tabs' to the class list of any
@@ -21,14 +21,13 @@ tabs {
  * TODO(rfevang): Remove when all users are converted to the new style.
  *                (crbug.com/247772). */
 tabs.new-style-tabs {
-  -webkit-padding-start: 9px;
   background: #fbfbfb;
   border-bottom: 1px solid #c8c8c8;
+  padding-inline-start: 9px;
   padding-top: 14px;
 }
 
 tabs > * {
-  -webkit-margin-start: 5px;
   background: rgba(160, 160, 160, .3);
   border: 1px solid rgba(160, 160, 160, .3);
   border-bottom: 0;
@@ -36,6 +35,7 @@ tabs > * {
   border-top-right-radius: 3px;
   cursor: default;
   display: block;
+  margin-inline-start: 5px;
   min-width: 4em;
   padding: 2px 10px;
   text-align: center;
@@ -43,11 +43,11 @@ tabs > * {
 }
 
 tabs.new-style-tabs > * {
-  -webkit-margin-start: 0;
   background: #fbfbfb;
   border: 1px solid #fbfbfb;
   border-bottom: 0;
   border-radius: 0;
+  margin-inline-start: 0;
   min-width: 0;
   padding: 4px 9px 4px 10px;
   transition: none;

@@ -14,10 +14,6 @@
         --md-arrow-width: 0.9em;
 
         -webkit-appearance: none;
-        /* Ensures 3px space between text and arrow */
-        -webkit-padding-end: calc(var(--md-select-side-padding) +
-            var(--md-arrow-width) + 3px);
-        -webkit-padding-start: var(--md-select-side-padding);
         background: url(chrome://resources/images/arrow_down.svg)
             calc(100% - var(--md-select-side-padding))
             center no-repeat;
@@ -33,6 +29,10 @@
         max-width: 100%;
         outline: none;
         padding-bottom: 6px;
+        /* Ensures 3px space between text and arrow */
+        padding-inline-end: calc(var(--md-select-side-padding) +
+            var(--md-arrow-width) + 3px);
+        padding-inline-start: var(--md-select-side-padding);
         padding-top: 6px;
         width: var(--md-select-width, 200px);
       }

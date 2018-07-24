@@ -89,27 +89,27 @@ list > [selected]:hover {
 }
 
 .table-header-sort-image-desc::after {
-  -webkit-padding-start: 5px;
   color: #888;
   content: '\25be'; /* BLACK DOWN-POINTING SMALL TRIANGLE */
+  padding-inline-start: 5px;
   position: relative;
   top: -2px;
 }
 
 .table-header-sort-image-asc::after {
-  -webkit-padding-start: 5px;
   color: #888;
   content: '\25b4'; /* BLACK UP-POINTING SMALL TRIANGLE */
+  padding-inline-start: 5px;
   position: relative;
   top: -2px;
 }
 
 .table-header-splitter {
-  -webkit-margin-start: -1px;
   background-color: black;
   cursor: col-resize;
   height: 100%;
   left: 0;
+  margin-inline-start: -1px;
   position: absolute;
   top: 0;
   width: 5px;
