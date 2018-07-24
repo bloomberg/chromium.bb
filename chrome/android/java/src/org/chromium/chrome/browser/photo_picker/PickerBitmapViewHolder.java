@@ -55,8 +55,9 @@ public class PickerBitmapViewHolder
         if (mCategoryView.getLowResBitmaps().get(filePath) == null) {
             Resources resources = mItemView.getContext().getResources();
             new BitmapScalerTask(mCategoryView.getLowResBitmaps(), filePath,
-                    resources.getDimensionPixelSize(R.dimen.photo_picker_grainy_thumbnail_size))
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bitmap);
+                    resources.getDimensionPixelSize(R.dimen.photo_picker_grainy_thumbnail_size),
+                    bitmap)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         if (!TextUtils.equals(mBitmapDetails.getFilePath(), filePath)) {

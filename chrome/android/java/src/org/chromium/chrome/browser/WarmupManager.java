@@ -217,9 +217,9 @@ public final class WarmupManager {
      */
     private void prefetchDnsForUrlInBackground(final String url) {
         mDnsRequestsInFlight.add(url);
-        new AsyncTask<String, Void, Void>() {
+        new AsyncTask<Void, Void, Void>() {
             @Override
-            protected Void doInBackground(String... params) {
+            protected Void doInBackground(Void... params) {
                 try (TraceEvent e =
                                 TraceEvent.scoped("WarmupManager.prefetchDnsForUrlInBackground")) {
                     InetAddress.getByName(new URL(url).getHost());
@@ -242,7 +242,8 @@ public final class WarmupManager {
                     maybePreconnectUrlAndSubResources(profile, url);
                 }
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /** Launches a background DNS query for a given URL if the data reduction proxy is not in use.
