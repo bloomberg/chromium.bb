@@ -96,6 +96,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   'MissingFail',
   'MissingOverride',
   'NarrowingCompoundAssignment',
+  'OrphanedFormatString',
   'ParameterName',
   'ParcelableCreator',
   'ReferenceEquality',
