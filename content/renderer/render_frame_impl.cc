@@ -5910,36 +5910,13 @@ void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
 
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
-  // A content initiated navigation may have originated from a link-click,
-  // script, drag-n-drop operation, etc.
-  // info.extraData is only non-null if this is a redirect. Use the extraData
-  // initiation information for redirects, and check pending_navigation_params_
-  // otherwise.
-  bool is_content_initiated =
-      info.extra_data ? static_cast<DocumentState*>(info.extra_data)
-                            ->navigation_state()
-                            ->IsContentInitiated()
-                      : !IsBrowserInitiated(pending_navigation_params_.get());
-  // TODO(dgozman): clean this up after some Canary coverage.
-  CHECK(!pending_navigation_params_);
-  if (info.extra_data) {
-    CHECK(static_cast<DocumentState*>(info.extra_data)
-              ->navigation_state()
-              ->IsContentInitiated());
-  }
+  // This method is only called for renderer initiated navigations, which
+  // may have originated from a link-click, script, drag-n-drop operation, etc.
 
-  // Webkit is asking whether to navigate to a new URL.
+  // Blink is asking whether to navigate to a new URL.
   // This is fine normally, except if we're showing UI from one security
   // context and they're trying to navigate to a different context.
   const GURL& url = info.url_request.Url();
-
-  // The redirect list is available for the first url. We maintain the old
-  // behavior of not classifying the first URL in the chain as a redirect.
-  bool is_redirect =
-      info.extra_data ||
-      (pending_navigation_params_ &&
-       !pending_navigation_params_->request_params.redirects.empty() &&
-       url != pending_navigation_params_->request_params.redirects[0]);
 
 #ifdef OS_ANDROID
   bool render_view_was_created_by_renderer =
@@ -5948,15 +5925,15 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // crbug.com/325351 is resolved.
   if (!IsURLHandledByNetworkStack(url) &&
       GetContentClient()->renderer()->HandleNavigation(
-          this, is_content_initiated, render_view_was_created_by_renderer,
-          frame_, info.url_request, info.navigation_type, info.default_policy,
-          is_redirect)) {
+          this, true /* is_content_initiated */,
+          render_view_was_created_by_renderer, frame_, info.url_request,
+          info.navigation_type, info.default_policy, false /* is_redirect */)) {
     return blink::kWebNavigationPolicyIgnore;
   }
 #endif
 
   // If the browser is interested, then give it a chance to look at the request.
-  if (is_content_initiated && IsTopLevelNavigation(frame_) &&
+  if (IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
     OpenURL(info, /*send_referrer=*/true,
@@ -5970,8 +5947,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // that have history items, or if it's staying at the initial about:blank URL,
   // fall back to loading the default url.  (We remove each name as we encounter
   // it, because it will only be used once as the frame is created.)
-  if (info.is_history_navigation_in_new_child_frame && is_content_initiated &&
-      frame_->Parent()) {
+  if (info.is_history_navigation_in_new_child_frame && frame_->Parent()) {
     // Check whether the browser has a history item for this frame that isn't
     // just staying at the initial about:blank document.
     bool should_ask_browser = false;
@@ -6036,8 +6012,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       frame_->Opener() == nullptr &&
       // Must be a top-level frame.
       frame_->Parent() == nullptr &&
-      // Must not have issued the request from this page.
-      is_content_initiated &&
       // Must be targeted at the current tab.
       info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
       // Must be a JavaScript navigation, which appears as "other".
@@ -6055,8 +6029,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations (not iframes). But we sometimes navigate to
   // about:blank to clear a tab, and we want to still allow that.
-  if (!frame_->Parent() && is_content_initiated &&
-      !url.SchemeIs(url::kAboutScheme)) {
+  if (!frame_->Parent() && !url.SchemeIs(url::kAboutScheme)) {
     bool send_referrer = false;
 
     // All navigations to or from WebUI URLs or within WebUI-enabled
@@ -6087,7 +6060,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       // Give the embedder a chance.
       should_fork = GetContentClient()->renderer()->ShouldFork(
           frame_, url, info.url_request.HttpMethod().Utf8(),
-          is_initial_navigation, is_redirect, &send_referrer);
+          is_initial_navigation, false /* is_redirect */, &send_referrer);
     }
 
     if (should_fork) {
@@ -6099,9 +6072,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
 
   bool should_dispatch_before_unload =
       info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
-      // There is no need to execute the BeforeUnload event during a redirect,
-      // since it was already executed at the start of the navigation.
-      !is_redirect &&
       // This should not be executed when commiting the navigation.
       info.url_request.CheckForBrowserSideNavigation() &&
       // No need to dispatch beforeunload if the frame has not committed a

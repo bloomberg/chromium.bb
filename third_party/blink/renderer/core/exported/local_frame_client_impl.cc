@@ -513,8 +513,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
       wrapped_resource_request);
   navigation_info.navigation_type = type;
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
-  navigation_info.extra_data =
-      web_document_loader ? web_document_loader->GetExtraData() : nullptr;
+  // TODO(dgozman): remove this after some Canary coverage.
+  CHECK(!web_document_loader || !web_document_loader->GetExtraData());
   navigation_info.replaces_current_history_item = replaces_current_history_item;
   navigation_info.is_client_redirect = is_client_redirect;
   navigation_info.triggering_event_info = triggering_event_info;

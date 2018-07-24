@@ -332,8 +332,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // defaultPolicy should just be returned.
 
   struct NavigationPolicyInfo {
-    WebDocumentLoader::ExtraData* extra_data;
-
     // Note: if browser side navigations are enabled, the client may modify
     // the urlRequest. However, should this happen, the client should change
     // the WebNavigationPolicy to WebNavigationPolicyIgnore, and the load
@@ -359,8 +357,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     ArchiveStatus archive_status;
 
     explicit NavigationPolicyInfo(WebURLRequest& url_request)
-        : extra_data(nullptr),
-          url_request(url_request),
+        : url_request(url_request),
           navigation_type(kWebNavigationTypeOther),
           default_policy(kWebNavigationPolicyIgnore),
           replaces_current_history_item(false),
