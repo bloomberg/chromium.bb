@@ -41,18 +41,19 @@ BUILDROOT_BUILDROOT_LAYOUT = 2
 _DISTFILES_CACHE_EXPIRY_HOURS = 8 * 24
 
 # Metrics reported to Monarch.
-METRIC_ACTIVE = 'chromeos/chromite/cbuildbot_launch/active'
-METRIC_INVOKED = 'chromeos/chromite/cbuildbot_launch/invoked'
-METRIC_COMPLETED = 'chromeos/chromite/cbuildbot_launch/completed'
-METRIC_PREP = 'chromeos/chromite/cbuildbot_launch/prep_completed'
-METRIC_CLEAN = 'chromeos/chromite/cbuildbot_launch/clean_buildroot_durations'
-METRIC_INITIAL = 'chromeos/chromite/cbuildbot_launch/initial_checkout_durations'
-METRIC_CBUILDBOT = 'chromeos/chromite/cbuildbot_launch/cbuildbot_durations'
-METRIC_CLOBBER = 'chromeos/chromite/cbuildbot_launch/clobber'
-METRIC_BRANCH_CLEANUP = 'chromeos/chromite/cbuildbot_launch/branch_cleanup'
-METRIC_DISTFILES_CLEANUP = (
-    'chromeos/chromite/cbuildbot_launch/distfiles_cleanup')
-METRIC_CHROOT_CLEANUP = 'chromeos/chromite/cbuildbot_launch/chroot_cleanup'
+METRIC_PREFIX = 'chromeos/chromite/cbuildbot_launch/'
+METRIC_ACTIVE = METRIC_PREFIX + 'active'
+METRIC_INVOKED = METRIC_PREFIX + 'invoked'
+METRIC_COMPLETED = METRIC_PREFIX + 'completed'
+METRIC_PREP = METRIC_PREFIX + 'prep_completed'
+METRIC_CLEAN = METRIC_PREFIX + 'clean_buildroot_durations'
+METRIC_INITIAL = METRIC_PREFIX + 'initial_checkout_durations'
+METRIC_CBUILDBOT = METRIC_PREFIX + 'cbuildbot_durations'
+METRIC_CBUILDBOT_INSTANCE = METRIC_PREFIX + 'cbuildbot_instance_durations'
+METRIC_CLOBBER = METRIC_PREFIX + 'clobber'
+METRIC_BRANCH_CLEANUP = METRIC_PREFIX + 'branch_cleanup'
+METRIC_DISTFILES_CLEANUP = METRIC_PREFIX + 'distfiles_cleanup'
+METRIC_CHROOT_CLEANUP = METRIC_PREFIX + 'chroot_cleanup'
 
 # Builder state
 BUILDER_STATE_FILENAME = '.cbuildbot_build_state.json'
@@ -461,7 +462,9 @@ def _main(argv):
           InitialCheckout(repo)
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
-    with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
+    with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields), \
+         metrics.SecondsInstanceTimer(METRIC_CBUILDBOT_INSTANCE,
+                                      fields=metrics_fields):
       if previous_build_state.is_valid():
         argv.append('--previous-build-state')
         argv.append(base64.b64encode(previous_build_state.to_json()))
