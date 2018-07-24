@@ -50,9 +50,9 @@ class ASH_EXPORT AssistantScreenContextController
   void AddModelObserver(AssistantScreenContextModelObserver* observer);
   void RemoveModelObserver(AssistantScreenContextModelObserver* observer);
 
-  // Requests a screenshot for the region defined by |rect|. If an empty rect is
-  // supplied, the entire screen is captured. Upon screenshot completion, the
-  // specified |callback| is run.
+  // Requests a screenshot for the region defined by |rect| (given in DP). If
+  // an empty rect is supplied, the entire screen is captured. Upon screenshot
+  // completion, the specified |callback| is run.
   void RequestScreenshot(
       const gfx::Rect& rect,
       mojom::AssistantController::RequestScreenshotCallback callback);
