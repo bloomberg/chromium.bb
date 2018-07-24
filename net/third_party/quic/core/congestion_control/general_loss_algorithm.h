@@ -27,6 +27,8 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
 
   GeneralLossAlgorithm();
   explicit GeneralLossAlgorithm(LossDetectionType loss_type);
+  GeneralLossAlgorithm(const GeneralLossAlgorithm&) = delete;
+  GeneralLossAlgorithm& operator=(const GeneralLossAlgorithm&) = delete;
   ~GeneralLossAlgorithm() override {}
 
   LossDetectionType GetLossDetectionType() const override;
@@ -70,8 +72,6 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
   QuicPacketNumber largest_previously_acked_;
   // The largest lost packet.
   QuicPacketNumber largest_lost_;
-
-  DISALLOW_COPY_AND_ASSIGN(GeneralLossAlgorithm);
 };
 
 }  // namespace quic

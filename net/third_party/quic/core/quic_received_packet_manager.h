@@ -23,6 +23,9 @@ struct QuicConnectionStats;
 class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
  public:
   explicit QuicReceivedPacketManager(QuicConnectionStats* stats);
+  QuicReceivedPacketManager(const QuicReceivedPacketManager&) = delete;
+  QuicReceivedPacketManager& operator=(const QuicReceivedPacketManager&) =
+      delete;
   virtual ~QuicReceivedPacketManager();
 
   // Updates the internal state concerning which packets have been received.
@@ -92,8 +95,6 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   QuicTime time_largest_observed_;
 
   QuicConnectionStats* stats_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacketManager);
 };
 
 }  // namespace quic

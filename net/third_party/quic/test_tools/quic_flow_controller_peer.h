@@ -16,6 +16,8 @@ namespace test {
 
 class QuicFlowControllerPeer {
  public:
+  QuicFlowControllerPeer() = delete;
+
   static void SetSendWindowOffset(QuicFlowController* flow_controller,
                                   QuicStreamOffset offset);
 
@@ -36,9 +38,6 @@ class QuicFlowControllerPeer {
 
   static QuicByteCount WindowUpdateThreshold(
       QuicFlowController* flow_controller);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicFlowControllerPeer);
 };
 
 }  // namespace test

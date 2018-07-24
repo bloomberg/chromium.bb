@@ -26,12 +26,11 @@ const int64_t kRtt = 100;
 class MockFlowController : public QuicFlowControllerInterface {
  public:
   MockFlowController() {}
+  MockFlowController(const MockFlowController&) = delete;
+  MockFlowController& operator=(const MockFlowController&) = delete;
   ~MockFlowController() override {}
 
   MOCK_METHOD1(EnsureWindowAtLeast, void(QuicByteCount));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFlowController);
 };
 
 class QuicFlowControllerTest : public QuicTest {

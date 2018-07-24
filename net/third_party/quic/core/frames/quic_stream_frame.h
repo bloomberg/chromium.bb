@@ -41,9 +41,8 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
                   QuicStreamOffset offset,
                   const char* data_buffer,
                   QuicPacketLength data_length);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamFrame);
+  QuicStreamFrame(const QuicStreamFrame&) = delete;
+  QuicStreamFrame& operator=(const QuicStreamFrame&) = delete;
 };
 static_assert(sizeof(QuicStreamFrame) <= 64,
               "Keep the QuicStreamFrame size to a cacheline.");

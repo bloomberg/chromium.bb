@@ -96,6 +96,8 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
             QuicPacketCount initial_tcp_congestion_window,
             QuicPacketCount max_tcp_congestion_window,
             QuicRandom* random);
+  BbrSender(const BbrSender&) = delete;
+  BbrSender& operator=(const BbrSender&) = delete;
   ~BbrSender() override;
 
   // Start implementation of SendAlgorithmInterface.
@@ -384,8 +386,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   bool probe_rtt_disabled_if_app_limited_;
   bool app_limited_since_last_probe_rtt_;
   QuicTime::Delta min_rtt_since_last_probe_rtt_;
-
-  DISALLOW_COPY_AND_ASSIGN(BbrSender);
 };
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,

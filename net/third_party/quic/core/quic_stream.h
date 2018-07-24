@@ -59,6 +59,8 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // |is_static| is true, then the stream will be given precedence
   // over other streams when determing what streams should write next.
   QuicStream(QuicStreamId id, QuicSession* session, bool is_static);
+  QuicStream(const QuicStream&) = delete;
+  QuicStream& operator=(const QuicStream&) = delete;
 
   virtual ~QuicStream();
 
@@ -433,8 +435,6 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // If true, then this stream has precedence over other streams for write
   // scheduling.
   const bool is_static_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicStream);
 };
 
 }  // namespace quic

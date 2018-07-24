@@ -22,6 +22,8 @@ namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicUtils {
  public:
+  QuicUtils() = delete;
+
   // Returns the 64 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
   static uint64_t FNV1a_64_Hash(QuicStringPiece data);
@@ -87,9 +89,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns true if header with |first_byte| is considered as an IETF QUIC
   // packet header.
   static bool IsIetfPacketHeader(uint8_t first_byte);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };
 
 }  // namespace quic

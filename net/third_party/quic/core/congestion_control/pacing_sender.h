@@ -32,6 +32,8 @@ class QuicSentPacketManagerPeer;
 class QUIC_EXPORT_PRIVATE PacingSender {
  public:
   PacingSender();
+  PacingSender(const PacingSender&) = delete;
+  PacingSender& operator=(const PacingSender&) = delete;
   ~PacingSender();
 
   // Sets the underlying sender. Does not take ownership of |sender|. |sender|
@@ -99,8 +101,6 @@ class QUIC_EXPORT_PRIVATE PacingSender {
   // Indicates whether pacing throttles the sending. If true, make up for lost
   // time.
   bool pacing_limited_;
-
-  DISALLOW_COPY_AND_ASSIGN(PacingSender);
 };
 
 }  // namespace quic

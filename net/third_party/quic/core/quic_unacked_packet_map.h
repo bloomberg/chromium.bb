@@ -23,6 +23,8 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
  public:
   QuicUnackedPacketMap();
+  QuicUnackedPacketMap(const QuicUnackedPacketMap&) = delete;
+  QuicUnackedPacketMap& operator=(const QuicUnackedPacketMap&) = delete;
   ~QuicUnackedPacketMap();
 
   // Adds |serialized_packet| to the map and marks it as sent at |sent_time|.
@@ -231,8 +233,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // If true, let session decides what to write.
   bool session_decides_what_to_write_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };
 
 }  // namespace quic

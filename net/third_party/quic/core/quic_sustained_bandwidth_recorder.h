@@ -26,6 +26,10 @@ class QuicSustainedBandwidthRecorderPeer;
 class QUIC_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
  public:
   QuicSustainedBandwidthRecorder();
+  QuicSustainedBandwidthRecorder(const QuicSustainedBandwidthRecorder&) =
+      delete;
+  QuicSustainedBandwidthRecorder& operator=(
+      const QuicSustainedBandwidthRecorder&) = delete;
 
   // As long as |in_recovery| is consistently false, multiple calls to this
   // method over a 3 * srtt period results in storage of a valid sustained
@@ -85,8 +89,6 @@ class QUIC_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
 
   // Timestamp marking the beginning of the latest recording period.
   QuicTime start_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSustainedBandwidthRecorder);
 };
 
 }  // namespace quic

@@ -19,6 +19,8 @@ template <class K, class V>
 class QuicLRUCache {
  public:
   explicit QuicLRUCache(int64_t total_units) : impl_(total_units) {}
+  QuicLRUCache(const QuicLRUCache&) = delete;
+  QuicLRUCache& operator=(const QuicLRUCache&) = delete;
 
   // Inserts one unit of |key|, |value| pair to the cache. Cache takes ownership
   // of inserted |value|.
@@ -43,8 +45,6 @@ class QuicLRUCache {
 
  private:
   QuicLRUCacheImpl<K, V> impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicLRUCache);
 };
 
 }  // namespace quic

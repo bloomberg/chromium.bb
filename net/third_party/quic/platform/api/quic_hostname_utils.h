@@ -14,6 +14,8 @@ namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicHostnameUtils {
  public:
+  QuicHostnameUtils() = delete;
+
   // Returns true if the sni is valid, false otherwise.
   //  (1) disallow IP addresses;
   //  (2) check that the hostname contains valid characters only; and
@@ -23,9 +25,6 @@ class QUIC_EXPORT_PRIVATE QuicHostnameUtils {
   // Convert hostname to lowercase and remove the trailing '.'.
   // WARNING: mutates |hostname| in place and returns |hostname|.
   static char* NormalizeHostname(char* hostname);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicHostnameUtils);
 };
 
 }  // namespace quic

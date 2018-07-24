@@ -82,6 +82,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   QuicSession(QuicConnection* connection,
               Visitor* owner,
               const QuicConfig& config);
+  QuicSession(const QuicSession&) = delete;
+  QuicSession& operator=(const QuicSession&) = delete;
 
   ~QuicSession() override;
 
@@ -551,8 +553,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // is not used here.
   // List of streams with pending retransmissions.
   QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };
 
 }  // namespace quic

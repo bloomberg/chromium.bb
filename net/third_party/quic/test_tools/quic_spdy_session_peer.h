@@ -20,6 +20,8 @@ namespace test {
 
 class QuicSpdySessionPeer {
  public:
+  QuicSpdySessionPeer() = delete;
+
   static QuicHeadersStream* GetHeadersStream(QuicSpdySession* session);
   static void SetHeadersStream(QuicSpdySession* session,
                                QuicHeadersStream* headers_stream);
@@ -54,9 +56,6 @@ class QuicSpdySessionPeer {
   static QuicStreamId GetNthServerInitiatedStreamId(
       const QuicSpdySession& session,
       int n);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicSpdySessionPeer);
 };
 
 }  // namespace test

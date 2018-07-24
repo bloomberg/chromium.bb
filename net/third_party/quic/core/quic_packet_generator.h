@@ -75,6 +75,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
                       QuicFramer* framer,
                       QuicRandom* random_generator,
                       DelegateInterface* delegate);
+  QuicPacketGenerator(const QuicPacketGenerator&) = delete;
+  QuicPacketGenerator& operator=(const QuicPacketGenerator&) = delete;
 
   ~QuicPacketGenerator();
 
@@ -237,8 +239,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   QuicStopWaitingFrame pending_stop_waiting_frame_;
 
   QuicRandom* random_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };
 
 }  // namespace quic

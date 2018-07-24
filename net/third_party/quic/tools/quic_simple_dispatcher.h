@@ -5,8 +5,8 @@
 #ifndef NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_DISPATCHER_H_
 #define NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_DISPATCHER_H_
 
+#include "net/third_party/quic/core/http/quic_server_session_base.h"
 #include "net/third_party/quic/core/quic_dispatcher.h"
-#include "net/third_party/quic/core/quic_server_session_base.h"
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
 
 namespace quic {

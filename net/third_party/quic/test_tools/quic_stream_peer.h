@@ -22,6 +22,8 @@ namespace test {
 
 class QuicStreamPeer {
  public:
+  QuicStreamPeer() = delete;
+
   static void SetWriteSideClosed(bool value, QuicStream* stream);
   static void SetStreamBytesWritten(QuicStreamOffset stream_bytes_written,
                                     QuicStream* stream);
@@ -49,9 +51,6 @@ class QuicStreamPeer {
   static void set_ack_listener(
       QuicStream* stream,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamPeer);
 };
 
 }  // namespace test

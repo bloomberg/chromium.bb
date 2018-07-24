@@ -16,6 +16,8 @@ namespace test {
 
 class QuicDispatcherPeer {
  public:
+  QuicDispatcherPeer() = delete;
+
   static void SetTimeWaitListManager(
       QuicDispatcher* dispatcher,
       QuicTimeWaitListManager* time_wait_list_manager);
@@ -60,9 +62,6 @@ class QuicDispatcherPeer {
   static void RestorePerPacketContext(
       QuicDispatcher* dispatcher,
       std::unique_ptr<QuicDispatcher::PerPacketContext>);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicDispatcherPeer);
 };
 
 }  // namespace test

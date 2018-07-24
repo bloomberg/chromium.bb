@@ -18,6 +18,8 @@ namespace test {
 
 class QuicSustainedBandwidthRecorderPeer {
  public:
+  QuicSustainedBandwidthRecorderPeer() = delete;
+
   static void SetBandwidthEstimate(
       QuicSustainedBandwidthRecorder* bandwidth_recorder,
       int32_t bandwidth_estimate_kbytes_per_second);
@@ -26,9 +28,6 @@ class QuicSustainedBandwidthRecorderPeer {
       QuicSustainedBandwidthRecorder* bandwidth_recorder,
       int32_t max_bandwidth_estimate_kbytes_per_second,
       int32_t max_bandwidth_timestamp);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicSustainedBandwidthRecorderPeer);
 };
 
 }  // namespace test

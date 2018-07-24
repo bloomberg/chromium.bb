@@ -27,6 +27,8 @@ class SimpleQuicFramer {
   explicit SimpleQuicFramer(const ParsedQuicVersionVector& supported_versions);
   SimpleQuicFramer(const ParsedQuicVersionVector& supported_versions,
                    Perspective perspective);
+  SimpleQuicFramer(const SimpleQuicFramer&) = delete;
+  SimpleQuicFramer& operator=(const SimpleQuicFramer&) = delete;
   ~SimpleQuicFramer();
 
   bool ProcessPacket(const QuicEncryptedPacket& packet);
@@ -54,7 +56,6 @@ class SimpleQuicFramer {
  private:
   QuicFramer framer_;
   std::unique_ptr<SimpleFramerVisitor> visitor_;
-  DISALLOW_COPY_AND_ASSIGN(SimpleQuicFramer);
 };
 
 }  // namespace test

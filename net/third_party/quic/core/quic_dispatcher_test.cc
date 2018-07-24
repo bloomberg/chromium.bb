@@ -65,6 +65,9 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
                               crypto_config,
                               compressed_certs_cache),
         crypto_stream_(QuicServerSessionBase::GetMutableCryptoStream()) {}
+  TestQuicSpdyServerSession(const TestQuicSpdyServerSession&) = delete;
+  TestQuicSpdyServerSession& operator=(const TestQuicSpdyServerSession&) =
+      delete;
 
   ~TestQuicSpdyServerSession() override { delete connection(); };
 
@@ -102,8 +105,6 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
 
  private:
   QuicCryptoServerStreamBase* crypto_stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };
 
 class TestDispatcher : public QuicDispatcher {
@@ -805,6 +806,9 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
             session,
             helper),
         handshake_confirmed_(false) {}
+  MockQuicCryptoServerStream(const MockQuicCryptoServerStream&) = delete;
+  MockQuicCryptoServerStream& operator=(const MockQuicCryptoServerStream&) =
+      delete;
 
   void set_handshake_confirmed_for_testing(bool handshake_confirmed) {
     handshake_confirmed_ = handshake_confirmed;
@@ -814,7 +818,6 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
 
  private:
   bool handshake_confirmed_;
-  DISALLOW_COPY_AND_ASSIGN(MockQuicCryptoServerStream);
 };
 
 struct StatelessRejectTestParams {

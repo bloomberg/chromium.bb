@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "net/third_party/quic/core/spdy_utils.h"
+#include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_file_utils.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"

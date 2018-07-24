@@ -16,6 +16,8 @@ namespace test {
 
 class QuicStreamSequencerPeer {
  public:
+  QuicStreamSequencerPeer() = delete;
+
   static size_t GetNumBufferedBytes(QuicStreamSequencer* sequencer);
 
   static QuicStreamOffset GetCloseOffset(QuicStreamSequencer* sequencer);
@@ -24,9 +26,6 @@ class QuicStreamSequencerPeer {
 
   static void SetFrameBufferTotalBytesRead(QuicStreamSequencer* sequencer,
                                            QuicStreamOffset total_bytes_read);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerPeer);
 };
 
 }  // namespace test

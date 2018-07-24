@@ -35,14 +35,14 @@ class DeleteSessionsAlarm : public QuicAlarm::Delegate {
  public:
   explicit DeleteSessionsAlarm(QuicDispatcher* dispatcher)
       : dispatcher_(dispatcher) {}
+  DeleteSessionsAlarm(const DeleteSessionsAlarm&) = delete;
+  DeleteSessionsAlarm& operator=(const DeleteSessionsAlarm&) = delete;
 
   void OnAlarm() override { dispatcher_->DeleteSessions(); }
 
  private:
   // Not owned.
   QuicDispatcher* dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteSessionsAlarm);
 };
 
 // Collects packets serialized by a QuicPacketCreator in order

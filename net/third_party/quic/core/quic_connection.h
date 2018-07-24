@@ -337,6 +337,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
                  bool owns_writer,
                  Perspective perspective,
                  const ParsedQuicVersionVector& supported_versions);
+  QuicConnection(const QuicConnection&) = delete;
+  QuicConnection& operator=(const QuicConnection&) = delete;
   ~QuicConnection() override;
 
   // Sets connection parameters from the supplied |config|.
@@ -1295,8 +1297,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Latched value of quic_reloadable_flag_quic_retransmissions_app_limited.
   const bool retransmissions_app_limited_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
 
 }  // namespace quic

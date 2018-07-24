@@ -25,12 +25,11 @@ class QUIC_EXPORT_PRIVATE Aes256GcmDecrypter : public AeadBaseDecrypter {
   };
 
   Aes256GcmDecrypter();
+  Aes256GcmDecrypter(const Aes256GcmDecrypter&) = delete;
+  Aes256GcmDecrypter& operator=(const Aes256GcmDecrypter&) = delete;
   ~Aes256GcmDecrypter() override;
 
   uint32_t cipher_id() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Aes256GcmDecrypter);
 };
 
 }  // namespace quic

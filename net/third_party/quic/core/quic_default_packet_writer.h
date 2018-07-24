@@ -20,6 +20,8 @@ struct WriteResult;
 class QUIC_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
  public:
   explicit QuicDefaultPacketWriter(int fd);
+  QuicDefaultPacketWriter(const QuicDefaultPacketWriter&) = delete;
+  QuicDefaultPacketWriter& operator=(const QuicDefaultPacketWriter&) = delete;
   ~QuicDefaultPacketWriter() override;
 
   // QuicPacketWriter
@@ -47,8 +49,6 @@ class QUIC_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
  private:
   int fd_;
   bool write_blocked_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicDefaultPacketWriter);
 };
 
 }  // namespace quic

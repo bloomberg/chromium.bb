@@ -17,10 +17,9 @@ namespace test {
 
 class QuicPacketGeneratorPeer {
  public:
-  static QuicPacketCreator* GetPacketCreator(QuicPacketGenerator* generator);
+  QuicPacketGeneratorPeer() = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicPacketGeneratorPeer);
+  static QuicPacketCreator* GetPacketCreator(QuicPacketGenerator* generator);
 };
 
 }  // namespace test

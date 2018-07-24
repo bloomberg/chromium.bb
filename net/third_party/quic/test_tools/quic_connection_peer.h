@@ -31,6 +31,8 @@ namespace test {
 // Peer to make public a number of otherwise private QuicConnection methods.
 class QuicConnectionPeer {
  public:
+  QuicConnectionPeer() = delete;
+
   static void SendAck(QuicConnection* connection);
 
   static void SetSendAlgorithm(QuicConnection* connection,
@@ -128,9 +130,6 @@ class QuicConnectionPeer {
                                    QuicPacketCount max_tracked_packets);
   static void SetSessionDecidesWhatToWrite(QuicConnection* connection);
   static void SetNegotiatedVersion(QuicConnection* connection);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
 };
 
 }  // namespace test

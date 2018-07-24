@@ -16,6 +16,8 @@ namespace quic {
 class MockClock : public QuicClock {
  public:
   MockClock();
+  MockClock(const MockClock&) = delete;
+  MockClock& operator=(const MockClock&) = delete;
   ~MockClock() override;
 
   // QuicClock implementation:
@@ -31,8 +33,6 @@ class MockClock : public QuicClock {
 
  private:
   QuicTime now_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockClock);
 };
 
 }  // namespace quic

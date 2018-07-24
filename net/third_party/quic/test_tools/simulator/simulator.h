@@ -22,6 +22,8 @@ namespace simulator {
 class Simulator : public QuicConnectionHelperInterface {
  public:
   Simulator();
+  Simulator(const Simulator&) = delete;
+  Simulator& operator=(const Simulator&) = delete;
   ~Simulator() override;
 
   // Register an actor with the simulator.  Returns a handle which the actor can
@@ -125,8 +127,6 @@ class Simulator : public QuicConnectionHelperInterface {
   // unscheduled actors is QuicTime::Infinite().
   QuicUnorderedMap<Actor*, QuicTime> scheduled_times_;
   QuicUnorderedSet<std::string> actor_names_;
-
-  DISALLOW_COPY_AND_ASSIGN(Simulator);
 };
 
 template <class TerminationPredicate>

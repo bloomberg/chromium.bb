@@ -55,9 +55,9 @@ class Actor {
   // Since the Actor object registers itself with a simulator using a pointer to
   // itself, do not allow it to be moved.
   Actor(Actor&&) = delete;
+  Actor(const Actor&) = delete;
+  Actor& operator=(const Actor&) = delete;
   Actor& operator=(Actor&&) = delete;
-
-  DISALLOW_COPY_AND_ASSIGN(Actor);
 };
 
 }  // namespace simulator

@@ -17,12 +17,11 @@ namespace test {
 
 class QuicServerPeer {
  public:
+  QuicServerPeer() = delete;
+
   static bool SetSmallSocket(QuicServer* server);
   static QuicDispatcher* GetDispatcher(QuicServer* server);
   static void SetReader(QuicServer* server, QuicPacketReader* reader);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicServerPeer);
 };
 
 }  // namespace test

@@ -14,6 +14,8 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE LOCKABLE QuicMutex {
  public:
   QuicMutex() = default;
+  QuicMutex(const QuicMutex&) = delete;
+  QuicMutex& operator=(const QuicMutex&) = delete;
 
   // Block until this Mutex is free, then acquire it exclusively.
   void WriterLock() EXCLUSIVE_LOCK_FUNCTION();
@@ -34,8 +36,6 @@ class QUIC_EXPORT_PRIVATE LOCKABLE QuicMutex {
 
  private:
   QuicLockImpl impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicMutex);
 };
 
 // A helper class that acquires the given QuicMutex shared lock while the
@@ -43,13 +43,13 @@ class QUIC_EXPORT_PRIVATE LOCKABLE QuicMutex {
 class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicReaderMutexLock {
  public:
   explicit QuicReaderMutexLock(QuicMutex* lock) SHARED_LOCK_FUNCTION(lock);
+  QuicReaderMutexLock(const QuicReaderMutexLock&) = delete;
+  QuicReaderMutexLock& operator=(const QuicReaderMutexLock&) = delete;
 
   ~QuicReaderMutexLock() UNLOCK_FUNCTION();
 
  private:
   QuicMutex* const lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicReaderMutexLock);
 };
 
 // A helper class that acquires the given QuicMutex exclusive lock while the
@@ -57,13 +57,13 @@ class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicReaderMutexLock {
 class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicWriterMutexLock {
  public:
   explicit QuicWriterMutexLock(QuicMutex* lock) EXCLUSIVE_LOCK_FUNCTION(lock);
+  QuicWriterMutexLock(const QuicWriterMutexLock&) = delete;
+  QuicWriterMutexLock& operator=(const QuicWriterMutexLock&) = delete;
 
   ~QuicWriterMutexLock() UNLOCK_FUNCTION();
 
  private:
   QuicMutex* const lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicWriterMutexLock);
 };
 
 }  // namespace quic

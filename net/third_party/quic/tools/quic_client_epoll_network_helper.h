@@ -14,12 +14,12 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "net/third_party/quic/core/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_session.h"
+#include "net/third_party/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_packet_reader.h"
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
-#include "net/third_party/quic/core/quic_spdy_client_session.h"
-#include "net/third_party/quic/core/quic_spdy_stream.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/tools/quic_client_base.h"
 #include "net/third_party/quic/tools/quic_spdy_client_base.h"
@@ -41,6 +41,9 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
   // net::EpollServer.
   QuicClientEpollNetworkHelper(net::EpollServer* epoll_server,
                                QuicClientBase* client);
+  QuicClientEpollNetworkHelper(const QuicClientEpollNetworkHelper&) = delete;
+  QuicClientEpollNetworkHelper& operator=(const QuicClientEpollNetworkHelper&) =
+      delete;
 
   ~QuicClientEpollNetworkHelper() override;
 
@@ -130,8 +133,6 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
   QuicClientBase* client_;
 
   int max_reads_per_epoll_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicClientEpollNetworkHelper);
 };
 
 }  // namespace quic

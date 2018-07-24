@@ -25,6 +25,8 @@ namespace test {
 
 class QuicSessionPeer {
  public:
+  QuicSessionPeer() = delete;
+
   static QuicStreamId GetNextOutgoingStreamId(QuicSession* session);
   static void SetNextOutgoingStreamId(QuicSession* session, QuicStreamId id);
   static void SetMaxOpenIncomingStreams(QuicSession* session,
@@ -55,9 +57,6 @@ class QuicSessionPeer {
 
   static QuicStream* GetStream(QuicSession* session, QuicStreamId id);
   static bool IsStreamWriteBlocked(QuicSession* session, QuicStreamId id);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);
 };
 
 }  // namespace test

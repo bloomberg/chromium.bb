@@ -24,6 +24,8 @@ class OneWayLink : public Actor, public ConstrainedPortInterface {
              UnconstrainedPortInterface* sink,
              QuicBandwidth bandwidth,
              QuicTime::Delta propagation_delay);
+  OneWayLink(const OneWayLink&) = delete;
+  OneWayLink& operator=(const OneWayLink&) = delete;
   ~OneWayLink() override;
 
   void AcceptPacket(std::unique_ptr<Packet> packet) override;
@@ -57,8 +59,6 @@ class OneWayLink : public Actor, public ConstrainedPortInterface {
   const QuicTime::Delta propagation_delay_;
 
   QuicTime next_write_at_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneWayLink);
 };
 
 // A full-duplex link between two endpoints, functionally equivalent to two
@@ -75,14 +75,14 @@ class SymmetricLink {
                 Endpoint* endpoint_b,
                 QuicBandwidth bandwidth,
                 QuicTime::Delta propagation_delay);
+  SymmetricLink(const SymmetricLink&) = delete;
+  SymmetricLink& operator=(const SymmetricLink&) = delete;
 
   inline QuicBandwidth bandwidth() { return a_to_b_link_.bandwidth(); }
 
  private:
   OneWayLink a_to_b_link_;
   OneWayLink b_to_a_link_;
-
-  DISALLOW_COPY_AND_ASSIGN(SymmetricLink);
 };
 
 }  // namespace simulator

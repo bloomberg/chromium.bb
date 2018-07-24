@@ -73,11 +73,11 @@ class QuicCryptoServerConfigPeer;
 class PrimaryConfigChangedCallback {
  public:
   PrimaryConfigChangedCallback();
+  PrimaryConfigChangedCallback(const PrimaryConfigChangedCallback&) = delete;
+  PrimaryConfigChangedCallback& operator=(const PrimaryConfigChangedCallback&) =
+      delete;
   virtual ~PrimaryConfigChangedCallback();
   virtual void Run(const QuicString& scid) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrimaryConfigChangedCallback);
 };
 
 // Callback used to accept the result of the |client_hello| validation step.
@@ -103,27 +103,29 @@ class QUIC_EXPORT_PRIVATE ValidateClientHelloResultCallback {
   };
 
   ValidateClientHelloResultCallback();
+  ValidateClientHelloResultCallback(const ValidateClientHelloResultCallback&) =
+      delete;
+  ValidateClientHelloResultCallback& operator=(
+      const ValidateClientHelloResultCallback&) = delete;
   virtual ~ValidateClientHelloResultCallback();
   virtual void Run(QuicReferenceCountedPointer<Result> result,
                    std::unique_ptr<ProofSource::Details> details) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloResultCallback);
 };
 
 // Callback used to accept the result of the ProcessClientHello method.
 class QUIC_EXPORT_PRIVATE ProcessClientHelloResultCallback {
  public:
   ProcessClientHelloResultCallback();
+  ProcessClientHelloResultCallback(const ProcessClientHelloResultCallback&) =
+      delete;
+  ProcessClientHelloResultCallback& operator=(
+      const ProcessClientHelloResultCallback&) = delete;
   virtual ~ProcessClientHelloResultCallback();
   virtual void Run(QuicErrorCode error,
                    const QuicString& error_details,
                    std::unique_ptr<CryptoHandshakeMessage> message,
                    std::unique_ptr<DiversificationNonce> diversification_nonce,
                    std::unique_ptr<ProofSource::Details> details) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProcessClientHelloResultCallback);
 };
 
 // Callback used to receive the results of a call to
@@ -132,10 +134,11 @@ class BuildServerConfigUpdateMessageResultCallback {
  public:
   BuildServerConfigUpdateMessageResultCallback() = default;
   virtual ~BuildServerConfigUpdateMessageResultCallback() {}
+  BuildServerConfigUpdateMessageResultCallback(
+      const BuildServerConfigUpdateMessageResultCallback&) = delete;
+  BuildServerConfigUpdateMessageResultCallback& operator=(
+      const BuildServerConfigUpdateMessageResultCallback&) = delete;
   virtual void Run(bool ok, const CryptoHandshakeMessage& message) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BuildServerConfigUpdateMessageResultCallback);
 };
 
 // Object that is interested in built rejections (which include REJ, SREJ and
@@ -144,12 +147,11 @@ class RejectionObserver {
  public:
   RejectionObserver() = default;
   virtual ~RejectionObserver() {}
+  RejectionObserver(const RejectionObserver&) = delete;
+  RejectionObserver& operator=(const RejectionObserver&) = delete;
   // Called after a rejection is built.
   virtual void OnRejectionBuilt(const std::vector<uint32_t>& reasons,
                                 CryptoHandshakeMessage* out) const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RejectionObserver);
 };
 
 // QuicCryptoServerConfig contains the crypto configuration of a QUIC server.
@@ -200,6 +202,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
                          QuicRandom* server_nonce_entropy,
                          std::unique_ptr<ProofSource> proof_source,
                          bssl::UniquePtr<SSL_CTX> ssl_ctx);
+  QuicCryptoServerConfig(const QuicCryptoServerConfig&) = delete;
+  QuicCryptoServerConfig& operator=(const QuicCryptoServerConfig&) = delete;
   ~QuicCryptoServerConfig();
 
   // TESTING is a magic parameter for passing to the constructor in tests.
@@ -413,6 +417,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
                                      public QuicReferenceCounted {
    public:
     Config();
+    Config(const Config&) = delete;
+    Config& operator=(const Config&) = delete;
 
     // TODO(rtenneti): since this is a class, we should probably do
     // getters/setters here.
@@ -467,8 +473,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
    private:
     ~Config() override;
-
-    DISALLOW_COPY_AND_ASSIGN(Config);
   };
 
   typedef std::map<ServerConfigID, QuicReferenceCountedPointer<Config>>
@@ -773,8 +777,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // If non-empty, the server will operate in the pre-shared key mode by
   // incorporating |pre_shared_key_| into the key schedule.
   QuicString pre_shared_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerConfig);
 };
 
 struct QUIC_EXPORT_PRIVATE QuicSignedServerConfig

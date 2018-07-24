@@ -18,6 +18,8 @@ namespace quic {
 class QuicEpollAlarmFactory : public QuicAlarmFactory {
  public:
   explicit QuicEpollAlarmFactory(net::EpollServer* epoll_server);
+  QuicEpollAlarmFactory(const QuicEpollAlarmFactory&) = delete;
+  QuicEpollAlarmFactory& operator=(const QuicEpollAlarmFactory&) = delete;
   ~QuicEpollAlarmFactory() override;
 
   // QuicAlarmFactory interface.
@@ -28,8 +30,6 @@ class QuicEpollAlarmFactory : public QuicAlarmFactory {
 
  private:
   net::EpollServer* epoll_server_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(QuicEpollAlarmFactory);
 };
 
 }  // namespace quic

@@ -77,6 +77,9 @@ class ValidateClientHelloHelper {
           result,
       std::unique_ptr<ValidateClientHelloResultCallback>* done_cb)
       : result_(std::move(result)), done_cb_(done_cb) {}
+  ValidateClientHelloHelper(const ValidateClientHelloHelper&) = delete;
+  ValidateClientHelloHelper& operator=(const ValidateClientHelloHelper&) =
+      delete;
 
   ~ValidateClientHelloHelper() {
     QUIC_BUG_IF(done_cb_ != nullptr)
@@ -102,8 +105,6 @@ class ValidateClientHelloHelper {
   QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
       result_;
   std::unique_ptr<ValidateClientHelloResultCallback>* done_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloHelper);
 };
 
 // static

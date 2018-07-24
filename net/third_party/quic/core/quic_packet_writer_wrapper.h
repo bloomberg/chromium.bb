@@ -19,6 +19,8 @@ namespace quic {
 class QuicPacketWriterWrapper : public QuicPacketWriter {
  public:
   QuicPacketWriterWrapper();
+  QuicPacketWriterWrapper(const QuicPacketWriterWrapper&) = delete;
+  QuicPacketWriterWrapper& operator=(const QuicPacketWriterWrapper&) = delete;
   ~QuicPacketWriterWrapper() override;
 
   // Default implementation of the QuicPacketWriter interface. Passes everything
@@ -53,8 +55,6 @@ class QuicPacketWriterWrapper : public QuicPacketWriter {
 
   QuicPacketWriter* writer_ = nullptr;
   bool owns_writer_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicPacketWriterWrapper);
 };
 
 }  // namespace quic

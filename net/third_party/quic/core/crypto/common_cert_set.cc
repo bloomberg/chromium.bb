@@ -148,10 +148,11 @@ class CommonCertSetsQUIC : public CommonCertSets {
 
  private:
   CommonCertSetsQUIC() {}
+  CommonCertSetsQUIC(const CommonCertSetsQUIC&) = delete;
+  CommonCertSetsQUIC& operator=(const CommonCertSetsQUIC&) = delete;
   ~CommonCertSetsQUIC() override {}
 
   friend QuicSingletonFriend<CommonCertSetsQUIC>;
-  DISALLOW_COPY_AND_ASSIGN(CommonCertSetsQUIC);
 };
 
 }  // anonymous namespace

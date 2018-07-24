@@ -32,6 +32,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
       std::unique_ptr<ProofVerifyContext> verify_context,
       QuicCryptoClientConfig* crypto_config,
       QuicCryptoClientStream::ProofHandler* proof_handler);
+  QuicCryptoClientHandshaker(const QuicCryptoClientHandshaker&) = delete;
+  QuicCryptoClientHandshaker& operator=(const QuicCryptoClientHandshaker&) =
+      delete;
 
   ~QuicCryptoClientHandshaker() override;
 
@@ -233,8 +236,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   bool handshake_confirmed_;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientHandshaker);
 };
 
 }  // namespace quic

@@ -195,6 +195,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicFramer(const ParsedQuicVersionVector& supported_versions,
              QuicTime creation_time,
              Perspective perspective);
+  QuicFramer(const QuicFramer&) = delete;
+  QuicFramer& operator=(const QuicFramer&) = delete;
 
   virtual ~QuicFramer();
 
@@ -763,8 +765,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // If not null, framer asks data_producer_ to write stream frame data. Not
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };
 
 }  // namespace quic

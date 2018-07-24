@@ -18,6 +18,8 @@ namespace test {
 class SimpleFramerVisitor : public QuicFramerVisitorInterface {
  public:
   SimpleFramerVisitor() : error_(QUIC_NO_ERROR) {}
+  SimpleFramerVisitor(const SimpleFramerVisitor&) = delete;
+  SimpleFramerVisitor& operator=(const SimpleFramerVisitor&) = delete;
 
   ~SimpleFramerVisitor() override {}
 
@@ -230,8 +232,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<QuicBlockedFrame> blocked_frames_;
   std::vector<QuicNewConnectionIdFrame> new_connection_id_frames_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleFramerVisitor);
 };
 
 SimpleQuicFramer::SimpleQuicFramer()

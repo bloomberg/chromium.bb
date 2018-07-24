@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_CLIENT_SESSION_H_
 #define NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_CLIENT_SESSION_H_
 
-#include "net/third_party/quic/core/quic_spdy_client_session.h"
+#include "net/third_party/quic/core/http/quic_spdy_client_session.h"
 #include "net/third_party/quic/tools/quic_simple_client_stream.h"
 
 namespace quic {

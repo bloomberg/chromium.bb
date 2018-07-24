@@ -21,6 +21,8 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressCoder {
  public:
   QuicSocketAddressCoder();
   explicit QuicSocketAddressCoder(const QuicSocketAddress& address);
+  QuicSocketAddressCoder(const QuicSocketAddressCoder&) = delete;
+  QuicSocketAddressCoder& operator=(const QuicSocketAddressCoder&) = delete;
   ~QuicSocketAddressCoder();
 
   QuicString Encode() const;
@@ -33,8 +35,6 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressCoder {
 
  private:
   QuicSocketAddress address_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSocketAddressCoder);
 };
 
 }  // namespace quic

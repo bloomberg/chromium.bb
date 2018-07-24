@@ -88,6 +88,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   };
 
   explicit QuicStreamSequencerBuffer(size_t max_capacity_bytes);
+  QuicStreamSequencerBuffer(const QuicStreamSequencerBuffer&) = delete;
+  QuicStreamSequencerBuffer& operator=(const QuicStreamSequencerBuffer&) =
+      delete;
   ~QuicStreamSequencerBuffer();
 
   // Free the space used to buffer data.
@@ -225,8 +228,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   // Currently received data.
   QuicIntervalSet<QuicStreamOffset> bytes_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerBuffer);
 };
 }  // namespace quic
 

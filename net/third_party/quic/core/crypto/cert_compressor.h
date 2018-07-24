@@ -30,6 +30,8 @@ namespace quic {
 //      methods and a small chunk of common substrings.
 class QUIC_EXPORT_PRIVATE CertCompressor {
  public:
+  CertCompressor() = delete;
+
   // CompressChain compresses the certificates in |certs| and returns a
   // compressed representation. |common_sets| contains the common certificate
   // sets known locally and |client_common_set_hashes| contains the hashes of
@@ -48,9 +50,6 @@ class QUIC_EXPORT_PRIVATE CertCompressor {
                               const std::vector<QuicString>& cached_certs,
                               const CommonCertSets* common_sets,
                               std::vector<QuicString>* out_certs);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CertCompressor);
 };
 
 }  // namespace quic

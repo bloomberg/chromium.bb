@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "net/test/gtest_util.h"
+#include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
@@ -103,6 +103,9 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
         .WillByDefault(testing::Return(QuicConsumedData(0, false)));
   }
 
+  MockQuicSimpleServerSession(const MockQuicSimpleServerSession&) = delete;
+  MockQuicSimpleServerSession& operator=(const MockQuicSimpleServerSession&) =
+      delete;
   ~MockQuicSimpleServerSession() override = default;
 
   MOCK_METHOD3(OnConnectionClosed,
@@ -165,9 +168,6 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
   using QuicSession::ActivateStream;
 
   spdy::SpdyHeaderBlock original_request_headers_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockQuicSimpleServerSession);
 };
 
 class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
