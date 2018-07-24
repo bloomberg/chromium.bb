@@ -164,12 +164,6 @@ public class VrShellImpl
             mActivity.getFindToolbarManager().hideToolbar();
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
-            mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
-            UiWidgetFactory.setInstance(
-                    new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
-        }
-
         // This overrides the default intent created by GVR to return to Chrome when the DON flow
         // is triggered by resuming the GvrLayout, which is the usual way Daydream apps enter VR.
         // See VrShellDelegate#getEnterVrPendingIntent for why we need to do this.
@@ -199,6 +193,13 @@ public class VrShellImpl
         getUiLayout().setSettingsButtonListener(mDelegate.getVrSettingsButtonListener());
 
         if (mVrBrowsingEnabled) injectVrHostedUiView();
+
+        // This has to happen after VrModalDialogManager is created.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
+            mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
+            UiWidgetFactory.setInstance(
+                    new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
+        }
 
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
