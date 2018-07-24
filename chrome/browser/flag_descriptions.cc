@@ -2227,6 +2227,11 @@ const char kContextualSearchSecondTapDescription[] =
     "Enables triggering on a second tap gesture even when Ranker would "
     "normally suppress that tap.";
 
+const char kContextualSearchUnityIntegrationName[] =
+    "Contextual Search integration with Unified Consent";
+const char kContextualSearchUnityIntegrationDescription[] =
+    "Enables integration of Tap to Search with Unified Consent.";
+
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
