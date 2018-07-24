@@ -1646,14 +1646,14 @@ void NormalPage::TakeSnapshot(base::trace_event::MemoryAllocatorDump* page_dump,
       live_count++;
       live_size += header->size();
 
-      size_t gc_info_index = header->GcInfoIndex();
+      uint32_t gc_info_index = header->GcInfoIndex();
       info.live_count[gc_info_index]++;
       info.live_size[gc_info_index] += header->size();
     } else {
       dead_count++;
       dead_size += header->size();
 
-      size_t gc_info_index = header->GcInfoIndex();
+      uint32_t gc_info_index = header->GcInfoIndex();
       info.dead_count[gc_info_index]++;
       info.dead_size[gc_info_index] += header->size();
     }
@@ -1730,7 +1730,7 @@ void LargeObjectPage::TakeSnapshot(
   size_t live_count = 0;
   size_t dead_count = 0;
   HeapObjectHeader* header = ObjectHeader();
-  size_t gc_info_index = header->GcInfoIndex();
+  uint32_t gc_info_index = header->GcInfoIndex();
   size_t payload_size = header->PayloadSize();
   if (header->IsMarked()) {
     live_count = 1;

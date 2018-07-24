@@ -44,7 +44,7 @@ struct GCInfo {
 };
 
 #if DCHECK_IS_ON()
-PLATFORM_EXPORT void AssertObjectHasGCInfo(const void*, size_t gc_info_index);
+PLATFORM_EXPORT void AssertObjectHasGCInfo(const void*, uint32_t gc_info_index);
 #endif
 
 class PLATFORM_EXPORT GCInfoTable {
@@ -56,14 +56,14 @@ class PLATFORM_EXPORT GCInfoTable {
   // of the Oilpan GC Clang plugin, there appear to be at most about 6,000
   // types. Thus 14 bits should be more than twice as many bits as we will ever
   // need.
-  static constexpr size_t kMaxIndex = 1 << 14;
+  static constexpr uint32_t kMaxIndex = 1 << 14;
 
   // Sets up a singleton table that can be acquired using Get().
   static void CreateGlobalTable();
 
   static GCInfoTable& Get() { return *global_table_; }
 
-  inline const GCInfo* GCInfoFromIndex(size_t index) {
+  inline const GCInfo* GCInfoFromIndex(uint32_t index) {
     DCHECK_GE(index, 1u);
     DCHECK(index < kMaxIndex);
     DCHECK(table_);
@@ -72,9 +72,9 @@ class PLATFORM_EXPORT GCInfoTable {
     return info;
   }
 
-  void EnsureGCInfoIndex(const GCInfo*, size_t*);
+  void EnsureGCInfoIndex(const GCInfo*, uint32_t*);
 
-  size_t GcInfoIndex() { return current_index_; }
+  uint32_t GcInfoIndex() { return current_index_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GCInfoTest, InitialEmpty);
@@ -95,10 +95,10 @@ class PLATFORM_EXPORT GCInfoTable {
 
   // GCInfo indices start from 1 for heap objects, with 0 being treated
   // specially as the index for freelist entries and large heap objects.
-  size_t current_index_ = 0;
+  uint32_t current_index_ = 0;
 
   // The limit (exclusive) of the currently allocated table.
-  size_t limit_ = 0;
+  uint32_t limit_ = 0;
 
   Mutex table_mutex_;
 };
@@ -108,14 +108,14 @@ class PLATFORM_EXPORT GCInfoTable {
 template <typename T>
 struct GCInfoAtBaseType {
   STATIC_ONLY(GCInfoAtBaseType);
-  static size_t Index() {
+  static uint32_t Index() {
     static_assert(sizeof(T), "T must be fully defined");
     static const GCInfo kGcInfo = {
         TraceTrait<T>::Trace,          FinalizerTrait<T>::Finalize,
         NameTrait<T>::GetName,         FinalizerTrait<T>::kNonTrivialFinalizer,
         std::is_polymorphic<T>::value,
     };
-    static size_t gc_info_index = 0;
+    static uint32_t gc_info_index = 0;
     if (!AcquireLoad(&gc_info_index))
       GCInfoTable::Get().EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
     DCHECK_GE(gc_info_index, 1u);
@@ -144,7 +144,7 @@ struct GetGarbageCollectedType<T, false> {
 template <typename T>
 struct GCInfoTrait {
   STATIC_ONLY(GCInfoTrait);
-  static size_t Index() {
+  static uint32_t Index() {
     return GCInfoAtBaseType<typename GetGarbageCollectedType<T>::type>::Index();
   }
 };

@@ -194,7 +194,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   size_t size() const;
 
-  NO_SANITIZE_ADDRESS size_t GcInfoIndex() const {
+  NO_SANITIZE_ADDRESS uint32_t GcInfoIndex() const {
     return (encoded_ & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
   }
 
