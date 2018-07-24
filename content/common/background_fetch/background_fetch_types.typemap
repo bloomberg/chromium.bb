@@ -15,5 +15,4 @@ type_mappings = [
   "blink.mojom.BackgroundFetchOptions=content::BackgroundFetchOptions",
   "blink.mojom.BackgroundFetchRegistration=content::BackgroundFetchRegistration",
   "content.mojom.BackgroundFetchSettledFetch=::content::BackgroundFetchSettledFetch",
-  "blink.mojom.IconDefinition=content::IconDefinition",
 ]
