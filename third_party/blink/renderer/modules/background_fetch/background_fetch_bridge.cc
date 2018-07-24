@@ -69,7 +69,14 @@ void BackgroundFetchBridge::Abort(const String& developer_id,
 void BackgroundFetchBridge::UpdateUI(const String& developer_id,
                                      const String& unique_id,
                                      const String& title,
+                                     const SkBitmap& icon,
                                      UpdateUICallback callback) {
+  if (title.IsNull() && icon.isNull()) {
+    std::move(callback).Run(
+        mojom::blink::BackgroundFetchError::INVALID_ARGUMENT);
+    return;
+  }
+
   GetService()->UpdateUI(
       GetSupplementable()->WebRegistration()->RegistrationId(), developer_id,
       unique_id, title, std::move(callback));
