@@ -87,8 +87,10 @@ SyncBasedUrlKeyedDataCollectionConsentHelper::
       sync_data_type_(sync_data_type),
       sync_data_type_upload_state_(
           syncer::GetUploadToGoogleState(sync_service_, sync_data_type_)) {
-  DCHECK(sync_service_);
-  sync_service_->AddObserver(this);
+  if (sync_service_)
+    sync_service_->AddObserver(this);
+  else
+    DCHECK_EQ(syncer::UploadState::NOT_ACTIVE, sync_data_type_upload_state_);
 }
 
 SyncBasedUrlKeyedDataCollectionConsentHelper::

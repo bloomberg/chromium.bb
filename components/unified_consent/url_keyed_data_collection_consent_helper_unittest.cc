@@ -137,6 +137,16 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 }
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
+       AnonymizedDataCollection_UnifiedConsentDisabled_NullSyncService) {
+  std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
+      UrlKeyedDataCollectionConsentHelper::
+          NewAnonymizedDataCollectionConsentHelper(
+              false /* is_unified_consent_enabled */, &pref_service_,
+              nullptr /* sync_service */);
+  EXPECT_FALSE(helper->IsEnabled());
+}
+
+TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        PersonalizeddDataCollection_UnifiedConsentEnabled) {
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
@@ -169,6 +179,26 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   EXPECT_TRUE(helper->IsEnabled());
   ASSERT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
+}
+
+TEST_F(UrlKeyedDataCollectionConsentHelperTest,
+       PersonalizedDataCollection_NullSyncService) {
+  {
+    std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
+        UrlKeyedDataCollectionConsentHelper::
+            NewPersonalizedDataCollectionConsentHelper(
+                false /* is_unified_consent_enabled */,
+                nullptr /* sync_service */);
+    EXPECT_FALSE(helper->IsEnabled());
+  }
+  {
+    std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
+        UrlKeyedDataCollectionConsentHelper::
+            NewPersonalizedDataCollectionConsentHelper(
+                true /* is_unified_consent_enabled */,
+                nullptr /* sync_service */);
+    EXPECT_FALSE(helper->IsEnabled());
+  }
 }
 
 }  // namespace
