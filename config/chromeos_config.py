@@ -575,6 +575,7 @@ _x86_internal_release_boards = frozenset([
     'poppy',
     'pyro',
     'quawks',
+    'rammus',
     'reef',
     'reks',
     'relm',
@@ -2415,6 +2416,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
       'kukui', # contact:zhuohao@
+      'rammus', # contact:zhuohao@
       'tael',
       'atlas',
   ])
