@@ -130,9 +130,9 @@ So:
    things are fast enough that we can afford to build everything affected by a
    patch, but listing every possible target explicitly would be painful. The
    GN Ninja generator provides an 'all' target that captures (nearly,
-   see [crbug.com/503241](crbug.com/503241)) everything, but unfortunately
-   GN doesn't actually represent 'all' as a meta target in the build
-   graph, so we will need to write code to handle that specially.
+   see [crbug.com/503241](https://crbug.com/503241)) everything, but
+   unfortunately GN doesn't actually represent 'all' as a meta target in the
+   build graph, so we will need to write code to handle that specially.
 
 7. In some cases, we will not be able to correctly analyze the build graph to
    determine the impact of a patch, and need to bail out (e.g,. if you change a

@@ -214,7 +214,7 @@ assume that anything it installed is still installed, even if you deleted it.
 To clear the cache and force a full reinstallation, delete your
 `$GCLIENT_ROOT/.cipd` directory.
 
-Note that there is a [bug](crbug.com/794764) on file to add a mode to CIPD
+Note that there is a [bug](https://crbug.com/794764) on file to add a mode to CIPD
 that is not so trusting of its own cache.
 
 [1]: https://chromium.googlesource.com/infra/luci/luci-go/+/master/cipd/

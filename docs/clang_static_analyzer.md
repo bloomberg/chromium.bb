@@ -39,7 +39,7 @@ use_clang_static_analyzer = true
 The next time you run your build, you should see static analysis warnings appear
 inline with the usual Clang build warnings and errors. Expect some slowdown on
 your build; anywhere from a 10% increase on local builds, to well over 100% under Goma
-([crbug](crbug.com/733363)).
+([crbug](https://crbug.com/733363)).
 
 ## Supported checks
 Clang's static analyzer comes with a wide variety of checkers. Some of the checks
