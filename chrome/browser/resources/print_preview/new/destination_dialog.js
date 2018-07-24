@@ -100,9 +100,6 @@ Polymer({
   attached: function() {
     this.tracker_.add(
         assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
-    this.tracker_.add(
-        assert(this.$$('#cloudprintPromo > .close-button')), 'click',
-        this.onCloudPrintPromoDismissed_.bind(this));
   },
 
   /**
