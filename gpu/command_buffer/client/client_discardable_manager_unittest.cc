@@ -33,7 +33,6 @@ class FakeCommandBuffer : public CommandBuffer {
   void SetGetBuffer(int32_t transfer_buffer_id) override { NOTREACHED(); }
   scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
                                                   int32_t* id) override {
-    EXPECT_GE(size, 2048u);
     *id = next_id_++;
     active_ids_.insert(*id);
     base::UnsafeSharedMemoryRegion shmem_region =
@@ -104,11 +103,12 @@ TEST(ClientDiscardableManagerTest, Reuse) {
     ClientDiscardableHandle handle = manager.GetHandle(handle_id);
     EXPECT_TRUE(handle.IsLockedForTesting());
     EXPECT_EQ(handle.shm_id(), 1);
-    UnlockAndDeleteClientHandleForTesting(handle);
+    UnlockClientHandleForTesting(handle);
     handle_ids.push_back(handle_id);
   }
   // Delete every other entry.
   for (auto it = handle_ids.begin(); it != handle_ids.end();) {
+    DeleteClientHandleForTesting(manager.GetHandle(*it));
     manager.FreeHandle(*it);
     it = handle_ids.erase(it);
     ++it;
@@ -120,11 +120,12 @@ TEST(ClientDiscardableManagerTest, Reuse) {
     ClientDiscardableHandle handle = manager.GetHandle(handle_id);
     EXPECT_TRUE(handle.IsLockedForTesting());
     EXPECT_EQ(handle.shm_id(), 1);
-    UnlockAndDeleteClientHandleForTesting(handle);
+    UnlockClientHandleForTesting(handle);
     handle_ids.push_back(handle_id);
   }
   // Delete all outstanding allocations
   for (const auto& handle_id : handle_ids) {
+    DeleteClientHandleForTesting(manager.GetHandle(handle_id));
     manager.FreeHandle(handle_id);
   }
   manager.CheckPendingForTesting(&command_buffer);
@@ -141,7 +142,7 @@ TEST(ClientDiscardableManagerTest, MultipleAllocations) {
     ClientDiscardableHandle handle = manager.GetHandle(handle_id);
     EXPECT_TRUE(handle.IsLockedForTesting());
     EXPECT_EQ(handle.shm_id(), 1);
-    UnlockAndDeleteClientHandleForTesting(handle);
+    UnlockClientHandleForTesting(handle);
     handle_ids.push_back(handle_id);
   }
   // Allocate and free one entry multiple times, this should cause the
@@ -157,7 +158,53 @@ TEST(ClientDiscardableManagerTest, MultipleAllocations) {
   }
   // Delete all outstanding allocations
   for (const auto& handle_id : handle_ids) {
+    DeleteClientHandleForTesting(manager.GetHandle(handle_id));
     manager.FreeHandle(handle_id);
+  }
+  manager.CheckPendingForTesting(&command_buffer);
+}
+
+TEST(ClientDiscardableManagerTest, FreeDeleted) {
+  FakeCommandBuffer command_buffer;
+  ClientDiscardableManager manager;
+  manager.SetElementCountForTesting(4);
+  // Fill our allocation with unlocked handles.
+  std::vector<ClientDiscardableHandle::Id> handle_ids;
+  for (int i = 0; i < 4; ++i) {
+    ClientDiscardableHandle::Id handle_id =
+        manager.CreateHandle(&command_buffer);
+    ClientDiscardableHandle handle = manager.GetHandle(handle_id);
+    EXPECT_TRUE(handle.IsLockedForTesting());
+    EXPECT_EQ(handle.shm_id(), 1);
+    UnlockClientHandleForTesting(handle);
+    handle_ids.push_back(handle_id);
+  }
+  // Allocate and free a new entry. It should get a new allocation.
+  {
+    ClientDiscardableHandle::Id handle_id =
+        manager.CreateHandle(&command_buffer);
+    ClientDiscardableHandle handle = manager.GetHandle(handle_id);
+    EXPECT_TRUE(handle.IsLockedForTesting());
+    EXPECT_EQ(handle.shm_id(), 2);
+    UnlockAndDeleteClientHandleForTesting(handle);
+    manager.FreeHandle(handle_id);
+  }
+  // Delete (but don't free) one of the above entries.
+  DeleteClientHandleForTesting(manager.GetHandle(handle_ids[0]));
+  // Allocate and free a new entry, it should re-use the first allocation.
+  {
+    ClientDiscardableHandle::Id handle_id =
+        manager.CreateHandle(&command_buffer);
+    ClientDiscardableHandle handle = manager.GetHandle(handle_id);
+    EXPECT_TRUE(handle.IsLockedForTesting());
+    EXPECT_EQ(handle.shm_id(), 1);
+    UnlockAndDeleteClientHandleForTesting(handle);
+    manager.FreeHandle(handle_id);
+  }
+  // Delete and free the remaining handles.
+  for (int i = 1; i < 4; ++i) {
+    DeleteClientHandleForTesting(manager.GetHandle(handle_ids[i]));
+    manager.FreeHandle(handle_ids[i]);
   }
   manager.CheckPendingForTesting(&command_buffer);
 }
