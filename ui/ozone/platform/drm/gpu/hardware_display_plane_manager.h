@@ -46,19 +46,6 @@ struct HardwareDisplayPlaneList {
     uint32_t crtc_id;
     uint32_t framebuffer;
     CrtcController* crtc;
-
-    struct Plane {
-      Plane(int plane,
-            int framebuffer,
-            const gfx::Rect& bounds,
-            const gfx::Rect& src_rect);
-      ~Plane();
-      int plane;
-      int framebuffer;
-      gfx::Rect bounds;
-      gfx::Rect src_rect;
-    };
-    std::vector<Plane> planes;
   };
   // In the case of non-atomic operation, this info will be used for
   // pageflipping.
@@ -158,6 +145,8 @@ class HardwareDisplayPlaneManager {
 
   bool InitializeCrtcProperties(DrmDevice* drm);
 
+  virtual bool InitializePlanes(DrmDevice* drm) = 0;
+
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,
                             const DrmOverlayPlane& overlay,
@@ -195,6 +184,8 @@ class HardwareDisplayPlaneManager {
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.
   DrmDevice* drm_;
+
+  bool has_universal_planes_ = false;
 
   std::vector<std::unique_ptr<HardwareDisplayPlane>> planes_;
   std::vector<CrtcProperties> crtc_properties_;

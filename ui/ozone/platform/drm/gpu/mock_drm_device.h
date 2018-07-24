@@ -78,6 +78,7 @@ class MockDrmDevice : public DrmDevice {
   void set_legacy_gamma_ramp_expectation(bool state) {
     legacy_gamma_ramp_expectation_ = state;
   }
+  void set_commit_expectation(bool state) { commit_expectation_ = state; }
 
   uint32_t current_framebuffer() const { return current_framebuffer_; }
 
@@ -199,6 +200,7 @@ class MockDrmDevice : public DrmDevice {
   bool page_flip_expectation_;
   bool create_dumb_buffer_expectation_;
   bool legacy_gamma_ramp_expectation_ = false;
+  bool commit_expectation_ = true;
 
   uint32_t current_framebuffer_;
 

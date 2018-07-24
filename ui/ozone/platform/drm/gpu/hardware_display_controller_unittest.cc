@@ -13,6 +13,7 @@
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
@@ -29,6 +30,7 @@ constexpr uint32_t kPrimaryCrtc = kCrtcIdBase;
 constexpr uint32_t kSecondaryCrtc = kCrtcIdBase + 1;
 constexpr uint32_t kPrimaryConnector = 10;
 constexpr uint32_t kSecondaryConnector = 11;
+constexpr uint32_t kPlaneOffset = 1000;
 
 const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
 const gfx::Size kOverlaySize(kDefaultMode.hdisplay / 2,
@@ -50,6 +52,8 @@ class HardwareDisplayControllerTest : public testing::Test {
   void OnSubmission(gfx::SwapResult swap_result,
                     std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
+  uint64_t GetPlanePropertyValue(uint32_t plane,
+                                 const std::string& property_name);
 
  protected:
   std::unique_ptr<ui::HardwareDisplayController> controller_;
@@ -68,7 +72,7 @@ void HardwareDisplayControllerTest::SetUp() {
   last_swap_result_ = gfx::SwapResult::SWAP_FAILED;
 
   drm_ = new ui::MockDrmDevice;
-  InitializeDrmDevice(/* use_atomic= */ false);
+  InitializeDrmDevice(/* use_atomic= */ true);
 
   controller_.reset(new ui::HardwareDisplayController(
       std::unique_ptr<ui::CrtcController>(
@@ -112,7 +116,7 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
       const uint32_t offset = plane_properties.size();
 
       ui::MockDrmDevice::PlaneProperties plane;
-      plane.id = 100 + offset;
+      plane.id = kPlaneOffset + offset;
       plane.crtc_mask = 1 << i;
       for (const auto& pair : property_names) {
         uint32_t value = 0;
@@ -157,6 +161,17 @@ void HardwareDisplayControllerTest::OnPresentation(
   last_presentation_feedback_ = feedback;
 }
 
+uint64_t HardwareDisplayControllerTest::GetPlanePropertyValue(
+    uint32_t plane,
+    const std::string& property_name) {
+  ui::DrmDevice::Property p{};
+  ui::ScopedDrmObjectPropertyPtr properties(
+      drm_->GetObjectProperties(plane, DRM_MODE_OBJECT_PLANE));
+  EXPECT_TRUE(ui::GetDrmPropertyForName(drm_.get(), properties.get(),
+                                        property_name, &p));
+  return p.value;
+}
+
 TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
   ui::DrmOverlayPlane plane(scoped_refptr<ui::ScanoutBuffer>(
                                 new ui::MockScanoutBuffer(kDefaultModeSize)),
@@ -187,8 +202,10 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
-  EXPECT_EQ(1, drm_->get_page_flip_call_count());
-  EXPECT_EQ(0, drm_->get_overlay_flip_call_count());
+  EXPECT_EQ(1, drm_->get_commit_count());
+  // Verify only the primary display have a valid framebuffer.
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
+  EXPECT_EQ(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
@@ -202,7 +219,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
-  drm_->set_page_flip_expectation(false);
+  drm_->set_commit_expectation(false);
 
   ui::DrmOverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                                  new ui::MockScanoutBuffer(kDefaultModeSize)),
@@ -238,8 +255,10 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
-  EXPECT_EQ(1, drm_->get_page_flip_call_count());
-  EXPECT_EQ(1, drm_->get_overlay_flip_call_count());
+  EXPECT_EQ(1, drm_->get_commit_count());
+  // Verify both planes on the primary display have a valid framebuffer.
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
@@ -258,22 +277,27 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
   planes.push_back(plane2.Clone());
 
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
+  EXPECT_EQ(1, drm_->get_commit_count());
+  // Verify both planes on the primary display have a valid framebuffer.
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 
   // A test call shouldn't cause new flips, but should succeed.
   EXPECT_TRUE(controller_->TestPageFlip(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
-  EXPECT_EQ(1, drm_->get_page_flip_call_count());
-  EXPECT_EQ(1, drm_->get_overlay_flip_call_count());
+  EXPECT_EQ(2, drm_->get_commit_count());
 
   // Regular flips should continue on normally.
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(2, page_flips_);
-  EXPECT_EQ(2, drm_->get_page_flip_call_count());
-  EXPECT_EQ(2, drm_->get_overlay_flip_call_count());
+  EXPECT_EQ(3, drm_->get_commit_count());
+  // Verify both planes on the primary display have a valid framebuffer.
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 }
 
 TEST_F(HardwareDisplayControllerTest, AcceptUnderlays) {
@@ -317,8 +341,14 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
-  EXPECT_EQ(2, drm_->get_page_flip_call_count());
-  EXPECT_EQ(1, page_flips_);
+  EXPECT_EQ(1, drm_->get_commit_count());
+  // Verify only the displays have a valid framebuffer on the primary plane.
+  // First display:
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
+  EXPECT_EQ(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
+  // Second display:
+  EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset + 2, "FB_ID"));
+  EXPECT_EQ(0u, GetPlanePropertyValue(kPlaneOffset + 3, "FB_ID"));
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
@@ -464,7 +494,7 @@ TEST_F(HardwareDisplayControllerTest, ModesetWhilePageFlipping) {
 }
 
 TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
-  drm_->set_page_flip_expectation(false);
+  drm_->set_commit_expectation(false);
 
   ui::DrmOverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                                  new ui::MockScanoutBuffer(kDefaultModeSize)),

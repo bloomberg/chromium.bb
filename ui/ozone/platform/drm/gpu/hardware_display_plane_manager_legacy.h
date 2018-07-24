@@ -35,6 +35,7 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
       base::OnceCallback<void(DrmOverlayPlaneList)> callback) override;
 
  protected:
+  bool InitializePlanes(DrmDevice* drm) override;
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
                     const DrmOverlayPlane& overlay,

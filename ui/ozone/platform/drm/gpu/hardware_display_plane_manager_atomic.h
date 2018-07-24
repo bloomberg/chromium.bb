@@ -41,6 +41,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
                     CrtcController* crtc) override;
 
  private:
+  bool InitializePlanes(DrmDevice* drm) override;
   std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
   bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
   bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;

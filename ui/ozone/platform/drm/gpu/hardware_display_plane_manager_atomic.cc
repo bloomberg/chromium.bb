@@ -229,6 +229,24 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
   return true;
 }
 
+bool HardwareDisplayPlaneManagerAtomic::InitializePlanes(DrmDevice* drm) {
+  ScopedDrmPlaneResPtr plane_resources = drm->GetPlaneResources();
+  if (!plane_resources) {
+    PLOG(ERROR) << "Failed to get plane resources.";
+    return false;
+  }
+
+  for (uint32_t i = 0; i < plane_resources->count_planes; ++i) {
+    std::unique_ptr<HardwareDisplayPlane> plane(
+        CreatePlane(plane_resources->planes[i]));
+
+    if (plane->Initialize(drm))
+      planes_.push_back(std::move(plane));
+  }
+
+  return true;
+}
+
 std::unique_ptr<HardwareDisplayPlane>
 HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id) {
   return std::make_unique<HardwareDisplayPlaneAtomic>(plane_id);
