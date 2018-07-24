@@ -25,7 +25,7 @@ VideoCaptureDeviceChromeOS::VideoCaptureDeviceChromeOS(
     : VideoCaptureDeviceLinux(std::move(v4l2), device_descriptor),
       camera_config_(camera_config),
       screen_observer_delegate_(
-          new ScreenObserverDelegate(this, ui_task_runner)) {}
+          ScreenObserverDelegate::Create(this, ui_task_runner)) {}
 
 VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
   screen_observer_delegate_->RemoveObserver();

@@ -25,7 +25,7 @@ class ScreenObserverDelegate
     : public display::DisplayObserver,
       public base::RefCountedThreadSafe<ScreenObserverDelegate> {
  public:
-  ScreenObserverDelegate(
+  static scoped_refptr<ScreenObserverDelegate> Create(
       DisplayRotationObserver* observer,
       scoped_refptr<base::SingleThreadTaskRunner> display_task_runner);
 
@@ -36,6 +36,9 @@ class ScreenObserverDelegate
  private:
   friend class base::RefCountedThreadSafe<ScreenObserverDelegate>;
 
+  ScreenObserverDelegate(
+      DisplayRotationObserver* observer,
+      scoped_refptr<base::SingleThreadTaskRunner> display_task_runner);
   ~ScreenObserverDelegate() override;
 
   // DisplayObserver implementations.
