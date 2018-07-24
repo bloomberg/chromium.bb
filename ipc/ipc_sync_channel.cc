@@ -547,20 +547,6 @@ std::unique_ptr<SyncChannel> SyncChannel::Create(
 
 // static
 std::unique_ptr<SyncChannel> SyncChannel::Create(
-    std::unique_ptr<ChannelFactory> factory,
-    Listener* listener,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
-    bool create_pipe_now,
-    base::WaitableEvent* shutdown_event) {
-  std::unique_ptr<SyncChannel> channel =
-      Create(listener, ipc_task_runner, listener_task_runner, shutdown_event);
-  channel->Init(std::move(factory), create_pipe_now);
-  return channel;
-}
-
-// static
-std::unique_ptr<SyncChannel> SyncChannel::Create(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,

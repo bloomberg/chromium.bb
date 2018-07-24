@@ -33,7 +33,6 @@ class SyncHandleRegistry;
 
 namespace IPC {
 
-class ChannelFactory;
 class SyncMessage;
 
 // This is similar to ChannelProxy, with the added feature of supporting sending
@@ -82,14 +81,6 @@ class COMPONENT_EXPORT(IPC) SyncChannel : public ChannelProxy {
   static std::unique_ptr<SyncChannel> Create(
       const IPC::ChannelHandle& channel_handle,
       IPC::Channel::Mode mode,
-      Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
-      bool create_pipe_now,
-      base::WaitableEvent* shutdown_event);
-
-  static std::unique_ptr<SyncChannel> Create(
-      std::unique_ptr<ChannelFactory> factory,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
