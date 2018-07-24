@@ -915,7 +915,27 @@ static bool IsPrintingRootLayoutView(const LayoutObject& object) {
   return !ToLocalFrame(parent_frame)->GetDocument()->Printing();
 }
 
+static bool NeedsOverflowClipForReplacedContents(
+    const LayoutReplaced& replaced) {
+  // <svg> may optionally allow overflow. If an overflow clip is required,
+  // always create it without checking whether the actual content overflows.
+  if (replaced.IsSVGRoot())
+    return ToLayoutSVGRoot(replaced).ShouldApplyViewportClip();
+
+  if (replaced.StyleRef().HasBorderRadius())
+    return true;
+
+  // Embedded objects are always sized to fit the content rect.
+  if (replaced.IsLayoutEmbeddedContent())
+    return false;
+
+  return true;
+}
+
 static bool NeedsOverflowClip(const LayoutObject& object) {
+  if (object.IsLayoutReplaced())
+    return NeedsOverflowClipForReplacedContents(ToLayoutReplaced(object));
+
   if (object.IsSVGViewportContainer() &&
       SVGLayoutSupport::IsOverflowHidden(object))
     return true;
@@ -943,16 +963,15 @@ bool FragmentPaintPropertyTreeBuilder::NeedsOverflowControlsClip() const {
 }
 
 static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
-  if (!object.StyleRef().HasBorderRadius())
+  // Replaced elements don't have scrollbars thus needs no separate clip
+  // for the padding box (InnerBorderRadiusClip) and the client box (padding
+  // box minus scrollbar, OverflowClip).
+  // Furthermore, replaced elements clip to the content box instead,
+  if (object.IsLayoutReplaced())
     return false;
-  if (object.IsBox() && NeedsOverflowClip(object))
-    return true;
-  // LayoutReplaced applies inner border-radius clip on the foreground. This
-  // doesn't apply to SVGRoot which uses the NeedsOverflowClip() rule above.
-  // This includes iframes which applies border-radius clip on the subdocument.
-  if (object.IsLayoutReplaced() && !object.IsSVGRoot())
-    return true;
-  return false;
+
+  return object.StyleRef().HasBorderRadius() && object.IsBox() &&
+         NeedsOverflowClip(object);
 }
 
 static LayoutPoint VisualOffsetFromPaintOffsetRoot(
@@ -1007,18 +1026,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
       const LayoutBox& box = ToLayoutBox(object_);
       ClipPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
-      if (box.IsLayoutReplaced()) {
-        // LayoutReplaced clips the foreground by rounded inner content box.
-        state.clip_rect = box.StyleRef().GetRoundedInnerBorderFor(
-            LayoutRect(context_.current.paint_offset, box.Size()),
-            LayoutRectOutsets(-(box.PaddingTop() + box.BorderTop()),
-                              -(box.PaddingRight() + box.BorderRight()),
-                              -(box.PaddingBottom() + box.BorderBottom()),
-                              -(box.PaddingLeft() + box.BorderLeft())));
-      } else {
-        state.clip_rect = box.StyleRef().GetRoundedInnerBorderFor(
-            LayoutRect(context_.current.paint_offset, box.Size()));
-      }
+      state.clip_rect = box.StyleRef().GetRoundedInnerBorderFor(
+          LayoutRect(context_.current.paint_offset, box.Size()));
       OnUpdateClip(properties_->UpdateInnerBorderRadiusClip(
           *context_.current.clip, std::move(state)));
     } else {
@@ -1051,6 +1060,15 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
   if (block.HasControlClip() || block.ShouldPaintCarets())
     return false;
 
+  if (object.IsLayoutReplaced()) {
+    const LayoutReplaced& replaced = ToLayoutReplaced(object);
+    if (replaced.StyleRef().HasBorderRadius())
+      return false;
+    LayoutRect replaced_content_rect = replaced.ReplacedContentRect();
+    return replaced_content_rect.IsEmpty() ||
+           replaced.ContentBoxRect().Contains(replaced_content_rect);
+  }
+
   // We need OverflowClip for hit-testing if the clip rect excluding overlay
   // scrollbars is different from the normal clip rect.
   auto clip_rect = block.OverflowClipRect(LayoutPoint());
@@ -1069,7 +1087,26 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
       ClipPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
 
-      if (object_.IsBox()) {
+      if (object_.IsLayoutReplaced()) {
+        const LayoutReplaced& replaced = ToLayoutReplaced(object_);
+        // LayoutReplaced clips the foreground by rounded content box.
+        state.clip_rect = replaced.StyleRef().GetRoundedInnerBorderFor(
+            LayoutRect(context_.current.paint_offset, replaced.Size()),
+            LayoutRectOutsets(
+                -(replaced.PaddingTop() + replaced.BorderTop()),
+                -(replaced.PaddingRight() + replaced.BorderRight()),
+                -(replaced.PaddingBottom() + replaced.BorderBottom()),
+                -(replaced.PaddingLeft() + replaced.BorderLeft())));
+        if (replaced.IsLayoutEmbeddedContent()) {
+          // Embedded objects are always sized to fit the content rect, but
+          // they could overflow by 1px due to pre-snapping. Adjust clip rect
+          // to match pre-snapped box as a special case.
+          FloatRect adjusted_rect = state.clip_rect.Rect();
+          adjusted_rect.SetSize(
+              FloatSize(replaced.ReplacedContentRect().Size()));
+          state.clip_rect.SetRect(adjusted_rect);
+        }
+      } else if (object_.IsBox()) {
         state.clip_rect = ToClipRect(ToLayoutBox(object_).OverflowClipRect(
             context_.current.paint_offset));
         state.clip_rect_excluding_overlay_scrollbars =
@@ -1611,6 +1648,10 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
     if (had_overflow_clip == CanOmitOverflowClip(box))
       box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
   }
+
+  if (box.IsLayoutReplaced() &&
+      box.PreviousContentBoxRect() != box.ContentBoxRect())
+    box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
 
   if (box.Size() == box.PreviousSize())
     return;

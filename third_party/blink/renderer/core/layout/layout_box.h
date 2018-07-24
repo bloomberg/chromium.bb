@@ -70,7 +70,7 @@ struct LayoutBoxRareData {
         override_logical_height_(-1),
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
-        has_previous_content_box_size_and_layout_overflow_rect_(false),
+        has_previous_content_box_rect_and_layout_overflow_rect_(false),
         percent_height_container_(nullptr),
         snap_container_(nullptr),
         snap_areas_(nullptr) {}
@@ -84,7 +84,7 @@ struct LayoutBoxRareData {
 
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
-  bool has_previous_content_box_size_and_layout_overflow_rect_ : 1;
+  bool has_previous_content_box_rect_and_layout_overflow_rect_ : 1;
 
   LayoutUnit override_containing_block_content_logical_width_;
   LayoutUnit override_containing_block_content_logical_height_;
@@ -109,8 +109,8 @@ struct LayoutBoxRareData {
 
   // Used by BoxPaintInvalidator. Stores the previous content box size and
   // layout overflow rect after the last paint invalidation. They are valid if
-  // m_hasPreviousContentBoxSizeAndLayoutOverflowRect is true.
-  LayoutSize previous_content_box_size_;
+  // m_hasPreviousContentBoxRectAndLayoutOverflowRect is true.
+  LayoutRect previous_content_box_rect_;
   LayoutRect previous_physical_layout_overflow_rect_;
 
   // Used by LocalFrameView::ScrollIntoView. When the scroll is sequenced
@@ -1372,12 +1372,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     void SavePreviousSize() {
       GetLayoutBox().previous_size_ = GetLayoutBox().Size();
     }
-    void SavePreviousContentBoxSizeAndLayoutOverflowRect();
-    void ClearPreviousContentBoxSizeAndLayoutOverflowRect() {
+    void SavePreviousContentBoxRectAndLayoutOverflowRect();
+    void ClearPreviousContentBoxRectAndLayoutOverflowRect() {
       if (!GetLayoutBox().rare_data_)
         return;
       GetLayoutBox()
-          .rare_data_->has_previous_content_box_size_and_layout_overflow_rect_ =
+          .rare_data_->has_previous_content_box_rect_and_layout_overflow_rect_ =
           false;
     }
 
@@ -1395,17 +1395,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   LayoutSize PreviousSize() const { return previous_size_; }
-  LayoutSize PreviousContentBoxSize() const {
+  LayoutRect PreviousContentBoxRect() const {
     return rare_data_ &&
                    rare_data_
-                       ->has_previous_content_box_size_and_layout_overflow_rect_
-               ? rare_data_->previous_content_box_size_
-               : PreviousSize();
+                       ->has_previous_content_box_rect_and_layout_overflow_rect_
+               ? rare_data_->previous_content_box_rect_
+               : LayoutRect(LayoutPoint(), PreviousSize());
   }
   LayoutRect PreviousPhysicalLayoutOverflowRect() const {
     return rare_data_ &&
                    rare_data_
-                       ->has_previous_content_box_size_and_layout_overflow_rect_
+                       ->has_previous_content_box_rect_and_layout_overflow_rect_
                ? rare_data_->previous_physical_layout_overflow_rect_
                : LayoutRect(LayoutPoint(), PreviousSize());
   }

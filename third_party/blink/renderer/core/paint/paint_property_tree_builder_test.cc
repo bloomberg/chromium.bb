@@ -4839,7 +4839,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
   )HTML");
 
   const auto* properties = PaintPropertiesForElement("iframe");
-  const auto* border_radius_clip = properties->InnerBorderRadiusClip();
+  const auto* border_radius_clip = properties->OverflowClip();
   ASSERT_NE(nullptr, border_radius_clip);
   FloatSize radius(30, 30);
   EXPECT_EQ(FloatRoundedRect(FloatRect(28, 28, 200, 200), radius, radius,
@@ -4847,7 +4847,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
             border_radius_clip->ClipRect());
   EXPECT_EQ(DocContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(DocPreTranslation(), border_radius_clip->LocalTransformSpace());
-  EXPECT_EQ(nullptr, properties->OverflowClip());
+  EXPECT_EQ(nullptr, properties->InnerBorderRadiusClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NoPropertyForSVGTextWithReflection) {
@@ -4866,7 +4866,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
   )HTML");
 
   const auto* properties = PaintPropertiesForElement("img");
-  const auto* border_radius_clip = properties->InnerBorderRadiusClip();
+  const auto* border_radius_clip = properties->OverflowClip();
   ASSERT_NE(nullptr, border_radius_clip);
   FloatSize radius(20, 20);
   EXPECT_EQ(FloatRoundedRect(FloatRect(18, 18, 50, 50), radius, radius, radius,
@@ -4874,7 +4874,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
             border_radius_clip->ClipRect());
   EXPECT_EQ(DocContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(DocPreTranslation(), border_radius_clip->LocalTransformSpace());
-  EXPECT_EQ(nullptr, properties->OverflowClip());
+  EXPECT_EQ(nullptr, properties->InnerBorderRadiusClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
@@ -5504,7 +5504,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilterUpdated) {
   ToLayoutImage(GetLayoutObjectByElementId("img"))
       ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("img"));
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("img")->Filter());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilter) {
@@ -5537,7 +5537,7 @@ TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilterUpdated) {
   ToLayoutImage(GetLayoutObjectByElementId("img"))
       ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("img"));
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("img")->Filter());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -5592,6 +5592,46 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(LayoutPoint(100, 85), paint_offset("float-right-vlr"));
   EXPECT_EQ(LayoutPoint(0, 0), paint_offset("float-left-rtl-vlr"));
   EXPECT_EQ(LayoutPoint(100, 85), paint_offset("float-right-rtl-vlr"));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
+  // This test verifies clip nodes are correctly updated in response to
+  // content box mutation.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    img {
+      box-sizing: border-box;
+      width: 8px;
+      height: 8px;
+      object-fit: none;
+    }
+    </style>
+    <!-- An image of 10x10 white pixels. -->
+    <img id="target" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAA
+        AAKCAIAAAACUFjqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gcVABQvx8CBmA
+        AAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFUlEQVQY02P
+        8//8/A27AxIAXjFRpAKXjAxH/0Dm5AAAAAElFTkSuQmCC"/>
+  )HTML");
+
+  {
+    const auto* properties = PaintPropertiesForElement("target");
+    ASSERT_TRUE(properties);
+    ASSERT_TRUE(properties->OverflowClip());
+    EXPECT_EQ(FloatRect(8, 8, 8, 8),
+              properties->OverflowClip()->ClipRect().Rect());
+  }
+
+  GetDocument().getElementById("target")->setAttribute(
+      HTMLNames::styleAttr, "padding: 1px 2px 3px 4px;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  {
+    const auto* properties = PaintPropertiesForElement("target");
+    ASSERT_TRUE(properties);
+    ASSERT_TRUE(properties->OverflowClip());
+    EXPECT_EQ(FloatRect(12, 9, 2, 4),
+              properties->OverflowClip()->ClipRect().Rect());
+  }
 }
 
 }  // namespace blink

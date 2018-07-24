@@ -45,8 +45,6 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info) {
            .ShouldPaint(local_paint_info, paint_offset))
     return;
 
-  LayoutRect border_rect(paint_offset, layout_embedded_content_.Size());
-
   if (layout_embedded_content_.HasBoxDecorationBackground() &&
       (local_paint_info.phase == PaintPhase::kForeground ||
        local_paint_info.phase == PaintPhase::kSelection)) {
@@ -69,20 +67,21 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   if (layout_embedded_content_.GetEmbeddedContentView()) {
-    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    if (layout_embedded_content_.Style()->HasBorderRadius()) {
-      if (border_rect.IsEmpty())
-        return;
+    LayoutRect border_rect(paint_offset, layout_embedded_content_.Size());
+    if (border_rect.IsEmpty())
+      return;
 
-      const auto* fragment =
-          local_paint_info.FragmentToPaint(layout_embedded_content_);
-      if (!fragment)
-        return;
-      const auto* properties = fragment->PaintProperties();
-      DCHECK(properties && properties->InnerBorderRadiusClip());
+    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+    const auto* fragment =
+        local_paint_info.FragmentToPaint(layout_embedded_content_);
+    if (!fragment)
+      return;
+    const auto* properties = fragment->PaintProperties();
+
+    if (properties && properties->OverflowClip()) {
       scoped_paint_chunk_properties.emplace(
           local_paint_info.context.GetPaintController(),
-          properties->InnerBorderRadiusClip(), layout_embedded_content_,
+          properties->OverflowClip(), layout_embedded_content_,
           DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
     }
 

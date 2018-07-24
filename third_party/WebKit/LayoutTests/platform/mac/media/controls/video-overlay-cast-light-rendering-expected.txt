@@ -22,17 +22,17 @@ layer at (8,50) size 352x288
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 352x288
 layer at (16,58) size 48x48
   LayoutButton (positioned) {INPUT} at (8,8) size 48x48
-layer at (8,342) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,342) size 320x262 backgroundClip at (8,342) size 320x258 clip at (8,342) size 320x258
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x261.81
     LayoutFlexibleBox {DIV} at (0,0) size 320x261.81
-layer at (8,342) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,342) size 320x262 backgroundClip at (8,342) size 320x258 clip at (8,342) size 320x258
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 320x261.81
 layer at (16,350) size 48x48
   LayoutButton (positioned) {INPUT} at (8,8) size 48x48
 layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutVideo (positioned) {VIDEO} at (8,607.81) size 320x261.81
-layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,608) size 320x262 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x261.81
     LayoutFlexibleBox {DIV} at (0,0) size 320x261.81
-layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,608) size 320x262 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 320x261.81

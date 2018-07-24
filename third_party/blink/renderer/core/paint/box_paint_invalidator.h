@@ -43,7 +43,7 @@ class CORE_EXPORT BoxPaintInvalidator {
 
   PaintInvalidationReason ComputePaintInvalidationReason();
 
-  bool NeedsToSavePreviousContentBoxSizeOrLayoutOverflowRect();
+  bool NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect();
   void SavePreviousBoxGeometriesIfNeeded();
 
   const LayoutBox& box_;
