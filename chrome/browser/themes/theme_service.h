@@ -247,9 +247,10 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   // These methods provide the implementation for ui::ThemeProvider (exposed
   // via BrowserThemeProvider).
   gfx::ImageSkia* GetImageSkiaNamed(int id, bool incognito) const;
-  SkColor GetColor(int id, bool incognito) const;
+  SkColor GetColor(int id,
+                   bool incognito,
+                   bool* has_custom_color = nullptr) const;
   int GetDisplayProperty(int id) const;
-  bool HasCustomColor(int id) const;
   base::RefCountedMemory* GetRawData(int id,
                                      ui::ScaleFactor scale_factor) const;
 #if defined(OS_MACOSX)

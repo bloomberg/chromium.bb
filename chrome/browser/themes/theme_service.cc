@@ -107,6 +107,19 @@ void WritePackToDiskCallback(BrowserThemePack* pack,
                    false);
 }
 
+// For legacy reasons, the theme supplier requires the incognito variants of
+// color IDs.  This converts from normal to incognito IDs where they exist.
+int GetIncognitoId(int id) {
+  switch (id) {
+    case ThemeProperties::COLOR_FRAME:
+      return ThemeProperties::COLOR_FRAME_INCOGNITO;
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+      return ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE;
+    default:
+      return id;
+  }
+}
+
 // Heuristic to determine if color is grayscale. This is used to decide whether
 // to use the colorful or white logo, if a theme fails to specify which.
 bool IsColorGrayscale(SkColor color) {
@@ -156,7 +169,9 @@ bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
 }
 
 bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
-  return theme_service_.HasCustomColor(id);
+  bool has_custom_color = false;
+  theme_service_.GetColor(id, incognito_, &has_custom_color);
+  return has_custom_color;
 }
 
 base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
@@ -721,8 +736,13 @@ gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {
   return const_cast<gfx::ImageSkia*>(image.ToImageSkia());
 }
 
-SkColor ThemeService::GetColor(int id, bool incognito) const {
+SkColor ThemeService::GetColor(int id,
+                               bool incognito,
+                               bool* has_custom_color) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (has_custom_color)
+    *has_custom_color = false;
 
   // The incognito NTP always uses the default background color, unless there is
   // a custom NTP background image. See also https://crbug.com/21798#c114.
@@ -731,19 +751,13 @@ SkColor ThemeService::GetColor(int id, bool incognito) const {
     return ThemeProperties::GetDefaultColor(id, incognito);
   }
 
-  // For legacy reasons, |theme_supplier_| requires the incognito variants
-  // of color IDs.
-  int theme_supplier_id = id;
-  if (incognito) {
-    if (id == ThemeProperties::COLOR_FRAME)
-      theme_supplier_id = ThemeProperties::COLOR_FRAME_INCOGNITO;
-    else if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
-      theme_supplier_id = ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE;
-  }
-
   SkColor color;
-  if (theme_supplier_ && theme_supplier_->GetColor(theme_supplier_id, &color))
+  const int theme_supplier_id = incognito ? GetIncognitoId(id) : id;
+  if (theme_supplier_ && theme_supplier_->GetColor(theme_supplier_id, &color)) {
+    if (has_custom_color)
+      *has_custom_color = true;
     return color;
+  }
 
   return GetDefaultColor(id, incognito);
 }
@@ -773,11 +787,6 @@ int ThemeService::GetDisplayProperty(int id) const {
     default:
       return -1;
   }
-}
-
-bool ThemeService::HasCustomColor(int id) const {
-  SkColor color;
-  return theme_supplier_ && theme_supplier_->GetColor(id, &color);
 }
 
 base::RefCountedMemory* ThemeService::GetRawData(
