@@ -341,16 +341,16 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
 
   // TODO(eroman): Update this test to use a synthetic certificate, so the test
   // does not break in the future. The certificate chain in question expires on
-  // Dec 22 23:59:59 2018 GMT 2018, at which point this test will start failing.
+  // Jun 12 14:33:43 2020 GMT, at which point this test will start failing.
   if (base::Time::Now() >
-      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1545523199)) {
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1591972423)) {
     FAIL() << "This test uses a certificate chain which is now expired. Please "
               "disable and file a bug.";
     return;
   }
 
   scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "trustcenter.websecurity.symantec.com.pem",
+      GetTestCertsDirectory(), "login.trustwave.com.pem",
       X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   ASSERT_TRUE(chain);
 
@@ -358,7 +358,7 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
   //
   // This way CRLSet coverage will be sufficient for EV revocation checking,
   // so this test does not depend on online revocation checking.
-  ASSERT_EQ(1u, chain->intermediate_buffers().size());
+  ASSERT_GE(chain->intermediate_buffers().size(), 1u);
   base::StringPiece spki;
   ASSERT_TRUE(
       asn1::ExtractSPKIFromDERCert(x509_util::CryptoBufferAsStringPiece(
@@ -371,7 +371,7 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
 
   CertVerifyResult verify_result;
   int flags = 0;
-  int error = Verify(chain.get(), "trustcenter.websecurity.symantec.com", flags,
+  int error = Verify(chain.get(), "login.trustwave.com", flags,
                      crl_set.get(), CertificateList(), &verify_result);
   EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_IS_EV);
