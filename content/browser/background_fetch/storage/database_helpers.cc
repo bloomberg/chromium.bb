@@ -23,8 +23,8 @@ std::string RegistrationKey(const std::string& unique_id) {
   return kRegistrationKeyPrefix + unique_id;
 }
 
-std::string UIOptionsKey(const std::string& unique_id) {
-  return kUIOptionsKeyPrefix + unique_id;
+std::string TitleKey(const std::string& unique_id) {
+  return kTitleKeyPrefix + unique_id;
 }
 
 std::string PendingRequestKeyPrefix(const std::string& unique_id) {
