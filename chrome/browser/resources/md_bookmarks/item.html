@@ -11,12 +11,12 @@
   <template>
     <style include="shared-style">
       :host {
-        -webkit-padding-start: 20px;
         align-items: center;
         color: inherit;
         display: flex;
         flex-direction: row;
         height: 40px;
+        padding-inline-start: 20px;
         position: relative;
         text-decoration: none;
         user-select: none;
@@ -27,8 +27,8 @@
       }
 
       #website-title {
-        -webkit-margin-start: 20px;
         flex: 1;
+        margin-inline-start: 20px;
         text-decoration: none;
       }
 
@@ -37,11 +37,11 @@
       }
 
       #website-url {
-        -webkit-margin-start: 20px;
         /* Transparent version of --cr-secondary-text-color */
         color: rgba(0, 0, 0, 0.54);
         display: none;
         flex: 1;
+        margin-inline-start: 20px;
         min-width: 100px;
       }
 
@@ -55,7 +55,7 @@
       }
 
       .more-vert-button {
-        -webkit-margin-end: 12px;
+        margin-inline-end: 12px;
       }
 
       :host(:focus) {

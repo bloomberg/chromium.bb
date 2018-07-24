@@ -25,15 +25,15 @@
       }
 
       #title {
-        -webkit-margin-start: 20px;
         height: var(--title-height);
+        margin-inline-start: 20px;
         padding-top: var(--title-padding);
       }
 
       #container {
-        -webkit-margin-start: 20px;
         align-items: flex-start;
         display: flex;
+        margin-inline-start: 20px;
         position: absolute;
         top: calc(var(--cr-settings-header-height) +
                   var(--title-padding) +
@@ -42,9 +42,9 @@
 
       #picturePane {
         --cr-picture-image-size: 192px;
-        -webkit-margin-end: 24px;
         flex-shrink: 0;
         height: 288px;
+        margin-inline-end: 24px;
         margin-top: 6px;
         position: relative;
         width: 288px;
@@ -58,7 +58,6 @@
       }
 
       #pictureList {
-        -webkit-margin-end: 16px;
         /* TODO(reveman): Find a way to have height align to viewport
            without using fixed position. */
         height: calc(100vh -
@@ -66,6 +65,7 @@
             var(--cr-settings-header-height) -
             var(--title-padding) -
             var(--title-height));
+        margin-inline-end: 16px;
         margin-top: 0;
         min-height: 332px;
         overflow-x: hidden;

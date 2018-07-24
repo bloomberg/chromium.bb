@@ -29,7 +29,7 @@
       #create-password-box,
       #reset-sync-message-box {
         /* In order to line up with the encryption radio box text. */
-        -webkit-margin-start: var(--settings-indent-width);
+        margin-inline-start: var(--settings-indent-width);
       }
 
       #create-password-box .list-item {
@@ -41,14 +41,14 @@
       }
 
       #existingPassphrase {
-        /* This particular list frame is not indented. */
-        -webkit-padding-start: var(--settings-box-row-padding);
         border-bottom: var(--settings-separator-line);
+        /* This particular list frame is not indented. */
+        padding-inline-start: var(--settings-box-row-padding);
       }
 
       #submitExistingPassphrase {
         /* The submit button for the existing passphrase is on the same line. */
-        -webkit-margin-start: 16px;
+        margin-inline-start: 16px;
       }
 
       #passphraseRecoverHint {

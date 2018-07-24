@@ -18,7 +18,6 @@
 }
 
 #splash-header {
-  -webkit-padding-start: 108px;
   background: left center no-repeat;
   background-size: 96px;
   color: #666;
@@ -26,6 +25,7 @@
   font-size: 48px;
   height: 96px;
   line-height: 96px;
+  padding-inline-start: 108px;
 }
 
 #splash-launch-text {

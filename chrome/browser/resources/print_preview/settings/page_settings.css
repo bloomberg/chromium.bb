@@ -10,7 +10,7 @@
 
 #page-settings .page-settings-custom-input-wrapper {
   -webkit-box-flex: 1;
-  -webkit-margin-start: 0.6em;
+  margin-inline-start: 0.6em;
   min-height: 2em;
   position: relative;
 }

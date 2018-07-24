@@ -30,12 +30,12 @@ h1 {
 }
 
 h2 {
-  -webkit-padding-end: 1em;
-  -webkit-padding-start: 0;
   color: rgb(58, 117, 189);
   display: inline-block;
   font-size: 110%;
   font-weight: normal;
+  padding-inline-end: 1em;
+  padding-inline-start: 0;
 }
 
 #header {
@@ -76,11 +76,11 @@ div#header h1::before {
 }
 
 #header p {
-  -webkit-padding-start: 0.4em;
   color: white;
   display: inline;
   font-size: 84%;
   font-style: italic;
+  padding-inline-start: 0.4em;
 }
 
 .list {
@@ -104,11 +104,11 @@ div#header h1::before {
 
 .list tr td:nth-last-child(1),
 .list tr th:nth-last-child(1) {
-  -webkit-padding-end: 1em;
+  padding-inline-end: 1em;
 }
 
 .list:not(.filtered) .tab .name {
-  -webkit-padding-start: 1.5em;
+  padding-inline-start: 1.5em;
 }
 
 .list .name {
@@ -144,7 +144,7 @@ html[dir='rtl'] .number-collapsed  {
 
 tr > *:nth-child(1),
 tr > *:nth-child(2) {
-  -webkit-border-end: 1px solid rgb(181, 198, 222);
+  border-inline-end: 1px solid rgb(181, 198, 222);
 }
 
 .name {

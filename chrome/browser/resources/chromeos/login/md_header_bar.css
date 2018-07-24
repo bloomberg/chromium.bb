@@ -66,7 +66,7 @@ html[full-screen-dialog] #login-header-bar button {
   --iron-icon-fill-color: white;
   --iron-icon-height: 20px;
   --iron-icon-width: 20px;
-  -webkit-padding-end: 8px;
+  padding-inline-end: 8px;
 }
 
 html[full-screen-dialog] #login-header-bar hd-iron-icon {

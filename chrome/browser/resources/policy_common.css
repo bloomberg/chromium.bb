@@ -3,12 +3,12 @@
  * found in the LICENSE file. */
 
 body {
-  -webkit-margin-start: 23px;
+  margin-inline-start: 23px;
 }
 
 body > .page {
-  -webkit-margin-end: 0;
-  -webkit-padding-end: 24px;
+  margin-inline-end: 0;
+  padding-inline-end: 24px;
 }
 
 #filter-overlay {
@@ -31,7 +31,7 @@ body section {
 }
 
 div.label {
-  -webkit-margin-end: 1em;
+  margin-inline-end: 1em;
   white-space: nowrap;
 }
 
@@ -87,7 +87,7 @@ section:not(.empty) > div.no-policies-set {
 }
 
 #main-section {
-  -webkit-padding-start: 0;
+  padding-inline-start: 0;
 }
 
 section.policy-table-section {

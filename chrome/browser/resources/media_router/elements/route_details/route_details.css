@@ -18,9 +18,9 @@
 }
 
 #route-description {
-  -webkit-padding-end: var(--dialog-padding-end);
-  -webkit-padding-start: 44px;
   font-size: 1.2em;
   line-height: 1.5em;
   margin-top: 16px;
+  padding-inline-end: var(--dialog-padding-end);
+  padding-inline-start: 44px;
 }

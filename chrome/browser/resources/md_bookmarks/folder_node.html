@@ -24,23 +24,23 @@
       }
 
       .menu-label {
-        -webkit-margin-start: 16px;
         color: var(--folder-inactive-color);
         font-weight: 500;
+        margin-inline-start: 16px;
       }
 
       #container {
-        -webkit-padding-start:
-            calc(var(--node-depth, 0) * var(--padding-start-per-depth));
         cursor: pointer;
         height: 40px;
+        padding-inline-start:
+            calc(var(--node-depth, 0) * var(--padding-start-per-depth));
         position: relative;
       }
 
       #folder-label {
-        -webkit-padding-end: 8px;
         color: var(--cr-secondary-text-color);
         flex-grow: 1;
+        padding-inline-end: 8px;
       }
 
       :host([is-selected-folder_]) .menu-label,
@@ -71,7 +71,7 @@
       }
 
       [no-children] {
-        -webkit-margin-start: 52px; /* The width of the arrow and its margin */
+        margin-inline-start: 52px; /* The width of the arrow and its margin */
       }
     </style>
 

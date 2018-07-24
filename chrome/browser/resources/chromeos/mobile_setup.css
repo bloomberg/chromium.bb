@@ -81,7 +81,7 @@ webview {
 }
 
 .header-cell {
-  -webkit-padding-start: 10px;
+  padding-inline-start: 10px;
 }
 
 .canvas-cell {
@@ -103,14 +103,14 @@ webview {
 }
 
 #banner {
-  -webkit-padding-end: 5px;
-  -webkit-padding-start: 70px;
   background-color: rgb(252, 246, 224);
   border: 1px solid #ccc;
   box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.2);
   display: -webkit-box;
   margin-left: -22px;
   padding-bottom: 5px;
+  padding-inline-end: 5px;
+  padding-inline-start: 70px;
   padding-top: 5px;
   width: 467px;
 }

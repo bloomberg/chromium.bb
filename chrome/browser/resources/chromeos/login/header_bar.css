@@ -3,11 +3,11 @@
  * found in the LICENSE file. */
 
 #login-header-bar {
-  -webkit-padding-start: 15px;
   bottom: 0;
   left: 0;
   min-height: 34px;  /* Should be consistent with .header-bar-item's height. */
   padding-bottom: 6px;
+  padding-inline-start: 15px;
   padding-top: 7px;
   position: absolute;
   right: 0;
@@ -97,10 +97,10 @@ html[dir=rtl] .header-bar-item {
 #login-header-bar #cancel-multiple-sign-in-button-text,
 #login-header-bar #sign-out-user-button-text,
 #login-header-bar #unlock-user-button-text {
-  -webkit-padding-start: 28px;
   background-position: left center;
   background-repeat: no-repeat;
   background-size: 20px;
+  padding-inline-start: 28px;
 }
 
 html[dir=rtl] #login-header-bar #shutdown-button-text,

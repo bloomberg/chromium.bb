@@ -16,7 +16,7 @@ fieldset {
 }
 
 fieldset + fieldset {
-  -webkit-margin-start: 20px;
+  margin-inline-start: 20px;
 }
 
 div.status-entry {

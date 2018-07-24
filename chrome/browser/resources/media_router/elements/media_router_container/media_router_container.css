@@ -8,9 +8,9 @@
 
 .cast-mode-icon,
 .sink-icon {
-  -webkit-padding-end: 12px;
-  -webkit-padding-start: var(--dialog-padding-start);
   height: var(--non-navigation-icon-size);
+  padding-inline-end: 12px;
+  padding-inline-start: var(--dialog-padding-start);
   width: var(--non-navigation-icon-size);
 }
 
@@ -68,7 +68,7 @@
 }
 
 #first-run-cloud-checkbox::shadow #checkboxLabel {
-  -webkit-padding-start: var(-dialog-padding-start);
+  padding-inline-start: var(-dialog-padding-start);
 }
 
 #first-run-flow {
@@ -174,11 +174,11 @@ paper-listbox {
 }
 
 .subheading-text {
-  -webkit-padding-start: var(--dialog-padding-start);
   color: var(--paper-grey-600);
   cursor: default;
   font-weight: normal;
   padding-bottom: 4px;
+  padding-inline-start: var(--dialog-padding-start);
   padding-top: 12px;
 }
 
@@ -194,8 +194,8 @@ paper-listbox {
 }
 
 .sink-domain {
-  -webkit-padding-start: 6px;
   color: var(--paper-grey-600);
+  padding-inline-start: 6px;
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
@@ -229,9 +229,9 @@ paper-listbox {
 /* Separate icon class is a consequence of box-sizing: border-box set by
  * paper-icon-button. This should achieve the same dimensions as .sink-icon. */
 #sink-search-icon {
-  -webkit-margin-start: 4px;
-  -webkit-padding-end: 12px;
-  -webkit-padding-start: 12px;
+  margin-inline-start: 4px;
+  padding-inline-end: 12px;
+  padding-inline-start: 12px;
 }
 
 #sink-search-input {
@@ -247,10 +247,10 @@ paper-listbox {
   --cr-input-padding-start: 0;
   --cr-input-padding-bottom: 2px;
   --cr-input-padding-top: 2px;
-  -webkit-margin-end: 31px;
   align-self: center;
   flex-grow: 1;
   font-size: 12px;
+  margin-inline-end: 31px;
 }
 
 .sink-subtext {

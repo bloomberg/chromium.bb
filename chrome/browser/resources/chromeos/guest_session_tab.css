@@ -22,8 +22,8 @@
 }
 
 #enterprise-info img {
-  -webkit-margin-end: 4px;
   height: 18px;
+  margin-inline-end: 4px;
   position: relative;
   top: 4px;
   width: 18px;

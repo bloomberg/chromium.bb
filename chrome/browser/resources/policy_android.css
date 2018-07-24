@@ -3,14 +3,14 @@
  * found in the LICENSE file. */
 
 body {
-  -webkit-margin-start: 0;
+  margin-inline-start: 0;
 }
 
 body > .page {
-  -webkit-margin-end: 0;
-  -webkit-padding-end: 10px;
-  -webkit-padding-start: 10px;
+  margin-inline-end: 0;
   min-width: 0;
+  padding-inline-end: 10px;
+  padding-inline-start: 10px;
 }
 
 #filter-overlay {
@@ -30,12 +30,12 @@ body header > h1 {
 }
 
 body section {
-  -webkit-padding-start: 0;
   max-width: none;
+  padding-inline-start: 0;
 }
 
 body section > h3 {
-  -webkit-margin-start: 0;
+  margin-inline-start: 0;
 }
 
 #status-box-container {
@@ -50,7 +50,7 @@ fieldset {
 }
 
 fieldset + fieldset {
-  -webkit-margin-start: 20px;
+  margin-inline-start: 20px;
 }
 
 div.status-entry {
@@ -63,7 +63,7 @@ div.status-entry:last-child {
 }
 
 div.label {
-  -webkit-margin-end: 1em;
+  margin-inline-end: 1em;
   white-space: nowrap;
 }
 

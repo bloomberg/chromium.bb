@@ -12,8 +12,8 @@
 }
 
 #terms-of-service .step-contents {
-  -webkit-margin-start: 32px;
   margin-bottom: 49px;
+  margin-inline-start: 32px;
 }
 
 #terms-of-service h1 {
@@ -31,7 +31,7 @@
 }
 
 #tos-container {
-  -webkit-margin-end: -2px;
+  margin-inline-end: -2px;
   width: 630px;
 }
 
@@ -92,5 +92,5 @@
 }
 
 #terms-of-service.error #tos-back-button {
-  -webkit-margin-end: 1px;
+  margin-inline-end: 1px;
 }

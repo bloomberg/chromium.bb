@@ -65,6 +65,6 @@ html[dir='rtl'] .action-area {
 }
 
 .button-strip > button {
-  -webkit-margin-start: 10px;
   display: block;
+  margin-inline-start: 10px;
 }

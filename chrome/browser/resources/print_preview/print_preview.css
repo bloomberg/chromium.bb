@@ -16,16 +16,16 @@ body {
 /* Header */
 
 header {
-  -webkit-padding-end: 19px;
-  -webkit-padding-start: 20px;
   background-color: #F6F6F6;
   border-bottom: 1px solid #d2d2d2;
+  padding-inline-end: 19px;
+  padding-inline-start: 20px;
 }
 
 #print-preview #navbar-container {
-  -webkit-border-end: 1px solid #c8c8c8;
   -webkit-box-orient: vertical;
   background-color: white;
+  border-inline-end: 1px solid #c8c8c8;
   display: -webkit-box;
   position: relative;
   user-select: none;
@@ -57,8 +57,8 @@ header {
 }
 
 .right-column {
-  -webkit-padding-end: 20px;
   display: table-cell;
+  padding-inline-end: 20px;
   width: 99%;
 }
 
@@ -73,10 +73,10 @@ header {
 }
 
 .left-column {
-  -webkit-padding-end: 20px;
-  -webkit-padding-start: 20px;
   display: table-cell;
   min-width: 70px;
+  padding-inline-end: 20px;
+  padding-inline-start: 20px;
   vertical-align: middle;
 }
 
@@ -273,8 +273,8 @@ span.jumping-dots > span:nth-child(3) {
 }
 
 #print-header .button-strip button {
-  -webkit-margin-start: 9px;
   display: block;
+  margin-inline-start: 9px;
 }
 
 #link-container {
@@ -294,9 +294,9 @@ span.jumping-dots > span:nth-child(3) {
 }
 
 #main-container {
-  -webkit-border-start: 1px solid #dcdcdc;
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
+  border-inline-start: 1px solid #dcdcdc;
   display: -webkit-box;
   height: 100%;
   position: relative;

@@ -37,8 +37,8 @@
           height: 100%;
         };
         --cr-dialog-body: {
-          -webkit-padding-end: 16px;
-          -webkit-padding-start: 16px;
+          padding-inline-end: 16px;
+          padding-inline-start: 16px;
           padding-bottom: 0;
           padding-top: 0;
         };
@@ -54,7 +54,7 @@
       }
 
       :host .user-info .account-select-label {
-        -webkit-padding-end: 18px;
+        padding-inline-end: 18px;
       }
 
       :host .user-info .account-select {
@@ -79,14 +79,13 @@
       }
 
       :host #cloudprintPromo .icon {
-        -webkit-margin-end: 12px;
         display: block;
         height: 24px;
+        margin-inline-end: 12px;
         width: 24px;
       }
 
       :host #cloudprintPromo button {
-        -webkit-margin-start: 12px;
         background-color: #f5f5f5;
         background-image: -webkit-image-set(
           url(chrome://theme/IDR_CLOSE_DIALOG) 1x,
@@ -95,6 +94,7 @@
         background-size: 14px;
         border: none;
         box-shadow: none;
+        margin-inline-start: 12px;
         min-height: 14px;
         min-width: 14px;
         outline: none;

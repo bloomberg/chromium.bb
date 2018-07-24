@@ -15,8 +15,8 @@
 }
 
 #recommend-apps-skip-button {
-  -webkit-padding-end: 6px;
   color: rgba(0, 0, 0, 0.54);
+  padding-inline-end: 6px;
 }
 
 .recommend-apps-loaded .app-list-loading,

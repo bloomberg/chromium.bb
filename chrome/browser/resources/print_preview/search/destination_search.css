@@ -17,10 +17,10 @@
 }
 
 #destination-search .user-info {
-  -webkit-padding-end: 18px;
-  -webkit-padding-start: 18px;
   display: flex;
   padding-bottom: 14px;
+  padding-inline-end: 18px;
+  padding-inline-start: 18px;
 }
 
 #destination-search .account-select-label {
@@ -33,7 +33,7 @@
 }
 
 #destination-search .account-select {
-  -webkit-margin-start: 18px;
+  margin-inline-start: 18px;
   width: auto;
 }
 
@@ -86,7 +86,7 @@
 }
 
 #destination-search .invitation-buttons > *:not(:first-child) {
-  -webkit-margin-start: 10px;
+  margin-inline-start: 10px;
 }
 
 #destination-search .invitation-cloud-print-information {
@@ -107,9 +107,9 @@
 }
 
 #destination-search .cloudprint-promo .icon {
-  -webkit-margin-end: 12px;
   display: block;
   height: 24px;
+  margin-inline-end: 12px;
   width: 24px;
 }
 
@@ -118,13 +118,13 @@
 }
 
 #destination-search .cloudprint-promo .close-button {
-  -webkit-margin-start: 12px;
   background-image: -webkit-image-set(
     url(chrome://theme/IDR_CLOSE_DIALOG) 1x,
     url(chrome://theme/IDR_CLOSE_DIALOG@2x) 2x);
   background-repeat: no-repeat;
   background-size: 14px;
   height: 14px;
+  margin-inline-start: 12px;
   width: 14px;
 }
 

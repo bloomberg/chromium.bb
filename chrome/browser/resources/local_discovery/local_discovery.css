@@ -11,7 +11,7 @@ h1 {
 }
 
 h2 {
-    margin: 23px 0 0 0;
+  margin: 23px 0 0 0;
 }
 
 header {
@@ -27,12 +27,12 @@ header {
 }
 
 html[dir='rtl'] .device {
-    background-position: right top;
+  background-position: right top;
 }
 
 .device .device-info {
-  -webkit-padding-start: 40px;
   float: left;
+  padding-inline-start: 40px;
 }
 
 .printer {
@@ -85,7 +85,7 @@ html[dir='rtl'] .controls {
 }
 
 .controls .subline {
-  -webkit-margin-start: 10px;
+  margin-inline-start: 10px;
 }
 
 .login-promo {
@@ -94,7 +94,7 @@ html[dir='rtl'] .controls {
 }
 
 .inline-login-promo {
-    display: inline;
+  display: inline;
 }
 
 .inline-spinner {
@@ -111,7 +111,7 @@ section {
 }
 
 .dialog-contents {
-    padding-left: 17px;
+  padding-left: 17px;
 }
 
 #back-link {

@@ -84,7 +84,7 @@
       }
 
       .error-item paper-icon-button-light {
-        -webkit-margin-end: 0;
+        margin-inline-end: 0;
       }
 
       .error-item.selected {
@@ -100,8 +100,8 @@
       }
 
       .error-message {
-        -webkit-margin-start: 10px;
         flex-grow: 1;
+        margin-inline-start: 10px;
         word-break: break-word;
       }
 
@@ -142,23 +142,23 @@
       /* TODO(scottchen): extract to shared location from settings. */
       .separator {
         --separator-gaps: 9px;
-        -webkit-border-start: var(--cr-separator-line);
-        -webkit-margin-end: var(--cr-section-padding);
+        border-inline-start: var(--cr-separator-line);
+        flex-shrink: 0;
+        height: calc(var(--cr-section-min-height) -
+            var(--separator-gaps));
+        margin-inline-end: var(--cr-section-padding);
+
         /**
          * Makes the tappable area fill its parent.
          * TODO(scottchen): This is an explicit reminder to override once
          * .separator styling is extracted from settings.
          */
-        -webkit-margin-start: 0;
-        flex-shrink: 0;
-        height: calc(var(--cr-section-min-height) -
-            var(--separator-gaps));
-
+        margin-inline-start: 0;
       }
 
       /* TODO(scottchen): extract to shared location from settings. */
       .separator + paper-icon-button-light {
-        -webkit-margin-start: var(--cr-icon-ripple-margin);
+        margin-inline-start: var(--cr-icon-ripple-margin);
       }
 
       :host-context(.focus-outline-visible) .start:focus {

@@ -13,9 +13,9 @@
 }
 
 .advanced-settings-item-label {
-  -webkit-padding-end: 20px;
   display: table-cell;
   overflow: hidden;
+  padding-inline-end: 20px;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
@@ -23,9 +23,9 @@
 }
 
 .advanced-settings-item-name .search-hint {
-  -webkit-margin-start: 1em;
   color: #999;
   font-size: 75%;
+  margin-inline-start: 1em;
 }
 
 .advanced-settings-item-query-highlight {

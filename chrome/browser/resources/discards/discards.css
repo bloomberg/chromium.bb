@@ -14,9 +14,9 @@ table th {
 }
 
 table th {
-  -webkit-padding-end: 16px;
   background: rgb(224, 236, 255);
   padding-bottom: 4px;
+  padding-inline-end: 16px;
   padding-top: 4px;
   white-space: nowrap;
 }

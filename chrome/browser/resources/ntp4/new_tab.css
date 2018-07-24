@@ -55,7 +55,7 @@ body {
 }
 
 [is='action-link'] {
-  -webkit-margin-start: 0.5em;
+  margin-inline-start: 0.5em;
 }
 
 #card-slider-frame {
@@ -166,14 +166,14 @@ html[dir='rtl'] #login-container {
 }
 
 #login-container [is='action-link'] {
-  -webkit-margin-start: 0;
+  margin-inline-start: 0;
 }
 
 .login-status-icon {
-  -webkit-padding-end: 37px;
   background-position: right center;
   background-repeat: no-repeat;
   min-height: 27px;
+  padding-inline-end: 37px;
 }
 
 html[dir='rtl'] .login-status-icon {
@@ -210,10 +210,10 @@ html[dir='rtl'] .login-status-icon {
 /* Trash. *********************************************************************/
 
 #trash {
-  -webkit-padding-start: 10px;
   color: #222;
   height: 100%;
   opacity: 0;
+  padding-inline-start: 10px;
   position: absolute;
   right: 0;
   top: 50px;
@@ -239,12 +239,12 @@ html[dir='rtl'] #trash {
 }
 
 #trash > .trash-text {
-  -webkit-padding-end: 7px;
-  -webkit-padding-start: 30px;
   border: 1px dashed #7f7f7f;
   border-radius: 4px;
   display: inline-block;
   padding-bottom: 9px;
+  padding-inline-end: 7px;
+  padding-inline-start: 30px;
   padding-top: 10px;
   position: relative;
   top: 7px;
@@ -300,22 +300,22 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 
 #chrome-web-store-link {
   -webkit-order: 3;
-  -webkit-padding-end: 12px;
   color: inherit;
   cursor: pointer;
   display: inline-block;
   margin: 0;
+  padding-inline-end: 12px;
   text-decoration: none;
   transition-delay: 100ms;
   white-space: nowrap;
 }
 
 #chrome-web-store-title {
-  -webkit-padding-end: 36px;
-  -webkit-padding-start: 15px;
   background: url(chrome://theme/IDR_WEBSTORE_ICON_24) right 50% no-repeat;
   display: inline-block;
   line-height: 49px;
+  padding-inline-end: 36px;
+  padding-inline-start: 15px;
 }
 
 #chrome-web-store-link:hover {

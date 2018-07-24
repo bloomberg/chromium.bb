@@ -46,14 +46,14 @@
 }
 
 .non-blocking > #buttons > #default-button {
-  -webkit-margin-end: 24px;
+  margin-inline-end: 24px;
 }
 
 .non-blocking > div > #title {
-  -webkit-margin-end: 12px;
-  -webkit-padding-end: 12px;
   color: rgba(255, 255, 255, 0.87);
+  margin-inline-end: 12px;
   overflow: hidden;
+  padding-inline-end: 12px;
 }
 
 paper-button {

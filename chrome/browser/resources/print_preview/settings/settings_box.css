@@ -8,8 +8,8 @@
 }
 
 .settings-box input[type='number'] {
-  -webkit-margin-end: 16px;
   margin-bottom: 2.5px;
+  margin-inline-end: 16px;
   margin-top: 2.5px;
 }
 

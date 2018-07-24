@@ -13,8 +13,8 @@ html:not([subframe]) #sub-frame-error {
 }
 
 #diagnose-button {
-  -webkit-margin-start: 0;
   margin-bottom: 10px;
+  margin-inline-start: 0;
   margin-top: 20px;
 }
 

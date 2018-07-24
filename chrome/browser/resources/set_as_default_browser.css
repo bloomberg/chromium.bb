@@ -81,13 +81,13 @@
 
 /* Action buttons. */
 #metro-action-box button {
-  -webkit-margin-end: 0.4em;
-  -webkit-margin-start: 0;
   border-radius: 2px;
   display: inline-block;
   font-size: 13px;
   height: 32px;
   line-height: 27px;
+  margin-inline-end: 0.4em;
+  margin-inline-start: 0;
   margin-top: 0;
   min-width: 80px;
   transition: all 218ms;

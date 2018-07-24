@@ -13,12 +13,12 @@ a {
 }
 
 #header {
-  -webkit-padding-start: 0;
   background: url(../../../ui/webui/resources/images/extension.svg)
       left center / 48px no-repeat;
   box-sizing: border-box;
   margin-bottom: 1.05em;
   overflow: hidden;
+  padding-inline-start: 0;
   position: relative;
 }
 
@@ -27,8 +27,8 @@ html[dir=rtl] #header {
 }
 
 #header h1 {
-  -webkit-padding-start: 51px;
   line-height: 48px;
+  padding-inline-start: 51px;
 }
 
 h1 {
@@ -53,11 +53,11 @@ h1 {
 }
 
 .section-header {
-  -webkit-padding-start: 5px;
   background: rgb(235, 239, 249);
   border-top: 1px solid rgb(181, 199, 222);
   font-size: 99%;
   padding-bottom: 2px;
+  padding-inline-start: 5px;
   padding-top: 3px;
   width: 100%;
 }
@@ -91,7 +91,7 @@ h1 {
 }
 
 #top {
-  -webkit-padding-end: 5px;
+  padding-inline-end: 5px;
 }
 
 .show-in-tmi-mode {
@@ -139,11 +139,11 @@ body.show-tmi-mode .show-in-tmi-mode {
 }
 
 .tmi-mode {
-  -webkit-padding-start: 10px;
   background: rgb(244, 246, 252);
   border-bottom: 1px solid rgb(237, 239, 245);
   font-size: 89%;
   padding-bottom: 0.8em;
+  padding-inline-start: 10px;
   padding-top: 0.8em;
   width: 100%;
 }
@@ -179,7 +179,7 @@ body.show-tmi-mode .show-in-tmi-mode {
 
 /* Indent the text related to each plug-in. */
 .component-text {
-  -webkit-padding-start: 5px;
+  padding-inline-start: 5px;
 }
 
 .component-name {
@@ -199,7 +199,7 @@ body.show-tmi-mode .show-in-tmi-mode {
 }
 
 .plugin-details {
-  -webkit-padding-start: 1em;
+  padding-inline-start: 1em;
 }
 
 /* Separate the inital line, Description, Location, and MIME Types lines. */
@@ -214,7 +214,7 @@ body.show-tmi-mode .show-in-tmi-mode {
 
 /* Separate columns by 1em for the most part. */
 .plugin-details td+td {
-  -webkit-padding-start: 1em;
+  padding-inline-start: 1em;
 }
 
 /* Make the MIME Types tables smaller. */
@@ -230,18 +230,18 @@ body.show-tmi-mode .show-in-tmi-mode {
 
 /* Separate the columns for tables used for horizontal listings only a bit. */
 .hlisting td+td {
-  -webkit-padding-start: 0.4em;
+  padding-inline-start: 0.4em;
 }
 
 /* Match the indentation of .plugin-text. */
 .component-actions {
-  -webkit-padding-start: 5px;
   margin-bottom: 0.2em;
   margin-top: 0.2em;
+  padding-inline-start: 5px;
 }
 
 .always-allow {
-  -webkit-margin-start: 30px;
+  margin-inline-start: 30px;
 }
 
 button {

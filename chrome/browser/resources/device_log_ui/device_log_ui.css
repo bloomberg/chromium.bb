@@ -24,7 +24,7 @@ body {
 }
 
 #log-checkbox-container button {
-  -webkit-margin-end: 8px;
+  margin-inline-end: 8px;
 }
 
 #log-checkbox-container label {
@@ -60,11 +60,11 @@ body {
 /* Log Level tags  */
 
 .level-tag {
-  -webkit-margin-end: 5px;
   border: 1px solid;
   border-radius: 2px;
   float: left;
   height: 14px;
+  margin-inline-end: 5px;
   margin-top: 2px;
   padding: 0 4px 2px 4px;
   width: 50px;
@@ -89,12 +89,12 @@ body {
 /* Log Type tags */
 
 .type-tag {
-  -webkit-margin-end: 5px;
   border: 1px solid;
   border-radius: 2px;
   float: left;
   font-weight: bold;
   height: 14px;
+  margin-inline-end: 5px;
   margin-top: 2px;
   padding: 0 4px 2px 4px;
   width: 65px;

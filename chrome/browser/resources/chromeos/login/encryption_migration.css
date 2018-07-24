@@ -23,7 +23,7 @@ paper-progress {
 }
 
 [slot='bottom-buttons'] {
-  -webkit-padding-end: 16px;
+  padding-inline-end: 16px;
 }
 
 oobe-text-button {

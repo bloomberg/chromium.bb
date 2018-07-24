@@ -31,14 +31,14 @@
       }
 
       .section-item {
-        /* Ensure the focus outline appears correctly (crbug.com/655503). */
-        -webkit-margin-end: 4px;
-        -webkit-padding-start: 24px;
         align-items: center;
         color: inherit;
         display: flex;
         font-weight: 500;
+        /* Ensure the focus outline appears correctly (crbug.com/655503). */
+        margin-inline-end: 4px;
         min-height: 40px;
+        padding-inline-start: 24px;
         position: relative;
         text-decoration: none;
       }
@@ -56,7 +56,7 @@
       }
 
       .cr-icon {
-        -webkit-margin-end: calc(
+        margin-inline-end: calc(
             var(--cr-section-padding) - var(--cr-icon-ripple-padding));
       }
     </style>

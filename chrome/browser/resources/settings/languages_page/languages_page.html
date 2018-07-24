@@ -67,13 +67,13 @@
 
       cr-checkbox.dropdown-item {
         --cr-action-menu-disabled-item-opacity: 0.38;
-        -webkit-margin-start: 0;
+        margin-inline-start: 0;
       }
 
       .icon-external {
         /* The negative margin messes up the outline border. These are in an
            indented list so this looks fine until moved: crbug.com/708286. */
-        -webkit-margin-end: 0;
+        margin-inline-end: 0;
       }
 
       #uiLanguageItem:focus,
@@ -102,7 +102,7 @@
       iron-icon[icon='cr:error'] {
         @apply --cr-icon-height-width;
         --iron-icon-fill-color: var(--google-red-700);
-        -webkit-margin-end: 8px;
+        margin-inline-end: 8px;
       }
 
       .name-with-error-list[disabled] {
@@ -110,7 +110,7 @@
       }
 
       iron-icon.policy {
-        -webkit-margin-start: 10px;
+        margin-inline-start: 10px;
       }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"

@@ -31,14 +31,14 @@
       }
 
       :host(:not([end-justified])) cr-policy-pref-indicator {
-        -webkit-margin-end: calc(
+        margin-inline-end: calc(
             var(--cr-controlled-by-spacing) - var(--justify-margin));
-        -webkit-margin-start: var(--cr-controlled-by-spacing);
+        margin-inline-start: var(--cr-controlled-by-spacing);
       }
 
       :host([end-justified]) cr-policy-pref-indicator {
-        -webkit-margin-end: var(--cr-controlled-by-spacing);
-        -webkit-margin-start: calc(
+        margin-inline-end: var(--cr-controlled-by-spacing);
+        margin-inline-start: calc(
             var(--cr-controlled-by-spacing) - var(--justify-margin));
         order: -1;
       }

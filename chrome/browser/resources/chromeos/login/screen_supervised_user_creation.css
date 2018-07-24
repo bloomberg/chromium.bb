@@ -20,11 +20,11 @@
 }
 
 #supervised-user-creation .step-controls {
-  -webkit-padding-end: 20px;
   align-items: center;
   bottom: 20px;
   display: flex;
   justify-content: flex-end;
+  padding-inline-end: 20px;
 }
 
 #supervised-user-creation .controls-links {
@@ -94,8 +94,8 @@
 }
 
 #supervised-user-creation .page-title.inline {
-  -webkit-margin-end: 1ex;
   display: inline-block;
+  margin-inline-end: 1ex;
 }
 
 #supervised-user-creation .page-title-explanation.inline {
@@ -305,8 +305,8 @@ input.supervised-user-creation-manager-password,
 }
 
 #supervised-user-creation-status .spinner-wrapper {
-  -webkit-margin-start: 3px;
   display: inline-flex;
+  margin-inline-start: 3px;
   margin-top: 3px;
   vertical-align: top;
 }
