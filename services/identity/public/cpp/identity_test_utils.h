@@ -79,11 +79,7 @@ AccountInfo MakePrimaryAccountAvailable(
 // Clears the primary account. On non-ChromeOS, results in the firing of the
 // IdentityManager and SigninManager callbacks for signout. Blocks until the
 // primary account is cleared.
-// Note that this function requires FakeSigninManager, as it internally invokes
-// functionality of the fake. If a use case emerges for invoking this
-// functionality with a production SigninManager, contact blundell@chromium.org.
-// NOTE: See disclaimer at top of file re: direct usage.
-void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
+void ClearPrimaryAccount(SigninManagerBase* signin_manager,
                          IdentityManager* identity_manager);
 
 // Makes an account available for the given email address, generating a GAIA ID

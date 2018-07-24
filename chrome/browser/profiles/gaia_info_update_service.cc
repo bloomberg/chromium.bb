@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -39,9 +39,9 @@ const int kMinUpdateIntervalSeconds = 5;
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
     : profile_(profile) {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  signin_manager->AddObserver(this);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  identity_manager->AddObserver(this);
 
   PrefService* prefs = profile_->GetPrefs();
   last_updated_ = base::Time::FromInternalValue(
@@ -55,9 +55,9 @@ GAIAInfoUpdateService::~GAIAInfoUpdateService() {
 
 void GAIAInfoUpdateService::Update() {
   // The user must be logged in.
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  if (!signin_manager->IsAuthenticated())
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  if (!identity_manager->HasPrimaryAccount())
     return;
 
   if (profile_image_downloader_)
@@ -173,9 +173,9 @@ void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
 void GAIAInfoUpdateService::Shutdown() {
   timer_.Stop();
   profile_image_downloader_.reset();
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  signin_manager->RemoveObserver(this);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  identity_manager->RemoveObserver(this);
 
   // OK to reset |profile_| pointer here because GAIAInfoUpdateService will not
   // access it again.  This pointer is also used to implement the delegate for
@@ -208,12 +208,12 @@ void GAIAInfoUpdateService::ScheduleNextUpdate() {
   timer_.Start(FROM_HERE, delta, this, &GAIAInfoUpdateService::Update);
 }
 
-void GAIAInfoUpdateService::GoogleSigninSucceeded(const std::string& account_id,
-                                                  const std::string& username) {
-  OnUsernameChanged(username);
+void GAIAInfoUpdateService::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
+  OnUsernameChanged(primary_account_info.gaia);
 }
 
-void GAIAInfoUpdateService::GoogleSignedOut(const std::string& account_id,
-                                            const std::string& username) {
+void GAIAInfoUpdateService::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   OnUsernameChanged(std::string());
 }
