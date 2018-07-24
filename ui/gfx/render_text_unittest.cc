@@ -2308,8 +2308,15 @@ TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInTextWithMultiSpaces) {
 }
 #endif  // !defined(OS_WIN)
 
+// TODO(865527): Chinese and Japanese tokenization doesn't work on mobile.
+#if defined(OS_ANDROID)
+#define MAYBE_MoveLeftRightByWordInChineseText \
+  DISABLED_MoveLeftRightByWordInChineseText
+#else
+#define MAYBE_MoveLeftRightByWordInChineseText MoveLeftRightByWordInChineseText
+#endif
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
-TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInChineseText) {
+TEST_P(RenderTextHarfBuzzTest, MAYBE_MoveLeftRightByWordInChineseText) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("\u6211\u4EEC\u53BB\u516C\u56ED\u73A9"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
@@ -2480,7 +2487,17 @@ TEST_P(RenderTextTest, StringSizeEmptyString) {
   EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
 
-TEST_P(RenderTextTest, StringSizeRespectsFontListMetrics) {
+// TODO(865540): Find two system fonts on Android with different baseline and
+// different height.
+// See also: FontListTest::Fonts_GetHeight_GetBaseline.
+#if defined(OS_ANDROID)
+#define MAYBE_StringSizeRespectsFontListMetrics \
+  DISABLED_StringSizeRespectsFontListMetrics
+#else
+#define MAYBE_StringSizeRespectsFontListMetrics \
+  StringSizeRespectsFontListMetrics
+#endif
+TEST_P(RenderTextTest, MAYBE_StringSizeRespectsFontListMetrics) {
   // Check that the test font and the CJK font have different font metrics.
   Font test_font(kTestFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
@@ -4041,6 +4058,11 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
     return;
 #endif
 
+#if defined(OS_ANDROID)
+  // TODO(865709): make this work on Android.
+  return;
+#endif
+
   // Jump over the telephone: two codepoints, but a single glyph.
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(gfx::Range(3, 3), render_text->selection());
@@ -4235,21 +4257,17 @@ TEST_P(RenderTextTest, StringFitsOwnWidth) {
 }
 
 // TODO(derat): Figure out why this fails on Windows: http://crbug.com/427184
-#if !defined(OS_WIN)
+// TODO(865715): Figure out why this fails on Android.
+#if !defined(OS_WIN) && !defined(OS_ANDROID)
 // Ensure that RenderText examines all of the fonts in its FontList before
 // falling back to other fonts.
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_FontListFallback) {
-#if defined(OS_LINUX)
-  const char kTestFont[] = "Arimo";
-#else
-  const char kTestFont[] = "Arial";
-#endif
   // Double-check that the requested fonts are present.
-  std::string format = std::string(kTestFont) + ", %s, 12px";
+  std::string format = std::string(kTestFontName) + ", %s, 12px";
   FontList font_list(base::StringPrintf(format.c_str(), kSymbolFontName));
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2u, fonts.size());
-  ASSERT_EQ(base::ToLowerASCII(kTestFont),
+  ASSERT_EQ(base::ToLowerASCII(kTestFontName),
             base::ToLowerASCII(fonts[0].GetActualFontNameForTesting()));
   ASSERT_EQ(base::ToLowerASCII(kSymbolFontName),
             base::ToLowerASCII(fonts[1].GetActualFontNameForTesting()));
@@ -4264,7 +4282,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_FontListFallback) {
   ASSERT_EQ(static_cast<size_t>(1), spans.size());
   EXPECT_STRCASEEQ(kSymbolFontName, spans[0].first.GetFontName().c_str());
 }
-#endif  // !defined(OS_WIN)
+#endif  // !defined(OS_WIN) && !defined(OS_ANDROID)
 
 // Ensure that the fallback fonts of the Uniscribe font are tried for shaping.
 #if defined(OS_WIN)
@@ -4289,8 +4307,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_UniscribeFallback) {
 // Ensure that the fallback fonts offered by GetFallbackFonts() are tried. Note
 // this test assumes the font "Arial" doesn't provide a unicode glyph for a
 // particular character, and that there is a system fallback font which does.
-// TODO(msw): Fallback doesn't find a glyph on Linux.
-#if !defined(OS_LINUX)
+// TODO(msw): Fallback doesn't find a glyph on Linux and Android.
+#if !defined(OS_LINUX) && !defined(OS_ANDROID)
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_UnicodeFallback) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetFontList(FontList("Arial, 12px"));
@@ -4364,12 +4382,12 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     {
       SCOPED_TRACE("TextDoesntClip Left Side");
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, Linux, and Mac smoothing draws
-      // to the left of text.  This appears to be a preexisting issue that
-      // wasn't revealed by the prior unit tests.  RenderText currently only
-      // uses origins and advances and ignores bounding boxes so cannot account
-      // for under- and over-hang.
+    defined(OS_ANDROID) || defined(ARCH_CPU_MIPS_FAMILY)
+      // TODO(dschuyler): On Windows, Chrome OS, Linux, Android, and Mac
+      // smoothing draws to the left of text.  This appears to be a preexisting
+      // issue that wasn't revealed by the prior unit tests.  RenderText
+      // currently only uses origins and advances and ignores bounding boxes so
+      // cannot account for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize - 1,
                                   string_size.height());
 #else
@@ -4380,12 +4398,12 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     {
       SCOPED_TRACE("TextDoesntClip Right Side");
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, Linux, and Mac smoothing draws
-      // to the right of text.  This appears to be a preexisting issue that
-      // wasn't revealed by the prior unit tests.  RenderText currently only
-      // uses origins and advances and ignores bounding boxes so cannot account
-      // for under- and over-hang.
+    defined(OS_ANDROID) || defined(ARCH_CPU_MIPS_FAMILY)
+      // TODO(dschuyler): On Windows, Chrome OS, Linux, Android, and Mac
+      // smoothing draws to the right of text.  This appears to be a preexisting
+      // issue that wasn't revealed by the prior unit tests.  RenderText
+      // currently only uses origins and advances and ignores bounding boxes so
+      // cannot account for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE,
                                   kTestSize + string_size.width() + 1,
                                   kTestSize, kTestSize - 1,
@@ -4544,7 +4562,7 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
   render_text->SetText(UTF8ToUTF16("x"));
 
   DrawVisualText();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   // On Linux, whether subpixel AA is supported is determined by the platform
   // FontConfig. Force it into a particular style after computing runs. Other
   // platforms use a known default FontRenderParams from a static local.
@@ -4556,16 +4574,16 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
 
   render_text->set_subpixel_rendering_suppressed(true);
   DrawVisualText();
-#if defined(OS_LINUX)
-    // For Linux, runs shouldn't be re-calculated, and the suppression of the
-    // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
-    // checking, apply the override anyway to be explicit that it is suppressed.
-    EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
-    GetHarfBuzzRunList()->runs()[0]->common.render_params.subpixel_rendering =
-        FontRenderParams::SUBPIXEL_RENDERING_RGB;
-    DrawVisualText();
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // For Linux, runs shouldn't be re-calculated, and the suppression of the
+  // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
+  // checking, apply the override anyway to be explicit that it is suppressed.
+  EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
+  GetHarfBuzzRunList()->runs()[0]->common.render_params.subpixel_rendering =
+      FontRenderParams::SUBPIXEL_RENDERING_RGB;
+  DrawVisualText();
 #endif
-    EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
+  EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
 }
 
 // Verify GetWordLookupDataAtPoint returns the correct baseline point and
