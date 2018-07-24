@@ -1134,11 +1134,19 @@ const char kNewBookmarkAppsName[] = "The new bookmark app system";
 const char kNewBookmarkAppsDescription[] =
     "Enables the new system for creating bookmark apps.";
 
-const char kNewPasswordFormParsingName[] = "New password form parsing";
+const char kNewPasswordFormParsingName[] =
+    "New password form parsing for filling passwords";
 const char kNewPasswordFormParsingDescription[] =
-    "Replaces existing form parsing in password manager with a new version, "
-    "currently under development. WARNING: when enabled Password Manager might "
-    "stop working";
+    "Replaces existing form parsing for filling in password manager with a new "
+    "version, currently under development. WARNING: when enabled, Password "
+    "Manager might stop working";
+
+const char kNewPasswordFormParsingForSavingName[] =
+    "New password form parsing for saving passwords";
+const char kNewPasswordFormParsingForSavingDescription[] =
+    "Replaces existing form parsing for saving in password manager with a new "
+    "version, currently under development. WARNING: when enabled, Password "
+    "Manager might stop working";
 
 const char kNewRemotePlaybackPipelineName[] =
     "Enable the new remote playback pipeline.";

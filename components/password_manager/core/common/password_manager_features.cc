@@ -71,10 +71,16 @@ const base::Feature kPasswordsKeyboardAccessory = {
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-// Enables new password form parsing mechanism, details in
-// go/new-cpm-design-refactoring.
+
+// Enables new password form parsing mechanism for filling passwords, details in
+// https://goo.gl/QodPH1
 const base::Feature kNewPasswordFormParsing = {
     "new-password-form-parsing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables new password form parsing mechanism for saving passwords, details in
+// https://goo.gl/QodPH1
+const base::Feature kNewPasswordFormParsingForSaving = {
+    "new-password-form-parsing-for-saving", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =
