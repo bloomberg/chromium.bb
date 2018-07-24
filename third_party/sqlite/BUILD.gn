@@ -91,6 +91,12 @@ config("chromium_sqlite3_compile_options") {
     # Chromium calls sqlite3_reset() correctly to reset prepared statements.
     "SQLITE_OMIT_AUTORESET",
 
+    # Chrome doesn't ship the SQLite shell, so command auto-completion is not
+    # needed. Chrome developers who build the SQLite shell living at
+    # //third_party/sqlite:sqlite_shell for diagnostic purposes will have to
+    # live without auto-completion.
+    "SQLITE_OMIT_COMPLETE",
+
     # Chrome does not use sqlite3_column_decltype().
     "SQLITE_OMIT_DECLTYPE",
 
@@ -110,8 +116,8 @@ config("chromium_sqlite3_compile_options") {
     # Chromium doesn't use sqlite3_{profile,trace}().
     "SQLITE_OMIT_TRACE",
 
-    # TODO(pwnall): Add SQLITE_OMIT_COMPLETE when we import a SQLite release
-    #               including https://www.sqlite.org/src/info/c3e816cca4ddf096
+    # Uses isnan() in the C99 standard library.
+    "SQLITE_HAVE_ISNAN",
   ]
 
   # On OSX, SQLite has extra logic for detecting the use of network
@@ -258,9 +264,7 @@ component("chromium_sqlite3") {
     ":sqlite_warnings",
   ]
 
-  if (is_linux) {
-    libs = [ "dl" ]
-  } else if (is_mac || is_ios) {
+  if (is_mac || is_ios) {
     libs = [ "CoreFoundation.framework" ]
     if (!is_ios) {
       libs += [ "CoreServices.framework" ]
