@@ -1275,8 +1275,8 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_->GetTransform(&controller_model.transform);
   auto input_event_list = controller_->DetectGestures();
   controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
-  DCHECK(!(controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
-           controller_->ButtonDownHappened(gvr::kControllerButtonClick)))
+  DCHECK(!(controller_->ButtonUpHappened(PlatformController::kButtonSelect) &&
+           controller_->ButtonDownHappened(PlatformController::kButtonSelect)))
       << "Cannot handle a button down and up event within one frame.";
   if (controller_->ButtonState(gvr::kControllerButtonClick)) {
     controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;

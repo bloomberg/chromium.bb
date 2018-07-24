@@ -99,7 +99,6 @@ class VR_EXPORT GestureDetector {
   bool touch_position_changed_;
 
   base::TimeTicks menu_button_down_timestamp_;
-  bool menu_button_pressed_ = false;
   bool menu_button_long_pressed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GestureDetector);

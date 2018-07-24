@@ -67,8 +67,6 @@ class VrController : public PlatformController {
 
   bool TouchUpHappened();
 
-  bool ButtonUpHappened(gvr::ControllerButton button);
-  bool ButtonDownHappened(gvr::ControllerButton button);
   bool ButtonState(gvr::ControllerButton button) const;
 
   bool IsConnected();
@@ -76,6 +74,8 @@ class VrController : public PlatformController {
 
   // PlatformController
   bool IsButtonDown(PlatformController::ButtonType type) const override;
+  bool ButtonUpHappened(PlatformController::ButtonType type) const override;
+  bool ButtonDownHappened(PlatformController::ButtonType type) const override;
   bool IsTouchingTrackpad() const override;
   gfx::PointF GetPositionInTrackpad() const override;
   base::TimeTicks GetLastOrientationTimestamp() const override;

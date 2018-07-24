@@ -10,8 +10,11 @@
 
 namespace {
 constexpr float kDelta = 0.001f;
+}
 
-class MockPlatformController : public vr::PlatformController {
+namespace vr {
+
+class MockPlatformController : public PlatformController {
  public:
   MockPlatformController() = default;
   MockPlatformController(bool touching_trackpad,
@@ -19,12 +22,34 @@ class MockPlatformController : public vr::PlatformController {
       : is_touching_trackpad(touching_trackpad),
         last_touch_timestamp(touch_timestamp) {}
 
-  bool IsButtonDown(vr::PlatformController::ButtonType type) const override {
+  bool IsButtonDown(PlatformController::ButtonType type) const override {
     switch (type) {
       case vr::PlatformController::kButtonSelect:
         return is_select_button_down;
       case vr::PlatformController::kButtonMenu:
         return is_menu_button_down;
+      default:
+        return false;
+    }
+  }
+
+  bool ButtonUpHappened(PlatformController::ButtonType type) const override {
+    switch (type) {
+      case vr::PlatformController::kButtonSelect:
+        return was_select_button_down_ && !is_select_button_down;
+      case vr::PlatformController::kButtonMenu:
+        return was_menu_button_down_ && !is_menu_button_down;
+      default:
+        return false;
+    }
+  }
+
+  bool ButtonDownHappened(PlatformController::ButtonType type) const override {
+    switch (type) {
+      case vr::PlatformController::kButtonSelect:
+        return !was_select_button_down_ && is_select_button_down;
+      case vr::PlatformController::kButtonMenu:
+        return !was_menu_button_down_ && is_menu_button_down;
       default:
         return false;
     }
@@ -56,16 +81,22 @@ class MockPlatformController : public vr::PlatformController {
 
   int GetBatteryLevel() const override { return 100; }
 
+  // Call before each frame, if the test needs button up/down events.
+  void Update() {
+    was_select_button_down_ = is_select_button_down;
+    was_menu_button_down_ = is_menu_button_down;
+  }
+
   bool is_touching_trackpad = false;
   bool is_select_button_down = false;
   bool is_menu_button_down = false;
   gfx::PointF position_in_trackpad;
   base::TimeTicks last_touch_timestamp;
+
+ private:
+  bool was_select_button_down_ = false;
+  bool was_menu_button_down_ = false;
 };
-
-}  // namespace
-
-namespace vr {
 
 TEST(GestureDetector, StartTouchWithoutMoving) {
   GestureDetector detector;
@@ -215,6 +246,7 @@ TEST(GestureDetector, ClickMenuButton) {
   EXPECT_TRUE(gestures.empty());
 
   // Release menu button.
+  controller.Update();
   controller.is_menu_button_down = false;
   timestamp += base::TimeDelta::FromMilliseconds(1);
   gestures = detector.DetectGestures(controller, timestamp);
@@ -233,12 +265,14 @@ TEST(GestureDetector, LongPressMenuButton) {
   EXPECT_TRUE(gestures.empty());
 
   // Keep menu button down.
+  controller.Update();
   timestamp += base::TimeDelta::FromSeconds(1);
   gestures = detector.DetectGestures(controller, timestamp);
   EXPECT_EQ(gestures.size(), 1u);
   EXPECT_EQ(gestures.front()->type(), InputEvent::kMenuButtonLongPressStart);
 
   // Release menu button.
+  controller.Update();
   controller.is_menu_button_down = false;
   timestamp += base::TimeDelta::FromSeconds(1);
   gestures = detector.DetectGestures(controller, timestamp);
