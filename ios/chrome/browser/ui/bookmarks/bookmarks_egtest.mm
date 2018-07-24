@@ -108,14 +108,24 @@ id<GREYMatcher> BookmarksDeleteSwipeButton() {
 // UI.
 id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel) {
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    // When using the stock UINavigationBar back button item, the button's label
+    // may be truncated to the word "Back", or to nothing at all.  It is not
+    // possible to know which label will be used, as the OS makes that decision,
+    // so try to search for any of them.
+    id<GREYMatcher> buttonLabelMatcher =
+        grey_anyOf(grey_accessibilityLabel(previousViewControllerLabel),
+                   grey_accessibilityLabel(@"Back"), nil);
+
     if (@available(iOS 11, *)) {
-      return grey_allOf(grey_kindOfClass([UIButton class]),
-                        grey_accessibilityLabel(previousViewControllerLabel),
-                        nil);
+      return grey_allOf(
+          grey_kindOfClass([UIButton class]),
+          grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+          buttonLabelMatcher, nil);
     } else {
-      return grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitButton),
-                        grey_accessibilityLabel(previousViewControllerLabel),
-                        nil);
+      return grey_allOf(
+          grey_accessibilityTrait(UIAccessibilityTraitButton),
+          grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+          buttonLabelMatcher, nil);
     }
   } else {
     return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
@@ -177,13 +187,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 @end
 
 @implementation BookmarksTestCase
-
-// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
-+ (NSArray*)testInvocations {
-  if (base::ios::IsRunningOnIOS12OrLater())
-    return @[];
-  return [super testInvocations];
-}
 
 - (void)setUp {
   [super setUp];
@@ -1764,13 +1767,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 @implementation BookmarksTestCaseEntries
 
-// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
-+ (NSArray*)testInvocations {
-  if (base::ios::IsRunningOnIOS12OrLater())
-    return @[];
-  return [super testInvocations];
-}
-
 - (void)setUp {
   [super setUp];
 
@@ -2781,13 +2777,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 @implementation BookmarksTestCasePromo
 
-// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
-+ (NSArray*)testInvocations {
-  if (base::ios::IsRunningOnIOS12OrLater())
-    return @[];
-  return [super testInvocations];
-}
-
 - (void)setUp {
   [super setUp];
 
@@ -3002,13 +2991,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 @implementation BookmarksTestCaseAccessibility
 
-// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
-+ (NSArray*)testInvocations {
-  if (base::ios::IsRunningOnIOS12OrLater())
-    return @[];
-  return [super testInvocations];
-}
-
 - (void)setUp {
   [super setUp];
 
@@ -3184,13 +3166,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 @end
 
 @implementation BookmarksTestCaseFolders
-
-// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
-+ (NSArray*)testInvocations {
-  if (base::ios::IsRunningOnIOS12OrLater())
-    return @[];
-  return [super testInvocations];
-}
 
 - (void)setUp {
   [super setUp];
