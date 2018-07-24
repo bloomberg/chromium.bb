@@ -182,19 +182,21 @@ int av1_block_wavelet_energy_level(const AV1_COMP *cpi, MACROBLOCK *x,
 
 int av1_compute_deltaq_from_energy_level(const AV1_COMP *const cpi,
                                          int block_var_level) {
+  int rate_level;
+  const AV1_COMMON *const cm = &cpi->common;
+
   if (DELTAQ_MODULATION == 1) {
     ENERGY_IN_BOUNDS(block_var_level);
-    const int rate_level = SEGMENT_ID(block_var_level);
-    const AV1_COMMON *const cm = &cpi->common;
-    int qindex_delta = av1_compute_qdelta_by_rate(
-        &cpi->rc, cm->frame_type, cm->base_qindex,
-        deltaq_rate_ratio[rate_level], cm->seq_params.bit_depth);
-
-    if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
-      qindex_delta = -cm->base_qindex + 1;
-    }
-    return qindex_delta;
+    rate_level = SEGMENT_ID(block_var_level);
   } else {
-    return cpi->common.seg.feature_data[SEG_LVL_ALT_Q][block_var_level];
+    rate_level = block_var_level;
   }
+  int qindex_delta = av1_compute_qdelta_by_rate(
+      &cpi->rc, cm->frame_type, cm->base_qindex, deltaq_rate_ratio[rate_level],
+      cm->seq_params.bit_depth);
+
+  if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
+    qindex_delta = -cm->base_qindex + 1;
+  }
+  return qindex_delta;
 }
