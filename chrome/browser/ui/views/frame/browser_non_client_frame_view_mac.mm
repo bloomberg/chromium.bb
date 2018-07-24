@@ -73,6 +73,18 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
   // calling through private APIs.
   DCHECK(tabstrip);
 
+  const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
+  gfx::Rect bounds = gfx::Rect(0, GetTopInset(restored), width(),
+                               tabstrip->GetPreferredSize().height());
+  bounds.Inset(GetTabStripLeftInset(), 0,
+               GetAfterTabstripItemWidth() + GetTabstripPadding(), 0);
+  return bounds;
+}
+
+int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
+  if (!browser_view()->IsTabStripVisible())
+    return 0;
+
   // Calculate the y offset for the tab strip because in fullscreen mode the tab
   // strip may need to move under the slide down menu bar.
   CGFloat y_offset = kTabstripTopInset;
@@ -99,15 +111,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
     }
   }
 
-  gfx::Rect bounds =
-      gfx::Rect(0, y_offset, width(), tabstrip->GetPreferredSize().height());
-  bounds.Inset(GetTabStripLeftInset(), 0,
-               GetAfterTabstripItemWidth() + GetTabstripPadding(), 0);
-  return bounds;
-}
-
-int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
-  return browser_view()->IsTabStripVisible() ? kTabstripTopInset : 0;
+  return y_offset;
 }
 
 int BrowserNonClientFrameViewMac::GetAfterTabstripItemWidth() const {
