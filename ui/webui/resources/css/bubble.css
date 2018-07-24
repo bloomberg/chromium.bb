@@ -22,7 +22,7 @@
 /* When the close button is there, we need more padding on the right of the
  * bubble. */
 .bubble-close:not([hidden]) ~ .bubble-content {
-  -webkit-padding-end: 22px;
+  padding-inline-end: 22px;
 }
 
 .bubble-close {

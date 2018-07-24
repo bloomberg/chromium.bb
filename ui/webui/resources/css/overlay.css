@@ -98,7 +98,6 @@ html[dir='rtl'] .overlay .page > .close-button {
 }
 
 .overlay .page h1 {
-  -webkit-padding-end: 24px;
   color: #333;
   /* 120% of the body's font-size of 84% is 16px. This will keep the relative
    * size between the body and these titles consistent. */
@@ -144,8 +143,8 @@ html[dir='rtl'] .overlay .page .action-area {
 .overlay .page .button-strip > :-webkit-any(button,
                                             input[type='button'],
                                             input[type='submit']) {
-  -webkit-margin-start: 10px;
   display: block;
+  margin-inline-start: 10px;
 }
 
 .overlay .page .button-strip > .default-button:not(:focus) {

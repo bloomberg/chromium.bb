@@ -95,11 +95,11 @@
 }
 
 .cr-dialog-title {
-  -webkit-margin-end: 20px;
   display: block;
   font-size: 120%;
   font-weight: bold;
   margin-bottom: 10px;
+  margin-inline-end: 20px;
   white-space: nowrap;
   word-wrap: normal;
 }

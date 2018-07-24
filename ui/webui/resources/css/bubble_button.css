@@ -3,10 +3,10 @@
  * found in the LICENSE file. */
 
 .bubble-button {
-  -webkit-margin-start: 4px;
   display: inline-block;
   height: 0;
   line-height: 1;
+  margin-inline-start: 4px;
   vertical-align: middle;
   width: 16px;
 }

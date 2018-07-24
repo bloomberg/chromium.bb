@@ -9,7 +9,7 @@
 }
 
 .controlled-setting-indicator {
-  -webkit-margin-end: 0.3em;
+  margin-inline-end: 0.3em;
 }
 
 .controlled-setting-indicator:not([controlled-by]) {
@@ -63,12 +63,12 @@
 }
 
 .controlled-setting-bubble-extension-name {
-  -webkit-padding-start: 30px;
   background-repeat: no-repeat;
   font-weight: bold;
   height: 24px;
   margin-top: -9px;
   overflow: hidden;
+  padding-inline-start: 30px;
   padding-top: 3px;
   position: absolute;
   text-overflow: ellipsis;

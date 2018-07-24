@@ -47,9 +47,6 @@
         font-size: inherit;
         line-height: inherit;
         outline: none;
-        text-align: inherit;
-        text-overflow: ellipsis;
-        width: 100%;
 
         /**
          * When using mixins, avoid using padding shorthand. Using both the
@@ -59,10 +56,14 @@
          *
          * See https://crbug.com/846254 and associated CL for more information.
          */
-        -webkit-padding-end: var(--cr-input-padding-end, 8px);
-        -webkit-padding-start: var(--cr-input-padding-start, 8px);
         padding-bottom: var(--cr-input-padding-bottom, 6px);
+        padding-inline-end: var(--cr-input-padding-end, 8px);
+        padding-inline-start: var(--cr-input-padding-start, 8px);
         padding-top: var(--cr-input-padding-top, 6px);
+
+        text-align: inherit;
+        text-overflow: ellipsis;
+        width: 100%;
 
         @apply --cr-input-input;
       }

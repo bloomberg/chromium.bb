@@ -144,7 +144,7 @@ cr.define('cr.ui.table', function() {
         if (splitters[i].hidden)
           continue;
         place += cm.getWidth(i);
-        splitters[i].style.webkitMarginStart = place + 'px';
+        splitters[i].style.marginInlineStart = place + 'px';
       }
     },
 
