@@ -282,6 +282,11 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
   delegate_->SetDownloadManager(download_manager_.get());
   pref_service_ = profile()->GetTestingPrefService();
   web_contents()->SetDelegate(&web_contents_delegate_);
+
+#if defined(OS_ANDROID)
+  pref_service_->SetInteger(prefs::kPromptForDownloadAndroid,
+                            static_cast<int>(DownloadPromptStatus::DONT_SHOW));
+#endif
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
@@ -1101,6 +1106,10 @@ class TestDownloadLocationDialogBridge : public DownloadLocationDialogBridge {
 }  // namespace
 
 TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
+  // TODO(xingliu): Delete this test when download location change feature
+  // flag is deleted.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kDownloadsLocationChange);
   EXPECT_FALSE(
       base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
 
