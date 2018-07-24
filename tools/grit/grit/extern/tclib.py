@@ -500,4 +500,3 @@ class Translation(BaseMessage):
     Returns a copy of this Translation.
     """
     return Translation(None, clone_from=self)
-

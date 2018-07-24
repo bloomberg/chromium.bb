@@ -39,4 +39,3 @@ class SkeletonNode(base.Node):
 
   def GetInputPath(self):
     return self.attrs['file']
-

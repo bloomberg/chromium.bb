@@ -27,6 +27,3 @@ class PostProcessor(object):
       The root node of the processed GRD tree.
     '''
     raise NotImplementedError()
-
-
-

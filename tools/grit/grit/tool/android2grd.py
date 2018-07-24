@@ -476,4 +476,3 @@ OPTIONS may be any of the following:
       return value == 'true'
     else:
       return True
-

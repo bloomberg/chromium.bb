@@ -58,4 +58,3 @@ def ElementToClass(name, typeattr):
   if name not in _ELEMENT_TO_CLASS:
     raise exception.UnknownElement()
   return _ELEMENT_TO_CLASS[name]
-

@@ -77,4 +77,3 @@ END'''), 'IDD_SIDEBAR_RSS_PANEL_PROPPAGE')
 
 if __name__ == '__main__':
   unittest.main()
-

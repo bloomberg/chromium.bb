@@ -249,4 +249,3 @@ Bulk Translation Upload tool.
       output_file.write(' ')
       output_file.write(text)
       output_file.write('\n')
-

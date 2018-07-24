@@ -621,4 +621,3 @@ class ContentNode(Node):
   '''Convenience baseclass for nodes that can have content.'''
   def _ContentType(self):
     return self._CONTENT_TYPE_MIXED
-

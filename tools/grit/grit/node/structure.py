@@ -356,4 +356,3 @@ class StructureNode(base.Node):
     assert hasattr(self, 'gatherer')
     if self.ExpandVariables():
       self.gatherer.SubstituteMessages(substituter)
-

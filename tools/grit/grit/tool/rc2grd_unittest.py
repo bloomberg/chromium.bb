@@ -134,4 +134,3 @@ The installation will not proceed if you choose to cancel.
 
 if __name__ == '__main__':
   unittest.main()
-

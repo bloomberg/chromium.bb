@@ -138,4 +138,3 @@ def Parse(xtb_file, callback_function, defs=None, debug=False,
   xml.sax.parse(xtb_file, handler)
   assert handler.language != ''
   return handler.language
-

@@ -82,4 +82,3 @@ class RegexpGatherer(skeleton_gatherer.SkeletonGatherer):
 
     if self.single_message_:
       self.skeleton_.append(self.uberclique.MakeClique(self.single_message_))
-
