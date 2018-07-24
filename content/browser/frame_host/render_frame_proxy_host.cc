@@ -207,7 +207,9 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   // Temporary debugging code for https://crbug.com/794625 to see if we're ever
   // sending a message to create a RenderFrameProxy when one already exists.
   // TODO(alexmos): Remove after the investigation.
-  if (render_frame_proxy_created_) {
+  if (GetProcess()->GetProcess().IsValid() &&
+      GetProcess()->GetProcess().Pid() ==
+          pid_of_last_create_message_for_debugging_) {
     SiteInstanceImpl* site_instance =
         static_cast<SiteInstanceImpl*>(site_instance_.get());
     GURL site_url(site_instance->GetSiteURL());
@@ -235,7 +237,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
       frame_tree_node_->current_replication_state(),
       frame_tree_node_->devtools_frame_token());
 
-  render_frame_proxy_created_ = true;
+  set_render_frame_proxy_created(true);
 
   // For subframes, initialize the proxy's FrameOwnerProperties only if they
   // differ from default values.
