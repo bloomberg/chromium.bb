@@ -6,12 +6,14 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/mac/foundation_util.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -20,6 +22,27 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Returns a matcher to test whether the element is a scroll view with a content
+// smaller than the scroll view bounds.
+id<GREYMatcher> ContentViewSmallerThanScrollView() {
+  MatchesBlock matches = ^BOOL(UIView* view) {
+    UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view);
+    return scrollView &&
+           scrollView.contentSize.height < scrollView.bounds.size.height;
+  };
+  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+    [description appendText:
+                     @"Not a scroll view or the scroll view content is bigger "
+                     @"than the scroll view bounds"];
+  };
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
+}
+
+}  // namespace
 
 using chrome_test_util::AccountConsistencyConfirmationOkButton;
 using chrome_test_util::AccountConsistencySetupSigninButton;
@@ -66,27 +89,42 @@ using chrome_test_util::SettingsDoneButton;
 }
 
 + (void)confirmSigninConfirmationDialog {
-  // Confirm sign in. "More" button is shown on short devices (e.g. iPhone 5s,
-  // iPhone SE), so needs to scroll first to dismiss the "More" button before
-  // taping on "OK".
-  // Cannot directly scroll on |kSignInConfirmationCollectionViewId| because it
-  // is a MDC collection view, not a UICollectionView, so itself is not
-  // scrollable.
-  // Wait until the sync confirmation is displayed.
-  id<GREYMatcher> signinUICollectionViewMatcher = nil;
+  // To confirm the dialog, the scroll view content has to be scrolled to the
+  // bottom to transform "MORE" button into the validation button.
+  // EarlGrey fails to scroll to the bottom, using grey_scrollToContentEdge(),
+  // if the scroll view doesn't bounce and by default a scroll view doesn't
+  // bounce when the content fits into the scroll view (the scroll never ends).
+  // To test if the content fits into the scroll view,
+  // ContentViewSmallerThanScrollView() matcher is used on the signin scroll
+  // view.
+  // If the matcher fails, then the scroll view should be scrolled to the
+  // bottom.
+  // Once to the bottom, the consent can be confirmed.
+  id<GREYMatcher> confirmationScrollViewMatcher = nil;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
-    signinUICollectionViewMatcher =
+    confirmationScrollViewMatcher =
         grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   } else {
-    signinUICollectionViewMatcher = grey_allOf(
+    confirmationScrollViewMatcher = grey_allOf(
         grey_ancestor(
             grey_accessibilityID(kSigninConfirmationCollectionViewId)),
         grey_kindOfClass([UICollectionView class]), nil);
   }
-  [[EarlGrey selectElementWithMatcher:signinUICollectionViewMatcher]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-
+  NSError* error = nil;
+  [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
+      assertWithMatcher:ContentViewSmallerThanScrollView()
+                  error:&error];
+  if (error) {
+    // If the consent is bigger than the scroll view, the primary button should
+    // be "MORE".
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON)]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
+        performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+  }
   [[EarlGrey selectElementWithMatcher:AccountConsistencyConfirmationOkButton()]
       performAction:grey_tap()];
 }
