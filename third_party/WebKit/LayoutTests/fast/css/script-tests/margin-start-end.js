@@ -17,16 +17,16 @@ function test(dir, prop, value, queryProp)
     return result;
 }
 
-shouldBeEqualToString('test("ltr", "-webkit-margin-start", "10px", "width")', '90px');
-shouldBeEqualToString('test("ltr", "-webkit-margin-end", "20px", "width")', '80px');
-shouldBeEqualToString('test("ltr", "-webkit-margin-start", "10px", "margin-left")', '10px');
-shouldBeEqualToString('test("ltr", "-webkit-margin-end", "20px", "margin-right")', '20px');
-shouldBeEqualToString('test("ltr", "margin-left", "10px", "-webkit-margin-start")', '10px');
-shouldBeEqualToString('test("ltr", "margin-right", "20px", "-webkit-margin-end")', '20px');
+shouldBeEqualToString('test("ltr", "margin-inline-start", "10px", "width")', '90px');
+shouldBeEqualToString('test("ltr", "margin-inline-end", "20px", "width")', '80px');
+shouldBeEqualToString('test("ltr", "margin-inline-start", "10px", "margin-left")', '10px');
+shouldBeEqualToString('test("ltr", "margin-inline-end", "20px", "margin-right")', '20px');
+shouldBeEqualToString('test("ltr", "margin-left", "10px", "margin-inline-start")', '10px');
+shouldBeEqualToString('test("ltr", "margin-right", "20px", "margin-inline-end")', '20px');
 
-shouldBeEqualToString('test("rtl", "-webkit-margin-start", "10px", "width")', '90px');
-shouldBeEqualToString('test("rtl", "-webkit-margin-end", "20px", "width")', '80px');
-shouldBeEqualToString('test("rtl", "-webkit-margin-start", "10px", "margin-right")', '10px');
-shouldBeEqualToString('test("rtl", "-webkit-margin-end", "20px", "margin-left")', '20px');
-shouldBeEqualToString('test("rtl", "margin-right", "10px", "-webkit-margin-start")', '10px');
-shouldBeEqualToString('test("rtl", "margin-left", "20px", "-webkit-margin-end")', '20px');
+shouldBeEqualToString('test("rtl", "margin-inline-start", "10px", "width")', '90px');
+shouldBeEqualToString('test("rtl", "margin-inline-end", "20px", "width")', '80px');
+shouldBeEqualToString('test("rtl", "margin-inline-start", "10px", "margin-right")', '10px');
+shouldBeEqualToString('test("rtl", "margin-inline-end", "20px", "margin-left")', '20px');
+shouldBeEqualToString('test("rtl", "margin-right", "10px", "margin-inline-start")', '10px');
+shouldBeEqualToString('test("rtl", "margin-left", "20px", "margin-inline-end")', '20px');

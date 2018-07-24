@@ -11,7 +11,7 @@
 	opacity: invalid value;
 	border: black solid 5px;
 	border-left: thick dashed lightgreen;
-	-webkit-border-end-color: pink;
+	border-inline-end-color: pink;
 }
 #target2 {
   -webkit-align-content: space-between;
@@ -28,7 +28,7 @@ test(function() {
 	assert_true(internals.isCSSPropertyUseCounted(document, "background-color"));
 	assert_true(internals.isCSSPropertyUseCounted(document, "padding-bottom"));
 	assert_true(internals.isCSSPropertyUseCounted(document, "padding-left"));
-	assert_true(internals.isCSSPropertyUseCounted(document, "-webkit-border-end-color"));
+	assert_true(internals.isCSSPropertyUseCounted(document, "border-inline-end-color"));
 }, "Test setting and reading css properties");
 
 test(function() {

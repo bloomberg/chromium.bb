@@ -13,10 +13,10 @@ PASS No hashless color quirk for background short-hand
 PASS No hashless color quirk for text-shadow color
 PASS No hashless color quirk for box-shadow color
 PASS No hashless color quirk for linear-gradient colors
-PASS No hashless color quirk for -webkit-border-start-color property
-PASS No hashless color quirk for -webkit-border-end-color property
-PASS No hashless color quirk for -webkit-border-before-property
-PASS No hashless color quirk for -webkit-border-after-color property
+PASS No hashless color quirk for border-inline-start-color property
+PASS No hashless color quirk for border-inline-end-color property
+PASS No hashless color quirk for border-block-start-property
+PASS No hashless color quirk for border-block-end-color property
 PASS No hashless color quirk for -webkit-column-rule-color property
 PASS No hashless color quirk for -webkit-text-emphasis-color property
 PASS No hashless color quirk for -webkit-text-fill-color property
