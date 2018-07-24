@@ -19,6 +19,8 @@
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/tools/quic_memory_cache_backend.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
+#include "net/tools/quic/quic_http_proxy_backend.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 // The port the quic server will listen on.
@@ -29,6 +31,9 @@ std::string FLAGS_quic_mode = "cache";
 // construction to seed the cache. Cache directory can be
 // generated using `wget -p --save-headers <url>`
 std::string FLAGS_quic_response_cache_dir = "";
+// URL with http/https, IP address or host name and the port number of the
+// backend server
+std::string FLAGS_quic_proxy_backend_url = "";
 
 std::unique_ptr<quic::ProofSource> CreateProofSource(
     const base::FilePath& cert_path,
@@ -58,20 +63,26 @@ int main(int argc, char* argv[]) {
         "Options:\n"
         "-h, --help                  show this help message and exit\n"
         "--port=<port>               specify the port to listen on\n"
-        "--mode=<cache>              Default: cache\n"
-        "                            Specify mode of operation: Cache will "
-        "serve it "
+        "--mode=<cache|proxy>        Specify mode of operation: Proxy will "
+        "serve response from\n"
+        "                            a backend server and Cache will serve it "
         "from a cache dir\n"
         "--quic_response_cache_dir=<directory>\n"
         "                            The directory containing cached response "
         "data to load\n"
+        "--quic_proxy_backend_url=<http/https>://<hostname_ip>:<port_number> \n"
+        "                            The URL for the single backend server "
+        "hostname \n"
+        "                            For example, \"http://xyz.com:80\"\n"
         "--certificate_file=<file>   path to the certificate chain\n"
         "--key_file=<file>           path to the pkcs8 private key\n";
     std::cout << help_str;
     exit(0);
   }
 
-  quic::QuicMemoryCacheBackend memory_cache_backend;
+  // Serve the HTTP response from backend: memory cache or http proxy
+  std::unique_ptr<quic::QuicSimpleServerBackend> quic_simple_server_backend;
+
   if (line->HasSwitch("mode")) {
     FLAGS_quic_mode = line->GetSwitchValueASCII("mode");
   }
@@ -79,10 +90,25 @@ int main(int argc, char* argv[]) {
     if (line->HasSwitch("quic_response_cache_dir")) {
       FLAGS_quic_response_cache_dir =
           line->GetSwitchValueASCII("quic_response_cache_dir");
+      quic_simple_server_backend =
+          std::make_unique<quic::QuicMemoryCacheBackend>();
       if (FLAGS_quic_response_cache_dir.empty() ||
-          memory_cache_backend.InitializeBackend(
+          quic_simple_server_backend->InitializeBackend(
               FLAGS_quic_response_cache_dir) != true) {
         LOG(ERROR) << "--quic_response_cache_dir is not valid !";
+        return 1;
+      }
+    }
+  } else if (FLAGS_quic_mode.compare("proxy") == 0) {
+    if (line->HasSwitch("quic_proxy_backend_url")) {
+      FLAGS_quic_proxy_backend_url =
+          line->GetSwitchValueASCII("quic_proxy_backend_url");
+      quic_simple_server_backend =
+          std::make_unique<net::QuicHttpProxyBackend>();
+      if (quic_simple_server_backend->InitializeBackend(
+              FLAGS_quic_proxy_backend_url) != true) {
+        LOG(ERROR) << "--quic_proxy_backend_url "
+                   << FLAGS_quic_proxy_backend_url << " is not valid !";
         return 1;
       }
     }
@@ -115,7 +141,7 @@ int main(int argc, char* argv[]) {
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
       config, quic::QuicCryptoServerConfig::ConfigOptions(),
-      quic::AllSupportedVersions(), &memory_cache_backend);
+      quic::AllSupportedVersions(), quic_simple_server_backend.get());
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {
