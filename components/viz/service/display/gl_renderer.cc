@@ -2372,7 +2372,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                                  quad->resource_id());
   // ScopedReadLockGL contains the correct texture size, even when
-  // quad->resource_size_in_pixesl() is empty.
+  // quad->resource_size_in_pixels() is empty.
   const gfx::Size texture_size = lock.size();
   TexCoordPrecision tex_coord_precision =
       TexCoordPrecisionRequired(gl_, &highp_threshold_cache_,
