@@ -255,6 +255,7 @@ GIN_EXPORT v8::Local<v8::String> StringToSymbol(v8::Isolate* isolate,
 template<typename T>
 bool ConvertFromV8(v8::Isolate* isolate, v8::Local<v8::Value> input,
                    T* result) {
+  DCHECK(isolate);
   return Converter<T>::FromV8(isolate, input, result);
 }
 
