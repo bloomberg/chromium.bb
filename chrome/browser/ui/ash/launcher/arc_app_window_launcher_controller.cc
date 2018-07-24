@@ -210,6 +210,12 @@ void ArcAppWindowLauncherController::AttachControllerToWindowsIfNeeded() {
 void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
     aura::Window* window) {
   const int task_id = GetWindowTaskId(window);
+  if (task_id >= 0) {
+    // System windows are also arc apps.
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(ash::AppType::ARC_APP));
+  }
+
   if (task_id <= 0)
     return;
 
@@ -220,8 +226,6 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   // TODO(msw): Set shelf item types earlier to avoid ShelfWindowWatcher races.
   // (maybe use Widget::InitParams::mus_properties in cash too crbug.com/750334)
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::ARC_APP));
 
   // Create controller if we have task info.
   AppWindowInfo* info = GetAppWindowInfoForTask(task_id);
