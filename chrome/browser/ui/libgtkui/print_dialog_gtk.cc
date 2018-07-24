@@ -475,6 +475,7 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
       }
 
       PrintSettings settings;
+      settings.set_is_modifiable(context_->settings().is_modifiable());
       settings.set_ranges(ranges_vector);
       settings.set_selection_only(print_selection_only);
       InitPrintSettingsGtk(gtk_settings_, page_setup_, &settings);
