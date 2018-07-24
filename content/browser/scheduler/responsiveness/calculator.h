@@ -25,12 +25,14 @@ class CONTENT_EXPORT Calculator {
   virtual ~Calculator();
 
   // Must be called from the UI thread.
-  void TaskOrEventFinishedOnUIThread(base::TimeTicks schedule_time,
-                                     base::TimeTicks finish_time);
+  // virtual for testing.
+  virtual void TaskOrEventFinishedOnUIThread(base::TimeTicks schedule_time,
+                                             base::TimeTicks finish_time);
 
   // Must be called from the IO thread.
-  void TaskOrEventFinishedOnIOThread(base::TimeTicks schedule_time,
-                                     base::TimeTicks finish_time);
+  // virtual for testing.
+  virtual void TaskOrEventFinishedOnIOThread(base::TimeTicks schedule_time,
+                                             base::TimeTicks finish_time);
 
   // Each janking task/event is fully defined by |start_time| and |end_time|.
   // Note that |duration| = |end_time| - |start_time|.

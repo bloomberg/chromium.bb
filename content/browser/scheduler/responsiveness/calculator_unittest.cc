@@ -13,7 +13,6 @@ namespace {
 // Copied from calculator.cc.
 constexpr int kMeasurementIntervalInMs = 30 * 1000;
 constexpr int kJankThresholdInMs = 100;
-}  // namespace
 
 class FakeCalculator : public Calculator {
  public:
@@ -28,6 +27,8 @@ class FakeCalculator : public Calculator {
  private:
   std::vector<int> janky_slices_;
 };
+
+}  // namespace
 
 class ResponsivenessCalculatorTest : public testing::Test {
  public:
