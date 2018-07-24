@@ -14,7 +14,6 @@ source_set("autofill") {
     "form_input_accessory_view_controller.h",
     "form_input_accessory_view_controller.mm",
     "form_input_accessory_view_delegate.h",
-    "form_input_accessory_view_provider.h",
     "form_suggestion_controller.h",
     "form_suggestion_controller.mm",
     "form_suggestion_label.h",
@@ -30,6 +29,7 @@ source_set("autofill") {
     "validation_rules_storage_factory.h",
   ]
   deps = [
+    ":autofill_shared",
     "resources:autofill_close",
     "resources:autofill_close_pressed",
     "resources:autofill_keyboard_background",
@@ -70,6 +70,14 @@ source_set("autofill") {
     "//url",
   ]
   libs = [ "QuartzCore.framework" ]
+}
+
+source_set("autofill_shared") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "form_input_accessory_view_provider.h",
+  ]
+  libs = [ "UIKit.framework" ]
 }
 
 source_set("autofill_internal") {
