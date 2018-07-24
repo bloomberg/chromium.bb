@@ -1550,21 +1550,12 @@ DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-
-  if (!stringOrUrl.IsTrustedURL() && document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return nullptr;
+  String url = TrustedURL::GetString(stringOrUrl, document_, exception_state);
+  if (!exception_state.HadException()) {
+    return openFromString(executionContext, current_window, entered_window, url,
+                          target, features, exception_state);
   }
-
-  String url = stringOrUrl.IsUSVString()
-                   ? stringOrUrl.GetAsUSVString()
-                   : stringOrUrl.GetAsTrustedURL()->toString();
-
-  return openFromString(executionContext, current_window, entered_window, url,
-                        target, features, exception_state);
+  return nullptr;
 }
 
 DOMWindow* LocalDOMWindow::openFromString(ExecutionContext* executionContext,
@@ -1609,21 +1600,12 @@ DOMWindow* LocalDOMWindow::open(const USVStringOrTrustedURL& stringOrUrl,
                                 LocalDOMWindow* calling_window,
                                 LocalDOMWindow* entered_window,
                                 ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-
-  if (!stringOrUrl.IsTrustedURL() && document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return nullptr;
+  String url = TrustedURL::GetString(stringOrUrl, document_, exception_state);
+  if (!exception_state.HadException()) {
+    return openFromString(url, frame_name, window_features_string,
+                          calling_window, entered_window, exception_state);
   }
-
-  String url = stringOrUrl.IsUSVString()
-                   ? stringOrUrl.GetAsUSVString()
-                   : stringOrUrl.GetAsTrustedURL()->toString();
-
-  return openFromString(url, frame_name, window_features_string, calling_window,
-                        entered_window, exception_state);
+  return nullptr;
 }
 
 DOMWindow* LocalDOMWindow::openFromString(const String& url_string,

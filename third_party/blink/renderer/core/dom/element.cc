@@ -1617,19 +1617,11 @@ void Element::setAttribute(const QualifiedName& name,
 void Element::setAttribute(const QualifiedName& name,
                            const USVStringOrTrustedURL& stringOrURL,
                            ExceptionState& exception_state) {
-  DCHECK(stringOrURL.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  if (stringOrURL.IsUSVString() && GetDocument().RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return;
+  String url =
+      TrustedURL::GetString(stringOrURL, &GetDocument(), exception_state);
+  if (!exception_state.HadException()) {
+    setAttribute(name, AtomicString(url));
   }
-
-  String valueString = stringOrURL.IsUSVString()
-                           ? stringOrURL.GetAsUSVString()
-                           : stringOrURL.GetAsTrustedURL()->toString();
-
-  setAttribute(name, AtomicString(valueString));
 }
 
 ALWAYS_INLINE void Element::SetAttributeInternal(

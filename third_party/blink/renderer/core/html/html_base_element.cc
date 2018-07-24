@@ -96,21 +96,7 @@ KURL HTMLBaseElement::href() const {
 
 void HTMLBaseElement::setHref(const USVStringOrTrustedURL& stringOrUrl,
                               ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  DCHECK(!stringOrUrl.IsNull());
-
-  if (stringOrUrl.IsUSVString() && GetDocument().RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return;
-  }
-
-  AtomicString value(stringOrUrl.IsUSVString()
-                         ? stringOrUrl.GetAsUSVString()
-                         : stringOrUrl.GetAsTrustedURL()->toString());
-
-  setAttribute(hrefAttr, value);
+  setAttribute(hrefAttr, stringOrUrl, exception_state);
 }
 
 }  // namespace blink

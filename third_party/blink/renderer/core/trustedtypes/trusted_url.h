@@ -13,7 +13,10 @@
 
 namespace blink {
 
+class Document;
+class ExceptionState;
 class ScriptState;
+class USVStringOrTrustedURL;
 
 class CORE_EXPORT TrustedURL final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -25,6 +28,9 @@ class CORE_EXPORT TrustedURL final : public ScriptWrappable {
   String toString() const;
   static TrustedURL* create(ScriptState*, const String& url);
   static TrustedURL* unsafelyCreate(ScriptState*, const String& url);
+  static String GetString(USVStringOrTrustedURL,
+                          const Document*,
+                          ExceptionState&);
 
  private:
   TrustedURL(const KURL&);
