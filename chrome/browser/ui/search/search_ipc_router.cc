@@ -188,6 +188,48 @@ void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
   delegate_->OnUndoAllMostVisitedDeletions();
 }
 
+void SearchIPCRouter::AddCustomLink(int page_seq_no,
+                                    const GURL& url,
+                                    const std::string& title) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessAddCustomLink())
+    return;
+
+  delegate_->OnAddCustomLink(url, title);
+}
+
+void SearchIPCRouter::DeleteCustomLink(int page_seq_no, const GURL& url) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessDeleteCustomLink())
+    return;
+
+  delegate_->OnDeleteCustomLink(url);
+}
+
+void SearchIPCRouter::UndoDeleteCustomLink(int page_seq_no) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessUndoDeleteCustomLink())
+    return;
+
+  delegate_->OnUndoDeleteCustomLink();
+}
+
+void SearchIPCRouter::ResetCustomLinks(int page_seq_no) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessResetCustomLinks())
+    return;
+
+  delegate_->OnResetCustomLinks();
+}
+
 void SearchIPCRouter::LogEvent(int page_seq_no,
                                NTPLoggingEventType event,
                                base::TimeDelta time) {

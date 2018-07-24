@@ -80,6 +80,16 @@ class InstantService : public KeyedService,
   void UndoMostVisitedDeletion(const GURL& url);
   // Invoked when the Instant page wants to undo all Most Visited deletions.
   void UndoAllMostVisitedDeletions();
+  // Invoked when the Instant page wants to add a custom link.
+  void AddCustomLink(const GURL& url, const std::string& title);
+  // Invoked when the Instant page wants to delete a custom link.
+  void DeleteCustomLink(const GURL& url);
+  // Invoked when the Instant page wants to restore the previously deleted
+  // custom link.
+  void UndoDeleteCustomLink();
+  // Invoked when the Instant page wants to delete all custom links and use Most
+  // Visited sites instead.
+  void ResetCustomLinks();
 
   // Invoked by the InstantController to update theme information for NTP.
   //
@@ -146,6 +156,10 @@ class InstantService : public KeyedService,
   // Update the background pref to point to
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
+
+  // Will initialize custom links from the current Most Visited sites if custom
+  // links have not been initialized yet. Otherwise, does nothing.
+  void MaybeInitializeCustomLinks();
 
   Profile* const profile_;
 

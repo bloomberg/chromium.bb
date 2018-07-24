@@ -300,6 +300,29 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
+void SearchTabHelper::OnAddCustomLink(const GURL& url,
+                                      const std::string& title) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    instant_service_->AddCustomLink(url, title);
+}
+
+void SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    instant_service_->DeleteCustomLink(url);
+}
+
+void SearchTabHelper::OnUndoDeleteCustomLink() {
+  if (instant_service_)
+    instant_service_->UndoDeleteCustomLink();
+}
+
+void SearchTabHelper::OnResetCustomLinks() {
+  if (instant_service_)
+    instant_service_->ResetCustomLinks();
+}
+
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())

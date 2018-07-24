@@ -223,6 +223,13 @@ void MostVisitedSites::UninitializeCustomLinks() {
   Refresh();
 }
 
+bool MostVisitedSites::IsCustomLinksInitialized() {
+  if (!custom_links_)
+    return false;
+
+  return custom_links_->IsInitialized();
+}
+
 void MostVisitedSites::AddCustomLink(const GURL& url,
                                      const base::string16& title) {
   if (!custom_links_)
@@ -236,6 +243,13 @@ void MostVisitedSites::DeleteCustomLink(const GURL& url) {
     return;
 
   custom_links_->DeleteLink(url);
+}
+
+void MostVisitedSites::UndoDeleteCustomLink() {
+  if (!custom_links_)
+    return;
+
+  custom_links_->UndoDeleteLink();
 }
 
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
