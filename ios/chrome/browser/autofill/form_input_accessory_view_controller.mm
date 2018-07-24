@@ -562,60 +562,46 @@ NSArray* FindDescendantToolbarItemsForActionName(
   // if the provider can provide an accessory view for the specified form/field
   // and NO otherwise.
   NSMutableArray* findProviderBlocks = [[NSMutableArray alloc] init];
-  for (NSUInteger i = 0; i < [_providers count]; i++) {
-    passwords::PipelineBlock block =
-        ^(void (^completion)(BOOL success)) {
-          // Access all the providers through |self| to guarantee that both
-          // |self| and all the providers exist when the block is executed.
-          // |_providers| is immutable, so the subscripting is always valid.
-          FormInputAccessoryViewController* strongSelf = weakSelf;
-          if (!strongSelf)
-            return;
-          id<FormInputAccessoryViewProvider> provider =
-              strongSelf->_providers[i];
-          [provider checkIfAccessoryViewIsAvailableForForm:strongParams
-                                                  webState:webState
-                                         completionHandler:completion];
-        };
+  for (id<FormInputAccessoryViewProvider> provider in _providers) {
+    passwords::PipelineBlock block = ^(void (^completion)(BOOL success)) {
+      AccessoryViewReadyCompletion accessoryViewReadyCompletion =
+          ^(UIView* view, id<FormInputAccessoryViewProvider> provider) {
+            if (!view) {
+              // View is nil, tell the pipeline to continue searching.
+              completion(NO);
+              return;
+            }
+            // Once the view is retrieved, tell the pipeline to stop and
+            // update the UI.
+            completion(YES);
+            FormInputAccessoryViewController* strongSelf = weakSelf;
+            if (!strongSelf) {
+              return;
+            }
+            if (strongSelf->_currentProvider != provider) {
+              [strongSelf->_currentProvider
+                  inputAccessoryViewControllerDidReset:strongSelf];
+            }
+            strongSelf->_currentProvider = provider;
+            [provider setAccessoryViewDelegate:strongSelf];
+            [strongSelf showCustomInputAccessoryView:view];
+          };
+      [provider retrieveAccessoryViewForForm:strongParams
+                                    webState:webState
+                    accessoryViewUpdateBlock:accessoryViewReadyCompletion];
+    };
     [findProviderBlocks addObject:block];
   }
-
-  // Once the view is retrieved, update the UI.
-  AccessoryViewReadyCompletion readyCompletion =
-      ^(UIView* accessoryView, id<FormInputAccessoryViewProvider> provider) {
-        FormInputAccessoryViewController* strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf->_currentProvider)
-          return;
-        DCHECK_EQ(strongSelf->_currentProvider, provider);
-        [provider setAccessoryViewDelegate:strongSelf];
-        [strongSelf showCustomInputAccessoryView:accessoryView];
-      };
-
-  // Once a provider is found, use it to retrieve the accessory view.
-  passwords::PipelineCompletionBlock onProviderFound =
-      ^(NSUInteger providerIndex) {
-        if (providerIndex == NSNotFound) {
-          [weakSelf reset];
-          return;
-        }
-        FormInputAccessoryViewController* strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf->_webState)
-          return;
-        id<FormInputAccessoryViewProvider> provider =
-            strongSelf->_providers[providerIndex];
-        [strongSelf->_currentProvider
-            inputAccessoryViewControllerDidReset:self];
-        strongSelf->_currentProvider = provider;
-        [strongSelf->_currentProvider
-            retrieveAccessoryViewForForm:strongParams
-                                webState:webState
-                accessoryViewUpdateBlock:readyCompletion];
-      };
 
   // Run all the blocks in |findProviderBlocks| until one invokes its
   // completion with YES. The first one to do so will be passed to
   // |onProviderFound|.
-  passwords::RunSearchPipeline(findProviderBlocks, onProviderFound);
+  passwords::RunSearchPipeline(findProviderBlocks, ^(NSUInteger providerIndex) {
+    // If no view was retrieved, reset self.
+    if (providerIndex == NSNotFound) {
+      [weakSelf reset];
+    }
+  });
 }
 
 - (UIView*)getKeyboardView {

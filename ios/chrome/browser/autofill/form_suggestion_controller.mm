@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
+#include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
@@ -143,9 +145,6 @@ AutofillSuggestionState::AutofillSuggestionState(
   }
 }
 
-- (void)onNoSuggestionsAvailable {
-}
-
 - (void)detachFromWebState {
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());
@@ -264,6 +263,17 @@ AutofillSuggestionState::AutofillSuggestionState(
   passwords::RunSearchPipeline(findProviderBlocks, completion);
 }
 
+- (void)onNoSuggestionsAvailable {
+  DCHECK(accessoryViewUpdateBlock_);
+  BOOL isManualFillEnabled =
+      base::FeatureList::IsEnabled(autofill::features::kAutofillManualFallback);
+  if (isManualFillEnabled) {
+    accessoryViewUpdateBlock_(nil, self);
+  } else {
+    accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:@[]], self);
+  }
+}
+
 - (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
                   provider:(id<FormSuggestionProvider>)provider {
   // TODO(ios): crbug.com/249916. If we can also pass in the form/field for
@@ -357,23 +367,14 @@ AutofillSuggestionState::AutofillSuggestionState(
   _delegate = delegate;
 }
 
-- (void)
-checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
-                              webState:(web::WebState*)webState
-                     completionHandler:
-                         (AccessoryViewAvailableCompletion)completionHandler {
-  [self processPage:webState];
-  completionHandler(YES);
-}
-
 - (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
                             webState:(web::WebState*)webState
             accessoryViewUpdateBlock:
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
+  [self processPage:webState];
   _suggestionState.reset(
       new AutofillSuggestionState(params.form_name, params.field_name,
                                   params.field_identifier, params.value));
-  accessoryViewUpdateBlock([self suggestionViewWithSuggestions:@[]], self);
   accessoryViewUpdateBlock_ = [accessoryViewUpdateBlock copy];
   [self retrieveSuggestionsForForm:params webState:webState];
 }
