@@ -26,6 +26,7 @@ constexpr char kOfflineResourcesComponent[] = "demo_mode_resources";
 constexpr char kTestDemoModeResourcesMountPoint[] =
     "/run/imageloader/demo_mode_resources";
 constexpr char kDemoAppsImageFile[] = "android_demo_apps.squash";
+constexpr char kExternalExtensionsPrefsFile[] = "demo_extensions.json";
 
 void SetBoolean(bool* value) {
   *value = true;
@@ -163,6 +164,23 @@ TEST_F(DemoSessionTest, StartInitiatesOfflineResourcesLoad) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
+  EXPECT_EQ(
+      component_mount_point.AppendASCII("foo.txt"),
+      demo_session->GetOfflineResourceAbsolutePath(base::FilePath("foo.txt")));
+  EXPECT_EQ(component_mount_point.AppendASCII("foo/bar.txt"),
+            demo_session->GetOfflineResourceAbsolutePath(
+                base::FilePath("foo/bar.txt")));
+  EXPECT_EQ(
+      component_mount_point.AppendASCII("foo/"),
+      demo_session->GetOfflineResourceAbsolutePath(base::FilePath("foo/")));
+  EXPECT_TRUE(
+      demo_session->GetOfflineResourceAbsolutePath(base::FilePath("../foo/"))
+          .empty());
+  EXPECT_TRUE(
+      demo_session->GetOfflineResourceAbsolutePath(base::FilePath("foo/../bar"))
+          .empty());
 }
 
 TEST_F(DemoSessionTest, StartForDemoDeviceNotInDemoMode) {
@@ -212,6 +230,8 @@ TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInDemoMode) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
 }
 
 TEST_F(DemoSessionTest, PreloadOfflineResourcesIfNotInDemoMode) {
@@ -271,6 +291,8 @@ TEST_F(DemoSessionTest, StartDemoSessionWhilePreloadingResources) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
 }
 
 TEST_F(DemoSessionTest, StartDemoSessionAfterPreloadingResources) {
@@ -289,6 +311,8 @@ TEST_F(DemoSessionTest, StartDemoSessionAfterPreloadingResources) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
 
   EXPECT_EQ(std::list<std::string>(), image_loader_client_->pending_loads());
 }
@@ -316,6 +340,8 @@ TEST_F(DemoSessionTest, EnsureOfflineResourcesLoadedAfterStart) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
 }
 
 TEST_F(DemoSessionTest, EnsureOfflineResourcesLoadedAfterOfflineResourceLoad) {
@@ -338,6 +364,8 @@ TEST_F(DemoSessionTest, EnsureOfflineResourcesLoadedAfterOfflineResourceLoad) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
 }
 
 TEST_F(DemoSessionTest, EnsureOfflineResourcesLoadedAfterPreload) {
@@ -365,6 +393,8 @@ TEST_F(DemoSessionTest, EnsureOfflineResourcesLoadedAfterPreload) {
   EXPECT_TRUE(demo_session->offline_resources_loaded());
   EXPECT_EQ(component_mount_point.AppendASCII(kDemoAppsImageFile),
             demo_session->GetDemoAppsPath());
+  EXPECT_EQ(component_mount_point.AppendASCII(kExternalExtensionsPrefsFile),
+            demo_session->GetExternalExtensionsPrefsPath());
 }
 
 TEST_F(DemoSessionTest, MultipleEnsureOfflineResourcesLoaded) {

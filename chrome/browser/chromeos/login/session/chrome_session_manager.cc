@@ -112,8 +112,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       return;
     }
 
-    chromeos::DemoSession* demo_session =
-        chromeos::DemoSession::StartIfInDemoMode();
+    chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
     // In demo session, delay starting user session until the offline demo
     // session resources have been loaded.
     if (demo_session && demo_session->started() &&

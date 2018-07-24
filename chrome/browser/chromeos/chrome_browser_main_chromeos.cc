@@ -822,6 +822,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
     session_manager::SessionManager::Get()->CreateSessionForRestart(
         account_id, user_id_hash);
+
+    // If restarting demo session, mark demo session as started before primary
+    // profile starts initialization so browser context keyed services created
+    // with the browser context (for example ExtensionService) can use
+    // DemoSession::started().
+    DemoSession::StartIfInDemoMode();
+
     VLOG(1) << "Relaunching browser for user: " << account_id.Serialize()
             << " with hash: " << user_id_hash;
   }
