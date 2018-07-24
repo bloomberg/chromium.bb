@@ -817,9 +817,12 @@ PaintResult PaintLayerPainter::PaintSingleFragment(
     PaintLayerFlags paint_flags,
     const PaintLayerFragment& fragment,
     const LayoutSize& subpixel_accumulation) {
-  // Now do a paint with the root layer shifted to be us. The cull rect
-  // is infinite to simplify invalidation of clip property node changes across
-  // transform boundaries.
+  // Now do a paint with the root layer shifted to be us.
+
+  // We do not apply cull rect optimizations across transforms for two reasons:
+  //   1) Performance: We can optimize transform changes by not repainting.
+  //   2) Complexity: Difficulty updating clips when ancestor transforms change.
+  // For these reasons, we use an infinite dirty rect here.
   PaintLayerPaintingInfo new_paint_info(
       &paint_layer_, LayoutRect(LayoutRect::InfiniteIntRect()),
       painting_info.GetGlobalPaintFlags(), subpixel_accumulation);

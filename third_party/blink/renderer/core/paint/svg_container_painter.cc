@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
+#include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
@@ -24,11 +25,6 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
       !layout_svg_container_.SelfWillPaint())
     return;
 
-  FloatRect bounding_box =
-      layout_svg_container_.VisualRectInLocalSVGCoordinates();
-  // LayoutSVGHiddenContainer's visual rect is always empty but we need to
-  // paint its descendants.
-
   // Spec: An empty viewBox on the <svg> element disables rendering.
   DCHECK(layout_svg_container_.GetElement());
   if (IsSVGSVGElement(*layout_svg_container_.GetElement()) &&
@@ -37,17 +33,19 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
 
   PaintInfo paint_info_before_filtering(paint_info);
 
-  // Content underneath transforms applies an infinite cull rect. This is
-  // to simplify invalidation of clip property node changes across transform
-  // boundaries.
+  if (SVGModelObjectPainter(layout_svg_container_)
+          .CullRectSkipsPainting(paint_info_before_filtering)) {
+    return;
+  }
+
+  // We do not apply cull rect optimizations across transforms for two reasons:
+  //   1) Performance: We can optimize transform changes by not repainting.
+  //   2) Complexity: Difficulty updating clips when ancestor transforms change.
+  // This is why we use an infinite cull rect if there is a transform. Non-svg
+  // content, does this in PaintLayerPainter::PaintSingleFragment.
   if (layout_svg_container_.StyleRef().HasTransform()) {
     paint_info_before_filtering.ApplyInfiniteCullRect();
   } else {
-    if (!layout_svg_container_.IsSVGHiddenContainer() &&
-        !paint_info.GetCullRect().IntersectsCullRect(
-            layout_svg_container_.LocalToSVGParentTransform(), bounding_box))
-      return;
-
     paint_info_before_filtering.UpdateCullRect(
         layout_svg_container_.LocalToSVGParentTransform());
   }
@@ -94,20 +92,14 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     }
   }
 
-  if (paint_info_before_filtering.phase != PaintPhase::kForeground)
-    return;
+  SVGModelObjectPainter(layout_svg_container_)
+      .PaintOutline(paint_info_before_filtering);
 
-  if (layout_svg_container_.Style()->OutlineWidth() &&
-      layout_svg_container_.Style()->Visibility() == EVisibility::kVisible) {
-    PaintInfo outline_paint_info(paint_info_before_filtering);
-    outline_paint_info.phase = PaintPhase::kSelfOutlineOnly;
-    ObjectPainter(layout_svg_container_)
-        .PaintOutline(outline_paint_info, LayoutPoint(bounding_box.Location()));
-  }
-
-  if (paint_info_before_filtering.IsPrinting())
+  if (paint_info_before_filtering.IsPrinting() &&
+      paint_info_before_filtering.phase == PaintPhase::kForeground) {
     ObjectPainter(layout_svg_container_)
         .AddPDFURLRectIfNeeded(paint_info_before_filtering, LayoutPoint());
+  }
 }
 
 }  // namespace blink
