@@ -173,6 +173,7 @@ enum wdrm_plane_property {
 	WDRM_PLANE_CRTC_ID,
 	WDRM_PLANE_IN_FORMATS,
 	WDRM_PLANE_IN_FENCE_FD,
+	WDRM_PLANE_FB_DAMAGE_CLIPS,
 	WDRM_PLANE__COUNT
 };
 
@@ -216,6 +217,7 @@ static const struct drm_property_info plane_props[] = {
 	[WDRM_PLANE_CRTC_ID] = { .name = "CRTC_ID", },
 	[WDRM_PLANE_IN_FORMATS] = { .name = "IN_FORMATS" },
 	[WDRM_PLANE_IN_FENCE_FD] = { .name = "IN_FENCE_FD" },
+	[WDRM_PLANE_FB_DAMAGE_CLIPS] = { .name = "FB_DAMAGE_CLIPS" },
 };
 
 /**
@@ -462,6 +464,8 @@ struct drm_plane_state {
 
 	/* We don't own the fd, so we shouldn't close it */
 	int in_fence_fd;
+
+	pixman_region32_t damage; /* damage to kernel */
 
 	struct wl_list link; /* drm_output_state::plane_list */
 };
@@ -1396,6 +1400,7 @@ drm_plane_state_alloc(struct drm_output_state *state_output,
 	state->output_state = state_output;
 	state->plane = plane;
 	state->in_fence_fd = -1;
+	pixman_region32_init(&state->damage);
 
 	/* Here we only add the plane state to the desired link, and not
 	 * set the member. Having an output pointer set means that the
@@ -1427,6 +1432,7 @@ drm_plane_state_free(struct drm_plane_state *state, bool force)
 	wl_list_init(&state->link);
 	state->output_state = NULL;
 	state->in_fence_fd = -1;
+	pixman_region32_fini(&state->damage);
 
 	if (force || state != state->plane->state_cur) {
 		drm_fb_unref(state->fb);
@@ -1464,6 +1470,7 @@ drm_plane_state_duplicate(struct drm_output_state *state_output,
 	if (src->fb)
 		dst->fb = drm_fb_ref(src->fb);
 	dst->output_state = state_output;
+	pixman_region32_init(&dst->damage);
 	dst->complete = false;
 
 	return dst;
@@ -2516,6 +2523,42 @@ drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode)
 }
 
 static int
+plane_add_damage(drmModeAtomicReq *req, struct drm_backend *backend,
+		 struct drm_plane_state *plane_state)
+{
+	struct drm_plane *plane = plane_state->plane;
+	struct drm_property_info *info =
+		&plane->props[WDRM_PLANE_FB_DAMAGE_CLIPS];
+	pixman_box32_t *rects;
+	uint32_t blob_id;
+	int n_rects;
+	int ret;
+
+	if (!pixman_region32_not_empty(&plane_state->damage))
+		return 0;
+
+	/*
+	 * If a plane doesn't support fb damage blob property, kernel will
+	 * perform full plane update.
+	 */
+	if (info->prop_id == 0)
+		return 0;
+
+	rects = pixman_region32_rectangles(&plane_state->damage, &n_rects);
+
+	ret = drmModeCreatePropertyBlob(backend->drm.fd, rects,
+					sizeof(*rects) * n_rects, &blob_id);
+	if (ret != 0)
+		return ret;
+
+	ret = plane_add_prop(req, plane, WDRM_PLANE_FB_DAMAGE_CLIPS, blob_id);
+	if (ret != 0)
+		return ret;
+
+	return 0;
+}
+
+static int
 drm_output_apply_state_atomic(struct drm_output_state *state,
 			      drmModeAtomicReq *req,
 			      uint32_t *flags)
@@ -2590,6 +2633,7 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 				      plane_state->dest_w);
 		ret |= plane_add_prop(req, plane, WDRM_PLANE_CRTC_H,
 				      plane_state->dest_h);
+		ret |= plane_add_damage(req, b, plane_state);
 
 		if (plane_state->fb && plane_state->fb->format)
 			pinfo = plane_state->fb->format;
