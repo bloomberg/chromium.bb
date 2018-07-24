@@ -55,7 +55,6 @@
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
-#include "third_party/blink/public/platform/web_platform_event_type.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_speech_synthesizer.h"
