@@ -4,8 +4,6 @@
 
 #include "net/third_party/quic/core/http/quic_spdy_client_session.h"
 
-#include "net/log/net_log_with_source.h"
-#include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"

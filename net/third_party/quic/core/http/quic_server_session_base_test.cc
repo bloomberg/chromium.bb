@@ -7,14 +7,11 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/macros.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_crypto_server_stream.h"
-#include "net/third_party/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
@@ -599,9 +596,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   std::vector<ParsedQuicVersion> packet_version_list = {version};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       1, 0, true, false, 1,
-      QuicString(chlo.GetSerialized(Perspective::IS_CLIENT)
-                     .AsStringPiece()
-                     .as_string()),
+      QuicString(chlo.GetSerialized(Perspective::IS_CLIENT).AsStringPiece()),
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
       PACKET_4BYTE_PACKET_NUMBER, &packet_version_list));
 
@@ -612,7 +607,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
 
   // Set the current packet
   QuicConnectionPeer::SetCurrentPacket(session_->connection(),
-                                       packet->AsStringPiece().as_string());
+                                       packet->AsStringPiece());
 
   // Yes, this is horrible.  But it's the easiest way to trigger the behavior we
   // need to exercise.
