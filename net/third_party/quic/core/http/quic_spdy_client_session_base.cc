@@ -69,6 +69,12 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
+  if (!IsIncomingStream(promised_stream_id)) {
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Received push stream id for outgoing stream.",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
   largest_promised_stream_id_ = promised_stream_id;
 
   QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
