@@ -37,6 +37,8 @@ class PlatformController {
   virtual ~PlatformController() {}
 
   virtual bool IsButtonDown(ButtonType type) const = 0;
+  virtual bool ButtonUpHappened(ButtonType type) const = 0;
+  virtual bool ButtonDownHappened(ButtonType type) const = 0;
   virtual bool IsTouchingTrackpad() const = 0;
   virtual gfx::PointF GetPositionInTrackpad() const = 0;
   virtual base::TimeTicks GetLastOrientationTimestamp() const = 0;

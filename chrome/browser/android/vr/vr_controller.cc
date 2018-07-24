@@ -136,7 +136,7 @@ device::mojom::XRInputSourceStatePtr VrController::GetInputSourceState() {
   // Set the primary button state.
   state->primary_input_pressed = ButtonState(GVR_CONTROLLER_BUTTON_CLICK);
 
-  if (ButtonUpHappened(GVR_CONTROLLER_BUTTON_CLICK))
+  if (ButtonUpHappened(PlatformController::kButtonSelect))
     state->primary_input_clicked = true;
 
   state->description = device::mojom::XRInputSourceDescription::New();
@@ -174,7 +174,7 @@ device::mojom::XRInputSourceStatePtr VrController::GetInputSourceState() {
   return state;
 }
 
-bool VrController::IsButtonDown(PlatformController::ButtonType type) const {
+bool VrController::IsButtonDown(ButtonType type) const {
   return controller_state_->GetButtonState(PlatformToGvrButton(type));
 }
 
@@ -275,18 +275,20 @@ bool VrController::TouchUpHappened() {
   return controller_state_->GetTouchUp();
 }
 
-bool VrController::ButtonDownHappened(gvr::ControllerButton button) {
+bool VrController::ButtonDownHappened(ButtonType button) const {
   // Workaround for GVR sometimes not reporting GetButtonDown when it should.
-  bool detected_down =
-      !previous_button_states_[static_cast<int>(button)] && ButtonState(button);
-  return controller_state_->GetButtonDown(button) || detected_down;
+  auto gvr_button = PlatformToGvrButton(button);
+  bool detected_down = !previous_button_states_[static_cast<int>(button)] &&
+                       ButtonState(gvr_button);
+  return controller_state_->GetButtonDown(gvr_button) || detected_down;
 }
 
-bool VrController::ButtonUpHappened(gvr::ControllerButton button) {
+bool VrController::ButtonUpHappened(ButtonType button) const {
   // Workaround for GVR sometimes not reporting GetButtonUp when it should.
-  bool detected_up =
-      previous_button_states_[static_cast<int>(button)] && !ButtonState(button);
-  return controller_state_->GetButtonUp(button) || detected_up;
+  auto gvr_button = PlatformToGvrButton(button);
+  bool detected_up = previous_button_states_[static_cast<int>(button)] &&
+                     !ButtonState(gvr_button);
+  return controller_state_->GetButtonUp(gvr_button) || detected_up;
 }
 
 bool VrController::ButtonState(gvr::ControllerButton button) const {

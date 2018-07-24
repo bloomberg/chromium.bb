@@ -85,18 +85,14 @@ void GestureDetector::DetectMenuButtonGestures(
     const PlatformController& controller,
     base::TimeTicks current_timestamp) {
   std::unique_ptr<InputEvent> event;
-  if (!menu_button_pressed_ &&
-      controller.IsButtonDown(PlatformController::kButtonMenu)) {
-    menu_button_pressed_ = true;
+  if (controller.ButtonDownHappened(PlatformController::kButtonMenu)) {
     menu_button_down_timestamp_ = current_timestamp;
     menu_button_long_pressed_ = false;
   }
-  if (menu_button_pressed_ &&
-      !controller.IsButtonDown(PlatformController::kButtonMenu)) {
+  if (controller.ButtonUpHappened(PlatformController::kButtonMenu)) {
     event = std::make_unique<InputEvent>(
         menu_button_long_pressed_ ? InputEvent::kMenuButtonLongPressEnd
                                   : InputEvent::kMenuButtonClicked);
-    menu_button_pressed_ = false;
   }
   if (!menu_button_long_pressed_ &&
       controller.IsButtonDown(PlatformController::kButtonMenu) &&
