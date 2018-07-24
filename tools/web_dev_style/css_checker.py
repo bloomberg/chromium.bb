@@ -280,15 +280,38 @@ class CSSChecker(object):
       h = hex_reg.search(line).group(1)
       return ' (replace with #%s)' % (h[0] + h[2] + h[4])
 
-    webkit_before_or_after_reg = re.compile(r'-webkit-(\w+-)(after|before):')
+    prefixed_logical_axis_reg = re.compile(r"""
+        -webkit-(min-|max-|)logical-(height|width):
+        """, re.VERBOSE)
 
-    def suggest_top_or_bottom(line):
-      prop, pos = webkit_before_or_after_reg.search(line).groups()
-      top_or_bottom = 'top' if pos == 'before' else 'bottom'
-      return ' (replace with %s)' % (prop + top_or_bottom)
+    def suggest_unprefixed_logical_axis(line):
+      preffix, prop = prefixed_logical_axis_reg.search(line).groups()
+      block_or_inline = 'block' if prop == 'height' else 'inline'
+      return ' (replace with %s)' % (preffix + block_or_inline + '-size')
 
-    def webkit_before_or_after(line):
-      return webkit_before_or_after_reg.search(line)
+    def prefixed_logical_axis(line):
+      return prefixed_logical_axis_reg.search(line)
+
+    prefixed_logical_side_reg = re.compile(r"""
+        -webkit-(margin|padding|border)-(before|after|start|end)
+        (?!-collapse)(-\w+|):
+        """, re.VERBOSE)
+
+    def suggest_unprefixed_logical_side(line):
+      prop, pos, suffix = prefixed_logical_side_reg.search(line).groups()
+      if pos == 'before' or pos == 'after':
+        block_or_inline = 'block'
+      else:
+        block_or_inline = 'inline'
+      if pos == 'start' or pos == 'before':
+        start_or_end = 'start'
+      else:
+        start_or_end = 'end'
+      return ' (replace with %s)' % (
+        prop + '-' + block_or_inline + '-' + start_or_end + suffix)
+
+    def prefixed_logical_side(line):
+      return prefixed_logical_side_reg.search(line)
 
     def zero_width_lengths(contents):
       hsl_reg = re.compile(r"""
@@ -370,9 +393,13 @@ class CSSChecker(object):
           'test': rgb_if_not_gray,
           'after': suggest_rgb_from_hex,
         },
-        { 'desc': 'Use *-top/bottom instead of -webkit-*-before/after.',
-          'test': webkit_before_or_after,
-          'after': suggest_top_or_bottom,
+        { 'desc': 'Unprefix logical axis property.',
+          'test': prefixed_logical_axis,
+          'after': suggest_unprefixed_logical_axis,
+        },
+        { 'desc': 'Unprefix logical side property.',
+          'test': prefixed_logical_side,
+          'after': suggest_unprefixed_logical_side,
         },
         { 'desc': 'Use "0" for zero-width lengths (i.e. 0px -> 0)',
           'test': zero_width_lengths,
