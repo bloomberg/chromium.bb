@@ -44,13 +44,11 @@ namespace blink {
 class BlobDataHandle;
 class DOMArrayBuffer;
 class KURL;
-class WebSocketChannelClient;
 
 class MODULES_EXPORT WebSocketChannel
     : public GarbageCollectedFinalized<WebSocketChannel> {
  public:
   WebSocketChannel() = default;
-  static WebSocketChannel* Create(ExecutionContext*, WebSocketChannelClient*);
 
   enum CloseEventCode {
     kCloseEventCodeNotSpecified = -1,
@@ -77,15 +75,13 @@ class MODULES_EXPORT WebSocketChannel
                     unsigned byte_offset,
                     unsigned byte_length) = 0;
   virtual void Send(scoped_refptr<BlobDataHandle>) = 0;
-
-  // For WorkerWebSocketChannel.
   virtual void SendTextAsCharVector(std::unique_ptr<Vector<char>>) = 0;
   virtual void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>) = 0;
 
-  // Do not call |send| after calling this method.
+  // Do not call |Send| after calling this method.
   virtual void Close(int code, const String& reason) = 0;
 
-  // Log the reason text and close the connection. Will call didClose().
+  // Log the reason text and close the connection. Will call DidClose().
   // The MessageLevel parameter will be used for the level of the message
   // shown at the devtools console.
   // SourceLocation parameter may be shown with the reason text
