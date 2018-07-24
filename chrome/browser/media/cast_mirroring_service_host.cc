@@ -9,8 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/net/default_network_context_params.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -86,7 +88,11 @@ void CastMirroringServiceHost::GetVideoCaptureHost(
 
 void CastMirroringServiceHost::GetNetworkContext(
     network::mojom::NetworkContextRequest request) {
-  // TODO(xjz): Implemenation will be added in a later CL.
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      CreateDefaultNetworkContextParams();
+  network_context_params->context_name = "mirroring";
+  content::GetNetworkService()->CreateNetworkContext(
+      std::move(request), std::move(network_context_params));
 }
 
 void CastMirroringServiceHost::CreateAudioStream(
