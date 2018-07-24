@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
@@ -45,19 +46,17 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
   ~PreflightResult();
 
   // Checks if the given |method| is allowed by the CORS-preflight response.
-  base::Optional<mojom::CORSError> EnsureAllowedCrossOriginMethod(
+  base::Optional<CORSErrorStatus> EnsureAllowedCrossOriginMethod(
       const std::string& method) const;
 
   // Checks if the given all |headers| are allowed by the CORS-preflight
-  // response. |detected_header| indicates the disallowed header name if the
-  // pointer is valid.
+  // response.
   // This does not reject when the headers contain forbidden headers
   // (https://fetch.spec.whatwg.org/#forbidden-header-name) because they may be
   // added by the user agent. They must be checked separately and rejected for
   // JavaScript-initiated requests.
-  base::Optional<mojom::CORSError> EnsureAllowedCrossOriginHeaders(
-      const net::HttpRequestHeaders& headers,
-      std::string* detected_header) const;
+  base::Optional<CORSErrorStatus> EnsureAllowedCrossOriginHeaders(
+      const net::HttpRequestHeaders& headers) const;
 
   // Checks if the given combination of |credentials_mode|, |method|, and
   // |headers| is allowed by the CORS-preflight response.

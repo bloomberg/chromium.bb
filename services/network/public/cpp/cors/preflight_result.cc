@@ -112,8 +112,7 @@ PreflightResult::PreflightResult(
 
 PreflightResult::~PreflightResult() = default;
 
-base::Optional<mojom::CORSError>
-PreflightResult::EnsureAllowedCrossOriginMethod(
+base::Optional<CORSErrorStatus> PreflightResult::EnsureAllowedCrossOriginMethod(
     const std::string& method) const {
   // Request method is normalized to upper case, and comparison is performed in
   // case-sensitive way, that means access control header should provide an
@@ -127,13 +126,13 @@ PreflightResult::EnsureAllowedCrossOriginMethod(
   if (!credentials_ && methods_.find("*") != methods_.end())
     return base::nullopt;
 
-  return mojom::CORSError::kMethodDisallowedByPreflightResponse;
+  return CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+                         method);
 }
 
-base::Optional<mojom::CORSError>
+base::Optional<CORSErrorStatus>
 PreflightResult::EnsureAllowedCrossOriginHeaders(
-    const net::HttpRequestHeaders& headers,
-    std::string* detected_header) const {
+    const net::HttpRequestHeaders& headers) const {
   if (!credentials_ && headers_.find("*") != headers_.end())
     return base::nullopt;
 
@@ -149,9 +148,8 @@ PreflightResult::EnsureAllowedCrossOriginHeaders(
       // fine.
       if (IsForbiddenHeader(key))
         continue;
-      if (detected_header)
-        *detected_header = header.key;
-      return mojom::CORSError::kHeaderDisallowedByPreflightResponse;
+      return CORSErrorStatus(
+          mojom::CORSError::kHeaderDisallowedByPreflightResponse, header.key);
     }
   }
   return base::nullopt;
@@ -172,7 +170,7 @@ bool PreflightResult::EnsureAllowedRequest(
   if (EnsureAllowedCrossOriginMethod(method))
     return false;
 
-  if (EnsureAllowedCrossOriginHeaders(headers, nullptr))
+  if (EnsureAllowedCrossOriginHeaders(headers))
     return false;
 
   return true;
