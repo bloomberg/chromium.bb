@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_TEXT_METRICS_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/baselines.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -62,9 +63,8 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   }
   double emHeightAscent() const { return em_height_ascent_; }
   double emHeightDescent() const { return em_height_descent_; }
-  double hangingBaseline() const { return hanging_baseline_; }
-  double alphabeticBaseline() const { return alphabetic_baseline_; }
-  double ideographicBaseline() const { return ideographic_baseline_; }
+  void getBaselines(Baselines& baselines) const { baselines = baselines_; }
+  Baselines getBaselines() const { return baselines_; }
 
   static float GetFontBaseline(const TextBaseline&, const FontMetrics&);
 
@@ -89,9 +89,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   double actual_bounding_box_descent_ = 0.0;
   double em_height_ascent_ = 0.0;
   double em_height_descent_ = 0.0;
-  double hanging_baseline_ = 0.0;
-  double alphabetic_baseline_ = 0.0;
-  double ideographic_baseline_ = 0.0;
+  Baselines baselines_;
 };
 
 }  // namespace blink

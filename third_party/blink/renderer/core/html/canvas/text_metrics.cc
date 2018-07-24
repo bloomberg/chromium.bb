@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
+#include "third_party/blink/renderer/core/html/canvas/baselines.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 
 namespace blink {
@@ -101,9 +102,10 @@ void TextMetrics::Update(const Font& font,
   em_height_descent_ = baseline_y;
 
   // TODO(fserb): hanging/ideographic baselines are broken.
-  hanging_baseline_ = ascent * kHangingAsPercentOfAscent / 100.0f - baseline_y;
-  ideographic_baseline_ = -descent - baseline_y;
-  alphabetic_baseline_ = -baseline_y;
+  baselines_.setAlphabetic(-baseline_y);
+  baselines_.setHanging(ascent * kHangingAsPercentOfAscent / 100.0f -
+                        baseline_y);
+  baselines_.setIdeographic(-descent - baseline_y);
 }
 
 }  // namespace blink
