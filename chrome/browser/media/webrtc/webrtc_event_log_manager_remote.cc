@@ -162,9 +162,17 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
   // while destruction took place, thereby avoiding endless attempts to upload
   // the same file.
 
-  // |network_connection_tracker_| might already have posted a task back to us,
-  // but it will not run, because |task_runner_| has already been stopped.
-  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+  if (network_connection_tracker_) {
+    // * |network_connection_tracker_| might already have posted a task back
+    //   to us, but it will not run, because |task_runner_| has already been
+    //   stopped.
+    // * RemoveNetworkConnectionObserver() should generally be called on the
+    //   same thread as AddNetworkConnectionObserver(), but in this case it's
+    //   okay to remove on a separate thread, because this only happens during
+    //   Chrome shutdown, when no others tasks are running; there can be no
+    //   concurrently executing notification from the tracker.
+    network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+  }
 }
 
 void WebRtcRemoteEventLogManager::SetNetworkConnectionTracker(
