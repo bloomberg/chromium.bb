@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/system/palette/palette_utils.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/base_event_utils.h"
@@ -222,8 +223,17 @@ void HighlighterController::RecognizeGesture() {
 
   if (!box.IsEmpty() &&
       gesture_type != HighlighterGestureType::kNotRecognized) {
-    const gfx::Rect selection_rect = gfx::ToEnclosingRect(
-        gfx::ScaleRect(box, GetScreenshotScale(current_window)));
+    // TODO(muyuanli): Delete the check when native assistant is default on.
+    // This is a temporary workaround to support both ARC-based assistant
+    // and native assistant. In ARC-based assistant, we send the rect in pixels
+    // to ARC side, where the app will crop the screenshot. In native assistant,
+    // we pass the rect directly to UI snapshot API, which assumes coordinates
+    // in DP.
+    const gfx::Rect selection_rect =
+        chromeos::switches::IsAssistantEnabled()
+            ? gfx::ToEnclosingRect(box)
+            : gfx::ToEnclosingRect(
+                  gfx::ScaleRect(box, GetScreenshotScale(current_window)));
     if (client_)
       client_->HandleSelection(selection_rect);
 

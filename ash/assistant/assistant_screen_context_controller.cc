@@ -175,9 +175,8 @@ void AssistantScreenContextController::RequestScreenContext(
   assistant_screen_context_model_.SetRequestState(
       ScreenContextRequestState::kInProgress);
 
-  // Request screen context for the entire screen.
   assistant_->RequestScreenContext(
-      gfx::Rect(),
+      rect,
       base::BindOnce(
           &AssistantScreenContextController::OnScreenContextRequestFinished,
           screen_context_request_factory_.GetWeakPtr()));
