@@ -1601,13 +1601,17 @@ void QuicChromiumClientSession::OnConnectivityProbeReceived(
 int QuicChromiumClientSession::HandleWriteError(
     int error_code,
     scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet) {
+  current_connection_migration_cause_ = ON_WRITE_ERROR;
+  LogHandshakeStatusOnConnectionMigrationSignal();
+
   base::UmaHistogramSparse("Net.QuicSession.WriteError", -error_code);
   if (IsCryptoHandshakeConfirmed()) {
     base::UmaHistogramSparse("Net.QuicSession.WriteError.HandshakeConfirmed",
                              -error_code);
   }
+
   if (error_code == ERR_MSG_TOO_BIG || stream_factory_ == nullptr ||
-      !migrate_session_on_network_change_v2_) {
+      !migrate_session_on_network_change_v2_ || !IsCryptoHandshakeConfirmed()) {
     return error_code;
   }
 
@@ -1655,7 +1659,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
     // Close the connection if migration failed. Do not cause a
     // connection close packet to be sent since socket may be borked.
     connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
-                                  "Write and subsequent migration failed",
+                                  "Write error with nulled stream factory",
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
     return;
   }
@@ -1666,12 +1670,10 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
     // Close the connection if migration failed. Do not cause a
     // connection close packet to be sent since socket may be borked.
     connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
-                                  "Write and subsequent migration failed",
+                                  "Write error for non-migratable session",
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
     return;
   }
-
-  LogHandshakeStatusOnConnectionMigrationSignal();
 
   NetworkChangeNotifier::NetworkHandle new_network =
       stream_factory_->FindAlternateNetwork(

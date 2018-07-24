@@ -4375,6 +4375,72 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
   EXPECT_TRUE(quic_data3.AllWriteDataConsumed());
 }
 
+// Test that connection will be closed with PACKET_WRITE_ERROR if a write error
+// is triggered before handshake is confirmed and connection migration is turned
+// on.
+TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+
+  // Use unmocked crypto stream to do crypto connect.
+  crypto_client_stream_factory_.set_handshake_mode(
+      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  // Trigger PACKET_WRITE_ERROR when sending packets in crypto connect.
+  socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request, should fail after the write of the CHLO fails.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(ERR_QUIC_HANDSHAKE_FAILED, callback_.WaitForResult());
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
+
+  // Verify new requests can be sent normally.
+  crypto_client_stream_factory_.set_handshake_mode(
+      quic::MockCryptoClientStream::COLD_START);
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_pair_, version_, privacy_mode_,
+                             DEFAULT_PRIORITY, SocketTag(),
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  // Run the message loop to complete host resolution.
+  base::RunLoop().RunUntilIdle();
+
+  // Complete handshake. QuicStreamFactory::Job should complete and succeed.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
+
+  // Create QuicHttpStream.
+  std::unique_ptr<HttpStream> stream = CreateStream(&request2);
+  EXPECT_TRUE(stream.get());
+  stream.reset();
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
 void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
     IoMode write_error_mode) {
   InitializeConnectionMigrationV2Test(
