@@ -48,4 +48,13 @@ message TerminalParams {
   // Extra parameters to use when launching a terminal application that allow
   // executing a command inside the terminal.
   repeated string params = 1;
+
+  // Name of the VM to launch the terminal in.
+  string vm_name = 2;
+
+  // Name of the container within the VM to launch the terminal in.
+  string container_name = 3;
+
+  // The owner of the VM and container.
+  string owner_id = 4;
 }
