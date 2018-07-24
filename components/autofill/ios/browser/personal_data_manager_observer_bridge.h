@@ -10,10 +10,10 @@
 #include "base/macros.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 
-// PersonalDataManagerObserverBridgeDelegate is used by PersonalDataManager to
-// informs its client implemented in Objective-C when it has finished loading
-// personal data from the web database.
-@protocol PersonalDataManagerObserverBridgeDelegate<NSObject>
+// PersonalDataManagerObserver is used by PersonalDataManager to informs its
+// client implemented in Objective-C when it has finished loading personal data
+// from the web database.
+@protocol PersonalDataManagerObserver<NSObject>
 
 // Called when the PersonalDataManager changed in some way.
 - (void)onPersonalDataChanged;
@@ -32,7 +32,7 @@ namespace autofill {
 class PersonalDataManagerObserverBridge : public PersonalDataManagerObserver {
  public:
   explicit PersonalDataManagerObserverBridge(
-      id<PersonalDataManagerObserverBridgeDelegate> delegate);
+      id<PersonalDataManagerObserver> delegate);
   ~PersonalDataManagerObserverBridge() override;
 
   // PersonalDataManagerObserver implementation.
@@ -40,7 +40,7 @@ class PersonalDataManagerObserverBridge : public PersonalDataManagerObserver {
   void OnInsufficientFormData() override;
 
  private:
-  __unsafe_unretained id<PersonalDataManagerObserverBridgeDelegate> delegate_;
+  __weak id<PersonalDataManagerObserver> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerObserverBridge);
 };
