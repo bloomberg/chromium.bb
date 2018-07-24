@@ -612,13 +612,12 @@ SubDirectoryItem.prototype = {
  */
 SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
   var icon = this.querySelector('.icon');
-  // TODO(crbug.com/857343): Evaluate if this can be fully removed.
-  // This line invalidates the metadata model cache and was causing some
-  // directories to not display modificationTime which comes from metadata
-  // because it invalidated before displaying it.
-  // this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
-  this.parentTree_.metadataModel.get([this.dirEntry_], ['shared']).then(
-      function(metadata) {
+  this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
+  this.parentTree_.metadataModel
+      .get(
+          [this.dirEntry_],
+          constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES)
+      .then(function(metadata) {
         icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
       });
 };
