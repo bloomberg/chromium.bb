@@ -162,6 +162,10 @@ crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/pad-gestur
 crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
+crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scrollbar-fling.html [ Skip ]
+crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
+crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
+crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 
 # Sheriff 2018/05/25
 crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
@@ -1750,6 +1754,7 @@ crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
+crbug.com/522648 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
 crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
@@ -1817,6 +1822,10 @@ crbug.com/567837 fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ S
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
+
+crbug.com/853912 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/853912 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-squashing.html [ Failure ]
+crbug.com/853912 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
@@ -2220,6 +2229,7 @@ crbug.com/613672 [ Mac ] fast/events/touch/multi-touch-user-gesture.html [ Skip 
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
