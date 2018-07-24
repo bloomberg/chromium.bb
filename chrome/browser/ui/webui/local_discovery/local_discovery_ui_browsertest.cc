@@ -540,10 +540,7 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkNoDevices"));
 }
 
-// Flaky: http://crbug.com/660669.
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
-  TestMessageLoopCondition condition_token_claimed;
-
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
 
@@ -557,19 +554,17 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("registerShowOverlay"));
 
   {
+    base::RunLoop run_loop;
     InSequence s;
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(kURLInfo));
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         kURLRegisterStart));
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLRegisterClaimToken))
-        .WillOnce(InvokeWithoutArgs(&condition_token_claimed,
-                                    &TestMessageLoopCondition::Signal));
+    EXPECT_CALL(fake_url_fetcher_creator(),
+                OnCreateFakeURLFetcher(kURLRegisterClaimToken))
+        .WillOnce(InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+    EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("registerBegin"));
+    run_loop.Run();
   }
-
-  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("registerBegin"));
-
-  condition_token_claimed.Wait();
 
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("expectPageAdding1"));
 
@@ -586,6 +581,7 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
       net::URLRequestStatus::SUCCESS);
 
   {
+    base::RunLoop run_loop;
     InSequence s;
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         kURLRegisterClaimToken));
@@ -594,11 +590,9 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         kURLRegisterComplete));
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(kURLInfo))
-        .WillOnce(InvokeWithoutArgs(&condition_token_claimed,
-                                    &TestMessageLoopCondition::Signal));
+        .WillOnce(InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+    run_loop.Run();
   }
-
-  condition_token_claimed.Wait();
 
   test_service_discovery_client()->SimulateReceive(
       kAnnouncePacketRegistered, sizeof(kAnnouncePacketRegistered));

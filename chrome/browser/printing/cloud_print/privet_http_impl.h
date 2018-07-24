@@ -73,6 +73,13 @@ class PrivetRegisterOperationImpl
                     bool has_error) override;
   void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
 
+  // Used in test to skip delays when posting tasks for cancellation.
+  class RunTasksImmediatelyForTesting final {
+   public:
+    RunTasksImmediatelyForTesting();
+    ~RunTasksImmediatelyForTesting();
+  };
+
  private:
   class Cancelation : public PrivetURLFetcher::Delegate {
    public:
@@ -116,6 +123,8 @@ class PrivetRegisterOperationImpl
 
   std::unique_ptr<PrivetJSONOperation> info_operation_;
   std::string expected_id_;
+
+  static bool run_tasks_immediately_for_testing_;
 };
 
 class PrivetJSONOperationImpl : public PrivetJSONOperation,
@@ -176,6 +185,13 @@ class PrivetLocalPrintOperationImpl
                     bool has_error) override;
   void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
 
+  // Used in test to skip delays when posting tasks for cancellation.
+  class RunTasksImmediatelyForTesting final {
+   public:
+    RunTasksImmediatelyForTesting();
+    ~RunTasksImmediatelyForTesting();
+  };
+
  private:
   using ResponseCallback =
       base::OnceCallback<void(/*has_error=*/bool,
@@ -222,6 +238,8 @@ class PrivetLocalPrintOperationImpl
   std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter_;
 
   base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
+
+  static bool run_tasks_immediately_for_testing_;
 };
 #endif  // ENABLE_PRINT_PREVIEW
 
