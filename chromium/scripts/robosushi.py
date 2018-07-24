@@ -54,11 +54,11 @@ def main(argv):
       # Try to get everything to build.
       # auto-merge-test is just to make this quicker while i'm developing it
       # TODO: Make it skip these if they're already done.
-      if opt == "--auto-merge-test":
-        robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
-      else:
-        robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
-      robo_branch.HandleAutorename(robo_configuration)
+      #if opt == "--auto-merge-test":
+      #  robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
+      #else:
+      #  robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
+      #robo_branch.HandleAutorename(robo_configuration)
       robo_branch.AddAndCommit(robo_configuration, "GN Configuration")
       robo_branch.CheckMerge(robo_configuration)
       robo_branch.WritePatchesReadme(robo_configuration)
