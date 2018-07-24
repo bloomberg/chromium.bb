@@ -437,10 +437,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   VotesUploader votes_uploader_;
 
-  // True if the main frame's visible URL, at the time this PasswordFormManager
-  // was created, is secure.
-  bool is_main_frame_secure_ = false;
-
   // Takes care of recording metrics and events for this PasswordFormManager.
   // Make sure to call Init before using |*this|, to ensure it is not null.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
