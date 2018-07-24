@@ -43,18 +43,18 @@ class MonorailIssue(object):
         assert self._body['status'] in self._VALID_STATUSES, 'Unknown status %s.' % self._body['status']
         assert self._body['summary'], 'summary cannot be empty.'
 
-    def __str__(self):
-        result = ('Monorail issue in project {}\n'
+    def __unicode__(self):
+        result = (u'Monorail issue in project {}\n'
                   'Summary: {}\n'
                   'Status: {}\n').format(self.project_id, self.body['summary'], self.body['status'])
         if 'cc' in self.body:
-            result += 'CC: {}\n'.format(', '.join(self.body['cc']))
+            result += u'CC: {}\n'.format(', '.join(self.body['cc']))
         if 'components' in self.body:
-            result += 'Components: {}\n'.format(', '.join(self.body['components']))
+            result += u'Components: {}\n'.format(', '.join(self.body['components']))
         if 'labels' in self.body:
-            result += 'Labels: {}\n'.format(', '.join(self.body['labels']))
+            result += u'Labels: {}\n'.format(', '.join(self.body['labels']))
         if 'description' in self.body:
-            result += 'Description:\n{}\n'.format(self.body['description'])
+            result += u'Description:\n{}\n'.format(self.body['description'])
         return result
 
     @property

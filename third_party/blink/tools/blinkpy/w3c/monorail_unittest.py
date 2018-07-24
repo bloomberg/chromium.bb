@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -20,17 +21,19 @@ class MonorailIssueTest(unittest.TestCase):
         issue = MonorailIssue('chromium', summary='test', status='Untriaged')
         self.assertEqual(issue.body['projectId'], 'chromium')
 
-    def test_str(self):
-        issue = MonorailIssue('chromium', summary='test', status='Untriaged', description='body',
+    def test_unicode(self):
+        issue = MonorailIssue('chromium', summary=u'test', status='Untriaged',
+                              description=u'ABC~‾¥≈¤･・•∙·☼★星🌟星★☼·∙•・･¤≈¥‾~XYZ',
                               cc=['foo@chromium.org', 'bar@chromium.org'], labels=['Flaky'], components=['Infra'])
-        self.assertEqual(str(issue),
-                         ('Monorail issue in project chromium\n'
-                          'Summary: test\n'
-                          'Status: Untriaged\n'
-                          'CC: foo@chromium.org, bar@chromium.org\n'
-                          'Components: Infra\n'
-                          'Labels: Flaky\n'
-                          'Description:\nbody\n'))
+        self.assertEqual(type(unicode(issue)), unicode)
+        self.assertEqual(unicode(issue),
+                         (u'Monorail issue in project chromium\n'
+                          u'Summary: test\n'
+                          u'Status: Untriaged\n'
+                          u'CC: foo@chromium.org, bar@chromium.org\n'
+                          u'Components: Infra\n'
+                          u'Labels: Flaky\n'
+                          u'Description:\nABC~‾¥≈¤･・•∙·☼★星🌟星★☼·∙•・･¤≈¥‾~XYZ\n'))
 
     def test_init_unknown_fields(self):
         with self.assertRaises(AssertionError):
