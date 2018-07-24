@@ -121,20 +121,11 @@ void Location::setHref(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
                        const USVStringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-
-  if (stringOrUrl.IsUSVString() &&
-      current_window->document()->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return;
+  String url = TrustedURL::GetString(stringOrUrl, current_window->document(),
+                                     exception_state);
+  if (!exception_state.HadException()) {
+    SetLocation(url, current_window, entered_window, &exception_state);
   }
-
-  String url = stringOrUrl.IsUSVString()
-                   ? stringOrUrl.GetAsUSVString()
-                   : stringOrUrl.GetAsTrustedURL()->toString();
-  SetLocation(url, current_window, entered_window, &exception_state);
 }
 
 void Location::setProtocol(LocalDOMWindow* current_window,
@@ -233,45 +224,23 @@ void Location::assign(LocalDOMWindow* current_window,
     return;
   }
 
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  DCHECK(!stringOrUrl.IsNull());
-
-  if (stringOrUrl.IsUSVString() &&
-      current_window->document()->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return;
+  String url = TrustedURL::GetString(stringOrUrl, current_window->document(),
+                                     exception_state);
+  if (!exception_state.HadException()) {
+    SetLocation(url, current_window, entered_window, &exception_state);
   }
-
-  String url = stringOrUrl.IsUSVString()
-                   ? stringOrUrl.GetAsUSVString()
-                   : stringOrUrl.GetAsTrustedURL()->toString();
-
-  SetLocation(url, current_window, entered_window, &exception_state);
 }
 
 void Location::replace(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
                        const USVStringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  DCHECK(!stringOrUrl.IsNull());
-
-  if (stringOrUrl.IsUSVString() &&
-      current_window->document()->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return;
+  String url = TrustedURL::GetString(stringOrUrl, current_window->document(),
+                                     exception_state);
+  if (!exception_state.HadException()) {
+    SetLocation(url, current_window, entered_window, &exception_state,
+                SetLocationPolicy::kReplaceThisFrame);
   }
-
-  String url = stringOrUrl.IsUSVString()
-                   ? stringOrUrl.GetAsUSVString()
-                   : stringOrUrl.GetAsTrustedURL()->toString();
-
-  SetLocation(url, current_window, entered_window, &exception_state,
-              SetLocationPolicy::kReplaceThisFrame);
 }
 
 void Location::reload(LocalDOMWindow* current_window) {
