@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +30,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -87,9 +89,9 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
 
   Profile* CreateProfile(const std::string& name) {
     TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(std::make_pair(
-        ChromeSigninClientFactory::GetInstance(),
-        signin::BuildTestSigninClient));
+    testing_factories.push_back(
+        std::make_pair(ChromeSigninClientFactory::GetInstance(),
+                       signin::BuildTestSigninClient));
     Profile* profile = testing_profile_manager_.CreateTestingProfile(
         name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16(name), 0, std::string(), testing_factories);
@@ -301,9 +303,9 @@ TEST_F(GAIAInfoUpdateServiceTest, ScheduleUpdate) {
 #if !defined(OS_CHROMEOS)
 
 TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
-  signin_manager->SetAuthenticatedAccountInfo("gaia_id", "pat@example.com");
+  identity::SetPrimaryAccount(SigninManagerFactory::GetForProfile(profile()),
+                              IdentityManagerFactory::GetForProfile(profile()),
+                              "pat@example.com");
   base::string16 gaia_name = base::UTF8ToUTF16("Pat Foo");
 
   ASSERT_EQ(1u, storage()->GetNumberOfProfiles());
@@ -319,8 +321,9 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
   EXPECT_FALSE(service()->GetCachedPictureURL().empty());
 
   // Log out.
-  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                          signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity::ClearPrimaryAccount(
+      SigninManagerFactory::GetForProfile(profile()),
+      IdentityManagerFactory::GetForProfile(profile()));
   // Verify that the GAIA name and picture, and picture URL are unset.
   EXPECT_TRUE(entry->GetGAIAName().empty());
   EXPECT_EQ(nullptr, entry->GetGAIAPicture());
@@ -330,11 +333,9 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
 TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
   // Log in.
   EXPECT_CALL(*service(), Update());
-  AccountTrackerServiceFactory::GetForProfile(profile())
-      ->SeedAccountInfo("gaia_id", "pat@example.com");
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
-  signin_manager->OnExternalSigninCompleted("pat@example.com");
+  identity::SetPrimaryAccount(SigninManagerFactory::GetForProfile(profile()),
+                              IdentityManagerFactory::GetForProfile(profile()),
+                              "pat@example.com");
 }
 
 #endif

@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
 class ProfileDownloader;
@@ -23,7 +23,7 @@ class ProfileDownloader;
 // The results are saved in the profile info cache.
 class GAIAInfoUpdateService : public KeyedService,
                               public ProfileDownloaderDelegate,
-                              public SigninManagerBase::Observer {
+                              public identity::IdentityManager::Observer {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
   ~GAIAInfoUpdateService() override;
@@ -54,11 +54,10 @@ class GAIAInfoUpdateService : public KeyedService,
   void OnUsernameChanged(const std::string& username);
   void ScheduleNextUpdate();
 
-  // Overridden from SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // Overridden from identity::IdentityManager::Observer:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
   Profile* profile_;
   std::unique_ptr<ProfileDownloader> profile_image_downloader_;
