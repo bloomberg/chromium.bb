@@ -465,13 +465,13 @@ void NewTabButton::PaintFill(bool pressed,
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
       float x_scale = 1.0f;
-      int x = GetMirroredX() + background_offset_.x();
-      const gfx::Size size = GetContentsBounds().size();
+      const gfx::Rect& contents_bounds = GetContentsBounds();
+      int x = GetMirroredX() + contents_bounds.x() + background_offset_.x();
       if (base::i18n::IsRTL()) {
         x_scale = -1.0f;
         // Offset by |width| such that the same region is painted as if there
         // was no flip.
-        x += size.width();
+        x += contents_bounds.width();
       }
 
       const bool succeeded = canvas->InitPaintFlagsForTiling(
