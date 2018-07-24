@@ -8,6 +8,9 @@ import collections
 
 import process_profiles
 
+# Used by ProfileFile to generate unique file names.
+_FILE_COUNTER = 0
+
 SimpleTestSymbol = collections.namedtuple(
     'SimpleTestSymbol', ['name', 'offset', 'size'])
 
@@ -25,3 +28,14 @@ class TestProfileManager(process_profiles.ProfileManager):
 
   def _ReadOffsets(self, filename):
     return self._filecontents_mapping[filename]
+
+
+def ProfileFile(timestamp_sec, phase, process_name=None):
+  global _FILE_COUNTER
+  _FILE_COUNTER += 1
+  if process_name:
+    name_str = process_name + '-'
+  else:
+    name_str = ''
+  return 'test-directory/profile-hitmap-{}{}-{}.txt_{}'.format(
+      name_str, _FILE_COUNTER, timestamp_sec * 1000 * 1000 * 1000, phase)
