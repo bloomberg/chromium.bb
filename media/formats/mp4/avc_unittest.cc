@@ -6,12 +6,16 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <ostream>
+
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp4/avc.h"
+#include "media/formats/mp4/bitstream_converter.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +39,15 @@ static H264NALU::Type StringToNALUType(const std::string& name) {
 
   if (name == "I")
     return H264NALU::kIDRSlice;
+
+  if (name == "SDA")
+    return H264NALU::kSliceDataA;
+
+  if (name == "SDB")
+    return H264NALU::kSliceDataB;
+
+  if (name == "SDC")
+    return H264NALU::kSliceDataC;
 
   if (name == "SEI")
     return H264NALU::kSEIMessage;
@@ -132,9 +145,9 @@ static void WriteStartCodeAndNALUType(std::vector<uint8_t>* buffer,
 // The output buffer will contain a valid-looking Annex B (it's valid-looking in
 // the sense that it has start codes and correct NALU types, but the actual NALU
 // payload is junk).
-void StringToAnnexB(const std::string& str,
-                    std::vector<uint8_t>* buffer,
-                    std::vector<SubsampleEntry>* subsamples) {
+static void StringToAnnexB(const std::string& str,
+                           std::vector<uint8_t>* buffer,
+                           std::vector<SubsampleEntry>* subsamples) {
   DCHECK(!str.empty());
 
   std::vector<std::string> subsample_specs = base::SplitString(
@@ -176,8 +189,30 @@ void StringToAnnexB(const std::string& str,
   }
 }
 
-std::string AnnexBToString(const std::vector<uint8_t>& buffer,
-                           const std::vector<SubsampleEntry>& subsamples) {
+// Helper to compare two results of AVC::Analyze().
+static bool AnalysesMatch(const BitstreamConverter::AnalysisResult& r1,
+                          const BitstreamConverter::AnalysisResult& r2) {
+  return r1.is_conformant == r2.is_conformant &&
+         r1.is_keyframe == r2.is_keyframe;
+}
+
+// Helper output operator, for debugging/testability.
+std::ostream& operator<<(std::ostream& os,
+                         const BitstreamConverter::AnalysisResult& r) {
+  os << "{ is_conformant: "
+     << (r.is_conformant.has_value()
+             ? (r.is_conformant.value() ? "true" : "false")
+             : "nullopt/unknown")
+     << ", is_keyframe: "
+     << (r.is_keyframe.has_value() ? (r.is_keyframe.value() ? "true" : "false")
+                                   : "nullopt/unknown")
+     << " }";
+  return os;
+}
+
+static std::string AnnexBToString(
+    const std::vector<uint8_t>& buffer,
+    const std::vector<SubsampleEntry>& subsamples) {
   std::stringstream ss;
 
   H264Parser parser;
@@ -230,7 +265,14 @@ TEST_P(AVCConversionTest, ParseCorrectly) {
   std::vector<SubsampleEntry> subsamples;
   MakeInputForLength(GetParam(), &buf);
   EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, &subsamples));
-  EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples));
+
+  BitstreamConverter::AnalysisResult expected;
+  expected.is_conformant = true;
+  expected.is_keyframe = false;
+  EXPECT_PRED2(AnalysesMatch,
+               AVC::AnalyzeAnnexB(buf.data(), buf.size(), subsamples),
+               expected);
+
   EXPECT_EQ(buf.size(), sizeof(kExpected));
   EXPECT_EQ(0, memcmp(kExpected, &buf[0], sizeof(kExpected)));
   EXPECT_EQ("P,SDC", AnnexBToString(buf, subsamples));
@@ -350,63 +392,107 @@ TEST_F(AVCConversionTest, StringConversionFunctions) {
   std::vector<uint8_t> buf;
   std::vector<SubsampleEntry> subsamples;
   StringToAnnexB(str, &buf, &subsamples);
-  EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples));
+
+  BitstreamConverter::AnalysisResult expected;
+  expected.is_conformant = true;
+  expected.is_keyframe = true;
+  EXPECT_PRED2(AnalysesMatch,
+               AVC::AnalyzeAnnexB(buf.data(), buf.size(), subsamples),
+               expected);
 
   EXPECT_EQ(str, AnnexBToString(buf, subsamples));
 }
 
 TEST_F(AVCConversionTest, ValidAnnexBConstructs) {
-  const char* test_cases[] = {
-    "I",
-    "I I I I",
-    "AUD I",
-    "AUD SPS PPS I",
-    "I EOSeq",
-    "I EOSeq EOStr",
-    "I EOStr",
-    "P",
-    "P P P P",
-    "AUD SPS PPS P",
-    "SEI SEI I",
-    "SEI SEI R14 I",
-    "SPS SPSExt SPS PPS I P",
-    "R14 SEI I",
-    "AUD,I",
-    "AUD,SEI I",
-    "AUD,SEI,SPS,PPS,I"
+  struct {
+    const char* case_string;
+    const bool is_keyframe;
+  } test_cases[] = {
+      {"I", true},
+      {"I I I I", true},
+      {"AUD I", true},
+      {"AUD SPS PPS I", true},
+      {"I EOSeq", true},
+      {"I EOSeq EOStr", true},
+      {"I EOStr", true},
+      {"P", false},
+      {"P P P P", false},
+      {"AUD SPS PPS P", false},
+      {"SEI SEI I", true},
+      {"SEI SEI R14 I", true},
+      {"SPS SPSExt SPS PPS I P", true},
+      {"R14 SEI I", true},
+      {"AUD,I", true},
+      {"AUD,SEI I", true},
+      {"AUD,SEI,SPS,PPS,I", true},
+
+      // In reality, these might not always be conformant/valid, but assuming
+      // they are, they're not keyframes because a non-IDR slice preceded the
+      // IDR slice, if any.
+      {"SDA SDB SDC", false},
+      {"P I", false},
+      {"SDA I", false},
+      {"SDB I", false},
+      {"SDC I", false},
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
-    StringToAnnexB(test_cases[i], &buf, NULL);
-    EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples))
-        << "'" << test_cases[i] << "' failed";
+    StringToAnnexB(test_cases[i].case_string, &buf, NULL);
+
+    BitstreamConverter::AnalysisResult expected;
+    expected.is_conformant = true;
+    expected.is_keyframe = test_cases[i].is_keyframe;
+    EXPECT_PRED2(AnalysesMatch,
+                 AVC::AnalyzeAnnexB(buf.data(), buf.size(), subsamples),
+                 expected)
+        << "'" << test_cases[i].case_string << "' failed";
   }
 }
 
 TEST_F(AVCConversionTest, InvalidAnnexBConstructs) {
-  static const char* test_cases[] = {
-    "AUD",  // No VCL present.
-    "AUD,SEI", // No VCL present.
-    "SPS PPS",  // No VCL present.
-    "SPS PPS AUD I",  // Parameter sets must come after AUD.
-    "SPSExt SPS P",  // SPS must come before SPSExt.
-    "SPS PPS SPSExt P",  // SPSExt must follow an SPS.
-    "EOSeq",  // EOSeq must come after a VCL.
-    "EOStr",  // EOStr must come after a VCL.
-    "I EOStr EOSeq",  // EOSeq must come before EOStr.
-    "I R14",  // Reserved14-18 must come before first VCL.
-    "I SEI",  // SEI must come before first VCL.
-    "P SPS P", // SPS after first VCL would indicate a new access unit.
+  struct {
+    const char* case_string;
+    const base::Optional<bool> is_keyframe;
+  } test_cases[] = {
+      // For these cases, lack of conformance is determined before detecting any
+      // IDR or non-IDR slices, so the non-conformant frames' keyframe analysis
+      // reports base::nullopt (which means undetermined analysis result).
+      {"AUD", base::nullopt},            // No VCL present.
+      {"AUD,SEI", base::nullopt},        // No VCL present.
+      {"SPS PPS", base::nullopt},        // No VCL present.
+      {"SPS PPS AUD I", base::nullopt},  // Parameter sets must come after AUD.
+      {"SPSExt SPS P", base::nullopt},   // SPS must come before SPSExt.
+      {"SPS PPS SPSExt P", base::nullopt},  // SPSExt must follow an SPS.
+      {"EOSeq", base::nullopt},             // EOSeq must come after a VCL.
+      {"EOStr", base::nullopt},             // EOStr must come after a VCL.
+
+      // For these cases, IDR slice is first VCL and is detected before
+      // conformance failure, so the non-conformant frame is reported as a
+      // keyframe.
+      {"I EOStr EOSeq", true},  // EOSeq must come before EOStr.
+      {"I R14", true},          // Reserved14-18 must come before first VCL.
+      {"I SEI", true},          // SEI must come before first VCL.
+
+      // For this case, P slice is first VCL and is detected before conformance
+      // failure, so the non-conformant frame is reported as a non-keyframe.
+      {"P SPS P",
+       false},  // SPS after first VCL would indicate a new access unit.
   };
+
+  BitstreamConverter::AnalysisResult expected;
+  expected.is_conformant = false;
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
-    StringToAnnexB(test_cases[i], &buf, NULL);
-    EXPECT_FALSE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples))
-        << "'" << test_cases[i] << "' failed";
+    StringToAnnexB(test_cases[i].case_string, &buf, NULL);
+    expected.is_keyframe = test_cases[i].is_keyframe;
+    EXPECT_PRED2(AnalysesMatch,
+                 AVC::AnalyzeAnnexB(buf.data(), buf.size(), subsamples),
+                 expected)
+        << "'" << test_cases[i].case_string << "' failed";
   }
 }
 
@@ -442,6 +528,10 @@ TEST_F(AVCConversionTest, InsertParamSetsAnnexB) {
   avc_config.pps_list[0].push_back(0x56);
   avc_config.pps_list[0].push_back(0x78);
 
+  BitstreamConverter::AnalysisResult expected;
+  expected.is_conformant = true;
+  expected.is_keyframe = true;
+
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
@@ -450,7 +540,9 @@ TEST_F(AVCConversionTest, InsertParamSetsAnnexB) {
 
     EXPECT_TRUE(AVC::InsertParamSetsAnnexB(avc_config, &buf, &subsamples))
         << "'" << test_cases[i].input << "' insert failed.";
-    EXPECT_TRUE(AVC::IsValidAnnexB(buf.data(), buf.size(), subsamples))
+    EXPECT_PRED2(AnalysesMatch,
+                 AVC::AnalyzeAnnexB(buf.data(), buf.size(), subsamples),
+                 expected)
         << "'" << test_cases[i].input << "' created invalid AnnexB.";
     EXPECT_EQ(test_cases[i].expected, AnnexBToString(buf, subsamples))
         << "'" << test_cases[i].input << "' generated unexpected output.";
