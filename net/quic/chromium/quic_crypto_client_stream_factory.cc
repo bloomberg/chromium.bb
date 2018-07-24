@@ -21,7 +21,7 @@ class DefaultCryptoStreamFactory : public QuicCryptoClientStreamFactory {
       std::unique_ptr<quic::ProofVerifyContext> proof_verify_context,
       quic::QuicCryptoClientConfig* crypto_config) override {
     return new quic::QuicCryptoClientStream(server_id, session,
-                                            proof_verify_context.release(),
+                                            std::move(proof_verify_context),
                                             crypto_config, session);
   }
 };

@@ -77,7 +77,7 @@ QuicCryptoClientHandshaker::QuicCryptoClientHandshaker(
     const QuicServerId& server_id,
     QuicCryptoClientStream* stream,
     QuicSession* session,
-    ProofVerifyContext* verify_context,
+    std::unique_ptr<ProofVerifyContext> verify_context,
     QuicCryptoClientConfig* crypto_config,
     QuicCryptoClientStream::ProofHandler* proof_handler)
     : QuicCryptoHandshaker(stream, session),
@@ -91,7 +91,7 @@ QuicCryptoClientHandshaker::QuicCryptoClientHandshaker(
       channel_id_sent_(false),
       channel_id_source_callback_run_(false),
       channel_id_source_callback_(nullptr),
-      verify_context_(verify_context),
+      verify_context_(std::move(verify_context)),
       proof_verify_callback_(nullptr),
       proof_handler_(proof_handler),
       verify_ok_(false),

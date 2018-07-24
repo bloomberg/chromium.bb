@@ -37,17 +37,18 @@ void TlsClientHandshaker::ProofVerifierCallbackImpl::Cancel() {
   parent_ = nullptr;
 }
 
-TlsClientHandshaker::TlsClientHandshaker(QuicCryptoStream* stream,
-                                         QuicSession* session,
-                                         const QuicServerId& server_id,
-                                         ProofVerifier* proof_verifier,
-                                         SSL_CTX* ssl_ctx,
-                                         ProofVerifyContext* verify_context,
-                                         const QuicString& user_agent_id)
+TlsClientHandshaker::TlsClientHandshaker(
+    QuicCryptoStream* stream,
+    QuicSession* session,
+    const QuicServerId& server_id,
+    ProofVerifier* proof_verifier,
+    SSL_CTX* ssl_ctx,
+    std::unique_ptr<ProofVerifyContext> verify_context,
+    const QuicString& user_agent_id)
     : TlsHandshaker(stream, session, ssl_ctx),
       server_id_(server_id),
       proof_verifier_(proof_verifier),
-      verify_context_(verify_context),
+      verify_context_(std::move(verify_context)),
       user_agent_id_(user_agent_id),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {}
 

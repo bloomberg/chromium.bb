@@ -22,7 +22,7 @@ namespace quic {
 MockCryptoClientStream::MockCryptoClientStream(
     const QuicServerId& server_id,
     QuicSpdyClientSessionBase* session,
-    ProofVerifyContext* verify_context,
+    std::unique_ptr<ProofVerifyContext> verify_context,
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
@@ -30,7 +30,7 @@ MockCryptoClientStream::MockCryptoClientStream(
     bool use_mock_crypter)
     : QuicCryptoClientStream(server_id,
                              session,
-                             verify_context,
+                             std::move(verify_context),
                              crypto_config,
                              session),
       QuicCryptoHandshaker(this, session),

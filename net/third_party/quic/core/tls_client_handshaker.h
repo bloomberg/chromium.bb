@@ -27,8 +27,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
                       const QuicServerId& server_id,
                       ProofVerifier* proof_verifier,
                       SSL_CTX* ssl_ctx,
-                      // Takes ownership of |verify_context|.
-                      ProofVerifyContext* verify_context,
+                      std::unique_ptr<ProofVerifyContext> verify_context,
                       const QuicString& user_agent_id);
 
   ~TlsClientHandshaker() override;

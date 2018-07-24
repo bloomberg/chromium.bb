@@ -131,8 +131,8 @@ std::unique_ptr<QuicCryptoClientStreamBase>
 QuicSpdyClientSession::CreateQuicCryptoStream() {
   return QuicMakeUnique<QuicCryptoClientStream>(
       server_id_, this,
-      crypto_config_->proof_verifier()->CreateDefaultContext().release(),
-      crypto_config_, this);
+      crypto_config_->proof_verifier()->CreateDefaultContext(), crypto_config_,
+      this);
 }
 
 bool QuicSpdyClientSession::IsAuthorized(const QuicString& authority) {
