@@ -40,7 +40,5 @@ interface TextMetrics {
     [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxDescent;
     [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double emHeightAscent;
     [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double emHeightDescent;
-    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double hangingBaseline;
-    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double alphabeticBaseline;
-    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double ideographicBaseline;
+    [RuntimeEnabled=ExtendedTextMetrics] Baselines getBaselines();
 };

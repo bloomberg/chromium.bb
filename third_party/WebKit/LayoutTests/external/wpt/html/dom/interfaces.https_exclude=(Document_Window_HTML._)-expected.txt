@@ -646,12 +646,8 @@ PASS TextMetrics interface: attribute emHeightAscent
 PASS Unscopable handled correctly for emHeightAscent property on TextMetrics
 PASS TextMetrics interface: attribute emHeightDescent
 PASS Unscopable handled correctly for emHeightDescent property on TextMetrics
-PASS TextMetrics interface: attribute hangingBaseline
-PASS Unscopable handled correctly for hangingBaseline property on TextMetrics
-PASS TextMetrics interface: attribute alphabeticBaseline
-PASS Unscopable handled correctly for alphabeticBaseline property on TextMetrics
-PASS TextMetrics interface: attribute ideographicBaseline
-PASS Unscopable handled correctly for ideographicBaseline property on TextMetrics
+PASS TextMetrics interface: operation getBaselines()
+PASS Unscopable handled correctly for getBaselines() on TextMetrics
 PASS ImageData interface: existence and properties of interface object
 PASS ImageData interface object length
 PASS ImageData interface object name

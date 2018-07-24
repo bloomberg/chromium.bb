@@ -21,8 +21,11 @@ function getMetric(ctx, text, baseline, align, rtl, metric) {
   const tm = ctx.measureText(text);
   tm.actualBoundingBoxWidth = Math.abs(tm.actualBoundingBoxRight + tm.actualBoundingBoxLeft);
   tm.actualBoundingBoxHeight = Math.abs(tm.actualBoundingBoxDescent + tm.actualBoundingBoxAscent);
-
-  return tm[metric];
+  if (["alphabetic", "ideographic", "hanging"].includes(metric)) {
+    return tm.getBaselines()[metric];
+  } else {
+    return tm[metric];
+  }
 }
 
 function testMetric(name, ctx, text, baseline, align, rtl, metric, expected_value, epsilon = 0) {
@@ -85,22 +88,22 @@ function testBaselines(ctx) {
   for (const ex of kTexts) {
     for (const bline of ["alphabetic", "ideographic", "hanging"]) {
       for (const align of kAligns) {
-        testMetric("own baselines", ctx, ex.text, bline, align, ex.rtl, bline + "Baseline", 0);
+        testMetric("own baselines", ctx, ex.text, bline, align, ex.rtl, bline, 0);
       }
     }
   }
 
   // Those 3 baselines are font size dependent, so everything should be fixed.
   forEachExample((ex, _, align) => {
-    testMetric("top baseline", ctx, ex.text, "top", align, ex.rtl, "alphabeticBaseline", -44);
+    testMetric("top baseline", ctx, ex.text, "top", align, ex.rtl, "alphabetic", -44);
   });
 
   forEachExample((ex, _, align) => {
-    testMetric("middle baseline", ctx, ex.text, "middle", align, ex.rtl, "alphabeticBaseline", -15);
+    testMetric("middle baseline", ctx, ex.text, "middle", align, ex.rtl, "alphabetic", -15);
   });
 
   forEachExample((ex, _, align) => {
-    testMetric("bottom baseline", ctx, ex.text, "bottom", align, ex.rtl, "alphabeticBaseline", 13);
+    testMetric("bottom baseline", ctx, ex.text, "bottom", align, ex.rtl, "alphabetic", 13);
   });
 }
 
