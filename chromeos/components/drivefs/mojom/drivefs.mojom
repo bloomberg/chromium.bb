@@ -29,6 +29,9 @@ interface DriveFs {
   // Sets the file at |path| to pinned or unpinned depending on the value of
   // |pinned|.
   SetPinned(mojo_base.mojom.FilePath path, bool pinned) => (FileError error);
+
+  // Set whether syncing should be paused.
+  SetPauseSyncing(bool pause);
 };
 
 // Implemented by Chrome, used from DriveFS.

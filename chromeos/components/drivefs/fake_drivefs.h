@@ -55,6 +55,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                  bool pinned,
                  SetPinnedCallback callback) override;
 
+  void SetPauseSyncing(bool pause) override;
+
   const base::FilePath mount_path_;
 
   std::map<base::FilePath, FileMetadata> metadata_;
