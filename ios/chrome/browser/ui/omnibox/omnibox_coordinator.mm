@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_coordinator.h"
 
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -12,6 +13,7 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
@@ -54,6 +56,19 @@
 
   self.viewController =
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
+  std::string defaultLeadingImageName = GetResourceNameForAutocompleteMatchType(
+      AutocompleteMatchType::URL_WHAT_YOU_TYPED, /* is_starred */ false);
+  UIImage* defaultLeadingImage =
+      [[UIImage imageNamed:base::SysUTF8ToNSString(defaultLeadingImageName)]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  self.viewController.defaultLeadingImage = defaultLeadingImage;
+  std::string defaultEmptyOmniboxLeadingImageName =
+      GetResourceNameForAutocompleteMatchType(
+          AutocompleteMatchType::SEARCH_SUGGEST, /* is_starred */ false);
+  UIImage* defaultEmptyOmniboxLeadingImage = [[UIImage
+      imageNamed:base::SysUTF8ToNSString(defaultEmptyOmniboxLeadingImageName)]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  self.viewController.emptyTextLeadingImage = defaultEmptyOmniboxLeadingImage;
 
   self.viewController.dispatcher =
       static_cast<id<LoadQueryCommands, OmniboxFocuser>>(self.dispatcher);
