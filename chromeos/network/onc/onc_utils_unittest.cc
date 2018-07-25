@@ -44,37 +44,37 @@ std::unique_ptr<base::Value> ReadTestJson(const std::string& filename) {
 namespace onc {
 
 TEST(ONCDecrypterTest, BrokenEncryptionIterations) {
-  std::unique_ptr<base::DictionaryValue> encrypted_onc =
+  std::unique_ptr<base::Value> encrypted_onc =
       test_utils::ReadTestDictionary("broken-encrypted-iterations.onc");
 
-  std::unique_ptr<base::DictionaryValue> decrypted_onc =
+  std::unique_ptr<base::Value> decrypted_onc =
       Decrypt("test0000", *encrypted_onc);
 
-  EXPECT_EQ(NULL, decrypted_onc.get());
+  EXPECT_EQ(nullptr, decrypted_onc.get());
 }
 
 TEST(ONCDecrypterTest, BrokenEncryptionZeroIterations) {
-  std::unique_ptr<base::DictionaryValue> encrypted_onc =
+  std::unique_ptr<base::Value> encrypted_onc =
       test_utils::ReadTestDictionary("broken-encrypted-zero-iterations.onc");
 
   std::string error;
-  std::unique_ptr<base::DictionaryValue> decrypted_onc =
+  std::unique_ptr<base::Value> decrypted_onc =
       Decrypt("test0000", *encrypted_onc);
 
-  EXPECT_EQ(NULL, decrypted_onc.get());
+  EXPECT_EQ(nullptr, decrypted_onc.get());
 }
 
 TEST(ONCDecrypterTest, LoadEncryptedOnc) {
-  std::unique_ptr<base::DictionaryValue> encrypted_onc =
+  std::unique_ptr<base::Value> encrypted_onc =
       test_utils::ReadTestDictionary("encrypted.onc");
-  std::unique_ptr<base::DictionaryValue> expected_decrypted_onc =
+  std::unique_ptr<base::Value> expected_decrypted_onc =
       test_utils::ReadTestDictionary("decrypted.onc");
 
   std::string error;
-  std::unique_ptr<base::DictionaryValue> actual_decrypted_onc =
+  std::unique_ptr<base::Value> actual_decrypted_onc =
       Decrypt("test0000", *encrypted_onc);
 
-  base::DictionaryValue emptyDict;
+  base::Value emptyDict;
   EXPECT_TRUE(test_utils::Equals(expected_decrypted_onc.get(),
                                  actual_decrypted_onc.get()));
 }
@@ -216,8 +216,8 @@ TEST(ONCUtils, ProxyConfigToOncProxySettings) {
     test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
 
     std::unique_ptr<base::DictionaryValue> actual_proxy_settings =
-        ConvertProxyConfigToOncProxySettings(
-            shill_proxy_config->CreateDeepCopy());
+        base::DictionaryValue::From(ConvertProxyConfigToOncProxySettings(
+            shill_proxy_config->CreateDeepCopy()));
     EXPECT_TRUE(
         test_utils::Equals(onc_proxy_settings, actual_proxy_settings.get()));
   }

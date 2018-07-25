@@ -62,7 +62,8 @@ std::string NetworkStateTest::ConfigureService(
   last_created_service_path_ = "";
 
   std::unique_ptr<base::DictionaryValue> shill_json_dict =
-      onc::ReadDictionaryFromJson(shill_json_string);
+      base::DictionaryValue::From(
+          onc::ReadDictionaryFromJson(shill_json_string));
   if (!shill_json_dict) {
     LOG(ERROR) << "Error parsing json: " << shill_json_string;
     return last_created_service_path_;

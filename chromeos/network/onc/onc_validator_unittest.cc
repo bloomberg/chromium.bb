@@ -28,7 +28,7 @@ class ONCValidatorTest : public ::testing::Test {
   // validation is stored, so that expectations can be checked afterwards using
   // one of the Expect* functions below.
   void Validate(bool strict,
-                std::unique_ptr<base::DictionaryValue> onc_object,
+                std::unique_ptr<base::Value> onc_object,
                 const OncValueSignature* signature,
                 bool managed_onc,
                 ::onc::ONCSource onc_source) {
@@ -41,7 +41,7 @@ class ONCValidatorTest : public ::testing::Test {
       validator.reset(new Validator(false, false, false, managed_onc));
     }
     validator->SetOncSource(onc_source);
-    original_object_ = std::move(onc_object);
+    original_object_ = base::DictionaryValue::From(std::move(onc_object));
     repaired_object_ = validator->ValidateAndRepairObject(signature,
                                                           *original_object_,
                                                           &validation_result_);

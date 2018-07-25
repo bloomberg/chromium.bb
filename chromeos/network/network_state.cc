@@ -162,14 +162,11 @@ bool NetworkState::PropertyChanged(const std::string& key,
     if (proxy_config_str.empty())
       return true;
 
-    std::unique_ptr<base::DictionaryValue> proxy_config_dict(
+    std::unique_ptr<base::Value> proxy_config_dict(
         onc::ReadDictionaryFromJson(proxy_config_str));
     if (proxy_config_dict) {
-      // Warning: The DictionaryValue returned from
-      // ReadDictionaryFromJson/JSONParser is an optimized derived class that
-      // doesn't allow releasing ownership of nested values. A Swap in the wrong
-      // order leads to memory access errors.
-      proxy_config_.MergeDictionary(proxy_config_dict.get());
+      proxy_config_.MergeDictionary(
+          base::DictionaryValue::From(std::move(proxy_config_dict)).get());
     } else {
       NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
     }
