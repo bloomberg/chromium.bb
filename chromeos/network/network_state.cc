@@ -175,7 +175,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     return true;
   } else if (key == shill::kProviderProperty) {
-    std::string vpn_provider_type;
+    std::string vpn_provider_type, vpn_provider_id;
     const base::DictionaryValue* dict;
     if (!value.GetAsDictionary(&dict) ||
         !dict->GetStringWithoutPathExpansion(shill::kTypeProperty,
@@ -189,15 +189,12 @@ bool NetworkState::PropertyChanged(const std::string& key,
       // If the network uses a third-party or Arc VPN provider,
       // |shill::kHostProperty| contains the extension ID or Arc package name.
       if (!dict->GetStringWithoutPathExpansion(shill::kHostProperty,
-                                               &vpn_provider_id_)) {
+                                               &vpn_provider_id)) {
         NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
         return false;
       }
-    } else {
-      vpn_provider_id_.clear();
     }
-
-    vpn_provider_type_ = vpn_provider_type;
+    SetVpnProvider(vpn_provider_id, vpn_provider_type);
     return true;
   } else if (key == shill::kTetheringProperty) {
     return GetStringValue(key, value, &tethering_state_);
@@ -248,17 +245,17 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
     dictionary->SetKey(shill::kDeviceProperty, base::Value(device_path()));
 
   // VPN properties.
-  if (NetworkTypePattern::VPN().MatchesType(type())) {
+  if (NetworkTypePattern::VPN().MatchesType(type()) && vpn_provider()) {
     // Shill sends VPN provider properties in a nested dictionary. |dictionary|
     // must replicate that nested structure.
     std::unique_ptr<base::DictionaryValue> provider_property(
         new base::DictionaryValue);
-    provider_property->SetKey(shill::kTypeProperty,
-                              base::Value(vpn_provider_type_));
-    if (vpn_provider_type_ == shill::kProviderThirdPartyVpn ||
-        vpn_provider_type_ == shill::kProviderArcVpn) {
+    std::string provider_type = vpn_provider()->type;
+    provider_property->SetKey(shill::kTypeProperty, base::Value(provider_type));
+    if (provider_type == shill::kProviderThirdPartyVpn ||
+        provider_type == shill::kProviderArcVpn) {
       provider_property->SetKey(shill::kHostProperty,
-                                base::Value(vpn_provider_id_));
+                                base::Value(vpn_provider()->id));
     }
     dictionary->SetWithoutPathExpansion(shill::kProviderProperty,
                                         std::move(provider_property));
@@ -334,6 +331,22 @@ GURL NetworkState::GetWebProxyAutoDiscoveryUrl() const {
     return GURL();
   }
   return gurl;
+}
+
+void NetworkState::SetCaptivePortalProvider(const std::string& id,
+                                            const std::string& name) {
+  if (id.empty()) {
+    captive_portal_provider_ = nullptr;
+    return;
+  }
+  if (!captive_portal_provider_)
+    captive_portal_provider_ = std::make_unique<CaptivePortalProviderInfo>();
+  captive_portal_provider_->id = id;
+  captive_portal_provider_->name = name;
+}
+
+std::string NetworkState::GetVpnProviderType() const {
+  return vpn_provider_ ? vpn_provider_->type : std::string();
 }
 
 bool NetworkState::RequiresActivation() const {
@@ -447,16 +460,6 @@ void NetworkState::SetGuid(const std::string& guid) {
   guid_ = guid;
 }
 
-bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
-  std::string updated_name =
-      shill_property_util::GetNameFromProperties(path(), properties);
-  if (updated_name != name()) {
-    set_name(updated_name);
-    return true;
-  }
-  return false;
-}
-
 std::string NetworkState::GetErrorState() const {
   if (ErrorIsValid(error()))
     return error();
@@ -498,6 +501,31 @@ std::unique_ptr<NetworkState> NetworkState::CreateDefaultCellular(
   new_state->set_visible(true);
   new_state->device_path_ = device_path;
   return new_state;
+}
+
+// Private methods.
+
+bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
+  std::string updated_name =
+      shill_property_util::GetNameFromProperties(path(), properties);
+  if (updated_name != name()) {
+    set_name(updated_name);
+    return true;
+  }
+  return false;
+}
+
+void NetworkState::SetVpnProvider(const std::string& id,
+                                  const std::string& type) {
+  // |type| is required but |id| is only set for ThirdParty and Arc VPNs.
+  if (type.empty()) {
+    vpn_provider_ = nullptr;
+    return;
+  }
+  if (!vpn_provider_)
+    vpn_provider_ = std::make_unique<VpnProviderInfo>();
+  vpn_provider_->id = id;
+  vpn_provider_->type = type;
 }
 
 }  // namespace chromeos

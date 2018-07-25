@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +47,8 @@ class NetworkingConfigServiceTest : public ApiUnitTest {
 
   void SetUp() override {
     ApiUnitTest::SetUp();
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
     extension_registry_ = std::unique_ptr<ExtensionRegistry>(
         new ExtensionRegistry(browser_context()));
     std::unique_ptr<MockEventDelegate> mock_event_delegate =
@@ -54,6 +58,12 @@ class NetworkingConfigServiceTest : public ApiUnitTest {
             browser_context(), std::move(mock_event_delegate),
             extension_registry_.get()));
     DCHECK(service_);
+  }
+
+  void TearDown() override {
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+    ApiUnitTest::TearDown();
   }
 
  protected:

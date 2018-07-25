@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/network/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -86,12 +85,9 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 
 }  // namespace
 
-ChromeShellDelegate::ChromeShellDelegate()
-    : networking_config_delegate_(
-          std::make_unique<chromeos::NetworkingConfigDelegateChromeos>()) {
-}
+ChromeShellDelegate::ChromeShellDelegate() = default;
 
-ChromeShellDelegate::~ChromeShellDelegate() {}
+ChromeShellDelegate::~ChromeShellDelegate() = default;
 
 service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
   return content::ServiceManagerConnection::GetForProcess()->GetConnector();
@@ -138,11 +134,6 @@ std::unique_ptr<keyboard::KeyboardUI> ChromeShellDelegate::CreateKeyboardUI() {
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateImpl;
-}
-
-ash::NetworkingConfigDelegate*
-ChromeShellDelegate::GetNetworkingConfigDelegate() {
-  return networking_config_delegate_.get();
 }
 
 std::unique_ptr<ash::ScreenshotDelegate>

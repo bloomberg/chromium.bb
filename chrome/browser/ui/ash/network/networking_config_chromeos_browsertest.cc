@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/network/networking_config_delegate_chromeos.h"
-
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
@@ -20,16 +18,15 @@
 
 namespace {
 
-using NetworkingConfigDelegateChromeosTest = extensions::ExtensionBrowserTest;
+using NetworkingConfigChromeosTest = extensions::ExtensionBrowserTest;
 
 // Tests that an extension registering itself as handling a Wi-Fi SSID updates
 // the ash system tray network item.
-IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
+IN_PROC_BROWSER_TEST_F(NetworkingConfigChromeosTest, SystemTrayItem) {
   // Load the extension and wait for the background page script to run. This
   // registers the extension as the network config handler for wifi1.
   ExtensionTestMessageListener listener("done", false);
-  ASSERT_TRUE(
-      LoadExtension(test_data_dir_.AppendASCII("networking_config_delegate")));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("networking_config")));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
   // Connect to ash.
@@ -45,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
   // Expect that the extension-controlled VPN item appears.
   base::string16 expected_tooltip = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
-      base::UTF8ToUTF16("NetworkingConfigDelegate test extension"));
+      base::UTF8ToUTF16("NetworkingConfig test extension"));
   base::string16 tooltip;
   wait_for.GetBubbleViewTooltip(ash::VIEW_ID_EXTENSION_CONTROLLED_WIFI,
                                 &tooltip);

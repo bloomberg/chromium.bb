@@ -227,7 +227,7 @@ bool NetworkStateNotifier::UpdateDefaultNetwork(const NetworkState* network) {
 void NetworkStateNotifier::UpdateVpnConnectionState(const NetworkState* vpn) {
   if (vpn->path() == connected_vpn_) {
     if (!vpn->IsConnectedState() && !vpn->IsConnectingState()) {
-      if (vpn->vpn_provider_type() != shill::kProviderArcVpn) {
+      if (vpn->GetVpnProviderType() != shill::kProviderArcVpn) {
         ShowVpnDisconnectedNotification(vpn);
       }
       connected_vpn_.clear();

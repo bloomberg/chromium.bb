@@ -31,10 +31,6 @@ std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }
 
-NetworkingConfigDelegate* ShellDelegateImpl::GetNetworkingConfigDelegate() {
-  return nullptr;
-}
-
 std::unique_ptr<ash::ScreenshotDelegate>
 ShellDelegateImpl::CreateScreenshotDelegate() {
   return std::make_unique<TestScreenshotDelegate>();

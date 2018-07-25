@@ -31,7 +31,6 @@ class InputDeviceControllerClient;
 namespace ash {
 
 class AccessibilityDelegate;
-class NetworkingConfigDelegate;
 class ScreenshotDelegate;
 
 // Delegate of the Shell.
@@ -53,9 +52,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Create a shell-specific keyboard::KeyboardUI.
   virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
-
-  // Returns the delegate. May be null in tests.
-  virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() = 0;
 
   // TODO(jamescook): Replace with a mojo-compatible interface.
   virtual std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() = 0;

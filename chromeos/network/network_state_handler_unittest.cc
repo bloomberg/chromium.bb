@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
@@ -1830,6 +1831,48 @@ TEST_F(NetworkStateHandlerTest, EnsureCellularNetwork) {
   ASSERT_EQ(1u, cellular_networks.size());
   EXPECT_FALSE(cellular_networks[0]->IsDefaultCellular());
   EXPECT_EQ("/service/cellular1", cellular_networks[0]->path());
+}
+
+TEST_F(NetworkStateHandlerTest, UpdateCaptivePortalProvider) {
+  constexpr char kProviderId[] = "TestProviderId";
+  constexpr char kProviderName[] = "TestProviderName";
+
+  // Verify initial state.
+  const NetworkState* wifi1 = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  ASSERT_TRUE(wifi1);
+  const NetworkState::CaptivePortalProviderInfo* info =
+      wifi1->captive_portal_provider();
+  EXPECT_EQ(nullptr, info);
+
+  // Verify that setting a captive portal provider applies to existing networks.
+  std::string hex_ssid = wifi1->GetHexSsid();
+  ASSERT_FALSE(hex_ssid.empty());
+  network_state_handler_->SetCaptivePortalProviderForHexSsid(
+      hex_ssid, kProviderId, kProviderName);
+  base::RunLoop().RunUntilIdle();
+
+  info = wifi1->captive_portal_provider();
+  ASSERT_NE(nullptr, info);
+  EXPECT_EQ(kProviderId, info->id);
+  EXPECT_EQ(kProviderName, info->name);
+
+  // Verify that adding a new network sets its captive portal provider.
+  constexpr char kNewSsid[] = "new_wifi";
+  std::string new_hex_ssid = base::HexEncode(kNewSsid, strlen(kNewSsid));
+  network_state_handler_->SetCaptivePortalProviderForHexSsid(
+      new_hex_ssid, kProviderId, kProviderName);
+  AddService("/service/new_wifi", "new_wifi_guid", kNewSsid, shill::kTypeWifi,
+             shill::kStateOnline);
+  base::RunLoop().RunUntilIdle();
+
+  const NetworkState* new_wifi =
+      network_state_handler_->GetNetworkState("/service/new_wifi");
+  ASSERT_TRUE(new_wifi);
+  info = new_wifi->captive_portal_provider();
+  ASSERT_NE(nullptr, info);
+  EXPECT_EQ(kProviderId, info->id);
+  EXPECT_EQ(kProviderName, info->name);
 }
 
 }  // namespace chromeos

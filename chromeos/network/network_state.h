@@ -20,7 +20,7 @@
 namespace base {
 class DictionaryValue;
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
@@ -38,6 +38,20 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
  public:
   explicit NetworkState(const std::string& path);
   ~NetworkState() override;
+
+  struct CaptivePortalProviderInfo {
+    // The id used by chrome to identify the provider (i.e. an extension id).
+    std::string id;
+    // The display name for the captive portal provider (i.e. extension name).
+    std::string name;
+  };
+
+  struct VpnProviderInfo {
+    // The id used by chrome to identify the provider (i.e. an extension id).
+    std::string id;
+    // The VPN type, provided by the VPN provider/extension.
+    std::string type;
+  };
 
   // ManagedState overrides
   // If you change this method, update GetProperties too.
@@ -81,6 +95,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool connectable() const { return connectable_; }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   bool is_captive_portal() const { return is_captive_portal_; }
+  const CaptivePortalProviderInfo* captive_portal_provider() const {
+    return captive_portal_provider_.get();
+  }
+  void SetCaptivePortalProvider(const std::string& id, const std::string& name);
   int signal_strength() const { return signal_strength_; }
   void set_signal_strength(int signal_strength) {
     signal_strength_ = signal_strength;
@@ -91,9 +109,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::vector<uint8_t>& raw_ssid() const { return raw_ssid_; }
 
   // Cellular property accessors
-  const std::string& network_technology() const {
-    return network_technology_;
-  }
+  const std::string& network_technology() const { return network_technology_; }
   const std::string& activation_type() const { return activation_type_; }
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
@@ -102,8 +118,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& tethering_state() const { return tethering_state_; }
 
   // VPN property accessors
-  const std::string& vpn_provider_type() const { return vpn_provider_type_; }
-  const std::string& vpn_provider_id() const { return vpn_provider_id_; }
+  const VpnProviderInfo* vpn_provider() const { return vpn_provider_.get(); }
+  std::string GetVpnProviderType() const;
 
   // Tether accessors and setters.
   int battery_percentage() const { return battery_percentage_; }
@@ -189,6 +205,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if |name_| changes.
   bool UpdateName(const base::DictionaryValue& properties);
 
+  void SetVpnProvider(const std::string& id, const std::string& type);
+
   // Set to true if the network is a member of Manager.Services.
   bool visible_ = false;
 
@@ -196,7 +214,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Instead use NetworkConfigurationHandler::GetProperties() to asynchronously
   // request properties from Shill.
   std::string security_class_;
-  std::string eap_method_;  // Needed for WiFi EAP networks
+  std::string eap_method_;    // Needed for WiFi EAP networks
   std::string eap_key_mgmt_;  // Needed for identifying Dynamic WEP networks
   std::string device_path_;
   std::string guid_;
@@ -222,6 +240,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Wireless properties, used for icons and Connect logic.
   bool connectable_ = false;
   bool is_captive_portal_ = false;
+  std::unique_ptr<CaptivePortalProviderInfo> captive_portal_provider_;
   int signal_strength_ = 0;
   std::string bssid_;  // For ARC
   int frequency_ = 0;  // For ARC
@@ -236,10 +255,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string tethering_state_;
 
   // VPN properties, used to construct the display name and to show the correct
-  // configuration dialog.
-  std::string vpn_provider_type_;
-  // Extension ID or Arc package name for extension or Arc provider VPNs.
-  std::string vpn_provider_id_;
+  // configuration dialog. The id is the Extension ID or Arc package name for
+  // extension or Arc provider VPNs.
+  std::unique_ptr<VpnProviderInfo> vpn_provider_;
 
   // Tether properties.
   std::string carrier_;

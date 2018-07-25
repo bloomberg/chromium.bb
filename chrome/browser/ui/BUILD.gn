@@ -1889,8 +1889,6 @@ jumbo_split_static_library("ui") {
       "ash/network/network_portal_notification_controller.h",
       "ash/network/network_state_notifier.cc",
       "ash/network/network_state_notifier.h",
-      "ash/network/networking_config_delegate_chromeos.cc",
-      "ash/network/networking_config_delegate_chromeos.h",
       "ash/network/tether_notification_presenter.cc",
       "ash/network/tether_notification_presenter.h",
       "ash/session_controller_client.cc",
@@ -3486,9 +3484,7 @@ jumbo_split_static_library("ui") {
     }
 
     if (!is_chromeos) {
-      sources += [
-        "views/screen_capture_notification_ui_views.cc",
-      ]
+      sources += [ "views/screen_capture_notification_ui_views.cc" ]
     }
 
     if (is_mac) {

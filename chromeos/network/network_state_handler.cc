@@ -27,7 +27,6 @@
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -938,6 +937,38 @@ void NetworkStateHandler::SetCheckPortalList(
   shill_property_handler_->SetCheckPortalList(check_portal_list);
 }
 
+void NetworkStateHandler::SetCaptivePortalProviderForHexSsid(
+    const std::string& hex_ssid,
+    const std::string& provider_id,
+    const std::string& provider_name) {
+  NET_LOG(EVENT) << "SetCaptivePortalProviderForHexSsid: " << hex_ssid
+                 << " -> (" << provider_id << ", " << provider_name << ")";
+  // NetworkState hex SSIDs are always uppercase.
+  std::string hex_ssid_uc = hex_ssid;
+  transform(hex_ssid_uc.begin(), hex_ssid_uc.end(), hex_ssid_uc.begin(),
+            toupper);
+  if (provider_id.empty()) {
+    hex_ssid_to_captive_portal_provider_map_.erase(hex_ssid_uc);
+  } else {
+    NetworkState::CaptivePortalProviderInfo provider_info;
+    provider_info.id = provider_id;
+    provider_info.name = provider_name;
+    hex_ssid_to_captive_portal_provider_map_[hex_ssid_uc] =
+        std::move(provider_info);
+  }
+  // When a new entry is added or removed from the map, check all networks
+  // for a matching hex SSID and update the provider info. (This should occur
+  // infrequently). New networks will be updated when added.
+  for (auto& managed : network_list_) {
+    NetworkState* network = managed->AsNetworkState();
+    if (network->GetHexSsid() == hex_ssid_uc) {
+      NET_LOG(EVENT) << "Setting captive portal provider for network: "
+                     << network->guid() << " = " << provider_id;
+      network->SetCaptivePortalProvider(provider_id, provider_name);
+    }
+  }
+}
+
 void NetworkStateHandler::SetWakeOnLanEnabled(bool enabled) {
   NET_LOG_EVENT("SetWakeOnLanEnabled", enabled ? "true" : "false");
   shill_property_handler_->SetWakeOnLanEnabled(enabled);
@@ -1134,7 +1165,10 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
       network_property_updated = true;
   }
   network_property_updated |= network->InitialPropertiesReceived(properties);
+
   UpdateGuid(network);
+  UpdateCaptivePortalProvider(network);
+
   network_list_sorted_ = false;
 
   // Notify observers of NetworkState changes.
@@ -1472,14 +1506,27 @@ void NetworkStateHandler::UpdateGuid(NetworkState* network) {
   }
   // Ensure that the NetworkState has a valid GUID.
   std::string guid;
-  SpecifierGuidMap::iterator iter = specifier_guid_map_.find(specifier);
-  if (iter != specifier_guid_map_.end()) {
-    guid = iter->second;
+  SpecifierGuidMap::iterator guid_iter = specifier_guid_map_.find(specifier);
+  if (guid_iter != specifier_guid_map_.end()) {
+    guid = guid_iter->second;
   } else {
     guid = base::GenerateGUID();
     specifier_guid_map_[specifier] = guid;
   }
   network->SetGuid(guid);
+}
+
+void NetworkStateHandler::UpdateCaptivePortalProvider(NetworkState* network) {
+  auto portal_iter =
+      hex_ssid_to_captive_portal_provider_map_.find(network->GetHexSsid());
+  if (portal_iter == hex_ssid_to_captive_portal_provider_map_.end()) {
+    network->SetCaptivePortalProvider("", "");
+    return;
+  }
+  NET_LOG(EVENT) << "Setting captive portal provider for network: "
+                 << network->guid() << " = " << portal_iter->second.id;
+  network->SetCaptivePortalProvider(portal_iter->second.id,
+                                    portal_iter->second.name);
 }
 
 void NetworkStateHandler::EnsureCellularNetwork(
