@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/consent_auditor/consent_sync_bridge_impl.h"
@@ -92,7 +93,8 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),
-      GetApplicationContext()->GetApplicationLocale());
+      GetApplicationContext()->GetApplicationLocale(),
+      base::DefaultClock::GetInstance());
 }
 
 bool ConsentAuditorFactory::ServiceIsNULLWhileTesting() const {

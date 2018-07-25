@@ -102,12 +102,14 @@ ConsentAuditorImpl::ConsentAuditorImpl(
     std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
     syncer::UserEventService* user_event_service,
     const std::string& app_version,
-    const std::string& app_locale)
+    const std::string& app_locale,
+    base::Clock* clock)
     : pref_service_(pref_service),
       consent_sync_bridge_(std::move(consent_sync_bridge)),
       user_event_service_(user_event_service),
       app_version_(app_version),
-      app_locale_(app_locale) {
+      app_locale_(app_locale),
+      clock_(clock) {
   if (IsSeparateConsentTypeEnabled()) {
     DCHECK(consent_sync_bridge_ && !user_event_service_);
   } else {
@@ -178,8 +180,7 @@ ConsentAuditorImpl::ConstructUserEventSpecifics(
   DCHECK(!IsSeparateConsentTypeEnabled());
 
   auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
-  specifics->set_event_time_usec(
-      base::Time::Now().since_origin().InMicroseconds());
+  specifics->set_event_time_usec(clock_->Now().since_origin().InMicroseconds());
   auto* consent = specifics->mutable_user_consent();
   consent->set_account_id(account_id);
   consent->set_feature(FeatureToUserEventProtoEnum(feature));
@@ -203,7 +204,7 @@ ConsentAuditorImpl::ConstructUserConsentSpecifics(
 
   auto specifics = std::make_unique<sync_pb::UserConsentSpecifics>();
   specifics->set_client_consent_time_usec(
-      base::Time::Now().since_origin().InMicroseconds());
+      clock_->Now().since_origin().InMicroseconds());
   specifics->set_account_id(account_id);
   specifics->set_feature(FeatureToUserConsentProtoEnum(feature));
   for (int id : description_grd_ids) {
