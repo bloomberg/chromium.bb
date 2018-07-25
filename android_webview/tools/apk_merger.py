@@ -37,12 +37,12 @@ BUILD_ANDROID_DIR = os.path.join(SRC_DIR, 'build', 'android')
 BUILD_ANDROID_GYP_DIR = os.path.join(BUILD_ANDROID_DIR, 'gyp')
 sys.path.append(BUILD_ANDROID_GYP_DIR)
 
-import finalize_apk # pylint: disable=import-error,wrong-import-position
-from util import build_utils # pylint: disable=import-error,wrong-import-position
+import finalize_apk # pylint: disable=import-error
+from util import build_utils # pylint: disable=import-error
 
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib import constants  # pylint: disable=import-error,wrong-import-position
+from pylib import constants  # pylint: disable=import-error
 
 DEFAULT_ZIPALIGN_PATH = os.path.join(
     SRC_DIR, 'third_party', 'android_tools', 'sdk', 'build-tools',
@@ -87,7 +87,7 @@ def GetDiffFiles(dcmp, base_dir):
     copy_files.extend(
         GetNonDirFiles(os.path.join(dcmp.right, file_name), base_dir))
 
-  # we cannot merge APKs with files with similar names but different contents
+# we cannot merge APKs with files with similar names but different contents
   if len(dcmp.diff_files) > 0:
     raise ApkMergeFailure('found differing files: %s in %s and %s' %
                           (dcmp.diff_files, dcmp.left, dcmp.right))
@@ -116,6 +116,11 @@ def CheckFilesExpected(actual_files, expected_files, component_build):
   missing_file_set = expected_file_set.difference(actual_file_set)
   duplicate_file_set = set(
       f for f, n in actual_file_names.iteritems() if n > 1)
+
+  # TODO(crbug.com/839191): Remove this once we're plumbing the lib correctly.
+  missing_file_set = set(
+      f for f in missing_file_set if not os.path.basename(f) ==
+      'libarcore_sdk_c_minimal.so')
 
   errors = []
   if unexpected_file_set:
@@ -171,6 +176,10 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
     expected_files[args.shared_library] = not args.uncompress_shared_libraries
   if args.has_unwind_cfi:
     expected_files['unwind_cfi_32'] = False
+
+  # TODO(crbug.com/839191): we should pass this in via script arguments.
+  if not args.loadable_module_32:
+    args.loadable_module_32.append('libarcore_sdk_c_minimal.so')
 
   for f in args.loadable_module_32:
     expected_files[f] = not args.uncompress_shared_libraries
