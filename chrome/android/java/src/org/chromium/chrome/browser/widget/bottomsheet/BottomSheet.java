@@ -77,10 +77,14 @@ public class BottomSheet extends FrameLayout
          * transitioning between states.
          */
         int NONE = -1;
+        // Values are used for indexing mStateRatios, should start from 0
+        // and can't have gaps. Additionally order is important for these,
+        // they go from smallest to largest.
         int HIDDEN = 0;
         int PEEK = 1;
         int HALF = 2;
         int FULL = 3;
+
         int SCROLLING = 4;
     }
 
@@ -141,8 +145,6 @@ public class BottomSheet extends FrameLayout
      * Information about the different scroll states of the sheet. Order is important for these,
      * they go from smallest to largest.
      */
-    private static final int[] sStates =
-            new int[] {SheetState.HIDDEN, SheetState.PEEK, SheetState.HALF, SheetState.FULL};
     private final float[] mStateRatios = new float[4];
 
     /** The interpolator that the height animator uses. */
@@ -1405,7 +1407,7 @@ public class BottomSheet extends FrameLayout
      */
     @SheetState
     private int getTargetSheetState(float sheetHeight, float yVelocity) {
-        if (sheetHeight <= getMinOffsetPx()) return sStates[getMinSwipableSheetState()];
+        if (sheetHeight <= getMinOffsetPx()) return getMinSwipableSheetState();
         if (sheetHeight >= getMaxOffsetPx()) return SheetState.FULL;
 
         boolean isMovingDownward = yVelocity < 0;
@@ -1413,15 +1415,15 @@ public class BottomSheet extends FrameLayout
 
         // First, find the two states that the sheet height is between.
         @SheetState
-        int nextState = sStates[getMinSwipableSheetState()];
+        int nextState = getMinSwipableSheetState();
 
         @SheetState
         int prevState = nextState;
-        for (int i = getMinSwipableSheetState(); i < sStates.length; i++) {
-            if (sStates[i] == SheetState.HALF && shouldSkipHalfState) continue;
-            if (sStates[i] == SheetState.PEEK && !mSheetContent.isPeekStateEnabled()) continue;
+        for (@SheetState int i = getMinSwipableSheetState(); i <= SheetState.FULL; i++) {
+            if (i == SheetState.HALF && shouldSkipHalfState) continue;
+            if (i == SheetState.PEEK && !mSheetContent.isPeekStateEnabled()) continue;
             prevState = nextState;
-            nextState = sStates[i];
+            nextState = i;
             // The values in PanelState are ascending, they should be kept that way in order for
             // this to work.
             if (sheetHeight >= getSheetHeightForState(prevState)
