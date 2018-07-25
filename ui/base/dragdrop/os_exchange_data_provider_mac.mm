@@ -100,17 +100,18 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(
   DCHECK(url);
   DCHECK(title);
 
-  NSArray* urlArray = nil;
-  NSArray* titleArray = nil;
-  if (ClipboardUtil::URLsAndTitlesFromPasteboard(pasteboard_->get(), &urlArray,
-                                                 &titleArray)) {
-    *url = GURL(base::SysNSStringToUTF8([urlArray firstObject]));
-    *title = base::SysNSStringToUTF16([titleArray firstObject]);
+  if (ui::PopulateURLAndTitleFromPasteboard(url, title, pasteboard_->get(),
+                                            false)) {
     return true;
   }
 
-  // If there are no URLS, try to convert a filename to a URL if the policy
+  // If there are no URLs, try to convert a filename to a URL if the policy
   // allows it. The title remains blank.
+  //
+  // This could be done in the call to PopulateURLAndTitleFromPasteboard above
+  // if |true| were passed in as the last parameter, but that function strips
+  // the trailing slashes off of paths and always returns the last path element
+  // as the title whereas no path conversion nor title is wanted.
   base::FilePath path;
   if (policy != OSExchangeData::DO_NOT_CONVERT_FILENAMES &&
       GetFilename(&path)) {
