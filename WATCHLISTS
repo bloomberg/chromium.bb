@@ -310,7 +310,9 @@
                   '|third_party/blink/renderer/bindings/core/v8/.*custom_element',
     },
     'blink_device_orientation': {
-      'filepath': 'third_party/blink/renderer/modules/device_orientation/' \
+      'filepath': 'content/browser/device_sensors/' \
+                  '|content/test/data/device_sensors/' \
+                  '|third_party/blink/renderer/modules/device_orientation/' \
                   '|third_party/WebKit/LayoutTests/device_orientation/' \
                   '|third_party/blink/renderer/core/frame/platform_event_(controller|dispatcher)' \
                   '|third_party/blink/renderer/core/frame/device_single_window_event_controller'
@@ -807,15 +809,6 @@
                   'chrome/browser/ui/views/extensions/chooser_dialog_.*|'\
                   'chrome/browser/ui/views/permission_bubble/chooser_bubble_.*|'\
                   'chrome/browser/usb/usb_chooser_.*',
-    },
-    'device_sensors': {
-      'filepath': 'content/browser/device_sensors/|'\
-                  'content/common/device_sensors/|'\
-                  'content/public/android/java/src/org/chromium/content/browser/DeviceSensors.java|'\
-                  'content/public/android/javatests/src/org/chromium/content/browser/DeviceSensorsTest.java|'\
-                  'content/renderer/device_sensors/|'\
-                  'content/test/data/device_sensors/|'\
-                  'device/sensors/',
     },
     'devtools': {
       'filepath': 'devtools',
@@ -1818,7 +1811,9 @@
                               'rego@igalia.com',
                               'svillar@igalia.com'],
     'blink_custom_elements': ['dominicc+watchlist@chromium.org'],
-    'blink_device_orientation': ['mlamouri+watch-blink@chromium.org',
+    'blink_device_orientation': ['juncai+watch@chromium.org',
+                                 'mlamouri+watch-blink@chromium.org',
+                                 'rijubrata.bhaumik@intel.com',
                                  'timvolodine@chromium.org'],
     'blink_devtools': ['apavlov+blink@chromium.org',
                        'caseq+blink@chromium.org',
@@ -2058,10 +2053,6 @@
                          'ortuno+watch@chromium.org'],
     'device_chooser': ['juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org'],
-    'device_sensors': ['juncai+watch@chromium.org',
-                       'mlamouri+watch-sensors@chromium.org',
-                       'rijubrata.bhaumik@intel.com',
-                       'timvolodine@chromium.org'],
     'devtools': ['devtools-reviews@chromium.org',
                  'pfeldman@chromium.org'],
     'dial': ['mfoltz+watch@chromium.org',
