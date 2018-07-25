@@ -41,7 +41,7 @@ constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
   <html>
     <body style="padding:0 32px;">
       <h3>Assistant Reminders</h3>
-      <p>Coming Soon! :)</p>
+      <p>Coming soon. Meanwhile, please use your Android/iOS phone to access reminders.</p>
     </body>
   </html>
 )";
@@ -51,7 +51,7 @@ constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
   <html>
     <body style="padding:0 32px;">
       <h3>Assistant Settings</h3>
-      <p>Coming Soon! :)</p>
+      <p>Coming soon. Meanwhile, please use your Android/iOS phone to access settings.</p>
     </body>
   </html>
 )";
