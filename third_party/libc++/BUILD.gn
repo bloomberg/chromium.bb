@@ -19,9 +19,10 @@ config("config") {
 }
 
 component("libc++") {
-  static_component_type = "source_set"
   if (is_component_build) {
     no_default_deps = true
+  } else {
+    static_component_type = "source_set"
   }
   sources = [
     "trunk/src/algorithm.cpp",
