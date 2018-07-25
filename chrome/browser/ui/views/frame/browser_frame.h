@@ -120,6 +120,10 @@ class BrowserFrame
   // Note that in multi user mode this will upon each call create a new model.
   ui::MenuModel* GetSystemMenuModel();
 
+  NativeBrowserFrame* native_browser_frame() const {
+    return native_browser_frame_;
+  }
+
  private:
   // Callback for MenuRunner.
   void OnMenuClosed();
