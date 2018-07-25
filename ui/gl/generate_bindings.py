@@ -3419,13 +3419,13 @@ namespace {
 // This is called mainly to prevent the compiler combining the code of mock
 // functions with identical contents, so that their function pointers will be
 // different.
-void MakeFunctionUnique(const char *func_name) {
+void Make%sMockFunctionUnique(const char *func_name) {
     VLOG(2) << "Calling mock " << func_name;
 }
 }  // namespace
 
 namespace gl {
-""" % (set_name,))
+""" % (set_name, set_name.capitalize()))
 
   # Write functions that trampoline into the set MockGLInterface instance.
   uniquely_named_functions = GetUniquelyNamedFunctions(functions)
@@ -3437,7 +3437,8 @@ namespace gl {
     file.write('%s GL_BINDING_CALL Mock%sInterface::Mock_%s(%s) {\n' %
         (func['return_type'], set_name.upper(), func['name'],
          func['arguments']))
-    file.write('  MakeFunctionUnique("%s");\n' % func['name'])
+    file.write('  Make%sMockFunctionUnique("%s");\n' % (set_name.capitalize(),
+                                                        func['name']))
     arg_re = r'(const |struct )*[a-zA-Z0-9]+((\s*const\s*)?\*)* ([a-zA-Z0-9]+)'
     argument_names = re.sub(arg_re, r'\4', func['arguments'])
     if argument_names == 'void':
@@ -3455,7 +3456,7 @@ namespace gl {
   # function pointers or trying to interpret the return value of
   # GLProcAddress().
   file.write('\n')
-  file.write('static void MockInvalidFunction() {\n')
+  file.write('static void Mock%sInvalidFunction() {\n' % set_name.capitalize())
   file.write('  NOTREACHED();\n')
   file.write('}\n')
 
@@ -3472,7 +3473,7 @@ namespace gl {
             name)
   # Always return a non-NULL pointer like some EGL implementations do.
   file.write('  return reinterpret_cast<GLFunctionPointerType>('
-             '&MockInvalidFunction);\n')
+             '&Mock%sInvalidFunction);\n' % set_name.capitalize())
   file.write('}\n')
 
   file.write('\n')
