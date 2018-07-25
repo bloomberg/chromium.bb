@@ -4,10 +4,18 @@
 
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -35,7 +43,7 @@ class TestTabLoadTracker : public TabLoadTracker {
   using TabLoadTracker::OnPageAlmostIdle;
   using TabLoadTracker::DetermineLoadingState;
 
-  TestTabLoadTracker() {}
+  TestTabLoadTracker() : all_tabs_are_non_ui_tabs_(false) {}
   virtual ~TestTabLoadTracker() {}
 
   // Some accessors for TabLoadTracker internals.
@@ -49,6 +57,19 @@ class TestTabLoadTracker : public TabLoadTracker {
       return false;
     return it->second.did_start_loading_seen;
   }
+
+  bool IsUiTab(content::WebContents* web_contents) override {
+    if (all_tabs_are_non_ui_tabs_)
+      return false;
+    return TabLoadTracker::IsUiTab(web_contents);
+  }
+
+  void SetAllTabsAreNonUiTabs(bool enabled) {
+    all_tabs_are_non_ui_tabs_ = enabled;
+  }
+
+ private:
+  bool all_tabs_are_non_ui_tabs_;
 };
 
 // A mock observer class.
@@ -143,7 +164,18 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(loaded, tracker().GetLoadedTabCount());
   }
 
-  void StateTransitionsTest(bool enable_pai);
+  void ExpectUiTabCounts(size_t tabs,
+                         size_t unloaded,
+                         size_t loading,
+                         size_t loaded) {
+    EXPECT_EQ(tabs, unloaded + loading + loaded);
+    EXPECT_EQ(tabs, tracker().GetUiTabCount());
+    EXPECT_EQ(unloaded, tracker().GetUnloadedUiTabCount());
+    EXPECT_EQ(loading, tracker().GetLoadingUiTabCount());
+    EXPECT_EQ(loaded, tracker().GetLoadedUiTabCount());
+  }
+
+  void StateTransitionsTest(bool enable_pai, bool use_non_ui_tabs);
 
   TestTabLoadTracker& tracker() { return tracker_; }
   MockObserver& observer() { return observer_; }
@@ -169,6 +201,17 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
     SCOPED_TRACE("");                 \
     ExpectTabCounts(a, b, c, d);      \
   }
+#define EXPECT_UI_TAB_COUNTS(a, b, c, d) \
+  {                                      \
+    SCOPED_TRACE("");                    \
+    ExpectUiTabCounts(a, b, c, d);       \
+  }
+#define EXPECT_TAB_AND_UI_TAB_COUNTS(a, b, c, d) \
+  {                                              \
+    SCOPED_TRACE("");                            \
+    ExpectTabCounts(a, b, c, d);                 \
+    ExpectUiTabCounts(a, b, c, d);               \
+  }
 
 TEST_F(TabLoadTrackerTest, DetermineLoadingState) {
   auto* tester1 = content::WebContentsTester::For(contents1());
@@ -186,8 +229,10 @@ TEST_F(TabLoadTrackerTest, DetermineLoadingState) {
   EXPECT_EQ(LoadingState::LOADED, tracker().DetermineLoadingState(contents1()));
 }
 
-void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
+void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai,
+                                              bool use_non_ui_tabs) {
   SetPageAlmostIdleFeatureEnabled(enable_pai);
+  tracker().SetAllTabsAreNonUiTabs(use_non_ui_tabs);
 
   auto* tester1 = content::WebContentsTester::For(contents1());
   auto* tester2 = content::WebContentsTester::For(contents2());
@@ -199,20 +244,35 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
   tester3->NavigateAndCommit(GURL("http://bar.com"));
   tester3->TestSetIsLoading(false);
 
-  // Add the contents to the trackers.
+  // Add the contents to the tracker.
   EXPECT_CALL(observer(), OnStartTracking(contents1(), LoadingState::UNLOADED));
   tracker().StartTracking(contents1());
-  EXPECT_TAB_COUNTS(1, 1, 0, 0);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(1, 1, 0, 0);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(1, 1, 0, 0);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
   EXPECT_CALL(observer(), OnStartTracking(contents2(), LoadingState::LOADING));
   tracker().StartTracking(contents2());
-  EXPECT_TAB_COUNTS(2, 1, 1, 0);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(2, 1, 1, 0);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(2, 1, 1, 0);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
   EXPECT_CALL(observer(), OnStartTracking(contents3(), LoadingState::LOADED));
   tracker().StartTracking(contents3());
-  EXPECT_TAB_COUNTS(3, 1, 1, 1);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(3, 1, 1, 1);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 1, 1);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
   // Start observers for the contents.
@@ -230,10 +290,20 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
   if (enable_pai) {
     // The state transition should only occur *after* the PAI signal when that
     // feature is enabled.
-    EXPECT_TAB_COUNTS(3, 1, 1, 1);
+    if (use_non_ui_tabs) {
+      EXPECT_TAB_COUNTS(3, 1, 1, 1);
+      EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+    } else {
+      EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 1, 1);
+    }
     tracker().OnPageAlmostIdle(contents2());
   }
-  EXPECT_TAB_COUNTS(3, 1, 0, 2);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(3, 1, 0, 2);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 0, 2);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
   // Start the loading for contents1.
@@ -241,7 +311,12 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
               OnLoadingStateChange(contents1(), LoadingState::UNLOADED,
                                    LoadingState::LOADING));
   tester1->NavigateAndCommit(GURL("http://baz.com"));
-  EXPECT_TAB_COUNTS(3, 0, 1, 2);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(3, 0, 1, 2);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 0, 1, 2);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
   // Stop the loading with an error. The tab should go back to a LOADED
@@ -251,7 +326,12 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
                                    LoadingState::LOADED));
   tester1->TestDidFailLoadWithError(GURL("http://baz.com"), 500,
                                     base::UTF8ToUTF16("server error"));
-  ExpectTabCounts(3, 0, 0, 3);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(3, 0, 0, 3);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 0, 0, 3);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 
   // Crash the render process corresponding to the main frame of a tab. This
@@ -263,16 +343,163 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
       static_cast<content::MockRenderProcessHost*>(
           contents1()->GetMainFrame()->GetProcess());
   rph->SimulateCrash();
-  ExpectTabCounts(3, 1, 0, 2);
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(3, 1, 0, 2);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 0, 2);
+  }
   testing::Mock::VerifyAndClearExpectations(&observer());
 }
 
 TEST_F(TabLoadTrackerTest, StateTransitions) {
-  StateTransitionsTest(false);
+  StateTransitionsTest(false /* enable_pai */, false /* use_non_ui_tabs */);
 }
 
 TEST_F(TabLoadTrackerTest, StateTransitionsPAI) {
-  StateTransitionsTest(true);
+  StateTransitionsTest(true /* enable_pai */, false /* use_non_ui_tabs */);
+}
+
+TEST_F(TabLoadTrackerTest, StateTransitionsNonUiTabs) {
+  StateTransitionsTest(false /* enable_pai */, true /* use_non_ui_tabs */);
+}
+
+TEST_F(TabLoadTrackerTest, StateTransitionsPAINonUiTabs) {
+  StateTransitionsTest(true /* enable_pai */, true /* use_non_ui_tabs */);
+}
+
+TEST_F(TabLoadTrackerTest, PrerenderContentsDoesNotChangeUiTabCounts) {
+  auto* tester1 = content::WebContentsTester::For(contents1());
+  tester1->NavigateAndCommit(GURL("http://baz.com"));
+
+  // Add the contents to the tracker.
+  EXPECT_CALL(observer(), OnStartTracking(contents1(), LoadingState::LOADING));
+  tracker().StartTracking(contents1());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(1, 0, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  EXPECT_CALL(observer(), OnStartTracking(contents2(), LoadingState::UNLOADED));
+  tracker().StartTracking(contents2());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(2, 1, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  // Start observers for the contents.
+  TestWebContentsObserver observer1(contents1(), &tracker());
+  TestWebContentsObserver observer2(contents2(), &tracker());
+
+  // Prerender some contents.
+  prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
+  prerender::PrerenderManager::SetMode(
+      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
+  GURL url("http://www.example.com");
+  const gfx::Size kSize(640, 480);
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle(
+      prerender_manager->AddPrerenderFromOmnibox(
+          url, contents1()->GetController().GetDefaultSessionStorageNamespace(),
+          kSize));
+  const std::vector<content::WebContents*> contentses =
+      prerender_manager->GetAllPrerenderingContents();
+  ASSERT_EQ(1U, contentses.size());
+
+  // Prerendering should not change the UI tab counts, but should increase
+  // overall tab count. Note, contentses[0] is UNLOADED since it is not a test
+  // web contents and therefore hasn't started receiving data.
+  TestWebContentsObserver prerender_observer(contentses[0], &tracker());
+  EXPECT_CALL(observer(),
+              OnStartTracking(contentses[0], LoadingState::UNLOADED));
+  tracker().StartTracking(contentses[0]);
+  EXPECT_TAB_COUNTS(3, 2, 1, 0);
+  EXPECT_UI_TAB_COUNTS(2, 1, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  prerender_manager->CancelAllPrerenders();
+}
+
+TEST_F(TabLoadTrackerTest, SwapInUiTabContents) {
+  auto* tester1 = content::WebContentsTester::For(contents1());
+  tester1->NavigateAndCommit(GURL("http://baz.com"));
+
+  // Add the contents to the tracker.
+  EXPECT_CALL(observer(), OnStartTracking(contents1(), LoadingState::LOADING));
+  tracker().StartTracking(contents1());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(1, 0, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  EXPECT_CALL(observer(), OnStartTracking(contents2(), LoadingState::UNLOADED));
+  tracker().StartTracking(contents2());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(2, 1, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  // Start observers for the contents.
+  TestWebContentsObserver observer1(contents1(), &tracker());
+  TestWebContentsObserver observer2(contents2(), &tracker());
+
+  // Simulate non-ui tab contents running in the background and getting swapped
+  // in. Non-ui tabs should not change the ui tab counts, but should change the
+  // overall tab counts.
+  std::unique_ptr<content::WebContents> non_ui_tab_contents =
+      CreateTestWebContents();
+  EXPECT_CALL(observer(), OnStartTracking(non_ui_tab_contents.get(),
+                                          LoadingState::UNLOADED));
+  tracker().SetAllTabsAreNonUiTabs(true);
+  tracker().StartTracking(non_ui_tab_contents.get());
+  EXPECT_TAB_COUNTS(3, 2, 1, 0);
+  EXPECT_UI_TAB_COUNTS(2, 1, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+  // Swap in the prerender contents and simulate resulting tab strip swap.
+  // |non_ui_tab_contents| is already being tracked. The UI tab count should
+  // remain stable through the swap.
+  EXPECT_CALL(observer(), OnStopTracking(contents1(), LoadingState::LOADING));
+  tracker().SetAllTabsAreNonUiTabs(false);
+  tracker().SwapTabContents(contents1(), non_ui_tab_contents.get());
+  // After swap, but before we stop tracking the swapped-out contents. The UI
+  // tab counts should be in the end-state, but the total tab counts will be in
+  // the pre-swap state while the swapped-out contents is still being tracked.
+  EXPECT_TAB_COUNTS(3, 2, 1, 0);
+  EXPECT_UI_TAB_COUNTS(2, 2, 0, 0);
+  tracker().StopTracking(contents1());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(2, 2, 0, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+}
+
+TEST_F(TabLoadTrackerTest, SwapInUntrackedContents) {
+  auto* tester1 = content::WebContentsTester::For(contents1());
+  tester1->NavigateAndCommit(GURL("http://baz.com"));
+
+  // Add the contents to the tracker.
+  EXPECT_CALL(observer(), OnStartTracking(contents1(), LoadingState::LOADING));
+  tracker().StartTracking(contents1());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(1, 0, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  EXPECT_CALL(observer(), OnStartTracking(contents2(), LoadingState::UNLOADED));
+  tracker().StartTracking(contents2());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(2, 1, 1, 0);
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  // Create an untracked web contents in the UNLOADED state, and swap it with
+  // the contents in the LOADING state. Since |untracked_contents| has no tab
+  // helper attached, swapping it in shouldn't changed the tab count.
+  std::unique_ptr<content::WebContents> untracked_contents =
+      CreateTestWebContents();
+  tracker().SwapTabContents(contents1(), untracked_contents.get());
+  // The total counts will remain stable since swapping out doesn't cause any
+  // web contents to stop being tracking. However, the swapped-out contents are
+  // no longer included in UI tab counts, and the swapped-in contents won't be
+  // until it is tracked.
+  EXPECT_TAB_COUNTS(2, 1, 1, 0);
+  EXPECT_UI_TAB_COUNTS(1, 1, 0, 0);
+
+  // Simulate swap in tab strip, which would cause |untracked_contents| to be
+  // tracked and the tab counts to change.
+  EXPECT_CALL(observer(), OnStopTracking(contents1(), LoadingState::LOADING));
+  EXPECT_CALL(observer(), OnStartTracking(untracked_contents.get(),
+                                          LoadingState::UNLOADED));
+  tracker().StopTracking(contents1());
+  tracker().StartTracking(untracked_contents.get());
+  EXPECT_TAB_AND_UI_TAB_COUNTS(2, 2, 0, 0);
 }
 
 }  // namespace resource_coordinator
