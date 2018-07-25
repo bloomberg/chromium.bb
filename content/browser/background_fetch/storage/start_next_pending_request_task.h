@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/database_task.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
@@ -24,8 +25,8 @@ class StartNextPendingRequestTask : public DatabaseTask {
 
   StartNextPendingRequestTask(
       DatabaseTaskHost* host,
-      int64_t service_worker_registration_id,
-      std::unique_ptr<proto::BackgroundFetchMetadata> metadata,
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRegistration& registration,
       NextRequestCallback callback);
 
   ~StartNextPendingRequestTask() override;
@@ -52,8 +53,8 @@ class StartNextPendingRequestTask : public DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
-  int64_t service_worker_registration_id_;
-  std::unique_ptr<proto::BackgroundFetchMetadata> metadata_;
+  BackgroundFetchRegistrationId registration_id_;
+  BackgroundFetchRegistration registration_;
   NextRequestCallback callback_;
 
   // protos don't support move semantics, so these class members will be used

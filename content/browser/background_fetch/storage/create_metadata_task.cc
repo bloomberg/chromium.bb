@@ -8,6 +8,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -191,9 +193,20 @@ void CreateMetadataTask::DidStoreMetadata(
 
 void CreateMetadataTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  if (error != blink::mojom::BackgroundFetchError::NONE)
-    metadata_proto_.reset();
-  std::move(callback_).Run(error, std::move(metadata_proto_));
+  BackgroundFetchRegistration registration;
+
+  if (error == blink::mojom::BackgroundFetchError::NONE) {
+    DCHECK(metadata_proto_);
+
+    registration = ToBackgroundFetchRegistration(*metadata_proto_);
+
+    for (auto& observer : data_manager()->observers()) {
+      observer.OnRegistrationCreated(registration_id_, registration, options_,
+                                     icon_, requests_.size());
+    }
+  }
+
+  std::move(callback_).Run(error, registration);
   Finished();  // Destroys |this|.
 }
 

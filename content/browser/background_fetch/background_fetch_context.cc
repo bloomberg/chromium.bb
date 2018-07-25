@@ -73,11 +73,9 @@ void BackgroundFetchContext::DidGetInitializationData(
   }
 
   for (auto& data : initialization_data) {
-    CreateController(data.registration_id, data.options, data.icon,
-                     data.ui_title, data.num_completed_requests,
-                     data.num_requests, data.active_fetch_guids,
-                     std::make_unique<BackgroundFetchRegistration>(
-                         std::move(data.registration)));
+    CreateController(data.registration_id, data.registration, data.options,
+                     data.icon, data.ui_title, data.num_completed_requests,
+                     data.num_requests, data.active_fetch_guids);
   }
 }
 
@@ -105,7 +103,7 @@ void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
 void BackgroundFetchContext::DidGetRegistration(
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
     blink::mojom::BackgroundFetchError error,
-    std::unique_ptr<BackgroundFetchRegistration> registration) {
+    const BackgroundFetchRegistration& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
@@ -114,13 +112,15 @@ void BackgroundFetchContext::DidGetRegistration(
     return;
   }
 
-  DCHECK(registration);
+  BackgroundFetchRegistration updated_registration(registration);
+
   // The data manager only has the number of bytes from completed downloads, so
   // augment this with the number of downloaded bytes from in-progress jobs.
-  DCHECK(job_controllers_.count(registration->unique_id));
-  registration->downloaded +=
-      job_controllers_[registration->unique_id]->GetInProgressDownloadedBytes();
-  std::move(callback).Run(error, *registration.get());
+  DCHECK(job_controllers_.count(registration.unique_id));
+  updated_registration.downloaded +=
+      job_controllers_[registration.unique_id]->GetInProgressDownloadedBytes();
+
+  std::move(callback).Run(error, updated_registration);
 }
 
 void BackgroundFetchContext::StartFetch(
@@ -141,8 +141,7 @@ void BackgroundFetchContext::StartFetch(
   data_manager_->CreateRegistration(
       registration_id, requests, options, icon,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
-                     weak_factory_.GetWeakPtr(), registration_id, options, icon,
-                     requests.size()));
+                     weak_factory_.GetWeakPtr(), registration_id));
 }
 
 void BackgroundFetchContext::GetIconDisplaySize(
@@ -154,35 +153,25 @@ void BackgroundFetchContext::GetIconDisplaySize(
 
 void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchOptions& options,
-    const SkBitmap& icon,
-    size_t num_requests,
     blink::mojom::BackgroundFetchError error,
-    std::unique_ptr<BackgroundFetchRegistration> registration) {
+    const BackgroundFetchRegistration& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   background_fetch::RecordRegistrationCreatedError(error);
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    DCHECK(fetch_callbacks_.count(registration_id));
-    std::move(fetch_callbacks_[registration_id])
-        .Run(error, base::nullopt /* BackgroundFetchRegistration */);
-    fetch_callbacks_.erase(registration_id);
+
+  auto iter = fetch_callbacks_.find(registration_id);
+
+  // The fetch might have been abandoned already if the Service Worker was
+  // unregistered or corrupted while registration was in progress.
+  if (iter == fetch_callbacks_.end())
     return;
-  }
 
-  if (hang_registration_creation_for_testing_) {
-    // Hang here, to allow time for testing races. For instance, this helps us
-    // test the behavior when a service worker gets unregistered before the
-    // controller can be created.
-    return;
-  }
+  if (error == blink::mojom::BackgroundFetchError::NONE)
+    std::move(iter->second).Run(error, registration);
+  else
+    std::move(iter->second).Run(error, base::nullopt /* registration */);
 
-  DCHECK(registration);
-
-  // Create the BackgroundFetchJobController to do the actual fetching.
-  CreateController(registration_id, options, icon, options.title,
-                   0u /* num_completed_requests */, num_requests,
-                   {} /* outstanding_guids */, std::move(registration));
+  fetch_callbacks_.erase(registration_id);
 }
 
 void BackgroundFetchContext::AddRegistrationObserver(
@@ -250,6 +239,29 @@ void BackgroundFetchContext::AbandonFetches(
   }
 }
 
+void BackgroundFetchContext::OnRegistrationCreated(
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRegistration& registration,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    int num_requests) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (hang_registration_creation_for_testing_) {
+    // Hang here, to allow time for testing races. For instance, this helps us
+    // test the behavior when a service worker gets unregistered before the
+    // controller can be created.
+    return;
+  }
+
+  // TODO(peter): When this moves to the BackgroundFetchScheduler, only create
+  // a controller when the background fetch can actually be started.
+
+  CreateController(registration_id, registration, options, icon, options.title,
+                   0u /* num_completed_requests */, num_requests,
+                   {} /* outstanding_guids */);
+}
+
 void BackgroundFetchContext::OnUpdatedUI(
     const BackgroundFetchRegistrationId& registration_id,
     const std::string& title) {
@@ -274,18 +286,18 @@ void BackgroundFetchContext::OnStorageWiped() {
 
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRegistration& registration,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     const std::string& ui_title,
     size_t num_completed_requests,
     size_t num_requests,
-    const std::vector<std::string>& outstanding_guids,
-    std::unique_ptr<BackgroundFetchRegistration> registration) {
+    const std::vector<std::string>& outstanding_guids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
-      &delegate_proxy_, registration_id, options, icon,
-      registration->downloaded, scheduler_.get(),
+      &delegate_proxy_, registration_id, options, icon, registration.downloaded,
+      scheduler_.get(),
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_.get())),
@@ -297,13 +309,6 @@ void BackgroundFetchContext::CreateController(
                                       outstanding_guids, ui_title);
   scheduler_->AddJobController(controller.get());
   job_controllers_.emplace(registration_id.unique_id(), std::move(controller));
-
-  auto fetch_callback_iter = fetch_callbacks_.find(registration_id);
-  if (fetch_callback_iter != fetch_callbacks_.end()) {
-    std::move(fetch_callback_iter->second)
-        .Run(blink::mojom::BackgroundFetchError::NONE, *registration);
-    fetch_callbacks_.erase(fetch_callback_iter);
-  }
 }
 
 void BackgroundFetchContext::Abort(

@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/background_fetch/background_fetch.pb.h"
 
 namespace content {
 
@@ -85,6 +86,21 @@ DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
   }
   NOTREACHED();
   return DatabaseStatus::kFailed;
+}
+
+BackgroundFetchRegistration ToBackgroundFetchRegistration(
+    const proto::BackgroundFetchMetadata& metadata_proto) {
+  const auto& registration_proto = metadata_proto.registration();
+
+  BackgroundFetchRegistration registration;
+  registration.developer_id = registration_proto.developer_id();
+  registration.unique_id = registration_proto.unique_id();
+  registration.upload_total = registration_proto.upload_total();
+  registration.uploaded = registration_proto.uploaded();
+  registration.download_total = registration_proto.download_total();
+  registration.downloaded = registration_proto.downloaded();
+
+  return registration;
 }
 
 }  // namespace background_fetch

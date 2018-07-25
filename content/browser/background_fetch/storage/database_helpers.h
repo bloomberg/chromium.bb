@@ -7,10 +7,16 @@
 
 #include <string>
 
+#include "content/common/background_fetch/background_fetch_types.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
+
+namespace proto {
+class BackgroundFetchMetadata;
+}
 
 namespace background_fetch {
 
@@ -32,7 +38,7 @@ const char kCompletedRequestKeyPrefix[] = "bgfetch_completed_request_";
 // Database Keys.
 std::string ActiveRegistrationUniqueIdKey(const std::string& developer_id);
 
-std::string RegistrationKey(const std::string& unique_id);
+CONTENT_EXPORT std::string RegistrationKey(const std::string& unique_id);
 
 std::string UIOptionsKey(const std::string& unique_id);
 
@@ -53,6 +59,10 @@ std::string CompletedRequestKey(const std::string& unique_id,
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
 DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status);
+
+// Converts the |metadata_proto| to a BackgroundFetchRegistration object.
+BackgroundFetchRegistration ToBackgroundFetchRegistration(
+    const proto::BackgroundFetchMetadata& metadata_proto);
 
 }  // namespace background_fetch
 

@@ -290,9 +290,12 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+ protected:
+  scoped_refptr<BackgroundFetchContext> context_;
+
  private:
   void DidGetRegistration(
-      base::Closure quit_closure,
+      base::OnceClosure quit_closure,
       blink::mojom::BackgroundFetchError* out_error,
       BackgroundFetchRegistration* out_registration,
       blink::mojom::BackgroundFetchError error,
@@ -305,15 +308,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     std::move(quit_closure).Run();
   }
 
-  void DidStartFetch(
-      base::Closure quit_closure,
-      blink::mojom::BackgroundFetchError error,
-      std::unique_ptr<BackgroundFetchRegistration> registration) {
+  void DidStartFetch(base::OnceClosure quit_closure,
+                     blink::mojom::BackgroundFetchError error,
+                     const BackgroundFetchRegistration& registration) {
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     std::move(quit_closure).Run();
   }
 
-  void DidGetError(base::Closure quit_closure,
+  void DidGetError(base::OnceClosure quit_closure,
                    blink::mojom::BackgroundFetchError* out_error,
                    blink::mojom::BackgroundFetchError error) {
     *out_error = error;
@@ -321,7 +323,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     std::move(quit_closure).Run();
   }
 
-  void DidGetDeveloperIds(base::Closure quit_closure,
+  void DidGetDeveloperIds(base::OnceClosure quit_closure,
                           blink::mojom::BackgroundFetchError* out_error,
                           std::vector<std::string>* out_developer_ids,
                           blink::mojom::BackgroundFetchError error,
@@ -332,7 +334,6 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     std::move(quit_closure).Run();
   }
 
-  scoped_refptr<BackgroundFetchContext> context_;
   std::unique_ptr<BackgroundFetchServiceImpl> service_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceTest);
@@ -1095,9 +1096,15 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
           .Build()));
   BackgroundFetchOptions options;
 
-  // Only register the Fetch.
-  StartFetch(service_worker_registration_id, kExampleDeveloperId, requests,
-             options, SkBitmap());
+  // Only register the Fetch. In order to appropriately simulate a browser
+  // restart, we do not want the fetch to start yet.
+  {
+    base::AutoReset<bool> hang_registration_creation_for_testing(
+        &context_->hang_registration_creation_for_testing_, true);
+
+    StartFetch(service_worker_registration_id, kExampleDeveloperId, requests,
+               options, SkBitmap());
+  }
 
   // Simulate browser restart by re-creating |context_| and |service_|.
   SetUp();
