@@ -1654,8 +1654,9 @@ TEST_P(WidgetScrollViewTestRTLAndLayers, ScrollOffsetUsingLayers) {
   EXPECT_TRUE(compositor);
 
   // But setting on the impl side should fail since the layer isn't committed.
-  int layer_id = container->layer()->cc_layer_for_testing()->id();
-  EXPECT_FALSE(compositor->ScrollLayerTo(layer_id, gfx::ScrollOffset(0, 0)));
+  cc::ElementId element_id =
+      container->layer()->cc_layer_for_testing()->element_id();
+  EXPECT_FALSE(compositor->ScrollLayerTo(element_id, gfx::ScrollOffset(0, 0)));
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
 
   WaitForCommit();
@@ -1663,13 +1664,13 @@ TEST_P(WidgetScrollViewTestRTLAndLayers, ScrollOffsetUsingLayers) {
 
   // Upon commit, the impl side should report the same value too.
   gfx::ScrollOffset impl_offset;
-  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
+  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(element_id, &impl_offset));
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), impl_offset);
 
   // Now impl-side scrolling should work, and also update the ScrollView.
   offset.set_y(kDefaultHeight * 3);
   EXPECT_TRUE(
-      compositor->ScrollLayerTo(layer_id, gfx::ScrollOffset(0, offset.y())));
+      compositor->ScrollLayerTo(element_id, gfx::ScrollOffset(0, offset.y())));
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
 
   // Scroll via ScrollView API. Should be reflected on the impl side.
@@ -1677,7 +1678,7 @@ TEST_P(WidgetScrollViewTestRTLAndLayers, ScrollOffsetUsingLayers) {
   scroll_view->contents()->ScrollRectToVisible(offset);
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
 
-  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
+  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(element_id, &impl_offset));
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), impl_offset);
 
   // Test horizontal scrolling.
@@ -1686,7 +1687,7 @@ TEST_P(WidgetScrollViewTestRTLAndLayers, ScrollOffsetUsingLayers) {
   EXPECT_EQ(gfx::ScrollOffset(offset.x(), offset.y()),
             test_api.CurrentOffset());
 
-  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
+  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(element_id, &impl_offset));
   EXPECT_EQ(gfx::ScrollOffset(offset.x(), offset.y()), impl_offset);
 }
 

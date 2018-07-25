@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -299,8 +300,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   // Gets or sets the scroll offset for the given layer in step with the
   // cc::InputHandler. Returns true if the layer is active on the impl side.
-  bool GetScrollOffsetForLayer(int layer_id, gfx::ScrollOffset* offset) const;
-  bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset);
+  bool GetScrollOffsetForLayer(cc::ElementId element_id,
+                               gfx::ScrollOffset* offset) const;
+  bool ScrollLayerTo(cc::ElementId element_id, const gfx::ScrollOffset& offset);
 
   // The "authoritative" vsync interval, if provided, will override interval
   // reported from 3D context. This is typically the value reported by a more

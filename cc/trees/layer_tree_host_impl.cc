@@ -813,24 +813,28 @@ ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
   return scroll_elasticity_helper_.get();
 }
 
-bool LayerTreeHostImpl::GetScrollOffsetForLayer(int layer_id,
+bool LayerTreeHostImpl::GetScrollOffsetForLayer(ElementId element_id,
                                                 gfx::ScrollOffset* offset) {
-  LayerImpl* layer = active_tree()->FindActiveTreeLayerById(layer_id);
-  if (!layer)
+  ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.FindNodeFromElementId(element_id);
+  if (!scroll_node)
     return false;
-
-  *offset = layer->CurrentScrollOffset();
+  *offset = scroll_tree.current_scroll_offset(element_id);
   return true;
 }
 
-bool LayerTreeHostImpl::ScrollLayerTo(int layer_id,
+bool LayerTreeHostImpl::ScrollLayerTo(ElementId element_id,
                                       const gfx::ScrollOffset& offset) {
-  LayerImpl* layer = active_tree()->FindActiveTreeLayerById(layer_id);
-  if (!layer)
+  ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.FindNodeFromElementId(element_id);
+  if (!scroll_node)
     return false;
 
-  layer->ScrollBy(
-      ScrollOffsetToVector2dF(offset - layer->CurrentScrollOffset()));
+  scroll_tree.ScrollBy(
+      scroll_node,
+      ScrollOffsetToVector2dF(offset -
+                              scroll_tree.current_scroll_offset(element_id)),
+      active_tree());
   return true;
 }
 

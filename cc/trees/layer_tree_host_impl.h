@@ -283,9 +283,10 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
-  bool GetScrollOffsetForLayer(int layer_id,
+  bool GetScrollOffsetForLayer(ElementId element_id,
                                gfx::ScrollOffset* offset) override;
-  bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) override;
+  bool ScrollLayerTo(ElementId element_id,
+                     const gfx::ScrollOffset& offset) override;
   bool ScrollingShouldSwitchtoMainThread() override;
 
   // BrowserControlsOffsetManagerClient implementation.

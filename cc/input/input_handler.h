@@ -16,6 +16,7 @@
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/touch_action.h"
+#include "cc/trees/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
 
 namespace gfx {
@@ -227,10 +228,11 @@ class CC_EXPORT InputHandler {
   virtual ScrollElasticityHelper* CreateScrollElasticityHelper() = 0;
 
   // Called by the single-threaded UI Compositor to get or set the scroll offset
-  // on the impl side. Retruns false if |layer_id| isn't in the active tree.
-  virtual bool GetScrollOffsetForLayer(int layer_id,
+  // on the impl side. Returns false if |element_id| isn't in the active tree.
+  virtual bool GetScrollOffsetForLayer(ElementId element_id,
                                        gfx::ScrollOffset* offset) = 0;
-  virtual bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) = 0;
+  virtual bool ScrollLayerTo(ElementId element_id,
+                             const gfx::ScrollOffset& offset) = 0;
 
   virtual bool ScrollingShouldSwitchtoMainThread() = 0;
 

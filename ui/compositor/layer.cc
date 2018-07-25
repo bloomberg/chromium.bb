@@ -983,7 +983,7 @@ gfx::ScrollOffset Layer::CurrentScrollOffset() const {
   const Compositor* compositor = GetCompositor();
   gfx::ScrollOffset offset;
   if (compositor &&
-      compositor->GetScrollOffsetForLayer(cc_layer_->id(), &offset))
+      compositor->GetScrollOffsetForLayer(cc_layer_->element_id(), &offset))
     return offset;
   return cc_layer_->CurrentScrollOffset();
 }
@@ -991,7 +991,7 @@ gfx::ScrollOffset Layer::CurrentScrollOffset() const {
 void Layer::SetScrollOffset(const gfx::ScrollOffset& offset) {
   Compositor* compositor = GetCompositor();
   bool scrolled_on_impl_side =
-      compositor && compositor->ScrollLayerTo(cc_layer_->id(), offset);
+      compositor && compositor->ScrollLayerTo(cc_layer_->element_id(), offset);
 
   if (!scrolled_on_impl_side)
     cc_layer_->SetScrollOffset(offset);
