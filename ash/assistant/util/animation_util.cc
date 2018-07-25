@@ -14,7 +14,34 @@ namespace util {
 
 ui::LayerAnimationSequence* CreateLayerAnimationSequence(
     std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b) {
+    const LayerAnimationSequenceParams& params) {
+  return CreateLayerAnimationSequence(std::move(a), nullptr, nullptr, nullptr,
+                                      params);
+}
+
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b,
+    const LayerAnimationSequenceParams& params) {
+  return CreateLayerAnimationSequence(std::move(a), std::move(b), nullptr,
+                                      nullptr, params);
+}
+
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b,
+    std::unique_ptr<ui::LayerAnimationElement> c,
+    const LayerAnimationSequenceParams& params) {
+  return CreateLayerAnimationSequence(std::move(a), std::move(b), std::move(c),
+                                      nullptr, params);
+}
+
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b,
+    std::unique_ptr<ui::LayerAnimationElement> c,
+    std::unique_ptr<ui::LayerAnimationElement> d,
+    const LayerAnimationSequenceParams& params) {
   ui::LayerAnimationSequence* layer_animation_sequence =
       new ui::LayerAnimationSequence();
 
@@ -23,24 +50,13 @@ ui::LayerAnimationSequence* CreateLayerAnimationSequence(
   if (b)
     layer_animation_sequence->AddElement(std::move(b));
 
-  return layer_animation_sequence;
-}
+  if (c)
+    layer_animation_sequence->AddElement(std::move(c));
 
-ui::LayerAnimationSequence* CreateLayerAnimationSequenceWithDelay(
-    std::unique_ptr<ui::LayerAnimationElement> layer_animation_element,
-    const base::TimeDelta& delay) {
-  DCHECK(delay.InMilliseconds() >= 0);
+  if (d)
+    layer_animation_sequence->AddElement(std::move(d));
 
-  ui::LayerAnimationSequence* layer_animation_sequence =
-      new ui::LayerAnimationSequence();
-
-  if (!delay.is_zero()) {
-    layer_animation_sequence->AddElement(
-        ui::LayerAnimationElement::CreatePauseElement(
-            layer_animation_element->properties(), delay));
-  }
-
-  layer_animation_sequence->AddElement(std::move(layer_animation_element));
+  layer_animation_sequence->set_is_cyclic(params.is_cyclic);
 
   return layer_animation_sequence;
 }

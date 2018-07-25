@@ -36,6 +36,8 @@ constexpr int kIconSizeDip = 24;
 constexpr int kPreferredHeightDip = 48;
 
 // Animation.
+constexpr base::TimeDelta kAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(83);
 constexpr base::TimeDelta kAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(100);
 constexpr base::TimeDelta kAnimationFadeOutDuration =
@@ -258,11 +260,13 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
                    gfx::Transform(), kAnimationTransformInDuration,
                    gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
            // Animate opacity to 100% with delay.
-           assistant::util::CreateLayerAnimationSequenceWithDelay(
+           assistant::util::CreateLayerAnimationSequence(
+               ui::LayerAnimationElement::CreatePauseElement(
+                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                   kAnimationFadeInDelay),
                assistant::util::CreateOpacityElement(
                    1.f, kAnimationFadeInDuration,
-                   gfx::Tween::Type::FAST_OUT_LINEAR_IN),
-               /*delay=*/kAnimationFadeOutDuration)});
+                   gfx::Tween::Type::FAST_OUT_LINEAR_IN))});
 
       // When switching to keyboard input modality, we focus the textfield.
       textfield_->RequestFocus();
@@ -290,11 +294,13 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
                    gfx::Transform(), kAnimationTransformInDuration,
                    gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
            // Animate opacity to 100% with delay.
-           assistant::util::CreateLayerAnimationSequenceWithDelay(
+           assistant::util::CreateLayerAnimationSequence(
+               ui::LayerAnimationElement::CreatePauseElement(
+                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                   kAnimationFadeInDelay),
                assistant::util::CreateOpacityElement(
                    1.f, kAnimationFadeInDuration,
-                   gfx::Tween::Type::FAST_OUT_LINEAR_IN),
-               /*delay=*/kAnimationFadeOutDuration)});
+                   gfx::Tween::Type::FAST_OUT_LINEAR_IN))});
       break;
     }
     case InputModality::kStylus:
