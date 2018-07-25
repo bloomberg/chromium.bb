@@ -26,7 +26,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
     case SANDBOX_TYPE_AUDIO:
 #if defined(OS_WIN)
       return !base::FeatureList::IsEnabled(
-          service_manager::features::kAudioServiceWindowsSandbox);
+          service_manager::features::kAudioServiceSandbox);
 #else
       return true;
 #endif
