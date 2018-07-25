@@ -409,7 +409,6 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       request.GetFetchCredentialsMode(), std::move(task_runner));
 
   if (allow_load) {
-    ThreadableLoaderOptions options;
     ResourceLoaderOptions resource_loader_options;
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
@@ -441,8 +440,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
 
     Document* document = ToDocument(observer_->LifecycleContext());
     DCHECK(document);
-    loader_ = ThreadableLoader::Create(*document, client_adapter_.get(),
-                                       options, resource_loader_options);
+    loader_ = new ThreadableLoader(*document, client_adapter_.get(),
+                                   resource_loader_options, base::nullopt);
     loader_->Start(webcore_request);
   }
 

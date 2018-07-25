@@ -151,17 +151,13 @@ void EventSource::Connect() {
 
   const SecurityOrigin* origin = execution_context.GetSecurityOrigin();
 
-  ThreadableLoaderOptions options;
-
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = origin;
 
   probe::willSendEventSourceRequest(&execution_context, this);
-  // probe::documentThreadableLoaderStartedLoadingForClient
-  // will be called synchronously.
-  loader_ = ThreadableLoader::Create(execution_context, this, options,
-                                     resource_loader_options);
+  loader_ = new ThreadableLoader(execution_context, this,
+                                 resource_loader_options, base::nullopt);
   loader_->Start(request);
 }
 

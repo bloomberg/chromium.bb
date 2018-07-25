@@ -195,10 +195,9 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   }
 
   void CreateLoader(ThreadableLoaderClient* client) override {
-    ThreadableLoaderOptions options;
     ResourceLoaderOptions resource_loader_options;
-    loader_ = ThreadableLoader::Create(GetDocument(), client, options,
-                                       resource_loader_options);
+    loader_ = new ThreadableLoader(GetDocument(), client,
+                                   resource_loader_options, base::nullopt);
   }
 
   void StartLoader(const ResourceRequest& request) override {
@@ -389,14 +388,13 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     DCHECK(worker_thread_);
     DCHECK(worker_thread_->IsCurrentThread());
 
-    ThreadableLoaderOptions options;
     ResourceLoaderOptions resource_loader_options;
 
     // Ensure that ThreadableLoader is created.
     DCHECK(worker_thread_->GlobalScope()->IsWorkerGlobalScope());
 
-    loader_ = ThreadableLoader::Create(*worker_thread_->GlobalScope(), client,
-                                       options, resource_loader_options);
+    loader_ = new ThreadableLoader(*worker_thread_->GlobalScope(), client,
+                                   resource_loader_options, base::nullopt);
     DCHECK(loader_);
     event->Signal();
   }

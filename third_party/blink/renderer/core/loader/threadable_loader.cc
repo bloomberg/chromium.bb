@@ -181,18 +181,6 @@ class ThreadableLoader::DetachedClient final
 static const int kMaxCORSRedirects = 20;
 
 // static
-void ThreadableLoader::LoadResourceSynchronously(
-    ExecutionContext& context,
-    const ResourceRequest& request,
-    ThreadableLoaderClient& client,
-    const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resource_loader_options) {
-  (new ThreadableLoader(context, &client, kLoadSynchronously, options,
-                        resource_loader_options))
-      ->Start(request);
-}
-
-// static
 std::unique_ptr<ResourceRequest>
 ThreadableLoader::CreateAccessControlPreflightRequest(
     const ResourceRequest& request,
@@ -242,31 +230,20 @@ ThreadableLoader::CreateAccessControlPreflightRequestForTesting(
   return CreateAccessControlPreflightRequest(request, nullptr);
 }
 
-// static
-ThreadableLoader* ThreadableLoader::Create(
-    ExecutionContext& context,
-    ThreadableLoaderClient* client,
-    const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resource_loader_options) {
-  return new ThreadableLoader(context, client, kLoadAsynchronously, options,
-                              resource_loader_options);
-}
-
 ThreadableLoader::ThreadableLoader(
     ExecutionContext& context,
     ThreadableLoaderClient* client,
-    BlockingBehavior blocking_behavior,
-    const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resource_loader_options)
+    const ResourceLoaderOptions& resource_loader_options,
+    const base::Optional<TimeDelta>& timeout)
     : client_(client),
       loading_context_(ThreadableLoadingContext::Create(context)),
-      options_(options),
+      timeout_(timeout),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCORSEnabled()),
       cors_flag_(false),
       security_origin_(resource_loader_options_.security_origin),
       is_using_data_consumer_handle_(false),
-      async_(blocking_behavior == kLoadAsynchronously),
+      async_(resource_loader_options.synchronous_policy == kRequestAsynchronously),
       request_context_(WebURLRequest::kRequestContextUnspecified),
       fetch_request_mode_(network::mojom::FetchRequestMode::kSameOrigin),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
@@ -278,6 +255,8 @@ ThreadableLoader::ThreadableLoader(
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
   DCHECK(client);
+  // timeout_ should either be base::nullopt to indicate no timeout, or non-zero.
+  DCHECK(!timeout_ || !timeout_->is_zero());
 }
 
 void ThreadableLoader::Start(const ResourceRequest& request) {
@@ -1176,15 +1155,13 @@ void ThreadableLoader::LoadRequest(
   if (!actual_request_.IsNull())
     resource_loader_options.data_buffering_policy = kBufferData;
 
-  TimeDelta timeout =
-      TimeDelta::FromMilliseconds(options_.timeout_milliseconds);
-  if (options_.timeout_milliseconds > 0) {
+  if (timeout_) {
     if (!async_) {
-      request.SetTimeoutInterval(timeout);
+      request.SetTimeoutInterval(*timeout_);
     } else if (!timeout_timer_.IsActive()) {
       // The timer can be active if this is the actual request of a
       // CORS-with-preflight request.
-      timeout_timer_.StartOneShot(timeout, FROM_HERE);
+      timeout_timer_.StartOneShot(*timeout_, FROM_HERE);
     }
   }
 

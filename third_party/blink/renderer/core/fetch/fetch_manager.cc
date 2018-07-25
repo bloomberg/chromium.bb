@@ -854,12 +854,10 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
         std::move(factory_clone));
   }
 
-  ThreadableLoaderOptions threadable_loader_options;
-
   probe::willStartFetch(execution_context_, this);
-  threadable_loader_ = ThreadableLoader::Create(*execution_context_, this,
-                                                threadable_loader_options,
-                                                resource_loader_options);
+  threadable_loader_ = new ThreadableLoader(*execution_context_, this,
+                                            resource_loader_options,
+                                            base::nullopt);
   threadable_loader_->Start(request);
 }
 
@@ -884,12 +882,10 @@ void FetchManager::Loader::PerformDataFetch() {
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = fetch_request_data_->Origin().get();
 
-  ThreadableLoaderOptions threadable_loader_options;
-
   probe::willStartFetch(execution_context_, this);
-  threadable_loader_ = ThreadableLoader::Create(*execution_context_, this,
-                                                threadable_loader_options,
-                                                resource_loader_options);
+  threadable_loader_ = new ThreadableLoader(*execution_context_, this,
+                                            resource_loader_options,
+                                            base::nullopt);
   threadable_loader_->Start(request);
 }
 

@@ -73,8 +73,7 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
 
   icon_callback_ = std::move(icon_callback);
 
-  ThreadableLoaderOptions threadable_loader_options;
-  threadable_loader_options.timeout_milliseconds = kIconFetchTimeoutInMs;
+  TimeDelta timeout = TimeDelta::FromMilliseconds(kIconFetchTimeoutInMs);
 
   ResourceLoaderOptions resource_loader_options;
   if (execution_context->IsWorkerGlobalScope())
@@ -85,9 +84,8 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetRequestorOrigin(execution_context->GetSecurityOrigin());
 
-  threadable_loader_ = ThreadableLoader::Create(*execution_context, this,
-                                                threadable_loader_options,
-                                                resource_loader_options);
+  threadable_loader_ = new ThreadableLoader(*execution_context, this,
+                                            resource_loader_options, timeout);
 
   threadable_loader_->Start(resource_request);
 }
