@@ -9,8 +9,10 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 #if !defined(USE_AURA)
-// aura_constants.cc also declared the bool ClassProperty type.
+// aura_constants.cc also declared the bool and int[32_t]
+// ClassProperty type.
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, bool);
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, int);
 #endif
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*);
