@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,7 +40,8 @@ class ConsentAuditorImpl : public ConsentAuditor {
       std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
       syncer::UserEventService* user_event_service,
       const std::string& app_version,
-      const std::string& app_locale);
+      const std::string& app_locale,
+      base::Clock* clock);
   ~ConsentAuditorImpl() override;
 
   // KeyedService (through ConsentAuditor) implementation.
@@ -98,6 +100,7 @@ class ConsentAuditorImpl : public ConsentAuditor {
   syncer::UserEventService* user_event_service_;
   std::string app_version_;
   std::string app_locale_;
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsentAuditorImpl);
 };

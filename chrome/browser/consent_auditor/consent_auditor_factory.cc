@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
@@ -80,7 +81,8 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),
-      g_browser_process->GetApplicationLocale());
+      g_browser_process->GetApplicationLocale(),
+      base::DefaultClock::GetInstance());
 }
 
 // static

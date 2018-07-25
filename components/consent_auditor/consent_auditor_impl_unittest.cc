@@ -10,6 +10,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/default_clock.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -107,6 +109,8 @@ class ConsentAuditorImplTest : public testing::Test {
  public:
   void SetUp() override {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    // Use normal clock by default.
+    clock_ = base::DefaultClock::GetInstance();
     if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
       consent_sync_bridge_ = std::make_unique<FakeConsentSyncBridge>();
     } else {
@@ -122,7 +126,7 @@ class ConsentAuditorImplTest : public testing::Test {
   void BuildConsentAuditorImpl() {
     consent_auditor_ = std::make_unique<ConsentAuditorImpl>(
         pref_service_.get(), std::move(consent_sync_bridge_),
-        user_event_service_.get(), app_version_, app_locale_);
+        user_event_service_.get(), app_version_, app_locale_, clock_);
   }
 
   // These have no effect before |BuildConsentAuditorImpl|.
@@ -139,6 +143,7 @@ class ConsentAuditorImplTest : public testing::Test {
       std::unique_ptr<syncer::FakeUserEventService> service) {
     user_event_service_ = std::move(service);
   }
+  void SetClock(base::Clock* clock) { clock_ = clock; }
 
   void SetIsSeparateConsentTypeEnabledFeature(bool new_value) {
     feature_list_.InitWithFeatureState(switches::kSyncUserConsentSeparateType,
@@ -153,6 +158,7 @@ class ConsentAuditorImplTest : public testing::Test {
 
  private:
   std::unique_ptr<ConsentAuditorImpl> consent_auditor_;
+  base::Clock* clock_;
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<syncer::FakeUserEventService> user_event_service_;
@@ -270,16 +276,23 @@ TEST_F(ConsentAuditorImplTest, RecordingDisabled) {
 }
 
 TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserEvent) {
+  base::SimpleTestClock test_clock;
+
   SetIsSeparateConsentTypeEnabledFeature(false);
   SetConsentSyncBridge(nullptr);
   SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
+  SetClock(&test_clock);
   BuildConsentAuditorImpl();
 
   std::vector<int> kDescriptionMessageIds = {12, 37, 42};
   int kConfirmationMessageId = 47;
-  base::Time t1 = base::Time::Now();
+
+  base::Time now;
+  ASSERT_TRUE(base::Time::FromUTCString("2017-11-14T15:15:38Z", &now));
+  test_clock.SetNow(now);
+
   sync_pb::UserConsentTypes::SyncConsent sync_consent;
   sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
                               UserConsentTypes_ConsentStatus_GIVEN);
@@ -288,11 +301,10 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserEvent) {
     sync_consent.add_description_grd_ids(id);
   }
   consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
-  base::Time t2 = base::Time::Now();
+
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
-  EXPECT_LE(t1.since_origin().InMicroseconds(), events[0].event_time_usec());
-  EXPECT_GE(t2.since_origin().InMicroseconds(), events[0].event_time_usec());
+  EXPECT_EQ(now.since_origin().InMicroseconds(), events[0].event_time_usec());
   EXPECT_FALSE(events[0].has_navigation_id());
   EXPECT_TRUE(events[0].has_user_consent());
   auto& consent = events[0].user_consent();
@@ -311,17 +323,22 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
 
   auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
   FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
+  base::SimpleTestClock test_clock;
 
   SetConsentSyncBridge(std::move(wrapped_fake_bridge));
   SetUserEventService(nullptr);
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
+  SetClock(&test_clock);
   BuildConsentAuditorImpl();
 
   std::vector<int> kDescriptionMessageIds = {12, 37, 42};
   int kConfirmationMessageId = 47;
-  // TODO(vitaliii): Inject a fake clock instead.
-  base::Time time_before = base::Time::Now();
+
+  base::Time now;
+  ASSERT_TRUE(base::Time::FromUTCString("2017-11-14T15:15:38Z", &now));
+  test_clock.SetNow(now);
+
   sync_pb::UserConsentTypes::SyncConsent sync_consent;
   sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
                               UserConsentTypes_ConsentStatus_GIVEN);
@@ -330,16 +347,13 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
     sync_consent.add_description_grd_ids(id);
   }
   consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
-  base::Time time_after = base::Time::Now();
 
   std::vector<UserConsentSpecifics> consents =
       fake_bridge->GetRecordedUserConsents();
   ASSERT_EQ(1U, consents.size());
   UserConsentSpecifics consent = consents[0];
 
-  EXPECT_LE(time_before.since_origin().InMicroseconds(),
-            consent.client_consent_time_usec());
-  EXPECT_GE(time_after.since_origin().InMicroseconds(),
+  EXPECT_EQ(now.since_origin().InMicroseconds(),
             consent.client_consent_time_usec());
   EXPECT_EQ(kAccountId, consent.account_id());
   EXPECT_EQ(UserConsentSpecifics::CHROME_SYNC, consent.feature());
