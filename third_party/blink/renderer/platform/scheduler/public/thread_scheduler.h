@@ -69,7 +69,7 @@ class PLATFORM_EXPORT ThreadScheduler {
                                        WebThread::IdleTask) = 0;
 
   virtual void AddRAILModeObserver(
-      scheduler::WebThreadScheduler::RAILModeObserver* observer) = 0;
+      scheduler::WebRAILModeObserver* observer) = 0;
 
   // Returns a task runner for kV8 tasks. Can be called from any thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() = 0;

@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_storage_event_dispatcher.h"
 

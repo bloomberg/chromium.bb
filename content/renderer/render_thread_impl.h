@@ -59,7 +59,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
@@ -164,7 +164,7 @@ class StreamTextureFactory;
 class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
-      public blink::scheduler::WebThreadScheduler::RAILModeObserver,
+      public blink::scheduler::WebRAILModeObserver,
       public base::MemoryCoordinatorClient,
       public mojom::Renderer,
       public viz::mojom::CompositingModeWatcher,
@@ -259,7 +259,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   bool IsThreadedAnimationEnabled();
 
-  // blink::scheduler::WebThreadScheduler::RAILModeObserver implementation.
+  // blink::scheduler::WebRAILModeObserver implementation.
   void OnRAILModeChanged(v8::RAILMode rail_mode) override;
 
   // viz::mojom::CompositingModeWatcher implementation.

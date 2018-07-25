@@ -178,7 +178,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void Shutdown() override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
-  void AddRAILModeObserver(RAILModeObserver* observer) override;
+  void AddRAILModeObserver(WebRAILModeObserver* observer) override;
   void SetRendererProcessType(RendererProcessType type) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const char* name,
@@ -846,7 +846,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
     std::set<PageSchedulerImpl*> page_schedulers;  // Not owned.
-    base::ObserverList<RAILModeObserver> rail_mode_observers;  // Not owned.
+    base::ObserverList<WebRAILModeObserver> rail_mode_observers;  // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;         // Not owned.
     MainThreadMetricsHelper metrics_helper;
     TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>

@@ -2451,7 +2451,8 @@ void MainThreadSchedulerImpl::SetTopLevelBlameContext(
   ipc_task_queue_->SetBlameContext(blame_context);
 }
 
-void MainThreadSchedulerImpl::AddRAILModeObserver(RAILModeObserver* observer) {
+void MainThreadSchedulerImpl::AddRAILModeObserver(
+    WebRAILModeObserver* observer) {
   main_thread_only().rail_mode_observers.AddObserver(observer);
   observer->OnRAILModeChanged(main_thread_only().current_policy.rail_mode());
 }

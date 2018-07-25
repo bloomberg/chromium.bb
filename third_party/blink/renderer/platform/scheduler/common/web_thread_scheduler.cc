@@ -15,8 +15,6 @@ namespace scheduler {
 
 WebThreadScheduler::~WebThreadScheduler() = default;
 
-WebThreadScheduler::RAILModeObserver::~RAILModeObserver() = default;
-
 // static
 std::unique_ptr<WebThreadScheduler>
 WebThreadScheduler::CreateMainThreadScheduler(
@@ -153,7 +151,7 @@ void WebThreadScheduler::SetTopLevelBlameContext(
   NOTREACHED();
 }
 
-void WebThreadScheduler::AddRAILModeObserver(RAILModeObserver* observer) {
+void WebThreadScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {
   NOTREACHED();
 }
 

@@ -35,11 +35,11 @@
 
 #include "base/atomicops.h"
 #include "base/macros.h"
+#include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -139,7 +139,7 @@ class PLATFORM_EXPORT BlinkGCObserver {
 };
 
 class PLATFORM_EXPORT ThreadState final
-    : scheduler::WebThreadScheduler::RAILModeObserver {
+    : private scheduler::WebRAILModeObserver {
   USING_FAST_MALLOC(ThreadState);
 
  public:
@@ -569,7 +569,7 @@ class PLATFORM_EXPORT ThreadState final
 
   MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
-  // Implementation for RAILModeObserver
+  // Implementation for WebRAILModeObserver
   void OnRAILModeChanged(v8::RAILMode new_mode) override {
     should_optimize_for_load_time_ = new_mode == v8::RAILMode::PERFORMANCE_LOAD;
   }

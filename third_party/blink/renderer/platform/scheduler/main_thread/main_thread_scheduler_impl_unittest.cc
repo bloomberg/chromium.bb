@@ -276,7 +276,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return any_thread().begin_main_frame_on_critical_path;
   }
 
-  void RemoveRAILModeObserver(RAILModeObserver const* observer) {
+  void RemoveRAILModeObserver(WebRAILModeObserver const* observer) {
     main_thread_only().rail_mode_observers.RemoveObserver(observer);
   }
 
@@ -3358,7 +3358,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
   EXPECT_EQ(279u, run_order.size());
 }
 
-class MockRAILModeObserver : public WebThreadScheduler::RAILModeObserver {
+class MockRAILModeObserver : public WebRAILModeObserver {
  public:
   MOCK_METHOD1(OnRAILModeChanged, void(v8::RAILMode rail_mode));
 };
