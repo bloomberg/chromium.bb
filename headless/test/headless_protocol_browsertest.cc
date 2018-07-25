@@ -341,5 +341,8 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererClientRedirectChain,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererClientRedirectChainNoJs,
     "sanity/renderer-client-redirect-chain-no-js.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCssUrlFilter,
+                                  "sanity/renderer-css-url-filter.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCanvas, "sanity/renderer-canvas.js");
 
 }  // namespace headless
