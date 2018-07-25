@@ -61,6 +61,7 @@
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/gpu/queue_message_swap_promise.h"
+#include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -591,6 +592,10 @@ blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
 }
 
 void RenderWidget::CloseForFrame() {
+  if (owner_delegate_) {
+    owner_delegate_->OverrideCloseForWidget();
+    return;
+  }
   OnClose();
 }
 
@@ -643,6 +648,10 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
     if (is_hidden_)
       RenderThreadImpl::current()->WidgetHidden();
   }
+}
+
+void RenderWidget::SetUpIdleUserDetector() {
+  idle_user_detector_ = std::make_unique<IdleUserDetector>();
 }
 
 void RenderWidget::WasSwappedOut() {
@@ -762,29 +771,6 @@ bool RenderWidget::ShouldHandleImeEvents() const {
          (has_focus_ || for_oopif_);
 }
 
-void RenderWidget::SetWindowRectSynchronously(
-    const gfx::Rect& new_window_rect) {
-  VisualProperties visual_properties;
-  visual_properties.screen_info = screen_info_;
-  visual_properties.new_size = new_window_rect.size();
-  visual_properties.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
-      new_window_rect.size(), GetWebScreenInfo().device_scale_factor);
-  visual_properties.visible_viewport_size = new_window_rect.size();
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-  visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id = local_surface_id_from_parent_;
-  // We are resizing the window from the renderer, so allocate a new
-  // viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (layer_tree_view_)
-    layer_tree_view_->RequestNewLocalSurfaceId();
-  SynchronizeVisualProperties(visual_properties);
-
-  view_screen_rect_ = new_window_rect;
-  window_screen_rect_ = new_window_rect;
-  if (!did_show_)
-    initial_rect_ = new_window_rect;
-}
-
 void RenderWidget::OnClose() {
   DCHECK(content::RenderThread::Get());
   if (closing_)
@@ -821,24 +807,72 @@ void RenderWidget::OnClose() {
 }
 
 void RenderWidget::OnSynchronizeVisualProperties(
-    const VisualProperties& params) {
-  gfx::Size old_visible_viewport_size = visible_viewport_size_;
+    const VisualProperties& original_params) {
+  TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
-  if (resizing_mode_selector_->ShouldAbortOnResize(this, params)) {
-    return;
+  VisualProperties params = original_params;
+  if (owner_delegate_) {
+    owner_delegate_->ApplyNewSizeForWidget(size_, params.new_size);
+
+    if (display_mode_ != params.display_mode) {
+      display_mode_ = params.display_mode;
+      owner_delegate_->ApplyNewDisplayModeForWidget(params.display_mode);
+    }
+
+    bool auto_resize_mode_changed =
+        auto_resize_mode_ != params.auto_resize_enabled;
+    auto_resize_mode_ = params.auto_resize_enabled;
+    min_size_for_auto_resize_ = params.min_size_for_auto_resize;
+    max_size_for_auto_resize_ = params.max_size_for_auto_resize;
+
+    if (auto_resize_mode_) {
+      gfx::Size min_auto_size = min_size_for_auto_resize_;
+      gfx::Size max_auto_size = max_size_for_auto_resize_;
+      if (compositor_deps_->IsUseZoomForDSFEnabled()) {
+        min_auto_size = gfx::ScaleToCeiledSize(
+            min_auto_size, params.screen_info.device_scale_factor);
+        max_auto_size = gfx::ScaleToCeiledSize(
+            max_auto_size, params.screen_info.device_scale_factor);
+      }
+      owner_delegate_->ApplyAutoResizeLimitsForWidget(min_auto_size,
+                                                      max_auto_size);
+    } else if (auto_resize_mode_changed) {
+      owner_delegate_->DisableAutoResizeForWidget();
+      if (params.new_size.IsEmpty())
+        return;
+    }
+
+    browser_controls_shrink_blink_size_ =
+        params.browser_controls_shrink_blink_size;
+    top_controls_height_ = params.top_controls_height;
+    bottom_controls_height_ = params.bottom_controls_height;
+
+    // TODO(fsamuel): Modifies the |params| that are used for
+    // SynchronizeVisualProperties(), but does not used this modified
+    // device_scale_factor for the auto-resize values, which is probably a bug.
+    if (device_scale_factor_for_testing_) {
+      params.screen_info.device_scale_factor =
+          *device_scale_factor_for_testing_;
+      params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
+          params.new_size, params.screen_info.device_scale_factor);
+    }
   }
 
-  if (screen_metrics_emulator_) {
-    screen_metrics_emulator_->OnSynchronizeVisualProperties(params);
-    return;
+  if (!resizing_mode_selector_->ShouldAbortOnResize(this, params)) {
+    if (screen_metrics_emulator_) {
+      screen_metrics_emulator_->OnSynchronizeVisualProperties(params);
+    } else {
+      gfx::Size old_visible_viewport_size = visible_viewport_size_;
+      SynchronizeVisualProperties(params);
+      if (old_visible_viewport_size != visible_viewport_size_) {
+        for (auto& render_frame : render_frames_)
+          render_frame.DidChangeVisibleViewport();
+      }
+    }
   }
 
-  SynchronizeVisualProperties(params);
-
-  if (old_visible_viewport_size != visible_viewport_size_) {
-    for (auto& render_frame : render_frames_)
-      render_frame.DidChangeVisibleViewport();
-  }
+  if (owner_delegate_ && params.scroll_focused_node_into_view)
+    owner_delegate_->ScrollFocusedNodeIntoViewForWidget();
 }
 
 void RenderWidget::OnEnableDeviceEmulation(
@@ -916,10 +950,6 @@ void RenderWidget::DidPresentForceDrawFrame(
   Send(new ViewHostMsg_ForceRedrawComplete(routing_id(), snapshot_id));
 }
 
-GURL RenderWidget::GetURLForGraphicsContext3D() {
-  return GURL();
-}
-
 viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::Point& point) {
   return input_handler_->GetFrameSinkIdAtPoint(point);
 }
@@ -928,6 +958,13 @@ void RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
+  if (owner_delegate_ && is_swapped_out_) {
+    std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency_info,
+                            nullptr, base::nullopt);
+    return;
+  }
+  if (idle_user_detector_)
+    idle_user_detector_->ActivityDetected();
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
 }
@@ -953,15 +990,21 @@ void RenderWidget::OnSetEditCommandsForNextKeyEvent(
 
 void RenderWidget::OnSetActive(bool active) {
   if (owner_delegate_)
-    owner_delegate_->SetActive(active);
+    owner_delegate_->SetActiveForWidget(active);
 }
 
 void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
   if (owner_delegate_)
-    owner_delegate_->SetBackgroundOpaque(opaque);
+    owner_delegate_->SetBackgroundOpaqueForWidget(opaque);
 }
 
 void RenderWidget::OnSetFocus(bool enable) {
+  if (owner_delegate_)
+    owner_delegate_->DidReceiveSetFocusEventForWidget();
+  SetFocus(enable);
+}
+
+void RenderWidget::SetFocus(bool enable) {
   has_focus_ = enable;
 
   if (GetWebWidget())
@@ -969,6 +1012,9 @@ void RenderWidget::OnSetFocus(bool enable) {
 
   for (auto& observer : render_frames_)
     observer.RenderWidgetSetFocus(enable);
+
+  if (owner_delegate_)
+    owner_delegate_->DidChangeFocusForWidget();
 }
 
 void RenderWidget::SetNeedsMainFrame() {
@@ -1052,9 +1098,14 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
+  if (owner_delegate_)
+    owner_delegate_->DidCommitCompositorFrameForWidget();
 }
 
-void RenderWidget::DidCompletePageScaleAnimation() {}
+void RenderWidget::DidCompletePageScaleAnimation() {
+  if (owner_delegate_)
+    owner_delegate_->DidCompletePageScaleAnimationForWidget();
+}
 
 void RenderWidget::DidReceiveCompositorFrameAck() {
 }
@@ -1079,6 +1130,10 @@ bool RenderWidget::IsClosing() const {
 }
 
 void RenderWidget::RequestScheduleAnimation() {
+  if (owner_delegate_) {
+    owner_delegate_->RequestScheduleAnimationForWidget();
+    return;
+  }
   ScheduleAnimation();
 }
 
@@ -1312,7 +1367,7 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
       gfx::Point(event.PositionInScreen().x, event.PositionInScreen().y);
 
   if (owner_delegate_)
-    return owner_delegate_->RenderWidgetWillHandleMouseEvent(event);
+    return owner_delegate_->RenderWidgetWillHandleMouseEventForWidget(event);
 
   return false;
 }
@@ -1326,7 +1381,14 @@ void RenderWidget::Redraw() {
 }
 
 void RenderWidget::ResizeWebWidget() {
-  GetWebWidget()->Resize(GetSizeForWebWidget());
+  gfx::Size size = GetSizeForWebWidget();
+  if (owner_delegate_) {
+    owner_delegate_->ResizeWebWidgetForWidget(
+        size, top_controls_height_, bottom_controls_height_,
+        browser_controls_shrink_blink_size_);
+    return;
+  }
+  GetWebWidget()->Resize(size);
 }
 
 gfx::Size RenderWidget::GetSizeForWebWidget() const {
@@ -1421,8 +1483,10 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
 void RenderWidget::SetScreenMetricsEmulationParameters(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {
-  // This is only supported in RenderView.
-  NOTREACHED();
+  // This is only supported in RenderView, which has an |owner_delegate_|.
+  DCHECK(owner_delegate_);
+  owner_delegate_->SetScreenMetricsEmulationParametersForWidget(enabled,
+                                                                params);
 }
 
 void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
@@ -1572,12 +1636,21 @@ void RenderWidget::AutoscrollEnd() {
 // created RenderWidget (i.e., as a blocked popup or as a new tab).
 //
 void RenderWidget::Show(WebNavigationPolicy policy) {
-  DCHECK(!did_show_) << "received extraneous Show call";
+  if (did_show_) {
+    if (owner_delegate_) {
+      // When SupportsMultipleWindows is disabled, popups are reusing
+      // the same view. In some scenarios, this makes blink to call Show()
+      // twice. But otherwise, if it is enabled, we should not visit Show() more
+      // than once.
+      DCHECK(!owner_delegate_->SupportsMultipleWindowsForWidget());
+    } else {
+      DCHECK(!did_show_) << "received extraneous Show call";
+    }
+    return;
+  }
+
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
   DCHECK(show_callback_);
-
-  if (did_show_)
-    return;
 
   did_show_ = true;
 
@@ -1626,6 +1699,8 @@ void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
   CloseWebWidget();
   layer_tree_view_.reset();
+  if (owner_delegate_)
+    owner_delegate_->DidCloseWidget();
 }
 
 void RenderWidget::CloseWebWidget() {
@@ -1895,6 +1970,29 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     UpdateWebViewWithDeviceScaleFactor();
 }
 
+void RenderWidget::SetWindowRectSynchronously(
+    const gfx::Rect& new_window_rect) {
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.new_size = new_window_rect.size();
+  visual_properties.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
+      new_window_rect.size(), GetWebScreenInfo().device_scale_factor);
+  visual_properties.visible_viewport_size = new_window_rect.size();
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
+  visual_properties.display_mode = display_mode_;
+  visual_properties.local_surface_id = local_surface_id_from_parent_;
+  // We are resizing the window from the renderer, so allocate a new
+  // viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  if (layer_tree_view_)
+    layer_tree_view_->RequestNewLocalSurfaceId();
+  SynchronizeVisualProperties(visual_properties);
+
+  view_screen_rect_ = new_window_rect;
+  window_screen_rect_ = new_window_rect;
+  if (!did_show_)
+    initial_rect_ = new_window_rect;
+}
+
 void RenderWidget::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   if (capture_sequence_number == last_capture_sequence_number_)
@@ -2149,6 +2247,12 @@ void RenderWidget::OnOrientationChange() {
   }
 }
 
+GURL RenderWidget::GetURLForGraphicsContext3D() {
+  if (owner_delegate_)
+    return owner_delegate_->GetURLForGraphicsContext3DForWidget();
+  return GURL();
+}
+
 void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_ == hidden)
     return;
@@ -2401,9 +2505,12 @@ blink::WebScreenInfo RenderWidget::GetScreenInfo() {
 
 void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
                                          bool event_cancelled) {
-#if defined(OS_ANDROID) || defined(USE_AURA)
-  if (event_cancelled)
+  if (event_cancelled) {
+    // The |owner_delegate_| doesn't need to hear about cancelled events.
     return;
+  }
+
+#if defined(OS_ANDROID) || defined(USE_AURA)
   if (event.GetType() == WebInputEvent::kGestureTap) {
     ShowVirtualKeyboard();
   } else if (event.GetType() == WebInputEvent::kGestureLongPress) {
@@ -2417,19 +2524,22 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
 // TODO(ananta): Piggyback off existing IPCs to communicate this information,
 // crbug/420130.
 #if defined(OS_WIN)
-  if (event.GetType() != blink::WebGestureEvent::kGestureTap)
-    return;
+  if (event.GetType() == blink::WebGestureEvent::kGestureTap) {
+    // TODO(estade): hit test the event against focused node to make sure
+    // the tap actually hit the focused node.
+    blink::WebInputMethodController* controller = GetInputMethodController();
+    blink::WebTextInputType text_input_type =
+        controller ? controller->TextInputType() : blink::kWebTextInputTypeNone;
 
-  // TODO(estade): hit test the event against focused node to make sure
-  // the tap actually hit the focused node.
-  blink::WebInputMethodController* controller = GetInputMethodController();
-  blink::WebTextInputType text_input_type =
-      controller ? controller->TextInputType() : blink::kWebTextInputTypeNone;
-
-  Send(new ViewHostMsg_FocusedNodeTouched(
-      routing_id_, text_input_type != blink::kWebTextInputTypeNone));
+    Send(new ViewHostMsg_FocusedNodeTouched(
+        routing_id_, text_input_type != blink::kWebTextInputTypeNone));
+  }
 #endif
 #endif
+
+  // The |owner_delegate_| gets to respond to handling gestures last.
+  if (owner_delegate_)
+    owner_delegate_->DidHandleGestureEventForWidget(event);
 }
 
 void RenderWidget::DidOverscroll(
@@ -2879,10 +2989,6 @@ void RenderWidget::StartCompositor() {
     layer_tree_view_->SetVisible(true);
 }
 
-void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
-  input_handler_->set_handling_input_event(handling_input_event);
-}
-
 void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
   if (has_touch_handlers_ && *has_touch_handlers_ == has_handlers)
     return;
@@ -3001,6 +3107,12 @@ void RenderWidget::DidNavigate() {
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
+  if (owner_delegate_) {
+    blink::WebWidget* delegate_widget =
+        owner_delegate_->GetWebWidgetForWidget();
+    if (delegate_widget)
+      return delegate_widget;
+  }
   return webwidget_internal_;
 }
 
@@ -3036,6 +3148,89 @@ void RenderWidget::SetMouseCapture(bool capture) {
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_view_ &&
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
+}
+
+void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
+  input_handler_->set_handling_input_event(handling_input_event);
+}
+
+void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
+  device_scale_factor_for_testing_ = factor;
+
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info.device_scale_factor = factor;
+  visual_properties.new_size = size();
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.compositor_viewport_pixel_size =
+      gfx::ScaleToCeiledSize(size(), factor);
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
+  visual_properties.display_mode = display_mode_;
+  visual_properties.local_surface_id = local_surface_id_from_parent_;
+  // We are changing the device scale factor from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  if (layer_tree_view_)
+    layer_tree_view_->RequestNewLocalSurfaceId();
+
+  OnSynchronizeVisualProperties(visual_properties);
+}
+
+void RenderWidget::SetDeviceColorSpaceForTesting(
+    const gfx::ColorSpace& color_space) {
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info.color_space = color_space;
+  visual_properties.new_size = size();
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.compositor_viewport_pixel_size =
+      compositor_viewport_pixel_size_;
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
+  visual_properties.display_mode = display_mode_;
+  visual_properties.local_surface_id = local_surface_id_from_parent_;
+  // We are changing the device color space from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  if (layer_tree_view_)
+    layer_tree_view_->RequestNewLocalSurfaceId();
+  OnSynchronizeVisualProperties(visual_properties);
+}
+
+void RenderWidget::SetWindowRectSynchronouslyForTesting(
+    const gfx::Rect& new_window_rect) {
+  SetWindowRectSynchronously(new_window_rect);
+}
+
+void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
+                                              const gfx::Size& max_size) {
+  VisualProperties visual_properties;
+  visual_properties.auto_resize_enabled = true;
+  visual_properties.min_size_for_auto_resize = min_size;
+  visual_properties.max_size_for_auto_resize = max_size;
+  visual_properties.local_surface_id = base::Optional<viz::LocalSurfaceId>(
+      viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+  OnSynchronizeVisualProperties(visual_properties);
+}
+
+void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
+  if (!auto_resize_mode_)
+    return;
+
+  VisualProperties visual_properties;
+  visual_properties.auto_resize_enabled = false;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.new_size = new_size;
+  visual_properties.compositor_viewport_pixel_size =
+      compositor_viewport_pixel_size_;
+  visual_properties.browser_controls_shrink_blink_size =
+      browser_controls_shrink_blink_size_;
+  visual_properties.top_controls_height = top_controls_height_;
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
+  visual_properties.display_mode = display_mode_;
+  OnSynchronizeVisualProperties(visual_properties);
 }
 
 void RenderWidget::UpdateURLForCompositorUkm() {

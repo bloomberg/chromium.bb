@@ -256,7 +256,9 @@ TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
 
   ViewMsg_WasShown was_shown_message(0, true, base::TimeTicks());
   // Test passes if this does not crash.
-  static_cast<RenderViewImpl*>(view_)->OnMessageReceived(was_shown_message);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(view_)->GetWidget();
+  render_widget->OnMessageReceived(was_shown_message);
 }
 
 // Test that LoFi state only updates for new main frame documents. Subframes
