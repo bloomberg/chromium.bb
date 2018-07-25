@@ -173,31 +173,10 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     // waiting).
     DCHECK(resource);
 
-    if (!resource->GetResponse().CacheStorageCacheName().IsNull()) {
-      // The resource has a cache storage cache and so may have a code cache.
-      // TODO(rmcilroy): We currently disable streaming even if the cache
-      // storage doesn't contain a code-cache (and thus we might be planning to
-      // produce a code-cache in this storage). We no longer need to suppress
-      // streaming when producing a code-cache so we should avoid suppressing
-      // in this case.
-      streamer->SuppressStreaming(ScriptStreamer::kHasCodeCache);
-      Cancel();
-      return;
-    }
-
-    SingleCachedMetadataHandler* cache_handler = resource->CacheHandler();
-    scoped_refptr<CachedMetadata> code_cache(
-        cache_handler ? cache_handler->GetCachedMetadata(
-                            V8CodeCache::TagForCodeCache(cache_handler))
-                      : nullptr);
-    if (code_cache.get()) {
+    if (V8CodeCache::HasCodeCache(resource->CacheHandler())) {
       // The resource has a code cache entry, so it's unnecessary to stream
       // and parse the code. Cancel the streaming and resume the non-streaming
-      // code path.
-      // TODO(rmcilroy): We currently disable streaming even if the code-cache
-      // only contains a time-stamp (and thus we might be planning to produce a
-      // code-cache). We no longer need to suppress streaming when producing a
-      // code-cache so we should avoid suppressing in this case.
+      // code path which will consume the code cache.
       streamer->SuppressStreaming(ScriptStreamer::kHasCodeCache);
       Cancel();
       return;

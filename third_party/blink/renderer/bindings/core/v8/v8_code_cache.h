@@ -45,6 +45,10 @@ class CORE_EXPORT V8CodeCache final {
   static uint32_t TagForTimeStamp(SingleCachedMetadataHandler*);
   static void SetCacheTimeStamp(SingleCachedMetadataHandler*);
 
+  // Returns true iff the SingleCachedMetadataHandler contains a code cache
+  // that can be consumed by V8.
+  static bool HasCodeCache(SingleCachedMetadataHandler*);
+
   static std::tuple<v8::ScriptCompiler::CompileOptions,
                     ProduceCacheOptions,
                     v8::ScriptCompiler::NoCacheReason>
