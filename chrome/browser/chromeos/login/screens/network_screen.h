@@ -41,6 +41,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
  private:
   friend class NetworkScreenTest;
   friend class NetworkScreenUnitTest;
+  friend class DemoSetupTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesAutomatically);

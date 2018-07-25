@@ -447,6 +447,8 @@ class WizardController : public BaseScreenDelegate,
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerDeviceStateTest,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
+
+  friend class DemoSetupTest;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerDemoSetupTest;
   friend class WizardControllerDeviceStateTest;

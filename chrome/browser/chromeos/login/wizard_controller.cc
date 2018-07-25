@@ -821,13 +821,19 @@ void WizardController::OnWelcomeContinued() {
 }
 
 void WizardController::OnNetworkBack() {
-  ShowWelcomeScreen();
+  if (is_in_demo_setup_flow_) {
+    ShowDemoModePreferencesScreen();
+  } else {
+    ShowWelcomeScreen();
+  }
 }
 
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {
       ShowEulaScreen();
+    } else if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+      ShowArcTermsOfServiceScreen();
     } else {
       // Possible cases:
       // 1. EULA was accepted, forced shutdown/reboot during update.
@@ -846,6 +852,11 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
+  if (is_in_demo_setup_flow_) {
+    ShowDemoModeSetupScreen();
+    return;
+  }
+
   if (IsSharkRequisition() || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
   } else if (IsControllerDetected()) {
@@ -877,11 +888,7 @@ void WizardController::OnEulaAccepted() {
 }
 
 void WizardController::OnEulaBack() {
-  if (is_in_demo_setup_flow_) {
-    ShowDemoModePreferencesScreen();
-  } else {
     ShowNetworkScreen();
-  }
 }
 
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
@@ -1005,7 +1012,7 @@ void WizardController::OnArcTermsOfServiceSkipped() {
 
 void WizardController::OnArcTermsOfServiceAccepted() {
   if (is_in_demo_setup_flow_) {
-    ShowDemoModeSetupScreen();
+    InitiateOOBEUpdate();
     return;
   }
 
@@ -1026,7 +1033,8 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 
 void WizardController::OnArcTermsOfServiceBack() {
   DCHECK(is_in_demo_setup_flow_);
-  ShowPreviousScreen();
+  DCHECK(StartupUtils::IsEulaAccepted());
+  ShowNetworkScreen();
 }
 
 void WizardController::OnRecommendAppsSkipped() {
@@ -1088,7 +1096,7 @@ void WizardController::OnDemoSetupCanceled() {
 
 void WizardController::OnDemoPreferencesContinued() {
   DCHECK(is_in_demo_setup_flow_);
-  ShowEulaScreen();
+  ShowNetworkScreen();
 }
 
 void WizardController::OnDemoPreferencesCanceled() {
