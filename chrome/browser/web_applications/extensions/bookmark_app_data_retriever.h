@@ -5,17 +5,18 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
 
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
+#include "chrome/common/web_application_info.h"
 
 namespace content {
 class WebContents;
 }
-
-struct WebApplicationInfo;
 
 namespace extensions {
 
@@ -25,6 +26,8 @@ class BookmarkAppDataRetriever {
  public:
   using GetWebApplicationInfoCallback =
       base::OnceCallback<void(base::Optional<WebApplicationInfo>)>;
+  using GetIconsCallback =
+      base::OnceCallback<void(std::vector<WebApplicationInfo::IconInfo>)>;
 
   BookmarkAppDataRetriever();
   virtual ~BookmarkAppDataRetriever();
@@ -33,6 +36,13 @@ class BookmarkAppDataRetriever {
   // |web_contents|.
   virtual void GetWebApplicationInfo(content::WebContents* web_contents,
                                      GetWebApplicationInfoCallback callback);
+
+  // Downloads icons from |icon_urls|. If icons are missing for certain required
+  // sizes, generates them based on |app_url|. Runs |callback| with a vector of
+  // the retrieved and generated icons.
+  virtual void GetIcons(const GURL& app_url,
+                        const std::vector<GURL>& icon_urls,
+                        GetIconsCallback callback);
 
  private:
   void OnGetWebApplicationInfo(

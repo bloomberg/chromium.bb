@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -59,6 +60,8 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallationTaskTest);
 };
 
+// All BookmarkAppDataRetriever operations are async, so this class posts tasks
+// when running callbacks to simulate async behavior in tests as well.
 class TestDataRetriever : public BookmarkAppDataRetriever {
  public:
   explicit TestDataRetriever(base::Optional<WebApplicationInfo> web_app_info)
@@ -69,10 +72,16 @@ class TestDataRetriever : public BookmarkAppDataRetriever {
   void GetWebApplicationInfo(content::WebContents* web_contents,
                              GetWebApplicationInfoCallback callback) override {
     DCHECK(web_contents);
-    // All BookmarkAppDataRetriever operations are async, so post a task here
-    // to simulate this async behavior in tests as well.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), web_app_info_));
+  }
+
+  void GetIcons(const GURL& app_url,
+                const std::vector<GURL>& icon_urls,
+                GetIconsCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  std::vector<WebApplicationInfo::IconInfo>()));
   }
 
  private:
