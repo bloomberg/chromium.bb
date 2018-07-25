@@ -137,7 +137,8 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   if (!subheading_text.empty())
     AddMultiLineLabel(text_container, subheading_text);
 
-  icon_loader_.reset(new ArcAppIconLoader(profile_, kIconSourceSize, this));
+  icon_loader_ = std::make_unique<ArcAppIconLoader>(
+      profile_, kIconSourceSize, this);
   // The dialog will show once the icon is loaded.
   icon_loader_->FetchImage(app_id_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ARC_APP);

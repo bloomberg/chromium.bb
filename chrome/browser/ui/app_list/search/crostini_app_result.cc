@@ -23,10 +23,10 @@ CrostiniAppResult::CrostiniAppResult(Profile* profile,
     : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
 
-  icon_loader_.reset(new CrostiniAppIconLoader(
+  icon_loader_ = std::make_unique<CrostiniAppIconLoader>(
       profile,
       AppListConfig::instance().GetPreferredIconDimension(display_type()),
-      this));
+      this);
   icon_loader_->FetchImage(app_id);
 }
 

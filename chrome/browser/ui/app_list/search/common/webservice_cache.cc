@@ -59,8 +59,8 @@ void WebserviceCache::Put(QueryType type,
                           std::unique_ptr<base::DictionaryValue> result) {
   if (result) {
     std::string typed_query = PrependType(type, query);
-    std::unique_ptr<Payload> scoped_payload(
-        new Payload(base::Time::Now(), std::move(result)));
+    std::unique_ptr<Payload> scoped_payload =
+        std::make_unique<Payload>(base::Time::Now(), std::move(result));
     Payload* payload = scoped_payload.get();
 
     cache_.Put(typed_query, std::move(scoped_payload));
@@ -86,7 +86,7 @@ void WebserviceCache::OnCacheLoaded(std::unique_ptr<base::DictionaryValue>) {
       !it.IsAtEnd();
       it.Advance()) {
     const base::DictionaryValue* payload_dict;
-    std::unique_ptr<Payload> payload(new Payload);
+    std::unique_ptr<Payload> payload = std::make_unique<Payload>();
     if (!it.value().GetAsDictionary(&payload_dict) ||
         !payload_dict ||
         !PayloadFromDict(payload_dict, payload.get())) {

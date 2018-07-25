@@ -82,12 +82,12 @@ ArcApplicationNotifierController::GetNotifierList(Profile* profile) {
       continue;
 
     // Load icons for notifier.
-    std::unique_ptr<ArcAppIcon> icon(
-        new ArcAppIcon(profile, app_id,
+    std::unique_ptr<ArcAppIcon> icon =
+        std::make_unique<ArcAppIcon>(profile, app_id,
                        // ARC icon is available only for 48x48 dips.
                        kArcAppIconSizeInDp,
                        // The life time of icon must shorter than |this|.
-                       this));
+                       this);
     // Apply icon now to set the default image.
     OnIconUpdated(icon.get());
 

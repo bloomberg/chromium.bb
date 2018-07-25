@@ -40,8 +40,8 @@ class OmniboxResultTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    app_list_controller_delegate_.reset(
-        new ::test::TestAppListControllerDelegate);
+    app_list_controller_delegate_ =
+        std::make_unique<::test::TestAppListControllerDelegate>();
   }
 
   std::unique_ptr<OmniboxResult> CreateOmniboxResult(
@@ -53,8 +53,8 @@ class OmniboxResultTest : public AppListTestBase {
       AutocompleteMatchType::Type type,
       const std::string& keyword) {
     AutocompleteMatch match;
-    match.search_terms_args.reset(
-        new TemplateURLRef::SearchTermsArgs(base::UTF8ToUTF16(original_query)));
+    match.search_terms_args = std::make_unique<TemplateURLRef::SearchTermsArgs>(
+        base::UTF8ToUTF16(original_query));
     match.search_terms_args->original_query = base::UTF8ToUTF16(original_query);
     match.relevance = relevance;
     match.destination_url = GURL(destination_url);
@@ -63,8 +63,8 @@ class OmniboxResultTest : public AppListTestBase {
     match.type = type;
     match.keyword = base::UTF8ToUTF16(keyword);
 
-    return std::unique_ptr<OmniboxResult>(new OmniboxResult(
-        profile_.get(), app_list_controller_delegate_.get(), nullptr, match));
+    return std::make_unique<OmniboxResult>(
+        profile_.get(), app_list_controller_delegate_.get(), nullptr, match);
   }
 
   const GURL& GetLastOpenedUrl() const {

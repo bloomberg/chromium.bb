@@ -196,7 +196,7 @@ void ExtensionAppModelBuilder::BuildModel() {
   if (tracker_)
     tracker_->AddObserver(this);
 
-  app_updater_.reset(new LauncherExtensionAppUpdater(this, profile()));
+  app_updater_ = std::make_unique<LauncherExtensionAppUpdater>(this, profile());
 }
 
 void ExtensionAppModelBuilder::PopulateApps() {

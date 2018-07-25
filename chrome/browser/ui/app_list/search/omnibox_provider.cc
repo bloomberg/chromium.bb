@@ -23,8 +23,8 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
                                  AppListControllerDelegate* list_controller)
     : profile_(profile),
       list_controller_(list_controller),
-      controller_(new AutocompleteController(
-          base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
+      controller_(std::make_unique<AutocompleteController>(
+          std::make_unique<ChromeAutocompleteProviderClient>(profile),
           this,
           AutocompleteClassifier::DefaultOmniboxProviders() &
               ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {}

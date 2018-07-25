@@ -87,9 +87,9 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                            IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }
   } else {
-    extension_menu_items_.reset(new extensions::ContextMenuMatcher(
+    extension_menu_items_ = std::make_unique<extensions::ContextMenuMatcher>(
         profile(), this, menu_model,
-        base::Bind(MenuItemHasLauncherContext)));
+        base::Bind(MenuItemHasLauncherContext));
 
     // First, add the primary actions.
     if (!is_platform_app_) {

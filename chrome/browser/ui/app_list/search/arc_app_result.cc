@@ -27,10 +27,10 @@ ArcAppResult::ArcAppResult(Profile* profile,
   std::string id = kArcAppPrefix;
   id += app_id;
   set_id(id);
-  icon_loader_.reset(new ArcAppIconLoader(
+  icon_loader_ = std::make_unique<ArcAppIconLoader>(
       profile,
       AppListConfig::instance().GetPreferredIconDimension(display_type()),
-      this));
+      this);
   icon_loader_->FetchImage(app_id);
 }
 

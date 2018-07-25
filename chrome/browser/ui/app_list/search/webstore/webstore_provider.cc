@@ -86,10 +86,10 @@ void WebstoreProvider::Start(const base::string16& query) {
   }
 
   if (!webstore_search_) {
-    webstore_search_.reset(new JSONResponseFetcher(
+    webstore_search_ = std::make_unique<JSONResponseFetcher>(
         base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
                    base::Unretained(this)),
-        profile_));
+        profile_);
   }
 
   query_pending_ = true;

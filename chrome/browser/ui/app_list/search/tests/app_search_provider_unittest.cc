@@ -67,13 +67,13 @@ class AppSearchProviderTest : public AppListTestBase {
     AppListTestBase::SetUp();
 
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
-    controller_.reset(new ::test::TestAppListControllerDelegate);
+    controller_ = std::make_unique<::test::TestAppListControllerDelegate>();
   }
 
   void CreateSearch() {
     clock_.SetNow(kTestCurrentTime);
-    app_search_.reset(new AppSearchProvider(profile_.get(), nullptr, &clock_,
-                                            model_updater_.get()));
+    app_search_ = std::make_unique<AppSearchProvider>(
+        profile_.get(), nullptr, &clock_, model_updater_.get());
   }
 
   std::string RunQuery(const std::string& query) {

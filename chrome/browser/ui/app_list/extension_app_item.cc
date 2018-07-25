@@ -100,8 +100,8 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    extension_enable_flow_.reset(new ExtensionEnableFlow(
-        profile(), extension_id(), this));
+    extension_enable_flow_ = std::make_unique<ExtensionEnableFlow>(
+        profile(), extension_id(), this);
     extension_enable_flow_->StartForNativeWindow(nullptr);
   }
   return true;

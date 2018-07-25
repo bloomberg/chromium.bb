@@ -175,9 +175,9 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     const GURL gallery_url(embedded_test_server()->base_url().spec() + "path");
     extension_test_util::SetGalleryURL(gallery_url);
 
-    mock_controller_.reset(new AppListControllerDelegateForTest);
-    webstore_provider_.reset(new WebstoreProvider(
-        ProfileManager::GetActiveUserProfile(), mock_controller_.get()));
+    mock_controller_ = std::make_unique<AppListControllerDelegateForTest>();
+    webstore_provider_ = std::make_unique<WebstoreProvider>(
+        ProfileManager::GetActiveUserProfile(), mock_controller_.get());
     webstore_provider_->set_webstore_search_fetched_callback(
         base::Bind(&WebstoreProviderTest::OnSearchResultsFetched,
                    base::Unretained(this)));
@@ -192,7 +192,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
     if (webstore_provider_->query_pending_ && !mock_server_response.empty()) {
       DCHECK(!run_loop_);
-      run_loop_.reset(new base::RunLoop);
+      run_loop_ = std::make_unique<base::RunLoop>();
       run_loop_->Run();
       run_loop_.reset();
 
@@ -264,7 +264,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+    std::unique_ptr<BasicHttpResponse> response =
+        std::make_unique<BasicHttpResponse>();
 
     if (request.relative_url.find("/jsonsearch?") != std::string::npos) {
       if (mock_server_response_ == "ERROR_NOT_FOUND") {
