@@ -310,6 +310,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   [super viewDidAppear:animated];
   // Resize the collection as it might have been rotated while not being
   // presented (e.g. rotation on stack view).
+  [self correctMissingSafeArea];
   [self updateConstraints];
   // Update the shadow bar.
   [self.audience contentOffsetDidChange];
@@ -354,6 +355,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
   [self correctMissingSafeArea];
+  [self.headerSynchronizer
+      updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
 }
 
 #pragma mark - UICollectionViewDelegate

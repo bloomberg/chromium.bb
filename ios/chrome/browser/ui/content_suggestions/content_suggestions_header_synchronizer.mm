@@ -189,7 +189,14 @@ initWithCollectionController:
 - (void)updateFakeOmniboxOnNewWidth:(CGFloat)width {
   if (self.shouldAnimateHeader &&
       (IsUIRefreshPhase1Enabled() || !IsIPadIdiom())) {
-    UIEdgeInsets insets = SafeAreaInsetsForViewWithinNTP(self.collectionView);
+    // We check -superview here because in certain scenarios (such as when the
+    // VC is rotated underneath another presented VC), in a
+    // UICollectionViewController -viewSafeAreaInsetsDidChange the VC.view has
+    // updated safeAreaInsets, but VC.collectionView does not until a layer
+    // -viewDidLayoutSubviews.  Since self.collectionView and it's superview
+    // should always have the same safeArea, this should be safe.
+    UIEdgeInsets insets =
+        SafeAreaInsetsForViewWithinNTP(self.collectionView.superview);
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:width
