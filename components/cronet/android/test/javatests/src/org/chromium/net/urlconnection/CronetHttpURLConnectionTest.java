@@ -38,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
@@ -1401,5 +1402,71 @@ public class CronetHttpURLConnectionTest {
         assertEquals(200, urlConnection.getResponseCode());
         urlConnection.disconnect();
         assertTrue(CronetTestUtil.nativeGetTaggedBytes(tag) > priorBytes);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testIOExceptionErrorRethrown() throws Exception {
+        // URL that should fail to connect.
+        URL url = new URL("http://localhost");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // This should not throw, even though internally it may encounter an exception.
+        connection.getHeaderField("blah");
+        try {
+            // This should throw an IOException.
+            connection.getResponseCode();
+            fail();
+        } catch (IOException e) {
+            // Expected
+        }
+        connection.disconnect();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testIOExceptionInterruptRethrown() throws Exception {
+        // Older system impls don't reliably respond to interrupt.
+        if (mTestRule.testingSystemHttpURLConnection()
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return;
+        }
+        ServerSocket hangingServer = new ServerSocket(0);
+        URL url = new URL("http://localhost:" + hangingServer.getLocalPort());
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // connect() is non-blocking.
+        connection.connect();
+        FutureTask<IOException> task = new FutureTask<IOException>(new Callable<IOException>() {
+            @Override
+            public IOException call() {
+                // This should not throw, even though internally it may encounter an exception.
+                connection.getHeaderField("blah");
+                try {
+                    // This should throw an InterruptedIOException.
+                    connection.getResponseCode();
+                } catch (InterruptedIOException e) {
+                    // Expected
+                    return e;
+                } catch (IOException e) {
+                    return null;
+                }
+                return null;
+            }
+        });
+        Thread t = new Thread(task);
+        t.start();
+        Socket s = hangingServer.accept();
+        hangingServer.close();
+        // This will trigger an InterruptException in getHeaderField() and getResponseCode().
+        // getHeaderField() should not re-throw it.  getResponseCode() should re-throw it as an
+        // InterruptedIOException.
+        t.interrupt();
+        // Make sure an IOException is thrown.
+        assertNotNull(task.get());
+        s.close();
+        connection.disconnect();
     }
 }

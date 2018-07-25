@@ -19,6 +19,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -78,7 +79,7 @@ public class MessageLoopTest {
                     loop.loop();
                     fail();
                 } catch (Exception e) {
-                    if (!(e instanceof IllegalStateException)) {
+                    if (!(e instanceof InterruptedIOException)) {
                         fail();
                     }
                 }
@@ -127,7 +128,7 @@ public class MessageLoopTest {
                     loop.loop();
                     fail();
                 } catch (Exception e) {
-                    if (!(e instanceof IllegalStateException)) {
+                    if (!(e instanceof NullPointerException)) {
                         fail();
                     }
                 }
