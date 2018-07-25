@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
@@ -95,9 +96,15 @@ void InitSyncableAccountServicesOnDBSequence(
         ->InjectStartSyncFlare(sync_flare);
   }
 
-  autofill::AutofillWalletMetadataSyncableService::
-      CreateForWebDataServiceAndBackend(autofill_web_data.get(),
-                                        autofill_backend, app_locale);
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletMetadata)) {
+    autofill::AutofillWalletMetadataSyncBridge::
+        CreateForWebDataServiceAndBackend(app_locale, autofill_backend,
+                                          autofill_web_data.get());
+  } else {
+    autofill::AutofillWalletMetadataSyncableService::
+        CreateForWebDataServiceAndBackend(autofill_web_data.get(),
+                                          autofill_backend, app_locale);
+  }
 }
 
 }  // namespace

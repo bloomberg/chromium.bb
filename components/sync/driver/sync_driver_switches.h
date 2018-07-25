@@ -30,6 +30,7 @@ extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSSessions;
 extern const base::Feature kSyncUSSAutofillProfile;
 extern const base::Feature kSyncUSSAutofillWalletData;
+extern const base::Feature kSyncUSSAutofillWalletMetadata;
 
 }  // namespace switches
 

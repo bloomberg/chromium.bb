@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/web_data_model_type_controller.h"
@@ -69,7 +70,7 @@ AutocompleteDelegateFromDataService(autofill::AutofillWebDataService* service) {
   // TODO(jkrcal): Deal with the (probably rare) race condition when we call
   // bridges' FromWebDataService() before calling
   // CreateForWebDataServiceAndBackend() in WebDataServiceWrapper. This TODO
-  // also applies to the second function below and to analogous code in
+  // also applies to all analogous functions below and to analogous code in
   // SyncClient::GetControllerDelegateForModelType().
   return autofill::AutocompleteSyncBridge::FromWebDataService(service)
       ->change_processor()
@@ -80,6 +81,22 @@ base::WeakPtr<syncer::ModelTypeControllerDelegate>
 AutofillProfileDelegateFromDataService(
     autofill::AutofillWebDataService* service) {
   return autofill::AutofillProfileSyncBridge::FromWebDataService(service)
+      ->change_processor()
+      ->GetControllerDelegateOnUIThread();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+AutofillWalletDelegateFromDataService(
+    autofill::AutofillWebDataService* service) {
+  return autofill::AutofillWalletSyncBridge::FromWebDataService(service)
+      ->change_processor()
+      ->GetControllerDelegateOnUIThread();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+AutofillWalletMetadataDelegateFromDataService(
+    autofill::AutofillWebDataService* service) {
+  return autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(service)
       ->change_processor()
       ->GetControllerDelegateOnUIThread();
 }
@@ -157,7 +174,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
             std::make_unique<autofill::WebDataModelTypeController>(
                 syncer::AUTOFILL_WALLET_DATA, sync_client_, db_thread_,
                 web_data_service_,
-                base::BindRepeating(&AutofillProfileDelegateFromDataService)));
+                base::BindRepeating(&AutofillWalletDelegateFromDataService)));
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
@@ -170,9 +187,20 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // is syncing and metadata sync is not explicitly disabled.
     if (!wallet_disabled &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
-      controllers.push_back(std::make_unique<AutofillWalletDataTypeController>(
-          syncer::AUTOFILL_WALLET_METADATA, db_thread_, error_callback,
-          sync_client_, web_data_service_));
+      if (base::FeatureList::IsEnabled(
+              switches::kSyncUSSAutofillWalletMetadata)) {
+        controllers.push_back(
+            std::make_unique<autofill::WebDataModelTypeController>(
+                syncer::AUTOFILL_WALLET_METADATA, sync_client_, db_thread_,
+                web_data_service_,
+                base::BindRepeating(
+                    &AutofillWalletMetadataDelegateFromDataService)));
+      } else {
+        controllers.push_back(
+            std::make_unique<AutofillWalletDataTypeController>(
+                syncer::AUTOFILL_WALLET_METADATA, db_thread_, error_callback,
+                sync_client_, web_data_service_));
+      }
     }
   }
 
