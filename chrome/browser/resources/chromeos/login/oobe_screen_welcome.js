@@ -12,12 +12,7 @@ login.createScreen('WelcomeScreen', 'connect', function() {
   var CONTEXT_KEY_TIMEZONE = 'timezone';
 
   return {
-    EXTERNAL_API: ['showError'],
-
-    /**
-     * Dropdown element for networks selection.
-     */
-    dropdown_: null,
+    EXTERNAL_API: [],
 
     /** @override */
     decorate: function() {
@@ -58,7 +53,7 @@ login.createScreen('WelcomeScreen', 'connect', function() {
      * @type {string}
      */
     get header() {
-      return loadTimeData.getString('networkScreenTitle');
+      return loadTimeData.getString('welcomeScreenTitle');
     },
 
     /**
@@ -66,19 +61,6 @@ login.createScreen('WelcomeScreen', 'connect', function() {
      */
     get defaultControl() {
       return $('oobe-welcome-md');
-    },
-
-    /**
-     * Shows the network error message.
-     * @param {string} message Message to be shown.
-     */
-    showError: function(message) {
-      var error = document.createElement('div');
-      var messageDiv = document.createElement('div');
-      messageDiv.className = 'error-message-bubble';
-      messageDiv.textContent = message;
-      error.appendChild(messageDiv);
-      error.setAttribute('role', 'alert');
     },
 
     /**

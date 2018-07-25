@@ -6,20 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_SCREEN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
@@ -32,12 +27,7 @@ namespace locale_util {
 struct LanguageSwitchResult;
 }
 
-namespace login {
-class NetworkStateHelper;
-}
-
 class WelcomeScreen : public BaseScreen,
-                      public NetworkStateHandlerObserver,
                       public input_method::InputMethodManager::Observer {
  public:
   class Delegate {
@@ -85,34 +75,15 @@ class WelcomeScreen : public BaseScreen,
   void SetTimezone(const std::string& timezone_id);
   std::string GetTimezone() const;
 
-  // Currently We can only get unsecured Wifi network configuration from shark
-  // that can be applied to remora. Returns the network ONC configuration.
-  void GetConnectedWifiNetwork(std::string* out_onc_spec);
-  void CreateAndConnectNetworkFromOnc(
-      const std::string& onc_spec,
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback);
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  private:
-  friend class WelcomeScreenTest;
-  friend class WelcomeScreenUnitTest;
-  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenTest, Timeout);
-  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenTest, CanConnect);
-  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenUnitTest, ContinuesAutomatically);
-  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenUnitTest, ContinuesOnlyOnce);
-
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
   void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
-
-  // NetworkStateHandlerObserver implementation:
-  void NetworkConnectionStateChanged(const NetworkState* network) override;
-  void DefaultNetworkChanged(const NetworkState* network) override;
 
   // InputMethodManager::Observer implementation:
   void InputMethodChanged(input_method::InputMethodManager* manager,
@@ -124,35 +95,6 @@ class WelcomeScreen : public BaseScreen,
 
   // Subscribe to timezone changes.
   void InitializeTimezoneObserver();
-
-  // Subscribes WelcomeScreen to the network change notification,
-  // forces refresh of current network state.
-  void Refresh();
-
-  // Sets the NetworkStateHelper for use in tests. This
-  // class will take ownership of the pointed object.
-  void SetNetworkStateHelperForTest(login::NetworkStateHelper* helper);
-
-  // Subscribes to network change notifications.
-  void SubscribeNetworkNotification();
-
-  // Unsubscribes from network change notifications.
-  void UnsubscribeNetworkNotification();
-
-  // Notifies wizard on successful connection.
-  void NotifyOnConnection();
-
-  // Called by |connection_timer_| when connection to the network timed out.
-  void OnConnectionTimeout();
-
-  // Update UI based on current network status.
-  void UpdateStatus();
-
-  // Stops waiting for network to connect.
-  void StopWaitingForConnection(const base::string16& network_id);
-
-  // Starts waiting for network connection. Shows spinner.
-  void WaitForConnection(const base::string16& network_id);
 
   // Called when continue button is pressed.
   void OnContinueButtonPressed();
@@ -177,30 +119,10 @@ class WelcomeScreen : public BaseScreen,
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
 
-  // True if subscribed to network change notification.
-  bool is_network_subscribed_ = false;
-
-  // ID of the the network that we are waiting for.
-  base::string16 network_id_;
-
-  // Keeps track of the number of times OnContinueButtonPressed was called.
-  // OnContinueButtonPressed is called either in response to the user
-  // pressing the continue button, or automatically during hands-off enrollment
-  // after a network connection is established.
-  int continue_attempts_ = 0;
-
-  // True if the user pressed the continue button in the UI.
-  // Indicates that we should proceed with OOBE as soon as we are connected.
-  bool continue_pressed_ = false;
-
-  // Timer for connection timeout.
-  base::OneShotTimer connection_timer_;
-
   std::unique_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
   WelcomeView* view_ = nullptr;
   Delegate* delegate_ = nullptr;
-  std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   std::string input_method_;
   std::string timezone_;

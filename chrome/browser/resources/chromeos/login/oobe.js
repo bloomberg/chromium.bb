@@ -11,14 +11,15 @@
 // <include src="login_non_lock_shared.js">
 // <include src="oobe_screen_auto_enrollment_check.js">
 // <include src="oobe_screen_controller_pairing.js">
+// <include src="oobe_screen_demo_setup.js">
+// <include src="oobe_screen_demo_preferences.js">
 // <include src="oobe_screen_enable_debugging.js">
 // <include src="oobe_screen_eula.js">
 // <include src="oobe_screen_hid_detection.js">
 // <include src="oobe_screen_host_pairing.js">
-// <include src="oobe_screen_welcome.js">
+// <include src="oobe_screen_network.js">
 // <include src="oobe_screen_update.js">
-// <include src="oobe_screen_demo_setup.js">
-// <include src="oobe_screen_demo_preferences.js">
+// <include src="oobe_screen_welcome.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {
@@ -31,6 +32,7 @@ cr.define('cr.ui.Oobe', function() {
       login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
       login.WelcomeScreen.register();
+      login.NetworkScreen.register();
       login.EulaScreen.register();
       login.UpdateScreen.register();
       login.AutoEnrollmentCheckScreen.register();

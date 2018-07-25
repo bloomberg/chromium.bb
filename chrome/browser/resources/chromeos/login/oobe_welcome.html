@@ -57,7 +57,7 @@
     <link rel="stylesheet" href="oobe_welcome.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-welcome-dialog id="welcomeScreen" role="dialog"
-        aria-label$="[[i18nDynamic(locale, 'networkScreenGreeting')]]"
+        aria-label$="[[i18nDynamic(locale, 'welcomeScreenGreeting')]]"
         current-language="[[currentLanguage]]"
         on-language-button-clicked="onWelcomeSelectLanguageButtonClicked_"
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
@@ -272,9 +272,5 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-network-dialog id="networkSelectionScreen" role="dialog" hidden
-        on-back-button-clicked="onNetworkSelectionBackButtonClicked_"
-        on-next-button-clicked="onNetworkSelectionNextButtonClicked_">
-    </oobe-network-dialog>
   </template>
 </dom-module>

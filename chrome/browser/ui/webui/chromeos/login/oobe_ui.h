@@ -33,6 +33,8 @@ class AutoEnrollmentCheckScreenView;
 class BaseScreenHandler;
 class ControllerPairingScreenView;
 class CoreOobeView;
+class DemoPreferencesScreenView;
+class DemoSetupScreenView;
 class DeviceDisabledScreenView;
 class EnableDebuggingScreenView;
 class EncryptionMigrationScreenView;
@@ -48,16 +50,14 @@ class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
 class LoginScreenContext;
 class NativeWindowDelegate;
+class NetworkScreenView;
 class NetworkStateInformer;
-class WelcomeView;
 class OobeDisplayChooser;
 class RecommendAppsScreenView;
+class ResetView;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class SupervisedUserCreationScreenHandler;
-class ResetView;
-class DemoSetupScreenView;
-class DemoPreferencesScreenView;
 class SyncConsentScreenView;
 class TermsOfServiceScreenView;
 class UserBoardView;
@@ -66,6 +66,7 @@ class UpdateView;
 class UpdateRequiredView;
 class VoiceInteractionValuePropScreenView;
 class WaitForContainerReadyScreenView;
+class WelcomeView;
 class WrongHWIDScreenView;
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
@@ -135,6 +136,7 @@ class OobeUI : public content::WebUIController,
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
   DiscoverScreenView* GetDiscoverScreenView();
+  NetworkScreenView* GetNetworkScreenView();
 
   // ShutdownPolicyHandler::Delegate
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;

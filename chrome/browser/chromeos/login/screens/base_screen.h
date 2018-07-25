@@ -149,7 +149,7 @@ class BaseScreen {
   FRIEND_TEST_ALL_PREFIXES(HandsOffWelcomeScreenTest, ContinueClickedOnlyOnce);
 
   friend class BaseWebUIHandler;
-  friend class WelcomeScreenTest;
+  friend class NetworkScreenTest;
   friend class ScreenEditor;
   friend class ScreenManager;
   friend class UpdateScreenTest;

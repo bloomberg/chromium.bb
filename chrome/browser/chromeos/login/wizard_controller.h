@@ -40,6 +40,10 @@ class SharkConnectionListener;
 
 namespace chromeos {
 
+namespace login {
+class NetworkStateHelper;
+}  // namespace login
+
 class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
@@ -152,6 +156,7 @@ class WizardController : public BaseScreenDelegate,
  private:
   // Show specific screen.
   void ShowWelcomeScreen();
+  void ShowNetworkScreen();
   void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
@@ -188,6 +193,8 @@ class WizardController : public BaseScreenDelegate,
 
   // Exit handlers:
   void OnHIDDetectionCompleted();
+  void OnWelcomeContinued();
+  void OnNetworkBack();
   void OnNetworkConnected();
   void OnConnectionFailed();
   void OnUpdateCompleted();
@@ -459,6 +466,9 @@ class WizardController : public BaseScreenDelegate,
 
   // Pairing controller for remora devices.
   std::unique_ptr<pairing_chromeos::HostPairingController> remora_controller_;
+
+  // Helper for network realted operations.
+  std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   // Maps screen names to last time of their shows.
   std::map<std::string, base::Time> screen_show_times_;

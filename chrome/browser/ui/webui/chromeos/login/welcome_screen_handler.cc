@@ -11,38 +11,28 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/widget/widget.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace {
 
@@ -86,12 +76,6 @@ void WelcomeScreenHandler::Show() {
     return;
   }
 
-  // Make sure all physical network technologies are enabled. On OOBE, the user
-  // should be able to select any of the available networks on the device.
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  handler->SetTechnologyEnabled(NetworkTypePattern::Physical(), true,
-                                chromeos::network_handler::ErrorCallback());
-
   base::DictionaryValue welcome_screen_params;
   welcome_screen_params.SetBoolean(
       "isDeveloperMode", base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -112,22 +96,9 @@ void WelcomeScreenHandler::Unbind() {
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
-void WelcomeScreenHandler::ShowError(const base::string16& message) {
-  CallJS("showError", message);
-}
-
-void WelcomeScreenHandler::ClearErrors() {
-  if (page_is_ready())
-    core_oobe_view_->ClearErrors();
-}
-
 void WelcomeScreenHandler::StopDemoModeDetection() {
   core_oobe_view_->StopDemoModeDetection();
 }
-
-void WelcomeScreenHandler::ShowConnectingStatus(
-    bool connecting,
-    const base::string16& network_id) {}
 
 void WelcomeScreenHandler::ReloadLocalizedContent() {
   base::DictionaryValue localized_strings;
@@ -140,15 +111,14 @@ void WelcomeScreenHandler::ReloadLocalizedContent() {
 void WelcomeScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
-    builder->Add("networkScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
+    builder->Add("welcomeScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
   else
-    builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
+    builder->Add("welcomeScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
 
-  builder->Add("networkScreenTitle", IDS_WELCOME_SCREEN_TITLE);
-  builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
+  builder->Add("welcomeScreenTitle", IDS_WELCOME_SCREEN_TITLE);
 
   // MD-OOBE (oobe-welcome-md)
-  builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);
+  builder->Add("debuggingFeaturesLink", IDS_WELCOME_ENABLE_DEV_FEATURES_LINK);
   builder->Add("timezoneDropdownLabel", IDS_TIMEZONE_DROPDOWN_LABEL);
   builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
   builder->Add("welcomeNextButtonText", IDS_OOBE_WELCOME_NEXT_BUTTON_TEXT);
@@ -157,8 +127,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("accessibilitySectionTitle", IDS_ACCESSIBILITY_SECTION_TITLE);
   builder->Add("accessibilitySectionHint", IDS_ACCESSIBILITY_SECTION_HINT);
   builder->Add("timezoneSectionTitle", IDS_TIMEZONE_SECTION_TITLE);
-  builder->Add("networkSectionTitle", IDS_NETWORK_SECTION_TITLE);
-  builder->Add("networkSectionHint", IDS_NETWORK_SECTION_HINT);
   builder->Add("advancedOptionsSectionTitle",
                IDS_OOBE_ADVANCED_OPTIONS_SCREEN_TITLE);
   builder->Add("advancedOptionsEEBootstrappingTitle",
@@ -178,8 +146,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("languageDropdownLabel", IDS_LANGUAGE_DROPDOWN_LABEL);
   builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
   builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
-  builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
-  builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
 
   builder->Add("highContrastOptionOff", IDS_HIGH_CONTRAST_OPTION_OFF);
   builder->Add("highContrastOptionOn", IDS_HIGH_CONTRAST_OPTION_ON);
@@ -194,7 +160,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
 
   builder->Add("timezoneDropdownTitle", IDS_TIMEZONE_DROPDOWN_TITLE);
   builder->Add("timezoneButtonText", IDS_TIMEZONE_BUTTON_TEXT);
-  network_element::AddLocalizedValuesToBuilder(builder);
 }
 
 void WelcomeScreenHandler::GetAdditionalParameters(
