@@ -2711,6 +2711,84 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 }
 
+// Test that we can autofill forms that dynamically change the element that
+// has been clicked on.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicFormFill_FirstElementDisappears) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_element_invalid.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname2", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we can autofill forms that dynamically change the element that
+// has been clicked on, even though the form has no name.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicFormFill_FirstElementDisappearsNoNameForm) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_element_invalid_noname_form.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname2", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we can autofill forms that dynamically change the element that
+// has been clicked on, even though the elements are unowned.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicFormFill_FirstElementDisappearsUnowned) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_element_invalid_unowned.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname2", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
 // Test that credit card fields are never re-filled.
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_NotForCreditCard) {
