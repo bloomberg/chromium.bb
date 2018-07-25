@@ -10,13 +10,13 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_constants.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_preferences::TestingPrefServiceSyncable;
-using AppInfo = web_app::WebAppPolicyManager::AppInfo;
 
 namespace web_app {
 
@@ -33,13 +33,12 @@ class WebAppPolicyManagerTest : public testing::Test {
 };
 
 class WebAppPolicyManagerTest::TestPendingAppManager
-    : public WebAppPolicyManager::PendingAppManager {
+    : public PendingAppManager {
  public:
   TestPendingAppManager() = default;
   ~TestPendingAppManager() override = default;
 
-  void ProcessAppOperations(
-      std::vector<WebAppPolicyManager::AppInfo> apps_to_install) override {
+  void ProcessAppOperations(std::vector<AppInfo> apps_to_install) override {
     last_apps_to_install_ = std::move(apps_to_install);
   }
 
@@ -112,11 +111,11 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
                                              std::move(pending_app_manager));
   const auto& apps_to_install = pending_app_manager_ptr->last_apps_to_install();
 
-  std::vector<AppInfo> expected_apps_to_install;
+  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.emplace_back(
-      GURL(kUrl1), WebAppPolicyManager::LaunchContainer::kWindow);
+      GURL(kUrl1), PendingAppManager::LaunchContainer::kWindow);
   expected_apps_to_install.emplace_back(
-      GURL(kUrl2), WebAppPolicyManager::LaunchContainer::kTab);
+      GURL(kUrl2), PendingAppManager::LaunchContainer::kTab);
 
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }

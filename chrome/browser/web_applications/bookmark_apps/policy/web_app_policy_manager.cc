@@ -15,19 +15,6 @@
 
 namespace web_app {
 
-WebAppPolicyManager::AppInfo::AppInfo(GURL url,
-                                      LaunchContainer launch_container)
-    : url(std::move(url)), launch_container(launch_container) {}
-
-WebAppPolicyManager::AppInfo::AppInfo(AppInfo&& other) = default;
-
-WebAppPolicyManager::AppInfo::~AppInfo() = default;
-
-bool WebAppPolicyManager::AppInfo::operator==(const AppInfo& other) const {
-  return std::tie(url, launch_container) ==
-         std::tie(other.url, other.launch_container);
-}
-
 WebAppPolicyManager::WebAppPolicyManager(
     PrefService* pref_service,
     std::unique_ptr<PendingAppManager> pending_app_manager)
@@ -43,12 +30,12 @@ WebAppPolicyManager::WebAppPolicyManager(PrefService* pref_service)
 
 WebAppPolicyManager::~WebAppPolicyManager() = default;
 
-std::vector<WebAppPolicyManager::AppInfo>
+std::vector<PendingAppManager::AppInfo>
 WebAppPolicyManager::GetAppsToInstall() {
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
 
-  std::vector<AppInfo> apps_to_install;
+  std::vector<PendingAppManager::AppInfo> apps_to_install;
   for (const base::Value& info : web_apps->GetList()) {
     const base::Value& url = *info.FindKey(kUrlKey);
     const base::Value& launch_container = *info.FindKey(kLaunchContainerKey);
@@ -59,14 +46,10 @@ WebAppPolicyManager::GetAppsToInstall() {
     apps_to_install.emplace_back(
         GURL(url.GetString()),
         launch_container.GetString() == kLaunchContainerWindowValue
-            ? LaunchContainer::kWindow
-            : LaunchContainer::kTab);
+            ? PendingAppManager::LaunchContainer::kWindow
+            : PendingAppManager::LaunchContainer::kTab);
   }
   return apps_to_install;
 }
-
-WebAppPolicyManager::PendingAppManager::PendingAppManager() = default;
-
-WebAppPolicyManager::PendingAppManager::~PendingAppManager() = default;
 
 }  // namespace web_app

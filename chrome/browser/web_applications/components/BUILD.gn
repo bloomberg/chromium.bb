@@ -4,6 +4,8 @@
 
 source_set("components") {
   sources = [
+    "pending_app_manager.cc",
+    "pending_app_manager.h",
     "web_app_helpers.cc",
     "web_app_helpers.h",
   ]
