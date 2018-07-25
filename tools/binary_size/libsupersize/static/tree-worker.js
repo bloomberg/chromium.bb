@@ -37,6 +37,7 @@
 importScripts('./shared.js');
 
 const _PATH_SEP = '/';
+const _DEMO_DATA_URL = 'demo.ndjson';
 
 /** @param {FileEntry} fileEntry */
 function getSourcePath(fileEntry) {
@@ -559,6 +560,7 @@ class DataFetcher {
 function parseOptions(options) {
   const params = new URLSearchParams(options);
 
+  const url = params.get('data_url');
   const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
   const filterGeneratedFiles = params.has('generated_filter');
@@ -630,7 +632,7 @@ function parseOptions(options) {
     return filters.every(fn => fn(symbolNode));
   }
 
-  return {groupBy, filterTest};
+  return {groupBy, filterTest, url};
 }
 
 /** @type {TreeBuilder | null} */
@@ -639,13 +641,13 @@ const fetcher = new DataFetcher('data.ndjson');
 
 /**
  * Assemble a tree when this worker receives a message.
- * @param {string} options Query string containing options for the builder.
+ * @param {string} groupBy Sets how the tree is grouped.
+ * @param {(symbolNode: TreeNode) => boolean} filterTest Filter function that
+ * each symbol is tested against
  * @param {(msg: TreeProgress) => void} onProgress
  * @returns {Promise<TreeProgress>}
  */
-async function buildTree(options, onProgress) {
-  const {groupBy, filterTest} = parseOptions(options);
-
+async function buildTree(groupBy, filterTest, onProgress) {
   /** @type {Meta | null} Object from the first line of the data file */
   let meta = null;
 
@@ -736,10 +738,28 @@ async function buildTree(options, onProgress) {
 }
 
 const actions = {
-  /** @param {{input:string,options:string}} data */
+  /** @param {{input:string|null,options:string}} data */
   load(data) {
-    if (data.input) fetcher.setInput(data.input);
-    return buildTree(data.options, progress => {
+    const {groupBy, filterTest, url} = parseOptions(data.options);
+    if (data.input === 'from-url://') {
+      if (url) {
+        // Display the data from the `data_url` query parameter
+        console.info('Displaying data from', url);
+        fetcher.setInput(url);
+      } else {
+        // Display starter content if nothing was specified.
+        console.info('Displaying demo data');
+        // The demo file only exists in the GCS bucket where the UI is hosted.
+        // When using `start_server`, no data is shown until the user uploads
+        // something.
+        fetcher.setInput(_DEMO_DATA_URL);
+      }
+    } else if (data.input != null) {
+      console.info('Displaying uploaded data');
+      fetcher.setInput(data.input);
+    }
+
+    return buildTree(groupBy, filterTest, progress => {
       // @ts-ignore
       self.postMessage(progress);
     });

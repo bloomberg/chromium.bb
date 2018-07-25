@@ -92,4 +92,4 @@ class TreeWorker {
 const worker = new TreeWorker(_innerWorker);
 // Kick off the worker ASAP so it can start parsing data faster.
 // Subsequent calls will just use a worker locally.
-const treeReady = worker.loadTree('data.ndjson');
+const treeReady = worker.loadTree('from-url://');
