@@ -29,6 +29,10 @@
 namespace blink {
 class WebNode;
 class WebView;
+class WebString;
+class WebFormControlElement;
+template <typename T>
+class WebVector;
 }
 
 namespace autofill {
@@ -265,6 +269,15 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Called when current form is no longer submittable, submitted_forms_ is
   // cleared in this method.
   void OnFormNoLongerSubmittable();
+
+  // For no name forms, and unowned elements, try to see if there is a unique
+  // element in the updated form that corresponds to the old |element_|.
+  // Returns false if more than one element matches the |element_|.
+  bool FindTheUniqueNewVersionOfOldElement(
+      blink::WebVector<blink::WebFormControlElement>& elements,
+      bool& element_found,
+      const blink::WebString& original_element_section,
+      const blink::WebFormControlElement& original_element);
 
   // Check whether |element_| was removed or replaced dynamically on the page.
   // If so, looks for the same element in the updated |form| and replaces the

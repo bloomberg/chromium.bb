@@ -1965,7 +1965,12 @@ void AutofillManager::TriggerRefill(const FormData& form,
   DCHECK(itr != filling_contexts_map_.end());
   FillingContext* filling_context = itr->second.get();
 
-  DCHECK(!filling_context->attempted_refill);
+  // The refill attempt can happen from different paths, some of which happen
+  // after waiting for a while. Therefore, although this condition has been
+  // checked prior to calling TriggerRefill, it may not hold, when we get here.
+  if (filling_context->attempted_refill)
+    return;
+
   filling_context->attempted_refill = true;
 
   // Try to find the field from which the original field originated.

@@ -414,18 +414,22 @@ void AutofillAgent::DoAcceptDataListSuggestion(
 void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
   if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
     return;
+
+  ReplaceElementIfNowInvalid(form);
+
   FormFieldData field;
   FormData updated_form;
   if (form_util::FindFormAndFieldForFormControlElement(element_, &updated_form,
                                                        &field) &&
-      !form.DynamicallySameFormAs(updated_form)) {
+      (!element_.IsAutofilled() || !form.DynamicallySameFormAs(updated_form))) {
     base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
     WebLocalFrame* frame = render_frame()->GetWebFrame();
     std::vector<FormData> forms;
     forms.push_back(updated_form);
     // Always communicate to browser process for topmost frame.
-    if (!forms.empty() || !frame->Parent())
+    if (!forms.empty() || !frame->Parent()) {
       GetAutofillDriver()->FormsSeen(forms, forms_seen_timestamp);
+    }
   }
 }
 
@@ -1026,10 +1030,61 @@ void AutofillAgent::OnFormNoLongerSubmittable() {
   submitted_forms_.clear();
 }
 
+bool AutofillAgent::FindTheUniqueNewVersionOfOldElement(
+    WebVector<WebFormControlElement>& elements,
+    bool& element_found,
+    const WebString& original_element_section,
+    const WebFormControlElement& original_element) {
+  for (const WebFormControlElement& current_element : elements) {
+    if (current_element.IsFocusable() &&
+        original_element.NameForAutofill() ==
+            current_element.NameForAutofill()) {
+      if (!element_found) {
+        element_ = current_element;
+        element_found = true;
+      } else if (current_element.AutofillSection() ==
+                     element_.AutofillSection() ||
+                 (current_element.AutofillSection() !=
+                      original_element_section &&
+                  element_.AutofillSection() != original_element_section)) {
+        // If there are two elements that share the same name with the element_,
+        // and the section can't tell them apart, we can't decide between the
+        // two.
+        element_ = original_element;
+        return false;
+      } else if (current_element.AutofillSection() ==
+                 original_element_section) {
+        // If the current element has the right section, update the element_.
+        element_ = current_element;
+      }
+    }
+  }
+  return true;
+}
+
 void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   // If the document is invalid, bail out.
   if (element_.GetDocument().IsNull())
     return;
+
+  WebVector<WebFormElement> forms;
+  WebVector<WebFormControlElement> elements;
+
+  if (original_form.name.empty()) {
+    // If the form has no name, check all the forms.
+    bool element_found = false;
+    element_.GetDocument().Forms(forms);
+    for (const WebFormElement& form : forms) {
+      form.GetFormControlElements(elements);
+      // If finding a unique element is impossible, return.
+      if (!FindTheUniqueNewVersionOfOldElement(
+              elements, element_found, element_.AutofillSection(), element_))
+        return;
+    }
+    // If the element is not found, we should still check for unowned elements.
+    if (element_found)
+      return;
+  }
 
   if (!element_.Form().IsNull()) {
     // If |element_|'s parent form has no elements, |element_| is now invalid
@@ -1040,29 +1095,32 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
       return;
   }
 
-  // Try to find the new version of the form.
   WebFormElement form_element;
-  WebVector<WebFormElement> forms;
-  element_.GetDocument().Forms(forms);
-  for (const WebFormElement& form : forms) {
-    if (original_form.name == form.GetName().Utf16() ||
-        original_form.name == form.GetAttribute("id").Utf16()) {
-      form_element = form;
-      break;
+  if (!original_form.name.empty()) {
+    // Try to find the new version of the form.
+    element_.GetDocument().Forms(forms);
+    for (const WebFormElement& form : forms) {
+      if (original_form.name == form.GetName().Utf16() ||
+          original_form.name == form.GetAttribute("id").Utf16()) {
+        form_element = form;
+        break;
+      }
     }
   }
 
-  WebVector<WebFormControlElement> elements;
   if (form_element.IsNull()) {
     // Could not find the new version of the form, get all the unowned elements.
     std::vector<WebElement> fieldsets;
     elements = form_util::GetUnownedAutofillableFormFieldElements(
         element_.GetDocument().All(), &fieldsets);
-  } else {
-    // Get all the elements of the new version of the form.
-    form_element.GetFormControlElements(elements);
+    bool element_found = false;
+    FindTheUniqueNewVersionOfOldElement(elements, element_found,
+                                        element_.AutofillSection(), element_);
+    return;
   }
-
+  // This is the case for owned fields that belong to the right named form.
+  // Get all the elements of the new version of the form.
+  form_element.GetFormControlElements(elements);
   // Try to find the new version of the last interacted element.
   for (const WebFormControlElement& element : elements) {
     if (element_.NameForAutofill() == element.NameForAutofill()) {
