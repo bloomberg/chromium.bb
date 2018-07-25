@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -38,11 +37,8 @@ static Font ReplacementTextFont() {
 
 void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
                                           const LayoutPoint& paint_offset) {
-  if (!layout_embedded_object_.ShowsUnavailablePluginIndicator()) {
-    EmbeddedContentPainter(layout_embedded_object_)
-        .PaintReplaced(paint_info, paint_offset);
+  if (!layout_embedded_object_.ShowsUnavailablePluginIndicator())
     return;
-  }
 
   if (paint_info.phase == PaintPhase::kSelection)
     return;

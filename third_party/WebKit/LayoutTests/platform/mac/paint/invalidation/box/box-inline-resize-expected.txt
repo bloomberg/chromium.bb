@@ -20,22 +20,17 @@
         {
           "object": "InlineTextBox 'Chromium'",
           "rect": [40, 103, 113, 29],
-          "reason": "chunk appeared"
+          "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'Chromium'",
           "rect": [8, 103, 113, 29],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage IMG id='foo'",
           "rect": [8, 84, 32, 32],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutImage IMG id='foo'",
-          "rect": [8, 84, 32, 32],
-          "reason": "chunk appeared"
         }
       ]
     }

@@ -15,11 +15,6 @@
           "object": "LayoutImage IMG",
           "rect": [151, 117, 100, 100],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [151, 117, 100, 100],
-          "reason": "chunk appeared"
         }
       ]
     }
