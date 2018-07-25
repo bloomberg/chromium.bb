@@ -1342,6 +1342,7 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
     IntSize scroll_offset = layout_box.ScrolledContentOffset();
     IntPoint scroll_origin =
         compositing_container->GetScrollableArea()->ScrollOrigin();
+    scroll_origin.Move(-layout_box.OriginAdjustmentForScrollbars());
     scroll_origin.Move(-layout_box.BorderLeft().ToInt(),
                        -layout_box.BorderTop().ToInt());
     graphics_layer_parent_location = -(scroll_origin + scroll_offset);

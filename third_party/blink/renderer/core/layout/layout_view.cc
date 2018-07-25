@@ -262,6 +262,22 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
   }
 }
 
+bool LayoutView::ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  // See crbug.com/249860
+  if (frame.IsMainFrame())
+    return false;
+  // <body> inherits 'direction' from <html>, so checking style on the body is
+  // sufficient.
+  if (Element* body = GetDocument().body()) {
+    if (LayoutObject* body_layout_object = body->GetLayoutObject()) {
+      return body_layout_object->Style()
+          ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft();
+    }
+  }
+  return false;
+}
+
 void LayoutView::UpdateBlockLayout(bool relayout_children) {
   SubtreeLayoutScope layout_scope(*this);
 
