@@ -58,11 +58,26 @@
 #   If any deps are specified they will be inherited by the static library
 #   target.
 #
-# generate_static_library [optional, defaults to false]
-#   Produces a static library instead of a source_set.
-#
-# The generated library target also inherits the visibility and output_name
-# of its invoker.
+# visibility [optional]
+#   A specific visibility to apply for the generated static library. If omitted,
+#   visibility will be inherited from the invoker.
+
+# NOTE: Common variables here for when multiple templates use them.
+compiler_root = "//tools/json_schema_compiler"
+compiler_script = "$compiler_root/compiler.py"
+compiler_sources = [
+  "$compiler_root/cc_generator.py",
+  "$compiler_root/code.py",
+  "$compiler_root/compiler.py",
+  "$compiler_root/cpp_bundle_generator.py",
+  "$compiler_root/cpp_generator.py",
+  "$compiler_root/cpp_type_generator.py",
+  "$compiler_root/cpp_util.py",
+  "$compiler_root/h_generator.py",
+  "$compiler_root/idl_schema.py",
+  "$compiler_root/model.py",
+  "$compiler_root/util_cc_helper.py",
+]
 
 template("json_schema_api") {
   assert(defined(invoker.sources),
@@ -80,33 +95,12 @@ template("json_schema_api") {
     schema_include_rules = invoker.schema_include_rules
   }
 
-  # Keep a copy of the target_name here since it will be trampled
-  # in nested targets.
-  target_visibility = [ ":$target_name" ]
-
   generated_config_name = target_name + "_generated_config"
   config(generated_config_name) {
     include_dirs = [ root_gen_dir ]
-    visibility = target_visibility
   }
 
   root_namespace = invoker.root_namespace
-
-  compiler_root = "//tools/json_schema_compiler"
-  compiler_script = "$compiler_root/compiler.py"
-  compiler_sources = [
-    "$compiler_root/cc_generator.py",
-    "$compiler_root/code.py",
-    "$compiler_root/compiler.py",
-    "$compiler_root/cpp_bundle_generator.py",
-    "$compiler_root/cpp_generator.py",
-    "$compiler_root/cpp_type_generator.py",
-    "$compiler_root/cpp_util.py",
-    "$compiler_root/h_generator.py",
-    "$compiler_root/idl_schema.py",
-    "$compiler_root/model.py",
-    "$compiler_root/util_cc_helper.py",
-  ]
 
   if (schemas) {
     schema_generator_name = target_name + "_schema_generator"
@@ -126,11 +120,6 @@ template("json_schema_api") {
         "--generator=cpp",
         "--include-rules=$schema_include_rules",
       ]
-
-      if (defined(invoker.visibility)) {
-        # If visibility is restricted, add our own target to it.
-        visibility = invoker.visibility + target_visibility
-      }
     }
   }
 
@@ -247,9 +236,6 @@ template("json_schema_api") {
 
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
-    }
-    if (defined(invoker.output_name)) {
-      output_name = invoker.output_name
     }
   }
 }
