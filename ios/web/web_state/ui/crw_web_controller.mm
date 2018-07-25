@@ -1290,9 +1290,6 @@ GURL URLEscapedForHistory(const GURL& url) {
     return;
 
   base::string16 newTitle = base::SysNSStringToUTF16(title);
-  if (item->GetTitle() == newTitle)
-    return;
-
   item->SetTitle(newTitle);
   // TODO(crbug.com/546218): See if this can be removed; it's not clear that
   // other platforms send this (tab sync triggers need to be compared against
