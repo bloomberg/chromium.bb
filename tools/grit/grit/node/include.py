@@ -116,6 +116,7 @@ class IncludeNode(base.Node):
     allow_external_script = self.attrs['allowexternalscript'] == 'true'
     return grit.format.html_inline.GetResourceFilenames(
          self.ToRealPath(self.GetInputPath()),
+         self,
          allow_external_script=allow_external_script)
 
   def IsResourceMapSource(self):
