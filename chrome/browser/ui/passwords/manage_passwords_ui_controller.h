@@ -172,6 +172,11 @@ class ManagePasswordsUIController
            bubble_status_ == SHOULD_POP_UP_AFTER_REAUTH;
   }
 
+  // Returns whether the bubble is currently open.
+  bool IsShowingBubbleForTest() const {
+    return bubble_status_ != BubbleStatus::NOT_SHOWN;
+  }
+
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
