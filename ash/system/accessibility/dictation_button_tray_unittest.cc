@@ -59,10 +59,6 @@ class DictationButtonTrayTest : public AshTestBase {
   ~DictationButtonTrayTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kUseFirstDisplayAsInternal);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableExperimentalAccessibilityFeatures);
     AshTestBase::SetUp();
   }
 

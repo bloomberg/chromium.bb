@@ -42,8 +42,6 @@ class SelectToSpeakTrayTest : public AshTestBase {
   ~SelectToSpeakTrayTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableExperimentalAccessibilityFeatures);
     AshTestBase::SetUp();
     Shell::Get()->accessibility_controller()->SetSelectToSpeakEnabled(true);
   }
