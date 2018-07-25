@@ -59,7 +59,7 @@ enum SynchronousPolicy : uint8_t {
   kRequestAsynchronously
 };
 
-// Used by the DocumentThreadableLoader to turn off part of the CORS handling
+// Used by the ThreadableLoader to turn off part of the CORS handling
 // logic in the ResourceFetcher to use its own CORS handling logic.
 enum CORSHandlingByResourceFetcher {
   kDisableCORSHandlingByResourceFetcher,
@@ -102,7 +102,7 @@ struct ResourceLoaderOptions {
 
   // When set to kDisableCORSHandlingByResourceFetcher, the ResourceFetcher
   // suppresses part of its CORS handling logic.
-  // Used by DocumentThreadableLoader which does CORS handling by itself.
+  // Used by ThreadableLoader which does CORS handling by itself.
   CORSHandlingByResourceFetcher cors_handling_by_resource_fetcher;
 
   // Corresponds to the CORS flag in the Fetch spec.

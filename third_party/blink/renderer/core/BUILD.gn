@@ -1983,7 +1983,6 @@ jumbo_source_set("unit_tests") {
     "loader/base_fetch_context_test.cc",
     "loader/document_load_timing_test.cc",
     "loader/document_loader_test.cc",
-    "loader/document_threadable_loader_test.cc",
     "loader/frame_fetch_context_test.cc",
     "loader/idleness_detector_test.cc",
     "loader/interactive_detector_test.cc",

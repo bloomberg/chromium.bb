@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class DocumentThreadableLoader;
+class ThreadableLoader;
 class WebAssociatedURLLoaderClient;
 class Document;
 
@@ -57,10 +57,10 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
 
-  // An adapter which converts the DocumentThreadableLoaderClient method
+  // An adapter which converts the hreadableLoaderClient method
   // calls into the WebURLLoaderClient method calls.
   std::unique_ptr<ClientAdapter> client_adapter_;
-  Persistent<DocumentThreadableLoader> loader_;
+  Persistent<ThreadableLoader> loader_;
 
   // A ContextLifecycleObserver for cancelling |m_loader| when the Document
   // is detached.

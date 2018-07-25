@@ -127,11 +127,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
-#include "third_party/blink/renderer/core/loader/document_threadable_loader_client.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
-#include "third_party/blink/renderer/core/loader/threadable_loader.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -10065,21 +10061,6 @@ TEST_F(WebFrameTest, FrameWidgetTest) {
 
   helper.Reset();
 }
-
-class MockDocumentThreadableLoaderClient
-    : public DocumentThreadableLoaderClient {
- public:
-  MockDocumentThreadableLoaderClient() : failed_(false) {}
-  ~MockDocumentThreadableLoaderClient() override = default;
-
-  // DocumentThreadableLoaderClient:
-  void DidFail(const ResourceError&) override { failed_ = true; }
-
-  void Reset() { failed_ = false; }
-  bool Failed() { return failed_; }
-
-  bool failed_;
-};
 
 TEST_F(WebFrameTest, DetachRemoteFrame) {
   FrameTestHelpers::WebViewHelper helper;

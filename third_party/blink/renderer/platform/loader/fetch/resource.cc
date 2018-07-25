@@ -873,19 +873,19 @@ bool Resource::CanReuse(
     case network::mojom::FetchRequestMode::kCORS:
     case network::mojom::FetchRequestMode::kSameOrigin:
     case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
-      // We have two separate CORS handling logics in DocumentThreadableLoader
+      // We have two separate CORS handling logics in ThreadableLoader
       // and ResourceLoader and sharing resources is difficult when they are
       // handled differently.
       if (options_.cors_handling_by_resource_fetcher !=
           new_options.cors_handling_by_resource_fetcher) {
-        // If the existing one is handled in DocumentThreadableLoader and the
+        // If the existing one is handled in ThreadableLoader and the
         // new one is handled in ResourceLoader, reusing the existing one will
         // lead to CORS violations.
         if (!options_.cors_handling_by_resource_fetcher)
           return false;
 
         // Otherwise (i.e., if the existing one is handled in ResourceLoader
-        // and the new one is handled in DocumentThreadableLoader), reusing
+        // and the new one is handled in ThreadableLoader), reusing
         // the existing one will lead to double check which is harmless.
       }
       break;

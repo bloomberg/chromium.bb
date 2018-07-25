@@ -744,8 +744,7 @@ void FetchManager::Loader::PerformNetworkError(const String& message) {
 }
 
 void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
-  // CORS preflight fetch procedure is implemented inside
-  // DocumentThreadableLoader.
+  // CORS preflight fetch procedure is implemented inside ThreadableLoader.
 
   // "1. Let |HTTPRequest| be a copy of |request|, except that |HTTPRequest|'s
   //  body is a tee of |request|'s body."
@@ -837,7 +836,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   // |HTTPRequest|'s origin, serialized and utf-8 encoded, to |HTTPRequest|'s
   // header list."
   // We set Origin header in updateRequestForAccessControl() called from
-  // DocumentThreadableLoader::makeCrossOriginAccessRequest
+  // ThreadableLoader::makeCrossOriginAccessRequest
 
   // "5. Let |credentials flag| be set if either |HTTPRequest|'s credentials
   // mode is |include|, or |HTTPRequest|'s credentials mode is |same-origin|

@@ -205,7 +205,7 @@ void RawResource::ResponseReceived(
   if (response.WasFallbackRequiredByServiceWorker()) {
     // The ServiceWorker asked us to re-fetch the request. This resource must
     // not be reused.
-    // Note: This logic is needed here because DocumentThreadableLoader handles
+    // Note: This logic is needed here because ThreadableLoader handles
     // CORS independently from ResourceLoader. Fix it.
     if (IsMainThread())
       GetMemoryCache()->Remove(this);
