@@ -46,7 +46,9 @@ ContextResult RasterInProcessContext::Initialize(
     const SharedMemoryLimits& memory_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
-    GpuChannelManagerDelegate* gpu_channel_manager_delegate) {
+    GpuChannelManagerDelegate* gpu_channel_manager_delegate,
+    gpu::raster::GrShaderCache* gr_shader_cache,
+    GpuProcessActivityFlags* activity_flags) {
   DCHECK(attribs.enable_raster_interface);
   if (!attribs.enable_raster_interface) {
     return ContextResult::kFatalFailure;
@@ -62,7 +64,8 @@ ContextResult RasterInProcessContext::Initialize(
   auto result = command_buffer_->Initialize(
       nullptr /* surface */, true /* is_offscreen */, kNullSurfaceHandle,
       attribs, nullptr /* share_command_buffer */, gpu_memory_buffer_manager,
-      image_factory, gpu_channel_manager_delegate, client_task_runner_);
+      image_factory, gpu_channel_manager_delegate, client_task_runner_,
+      gr_shader_cache, activity_flags);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;

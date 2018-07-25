@@ -6,8 +6,10 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
@@ -40,15 +42,28 @@ RasterDecoderContextState::~RasterDecoderContextState() {
 
 void RasterDecoderContextState::InitializeGrContext(
     const GpuDriverBugWorkarounds& workarounds,
-    GrContextOptions::PersistentCache* cache) {
+    GrContextOptions::PersistentCache* cache,
+    GpuProcessActivityFlags* activity_flags) {
   DCHECK(context->IsCurrent(surface.get()));
 
-  sk_sp<const GrGLInterface> interface(
+  sk_sp<GrGLInterface> interface(
       gl::init::CreateGrGLInterface(*context->GetVersionInfo()));
   if (!interface) {
     LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                   "failed.";
     return;
+  }
+
+  if (activity_flags && cache) {
+    // |activity_flags| is safe to capture here since it must outlive the
+    // this context state.
+    interface->fFunctions.fProgramBinary =
+        [activity_flags](GrGLuint program, GrGLenum binaryFormat, void* binary,
+                         GrGLsizei length) {
+          GpuProcessActivityFlags::ScopedSetFlag scoped_set_flag(
+              activity_flags, ActivityFlagsBase::FLAG_LOADING_PROGRAM_BINARY);
+          glProgramBinary(program, binaryFormat, binary, length);
+        };
   }
 
   // If you make any changes to the GrContext::Options here that could

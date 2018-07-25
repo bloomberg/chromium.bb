@@ -40,7 +40,7 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
         /*service=*/nullptr, attributes, SharedMemoryLimits(),
         gpu_memory_buffer_manager_.get(),
         gpu_memory_buffer_factory_->AsImageFactory(),
-        /*gpu_channel_manager_delegate=*/nullptr);
+        /*gpu_channel_manager_delegate=*/nullptr, nullptr, nullptr);
     DCHECK_EQ(result, ContextResult::kSuccess);
     return context;
   }

@@ -57,6 +57,7 @@ class Size;
 
 namespace gpu {
 class GpuChannelManagerDelegate;
+class GpuProcessActivityFlags;
 class CommandBufferTaskExecutor;
 class GpuMemoryBufferManager;
 class ImageFactory;
@@ -65,6 +66,10 @@ class SyncPointOrderData;
 class TransferBufferManager;
 struct ContextCreationAttribs;
 struct SwapBuffersCompleteParams;
+
+namespace raster {
+class GrShaderCache;
+}
 
 // This class provides a thread-safe interface to the global GPU service (for
 // example GPU thread) when being run in single process mode.
@@ -95,7 +100,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
       GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      gpu::raster::GrShaderCache* gr_shader_cache,
+      GpuProcessActivityFlags* activity_flags);
 
   // CommandBuffer implementation:
   State GetLastState() override;
@@ -199,19 +206,25 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* share_command_buffer;
     ImageFactory* image_factory;
+    gpu::raster::GrShaderCache* gr_shader_cache;
+    GpuProcessActivityFlags* activity_flags;
 
     InitializeOnGpuThreadParams(bool is_offscreen,
                                 SurfaceHandle window,
                                 const ContextCreationAttribs& attribs,
                                 Capabilities* capabilities,
                                 InProcessCommandBuffer* share_command_buffer,
-                                ImageFactory* image_factory)
+                                ImageFactory* image_factory,
+                                gpu::raster::GrShaderCache* gr_shader_cache,
+                                GpuProcessActivityFlags* activity_flags)
         : is_offscreen(is_offscreen),
           window(window),
           attribs(attribs),
           capabilities(capabilities),
           share_command_buffer(share_command_buffer),
-          image_factory(image_factory) {}
+          image_factory(image_factory),
+          gr_shader_cache(gr_shader_cache),
+          activity_flags(activity_flags) {}
   };
 
   gpu::ContextResult InitializeOnGpuThread(
@@ -261,6 +274,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // creation):
   bool waiting_for_sync_point_ = false;
   bool use_virtualized_gl_context_ = false;
+  raster::GrShaderCache* gr_shader_cache_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;

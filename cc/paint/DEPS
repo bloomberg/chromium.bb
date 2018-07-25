@@ -6,4 +6,7 @@ specific_include_rules = {
   "transfer_cache_fuzzer.cc": [
     "+components/viz/test",
   ],
+  "oop_pixeltest.cc": [
+    "+gpu/command_buffer",
+  ],
 }
