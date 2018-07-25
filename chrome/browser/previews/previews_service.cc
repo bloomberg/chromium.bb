@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
@@ -94,7 +95,8 @@ blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews() {
 
 }  // namespace
 
-PreviewsService::PreviewsService() {
+PreviewsService::PreviewsService()
+    : previews_lite_page_decider_(std::make_unique<PreviewsLitePageDecider>()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

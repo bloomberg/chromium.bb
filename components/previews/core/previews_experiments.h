@@ -98,6 +98,7 @@ bool IsOfflinePreviewsEnabled();
 bool IsClientLoFiEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
+bool IsLitePageServerPreviewsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();

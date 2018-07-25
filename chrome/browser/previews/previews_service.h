@@ -25,6 +25,8 @@ class PreviewsDeciderImpl;
 class PreviewsUIService;
 }
 
+class PreviewsLitePageDecider;
+
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
 class PreviewsService : public KeyedService {
@@ -43,13 +45,22 @@ class PreviewsService : public KeyedService {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const base::FilePath& profile_path);
 
+  // The previews UI thread service.
   previews::PreviewsUIService* previews_ui_service() {
     return previews_ui_service_.get();
+  }
+
+  // The server lite page preview decider.
+  PreviewsLitePageDecider* previews_lite_page_decider() {
+    return previews_lite_page_decider_.get();
   }
 
  private:
   // The previews UI thread service.
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
+
+  // The server lite page preview decider.
+  std::unique_ptr<PreviewsLitePageDecider> previews_lite_page_decider_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsService);
 };

@@ -178,6 +178,10 @@ bool IsResourceLoadingHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kResourceLoadingHints);
 }
 
+bool IsLitePageServerPreviewsEnabled() {
+  return base::FeatureList::IsEnabled(features::kLitePageServerPreviews);
+}
+
 int OfflinePreviewsVersion() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
 }
