@@ -218,8 +218,6 @@ TEST_F(DrawingBufferTest, VerifyDestructionCompleteAfterAllResourceReleased) {
   viz::TransferableResource resource3;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
 
-  IntSize initial_size(kInitialWidth, kInitialHeight);
-
   // Produce resources.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_STENCIL_BUFFER_BIT);
@@ -521,7 +519,6 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   // Request a resource. An image should already be created. Everything works
   // as expected.
   EXPECT_CALL(*gl_, BindTexImage2DMock(_)).Times(1);
-  IntSize initial_size(kInitialWidth, kInitialHeight);
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
                                                            &release_callback1));

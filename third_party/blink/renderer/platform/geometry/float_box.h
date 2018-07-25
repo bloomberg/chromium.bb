@@ -42,12 +42,18 @@ class PLATFORM_EXPORT FloatBox {
   DISALLOW_NEW();
 
  public:
-  FloatBox() : x_(0), y_(0), z_(0), width_(0), height_(0), depth_(0) {}
+  constexpr FloatBox()
+      : x_(0), y_(0), z_(0), width_(0), height_(0), depth_(0) {}
 
-  FloatBox(float x, float y, float z, float width, float height, float depth)
+  constexpr FloatBox(float x,
+                     float y,
+                     float z,
+                     float width,
+                     float height,
+                     float depth)
       : x_(x), y_(y), z_(z), width_(width), height_(height), depth_(depth) {}
 
-  FloatBox(const FloatBox& box)
+  constexpr FloatBox(const FloatBox& box)
       : x_(box.X()),
         y_(box.Y()),
         z_(box.Z()),
@@ -102,20 +108,20 @@ class PLATFORM_EXPORT FloatBox {
     ExpandTo(box);
   }
 
-  bool IsEmpty() const {
+  constexpr bool IsEmpty() const {
     return (width_ <= 0 && height_ <= 0) || (width_ <= 0 && depth_ <= 0) ||
            (height_ <= 0 && depth_ <= 0);
   }
 
-  float Right() const { return x_ + width_; }
-  float Bottom() const { return y_ + height_; }
-  float front() const { return z_ + depth_; }
-  float X() const { return x_; }
-  float Y() const { return y_; }
-  float Z() const { return z_; }
-  float Width() const { return width_; }
-  float Height() const { return height_; }
-  float Depth() const { return depth_; }
+  constexpr float Right() const { return x_ + width_; }
+  constexpr float Bottom() const { return y_ + height_; }
+  constexpr float front() const { return z_ + depth_; }
+  constexpr float X() const { return x_; }
+  constexpr float Y() const { return y_; }
+  constexpr float Z() const { return z_; }
+  constexpr float Width() const { return width_; }
+  constexpr float Height() const { return height_; }
+  constexpr float Depth() const { return depth_; }
 
   String ToString() const;
 
@@ -128,13 +134,13 @@ class PLATFORM_EXPORT FloatBox {
   float depth_;
 };
 
-inline bool operator==(const FloatBox& a, const FloatBox& b) {
+constexpr bool operator==(const FloatBox& a, const FloatBox& b) {
   return a.X() == b.X() && a.Y() == b.Y() && a.Z() == b.Z() &&
          a.Width() == b.Width() && a.Height() == b.Height() &&
          a.Depth() == b.Depth();
 }
 
-inline bool operator!=(const FloatBox& a, const FloatBox& b) {
+constexpr bool operator!=(const FloatBox& a, const FloatBox& b) {
   return !(a == b);
 }
 

@@ -19,15 +19,15 @@ class PLATFORM_EXPORT FloatRectOutsets {
   STACK_ALLOCATED();
 
  public:
-  FloatRectOutsets() : top_(0), right_(0), bottom_(0), left_(0) {}
+  constexpr FloatRectOutsets() : top_(0), right_(0), bottom_(0), left_(0) {}
 
-  FloatRectOutsets(float top, float right, float bottom, float left)
+  constexpr FloatRectOutsets(float top, float right, float bottom, float left)
       : top_(top), right_(right), bottom_(bottom), left_(left) {}
 
-  float Top() const { return top_; }
-  float Right() const { return right_; }
-  float Bottom() const { return bottom_; }
-  float Left() const { return left_; }
+  constexpr float Top() const { return top_; }
+  constexpr float Right() const { return right_; }
+  constexpr float Bottom() const { return bottom_; }
+  constexpr float Left() const { return left_; }
 
   void SetTop(float top) { top_ = top; }
   void SetRight(float right) { right_ = right; }

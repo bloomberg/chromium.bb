@@ -102,7 +102,6 @@ static IntRect BackgroundRect(const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
     return IntRect();
 
-  LayoutRect rect;
   const LayoutBox& box = ToLayoutBox(layout_object);
   return PixelSnappedIntRect(box.BackgroundRect(kBackgroundClipRect));
 }

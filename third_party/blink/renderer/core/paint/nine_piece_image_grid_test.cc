@@ -93,7 +93,6 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_TopLeftDrawable) {
 
   IntSize image_size(100, 100);
   IntRect border_image_area(0, 0, 100, 100);
-  IntRectOutsets border_widths(10, 10, 10, 10);
 
   const struct {
     IntRectOutsets border_widths;

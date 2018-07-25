@@ -20,27 +20,27 @@ class PLATFORM_EXPORT DoublePoint {
   DISALLOW_NEW();
 
  public:
-  DoublePoint() : x_(0), y_(0) {}
-  DoublePoint(double x, double y) : x_(x), y_(y) {}
-  DoublePoint(const IntPoint& p) : x_(p.X()), y_(p.Y()) {}
-  DoublePoint(const FloatPoint& p) : x_(p.X()), y_(p.Y()) {}
+  constexpr DoublePoint() : x_(0), y_(0) {}
+  constexpr DoublePoint(double x, double y) : x_(x), y_(y) {}
+  constexpr DoublePoint(const IntPoint& p) : x_(p.X()), y_(p.Y()) {}
+  constexpr DoublePoint(const FloatPoint& p) : x_(p.X()), y_(p.Y()) {}
   explicit DoublePoint(const LayoutPoint&);
 
-  explicit DoublePoint(const IntSize& size)
+  constexpr explicit DoublePoint(const IntSize& size)
       : x_(size.Width()), y_(size.Height()) {}
 
   explicit DoublePoint(const FloatSize&);
 
-  explicit DoublePoint(const DoubleSize& size)
+  constexpr explicit DoublePoint(const DoubleSize& size)
       : x_(size.Width()), y_(size.Height()) {}
 
-  static DoublePoint Zero() { return DoublePoint(); }
+  static constexpr DoublePoint Zero() { return DoublePoint(); }
 
   DoublePoint ExpandedTo(const DoublePoint&) const;
   DoublePoint ShrunkTo(const DoublePoint&) const;
 
-  double X() const { return x_; }
-  double Y() const { return y_; }
+  constexpr double X() const { return x_; }
+  constexpr double Y() const { return y_; }
   void SetX(double x) { x_ = x; }
   void SetY(double y) { y_ = y; }
 
@@ -74,12 +74,12 @@ class PLATFORM_EXPORT DoublePoint {
   double x_, y_;
 };
 
-inline bool operator==(const DoublePoint& a, const DoublePoint& b) {
+constexpr bool operator==(const DoublePoint& a, const DoublePoint& b) {
   return a.X() == b.X() && a.Y() == b.Y();
 }
 
-inline bool operator!=(const DoublePoint& a, const DoublePoint& b) {
-  return a.X() != b.X() || a.Y() != b.Y();
+constexpr bool operator!=(const DoublePoint& a, const DoublePoint& b) {
+  return !(a == b);
 }
 
 inline DoublePoint& operator+=(DoublePoint& a, const DoubleSize& b) {
@@ -94,19 +94,19 @@ inline DoublePoint& operator-=(DoublePoint& a, const DoubleSize& b) {
   return a;
 }
 
-inline DoublePoint operator+(const DoublePoint& a, const DoubleSize& b) {
+constexpr DoublePoint operator+(const DoublePoint& a, const DoubleSize& b) {
   return DoublePoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
-inline DoubleSize operator-(const DoublePoint& a, const DoublePoint& b) {
+constexpr DoubleSize operator-(const DoublePoint& a, const DoublePoint& b) {
   return DoubleSize(a.X() - b.X(), a.Y() - b.Y());
 }
 
-inline DoublePoint operator-(const DoublePoint& a) {
+constexpr DoublePoint operator-(const DoublePoint& a) {
   return DoublePoint(-a.X(), -a.Y());
 }
 
-inline DoublePoint operator-(const DoublePoint& a, const DoubleSize& b) {
+constexpr DoublePoint operator-(const DoublePoint& a, const DoubleSize& b) {
   return DoublePoint(a.X() - b.Width(), a.Y() - b.Height());
 }
 
@@ -122,11 +122,11 @@ inline IntPoint FlooredIntPoint(const DoublePoint& p) {
   return IntPoint(clampTo<int>(floor(p.X())), clampTo<int>(floor(p.Y())));
 }
 
-inline FloatPoint ToFloatPoint(const DoublePoint& a) {
+constexpr FloatPoint ToFloatPoint(const DoublePoint& a) {
   return FloatPoint(a.X(), a.Y());
 }
 
-inline DoubleSize ToDoubleSize(const DoublePoint& a) {
+constexpr DoubleSize ToDoubleSize(const DoublePoint& a) {
   return DoubleSize(a.X(), a.Y());
 }
 

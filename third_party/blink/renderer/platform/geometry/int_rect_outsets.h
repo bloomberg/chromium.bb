@@ -44,22 +44,24 @@ class PLATFORM_EXPORT IntRectOutsets {
   DISALLOW_NEW();
 
  public:
-  IntRectOutsets() : top_(0), right_(0), bottom_(0), left_(0) {}
+  constexpr IntRectOutsets() : top_(0), right_(0), bottom_(0), left_(0) {}
 
-  IntRectOutsets(int top, int right, int bottom, int left)
+  constexpr IntRectOutsets(int top, int right, int bottom, int left)
       : top_(top), right_(right), bottom_(bottom), left_(left) {}
 
-  int Top() const { return top_; }
-  int Right() const { return right_; }
-  int Bottom() const { return bottom_; }
-  int Left() const { return left_; }
+  constexpr int Top() const { return top_; }
+  constexpr int Right() const { return right_; }
+  constexpr int Bottom() const { return bottom_; }
+  constexpr int Left() const { return left_; }
 
   void SetTop(int top) { top_ = top; }
   void SetRight(int right) { right_ = right; }
   void SetBottom(int bottom) { bottom_ = bottom; }
   void SetLeft(int left) { left_ = left; }
 
-  bool IsZero() const { return !Left() && !Right() && !Top() && !Bottom(); }
+  constexpr bool IsZero() const {
+    return !Left() && !Right() && !Top() && !Bottom();
+  }
 
  private:
   int top_;

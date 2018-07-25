@@ -49,11 +49,11 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   DISALLOW_NEW();
 
  public:
-  LayoutRectOutsets() = default;
-  LayoutRectOutsets(LayoutUnit top,
-                    LayoutUnit right,
-                    LayoutUnit bottom,
-                    LayoutUnit left)
+  constexpr LayoutRectOutsets() = default;
+  constexpr LayoutRectOutsets(LayoutUnit top,
+                              LayoutUnit right,
+                              LayoutUnit bottom,
+                              LayoutUnit left)
       : top_(top), right_(right), bottom_(bottom), left_(left) {}
   LayoutRectOutsets(int top, int right, int bottom, int left)
       : top_(LayoutUnit(top)),
@@ -73,10 +73,10 @@ class PLATFORM_EXPORT LayoutRectOutsets {
         bottom_(LayoutUnit(outsets.Bottom())),
         left_(LayoutUnit(outsets.Left())) {}
 
-  LayoutUnit Top() const { return top_; }
-  LayoutUnit Right() const { return right_; }
-  LayoutUnit Bottom() const { return bottom_; }
-  LayoutUnit Left() const { return left_; }
+  constexpr LayoutUnit Top() const { return top_; }
+  constexpr LayoutUnit Right() const { return right_; }
+  constexpr LayoutUnit Bottom() const { return bottom_; }
+  constexpr LayoutUnit Left() const { return left_; }
 
   void SetTop(LayoutUnit value) { top_ = value; }
   void SetRight(LayoutUnit value) { right_ = value; }
@@ -84,7 +84,9 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   void SetLeft(LayoutUnit value) { left_ = value; }
 
   LayoutSize Size() const { return LayoutSize(left_ + right_, top_ + bottom_); }
-  bool IsZero() const { return !top_ && !right_ && !bottom_ && !left_; }
+  constexpr bool IsZero() const {
+    return !top_ && !right_ && !bottom_ && !left_;
+  }
 
   void ClampNegativeToZero();
 
@@ -92,7 +94,7 @@ class PLATFORM_EXPORT LayoutRectOutsets {
 
   void FlipHorizontally() { std::swap(left_, right_); }
 
-  bool operator==(const LayoutRectOutsets other) const {
+  constexpr bool operator==(const LayoutRectOutsets other) const {
     return Top() == other.Top() && Right() == other.Right() &&
            Bottom() == other.Bottom() && Left() == other.Left();
   }

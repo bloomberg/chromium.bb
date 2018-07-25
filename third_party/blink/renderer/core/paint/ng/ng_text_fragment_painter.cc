@@ -275,9 +275,6 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   if (!ShouldPaintTextFragment(text_fragment, style))
     return;
 
-  NGPhysicalSize size_;
-  NGPhysicalOffset offset_;
-
   // We round the y-axis to ensure consistent line heights.
   LayoutPoint adjusted_paint_offset =
       LayoutPoint(paint_offset.X(), LayoutUnit(paint_offset.Y().Round()));

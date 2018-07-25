@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGSize CGSize;
@@ -59,8 +60,9 @@ class PLATFORM_EXPORT FloatSize {
   DISALLOW_NEW();
 
  public:
-  FloatSize() : width_(0), height_(0) {}
-  FloatSize(float width, float height) : width_(width), height_(height) {}
+  constexpr FloatSize() : width_(0), height_(0) {}
+  constexpr FloatSize(float width, float height)
+      : width_(width), height_(height) {}
   explicit FloatSize(const IntSize& size)
       : width_(size.Width()), height_(size.Height()) {}
   FloatSize(const SkSize&);
@@ -68,13 +70,13 @@ class PLATFORM_EXPORT FloatSize {
 
   static FloatSize NarrowPrecision(double width, double height);
 
-  float Width() const { return width_; }
-  float Height() const { return height_; }
+  constexpr float Width() const { return width_; }
+  constexpr float Height() const { return height_; }
 
   void SetWidth(float width) { width_ = width; }
   void SetHeight(float height) { height_ = height; }
 
-  bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
+  constexpr bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
   bool IsZero() const {
     return fabs(width_) < std::numeric_limits<float>::epsilon() &&
            fabs(height_) < std::numeric_limits<float>::epsilon();
@@ -153,38 +155,38 @@ inline FloatSize& operator+=(FloatSize& a, const FloatSize& b) {
   return a;
 }
 
-inline FloatSize& operator-=(FloatSize& a, const FloatSize& b) {
+constexpr FloatSize& operator-=(FloatSize& a, const FloatSize& b) {
   a.SetWidth(a.Width() - b.Width());
   a.SetHeight(a.Height() - b.Height());
   return a;
 }
 
-inline FloatSize operator+(const FloatSize& a, const FloatSize& b) {
+constexpr FloatSize operator+(const FloatSize& a, const FloatSize& b) {
   return FloatSize(a.Width() + b.Width(), a.Height() + b.Height());
 }
 
-inline FloatSize operator-(const FloatSize& a, const FloatSize& b) {
+constexpr FloatSize operator-(const FloatSize& a, const FloatSize& b) {
   return FloatSize(a.Width() - b.Width(), a.Height() - b.Height());
 }
 
-inline FloatSize operator-(const FloatSize& size) {
+constexpr FloatSize operator-(const FloatSize& size) {
   return FloatSize(-size.Width(), -size.Height());
 }
 
-inline FloatSize operator*(const FloatSize& a, const float b) {
+constexpr FloatSize operator*(const FloatSize& a, const float b) {
   return FloatSize(a.Width() * b, a.Height() * b);
 }
 
-inline FloatSize operator*(const float a, const FloatSize& b) {
+constexpr FloatSize operator*(const float a, const FloatSize& b) {
   return FloatSize(a * b.Width(), a * b.Height());
 }
 
-inline bool operator==(const FloatSize& a, const FloatSize& b) {
+constexpr bool operator==(const FloatSize& a, const FloatSize& b) {
   return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
-inline bool operator!=(const FloatSize& a, const FloatSize& b) {
-  return a.Width() != b.Width() || a.Height() != b.Height();
+constexpr bool operator!=(const FloatSize& a, const FloatSize& b) {
+  return !(a == b);
 }
 
 inline IntSize RoundedIntSize(const FloatSize& p) {

@@ -62,10 +62,10 @@ class PLATFORM_EXPORT FloatRect {
  public:
   enum ContainsMode { kInsideOrOnStroke, kInsideButNotOnStroke };
 
-  FloatRect() = default;
-  FloatRect(const FloatPoint& location, const FloatSize& size)
+  constexpr FloatRect() = default;
+  constexpr FloatRect(const FloatPoint& location, const FloatSize& size)
       : location_(location), size_(size) {}
-  FloatRect(float x, float y, float width, float height)
+  constexpr FloatRect(float x, float y, float width, float height)
       : location_(FloatPoint(x, y)), size_(FloatSize(width, height)) {}
   explicit FloatRect(const IntRect&);
   explicit FloatRect(const LayoutRect&);
@@ -76,26 +76,26 @@ class PLATFORM_EXPORT FloatRect {
                                    double width,
                                    double height);
 
-  FloatPoint Location() const { return location_; }
-  FloatSize Size() const { return size_; }
+  constexpr FloatPoint Location() const { return location_; }
+  constexpr FloatSize Size() const { return size_; }
 
   void SetLocation(const FloatPoint& location) { location_ = location; }
   void SetSize(const FloatSize& size) { size_ = size; }
 
-  float X() const { return location_.X(); }
-  float Y() const { return location_.Y(); }
-  float MaxX() const { return X() + Width(); }
-  float MaxY() const { return Y() + Height(); }
-  float Width() const { return size_.Width(); }
-  float Height() const { return size_.Height(); }
+  constexpr float X() const { return location_.X(); }
+  constexpr float Y() const { return location_.Y(); }
+  constexpr float MaxX() const { return X() + Width(); }
+  constexpr float MaxY() const { return Y() + Height(); }
+  constexpr float Width() const { return size_.Width(); }
+  constexpr float Height() const { return size_.Height(); }
 
   void SetX(float x) { location_.SetX(x); }
   void SetY(float y) { location_.SetY(y); }
   void SetWidth(float width) { size_.SetWidth(width); }
   void SetHeight(float height) { size_.SetHeight(height); }
 
-  bool IsEmpty() const { return size_.IsEmpty(); }
-  bool IsZero() const { return size_.IsZero(); }
+  constexpr bool IsEmpty() const { return size_.IsEmpty(); }
+  constexpr bool IsZero() const { return size_.IsZero(); }
   bool IsExpressibleAsIntRect() const;
 
   FloatPoint Center() const {
@@ -235,18 +235,16 @@ inline FloatRect& operator+=(FloatRect& a, const FloatRect& b) {
   return a;
 }
 
-inline FloatRect operator+(const FloatRect& a, const FloatRect& b) {
-  FloatRect c = a;
-  c += b;
-  return c;
+constexpr FloatRect operator+(const FloatRect& a, const FloatRect& b) {
+  return FloatRect(a.Location() + b.Location(), a.Size() + b.Size());
 }
 
-inline bool operator==(const FloatRect& a, const FloatRect& b) {
+constexpr bool operator==(const FloatRect& a, const FloatRect& b) {
   return a.Location() == b.Location() && a.Size() == b.Size();
 }
 
-inline bool operator!=(const FloatRect& a, const FloatRect& b) {
-  return a.Location() != b.Location() || a.Size() != b.Size();
+constexpr bool operator!=(const FloatRect& a, const FloatRect& b) {
+  return !(a == b);
 }
 
 // Returns a IntRect containing the given FloatRect.

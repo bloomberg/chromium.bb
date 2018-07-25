@@ -18,7 +18,6 @@ TEST(LayoutSizeTest, FitToAspectRatioDoesntOverflow) {
                 .FitToAspectRatio(aspect_ratio, kAspectRatioFitShrink)
                 .ToString());
 
-  LayoutSize size(1000, 2000);
   EXPECT_EQ("1000x1000",
             LayoutSize(1000, 2000)
                 .FitToAspectRatio(aspect_ratio, kAspectRatioFitShrink)

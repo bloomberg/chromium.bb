@@ -467,7 +467,6 @@ TEST_F(LayoutGeometryMapTest, ColumnTest) {
 
   LayoutGeometryMap rgm;
   rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "A"), nullptr);
-  FloatPoint point;
   FloatRect rect(0.0f, 0.0f, 5.0f, 3.0f);
 
   EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)),

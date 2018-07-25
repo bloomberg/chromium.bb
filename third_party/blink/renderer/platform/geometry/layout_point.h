@@ -44,21 +44,21 @@ class PLATFORM_EXPORT LayoutPoint {
   DISALLOW_NEW();
 
  public:
-  LayoutPoint() = default;
-  LayoutPoint(LayoutUnit x, LayoutUnit y) : x_(x), y_(y) {}
+  constexpr LayoutPoint() = default;
+  constexpr LayoutPoint(LayoutUnit x, LayoutUnit y) : x_(x), y_(y) {}
   LayoutPoint(int x, int y) : x_(LayoutUnit(x)), y_(LayoutUnit(y)) {}
   LayoutPoint(const IntPoint& point) : x_(point.X()), y_(point.Y()) {}
   explicit LayoutPoint(const FloatPoint& point)
       : x_(point.X()), y_(point.Y()) {}
   explicit LayoutPoint(const DoublePoint& point)
       : x_(point.X()), y_(point.Y()) {}
-  explicit LayoutPoint(const LayoutSize& size)
+  constexpr explicit LayoutPoint(const LayoutSize& size)
       : x_(size.Width()), y_(size.Height()) {}
 
-  static LayoutPoint Zero() { return LayoutPoint(); }
+  static constexpr LayoutPoint Zero() { return LayoutPoint(); }
 
-  LayoutUnit X() const { return x_; }
-  LayoutUnit Y() const { return y_; }
+  constexpr LayoutUnit X() const { return x_; }
+  constexpr LayoutUnit Y() const { return y_; }
 
   void SetX(LayoutUnit x) { x_ = x; }
   void SetY(LayoutUnit y) { y_ = y; }
@@ -148,23 +148,24 @@ inline LayoutPoint operator-(const LayoutPoint& point) {
   return LayoutPoint(-point.X(), -point.Y());
 }
 
-ALWAYS_INLINE bool operator==(const LayoutPoint& a, const LayoutPoint& b) {
+constexpr ALWAYS_INLINE bool operator==(const LayoutPoint& a,
+                                        const LayoutPoint& b) {
   return a.X() == b.X() && a.Y() == b.Y();
 }
 
-inline bool operator!=(const LayoutPoint& a, const LayoutPoint& b) {
-  return a.X() != b.X() || a.Y() != b.Y();
+constexpr bool operator!=(const LayoutPoint& a, const LayoutPoint& b) {
+  return !(a == b);
 }
 
-inline LayoutPoint ToPoint(const LayoutSize& size) {
+constexpr inline LayoutPoint ToPoint(const LayoutSize& size) {
   return LayoutPoint(size.Width(), size.Height());
 }
 
-inline LayoutPoint ToLayoutPoint(const LayoutSize& p) {
+constexpr inline LayoutPoint ToLayoutPoint(const LayoutSize& p) {
   return LayoutPoint(p.Width(), p.Height());
 }
 
-inline LayoutSize ToSize(const LayoutPoint& a) {
+constexpr inline LayoutSize ToSize(const LayoutPoint& a) {
   return LayoutSize(a.X(), a.Y());
 }
 
