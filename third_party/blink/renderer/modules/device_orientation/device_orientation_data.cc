@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 
-#include "services/device/public/cpp/generic_sensor/orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_init.h"
 
 namespace blink {
@@ -54,20 +53,6 @@ DeviceOrientationData* DeviceOrientationData::Create(
   if (init.hasGamma())
     gamma = init.gamma();
   return DeviceOrientationData::Create(alpha, beta, gamma, init.absolute());
-}
-
-DeviceOrientationData* DeviceOrientationData::Create(
-    const device::OrientationData& data) {
-  base::Optional<double> alpha;
-  base::Optional<double> beta;
-  base::Optional<double> gamma;
-  if (data.has_alpha)
-    alpha = data.alpha;
-  if (data.has_beta)
-    beta = data.beta;
-  if (data.has_gamma)
-    gamma = data.gamma;
-  return DeviceOrientationData::Create(alpha, beta, gamma, data.absolute);
 }
 
 DeviceOrientationData::DeviceOrientationData() : absolute_(false) {}

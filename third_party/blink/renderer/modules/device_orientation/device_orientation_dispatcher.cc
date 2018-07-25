@@ -78,8 +78,8 @@ void DeviceOrientationDispatcher::StopListening() {
 }
 
 void DeviceOrientationDispatcher::DidChangeDeviceOrientation(
-    const device::OrientationData& motion) {
-  last_device_orientation_data_ = DeviceOrientationData::Create(motion);
+    DeviceOrientationData* orientation) {
+  last_device_orientation_data_ = orientation;
   NotifyControllers();
 }
 

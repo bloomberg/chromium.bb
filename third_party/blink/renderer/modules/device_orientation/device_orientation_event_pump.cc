@@ -7,30 +7,28 @@
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
 
 namespace {
 
-bool IsAngleDifferentThreshold(bool has_angle1,
-                               double angle1,
-                               bool has_angle2,
-                               double angle2) {
-  if (has_angle1 != has_angle2)
-    return true;
-
-  return (has_angle1 &&
-          std::fabs(angle1 - angle2) >=
-              blink::DeviceOrientationEventPump::kOrientationThreshold);
+bool IsAngleDifferentThreshold(double angle1, double angle2) {
+  return (std::fabs(angle1 - angle2) >=
+          blink::DeviceOrientationEventPump::kOrientationThreshold);
 }
 
-bool IsSignificantlyDifferent(const device::OrientationData& data1,
-                              const device::OrientationData& data2) {
-  return IsAngleDifferentThreshold(data1.has_alpha, data1.alpha,
-                                   data2.has_alpha, data2.alpha) ||
-         IsAngleDifferentThreshold(data1.has_beta, data1.beta, data2.has_beta,
-                                   data2.beta) ||
-         IsAngleDifferentThreshold(data1.has_gamma, data1.gamma,
-                                   data2.has_gamma, data2.gamma);
+bool IsSignificantlyDifferent(const blink::DeviceOrientationData* data1,
+                              const blink::DeviceOrientationData* data2) {
+  if (data1->CanProvideAlpha() != data2->CanProvideAlpha() ||
+      data1->CanProvideBeta() != data2->CanProvideBeta() ||
+      data1->CanProvideGamma() != data2->CanProvideGamma())
+    return true;
+  return (data1->CanProvideAlpha() &&
+          IsAngleDifferentThreshold(data1->Alpha(), data2->Alpha())) ||
+         (data1->CanProvideBeta() &&
+          IsAngleDifferentThreshold(data1->Beta(), data2->Beta())) ||
+         (data1->CanProvideGamma() &&
+          IsAngleDifferentThreshold(data1->Gamma(), data2->Gamma()));
 }
 
 }  // namespace
@@ -105,15 +103,13 @@ void DeviceOrientationEventPump::SendStopMessage() {
   // data when stopping. If we don't reset here as well, then when starting back
   // up we won't notify DeviceOrientationDispatcher of the orientation, since
   // we think it hasn't changed.
-  data_ = device::OrientationData();
+  data_ = nullptr;
 }
 
 void DeviceOrientationEventPump::FireEvent(TimerBase*) {
-  device::OrientationData data;
-
   DCHECK(listener());
 
-  GetDataFromSharedMemory(&data);
+  DeviceOrientationData* data = GetDataFromSharedMemory();
 
   if (ShouldFireEvent(data)) {
     data_ = data;
@@ -152,60 +148,67 @@ bool DeviceOrientationEventPump::SensorsReadyOrErrored() const {
   return true;
 }
 
-void DeviceOrientationEventPump::GetDataFromSharedMemory(
-    device::OrientationData* data) {
-  data->all_available_sensors_are_active = true;
+DeviceOrientationData* DeviceOrientationEventPump::GetDataFromSharedMemory() {
+  base::Optional<double> alpha;
+  base::Optional<double> beta;
+  base::Optional<double> gamma;
+  bool absolute = false;
 
   if (!absolute_ && relative_orientation_sensor_.SensorReadingCouldBeRead()) {
     // For DeviceOrientation Event, this provides relative orientation data.
-    data->all_available_sensors_are_active =
-        relative_orientation_sensor_.reading.timestamp() != 0.0;
-    if (!data->all_available_sensors_are_active)
-      return;
-    data->alpha = relative_orientation_sensor_.reading.orientation_euler.z;
-    data->beta = relative_orientation_sensor_.reading.orientation_euler.x;
-    data->gamma = relative_orientation_sensor_.reading.orientation_euler.y;
-    data->has_alpha = !std::isnan(
-        relative_orientation_sensor_.reading.orientation_euler.z.value());
-    data->has_beta = !std::isnan(
-        relative_orientation_sensor_.reading.orientation_euler.x.value());
-    data->has_gamma = !std::isnan(
-        relative_orientation_sensor_.reading.orientation_euler.y.value());
-    data->absolute = false;
+    if (relative_orientation_sensor_.reading.timestamp() == 0.0)
+      return nullptr;
+
+    if (!std::isnan(
+            relative_orientation_sensor_.reading.orientation_euler.z.value()))
+      alpha = relative_orientation_sensor_.reading.orientation_euler.z;
+
+    if (!std::isnan(
+            relative_orientation_sensor_.reading.orientation_euler.x.value()))
+      beta = relative_orientation_sensor_.reading.orientation_euler.x;
+
+    if (!std::isnan(
+            relative_orientation_sensor_.reading.orientation_euler.y.value()))
+      gamma = relative_orientation_sensor_.reading.orientation_euler.y;
   } else if (absolute_orientation_sensor_.SensorReadingCouldBeRead()) {
     // For DeviceOrientationAbsolute Event, this provides absolute orientation
     // data.
     //
     // For DeviceOrientation Event, this provides absolute orientation data if
     // relative orientation data is not available.
-    data->all_available_sensors_are_active =
-        absolute_orientation_sensor_.reading.timestamp() != 0.0;
-    if (!data->all_available_sensors_are_active)
-      return;
-    data->alpha = absolute_orientation_sensor_.reading.orientation_euler.z;
-    data->beta = absolute_orientation_sensor_.reading.orientation_euler.x;
-    data->gamma = absolute_orientation_sensor_.reading.orientation_euler.y;
-    data->has_alpha = !std::isnan(
-        absolute_orientation_sensor_.reading.orientation_euler.z.value());
-    data->has_beta = !std::isnan(
-        absolute_orientation_sensor_.reading.orientation_euler.x.value());
-    data->has_gamma = !std::isnan(
-        absolute_orientation_sensor_.reading.orientation_euler.y.value());
-    data->absolute = true;
+    if (absolute_orientation_sensor_.reading.timestamp() == 0.0)
+      return nullptr;
+
+    if (!std::isnan(
+            absolute_orientation_sensor_.reading.orientation_euler.z.value()))
+      alpha = absolute_orientation_sensor_.reading.orientation_euler.z;
+
+    if (!std::isnan(
+            absolute_orientation_sensor_.reading.orientation_euler.x.value()))
+      beta = absolute_orientation_sensor_.reading.orientation_euler.x;
+
+    if (!std::isnan(
+            absolute_orientation_sensor_.reading.orientation_euler.y.value()))
+      gamma = absolute_orientation_sensor_.reading.orientation_euler.y;
+
+    absolute = true;
   } else {
-    data->absolute = absolute_;
+    absolute = absolute_;
   }
+
+  return DeviceOrientationData::Create(alpha, beta, gamma, absolute);
 }
 
 bool DeviceOrientationEventPump::ShouldFireEvent(
-    const device::OrientationData& data) const {
-  if (!data.all_available_sensors_are_active)
+    const DeviceOrientationData* data) const {
+  // |data| is null if not all sensors are active
+  if (!data)
     return false;
 
-  if (!data.has_alpha && !data.has_beta && !data.has_gamma) {
-    // no data can be provided, this is an all-null event.
+  // when the state changes from not having data to having data,
+  // the event should be fired
+  if (!data_)
     return true;
-  }
 
   return IsSignificantlyDifferent(data_, data);
 }

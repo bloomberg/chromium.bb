@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_EVENT_PUMP_H_
 
 #include "base/macros.h"
-#include "services/device/public/cpp/generic_sensor/orientation_data.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_sensor_event_pump.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -44,14 +43,14 @@ class MODULES_EXPORT DeviceOrientationEventPump
   // DeviceSensorEventPump:
   bool SensorsReadyOrErrored() const override;
 
-  void GetDataFromSharedMemory(device::OrientationData* data);
+  DeviceOrientationData* GetDataFromSharedMemory();
 
-  bool ShouldFireEvent(const device::OrientationData& data) const;
+  bool ShouldFireEvent(const DeviceOrientationData* data) const;
 
   bool absolute_;
   bool fall_back_to_absolute_orientation_sensor_;
   bool should_suspend_absolute_orientation_sensor_ = false;
-  device::OrientationData data_;
+  Persistent<DeviceOrientationData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPump);
 };

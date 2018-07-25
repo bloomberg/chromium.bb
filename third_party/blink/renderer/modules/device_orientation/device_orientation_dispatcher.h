@@ -36,10 +36,6 @@
 #include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-namespace device {
-class OrientationData;
-}
-
 namespace blink {
 
 class DeviceOrientationData;
@@ -62,7 +58,7 @@ class DeviceOrientationDispatcher final
   DeviceOrientationData* LatestDeviceOrientationData();
 
   // Inherited from WebDeviceOrientationListener.
-  void DidChangeDeviceOrientation(const device::OrientationData&) override;
+  void DidChangeDeviceOrientation(DeviceOrientationData*) override;
 
   void Trace(blink::Visitor*) override;
 

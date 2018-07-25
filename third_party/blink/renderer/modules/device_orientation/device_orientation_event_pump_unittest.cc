@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "services/device/public/cpp/generic_sensor/orientation_data.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace {
 
@@ -28,13 +29,12 @@ class MockDeviceOrientationListener
     : public blink::WebDeviceOrientationListener {
  public:
   MockDeviceOrientationListener() : did_change_device_orientation_(false) {
-    memset(&data_, 0, sizeof(data_));
+    data_ = DeviceOrientationData::Create();
   }
   ~MockDeviceOrientationListener() override {}
 
-  void DidChangeDeviceOrientation(
-      const device::OrientationData& data) override {
-    memcpy(&data_, &data, sizeof(data));
+  void DidChangeDeviceOrientation(DeviceOrientationData* data) override {
+    data_ = data;
     did_change_device_orientation_ = true;
   }
 
@@ -44,11 +44,11 @@ class MockDeviceOrientationListener
   void set_did_change_device_orientation(bool value) {
     did_change_device_orientation_ = value;
   }
-  const device::OrientationData& data() const { return data_; }
+  const DeviceOrientationData* data() const { return data_.Get(); }
 
  private:
   bool did_change_device_orientation_;
-  device::OrientationData data_;
+  Persistent<DeviceOrientationData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceOrientationListener);
 };
@@ -343,18 +343,18 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActive) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
   // DeviceOrientation Event provides relative orientation data when it is
   // available.
-  EXPECT_DOUBLE_EQ(1, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(2, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(3, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_FALSE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(1, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(2, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(3, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_FALSE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -378,21 +378,22 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActiveWithSensorFallback) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
   // DeviceOrientation Event provides absolute orientation data when relative
   // orientation data is not available but absolute orientation data is
   // available.
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(5, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(5, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+
   // Since no relative orientation data is available, DeviceOrientationEvent
   // fallback to provide absolute orientation data.
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_TRUE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -414,15 +415,15 @@ TEST_F(DeviceOrientationEventPumpTest, SomeSensorDataFieldsNotAvailable) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_FALSE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(2, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(3, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_FALSE(received_data.absolute);
+  EXPECT_FALSE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(2, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(3, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_FALSE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -447,20 +448,20 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
   // DeviceOrientation Event provides absolute orientation data when relative
   // orientation data is not available but absolute orientation data is
   // available.
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_FALSE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_FALSE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
   // Since no relative orientation data is available, DeviceOrientationEvent
   // fallback to provide absolute orientation data.
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_TRUE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -485,13 +486,13 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_FALSE(received_data.has_alpha);
-  EXPECT_FALSE(received_data.has_beta);
-  EXPECT_FALSE(received_data.has_gamma);
-  EXPECT_FALSE(received_data.absolute);
+  EXPECT_FALSE(received_data->CanProvideAlpha());
+  EXPECT_FALSE(received_data->CanProvideBeta());
+  EXPECT_FALSE(received_data->CanProvideGamma());
+  EXPECT_FALSE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -555,18 +556,18 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
   // DeviceOrientation Event provides relative orientation data when it is
   // available.
-  EXPECT_DOUBLE_EQ(1, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(2, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(3, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_FALSE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(1, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(2, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(3, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_FALSE(received_data->Absolute());
 
   listener()->set_did_change_device_orientation(false);
 
@@ -579,13 +580,13 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   received_data = listener()->data();
   EXPECT_FALSE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(1, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(2, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(3, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_FALSE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(1, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(2, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(3, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_FALSE(received_data->Absolute());
 
   listener()->set_did_change_device_orientation(false);
 
@@ -599,13 +600,13 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(1 + DeviceOrientationEventPump::kOrientationThreshold,
-                   received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(2, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(3, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_FALSE(received_data.absolute);
+                   received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(2, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(3, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_FALSE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -630,21 +631,21 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
   // DeviceOrientation Event provides absolute orientation data when relative
   // orientation data is not available but absolute orientation data is
   // available.
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(5, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(5, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
   // Since no relative orientation data is available, DeviceOrientationEvent
   // fallback to provide absolute orientation data.
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_TRUE(received_data->Absolute());
 
   listener()->set_did_change_device_orientation(false);
 
@@ -658,13 +659,13 @@ TEST_F(DeviceOrientationEventPumpTest,
   received_data = listener()->data();
   EXPECT_FALSE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(5, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(5, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   listener()->set_did_change_device_orientation(false);
 
@@ -679,15 +680,15 @@ TEST_F(DeviceOrientationEventPumpTest,
   received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
   EXPECT_DOUBLE_EQ(
       5 + DeviceOrientationEventPump::kOrientationThreshold + kEpsilon,
-      received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+      received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   orientation_pump()->Stop();
 
@@ -845,16 +846,16 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorIsActive) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(5, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(5, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   absolute_orientation_pump()->Stop();
 
@@ -875,15 +876,15 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_FALSE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_FALSE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   absolute_orientation_pump()->Stop();
 
@@ -903,13 +904,13 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, FireAllNullEvent) {
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_FALSE(received_data.has_alpha);
-  EXPECT_FALSE(received_data.has_beta);
-  EXPECT_FALSE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_FALSE(received_data->CanProvideAlpha());
+  EXPECT_FALSE(received_data->CanProvideBeta());
+  EXPECT_FALSE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   absolute_orientation_pump()->Stop();
 
@@ -948,16 +949,16 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  device::OrientationData received_data = listener()->data();
+  const DeviceOrientationData* received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(5, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(5, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   listener()->set_did_change_device_orientation(false);
 
@@ -971,13 +972,13 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   received_data = listener()->data();
   EXPECT_FALSE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
-  EXPECT_DOUBLE_EQ(5, received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
+  EXPECT_DOUBLE_EQ(5, received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   listener()->set_did_change_device_orientation(false);
 
@@ -992,15 +993,15 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
 
-  EXPECT_DOUBLE_EQ(4, received_data.alpha);
-  EXPECT_TRUE(received_data.has_alpha);
+  EXPECT_DOUBLE_EQ(4, received_data->Alpha());
+  EXPECT_TRUE(received_data->CanProvideAlpha());
   EXPECT_DOUBLE_EQ(
       5 + DeviceOrientationEventPump::kOrientationThreshold + kEpsilon,
-      received_data.beta);
-  EXPECT_TRUE(received_data.has_beta);
-  EXPECT_DOUBLE_EQ(6, received_data.gamma);
-  EXPECT_TRUE(received_data.has_gamma);
-  EXPECT_TRUE(received_data.absolute);
+      received_data->Beta());
+  EXPECT_TRUE(received_data->CanProvideBeta());
+  EXPECT_DOUBLE_EQ(6, received_data->Gamma());
+  EXPECT_TRUE(received_data->CanProvideGamma());
+  EXPECT_TRUE(received_data->Absolute());
 
   absolute_orientation_pump()->Stop();
 
