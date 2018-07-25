@@ -8226,6 +8226,7 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="kUnexpectedTime"/>
   <int value="3" label="kDatabaseError"/>
   <int value="4" label="kUploadFailed"/>
+  <int value="5" label="kPrepareForUploadFailed"/>
 </enum>
 
 <enum name="CrashpadWinExceptionCodes">
