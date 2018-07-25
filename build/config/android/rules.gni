@@ -3600,8 +3600,7 @@ if (enable_java_templates) {
   #      directory. Defaults to "$root_build_dir/apks".
   #
   #    bundle_name: Optional. If set, the bundle will be output to the
-  #      filename "${bundle_name}.aab". Also, if generate_apks is true
-  #      "${bundle_name}.apks" will be used. Defaults to "${target_name}".
+  #      filename "${bundle_name}.aab".
   #
   #    extra_modules: Optional list of scopes, one per extra module used by
   #      this bundle. Each scope must have a 'name' field that specifies the
@@ -3611,13 +3610,6 @@ if (enable_java_templates) {
   #
   #    extra_module_apk_targets: Optional list of android_apk target matching
   #      the names listed in extra_module_names.
-  #
-  #    generate_apks: Optional. If true, generate an .apks archive that
-  #      contains all generated APK splits from the bundle. These are
-  #      installable to a local device using the bundletool 'install-apks'
-  #      command.
-  #
-  #      NOTE: This creates a new target with the name "${target_name}_apks"
   #
   #    enable_language_splits: Optional. If true, enable APK splits based
   #      on languages.
@@ -3631,6 +3623,13 @@ if (enable_java_templates) {
   #    keystore_name: optional keystore name, used only when generating APKs.
   #    keystore_password: optional keystore password, used only when
   #      generating APKs.
+  #
+  #    command_line_flags_file: Optional. If provided, named of the on-device
+  #      file that will be used to store command-line arguments. The default
+  #      is 'command_line_flags_file', but this is typically redefined to
+  #      something more specific for certain bundles (e.g. the Chromium based
+  #      APKs use 'chrome-command-line', the WebView one uses
+  #      'webview-command-line').
   #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
@@ -3733,7 +3732,6 @@ if (enable_java_templates) {
     _rebased_bundle_path = rebase_path(_bundle_path, root_build_dir)
 
     _sign_bundle = defined(invoker.sign_bundle) && invoker.sign_bundle
-    _generate_apks = defined(invoker.generate_apks) && invoker.generate_apks
 
     _split_dimensions = []
     if (defined(invoker.enable_language_splits) &&
@@ -3741,25 +3739,23 @@ if (enable_java_templates) {
       _split_dimensions += [ "language" ]
     }
 
-    if (_sign_bundle || _generate_apks) {
-      _keystore_path = android_keystore_path
-      _keystore_password = android_keystore_password
-      _keystore_name = android_keystore_name
+    _keystore_path = android_keystore_path
+    _keystore_password = android_keystore_password
+    _keystore_name = android_keystore_name
 
-      if (defined(invoker.keystore_path)) {
-        _keystore_path = invoker.keystore_path
-        _keystore_password = invoker.keystore_password
-        _keystore_name = invoker.keystore_name
-      }
+    if (defined(invoker.keystore_path)) {
+      _keystore_path = invoker.keystore_path
+      _keystore_password = invoker.keystore_password
+      _keystore_name = invoker.keystore_name
+    }
 
-      _rebased_keystore_path = rebase_path(_keystore_path, root_build_dir)
+    _rebased_keystore_path = rebase_path(_keystore_path, root_build_dir)
 
-      if (_sign_bundle) {
-        # For now, the same keys are used to sign the bundle and the set of
-        # generated APKs. In the future, signing the bundle may require a
-        # different set of keys.
-        _bundle_keystore_name = _keystore_name
-      }
+    if (_sign_bundle) {
+      # For now, the same keys are used to sign the bundle and the set of
+      # generated APKs. In the future, signing the bundle may require a
+      # different set of keys.
+      _bundle_keystore_name = _keystore_name
     }
 
     # NOTE: Keep this consistent with the imports of create_app_bundle.py
@@ -3769,7 +3765,7 @@ if (enable_java_templates) {
           "//build/android/gyp/bundletool.py",
         ]
 
-    _bundle_target_name = target_name
+    _bundle_target_name = "${target_name}__bundle"
     action(_bundle_target_name) {
       script = "//build/android/gyp/create_app_bundle.py"
       inputs = _all_module_zip_paths + _all_module_build_configs +
@@ -3806,45 +3802,65 @@ if (enable_java_templates) {
       }
     }
 
-    if (_generate_apks) {
-      _android_aapt2_path = android_sdk_tools_bundle_aapt2
+    # Generate a wrapper script for the bundle.
+    _android_aapt2_path = android_sdk_tools_bundle_aapt2
 
-      _bundle_apks_target = "${target_name}_apks"
-      _bundle_apks_path = "$_bundle_base_path/$_bundle_name.apks"
+    _bundle_apks_path = "$_bundle_base_path/$_bundle_name.apks"
+    _bundle_wrapper_script_dir = "$root_build_dir/bin"
+    _bundle_wrapper_script_path = "$_bundle_wrapper_script_dir/$target_name"
 
-      # NOTE: Keep this consistent with the imports of app_bundle_to_apks.py
-      #       note that resource_utils.py imports build_utils.py
-      _app_bundle_to_apks_py_imports =
-          build_utils_py + [ "//build/android/gyp/bundletool.py" ]
+    _base_module_build_config = _all_module_build_configs[0]
+    _base_module_build_config_target =
+        "${invoker.base_module_target}__build_config"
+    _rebased_base_module_build_config =
+        rebase_path(_base_module_build_config, root_build_dir)
 
-      action(_bundle_apks_target) {
-        script = "//build/android/gyp/app_bundle_to_apks.py"
-        inputs = _app_bundle_to_apks_py_imports + [
-                   _bundle_path,
-                   _android_aapt2_path,
-                   _keystore_path,
-                 ]
-        outputs = [
-          _bundle_apks_path,
-        ]
-        deps = [
-          ":$_bundle_target_name",
-        ]
-        args = [
-          "--aapt2",
-          rebase_path(_android_aapt2_path, root_build_dir),
-          "--bundle",
-          _rebased_bundle_path,
-          "--out-zip",
-          rebase_path(_bundle_apks_path, root_build_dir),
-          "--keystore-path",
-          _rebased_keystore_path,
-          "--keystore-password",
-          _keystore_password,
-          "--key-name",
-          _keystore_name,
+    action("${target_name}__wrapper_script") {
+      script = "//build/android/gyp/create_bundle_wrapper_script.py"
+      inputs = build_utils_py + [
+                 "//build/android/gyp/bundletool.py",
+                 _base_module_build_config,
+               ]
+      outputs = [
+        _bundle_wrapper_script_path,
+      ]
+      deps = [
+        _base_module_build_config_target,
+      ]
+      args = [
+        "--script-output-path",
+        rebase_path(_bundle_wrapper_script_path, root_build_dir),
+        "--package-name=@FileArg(" +
+            "$_rebased_base_module_build_config:deps_info:package_name)",
+        "--aapt2",
+        rebase_path(_android_aapt2_path, root_build_dir),
+        "--bundle-path",
+        _rebased_bundle_path,
+        "--bundle-apks-path",
+        rebase_path(_bundle_apks_path, root_build_dir),
+        "--target-cpu=$target_cpu",
+        "--keystore-path",
+        _rebased_keystore_path,
+        "--keystore-password",
+        _keystore_password,
+        "--key-name",
+        _keystore_name,
+      ]
+      if (defined(invoker.command_line_flags_file)) {
+        args += [
+          "--command-line-flags-file",
+          invoker.command_line_flags_file,
         ]
       }
+
+      # TODO(digit): Add --proguard-mapping-path argument.
+    }
+
+    group(target_name) {
+      deps = [
+        ":${target_name}__bundle",
+        ":${target_name}__wrapper_script",
+      ]
     }
   }
 }
