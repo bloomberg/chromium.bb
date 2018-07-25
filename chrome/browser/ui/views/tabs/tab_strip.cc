@@ -331,7 +331,7 @@ int TabStrip::GetTabsMaxX() const {
   return tab_count() ? ideal_bounds(tab_count() - 1).right() : 0;
 }
 
-void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
+void TabStrip::SetBackgroundOffset(int offset) {
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->set_background_offset(offset);
   new_tab_button_->set_background_offset(offset);

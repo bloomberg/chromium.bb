@@ -328,9 +328,8 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return gfx::ToEnclosingRect(bounds_f);
   }
 
-  int GetTopInsetInBrowserView(bool restored) const override {
-    return browser_view_->frame()->GetTopInset(restored) -
-        browser_view_->y();
+  int GetTopInsetInBrowserView() const override {
+    return browser_view_->frame()->GetTopInset() - browser_view_->y();
   }
 
   int GetThemeBackgroundXInset() const override {
@@ -527,7 +526,7 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
   // be).  We expect our parent's origin to be the window origin.
   gfx::Point window_point(point + GetMirroredPosition().OffsetFromOrigin());
   window_point.Offset(frame_->GetThemeBackgroundXInset(),
-                      -frame_->GetTopInset(false));
+                      -frame_->GetTopInset());
   return window_point;
 }
 

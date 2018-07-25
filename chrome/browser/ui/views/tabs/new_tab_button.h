@@ -29,9 +29,9 @@ class NewTabButton : public views::ImageButton,
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
   ~NewTabButton() override;
 
-  // Set the background offset used to match the background image to the frame
+  // Set the background X offset used to match the background image to the frame
   // image.
-  void set_background_offset(const gfx::Point& offset) {
+  void set_background_offset(int offset) {
     background_offset_ = offset;
   }
 
@@ -143,7 +143,7 @@ class NewTabButton : public views::ImageButton,
   NewTabPromoBubbleView* new_tab_promo_ = nullptr;
 
   // The offset used to paint the background image.
-  gfx::Point background_offset_;
+  int background_offset_;
 
   // Whether this new tab button belongs to a tabstrip that is part of an
   // incognito mode browser or not. Note that you can't drag a tab from one

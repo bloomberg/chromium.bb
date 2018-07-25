@@ -304,8 +304,8 @@ TEST_F(BrowserViewHostedAppTest, Layout) {
 
   // The position of the bottom of the header (the bar with the window
   // controls) in the coordinates of BrowserView.
-  int bottom_of_header = browser_view()->frame()->GetTopInset(false) -
-      header_offset.y();
+  int bottom_of_header =
+      browser_view()->frame()->GetTopInset() - header_offset.y();
 
   // The web contents should be flush with the bottom of the header.
   EXPECT_EQ(bottom_of_header, contents_container->y());
@@ -313,5 +313,5 @@ TEST_F(BrowserViewHostedAppTest, Layout) {
   // The find bar should butt against the 1px header/web-contents separator at
   // the bottom of the header.
   EXPECT_EQ(browser_view()->GetFindBarBoundingBox().y(),
-            browser_view()->frame()->GetTopInset(false));
+            browser_view()->frame()->GetTopInset());
 }
