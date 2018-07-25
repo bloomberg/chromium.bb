@@ -110,6 +110,8 @@ void HTMLLinkElement::ParseAttribute(
     importance_ = value;
   } else if (name == disabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
+    if (params.reason == AttributeModificationReason::kByParser)
+      UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabledByParser);
     if (LinkStyle* link = GetLinkStyle())
       link->SetDisabledState(!value.IsNull());
   } else {

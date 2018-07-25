@@ -19427,6 +19427,7 @@ Called by update_net_error_codes.py.-->
   <int value="2513" label="V8RTCPeerConnection_AddTransceiver_Method"/>
   <int value="2514" label="V8RTCRtpTransceiver_Direction_AttributeGetter"/>
   <int value="2515" label="V8RTCRtpTransceiver_Direction_AttributeSetter"/>
+  <int value="2516" label="HTMLLinkElementDisabledByParser"/>
 </enum>
 
 <enum name="FeedbackSource">
