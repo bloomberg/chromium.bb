@@ -236,6 +236,21 @@ function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 'left') {
   });
 }
 
+function touchTapOn(xPosition, yPosition) {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'touch',
+         actions: [
+            { name: 'pointerDown', x: xPosition, y: yPosition },
+            { name: 'pointerUp' }
+        ]}], resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
 function approx_equals(actual, expected, epsilon) {
   return actual >= expected - epsilon && actual <= expected + epsilon;
 }
