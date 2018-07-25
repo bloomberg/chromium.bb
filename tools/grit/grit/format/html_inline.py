@@ -367,6 +367,7 @@ def DoInline(
     if names_only:
       inlined_files.update(GetResourceFilenames(
           filepath,
+          grd_node,
           allow_external_script,
           rewrite_function,
           filename_expansion_function=filename_expansion_function))
@@ -555,6 +556,7 @@ def InlineToFile(input_filename, output_filename, grd_node):
 
 
 def GetResourceFilenames(filename,
+                         grd_node,
                          allow_external_script=False,
                          rewrite_function=None,
                          filename_expansion_function=None):
@@ -562,7 +564,7 @@ def GetResourceFilenames(filename,
   try:
     return DoInline(
         filename,
-        None,
+        grd_node,
         names_only=True,
         preprocess_only=False,
         allow_external_script=allow_external_script,

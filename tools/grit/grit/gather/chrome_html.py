@@ -320,6 +320,7 @@ class ChromeHtml(interface.GathererBase):
     if self.flatten_html_:
       return html_inline.GetResourceFilenames(
           self.grd_node.ToRealPath(self.GetInputPath()),
+          self.grd_node,
           allow_external_script=self.allow_external_script_,
           rewrite_function=lambda fp, t, d: ProcessImageSets(
               fp, t, self.scale_factors_, d,
