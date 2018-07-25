@@ -138,5 +138,6 @@ public class WebXrArSessionTest {
         mWebXrArTestFramework.enterSessionWithUserGesture();
         mWebXrArTestFramework.pollJavaScriptBooleanOrFail(
                 "sessionInfos[sessionTypes.AR].currentSession != null", POLL_TIMEOUT_LONG_MS);
+        mWebXrArTestFramework.assertNoJavaScriptErrors();
     }
 }

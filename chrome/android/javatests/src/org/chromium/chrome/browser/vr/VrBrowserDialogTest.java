@@ -49,8 +49,6 @@ public class VrBrowserDialogTest {
     // A long enough sleep after triggering/interacting with a dialog to ensure that the interaction
     // has propagated through the render pipeline, i.e. the result of the interaction will actually
     // be visible on the screen.
-    // TODO(https://crbug.com/826841): Remove this in favor of notifications from the native code.
-    private static final int VR_DIALOG_RENDER_SLEEP_MS = 500;
     private static final String TEST_IMAGE_DIR = "chrome/test/data/vr/UiCapture";
     private static final File sBaseDirectory =
             new File(UrlUtils.getIsolatedTestFilePath(TEST_IMAGE_DIR));
@@ -94,7 +92,7 @@ public class VrBrowserDialogTest {
         Assert.assertTrue("Failed to take screenshot", uiDevice.takeScreenshot(screenshotFile));
     }
 
-    private void displayPermissionPrompt(String initialPage, String navigationCommand)
+    private void navigateAndDisplayPermissionPrompt(String page, String promptCommand)
             throws InterruptedException, TimeoutException {
         // Trying to grant permissions on file:// URLs ends up hitting DCHECKS, so load from a local
         // server instead.
@@ -102,13 +100,12 @@ public class VrBrowserDialogTest {
             mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         }
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mServer.getURL(
-                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(initialPage)),
+                mServer.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(page)),
                 PAGE_LOAD_TIMEOUT_S);
 
         // Display the given permission prompt.
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        mVrBrowserTestFramework.runJavaScriptOrFail(navigationCommand, POLL_TIMEOUT_SHORT_MS);
+        mVrBrowserTestFramework.runJavaScriptOrFail(promptCommand, POLL_TIMEOUT_SHORT_MS);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
         // There is currently no way to know whether a dialog has been drawn yet,
@@ -116,17 +113,17 @@ public class VrBrowserDialogTest {
         Thread.sleep(VR_ENTRY_SLEEP_MS);
     }
 
-    private void displayJavascriptDialog(String initialPage, String navigationCommand)
+    private void navigateAndDisplayJavaScriptDialog(String page, String dialogCommand)
             throws InterruptedException, TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(page), PAGE_LOAD_TIMEOUT_S);
 
         // Display the JavaScript dialog.
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         // We can't use runJavaScriptOrFail here because JavaScript execution is blocked while a
         // JS dialog is visible, so runJavaScriptOrFail will always time out.
         JavaScriptUtils.executeJavaScript(
-                mVrBrowserTestFramework.getFirstTabWebContents(), navigationCommand);
+                mVrBrowserTestFramework.getFirstTabWebContents(), dialogCommand);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
         // There is currently no way to know whether a dialog has been drawn yet,
@@ -156,13 +153,14 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testMicrophonePermissionPrompt() throws InterruptedException, TimeoutException {
         // Display audio permissions prompt.
-        displayPermissionPrompt(
+        navigateAndDisplayPermissionPrompt(
                 "test_navigation_2d_page", "navigator.getUserMedia({audio: true}, ()=>{}, ()=>{})");
 
         // Capture image
         captureScreen("MicrophonePermissionPrompt_Visible");
         NativeUiUtils.clickFallbackUiPositiveButton();
         captureScreen("MicrophonePermissionPrompt_Granted");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -173,11 +171,12 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testCameraPermissionPrompt() throws InterruptedException, TimeoutException {
         // Display Camera permissions prompt.
-        displayPermissionPrompt(
+        navigateAndDisplayPermissionPrompt(
                 "test_navigation_2d_page", "navigator.getUserMedia({video: true}, ()=>{}, ()=>{})");
 
         // Capture image
         captureScreen("CameraPermissionPrompt_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -188,11 +187,12 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testLocationPermissionPrompt() throws InterruptedException, TimeoutException {
         // Display Location permissions prompt.
-        displayPermissionPrompt("test_navigation_2d_page",
+        navigateAndDisplayPermissionPrompt("test_navigation_2d_page",
                 "navigator.geolocation.getCurrentPosition(()=>{}, ()=>{})");
 
         // Capture image
         captureScreen("LocationPermissionPrompt_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -203,11 +203,12 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testNotificationPermissionPrompt() throws InterruptedException, TimeoutException {
         // Display Notification permissions prompt.
-        displayPermissionPrompt(
+        navigateAndDisplayPermissionPrompt(
                 "test_navigation_2d_page", "Notification.requestPermission(()=>{})");
 
         // Capture image
         captureScreen("NotificationPermissionPrompt_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -218,11 +219,12 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testMidiPermisionPrompt() throws InterruptedException, TimeoutException {
         // Display MIDI permissions prompt.
-        displayPermissionPrompt(
+        navigateAndDisplayPermissionPrompt(
                 "test_navigation_2d_page", "navigator.requestMIDIAccess({sysex: true})");
 
         // Capture image
         captureScreen("MidiPermissionPrompt_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -233,11 +235,13 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testJavaScriptAlert() throws InterruptedException, TimeoutException {
         // Display a JavaScript alert()
-        displayJavascriptDialog(
+        navigateAndDisplayJavaScriptDialog(
                 "test_navigation_2d_page", "alert('538 perf regressions detected')");
 
         // Capture image
         captureScreen("JavaScriptAlert_Visible");
+        // No assertNoJavaScriptErrors since the alert is still visible, preventing further
+        // JavaScript execution.
     }
 
     /**
@@ -248,7 +252,7 @@ public class VrBrowserDialogTest {
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testJavaScriptConfirm() throws InterruptedException, TimeoutException {
         // Display a JavaScript confirm()
-        displayJavascriptDialog(
+        navigateAndDisplayJavaScriptDialog(
                 "test_navigation_2d_page", "var c = confirm('This is a confirmation dialog')");
 
         // Capture image
@@ -261,6 +265,7 @@ public class VrBrowserDialogTest {
                 mVrBrowserTestFramework.runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS)
                         .equals("false"));
         captureScreen("JavaScriptConfirm_Dismissed");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -273,7 +278,7 @@ public class VrBrowserDialogTest {
     public void testJavaScriptPrompt() throws InterruptedException, TimeoutException {
         // Display a JavaScript prompt()
         String expectedString = "Probably most likely yes";
-        displayJavascriptDialog("test_navigation_2d_page",
+        navigateAndDisplayJavaScriptDialog("test_navigation_2d_page",
                 "var p = prompt('Are the Chrome controls broken?', '" + expectedString + "')");
 
         // Capture image
@@ -288,6 +293,7 @@ public class VrBrowserDialogTest {
                         .runJavaScriptOrFail("p == '" + expectedString + "'", POLL_TIMEOUT_SHORT_MS)
                         .equals("true"));
         captureScreen("JavaScriptPrompt_Dismissed");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     @Test
@@ -296,6 +302,7 @@ public class VrBrowserDialogTest {
     public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.URL);
         captureScreen("KeyboardAppearsOnUrlBarClick_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     @Test
@@ -304,6 +311,7 @@ public class VrBrowserDialogTest {
     public void testOverflowMenuAppears() throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.OVERFLOW_MENU);
         captureScreen("OverflowMenuAppears_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     @Test
@@ -313,5 +321,6 @@ public class VrBrowserDialogTest {
             throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.PAGE_INFO_BUTTON);
         captureScreen("PageInfoAppearsOnSecurityTokenClick_Visible");
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 }

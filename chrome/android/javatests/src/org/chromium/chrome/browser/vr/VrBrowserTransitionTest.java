@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -107,7 +106,6 @@ public class VrBrowserTransitionTest {
      */
     @Test
     @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM})
-    @RetryOnFailure(message = "crbug.com/736527")
     @LargeTest
     public void test2dtoVrShellNfcSupported() {
         enterVrShellNfc(true /* supported */);
@@ -226,6 +224,7 @@ public class VrBrowserTransitionTest {
                 },
                 "Exiting VR did not exit fullscreen", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -240,7 +239,7 @@ public class VrBrowserTransitionTest {
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         exitPresentationToVrShellImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page"),
-                mWebVrTestFramework, "vrDisplay.exitPresent();");
+                mWebVrTestFramework);
     }
 
     /**
@@ -255,11 +254,11 @@ public class VrBrowserTransitionTest {
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         exitPresentationToVrShellImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page"),
-                mWebXrVrTestFramework, "immersiveSession.end();");
+                mWebXrVrTestFramework);
     }
 
-    private void exitPresentationToVrShellImpl(String url, WebXrVrTestFramework framework,
-            String exitPresentString) throws InterruptedException {
+    private void exitPresentationToVrShellImpl(String url, WebXrVrTestFramework framework)
+            throws InterruptedException {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
@@ -274,9 +273,10 @@ public class VrBrowserTransitionTest {
         framework.pollJavaScriptBooleanOrFail(javascript, POLL_TIMEOUT_LONG_MS);
 
         // Exit presentation through JavaScript.
-        framework.runJavaScriptOrFail(exitPresentString, POLL_TIMEOUT_SHORT_MS);
+        framework.endSession();
 
         framework.pollJavaScriptBooleanOrFail(javascript, POLL_TIMEOUT_LONG_MS);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -464,5 +464,6 @@ public class VrBrowserTransitionTest {
                 "navigator.getUserMedia({video: true}, ()=>{}, ()=>{})", POLL_TIMEOUT_SHORT_MS);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
         VrBrowserTransitionUtils.forceExitVr();
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 }

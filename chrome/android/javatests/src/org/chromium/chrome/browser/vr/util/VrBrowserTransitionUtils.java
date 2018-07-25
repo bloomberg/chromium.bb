@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class VrBrowserTransitionUtils extends VrTransitionUtils {
     /**
      * Forces Chrome into the VR Browser.
+     *
      * @return True if the request to enter the VR Browser succeeded, false otherwise.
      */
     public static boolean forceEnterVrBrowser() {
@@ -46,8 +47,9 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
     /**
      * Forces Chrome into the VR Browser, causing a test failure if it is not entered in the
      * allotted time.
+     *
      * @param timeoutMs The amount of time in milliseconds to wait for VR Browser entry before
-     *    failing.
+     *        failing.
      */
     public static void forceEnterVrBrowserOrFail(int timeoutMs) {
         Assert.assertTrue("Request to enter VR Browser failed", forceEnterVrBrowser());
@@ -99,10 +101,10 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      * true, this is expected to fail unless the trusted intent check is disabled in
      * VrShellDelegate.
      *
-     * @param url String containing the URL to open
-     * @param autopresent If this intent is expected to auto-present WebVR
+     * @param url String containing the URL to open.
+     * @param autopresent If this intent is expected to auto-present WebVR.
      * @param avoidRelaunch Include an extra that prevents relaunching Chrome once the intent is
-     *    received
+     *        received.
      */
     public static void sendVrLaunchIntent(String url, boolean autopresent, boolean avoidRelaunch) {
         // Create an intent that will launch Chrome at the specified URL.
@@ -142,6 +144,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
     /**
      * Waits until either a JavaScript dialog or permission prompt is being displayed using the
      * Android native UI in the VR browser.
+     *
      * @param timeout How long in milliseconds to wait before timing out and failing.
      */
     public static void waitForNativeUiPrompt(final int timeout) {

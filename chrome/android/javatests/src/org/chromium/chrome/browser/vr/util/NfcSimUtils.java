@@ -42,6 +42,7 @@ public class NfcSimUtils {
     /**
      * Makes an Intent that triggers VrCore as if the Daydream headset's NFC
      * tag was scanned.
+     *
      * @return The intent to send to VrCore to simulate an NFC scan.
      */
     public static Intent makeNfcIntent() {
@@ -59,6 +60,7 @@ public class NfcSimUtils {
 
     /**
      * Simulates the NFC tag of the Daydream headset being scanned.
+     *
      * @param context The Context that the NFC scan activity will be started from.
      */
     public static void simNfcScan(Context context) {
@@ -73,6 +75,7 @@ public class NfcSimUtils {
     /**
      * Repeatedly simulates an NFC scan until VR is actually entered. This is a workaround for
      * https://crbug.com/736527.
+     *
      * @param context The Context that the NFC scan activity will be started from.
      */
     public static void simNfcScanUntilVrEntry(final Context context) {

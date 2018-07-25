@@ -33,6 +33,7 @@ public class VrTransitionUtils {
 
     /**
      * Waits until Chrome believes it is in VR.
+     *
      * @param timeout How long to wait for VR entry before timing out and failing.
      */
     public static void waitForVrEntry(final int timeout) {

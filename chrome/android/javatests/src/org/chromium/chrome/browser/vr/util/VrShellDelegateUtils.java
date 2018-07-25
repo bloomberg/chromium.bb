@@ -19,9 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class VrShellDelegateUtils {
     /**
-     * Retrieves the current VrShellDelegate instance from the UI thread.
-     * This is necessary in case acquiring the instance causes the delegate
-     * to be constructed, which must happen on the UI thread.
+     * Retrieves the current VrShellDelegate instance from the UI thread. This is necessary in case
+     * acquiring the instance causes the delegate to be constructed, which must happen on the UI
+     * thread.
+     *
+     * @return The TestVrShellDelegate instance currently in use.
      */
     public static TestVrShellDelegate getDelegateInstance() {
         final AtomicReference<TestVrShellDelegate> delegate =
@@ -32,12 +34,13 @@ public class VrShellDelegateUtils {
     }
 
     /**
-     * Creates and sets a MockVrCoreVersionCheckerImpl as the VrShellDelegate's
-     * VrCoreVersionChecker instance.
+     * Creates and sets a MockVrCoreVersionCheckerImpl as the VrShellDelegate's VrCoreVersionChecker
+     * instance.
+     *
      * @param compatibility An int corresponding to a VrCoreCompatibility value that the mock
-     *     version checker will return.
+     *        version checker will return.
      * @return The MockVrCoreVersionCheckerImpl that was set as VrShellDelegate's
-     *     VrCoreVersionChecker instance.
+     *        VrCoreVersionChecker instance.
      */
     public static MockVrCoreVersionCheckerImpl setVrCoreCompatibility(int compatibility) {
         final MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();

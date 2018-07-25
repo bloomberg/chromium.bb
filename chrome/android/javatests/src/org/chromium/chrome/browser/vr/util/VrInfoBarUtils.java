@@ -25,8 +25,9 @@ public class VrInfoBarUtils {
 
     /**
      * Determines whether InfoBars are present in the current activity.
-     * @param rule The ChromeActivityTestRule to get the InfoBars from
-     * @return True if there are any InfoBars present, false otherwise
+     *
+     * @param rule The ChromeActivityTestRule to get the InfoBars from.
+     * @return True if there are any InfoBars present, false otherwise.
      */
     @SuppressWarnings("unchecked")
     public static boolean isInfoBarPresent(ChromeActivityTestRule rule) {
@@ -37,8 +38,9 @@ public class VrInfoBarUtils {
     /**
      * Clicks on either the primary or secondary button of the first InfoBar
      * in the activity.
-     * @param button Which button to click
-     * @param rule The ChromeActivityTestRule to get the InfoBars from
+     *
+     * @param button Which button to click.
+     * @param rule The ChromeActivityTestRule to get the InfoBars from.
      */
     @SuppressWarnings("unchecked")
     public static void clickInfoBarButton(final Button button, ChromeActivityTestRule rule) {
@@ -58,7 +60,8 @@ public class VrInfoBarUtils {
 
     /**
      * Clicks on the close button of the first InfoBar in the activity.
-     * @param rule The ChromeActivityTestRule to get the InfoBars from
+     *
+     * @param rule The ChromeActivityTestRule to get the InfoBars from.
      */
     @SuppressWarnings("unchecked")
     public static void clickInfobarCloseButton(ChromeActivityTestRule rule) {
@@ -70,7 +73,8 @@ public class VrInfoBarUtils {
 
     /**
      * Determines is there is any InfoBar present in the given View hierarchy.
-     * @param rule The ChromeActivityTestRule to get the InfoBars from
+     *
+     * @param rule The ChromeActivityTestRule to get the InfoBars from.
      * @param present Whether an InfoBar should be present.
      */
     public static void expectInfoBarPresent(

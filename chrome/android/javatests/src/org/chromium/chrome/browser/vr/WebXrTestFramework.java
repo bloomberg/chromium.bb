@@ -18,7 +18,7 @@ import java.util.concurrent.TimeoutException;
 public abstract class WebXrTestFramework extends XrTestFramework {
     /**
      * Must be constructed after the rule has been applied (e.g. in whatever method is
-     * tagged with @Before)
+     * tagged with @Before).
      */
     public WebXrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
@@ -28,6 +28,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      * Checks whether an XRDevice was actually found. Needs to be non-static despite not using any
      * member variables in order for the WebContents-less helper version to work properly in
      * subclasses.
+     *
      * @param webContents The WebContents to run the JavaScript through.
      * @return Whether an XRDevice was found.
      */
@@ -37,6 +38,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
 
     /**
      * Helper function to run xrDeviceFound with the first tab's WebContents.
+     *
      * @return Whether an XRDevice was found.
      */
     public boolean xrDeviceFound() {
@@ -47,6 +49,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      * Enters a WebXR or WebVR session of some kind by tapping on the canvas on the page. Needs to
      * be non-static despite not using any member variables in order for the WebContents-less helper
      * version to work properly in subclasses.
+     *
      * @param webContents The WebContents for the tab the canvas is in.
      */
     public void enterSessionWithUserGesture(WebContents webContents) {
@@ -68,6 +71,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      * Enters a WebXR or WebVR session of some kind and waits until the page reports it is finished
      * with its JavaScript step. Needs to be non-static despite not using any member variables in
      * order for the WebContents-less helper version to work properly in subclasses.
+     *
      * @param webContents The WebContents for the tab to enter the session in.
      */
     public void enterSessionWithUserGestureAndWait(WebContents webContents) {
@@ -84,6 +88,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
 
     /**
      * Attempts to enter a WebXR or WebVR session of some kind, failing if it is unable to.
+     *
      * @param webContents The WebContents for the tab to enter the session in.
      */
     public abstract void enterSessionWithUserGestureOrFail(WebContents webContents);
@@ -97,6 +102,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
 
     /**
      * Ends whatever type of session a subclass enters with enterSessionWithUserGesture.
+     *
      * @param webContents The WebContents to end the session in
      */
     public abstract void endSession(WebContents webContents);

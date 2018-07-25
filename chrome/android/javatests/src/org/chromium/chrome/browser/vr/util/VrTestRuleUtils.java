@@ -28,6 +28,9 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
     /**
      * Creates the list of VrTestRules that are currently supported for use in test
      * parameterization.
+     *
+     * @return An ArrayList of ParameterSets, with each ParameterSet containing a callable to create
+     *         a VrTestRule for a supported ChromeActivity.
      */
     public static ArrayList<ParameterSet> generateDefaultTestRuleParameters() {
         ArrayList<ParameterSet> parameters = new ArrayList<ParameterSet>();

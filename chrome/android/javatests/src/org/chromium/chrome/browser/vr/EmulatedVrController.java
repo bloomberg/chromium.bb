@@ -45,6 +45,10 @@ public class EmulatedVrController {
         sendClickButtonToggleEvent();
     }
 
+    /**
+     * Either presses or releases the Daydream controller's touchpad button depending on wheter
+     * the button is currently pressed or not.
+     */
     public void sendClickButtonToggleEvent() {
         mApi.buttonEvent.sendClickButtonToggleEvent();
     }
@@ -95,10 +99,10 @@ public class EmulatedVrController {
      * scrolling up at the same speed won't necessarily scroll back to the exact
      * starting position on the page.
      *
-     * @param direction the ScrollDirection to scroll with
-     * @param steps the number of intermediate steps to send while scrolling
+     * @param direction the ScrollDirection to scroll with.
+     * @param steps the number of intermediate steps to send while scrolling.
      * @param speed how long to wait between steps in the scroll, with higher
-     * numbers resulting in a faster scroll
+     *        numbers resulting in a faster scroll.
      */
     public void scroll(ScrollDirection direction, int steps, int speed) {
         float startX, startY, endX, endY;
@@ -142,14 +146,14 @@ public class EmulatedVrController {
     /**
      * Simulates a touch down-drag-touch up sequence on the touchpad between two points.
      *
-     * @param xStart the x coordinate to start the touch sequence at, in range [0.0f, 1.0f]
-     * @param yStart the y coordinate to start the touch sequence at, in range [0.0f, 1.0f]
-     * @param xEnd the x coordinate to end the touch sequence at, in range [0.0f, 1.0f]
-     * @param yEnd the y coordinate to end the touch sequence at, in range [0.0f, 1.0f]
-     * @param steps the number of steps the drag will have
+     * @param xStart the x coordinate to start the touch sequence at, in range [0.0f, 1.0f].
+     * @param yStart the y coordinate to start the touch sequence at, in range [0.0f, 1.0f].
+     * @param xEnd the x coordinate to end the touch sequence at, in range [0.0f, 1.0f].
+     * @param yEnd the y coordinate to end the touch sequence at, in range [0.0f, 1.0f].
+     * @param steps the number of steps the drag will have.
      * @param speed how long to wait between steps in the sequence. Generally, higher numbers
-     * result in faster movement, e.g. when used for scrolling, a higher number results in faster
-     * scrolling.
+     *        result in faster movement, e.g. when used for scrolling, a higher number results in
+     *        faster scrolling.
      */
     public void performLinearTouchpadMovement(
             float xStart, float yStart, float xEnd, float yEnd, int steps, int speed) {
@@ -166,10 +170,10 @@ public class EmulatedVrController {
     /**
      * Instantly moves the controller to the specified quaternion coordinates.
      *
-     * @param x the x component of the quaternion
-     * @param y the y component of the quaternion
-     * @param z the z component of the quaternion
-     * @param w the w component of the quaternion
+     * @param x the x component of the quaternion.
+     * @param y the y component of the quaternion.
+     * @param z the z component of the quaternion.
+     * @param w the w component of the quaternion.
      */
     public void moveControllerInstant(float x, float y, float z, float w) {
         mApi.moveEvent.sendMoveEvent(x, y, z, w, 0);
@@ -178,10 +182,10 @@ public class EmulatedVrController {
     /**
      * Moves the controller from one position to another over a period of time.
      *
-     * @param startAngles the x/y/z angles to start the controller at, in radians
-     * @param endAngles the x/y/z angles to end the controller at, in radians
-     * @param steps the number of steps the controller will take moving between the positions
-     * @param delayBetweenSteps how long to sleep between positions
+     * @param startAngles the x/y/z angles to start the controller at, in radians.
+     * @param endAngles the x/y/z angles to end the controller at, in radians.
+     * @param steps the number of steps the controller will take moving between the positions.
+     * @param delayBetweenSteps how long to sleep between positions.
      */
     public void moveControllerInterpolated(
             float[] startAngles, float[] endAngles, int steps, int delayBetweenSteps) {

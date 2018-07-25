@@ -12,7 +12,8 @@ import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActiv
  */
 public interface XrTestRule {
     /**
-     * Get the XrActivityRestriction.SupportedActivity that this rule is restricted to running in.
+     * @return The XrActivityRestriction.SupportedActivity that this rule is restricted to running
+     *         in.
      */
     public SupportedActivity getRestriction();
 }

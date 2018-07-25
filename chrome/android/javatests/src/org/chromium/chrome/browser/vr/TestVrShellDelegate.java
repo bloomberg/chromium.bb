@@ -12,8 +12,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 /**
  * Class for accessing VrShellDelegate internals for testing purposes.
  * This does two things:
- * - Prevents us from needing @VisibleForTesting annotations everywhere in production code
- * - Allows us to have test-specific behavior if necessary without changing production code
+ * - Prevents us from needing @VisibleForTesting annotations everywhere in production code.
+ * - Allows us to have test-specific behavior if necessary without changing production code.
  */
 public class TestVrShellDelegate extends VrShellDelegate {
     private Runnable mOnVSyncPausedCallback;
