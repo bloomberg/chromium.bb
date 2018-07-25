@@ -1243,6 +1243,14 @@ void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
 }
 #endif
 
+ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) {
+  auto iterator = property_trees()->element_id_to_scroll_node_index.find(id);
+  if (iterator == property_trees()->element_id_to_scroll_node_index.end())
+    return nullptr;
+
+  return Node(iterator->second);
+}
+
 const ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) const {
   auto iterator = property_trees()->element_id_to_scroll_node_index.find(id);
   if (iterator == property_trees()->element_id_to_scroll_node_index.end())

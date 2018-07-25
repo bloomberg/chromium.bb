@@ -433,16 +433,17 @@ bool Compositor::IsVisible() {
   return host_->IsVisible();
 }
 
-bool Compositor::ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) {
+bool Compositor::ScrollLayerTo(cc::ElementId element_id,
+                               const gfx::ScrollOffset& offset) {
   auto input_handler = host_->GetInputHandler();
-  return input_handler && input_handler->ScrollLayerTo(layer_id, offset);
+  return input_handler && input_handler->ScrollLayerTo(element_id, offset);
 }
 
-bool Compositor::GetScrollOffsetForLayer(int layer_id,
+bool Compositor::GetScrollOffsetForLayer(cc::ElementId element_id,
                                          gfx::ScrollOffset* offset) const {
   auto input_handler = host_->GetInputHandler();
   return input_handler &&
-         input_handler->GetScrollOffsetForLayer(layer_id, offset);
+         input_handler->GetScrollOffsetForLayer(element_id, offset);
 }
 
 void Compositor::SetAuthoritativeVSyncInterval(

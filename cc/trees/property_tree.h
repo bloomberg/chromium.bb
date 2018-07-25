@@ -460,6 +460,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void CopyCompleteTreeState(const ScrollTree& other);
 #endif
 
+  ScrollNode* FindNodeFromElementId(ElementId id);
   const ScrollNode* FindNodeFromElementId(ElementId id) const;
 
  private:
