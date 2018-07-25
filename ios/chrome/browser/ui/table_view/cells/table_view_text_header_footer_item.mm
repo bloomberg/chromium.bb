@@ -76,6 +76,9 @@
     [containerView addSubview:verticalStack];
     [self.contentView addSubview:containerView];
 
+    // If performBatchUpdates is used with this header there might be a need to
+    // change the padding constraints priority. See https://crbug.com/854117 for
+    // more information.
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
       // Container Constraints.
