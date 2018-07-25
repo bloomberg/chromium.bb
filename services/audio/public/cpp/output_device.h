@@ -22,10 +22,13 @@ namespace audio {
 
 class OutputDevice {
  public:
+  // media::AudioRendererSink::RenderCallback must outlive |this|.
   OutputDevice(std::unique_ptr<service_manager::Connector> connector,
                const media::AudioParameters& params,
                media::AudioRendererSink::RenderCallback* callback,
                const std::string& device_id);
+
+  // Blocking call; see base/threading/thread_restrictions.h.
   ~OutputDevice();
 
   void Play();
@@ -34,7 +37,8 @@ class OutputDevice {
 
  private:
   void StreamCreated(media::mojom::ReadWriteAudioDataPipePtr data_pipe);
-  void CleanUp();
+  void OnConnectionError();
+  void CleanUp();  // Blocking call.
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/threading/thread_restrictions.h"
 #include "media/audio/audio_output_device_thread_callback.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -27,8 +28,8 @@ OutputDevice::OutputDevice(
 
   media::mojom::AudioOutputStreamRequest stream_request =
       mojo::MakeRequest(&stream_);
-  stream_.set_connection_error_handler(
-      base::BindOnce(&OutputDevice::CleanUp, weak_factory_.GetWeakPtr()));
+  stream_.set_connection_error_handler(base::BindOnce(
+      &OutputDevice::OnConnectionError, weak_factory_.GetWeakPtr()));
   stream_factory_->CreateOutputStream(
       std::move(stream_request), nullptr, nullptr, device_id, params,
       base::UnguessableToken::Create(),
@@ -68,16 +69,25 @@ void OutputDevice::StreamCreated(
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
-  audio_callback_.reset(new media::AudioOutputDeviceThreadCallback(
-      audio_parameters_, std::move(shared_memory_region), render_callback_));
-  audio_thread_.reset(new media::AudioDeviceThread(
+  DCHECK(!audio_callback_);
+  DCHECK(!audio_thread_);
+  audio_callback_ = std::make_unique<media::AudioOutputDeviceThreadCallback>(
+      audio_parameters_, std::move(shared_memory_region), render_callback_);
+  audio_thread_ = std::make_unique<media::AudioDeviceThread>(
       audio_callback_.get(), socket_handle, "audio::OutputDevice",
-      base::ThreadPriority::REALTIME_AUDIO));
+      base::ThreadPriority::REALTIME_AUDIO);
+}
+
+void OutputDevice::OnConnectionError() {
+  // Connection errors should be rare and handling them synchronously is
+  // simpler.
+  base::ScopedAllowBlocking allow_blocking;
+  CleanUp();
 }
 
 void OutputDevice::CleanUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  audio_thread_.reset();
+  audio_thread_.reset();  // Blocking call.
   audio_callback_.reset();
   stream_.reset();
   stream_factory_.reset();

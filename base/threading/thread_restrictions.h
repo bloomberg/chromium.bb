@@ -20,7 +20,9 @@ class AwFormDatabaseService;
 class CookieManager;
 class ScopedAllowInitGLBindings;
 }
-
+namespace audio {
+class OutputDevice;
+}
 namespace cc {
 class CompletionEvent;
 class SingleThreadTaskGraphRunner;
@@ -249,6 +251,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   // in unit tests to avoid the friend requirement.
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
   friend class android_webview::ScopedAllowInitGLBindings;
+  friend class audio::OutputDevice;
   friend class content::BrowserProcessSubThread;
   friend class content::GpuProcessTransportFactory;
   friend class cronet::CronetPrefsManager;
