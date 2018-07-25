@@ -119,10 +119,10 @@ def execute_benchmark(benchmark, isolated_out_dir,
   if stories:
     if 'begin' in stories.keys():
       per_benchmark_args.append(
-          ('--experimental-story-shard-begin-index=%d' % stories['begin']))
+          ('--story-shard-begin-index=%d' % stories['begin']))
     if 'end' in stories.keys():
       per_benchmark_args.append(
-          ('--experimental-story-shard-end-index=%d' % stories['end']))
+          ('--story-shard-end-index=%d' % stories['end']))
 
   # We don't care exactly what these are. In particular, the perf results
   # could be any format (chartjson, legacy, histogram). We just pass these
