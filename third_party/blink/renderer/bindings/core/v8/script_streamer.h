@@ -34,7 +34,28 @@ class CORE_EXPORT ScriptStreamer final
   WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 
  public:
-  enum Type { kParsingBlocking, kDeferred, kAsync };
+  // For tracking why some scripts are not streamed. Not streaming is part of
+  // normal operation (e.g., script already loaded, script too small) and
+  // doesn't necessarily indicate a failure.
+  enum NotStreamingReason {
+    kAlreadyLoaded,  // DEPRECATED
+    kNotHTTP,
+    kReload,
+    kContextNotValid,
+    kEncodingNotSupported,
+    kThreadBusy,
+    kV8CannotStream,
+    kScriptTooSmall,
+    kNoResourceBuffer,
+    kHasCodeCache,
+    kStreamerNotReadyOnGetSource,
+    kInlineScript,
+    kDidntTryToStartStreaming,
+
+    // Pseudo values that should never be seen in reported metrics
+    kCount,
+    kInvalid = -1,
+  };
 
   ~ScriptStreamer();
   void Trace(blink::Visitor*);
@@ -42,10 +63,10 @@ class CORE_EXPORT ScriptStreamer final
   // Launches a task (on a background thread) which will stream the given
   // ClassicPendingScript into V8 as it loads.
   static void StartStreaming(ClassicPendingScript*,
-                             Type,
                              Settings*,
                              ScriptState*,
-                             scoped_refptr<base::SingleThreadTaskRunner>);
+                             scoped_refptr<base::SingleThreadTaskRunner>,
+                             NotStreamingReason* not_streaming_reason);
 
   // Returns false if we cannot stream the given encoding.
   static bool ConvertEncoding(const char* encoding_name,
@@ -68,8 +89,15 @@ class CORE_EXPORT ScriptStreamer final
   // started streaming but then we detect we don't want to stream (e.g., when
   // we have the code cache for the script) and we still want to parse and
   // execute it when it has finished loading.
-  void SuppressStreaming();
-  bool StreamingSuppressed() const { return streaming_suppressed_; }
+  void SuppressStreaming(NotStreamingReason reason);
+  bool StreamingSuppressed() const {
+    DCHECK(!streaming_suppressed_ || suppressed_reason_ != kInvalid);
+    return streaming_suppressed_;
+  }
+  NotStreamingReason StreamingSuppressedReason() const {
+    DCHECK(streaming_suppressed_ || suppressed_reason_ == kInvalid);
+    return suppressed_reason_;
+  }
 
   // Called by ClassicPendingScript when data arrives from the network.
   void NotifyAppendData(ScriptResource*);
@@ -94,7 +122,6 @@ class CORE_EXPORT ScriptStreamer final
   static size_t small_script_threshold_;
 
   ScriptStreamer(ClassicPendingScript*,
-                 Type,
                  ScriptState*,
                  v8::ScriptCompiler::CompileOptions,
                  scoped_refptr<base::SingleThreadTaskRunner>);
@@ -118,14 +145,12 @@ class CORE_EXPORT ScriptStreamer final
   // Whether the script source code should be retrieved from the Resource
   // instead of the ScriptStreamer.
   bool streaming_suppressed_;
+  NotStreamingReason suppressed_reason_;
 
   // What kind of cached data V8 produces during streaming.
   v8::ScriptCompiler::CompileOptions compile_options_;
 
   Member<ScriptState> script_state_;
-
-  // For recording metrics for different types of scripts separately.
-  Type script_type_;
 
   // Keep the script URL string for event tracing.
   const String script_url_string_;

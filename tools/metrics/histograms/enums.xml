@@ -34370,6 +34370,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="V8 cannot stream"/>
   <int value="7" label="Script too small"/>
   <int value="8" label="No resource buffer"/>
+  <int value="9" label="Code-cache available for script"/>
+  <int value="10" label="Streamer not ready when GetSource called"/>
+  <int value="11" label="Internal script"/>
+  <int value="12" label="Streaming was never started"/>
 </enum>
 
 <enum name="NPAPIPluginStatus">

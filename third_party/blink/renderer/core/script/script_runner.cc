@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_thread.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -307,7 +306,6 @@ bool ScriptRunner::DoTryStream(PendingScript* pending_script) {
 #endif
 
   bool success = pending_script->StartStreamingIfPossible(
-      ScriptStreamer::kAsync,
       WTF::Bind(&ScriptRunner::NotifyScriptStreamerFinished,
                 WrapWeakPersistent(this)));
 #ifndef NDEBUG
