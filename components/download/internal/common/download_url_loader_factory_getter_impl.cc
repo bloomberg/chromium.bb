@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_url_loader_factory_getter_impl.h"
+#include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 
-namespace content {
+namespace download {
 
 DownloadURLLoaderFactoryGetterImpl::DownloadURLLoaderFactoryGetterImpl(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory)
@@ -22,4 +22,4 @@ DownloadURLLoaderFactoryGetterImpl::GetURLLoaderFactory() {
   return url_loader_factory_;
 }
 
-}  // namespace content
+}  // namespace download

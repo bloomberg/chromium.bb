@@ -33,6 +33,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
+#include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler_factory.h"
@@ -41,7 +42,6 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/download_url_loader_factory_getter_impl.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/file_download_url_loader_factory_getter.h"
 #include "content/browser/download/file_system_download_url_loader_factory_getter.h"
@@ -1131,7 +1131,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
   if (blob_url_loader_factory) {
     DCHECK(params->url().SchemeIsBlob());
     url_loader_factory_getter =
-        base::MakeRefCounted<DownloadURLLoaderFactoryGetterImpl>(
+        base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
             blob_url_loader_factory->Clone());
   } else if (params->url().SchemeIsFile()) {
     url_loader_factory_getter =
