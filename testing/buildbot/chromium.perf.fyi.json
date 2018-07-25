@@ -365,7 +365,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=pixel2_7_shard_map.json"
+          "--test-shard-map-filename=android_pixel2_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
