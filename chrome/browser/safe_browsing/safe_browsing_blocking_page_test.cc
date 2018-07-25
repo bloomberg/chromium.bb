@@ -247,7 +247,7 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
   TestThreatDetailsFactory() : details_() {}
   ~TestThreatDetailsFactory() override {}
 
-  ThreatDetails* CreateThreatDetails(
+  scoped_refptr<ThreatDetails> CreateThreatDetails(
       BaseUIManager* delegate,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
@@ -256,11 +256,13 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
-    details_ = new ThreatDetails(delegate, web_contents, unsafe_resource,
-                                 url_loader_factory, history_service,
-                                 referrer_chain_provider, trim_to_ad_tags,
-                                 done_callback);
-    return details_;
+    auto details = base::WrapRefCounted(new ThreatDetails(
+        delegate, web_contents, unsafe_resource, url_loader_factory,
+        history_service, referrer_chain_provider, trim_to_ad_tags,
+        done_callback));
+    details_ = details.get();
+    details->StartCollection();
+    return details;
   }
 
   ThreatDetails* get_details() { return details_; }

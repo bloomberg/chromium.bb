@@ -40,7 +40,7 @@ class MockThreatDetailsFactory : public ThreatDetailsFactory {
  public:
   ~MockThreatDetailsFactory() override {}
 
-  ThreatDetails* CreateThreatDetails(
+  scoped_refptr<ThreatDetails> CreateThreatDetails(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
@@ -49,8 +49,7 @@ class MockThreatDetailsFactory : public ThreatDetailsFactory {
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
-    MockThreatDetails* threat_details = new MockThreatDetails();
-    return threat_details;
+    return base::MakeRefCounted<MockThreatDetails>();
   }
 };
 
