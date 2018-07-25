@@ -107,8 +107,9 @@ void UpdateNotificationClickTimestamps(NotificationDatabaseData* data) {
 
 }  // namespace
 
-NotificationDatabase::NotificationDatabase(const base::FilePath& path)
-    : path_(path) {}
+NotificationDatabase::NotificationDatabase(const base::FilePath& path,
+                                           UkmCallback callback)
+    : path_(path), record_notification_to_ukm_callback_(std::move(callback)) {}
 
 NotificationDatabase::~NotificationDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -182,11 +183,13 @@ NotificationDatabase::ReadNotificationDataAndRecordInteraction(
   // Update the appropriate fields for UKM logging purposes.
   switch (interaction) {
     case PlatformNotificationContext::Interaction::CLOSED:
+      notification_database_data->closed_reason =
+          NotificationDatabaseData::ClosedReason::USER;
       notification_database_data->time_until_close_millis =
           base::Time::Now() - notification_database_data->creation_time_millis;
       break;
     case PlatformNotificationContext::Interaction::NONE:
-      return status;
+      break;
     case PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED:
       notification_database_data->num_action_button_clicks += 1;
       UpdateNotificationClickTimestamps(notification_database_data);
@@ -262,6 +265,13 @@ NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
   DCHECK(!notification_id.empty());
   DCHECK(origin.is_valid());
 
+  NotificationDatabaseData data;
+  Status status = ReadNotificationData(notification_id, origin, &data);
+  if (status == STATUS_OK && record_notification_to_ukm_callback_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(record_notification_to_ukm_callback_, data));
+  }
   std::string key = CreateDataKey(origin, notification_id);
   return LevelDBStatusToNotificationDatabaseStatus(
       db_->Delete(leveldb::WriteOptions(), key));
@@ -379,6 +389,13 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
         notification_database_data.service_worker_registration_id !=
             service_worker_registration_id) {
       continue;
+    }
+
+    if (record_notification_to_ukm_callback_) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(record_notification_to_ukm_callback_,
+                         notification_database_data));
     }
 
     batch.Delete(iter->key());

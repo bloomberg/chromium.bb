@@ -19,9 +19,12 @@
 #include "base/memory/singleton.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_types.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
@@ -95,6 +98,14 @@ class PlatformNotificationServiceImpl
       const DisplayedNotificationsCallback& callback) override;
   int64_t ReadNextPersistentNotificationId(
       content::BrowserContext* browser_context) override;
+  void RecordNotificationUkmEvent(
+      content::BrowserContext* browser_context,
+      const content::NotificationDatabaseData& data) override;
+
+  void set_history_query_complete_closure_for_testing(
+      base::OnceClosure closure) {
+    history_query_complete_closure_for_testing_ = std::move(closure);
+  }
 
  private:
   friend struct base::DefaultSingletonTraits<PlatformNotificationServiceImpl>;
@@ -105,6 +116,8 @@ class PlatformNotificationServiceImpl
                            CreateNotificationFromData);
   FRIEND_TEST_ALL_PREFIXES(PlatformNotificationServiceTest,
                            DisplayNameForContextMessage);
+  FRIEND_TEST_ALL_PREFIXES(PlatformNotificationServiceTest,
+                           RecordNotificationUkmEvent);
 
   PlatformNotificationServiceImpl();
   ~PlatformNotificationServiceImpl() override;
@@ -115,6 +128,10 @@ class PlatformNotificationServiceImpl
   void OnCloseEventDispatchComplete(
       base::OnceClosure completed_closure,
       content::PersistentNotificationStatus status);
+  void OnUrlHistoryQueryComplete(const content::NotificationDatabaseData& data,
+                                 bool found_url,
+                                 const history::URLRow& url_row,
+                                 const history::VisitVector& visits);
 
   // Creates a new Web Notification-based Notification object. Should only be
   // called when the notification is first shown.
@@ -148,6 +165,13 @@ class PlatformNotificationServiceImpl
   // Tracks the id of persistent notifications that have been closed
   // programmatically to avoid dispatching close events for them.
   std::unordered_set<std::string> closed_notifications_;
+
+  // Task tracker used for querying URLs in the history service.
+  base::CancelableTaskTracker task_tracker_;
+
+  // Testing-only closure to observe when querying the history service has been
+  // completed, and the result of logging UKM can be observed.
+  base::OnceClosure history_query_complete_closure_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceImpl);
 };

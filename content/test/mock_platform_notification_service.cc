@@ -100,6 +100,10 @@ int64_t MockPlatformNotificationService::ReadNextPersistentNotificationId(
   return ++next_persistent_notification_id_;
 }
 
+void MockPlatformNotificationService::RecordNotificationUkmEvent(
+    BrowserContext* browser_context,
+    const NotificationDatabaseData& data) {}
+
 void MockPlatformNotificationService::SimulateClick(
     const std::string& title,
     const base::Optional<int>& action_index,

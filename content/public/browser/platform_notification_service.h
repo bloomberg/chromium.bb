@@ -14,6 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_database_data.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
@@ -75,6 +76,11 @@ class CONTENT_EXPORT PlatformNotificationService {
   // increments the value, as it is called once per notification write.
   virtual int64_t ReadNextPersistentNotificationId(
       BrowserContext* browser_context) = 0;
+
+  // Records a given notification to UKM.
+  virtual void RecordNotificationUkmEvent(
+      BrowserContext* browser_context,
+      const NotificationDatabaseData& data) = 0;
 };
 
 }  // namespace content

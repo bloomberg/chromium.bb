@@ -66,6 +66,10 @@ void PlatformNotificationContextImpl::Initialize() {
       browser_context_,
       base::Bind(&PlatformNotificationContextImpl::DidGetNotificationsOnUI,
                  this));
+
+  ukm_callback_ = base::BindRepeating(
+      &PlatformNotificationService::RecordNotificationUkmEvent,
+      base::Unretained(service), browser_context_);
 }
 
 void PlatformNotificationContextImpl::DidGetNotificationsOnUI(
@@ -490,7 +494,7 @@ void PlatformNotificationContextImpl::OpenDatabase(
     return;
   }
 
-  database_.reset(new NotificationDatabase(GetDatabasePath()));
+  database_.reset(new NotificationDatabase(GetDatabasePath(), ukm_callback_));
   NotificationDatabase::Status status =
       database_->Open(true /* create_if_missing */);
 
@@ -502,7 +506,7 @@ void PlatformNotificationContextImpl::OpenDatabase(
     prune_database_on_open_ = false;
     DestroyDatabase();
 
-    database_.reset(new NotificationDatabase(GetDatabasePath()));
+    database_.reset(new NotificationDatabase(GetDatabasePath(), ukm_callback_));
     status = database_->Open(true /* create_if_missing */);
 
     // TODO(peter): Find the appropriate UMA to cover in regards to
@@ -513,7 +517,8 @@ void PlatformNotificationContextImpl::OpenDatabase(
   // away the contents of the directory and try re-opening the database.
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED) {
     if (DestroyDatabase()) {
-      database_.reset(new NotificationDatabase(GetDatabasePath()));
+      database_.reset(
+          new NotificationDatabase(GetDatabasePath(), ukm_callback_));
       status = database_->Open(true /* create_if_missing */);
 
       UMA_HISTOGRAM_ENUMERATION(

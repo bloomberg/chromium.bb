@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/common/platform_notification_data.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -39,15 +40,19 @@ const struct {
     {"https://chrome.com", "foo" /* tag */, 0}};
 
 class NotificationDatabaseTest : public ::testing::Test {
+ public:
+  NotificationDatabaseTest()
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+
  protected:
   // Creates a new NotificationDatabase instance in memory.
   NotificationDatabase* CreateDatabaseInMemory() {
-    return new NotificationDatabase(base::FilePath());
+    return new NotificationDatabase(base::FilePath(), callback());
   }
 
   // Creates a new NotificationDatabase instance in |path|.
   NotificationDatabase* CreateDatabaseOnFileSystem(const base::FilePath& path) {
-    return new NotificationDatabase(path);
+    return new NotificationDatabase(path, callback());
   }
 
   // Creates a new notification for |service_worker_registration_id| belonging
@@ -108,6 +113,12 @@ class NotificationDatabaseTest : public ::testing::Test {
 
   // Generates a random notification ID. The format of the ID is opaque.
   std::string GenerateNotificationId() { return base::GenerateGUID(); }
+
+  NotificationDatabase::UkmCallback callback() { return callback_; }
+
+  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+
+  NotificationDatabase::UkmCallback callback_;
 };
 
 TEST_F(NotificationDatabaseTest, OpenCloseMemory) {

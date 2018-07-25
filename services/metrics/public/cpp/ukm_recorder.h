@@ -18,6 +18,7 @@
 
 class IOSChromePasswordManagerClient;
 class MediaEngagementSession;
+class PlatformNotificationServiceImpl;
 class PluginInfoHostImpl;
 
 namespace autofill {
@@ -27,11 +28,11 @@ class TestAutofillClient;
 namespace blink {
 class Document;
 class NavigatorVR;
-}
+}  // namespace blink
 
 namespace cc {
 class UkmManager;
-}
+}  // namespace cc
 
 namespace content {
 class CrossSiteDocumentResourceHandler;
@@ -41,7 +42,7 @@ class PluginServiceImpl;
 
 namespace download {
 class DownloadUkmHelper;
-}
+}  // namespace download
 
 namespace password_manager {
 class PasswordManagerMetricsRecorder;
@@ -49,11 +50,11 @@ class PasswordManagerMetricsRecorder;
 
 namespace payments {
 class JourneyLogger;
-}
+}  // namespace payments
 
 namespace metrics {
 class UkmRecorderInterface;
-}
+}  // namespace metrics
 
 namespace media {
 class MediaMetricsProvider;
@@ -63,7 +64,7 @@ class WatchTimeRecorder;
 
 namespace translate {
 class TranslateRankerImpl;
-}
+}  // namespace translate
 
 namespace ukm {
 
@@ -73,7 +74,7 @@ class TestRecordingHelper;
 namespace internal {
 class SourceUrlRecorderWebContentsObserver;
 class SourceUrlRecorderWebStateObserver;
-}
+}  // namespace internal
 
 // This feature controls whether UkmService should be created.
 METRICS_EXPORT extern const base::Feature kUkmFeature;
@@ -104,6 +105,7 @@ class METRICS_EXPORT UkmRecorder {
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;
   friend MediaEngagementSession;
+  friend PlatformNotificationServiceImpl;
   friend PluginInfoHostImpl;
   friend TestRecordingHelper;
   friend autofill::TestAutofillClient;
