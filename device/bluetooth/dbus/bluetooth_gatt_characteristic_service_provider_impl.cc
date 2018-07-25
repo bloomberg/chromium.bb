@@ -373,8 +373,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::PrepareWriteValue(
   it = options.find(bluetooth_gatt_characteristic::kOptionOffset);
   if (it != options.end())
     it->second.PopUint16(&offset);
-  // TODO(b/78650442): kOptionHasSubsequentWrite
-  it = options.find("has-subsequent-write");
+  it = options.find(bluetooth_gatt_characteristic::kOptionHasSubsequentWrite);
   if (it != options.end())
     it->second.PopBool(&has_subsequent_write);
 
