@@ -18,13 +18,9 @@ config("config") {
   }
 }
 
-if (libcpp_is_static) {
-  link_target_type = "source_set"
-} else {
-  link_target_type = "shared_library"
-}
-target(link_target_type, "libc++") {
-  if (!libcpp_is_static) {
+component("libc++") {
+  static_component_type = "source_set"
+  if (is_component_build) {
     no_default_deps = true
   }
   sources = [
@@ -72,7 +68,7 @@ target(link_target_type, "libc++") {
     "//build/config/compiler:no_rtti",
     "//build/config/coverage:default_coverage",
   ]
-  if (is_android && !libcpp_is_static) {
+  if (is_android && is_component_build) {
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   }
   configs += [
@@ -84,14 +80,14 @@ target(link_target_type, "libc++") {
   ]
 
   defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
-  if (!is_clang && !libcpp_is_static) {
+  if (!is_clang && is_component_build) {
     # This is a temporary workaround to get libc++ builds working with
     # gcc.  It can be removed with either
     # https://reviews.llvm.org/D35326 or
     # https://reviews.llvm.org/D35388 lands.
     defines += [ "_LIBCPP_EXTERN_TEMPLATE_TYPE_VIS=__attribute__((__visibility__(\"default\")))" ]
   }
-  if (libcpp_is_static) {
+  if (!is_component_build) {
     defines += [
       # This resets the visibility to default only for the various
       # flavors of operator new and operator delete.  These symbols
@@ -110,11 +106,20 @@ target(link_target_type, "libc++") {
       "_LIBCPP_OVERRIDABLE_FUNC_VIS=__attribute__((__visibility__(\"default\")))",
     ]
   }
+  if (is_asan || is_tsan || is_msan) {
+    # In {a,t,m}san configurations, operator new and operator delete will be
+    # provided by the sanitizer runtime library.  Since libc++ defines these
+    # symbols with weak linkage, and the *san runtime uses strong linkage, it
+    # should technically be OK to omit this, but it's added to be explicit.
+    defines += [ "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS" ]
+  }
 
   if (!is_win) {
     defines += [ "LIBCXX_BUILDING_LIBCXXABI" ]
-    deps = [
-      "//buildtools/third_party/libc++abi",
-    ]
+    if (is_component_build) {
+      deps = [
+        "//buildtools/third_party/libc++abi",
+      ]
+    }
   }
 }

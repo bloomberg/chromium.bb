@@ -8,12 +8,18 @@ import("//build/config/c++/c++.gni")
 # use_custom_libcxx=true.
 if (use_custom_libcxx) {
   source_set("libc++abi") {
-    visibility = [ "//buildtools/third_party/libc++" ]
+    visibility = [
+      "//buildtools/third_party/libc++",
+      "//build/config:executable_deps",
+      "//build/config:loadable_module_deps",
+      "//build/config:shared_library_deps",
+    ]
     deps = []
 
     # Fuchsia builds don't link against any libraries that provide stack
     # unwinding symbols, unlike Linux does with glibc.  Build and link against
     # libunwind manually to get this functionality.
+    # TODO(thomasanderson): Move this to exe_and_shlib_deps.
     if (is_fuchsia) {
       deps += [ "//buildtools/third_party/libunwind" ]
     }
@@ -24,7 +30,6 @@ if (use_custom_libcxx) {
       "trunk/src/cxa_default_handlers.cpp",
       "trunk/src/cxa_exception.cpp",
       "trunk/src/cxa_exception_storage.cpp",
-      "trunk/src/cxa_guard.cpp",
       "trunk/src/cxa_handlers.cpp",
 
       # This file is supposed to be used in fno-exception builds of
@@ -40,6 +45,10 @@ if (use_custom_libcxx) {
       "trunk/src/stdlib_stdexcept.cpp",
       "trunk/src/stdlib_typeinfo.cpp",
     ]
+
+    if (!is_tsan) {
+      sources += [ "trunk/src/cxa_guard.cpp" ]
+    }
 
     # See the comment in cxa_demangle_stub.cc for why we don't use LLVM's
     # demangler on android.
@@ -72,6 +81,11 @@ if (use_custom_libcxx) {
       "//build/config/compiler:rtti",
       "//buildtools/third_party/libc++:config",
     ]
+
+    if (is_asan || is_ubsan_vptr) {
+      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      configs += [ "//build/config/gcc:symbol_visibility_default" ]
+    }
   }
 }
 
@@ -81,8 +95,10 @@ source_set("cxa_demangle_stub") {
   # use_custom_libcxx=true.  When this happens, this target can be removed,
   # cxa_demangle_stub.cc can be added to the libc++abi target above, and
   # __cxa_demangle can simply be annoted with _LIBCXXABI_FUNC_VIS.
-  if (use_custom_libcxx && !libcpp_is_static) {
+  if (use_custom_libcxx && is_component_build) {
     defines = [ "EXPORT_CXA_DEMANGLE" ]
   }
-  sources = [ "cxa_demangle_stub.cc" ]
+  sources = [
+    "cxa_demangle_stub.cc",
+  ]
 }

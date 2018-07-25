@@ -12,7 +12,7 @@ config("libunwind_config") {
 source_set("libunwind") {
   visibility = [ "//buildtools/third_party/libc++abi" ]
 
-  if (libcpp_is_static) {
+  if (!is_component_build) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
   }
   include_dirs = [ "//buildtools/third_party/libunwind/trunk/include" ]
