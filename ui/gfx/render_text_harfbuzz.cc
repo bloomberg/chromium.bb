@@ -1541,6 +1541,11 @@ void RenderTextHarfBuzz::EnsureLayout() {
       line_breaker.ConstructSingleLine();
     std::vector<internal::Line> lines;
     line_breaker.FinalizeLines(&lines, &total_size_);
+    if (multiline() && max_lines()) {
+      // TODO(crbug.com/866720): no more than max_lines() should be rendered.
+      // Uncomment the following DCHECK when the bug is fixed.
+      // DCHECK_LE(lines.size(), max_lines());
+    }
     set_lines(&lines);
   }
 }
