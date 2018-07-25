@@ -89,6 +89,10 @@ void SequenceManagerFuzzerProcessor::RunAction(
                                    action.shutdown_task_queue());
   } else if (action.has_cancel_task()) {
     ExecuteCancelTaskAction(action.action_id(), action.cancel_task());
+  } else if (action.has_insert_fence()) {
+    ExecuteInsertFenceAction(action.action_id(), action.insert_fence());
+  } else if (action.has_remove_fence()) {
+    ExecuteRemoveFenceAction(action.action_id(), action.remove_fence());
   } else {
     ExecutePostDelayedTaskAction(action.action_id(),
                                  action.post_delayed_task());
@@ -202,15 +206,43 @@ void SequenceManagerFuzzerProcessor::ExecuteCancelTaskAction(
                       test_task_runner_->GetMockTickClock()->NowTicks());
 
   if (!pending_tasks_.empty()) {
-    size_t queue_index = action.task_id() % pending_tasks_.size();
-    pending_tasks_[queue_index]->weak_ptr_factory_.InvalidateWeakPtrs();
+    size_t task_index = action.task_id() % pending_tasks_.size();
+    pending_tasks_[task_index]->weak_ptr_factory_.InvalidateWeakPtrs();
 
     // If it is already running, it is a parent task and will be deleted when
     // it is done.
-    if (!pending_tasks_[queue_index]->is_running) {
-      pending_tasks_.erase(pending_tasks_.begin() + queue_index);
+    if (!pending_tasks_[task_index]->is_running) {
+      pending_tasks_.erase(pending_tasks_.begin() + task_index);
     }
   }
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteInsertFenceAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::InsertFenceAction& action) {
+  LogActionForTesting(action_id, ActionForTest::ActionType::kInsertFence,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  size_t queue_index = action.task_queue_id() % task_queues_.size();
+
+  if (action.position() ==
+      SequenceManagerTestDescription::InsertFenceAction::NOW) {
+    task_queues_[queue_index].queue.get()->InsertFence(
+        TaskQueue::InsertFencePosition::kNow);
+  } else {
+    task_queues_[queue_index].queue.get()->InsertFence(
+        TaskQueue::InsertFencePosition::kBeginningOfTime);
+  }
+}
+
+void SequenceManagerFuzzerProcessor::ExecuteRemoveFenceAction(
+    uint64_t action_id,
+    const SequenceManagerTestDescription::RemoveFenceAction& action) {
+  LogActionForTesting(action_id, ActionForTest::ActionType::kRemoveFence,
+                      test_task_runner_->GetMockTickClock()->NowTicks());
+
+  size_t queue_index = action.task_queue_id() % task_queues_.size();
+  task_queues_[queue_index].queue.get()->RemoveFence();
 }
 
 void SequenceManagerFuzzerProcessor::ExecuteTask(
