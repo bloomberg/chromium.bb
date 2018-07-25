@@ -773,6 +773,42 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());
 }
 
+// Tests the delay mechanism for self-updating service workers, to prevent
+// them from running forever (see https://crbug.com/805496).
+TEST_F(ServiceWorkerVersionTest, ResetUpdateDelay) {
+  const base::TimeDelta kMinute = base::TimeDelta::FromMinutes(1);
+  const base::TimeDelta kNoDelay = base::TimeDelta();
+
+  // Initialize the delay.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  registration_->set_self_update_delay(kMinute);
+
+  // Events that can be triggered by a worker should not reset the delay.
+  // See the comment in ServiceWorkerVersion::StartRequestWithCustomTimeout.
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::ACTIVATE);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::MESSAGE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kMinute, registration_->self_update_delay());
+
+  // Events that can only be triggered externally reset the delay.
+  // Repeat the test for several such events.
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::SYNC);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kNoDelay, registration_->self_update_delay());
+
+  registration_->set_self_update_delay(kMinute);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kNoDelay, registration_->self_update_delay());
+
+  registration_->set_self_update_delay(kMinute);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kNoDelay, registration_->self_update_delay());
+}
+
 TEST_F(ServiceWorkerVersionTest, UpdateCachedMetadata) {
   CachedMetadataUpdateListener listener;
   version_->AddObserver(&listener);

@@ -17,6 +17,9 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
+namespace service_worker_registration_unittest {
+class ServiceWorkerRegistrationObjectHostTest;
+}  // namespace service_worker_registration_unittest
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
@@ -46,6 +49,12 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   ServiceWorkerRegistration* registration() { return registration_.get(); }
 
  private:
+  friend class service_worker_registration_unittest::
+      ServiceWorkerRegistrationObjectHostTest;
+
+  using StatusCallback =
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
+
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
@@ -68,6 +77,20 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
       const std::string& value,
       SetNavigationPreloadHeaderCallback callback) override;
 
+  // Delays an update if it is called by a worker without controllee, to prevent
+  // workers from running forever (see https://crbug.com/805496).
+  // Calls |update_function| with blink::ServiceWorkerStatusCode::kOk if the
+  // update should procceed, and blink::ServiceWorkerStatusCode::kTimeout
+  // otherwise.
+  // If there is no delay, or if the delay is very long, |update_function| is
+  // executed synchronously (before this method returns).
+  //
+  // TODO(falken): See if tests can call |Update| directly, then this separate
+  // function isn't needed.
+  static void DelayUpdate(blink::mojom::ServiceWorkerProviderType provider_type,
+                          ServiceWorkerRegistration* registration,
+                          ServiceWorkerVersion* version,
+                          StatusCallback update_function);
   // Called back from ServiceWorkerContextCore when an update is complete.
   void UpdateComplete(UpdateCallback callback,
                       blink::ServiceWorkerStatusCode status,

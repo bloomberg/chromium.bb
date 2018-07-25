@@ -538,6 +538,21 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
 
+  if (event_type != ServiceWorkerMetrics::EventType::INSTALL &&
+      event_type != ServiceWorkerMetrics::EventType::ACTIVATE &&
+      event_type != ServiceWorkerMetrics::EventType::MESSAGE) {
+    // Reset the self-update delay iff this is not an event that can triggered
+    // by a service worker itself. Otherwise, service workers can use update()
+    // to keep running forever via install and activate events, or postMessage()
+    // between themselves to reset the delay via message event.
+    // postMessage() resets the delay in ServiceWorkerObjectHost, iff it didn't
+    // come from a service worker.
+    ServiceWorkerRegistration* registration =
+        context_->GetLiveRegistration(registration_id_);
+    DCHECK(registration) << "running workers should have a live registration";
+    registration->set_self_update_delay(base::TimeDelta());
+  }
+
   auto request = std::make_unique<InflightRequest>(
       std::move(error_callback), clock_->Now(), tick_clock_->NowTicks(),
       event_type);
@@ -668,6 +683,12 @@ void ServiceWorkerVersion::AddControllee(
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
   ClearTick(&no_controllees_time_);
+
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  if (registration) {
+    registration->set_self_update_delay(base::TimeDelta());
+  }
 
   // Notify observers asynchronously for consistency with RemoveControllee.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
