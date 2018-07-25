@@ -888,8 +888,8 @@ TEST_F(TouchActionFilterTest, TouchActionNotResetWithinGestureSequence) {
 
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
-  EXPECT_FALSE(ScrollingTouchAction().has_value());
+  EXPECT_TRUE(filter_.allowed_touch_action().has_value());
+  EXPECT_TRUE(ScrollingTouchAction().has_value());
 }
 
 TEST_F(TouchActionFilterTest, TouchpadScroll) {

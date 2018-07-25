@@ -215,7 +215,6 @@ void RenderWidgetTargeter::QueryClient(
 }
 
 void RenderWidgetTargeter::FlushEventQueue() {
-  bool events_being_flushed = false;
   while (!request_in_flight_ && !requests_.empty()) {
     auto request = std::move(requests_.front());
     requests_.pop();
@@ -225,16 +224,9 @@ void RenderWidgetTargeter::FlushEventQueue() {
       continue;
     }
     request.tracker->Stop();
-    // Only notify the delegate once that the current event queue is being
-    // flushed. Once all the events are flushed, notify the delegate again.
-    if (!events_being_flushed) {
-      delegate_->SetEventsBeingFlushed(true);
-      events_being_flushed = true;
-    }
     FindTargetAndDispatch(request.root_view.get(), *request.event,
                           request.latency);
   }
-  delegate_->SetEventsBeingFlushed(false);
 }
 
 void RenderWidgetTargeter::FoundFrameSinkId(
