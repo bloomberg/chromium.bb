@@ -11,12 +11,20 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace cryptauth {
 class Connection;
 }  // namespace cryptauth
 
 namespace extensions {
+
+class EasyUnlockPrivateConnection;
+
+template <>
+BrowserContextKeyedAPIFactory<ApiResourceManager<EasyUnlockPrivateConnection>>*
+ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance();
+
 // An ApiResource wrapper for a cryptauth::Connection.
 class EasyUnlockPrivateConnection : public ApiResource {
  public:
