@@ -65,5 +65,9 @@ const base::Feature kOptimizationHintsExperiments{
 const base::Feature kResourceLoadingHints{"ResourceLoadingHints",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables client redirects to a server-rendered lite page preview.
+const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

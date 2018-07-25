@@ -82,6 +82,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/prerender/prerender_util.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -3990,6 +3991,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (new_tab_page_throttle)
     throttles.push_back(std::move(new_tab_page_throttle));
 #endif
+
+  std::unique_ptr<content::NavigationThrottle> previews_lite_page_throttle =
+      PreviewsLitePageDecider::MaybeCreateThrottleFor(handle);
+  if (previews_lite_page_throttle)
+    throttles.push_back(std::move(previews_lite_page_throttle));
 
   return throttles;
 }

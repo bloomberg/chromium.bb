@@ -327,3 +327,37 @@ IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
   EXPECT_TRUE(noscript_js_requested());
   EXPECT_FALSE(noscript_css_requested());
 }
+
+// This test class enables LitePageServerPreviews.
+class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
+ public:
+  PreviewsLitePageServerBrowserTest() {}
+
+  ~PreviewsLitePageServerBrowserTest() override {}
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kPreviews,
+         previews::features::kLitePageServerPreviews},
+        {});
+    PreviewsBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Previews InfoBar (which these tests triggers) does not work on Mac.
+// See crbug.com/782322 for detail.
+// Also occasional flakes on win7 (crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsEnabled LitePagePreviewsEnabled
+#else
+#define MAYBE_LitePagePreviewsEnabled DISABLED_LitePagePreviewsEnabled
+#endif
+
+// Makes sure that nothing crashes.
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsEnabled) {
+  ui_test_utils::NavigateToURL(browser(), https_url());
+}
