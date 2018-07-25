@@ -85,8 +85,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   struct SurfaceDrawQuadUmaStats {
     void Reset() {
       valid_surface = 0;
-      missing_surface = 0;
-      no_active_frame = 0;
       using_fallback_surface = 0;
     }
 
@@ -146,9 +144,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       SkColor background_color,
       RenderPass* dest_pass);
-
-  void ReportMissingFallbackSurface(const SurfaceId& fallback_surface_id,
-                                    const Surface* fallback_surface);
 
   SharedQuadState* CopySharedQuadState(const SharedQuadState* source_sqs,
                                        const gfx::Transform& target_transform,

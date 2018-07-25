@@ -42,10 +42,6 @@ constexpr float kOpacityEpsilon = 0.001f;
 
 const char kUmaValidSurface[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.ValidSurface";
-const char kUmaMissingSurface[] =
-    "Compositing.SurfaceAggregator.SurfaceDrawQuad.MissingSurface";
-const char kUmaNoActiveFrame[] =
-    "Compositing.SurfaceAggregator.SurfaceDrawQuad.NoActiveFrame";
 const char kUmaUsingFallbackSurface[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.UsingFallbackSurface";
 const char kUmaManhattanDistanceToPrimary[] =
@@ -213,34 +209,28 @@ void SurfaceAggregator::HandleSurfaceQuad(
     return;
   }
 
-  // If there's no fallback surface ID provided, then simply emit a
-  // SolidColorDrawQuad with the provided default background color.
-  if (!surface_quad->surface_range.start()) {
+  Surface* latest_surface = nullptr;
+  if (surface_quad->surface_range.start()) {
+    latest_surface = manager_->GetLatestInFlightSurface(
+        primary_surface_id, *surface_quad->surface_range.start());
+  }
+
+  // If there's no fallback surface ID available, then simply emit a
+  // SolidColorDrawQuad with the provided default background color. This
+  // can happen after a Viz process crash.
+  if (!latest_surface || !latest_surface->HasActiveFrame()) {
     EmitDefaultBackgroundColorQuad(surface_quad, target_transform, clip_rect,
                                    dest_pass);
     return;
   }
-  Surface* latest_surface = manager_->GetLatestInFlightSurface(
-      primary_surface_id, *surface_quad->surface_range.start());
 
-  if (latest_surface &&
-      primary_surface_id.frame_sink_id() ==
+  if (primary_surface_id.frame_sink_id() ==
           latest_surface->surface_id().frame_sink_id() &&
       primary_surface_id.local_surface_id().embed_token() ==
           latest_surface->surface_id().local_surface_id().embed_token()) {
     UMA_HISTOGRAM_COUNTS_100(
         kUmaManhattanDistanceToPrimary,
         latest_surface->surface_id().ManhattanDistanceTo(primary_surface_id));
-  }
-
-  // If the fallback is specified and missing then that's an error. Report the
-  // error to console, and log the UMA.
-  if (!latest_surface || !latest_surface->HasActiveFrame()) {
-    ReportMissingFallbackSurface(*surface_quad->surface_range.start(),
-                                 latest_surface);
-    EmitDefaultBackgroundColorQuad(surface_quad, target_transform, clip_rect,
-                                   dest_pass);
-    return;
   }
 
   if (!surface_quad->stretch_content_to_fill_bounds) {
@@ -549,20 +539,6 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
         dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bottom_gutter->SetNew(shared_quad_state, bottom_gutter_rect,
                           bottom_gutter_rect, background_color, false);
-  }
-}
-
-void SurfaceAggregator::ReportMissingFallbackSurface(
-    const SurfaceId& fallback_surface_id,
-    const Surface* fallback_surface) {
-  // If the fallback surface is unavailable then that's an error.
-  if (!fallback_surface) {
-    DLOG(ERROR) << fallback_surface_id << " is missing during aggregation";
-    ++uma_stats_.missing_surface;
-  } else {
-    DLOG(ERROR) << fallback_surface_id
-                << " has no active frame during aggregation";
-    ++uma_stats_.no_active_frame;
   }
 }
 
@@ -1266,10 +1242,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
   // Log UMA stats for SurfaceDrawQuads on the number of surfaces that were
   // aggregated together and any failures.
   UMA_HISTOGRAM_EXACT_LINEAR(kUmaValidSurface, uma_stats_.valid_surface,
-                             kUmaStatMaxSurfaces);
-  UMA_HISTOGRAM_EXACT_LINEAR(kUmaMissingSurface, uma_stats_.missing_surface,
-                             kUmaStatMaxSurfaces);
-  UMA_HISTOGRAM_EXACT_LINEAR(kUmaNoActiveFrame, uma_stats_.no_active_frame,
                              kUmaStatMaxSurfaces);
   UMA_HISTOGRAM_EXACT_LINEAR(kUmaUsingFallbackSurface,
                              uma_stats_.using_fallback_surface,
