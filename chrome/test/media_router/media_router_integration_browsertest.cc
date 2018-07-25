@@ -914,7 +914,14 @@ Browser* MediaRouterIntegrationIncognitoBrowserTest::browser() {
   return incognito_browser_;
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest, Basic) {
+// Test is flaky on Linux. (https://crbug.com/853167)
+#if defined(OS_LINUX)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest,
+                       MAYBE_Basic) {
   RunBasicTest();
 }
 
