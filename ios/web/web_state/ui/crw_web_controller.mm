@@ -4987,10 +4987,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                   NSURLCredential*))completionHandler {
   [self didReceiveWebViewNavigationDelegateCallback];
 
-  // This callback should never be triggered for placeholder navigations.
-  DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-           IsPlaceholderUrl(net::GURLWithNSURL(webView.URL))));
-
   NSString* authMethod = challenge.protectionSpace.authenticationMethod;
   if ([authMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
       [authMethod isEqual:NSURLAuthenticationMethodNTLM] ||
