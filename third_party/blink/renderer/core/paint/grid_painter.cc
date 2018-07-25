@@ -80,6 +80,9 @@ void GridPainter::PaintChildren(const PaintInfo& paint_info,
 
   Vector<std::pair<LayoutBox*, size_t>> grid_items_to_be_painted;
 
+  // TODO(svillar): This way of retrieving cells is extremelly
+  // inefficient for the list-based grid implementation. We must
+  // replace the loop by something else.
   for (const auto& row : dirtied_rows) {
     for (const auto& column : dirtied_columns) {
       const Vector<LayoutBox*, 1>& children =

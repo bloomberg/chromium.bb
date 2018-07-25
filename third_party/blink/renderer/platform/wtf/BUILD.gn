@@ -312,6 +312,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "assertions_test.cc",
     "decimal_test.cc",
     "deque_test.cc",
+    "doubly_linked_list_test.cc",
     "dtoa_test.cc",
     "experimental/container_type_operations_test.cc",
     "functional_test.cc",

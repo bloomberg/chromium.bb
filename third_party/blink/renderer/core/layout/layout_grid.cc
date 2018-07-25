@@ -807,7 +807,7 @@ void LayoutGrid::PlaceItemsOnGrid(
         specified_major_axis_auto_grid_items.push_back(child);
       continue;
     }
-    grid.insert(*child, area);
+    grid.Insert(*child, area);
   }
 
 #if DCHECK_IS_ON()
@@ -1013,7 +1013,7 @@ void LayoutGrid::PlaceSpecifiedMajorAxisItemsOnGrid(
           major_axis_positions);
     }
 
-    grid.insert(*auto_grid_item, *empty_grid_area);
+    grid.Insert(*auto_grid_item, *empty_grid_area);
 
     if (!is_grid_auto_flow_dense)
       minor_axis_cursors.Set(major_axis_initial_position,
@@ -1126,7 +1126,7 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
           GridSpan::TranslatedDefiniteGridSpan(0, minor_axis_span_size));
   }
 
-  grid.insert(grid_item, *empty_grid_area);
+  grid.Insert(grid_item, *empty_grid_area);
   // Move auto-placement cursor to the new position.
   auto_placement_cursor.first = empty_grid_area->rows.StartLine();
   auto_placement_cursor.second = empty_grid_area->columns.StartLine();
