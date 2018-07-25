@@ -43,6 +43,8 @@ class UserEventServiceImpl : public UserEventService {
   // Whether allowed to record events that link to navigation data.
   bool CanRecordHistory();
 
+  bool IsUserEventsDatatypeEnabled();
+
   // Checks dynamic or event specific conditions.
   bool ShouldRecordEvent(const sync_pb::UserEventSpecifics& specifics);
 

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -12,9 +13,11 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/variations/variations_associated_data.h"
 
 using fake_server::FakeServer;
@@ -287,9 +290,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
   EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1, consent2, testEvent3}));
 }
 
-// TODO(http://crbug.com/860616) User events continue to be synced even when
-// USER_EVENTS is disabled.
-IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, DISABLED_NoUserEvents) {
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoUserEvents) {
+  // Enable unified consent feature and the ones it depends on.
+  unified_consent::ScopedUnifiedConsent scoped_unified_consent(
+      unified_consent::UnifiedConsentFeatureState::kEnabledNoBump);
+
   const UserEventSpecifics testEvent1 = CreateTestEvent(1);
   const UserEventSpecifics testEvent2 = CreateTestEvent(2);
   const UserEventSpecifics testEvent3 = CreateTestEvent(3);
@@ -314,6 +319,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, DISABLED_NoUserEvents) {
 
 // Test that events that are logged before sync is enabled don't get lost.
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, LoggedBeforeSyncSetup) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(switches::kSyncUserConsentSeparateType);
+
   const UserEventSpecifics consent1 = CreateUserConsent(1);
   const UserEventSpecifics consent2 = CreateUserConsent(2);
   ASSERT_TRUE(SetupClients());
@@ -341,6 +349,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(switches::kSyncUserConsentSeparateType);
+
   const UserEventSpecifics testEvent1 = CreateTestEvent(1);
   const UserEventSpecifics testEvent2 = CreateTestEvent(2);
   const UserEventSpecifics consent1 = CreateUserConsent(3);
