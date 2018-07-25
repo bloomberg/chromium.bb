@@ -73,10 +73,10 @@
   }
 
   function changeVideoSrc() {
-    video.addEventListener('loadedmetadata', function() {
-      window.domAutomationController.send(true);
-    }, { once: true });
     video.src = video.src;
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
   }
 </script>
 </html>

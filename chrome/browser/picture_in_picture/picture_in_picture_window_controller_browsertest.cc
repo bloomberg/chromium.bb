@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // Tests that updating video src when video is in Picture-in-Picture session
 // keep Picture-in-Picture window opened.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       DISABLED_UpdateVideoSrcKeepsPictureInPictureWindowOpened) {
+                       UpdateVideoSrcKeepsPictureInPictureWindowOpened) {
   LoadTabAndEnterPictureInPicture(browser());
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
