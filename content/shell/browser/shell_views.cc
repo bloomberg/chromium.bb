@@ -426,11 +426,9 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   content_size_ = gfx::Size(width, height);
 
+  // |window_widget_| is made visible in PlatformSetContents(), so that the
+  // platform-window size does not need to change due to layout again.
   window_ = window_widget_->GetNativeWindow();
-  // Call ShowRootWindow on RootWindow created by WMTestHelper without
-  // which XWindow owned by RootWindow doesn't get mapped.
-  window_->GetHost()->Show();
-  window_widget_->Show();
 }
 
 void Shell::PlatformSetContents() {
@@ -454,6 +452,8 @@ void Shell::PlatformSetContents() {
     ShellWindowDelegateView* delegate_view =
         static_cast<ShellWindowDelegateView*>(widget_delegate);
     delegate_view->SetWebContents(web_contents_.get(), content_size_);
+    window_->GetHost()->Show();
+    window_widget_->Show();
   }
 }
 
