@@ -2153,6 +2153,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
 class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
  protected:
   WizardControllerDemoSetupTest() = default;
+  ~WizardControllerDemoSetupTest() override = default;
 
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2167,6 +2168,14 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
 
   bool IsInDemoSetupFlow() const {
     return WizardController::default_controller()->is_in_demo_setup_flow_;
+  }
+
+  template <class T, class H>
+  void SkipToScreen(OobeScreen screen, MockOutShowHide<T, H>* screen_mock) {
+    EXPECT_CALL(*screen_mock, Show()).Times(1);
+    auto* const wizard_controller = WizardController::default_controller();
+    wizard_controller->SimulateDemoModeSetupForTesting();
+    wizard_controller->AdvanceToScreen(screen);
   }
 
  private:
@@ -2188,10 +2197,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupFlowFinished) {
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_demo_preferences_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
 
   OnExit(*mock_demo_preferences_screen_,
          ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+
+  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2205,10 +2222,20 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupFlowFinished) {
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
 
   OnExit(*mock_arc_terms_of_service_screen_,
          ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED);
+
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  OnExit(*mock_arc_terms_of_service_screen_, ScreenExitCode::UPDATE_INSTALLED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2235,10 +2262,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_demo_preferences_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
 
   OnExit(*mock_demo_preferences_screen_,
          ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+
+  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2252,10 +2287,21 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
 
   OnExit(*mock_arc_terms_of_service_screen_,
          ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  OnExit(*mock_arc_terms_of_service_screen_, ScreenExitCode::UPDATE_INSTALLED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2274,11 +2320,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoPreferencesCanceled) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(IsInDemoSetupFlow());
   WaitUntilJSIsReady();
-
-  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
-
-  WizardController::default_controller()->StartDemoModeSetup();
+  SkipToScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES,
+               mock_demo_preferences_screen_);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2293,34 +2336,39 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoPreferencesCanceled) {
   EXPECT_FALSE(IsInDemoSetupFlow());
 }
 
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, NetworkBackPressed) {
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  EXPECT_FALSE(IsInDemoSetupFlow());
+  WaitUntilJSIsReady();
+  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK, mock_network_screen_);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
+
+  OnExit(*mock_eula_screen_, ScreenExitCode::NETWORK_BACK);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+}
+
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, EulaBackPressed) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(IsInDemoSetupFlow());
   WaitUntilJSIsReady();
-
-  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
-
-  WizardController::default_controller()->StartDemoModeSetup();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
-  EXPECT_TRUE(IsInDemoSetupFlow());
-
-  EXPECT_CALL(*mock_demo_preferences_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-
-  OnExit(*mock_demo_preferences_screen_,
-         ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
+  SkipToScreen(OobeScreen::SCREEN_OOBE_EULA, mock_eula_screen_);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
 
   OnExit(*mock_eula_screen_, ScreenExitCode::EULA_BACK);
 
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_TRUE(IsInDemoSetupFlow());
 }
 
@@ -2329,38 +2377,21 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, ArcTosBackPressed) {
   EXPECT_FALSE(IsInDemoSetupFlow());
   WaitUntilJSIsReady();
 
-  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
-
-  WizardController::default_controller()->StartDemoModeSetup();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
-  EXPECT_TRUE(IsInDemoSetupFlow());
-
-  EXPECT_CALL(*mock_demo_preferences_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-
-  OnExit(*mock_demo_preferences_screen_,
-         ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
-  EXPECT_TRUE(IsInDemoSetupFlow());
-
-  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
-
-  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+  // User cannot go to ARC ToS screen without accepting eula - simulate that.
+  StartupUtils::MarkEulaAccepted();
+  SkipToScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+               mock_arc_terms_of_service_screen_);
 
   CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
 
   OnExit(*mock_arc_terms_of_service_screen_,
          ScreenExitCode::ARC_TERMS_OF_SERVICE_BACK);
 
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_TRUE(IsInDemoSetupFlow());
 }
 
