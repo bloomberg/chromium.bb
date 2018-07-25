@@ -22,7 +22,13 @@ class WebClipboardImplTest : public ContentBrowserTest {
   ~WebClipboardImplTest() override = default;
 };
 
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
+#if defined(OS_CHROMEOS)
+// Test is flaky on ChromeOS (https://crbug.com/867339).
+#define MAYBE_PasteRTF DISABLED_PasteRTF
+#else
+#define MAYBE_PasteRTF PasteRTF
+#endif
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, MAYBE_PasteRTF) {
   BrowserTestClipboardScope clipboard;
 
   const std::string rtf_content = "{\\rtf1\\ansi Hello, {\\b world.}}";
