@@ -42,16 +42,18 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 
 // Bridge Obj-C class for WindowTouchBarDelegate and
 // BrowserWindowTouchBarController.
-@interface BrowserWindowTouchBarControllerViewsDelegate
+@interface BrowserWindowTouchBarViewsDelegate
     : NSObject<WindowTouchBarDelegate> {
   Browser* browser_;  // Weak.
   NSWindow* window_;  // Weak.
   base::scoped_nsobject<BrowserWindowTouchBarController> touchBarController_;
 }
 
+- (BrowserWindowTouchBarController*)touchBarController;
+
 @end
 
-@implementation BrowserWindowTouchBarControllerViewsDelegate
+@implementation BrowserWindowTouchBarViewsDelegate
 
 - (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
   if ((self = [super init])) {
@@ -60,6 +62,10 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
   }
 
   return self;
+}
+
+- (BrowserWindowTouchBarController*)touchBarController {
+  return touchBarController_.get();
 }
 
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
@@ -81,6 +87,11 @@ BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
           [[ChromeCommandDispatcherDelegate alloc] init]) {}
 
 BrowserFrameMac::~BrowserFrameMac() {
+}
+
+BrowserWindowTouchBarController* BrowserFrameMac::GetTouchBarController()
+    const {
+  return [touch_bar_delegate_ touchBarController];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,10 +148,9 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
 
-  touch_bar_delegate_.reset(
-      [[BrowserWindowTouchBarControllerViewsDelegate alloc]
-          initWithBrowser:browser_view_->browser()
-                   window:ns_window]);
+  touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]
+      initWithBrowser:browser_view_->browser()
+               window:ns_window]);
   [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
 
   return ns_window.autorelease();

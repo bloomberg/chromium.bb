@@ -21,6 +21,7 @@
 @class CustomWindowControlsView;
 @class NewTabButtonCocoa;
 @class TabContentsController;
+@class TabControllerCocoa;
 @class TabViewCocoa;
 @class TabStripDragController;
 @class TabStripView;

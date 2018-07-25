@@ -25,8 +25,6 @@ class WebContents;
 - (instancetype)initWithWebContents:(content::WebContents*)webContents
                          controller:(WebTextfieldTouchBarController*)controller;
 
-- (void)initObserver;
-
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2));
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
