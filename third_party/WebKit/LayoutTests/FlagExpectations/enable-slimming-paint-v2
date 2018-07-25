@@ -490,7 +490,6 @@ Bug(none) fast/events/touch/compositor-touch-hit-rects-trigger-commit.html [ Fai
 Bug(none) fast/events/touch/compositor-touch-hit-rects-transform-changed-nolayout.html [ Failure ]
 Bug(none) fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 Bug(none) fast/events/touch/gesture/gesture-scroll-by-page.html [ Failure ]
-Bug(none) fast/events/touch/gesture/gesture-scroll-by-pixel.html [ Failure ]
 Bug(none) fast/events/touch/touch-handler-assert-input-range.html [ Failure ]
 Bug(none) fast/events/touch/touch-rect-assert-first-layer-special.html [ Failure ]
 Bug(none) fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Failure ]
