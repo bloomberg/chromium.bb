@@ -160,7 +160,10 @@ source_set("unit_tests") {
   ]
 
   if (!use_x11) {
-    sources -= [ "unicode_to_keysym_unittest.cc" ]
+    sources -= [
+      "unicode_to_keysym_unittest.cc",
+      "x_server_clipboard_unittest.cc",
+    ]
   }
 
   configs += [ "//remoting/build/config:version" ]
