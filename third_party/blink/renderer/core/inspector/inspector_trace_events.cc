@@ -358,6 +358,41 @@ const char* CompileOptionsString(v8::ScriptCompiler::CompileOptions options) {
   return "";
 }
 
+const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
+  switch (reason) {
+    case ScriptStreamer::kNotHTTP:
+      return "not http/https protocol";
+    case ScriptStreamer::kReload:
+      return "reload event";
+    case ScriptStreamer::kContextNotValid:
+      return "script context not valid";
+    case ScriptStreamer::kEncodingNotSupported:
+      return "encoding not supported";
+    case ScriptStreamer::kThreadBusy:
+      return "script streamer thread busy";
+    case ScriptStreamer::kV8CannotStream:
+      return "V8 cannot stream script";
+    case ScriptStreamer::kScriptTooSmall:
+      return "script too small";
+    case ScriptStreamer::kNoResourceBuffer:
+      return "resource no longer alive";
+    case ScriptStreamer::kHasCodeCache:
+      return "script has code-cache available";
+    case ScriptStreamer::kStreamerNotReadyOnGetSource:
+      return "streamer not ready";
+    case ScriptStreamer::kInlineScript:
+      return "inline script";
+    case ScriptStreamer::kDidntTryToStartStreaming:
+      return "start streaming not called";
+    case ScriptStreamer::kAlreadyLoaded:
+    case ScriptStreamer::kCount:
+    case ScriptStreamer::kInvalid:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
@@ -1105,7 +1140,8 @@ std::unique_ptr<TracedValue> InspectorCompileScriptEvent::Data(
     const String& url,
     const TextPosition& text_position,
     const V8CacheResult& cache_result,
-    bool streamed) {
+    bool streamed,
+    ScriptStreamer::NotStreamingReason not_streaming_reason) {
   std::unique_ptr<TracedValue> value = FillLocation(url, text_position);
 
   if (cache_result.produce_result) {
@@ -1125,6 +1161,10 @@ std::unique_ptr<TracedValue> InspectorCompileScriptEvent::Data(
     value->SetBoolean("cacheRejected", cache_result.consume_result->rejected);
   }
   value->SetBoolean("streamed", streamed);
+  if (!streamed) {
+    value->SetString("notStreamedReason",
+                     NotStreamedReasonString(not_streaming_reason));
+  }
   return value;
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -425,7 +426,8 @@ struct V8CacheResult {
 std::unique_ptr<TracedValue> Data(const String& url,
                                   const WTF::TextPosition&,
                                   const V8CacheResult&,
-                                  bool streamed);
+                                  bool streamed,
+                                  ScriptStreamer::NotStreamingReason);
 }  // namespace InspectorCompileScriptEvent
 
 namespace InspectorFunctionCallEvent {

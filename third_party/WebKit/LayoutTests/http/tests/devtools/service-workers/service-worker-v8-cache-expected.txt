@@ -6,6 +6,7 @@ v8.compile Properties:
     data : {
         columnNumber : 0
         lineNumber : 0
+        notStreamedReason : "inline script"
         streamed : <boolean>
         url : .../devtools/service-workers/resources/v8-cache-worker.js
     }
@@ -20,6 +21,7 @@ v8.compile Properties:
         cacheProduceOptions : "full code"
         columnNumber : 0
         lineNumber : 0
+        notStreamedReason : "script has code-cache available"
         producedCacheSize : <number>
         streamed : <boolean>
         url : .../devtools/resources/v8-cache-script.js
@@ -39,6 +41,7 @@ v8.compile Properties:
         columnNumber : 0
         consumedCacheSize : <number>
         lineNumber : 0
+        notStreamedReason : "script too small"
         streamed : <boolean>
         url : .../devtools/resources/v8-cache-script.js
     }
@@ -55,6 +58,7 @@ v8.compile Properties:
         columnNumber : 0
         consumedCacheSize : <number>
         lineNumber : 0
+        notStreamedReason : "resource no longer alive"
         streamed : <boolean>
         url : .../devtools/resources/v8-cache-script.js
     }

@@ -68,7 +68,9 @@ class CORE_EXPORT ScriptSourceCode final {
   //
   // We lose the encoding information from ScriptResource.
   // Not sure if that matters.
-  ScriptSourceCode(ScriptStreamer*, ScriptResource*);
+  ScriptSourceCode(ScriptStreamer*,
+                   ScriptResource*,
+                   ScriptStreamer::NotStreamingReason);
 
   ~ScriptSourceCode();
   void Trace(blink::Visitor*);
@@ -83,11 +85,15 @@ class CORE_EXPORT ScriptSourceCode final {
   const String& SourceMapUrl() const { return source_map_url_; }
 
   ScriptStreamer* Streamer() const { return streamer_; }
+  ScriptStreamer::NotStreamingReason NotStreamingReason() const {
+    return not_streaming_reason_;
+  }
 
  private:
   const MovableString source_;
   Member<SingleCachedMetadataHandler> cache_handler_;
   Member<ScriptStreamer> streamer_;
+  ScriptStreamer::NotStreamingReason not_streaming_reason_;
 
   // The URL of the source code, which is primarily intended for DevTools
   // javascript debugger.

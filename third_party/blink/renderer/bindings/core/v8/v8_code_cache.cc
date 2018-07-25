@@ -225,7 +225,7 @@ void V8CodeCache::ProduceCache(
                       compile_options, cached_data ? cached_data->length : 0),
                   base::Optional<InspectorCompileScriptEvent::V8CacheResult::
                                      ConsumeResult>()),
-              source.Streamer()));
+              source.Streamer(), source.NotStreamingReason()));
       break;
     }
     case ProduceCacheOptions::kNoProduceCache:
@@ -314,7 +314,7 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
                   cached_data ? cached_data->length : 0),
               base::Optional<
                   InspectorCompileScriptEvent::V8CacheResult::ConsumeResult>()),
-          false));
+          false, ScriptStreamer::kHasCodeCache));
 
   return cached_metadata;
 }

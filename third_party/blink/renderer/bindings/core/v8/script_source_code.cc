@@ -56,6 +56,7 @@ ScriptSourceCode::ScriptSourceCode(
     const TextPosition& start_position)
     : source_(TreatNullSourceAsEmpty(source)),
       cache_handler_(cache_handler),
+      not_streaming_reason_(ScriptStreamer::kInlineScript),
       url_(StripFragmentIdentifier(url)),
       start_position_(start_position),
       source_location_type_(source_location_type) {
@@ -76,14 +77,18 @@ ScriptSourceCode::ScriptSourceCode(
                        start_position) {}
 
 ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
-                                   ScriptResource* resource)
+                                   ScriptResource* resource,
+                                   ScriptStreamer::NotStreamingReason reason)
     : source_(TreatNullSourceAsEmpty(resource->SourceText())),
       cache_handler_(resource->CacheHandler()),
       streamer_(streamer),
+      not_streaming_reason_(reason),
       url_(StripFragmentIdentifier(resource->GetResponse().Url())),
       source_map_url_(SourceMapUrlFromResponse(resource->GetResponse())),
       start_position_(TextPosition::MinimumPosition()),
-      source_location_type_(ScriptSourceLocationType::kExternalFile) {}
+      source_location_type_(ScriptSourceLocationType::kExternalFile) {
+  DCHECK_EQ(!streamer, reason != ScriptStreamer::NotStreamingReason::kInvalid);
+}
 
 ScriptSourceCode::~ScriptSourceCode() = default;
 
