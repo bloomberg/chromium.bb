@@ -195,7 +195,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   // https://crbug.com/847179.
   contents_size.SetToMax(gfx::Size(1, 1));
 
-  int min_height = delegate_->GetTopInsetInBrowserView(false) +
+  int min_height = delegate_->GetTopInsetInBrowserView() +
       tabstrip_size.height() + toolbar_size.height() +
       bookmark_bar_size.height() + infobar_container_size.height() +
       contents_size.height();
@@ -321,22 +321,12 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
 
 void BrowserViewLayout::Layout(views::View* browser_view) {
   vertical_layout_rect_ = browser_view->GetLocalBounds();
-  int top_inset = delegate_->GetTopInsetInBrowserView(false);
+  int top_inset = delegate_->GetTopInsetInBrowserView();
   int top = LayoutTabStripRegion(top_inset);
   if (delegate_->IsTabStripVisible()) {
-    // By passing true to GetTopInsetInBrowserView(), we position the tab
-    // background to vertically align with the frame background image of a
-    // restored-mode frame, even in a maximized window.  Then in the frame code,
-    // we position the frame so the portion of the image that's behind the
-    // restored-mode tabstrip is always behind the tabstrip.  Together these
-    // ensure that the tab and frame images are always aligned, and that their
-    // relative alignment with the toolbar image is always the same, so themes
-    // which try to align all three will look correct in both restored and
-    // maximized windows.
-    tab_strip_->SetBackgroundOffset(gfx::Point(
+    tab_strip_->SetBackgroundOffset(
         tab_strip_->GetMirroredX() + browser_view_->GetMirroredX() +
-            delegate_->GetThemeBackgroundXInset(),
-        browser_view_->y() + delegate_->GetTopInsetInBrowserView(true)));
+            delegate_->GetThemeBackgroundXInset());
   }
   top = LayoutToolbar(top);
 
@@ -501,7 +491,7 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
   // Ensure that the top container view reaches the topmost view in the
   // ClientView because the bounds of the top container view are used in
   // layout and we assume that this is the case.
-  height = std::max(height, delegate_->GetTopInsetInBrowserView(false));
+  height = std::max(height, delegate_->GetTopInsetInBrowserView());
 
   gfx::Rect top_container_bounds(vertical_layout_rect_.width(), height);
 

@@ -158,11 +158,9 @@ class Tab : public gfx::AnimationDelegate,
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
 
-  // Set the background offset used to match the image in the inactive tab
+  // Set the background X offset used to match the image in the inactive tab
   // to the frame image.
-  void set_background_offset(const gfx::Point& offset) {
-    background_offset_ = offset;
-  }
+  void set_background_offset(int offset) { background_offset_ = offset; }
 
   // Returns true if this tab became the active tab selected in
   // response to the last ui::ET_TAP_DOWN gesture dispatched to
@@ -338,7 +336,7 @@ class Tab : public gfx::AnimationDelegate,
   GlowHoverController hover_controller_;
 
   // The offset used to paint the inactive background image.
-  gfx::Point background_offset_;
+  int background_offset_;
 
   // For narrow tabs, we show the favicon even if it won't completely fit.
   // In this case, we need to center the favicon within the tab; it will be

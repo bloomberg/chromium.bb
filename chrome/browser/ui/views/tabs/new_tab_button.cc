@@ -449,24 +449,18 @@ void NewTabButton::PaintFill(bool pressed,
     // First we compute the background image coordinates and scale, in case we
     // need to draw a custom background image.
     const ui::ThemeProvider* tp = GetThemeProvider();
-    bool custom_image;
+    bool has_custom_image;
     const int bg_id = GetButtonFillResourceIdIfAny(
-        tab_strip_, tp, non_refresh_touch_ui, &custom_image);
-    if (custom_image && !new_tab_promo_observer_.IsObservingSources()) {
+        tab_strip_, tp, non_refresh_touch_ui, &has_custom_image);
+    if (has_custom_image && !new_tab_promo_observer_.IsObservingSources()) {
       // For non-refresh touch UI, the background is that of the active tab, so
-      // the positioning must match that in Tab::PaintTab().  For all other
-      // cases, the background is that of the inactive tab, so the positioning
-      // must match that in Tab::PaintInactiveTabBackground().
-      int offset_y;
-      if (non_refresh_touch_ui)
-        offset_y = -Tab::GetStrokeHeight();
-      else
-        offset_y = tp->HasCustomImage(bg_id) ? 0 : background_offset_.y();
+      // the positioning must match that in Tab::PaintTab().
+      const int offset_y = non_refresh_touch_ui ? -Tab::GetStrokeHeight() : 0;
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
       float x_scale = 1.0f;
       const gfx::Rect& contents_bounds = GetContentsBounds();
-      int x = GetMirroredX() + contents_bounds.x() + background_offset_.x();
+      int x = GetMirroredX() + contents_bounds.x() + background_offset_;
       if (base::i18n::IsRTL()) {
         x_scale = -1.0f;
         // Offset by |width| such that the same region is painted as if there

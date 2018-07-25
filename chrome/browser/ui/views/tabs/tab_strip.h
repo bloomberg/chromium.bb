@@ -84,7 +84,7 @@ class TabStrip : public views::View,
   int GetTabsMaxX() const;
 
   // Set the background offset used by inactive tabs to match the frame image.
-  void SetBackgroundOffset(const gfx::Point& offset);
+  void SetBackgroundOffset(int offset);
 
   // Returns true if the specified rect (in TabStrip coordinates) intersects
   // the window caption area of the browser window.

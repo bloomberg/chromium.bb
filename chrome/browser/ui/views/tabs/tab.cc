@@ -1277,20 +1277,10 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
                                      const gfx::Path& clip) {
   bool has_custom_image;
   int fill_id = controller_->GetBackgroundResourceId(&has_custom_image);
-
-  // The offset used to read from the image specified by |fill_id|.
-  int y_offset = 0;
-
-  if (!has_custom_image) {
+  if (!has_custom_image)
     fill_id = 0;
-  } else if (!GetThemeProvider()->HasCustomImage(fill_id)) {
-    // If there's a custom frame image but no custom image for the tab itself,
-    // then the tab's background will be the frame's image, so we need to
-    // provide an offset into the image to read from.
-    y_offset = background_offset_.y();
-  }
 
-  PaintTabBackground(canvas, false /* active */, fill_id, y_offset,
+  PaintTabBackground(canvas, false /* active */, fill_id, 0,
                      controller_->MaySetClip() ? &clip : nullptr);
 }
 
@@ -1391,7 +1381,7 @@ void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
     canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(fill_id),
-                         GetMirroredX() + background_offset_.x(), y_offset, 0,
+                         GetMirroredX() + background_offset_, y_offset, 0,
                          0, width(), height());
   } else {
     cc::PaintFlags flags;
