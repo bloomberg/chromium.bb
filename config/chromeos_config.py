@@ -4149,7 +4149,7 @@ def BranchScheduleConfig():
 
   branch_builds = (
       ('release-R69-10895.B', 'master-release',
-       release_label, '0 3 * * *', None),
+       release_label, '0 5 * * *', None),
       ('release-R69-10895.B', 'reef-android-nyc-pre-flight-branch',
        release_label, '0 1,5,9,13,17,21 * * *', None),
       ('release-R69-10895.B', 'samus-chrome-pre-flight-branch',
