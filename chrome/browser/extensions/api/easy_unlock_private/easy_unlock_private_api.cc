@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
