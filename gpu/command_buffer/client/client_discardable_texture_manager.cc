@@ -28,6 +28,8 @@ ClientDiscardableHandle ClientDiscardableTextureManager::InitializeTexture(
   if (handle_id.is_null())
     return ClientDiscardableHandle();
 
+  // We must have a valid handle here, since the id was generated above and
+  // should be in locked state.
   texture_entries_.emplace(texture_id, TextureEntry(handle_id));
   return discardable_manager_.GetHandle(handle_id);
 }

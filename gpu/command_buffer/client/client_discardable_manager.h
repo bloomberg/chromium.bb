@@ -22,6 +22,10 @@ class GPU_EXPORT ClientDiscardableManager {
  public:
   ClientDiscardableManager();
   ~ClientDiscardableManager();
+
+  // Note that the handles bound to an id are not guaranteed to outlive the
+  // handle id. GetHandle may return an empty handle if the corresponding handle
+  // was deleted on the service.
   ClientDiscardableHandle::Id CreateHandle(CommandBuffer* command_buffer);
   bool LockHandle(ClientDiscardableHandle::Id handle_id);
   void FreeHandle(ClientDiscardableHandle::Id handle_id);

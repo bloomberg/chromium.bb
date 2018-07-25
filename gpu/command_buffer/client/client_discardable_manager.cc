@@ -156,7 +156,8 @@ ClientDiscardableHandle::Id ClientDiscardableManager::CreateHandle(
 bool ClientDiscardableManager::LockHandle(
     ClientDiscardableHandle::Id handle_id) {
   auto found = handles_.find(handle_id);
-  DCHECK(found != handles_.end());
+  if (found == handles_.end())
+    return false;
   return found->second.Lock();
 }
 
@@ -177,7 +178,8 @@ bool ClientDiscardableManager::HandleIsValid(
 ClientDiscardableHandle ClientDiscardableManager::GetHandle(
     ClientDiscardableHandle::Id handle_id) {
   auto found = handles_.find(handle_id);
-  DCHECK(found != handles_.end());
+  if (found == handles_.end())
+    return ClientDiscardableHandle();
   return found->second;
 }
 

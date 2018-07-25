@@ -32,6 +32,8 @@ void ClientTransferCache::UnmapAndCreateEntry(uint32_t type, uint32_t id) {
   if (discardable_handle_id.is_null())
     return;
 
+  // We must have a valid handle here, since the id was generated above and
+  // should be in locked state.
   ClientDiscardableHandle handle =
       discardable_manager_.GetHandle(discardable_handle_id);
 
