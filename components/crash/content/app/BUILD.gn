@@ -76,11 +76,6 @@ static_library("app") {
       "//third_party/breakpad:client",
       "//third_party/crashpad/crashpad/snapshot",
     ]
-
-    # Clang's -mstackrealign doesn't work well with
-    # linux_syscall_support.h hand written asm syscalls.
-    # See https://crbug.com/556393
-    configs -= [ "//build/config/compiler:clang_stackrealign" ]
   }
 
   if (is_win) {
