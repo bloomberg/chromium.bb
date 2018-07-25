@@ -1,0 +1,40 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
+
+#include "components/autofill_assistant/browser/assistant_script.h"
+
+#include <map>
+#include <string>
+
+class GURL;
+
+namespace autofill_assistant {
+// Autofill assistant protocol related convenient utils.
+class AssistantProtocolUtils {
+ public:
+  // Create getting autofill assistant scripts request for the given
+  // |url|.
+  static std::string CreateGetScriptsRequest(const GURL& url);
+
+  using AssistantScripts =
+      std::map<AssistantScript*, std::unique_ptr<AssistantScript>>;
+  // Parse assistant scripts from the given |response|, which should not be an
+  // empty string.
+  static AssistantScripts ParseAssistantScripts(const std::string& response);
+
+  // Create initial request to get script actions for the given |script_path|.
+  static std::string CreateInitialScriptActionRequest(
+      const std::string& script_path);
+
+ private:
+  // To avoid instantiate this class by accident.
+  AssistantProtocolUtils() = delete;
+  ~AssistantProtocolUtils() = delete;
+};
+}  // namespace autofill_assistant
+
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
