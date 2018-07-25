@@ -63,7 +63,6 @@ EventType EventTypeFromNative(const PlatformEvent& native_event) {
     case NSEventTypeRotate:
     case NSEventTypeBeginGesture:
     case NSEventTypeEndGesture:
-      NOTIMPLEMENTED() << type;
       break;
     default:
       NOTIMPLEMENTED() << type;
