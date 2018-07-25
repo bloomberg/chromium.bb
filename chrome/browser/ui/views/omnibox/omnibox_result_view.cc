@@ -230,7 +230,7 @@ void OmniboxResultView::OnMatchIconUpdated() {
 }
 
 void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
-  suggestion_view_->image()->SetImage(image);
+  suggestion_view_->answer_image()->SetImage(image);
   Layout();
   SchedulePaint();
 }

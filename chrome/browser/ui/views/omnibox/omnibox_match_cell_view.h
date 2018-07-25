@@ -21,7 +21,7 @@ class OmniboxMatchCellView : public views::View {
   ~OmniboxMatchCellView() override;
 
   views::ImageView* icon() { return icon_view_; }
-  views::ImageView* image() { return image_view_; }
+  views::ImageView* answer_image() { return answer_image_view_; }
   OmniboxTextView* content() { return content_view_; }
   OmniboxTextView* description() { return description_view_; }
   OmniboxTextView* separator() { return separator_view_; }
@@ -55,8 +55,10 @@ class OmniboxMatchCellView : public views::View {
   bool should_show_tab_match_ = false;
 
   // Weak pointers for easy reference.
-  views::ImageView* icon_view_;   // An icon representing the type or content.
-  views::ImageView* image_view_;  // For rich suggestions.
+  // An icon representing the type or content.
+  views::ImageView* icon_view_;
+  // The image for answers in suggest and rich entity suggestions.
+  views::ImageView* answer_image_view_;
   OmniboxTextView* content_view_;
   OmniboxTextView* description_view_;
   OmniboxTextView* separator_view_;
