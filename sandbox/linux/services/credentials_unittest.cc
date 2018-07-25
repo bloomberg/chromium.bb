@@ -40,7 +40,9 @@ struct CapFreeDeleter {
 };
 
 // Wrapper to manage libcap2's cap_t type.
-typedef std::unique_ptr<typeof(*((cap_t)0)), CapFreeDeleter> ScopedCap;
+typedef std::unique_ptr<std::remove_reference<decltype(*((cap_t)0))>::type,
+                        CapFreeDeleter>
+    ScopedCap;
 
 bool WorkingDirectoryIsRoot() {
   char current_dir[PATH_MAX];

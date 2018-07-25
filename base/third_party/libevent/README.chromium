@@ -37,3 +37,4 @@ static library using GYP.
    by sandbox in nacl_helper_nonsfi.
 8) Remove an unnecessary workaround for OS X 10.4 from kqueue.c. It was causing
    problems on macOS Sierra.
+9) Change buffer.c to not redefine _GNU_SOURCE.

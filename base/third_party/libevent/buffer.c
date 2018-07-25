@@ -34,7 +34,7 @@
 #include <windows.h>
 #endif
 
-#ifdef HAVE_VASPRINTF
+#if defined(HAVE_VASPRINTF) && !defined(_GNU_SOURCE)
 /* If we have vasprintf, we need to define this before we include stdio.h. */
 #define _GNU_SOURCE
 #endif
