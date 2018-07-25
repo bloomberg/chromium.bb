@@ -66,6 +66,24 @@ class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicWriterMutexLock {
   QuicMutex* const lock_;
 };
 
+// A Notification allows threads to receive notification of a single occurrence
+// of a single event.
+class QUIC_EXPORT_PRIVATE QuicNotification {
+ public:
+  QuicNotification() = default;
+  QuicNotification(const QuicNotification&) = delete;
+  QuicNotification& operator=(const QuicNotification&) = delete;
+
+  bool HasBeenNotified() { return impl_.HasBeenNotified(); }
+
+  void Notify() { impl_.Notify(); }
+
+  void WaitForNotification() { impl_.WaitForNotification(); }
+
+ private:
+  QuicNotificationImpl impl_;
+};
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_MUTEX_H_

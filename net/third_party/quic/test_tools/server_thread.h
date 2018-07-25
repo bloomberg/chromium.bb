@@ -7,20 +7,18 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/simple_thread.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_mutex.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
+#include "net/third_party/quic/platform/api/quic_thread.h"
 #include "net/third_party/quic/tools/quic_server.h"
 
 namespace quic {
 namespace test {
 
 // Simple wrapper class to run QuicServer in a dedicated thread.
-class ServerThread : public base::SimpleThread {
+class ServerThread : public QuicThread {
  public:
   ServerThread(QuicServer* server, const QuicSocketAddress& address);
   ServerThread(const ServerThread&) = delete;
@@ -65,12 +63,12 @@ class ServerThread : public base::SimpleThread {
   void MaybeNotifyOfHandshakeConfirmation();
   void ExecuteScheduledActions();
 
-  base::WaitableEvent
-      confirmed_;  // Notified when the first handshake is confirmed.
-  base::WaitableEvent pause_;   // Notified when the server should pause.
-  base::WaitableEvent paused_;  // Notitied when the server has paused
-  base::WaitableEvent resume_;  // Notified when the server should resume.
-  base::WaitableEvent quit_;    // Notified when the server should quit.
+  QuicNotification
+      confirmed_;            // Notified when the first handshake is confirmed.
+  QuicNotification pause_;   // Notified when the server should pause.
+  QuicNotification paused_;  // Notitied when the server has paused
+  QuicNotification resume_;  // Notified when the server should resume.
+  QuicNotification quit_;    // Notified when the server should quit.
 
   std::unique_ptr<QuicServer> server_;
   QuicSocketAddress address_;
