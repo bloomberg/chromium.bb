@@ -271,7 +271,7 @@ void TrimElements(const std::set<int> target_ids,
 // don't leak it.
 class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
  public:
-  ThreatDetails* CreateThreatDetails(
+  scoped_refptr<ThreatDetails> CreateThreatDetails(
       BaseUIManager* ui_manager,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
@@ -280,10 +280,12 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
-    return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
-                             url_loader_factory, history_service,
-                             referrer_chain_provider, trim_to_ad_tags,
-                             done_callback);
+    auto threat_details = base::WrapRefCounted(new ThreatDetails(
+        ui_manager, web_contents, unsafe_resource, url_loader_factory,
+        history_service, referrer_chain_provider, trim_to_ad_tags,
+        done_callback));
+    threat_details->StartCollection();
+    return threat_details;
   }
 
  private:
@@ -299,7 +301,7 @@ static base::LazyInstance<ThreatDetailsFactoryImpl>::DestructorAtExit
 
 // Create a ThreatDetails for the given tab.
 /* static */
-ThreatDetails* ThreatDetails::NewThreatDetails(
+scoped_refptr<ThreatDetails> ThreatDetails::NewThreatDetails(
     BaseUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResource& resource,
@@ -344,7 +346,6 @@ ThreatDetails::ThreatDetails(
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
-  StartCollection();
 }
 
 // TODO(lpz): Consider making this constructor delegate to the parameterized one
