@@ -112,10 +112,9 @@ void CrashMetricsReporter::CrashDumpProcessed(
     const ChildExitObserver::TerminationInfo& info,
     breakpad::CrashDumpManager::CrashDumpStatus status) {
   ReportedCrashTypeSet reported_counts;
-  if (status == breakpad::CrashDumpManager::CrashDumpStatus::kMissingDump) {
-    NotifyObservers(info.process_host_id, reported_counts);
+  // Avoid duplicating processing for the same process.
+  if (status == breakpad::CrashDumpManager::CrashDumpStatus::kMissingDump)
     return;
-  }
 
   bool has_valid_dump = false;
   switch (status) {
