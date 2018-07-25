@@ -1830,18 +1830,18 @@ void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
       if (!level_infos[level_index].estimated_size)
         continue;
 
+      std::string level_dump_name = base::StringPrintf(
+          "%s/face_%d/level_%d", dump_name.c_str(), face_index, level_index);
+
       // If a level has a GLImage, ask the GLImage to dump itself.
       // If a level does not have a GLImage bound to it, then dump the
       // texture allocation also as the storage is not provided by the
       // GLImage in that case.
       if (level_infos[level_index].image) {
-        level_infos[level_index].image->OnMemoryDump(
-            pmd, client_tracing_id,
-            base::StringPrintf("%s/face_%d/level_%d", dump_name.c_str(),
-                               face_index, level_index));
+        level_infos[level_index].image->OnMemoryDump(pmd, client_tracing_id,
+                                                     level_dump_name);
       } else {
-        MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(base::StringPrintf(
-            "%s/face_%d/level_%d", dump_name.c_str(), face_index, level_index));
+        MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(level_dump_name);
         dump->AddScalar(
             MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
             static_cast<uint64_t>(level_infos[level_index].estimated_size));
