@@ -95,9 +95,9 @@ public final class ConnectivityChecker {
             postResult(callback, ConnectivityCheckResult.ERROR);
             return;
         }
-        new AsyncTask<String, Void, Integer>() {
+        new AsyncTask<Void, Void, Integer>() {
             @Override
-            protected Integer doInBackground(String... strings) {
+            protected Integer doInBackground(Void... params) {
                 try {
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setInstanceFollowRedirects(false);
@@ -127,7 +127,8 @@ public final class ConnectivityChecker {
             protected void onPostExecute(Integer result) {
                 callback.onResult(result);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

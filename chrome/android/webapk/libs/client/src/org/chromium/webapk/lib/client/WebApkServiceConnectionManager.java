@@ -150,12 +150,13 @@ public class WebApkServiceConnectionManager {
     public void disconnectAll(final Context appContext) {
         if (mConnections.isEmpty()) return;
 
-        Connection[] values = mConnections.values().toArray(new Connection[mConnections.size()]);
+        final Connection[] values =
+                mConnections.values().toArray(new Connection[mConnections.size()]);
         mConnections.clear();
 
-        new AsyncTask<Connection, Void, Void>() {
+        new AsyncTask<Void, Void, Void>() {
             @Override
-            protected final Void doInBackground(Connection... values) {
+            protected final Void doInBackground(Void... params) {
                 for (Connection connection : values) {
                     if (connection.getService() != null) {
                         appContext.unbindService(connection);
@@ -163,7 +164,8 @@ public class WebApkServiceConnectionManager {
                 }
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, values);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public WebApkServiceConnectionManager(String category, String action) {

@@ -173,10 +173,10 @@ public final class DefaultBrowserInfo {
                 .isStartupSuccessfullyCompleted();
 
         try {
-            new AsyncTask<Context, Void, DefaultInfo>() {
+            new AsyncTask<Void, Void, DefaultInfo>() {
                 @Override
-                protected DefaultInfo doInBackground(Context... params) {
-                    Context context = params[0];
+                protected DefaultInfo doInBackground(Void... params) {
+                    Context context = ContextUtils.getApplicationContext();
 
                     PackageManager pm = context.getPackageManager();
 
@@ -222,8 +222,7 @@ public final class DefaultBrowserInfo {
                             getDefaultBrowserUmaState(info), MobileDefaultBrowserState.NUM_ENTRIES);
                 }
             }
-                    .executeOnExecutor(
-                            AsyncTask.THREAD_POOL_EXECUTOR, ContextUtils.getApplicationContext());
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (RejectedExecutionException ex) {
             // Fail silently here since this is not a critical task.
         }

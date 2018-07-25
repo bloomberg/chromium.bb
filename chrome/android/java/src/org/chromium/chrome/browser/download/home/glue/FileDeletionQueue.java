@@ -67,22 +67,25 @@ class FileDeletionQueue {
 
         System.out.println("dtrainor: Starting " + file.getName());
 
-        mTask = new FileDeletionTask();
-        mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, file);
+        mTask = new FileDeletionTask(file);
+        mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private class FileDeletionTask extends AsyncTask<File, Void, Void> {
-        // AsyncTask implementation.
+    private class FileDeletionTask extends AsyncTask<Void, Void, Void> {
+        private final File mFile;
+
+        FileDeletionTask(File file) {
+            mFile = file;
+        }
+
         @Override
-        protected Void doInBackground(File... params) {
-            System.out.println("dtrainor: Deleting " + params[0].getName());
-            mDeleter.onResult(params[0]);
+        protected Void doInBackground(Void... params) {
+            mDeleter.onResult(mFile);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            System.out.println("dtrainor: Post");
             super.onPostExecute(result);
             mTask = null;
             deleteNextFile();
