@@ -66,13 +66,11 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     private static SyncController sInstance;
     private static boolean sInitialized;
 
-    private final Context mContext;
     private final ChromeSigninController mChromeSigninController;
     private final ProfileSyncService mProfileSyncService;
     private final SyncNotificationController mSyncNotificationController;
 
-    private SyncController(Context context) {
-        mContext = context;
+    private SyncController() {
         mChromeSigninController = ChromeSigninController.get();
         AndroidSyncSettings.registerObserver(this);
         mProfileSyncService = ProfileSyncService.get();
@@ -89,7 +87,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
 
         // Create the SyncNotificationController.
         mSyncNotificationController = new SyncNotificationController(
-                mContext, PassphraseActivity.class, AccountManagementFragment.class);
+                PassphraseActivity.class, AccountManagementFragment.class);
         mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
 
         updateSyncStateFromAndroid();
@@ -123,19 +121,28 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     /**
      * Retrieve the singleton instance of this class.
      *
-     * @param context the current context.
      * @return the singleton instance.
      */
     @Nullable
-    public static SyncController get(Context context) {
+    public static SyncController get() {
         ThreadUtils.assertOnUiThread();
         if (!sInitialized) {
             if (ProfileSyncService.get() != null) {
-                sInstance = new SyncController(context.getApplicationContext());
+                sInstance = new SyncController();
             }
             sInitialized = true;
         }
         return sInstance;
+    }
+
+    /**
+     * Retrieve the singleton instance of this class.
+     * @deprecated Use get with no arguments instead.
+     * @return the singleton instance.
+     */
+    @Nullable
+    public static SyncController get(Context context) {
+        return get();
     }
 
     /**
