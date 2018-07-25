@@ -381,17 +381,15 @@ class MockTimer : public base::MockOneShotTimer {
 
   void Start(const base::Location& posted_from,
              base::TimeDelta delay,
-             const base::Closure& user_task) override {
-    StartObserver(posted_from, delay, user_task);
-    base::MockOneShotTimer::Start(posted_from, delay, user_task);
+             base::OnceClosure user_task) override {
+    StartObserver(posted_from, delay);
+    base::MockOneShotTimer::Start(posted_from, delay, std::move(user_task));
   }
 
   // StartObserver is invoked when MockTimer::Start() is called.
   // Does not replace the behavior of MockTimer::Start().
-  MOCK_METHOD3(StartObserver,
-               void(const base::Location& posted_from,
-                    base::TimeDelta delay,
-                    const base::Closure& user_task));
+  MOCK_METHOD2(StartObserver,
+               void(const base::Location& posted_from, base::TimeDelta delay));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTimer);
@@ -565,7 +563,7 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   test_client_.reset(new MDnsClientImpl(&clock, base::WrapUnique(timer)));
   test_client_->StartListening(&socket_factory_);
 
-  EXPECT_CALL(*timer, StartObserver(_, _, _)).Times(1);
+  EXPECT_CALL(*timer, StartObserver(_, _)).Times(1);
   EXPECT_CALL(clock, Now())
       .Times(3)
       .WillRepeatedly(Return(start_time))
@@ -608,7 +606,7 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
       .WillOnce(Return(start_time + base::TimeDelta::FromSeconds(2)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*timer, StartObserver(_, base::TimeDelta(), _));
+  EXPECT_CALL(*timer, StartObserver(_, base::TimeDelta()));
 
   timer->Fire();
 }

@@ -384,10 +384,11 @@ class MockTimer : public base::MockOneShotTimer {
 
   void Start(const base::Location& posted_from,
              base::TimeDelta delay,
-             const base::Closure& user_task) override {
+             base::OnceClosure user_task) override {
     // Sets a maximum delay, so the timer does not fire unless it is told to.
     base::TimeDelta infinite_delay = base::TimeDelta::Max();
-    base::MockOneShotTimer::Start(posted_from, infinite_delay, user_task);
+    base::MockOneShotTimer::Start(posted_from, infinite_delay,
+                                  std::move(user_task));
   }
 
  private:
