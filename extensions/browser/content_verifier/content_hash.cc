@@ -47,10 +47,11 @@ std::unique_ptr<VerifiedContents> GetVerifiedContents(
     bool delete_invalid_file) {
   base::AssertBlockingAllowed();
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-  auto verified_contents = std::make_unique<VerifiedContents>(key.verifier_key);
   base::FilePath verified_contents_path =
       file_util::GetVerifiedContentsPath(key.extension_root);
-  if (!verified_contents->InitFrom(verified_contents_path)) {
+  std::unique_ptr<VerifiedContents> verified_contents =
+      VerifiedContents::Create(key.verifier_key, verified_contents_path);
+  if (!verified_contents) {
     if (delete_invalid_file &&
         !base::DeleteFile(verified_contents_path, false)) {
       LOG(WARNING) << "Failed to delete " << verified_contents_path.value();

@@ -71,13 +71,10 @@ std::unique_ptr<VerifiedContents> CreateTestVerifiedContents(
   if (!GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key))
     return nullptr;
 
-  auto contents = std::make_unique<VerifiedContents>(
-      base::as_bytes(base::make_span(public_key)));
   base::FilePath verified_contents_path =
       path.AppendASCII(verified_contents_filename);
-  if (!contents->InitFrom(verified_contents_path))
-    return nullptr;
-  return contents;
+  return VerifiedContents::Create(base::as_bytes(base::make_span(public_key)),
+                                  verified_contents_path);
 }
 
 }  // namespace
