@@ -5,16 +5,14 @@
 # found in the LICENSE file.
 
 import argparse
-import contextlib
 import json
 import logging
 import os
 import re
 import signal
-import stat
 import sys
 
-import psutil
+import psutil  # pylint: disable=import-error
 
 CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..'))
@@ -22,13 +20,13 @@ CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
 # Use the android test-runner's gtest results support library for generating
 # output json ourselves.
 sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
-from pylib.base import base_test_result
-from pylib.results import json_results
+from pylib.base import base_test_result  # pylint: disable=import-error
+from pylib.results import json_results  # pylint: disable=import-error
 
 # Use luci-py's subprocess42.py
 sys.path.insert(
     0, os.path.join(CHROMIUM_SRC_PATH, 'tools', 'swarming_client', 'utils'))
-import subprocess42
+import subprocess42  # pylint: disable=import-error
 
 CHROMITE_PATH = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'third_party', 'chromite'))
@@ -36,30 +34,275 @@ CROS_RUN_VM_TEST_PATH = os.path.abspath(os.path.join(
     CHROMITE_PATH, 'bin', 'cros_run_vm_test'))
 
 
-_FILE_BLACKLIST = [
-  re.compile(r'.*build/chromeos.*'),
-  re.compile(r'.*build/cros_cache.*'),
-  re.compile(r'.*third_party/chromite.*'),
-]
+class TestFormatError(Exception):
+  pass
 
 
-def read_runtime_files(runtime_deps_path, outdir):
-  if not runtime_deps_path:
-    return []
+class RemoteTest(object):
 
-  abs_runtime_deps_path = os.path.abspath(
-      os.path.join(outdir, runtime_deps_path))
-  with open(abs_runtime_deps_path) as runtime_deps_file:
-    files = [l.strip() for l in runtime_deps_file if l]
-  rel_file_paths = []
-  for f in files:
-    rel_file_path = os.path.relpath(
-        os.path.abspath(os.path.join(outdir, f)),
-        os.getcwd())
-    if not any(regex.match(rel_file_path) for regex in _FILE_BLACKLIST):
-      rel_file_paths.append(rel_file_path)
+  def __init__(self, args, unknown_args):
+    self._additional_args = unknown_args
+    self._path_to_outdir = args.path_to_outdir
+    self._test_exe = args.test_exe
+    self._test_launcher_summary_output = args.test_launcher_summary_output
+    self._vm_logs_dir = args.vm_logs_dir
 
-  return rel_file_paths
+    self._test_env = os.environ.copy()
+    self._retries = 0
+    self._timeout = None
+
+    self._vm_test_cmd = [
+        CROS_RUN_VM_TEST_PATH,
+        '--start',
+        '--board', args.board,
+        '--cache-dir', args.cros_cache,
+    ]
+    if args.vm_logs_dir:
+      self._vm_test_cmd += [
+          '--results-src', '/var/log/',
+          '--results-dest-dir', args.vm_logs_dir,
+      ]
+
+  @property
+  def vm_test_cmd(self):
+    return self._vm_test_cmd
+
+  def run_test(self):
+    # Traps SIGTERM and kills all child processes of cros_run_vm_test when it's
+    # caught. This will allow us to capture logs from the VM if a test hangs
+    # and gets timeout-killed by swarming. See also:
+    # https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+    test_proc = None
+    def _kill_child_procs(trapped_signal, _):
+      logging.warning(
+          'Received signal %d. Killing child processes of test.',
+          trapped_signal)
+      if not test_proc or not test_proc.pid:
+        # This shouldn't happen?
+        logging.error('Test process not running.')
+        return
+      for child in psutil.Process(test_proc.pid).children():
+        logging.warning('Killing process %s', child)
+        child.kill()
+
+    signal.signal(signal.SIGTERM, _kill_child_procs)
+
+    for i in xrange(self._retries+1):
+      logging.info('########################################')
+      logging.info('Test attempt #%d', i)
+      logging.info('########################################')
+      test_proc = subprocess42.Popen(
+          self._vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr,
+          env=self._test_env)
+      try:
+        test_proc.wait(timeout=self._timeout)
+      except subprocess42.TimeoutExpired:
+        logging.error('Test timed out. Sending SIGTERM.')
+        # SIGTERM the proc and wait 10s for it to close.
+        test_proc.terminate()
+        try:
+          test_proc.wait(timeout=10)
+        except subprocess42.TimeoutExpired:
+          # If it hasn't closed in 10s, SIGKILL it.
+          logging.error('Test did not exit in time. Sending SIGKILL.')
+          test_proc.kill()
+          test_proc.wait()
+      logging.info('Test exitted with %d.', test_proc.returncode)
+      if test_proc.returncode == 0:
+        break
+
+    self.handle_results(test_proc.returncode)
+    return test_proc.returncode
+
+  def handle_results(self, return_code):
+    pass
+
+
+class GTestTest(RemoteTest):
+
+  _FILE_BLACKLIST = [
+      re.compile(r'.*build/chromeos.*'),
+      re.compile(r'.*build/cros_cache.*'),
+      re.compile(r'.*third_party/chromite.*'),
+  ]
+
+  def __init__(self, args, unknown_args):
+    super(GTestTest, self).__init__(args, unknown_args)
+
+    self._runtime_deps_path = args.runtime_deps_path
+    self._vpython_dir = args.vpython_dir
+
+    self._test_launcher_shard_index = args.test_launcher_shard_index
+    self._test_launcher_total_shards = args.test_launcher_total_shards
+
+  def build_test_command(self):
+    # To keep things easy for us, ensure both types of output locations are
+    # the same.
+    if self._test_launcher_summary_output and self._vm_logs_dir:
+      json_out_dir = os.path.dirname(self._test_launcher_summary_output) or '.'
+      if os.path.abspath(json_out_dir) != os.path.abspath(self._vm_logs_dir):
+        raise TestFormatError(
+            '--test-launcher-summary-output and --vm-logs-dir must point to '
+            'the same directory.')
+
+    runtime_files = self._read_runtime_files()
+    if self._vpython_dir:
+      # --vpython-dir is relative to the out dir, but --files expects paths
+      # relative to src dir, so fix the path up a bit.
+      runtime_files.append(
+          os.path.relpath(
+              os.path.abspath(os.path.join(self._path_to_outdir,
+                                           self._vpython_dir)),
+              CHROMIUM_SRC_PATH))
+      # TODO(bpastene): Add the vpython spec to the test's runtime deps instead
+      # of handling it here.
+      runtime_files.append('.vpython')
+
+    # If we're pushing files, we need to set the cwd.
+    if runtime_files:
+        self._vm_test_cmd.extend(
+            ['--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH)])
+    for f in runtime_files:
+      self._vm_test_cmd.extend(['--files', f])
+
+    if self._test_launcher_summary_output:
+      result_dir, result_file = os.path.split(
+          self._test_launcher_summary_output)
+      # If args.test_launcher_summary_output is a file in cwd, result_dir will
+      # be an empty string, so replace it with '.' when this is the case so
+      # cros_run_vm_test can correctly handle it.
+      if not result_dir:
+        result_dir = '.'
+      vm_result_file = '/tmp/%s' % result_file
+      self._vm_test_cmd += [
+          '--results-src', vm_result_file,
+          '--results-dest-dir', result_dir,
+      ]
+
+    pre_test_cmds = [
+        # /home is mounted with "noexec" in the VM, but some of our tools
+        # and tests use the home dir as a workspace (eg: vpython downloads
+        # python binaries to ~/.vpython-root). /tmp doesn't have this
+        # restriction, so change the location of the home dir for the
+        # duration of the test.
+        'export HOME=/tmp', '\\;',
+    ]
+    if self._vpython_dir:
+      vpython_spec_path = os.path.relpath(
+          os.path.join(CHROMIUM_SRC_PATH, '.vpython'),
+          self._path_to_outdir)
+      pre_test_cmds += [
+          # Backslash is needed to prevent $PATH from getting prematurely
+          # executed on the host.
+          'export PATH=\\$PATH:\\$PWD/%s' % self._vpython_dir, '\\;',
+          # Initialize the vpython cache. This can take 10-20s, and some tests
+          # can't afford to wait that long on the first invocation.
+          'vpython', '-vpython-spec', vpython_spec_path, '-vpython-tool',
+          'install', '\\;',
+      ]
+
+    self._vm_test_cmd += [
+        # Some tests fail as root, so run as the less privileged user 'chronos'.
+        '--as-chronos',
+        '--cmd',
+        '--',
+        # Wrap the cmd to run in the VM around quotes (") so that the
+        # interpreter on the host doesn't stop at any ";" or "&&" tokens in the
+        # cmd.
+        '"',
+    ] + pre_test_cmds + [
+        './' + self._test_exe,
+        '--test-launcher-shard-index=%d' % self._test_launcher_shard_index,
+        '--test-launcher-total-shards=%d' % self._test_launcher_total_shards,
+    ] + self._additional_args + [
+        '"',
+    ]
+
+    if self._test_launcher_summary_output:
+      self._vm_test_cmd += [
+        '--test-launcher-summary-output=%s' % vm_result_file,
+      ]
+
+  def _read_runtime_files(self):
+    if not self._runtime_deps_path:
+      return []
+
+    abs_runtime_deps_path = os.path.abspath(
+        os.path.join(self._path_to_outdir, self._runtime_deps_path))
+    with open(abs_runtime_deps_path) as runtime_deps_file:
+      files = [l.strip() for l in runtime_deps_file if l]
+    rel_file_paths = []
+    for f in files:
+      rel_file_path = os.path.relpath(
+          os.path.abspath(os.path.join(self._path_to_outdir, f)),
+          os.getcwd())
+      if not any(regex.match(rel_file_path) for regex in self._FILE_BLACKLIST):
+        rel_file_paths.append(rel_file_path)
+
+    return rel_file_paths
+
+
+class BrowserSanityTest(RemoteTest):
+
+  def __init__(self, args, unknown_args):
+    super(BrowserSanityTest, self).__init__(args, unknown_args)
+
+    # 5 min should be enough time for the sanity test to pass.
+    self._retries = 2
+    self._timeout = 300
+
+  def build_test_command(self):
+    if self._additional_args:
+      raise TestFormatError('Sanity test should not have additional args.')
+
+    # run_cros_vm_test's default behavior when no cmd is specified is the sanity
+    # test that's baked into the VM image. This test smoke-checks the system
+    # browser, so deploy our locally-built chrome to the VM before testing.
+    self._vm_test_cmd += [
+        '--deploy',
+        '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
+    ]
+
+    # deploy_chrome needs a set of GN args used to build chrome to determine if
+    # certain libraries need to be pushed to the VM. It looks for the args via
+    # an env var. To trigger the default deploying behavior, give it a dummy set
+    # of args.
+    # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
+    # line args.
+    if not self._test_env.get('GN_ARGS'):
+      self._test_env['GN_ARGS'] = 'is_chromeos = true'
+    self._test_env['PATH'] = (
+        self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
+
+  def handle_results(self, return_code):
+    # Create a simple json results file for the sanity test if needed. The
+    # results will contain only one test ('cros_vm_sanity_test'), and will
+    # either be a PASS or FAIL depending on the return code of cros_run_vm_test.
+    if self._test_launcher_summary_output:
+      result = (base_test_result.ResultType.FAIL if return_code else
+                    base_test_result.ResultType.PASS)
+      sanity_test_result = base_test_result.BaseTestResult(
+          'cros_vm_sanity_test', result)
+      run_results = base_test_result.TestRunResults()
+      run_results.AddResult(sanity_test_result)
+      with open(self._test_launcher_summary_output, 'w') as f:
+        json.dump(json_results.GenerateResultsDict([run_results]), f)
+
+
+def vm_test(args, unknown_args):
+  # pylint: disable=redefined-variable-type
+  # TODO: Remove the above when depot_tool's pylint is updated to include the
+  # fix to https://github.com/PyCQA/pylint/issues/710.
+  if args.test_exe == 'cros_vm_sanity_test':
+    test = BrowserSanityTest(args, unknown_args)
+  else:
+    test = GTestTest(args, unknown_args)
+
+  test.build_test_command()
+  logging.info('Running the following command:')
+  logging.info(' '.join(test.vm_test_cmd))
+
+  return test.run_test()
 
 
 def host_cmd(args, unknown_args):
@@ -91,199 +334,6 @@ def host_cmd(args, unknown_args):
 
   return subprocess42.call(
       cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
-
-
-def vm_test(args, unknown_args):
-  is_sanity_test = args.test_exe == 'cros_vm_sanity_test'
-
-  # To keep things easy for us, ensure both types of output locations are
-  # the same.
-  if args.test_launcher_summary_output and args.vm_logs_dir:
-    json_output_dir = os.path.dirname(args.test_launcher_summary_output) or '.'
-    if os.path.abspath(json_output_dir) != os.path.abspath(args.vm_logs_dir):
-      logging.error(
-          '--test-launcher-summary-output and --vm-logs-dir must point to '
-          'the same directory.')
-      return 1
-
-  cros_run_vm_test_cmd = [
-      CROS_RUN_VM_TEST_PATH,
-      '--start',
-      '--board', args.board,
-      '--cache-dir', args.cros_cache,
-  ]
-
-  # cros_run_vm_test has trouble with relative paths that go up directories, so
-  # cd to src/, which should be the root of all data deps.
-  os.chdir(CHROMIUM_SRC_PATH)
-
-  runtime_files = read_runtime_files(
-      args.runtime_deps_path, args.path_to_outdir)
-  if args.vpython_dir:
-    # --vpython-dir is relative to the out dir, but --files expects paths
-    # relative to src dir, so fix the path up a bit.
-    runtime_files.append(
-        os.path.relpath(
-            os.path.abspath(os.path.join(args.path_to_outdir,
-                                         args.vpython_dir)),
-            CHROMIUM_SRC_PATH))
-    runtime_files.append('.vpython')
-
-  # If we're pushing files, we need to set the cwd.
-  if runtime_files:
-      cros_run_vm_test_cmd.extend(
-          ['--cwd', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH)])
-  for f in runtime_files:
-    cros_run_vm_test_cmd.extend(['--files', f])
-
-  if args.vm_logs_dir:
-    cros_run_vm_test_cmd += [
-        '--results-src', '/var/log/',
-        '--results-dest-dir', args.vm_logs_dir,
-    ]
-
-  if args.test_launcher_summary_output and not is_sanity_test:
-    result_dir, result_file = os.path.split(args.test_launcher_summary_output)
-    # If args.test_launcher_summary_output is a file in cwd, result_dir will be
-    # an empty string, so replace it with '.' when this is the case so
-    # cros_run_vm_test can correctly handle it.
-    if not result_dir:
-      result_dir = '.'
-    vm_result_file = '/tmp/%s' % result_file
-    cros_run_vm_test_cmd += [
-      '--results-src', vm_result_file,
-      '--results-dest-dir', result_dir,
-    ]
-
-  if is_sanity_test:
-    # run_cros_vm_test's default behavior when no cmd is specified is the sanity
-    # test that's baked into the VM image. This test smoke-checks the system
-    # browser, so deploy our locally-built chrome to the VM before testing.
-    cros_run_vm_test_cmd += [
-        '--deploy',
-        '--build-dir', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH),
-    ]
-  else:
-    pre_test_cmds = [
-        # /home is mounted with "noexec" in the VM, but some of our tools
-        # and tests use the home dir as a workspace (eg: vpython downloads
-        # python binaries to ~/.vpython-root). /tmp doesn't have this
-        # restriction, so change the location of the home dir for the
-        # duration of the test.
-        'export HOME=/tmp', '\;',
-    ]
-    if args.vpython_dir:
-      vpython_spec_path = os.path.relpath(
-          os.path.join(CHROMIUM_SRC_PATH, '.vpython'),
-          args.path_to_outdir)
-      pre_test_cmds += [
-          # Backslash is needed to prevent $PATH from getting prematurely
-          # executed on the host.
-          'export PATH=\$PATH:\$PWD/%s' % args.vpython_dir, '\;',
-          # Initialize the vpython cache. This can take 10-20s, and some tests
-          # can't afford to wait that long on the first invocation.
-          'vpython', '-vpython-spec', vpython_spec_path, '-vpython-tool',
-          'install', '\;',
-      ]
-    cros_run_vm_test_cmd += [
-        # Some tests fail as root, so run as the less privileged user 'chronos'.
-        '--as-chronos',
-        '--cmd',
-        '--',
-        # Wrap the cmd to run in the VM around quotes (") so that the
-        # interpreter on the host doesn't stop at any ";" or "&&" tokens in the
-        # cmd.
-        '"',
-    ] + pre_test_cmds + [
-        './' + args.test_exe,
-        '--test-launcher-shard-index=%d' % args.test_launcher_shard_index,
-        '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
-    ] + unknown_args + [
-        '"',
-    ]
-
-  if args.test_launcher_summary_output and not is_sanity_test:
-    cros_run_vm_test_cmd += [
-      '--test-launcher-summary-output=%s' % vm_result_file,
-    ]
-
-  logging.info('Running the following command:')
-  logging.info(' '.join(cros_run_vm_test_cmd))
-
-  # deploy_chrome needs a set of GN args used to build chrome to determine if
-  # certain libraries need to be pushed to the VM. It looks for the args via an
-  # env var. To trigger the default deploying behavior, give it a dummy set of
-  # args.
-  # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd-line
-  # args.
-  env_copy = os.environ.copy()
-  if not env_copy.get('GN_ARGS'):
-    env_copy['GN_ARGS'] = 'is_chromeos = true'
-  env_copy['PATH'] = env_copy['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
-
-  # Traps SIGTERM and kills all child processes of cros_run_vm_test when it's
-  # caught. This will allow us to capture logs from the VM if a test hangs
-  # and gets timeout-killed by swarming. See also:
-  # https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
-  test_proc = None
-  def _kill_child_procs(trapped_signal, _):
-    logging.warning(
-        'Received signal %d. Killing child processes of test.', trapped_signal)
-    if not test_proc or not test_proc.pid:
-      # This shouldn't happen?
-      logging.error('Test process not running.')
-      return
-    for child in psutil.Process(test_proc.pid).children():
-      logging.warning('Killing process %s', child)
-      child.kill()
-
-  # Standard GTests should handle retries and timeouts themselves.
-  retries, timeout = 0, None
-  if is_sanity_test:
-    # 5 min should be enough time for the sanity test to pass.
-    retries, timeout = 2, 300
-  signal.signal(signal.SIGTERM, _kill_child_procs)
-
-  for i in xrange(retries+1):
-    logging.info('########################################')
-    logging.info('Test attempt #%d', i)
-    logging.info('########################################')
-    test_proc = subprocess42.Popen(
-        cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr,
-        env=env_copy)
-    try:
-      test_proc.wait(timeout=timeout)
-    except subprocess42.TimeoutExpired:
-      logging.error('Test timed out. Sending SIGTERM.')
-      # SIGTERM the proc and wait 10s for it to close.
-      test_proc.terminate()
-      try:
-        test_proc.wait(timeout=10)
-      except subprocess42.TimeoutExpired:
-        # If it hasn't closed in 10s, SIGKILL it.
-        logging.error('Test did not exit in time. Sending SIGKILL.')
-        test_proc.kill()
-        test_proc.wait()
-    logging.info('Test exitted with %d.', test_proc.returncode)
-    if test_proc.returncode == 0:
-      break
-
-  rc = test_proc.returncode
-
-  # Create a simple json results file for the sanity test if needed. The results
-  # will contain only one test ('cros_vm_sanity_test'), and will either be a
-  # PASS or FAIL depending on the return code of cros_run_vm_test above.
-  if args.test_launcher_summary_output and is_sanity_test:
-    result = (base_test_result.ResultType.FAIL if rc else
-                  base_test_result.ResultType.PASS)
-    sanity_test_result = base_test_result.BaseTestResult(
-        'cros_vm_sanity_test', result)
-    run_results = base_test_result.TestRunResults()
-    run_results.AddResult(sanity_test_result)
-    with open(args.test_launcher_summary_output, 'w') as f:
-      json.dump(json_results.GenerateResultsDict([run_results]), f)
-
-  return rc
 
 
 def main():
@@ -364,6 +414,10 @@ def main():
     logging.error(
         '/dev/kvm is not writable as current user. Perhaps you should be root?')
     return 1
+
+  # cros_run_vm_test has trouble with relative paths that go up directories, so
+  # cd to src/, which should be the root of all data deps.
+  os.chdir(CHROMIUM_SRC_PATH)
 
   args.cros_cache = os.path.abspath(args.cros_cache)
   return args.func(args, unknown_args)
