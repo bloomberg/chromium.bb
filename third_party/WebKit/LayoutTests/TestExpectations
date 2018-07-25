@@ -2642,7 +2642,7 @@ crbug.com/828506 [ Linux Win ] fast/events/touch/scroll-without-mouse-lacks-mous
 crbug.com/828506 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Linux Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-
+crbug.com/828506 [ Linux Win ] virtual/paint-touchaction-rects/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Failure Pass ]
 
 # Failure messages are unstable so we cannot create baselines.
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
@@ -4683,4 +4683,3 @@ crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/color-space/canvas-create
 crbug.com/866965 [ Linux ] virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
 crbug.com/866965 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
 crbug.com/866965 [ Linux ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
-crbug.com/867181 [ Win10 ] virtual/paint-touchaction-rects/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Failure Pass ]
