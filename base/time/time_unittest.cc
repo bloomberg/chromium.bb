@@ -293,6 +293,15 @@ TEST_F(TimeTest, UTCExplode) {
   EXPECT_TRUE((a - b) < TimeDelta::FromSeconds(1));
 }
 
+TEST_F(TimeTest, UTCMidnight) {
+  Time::Exploded exploded;
+  Time::Now().UTCMidnight().UTCExplode(&exploded);
+  EXPECT_EQ(0, exploded.hour);
+  EXPECT_EQ(0, exploded.minute);
+  EXPECT_EQ(0, exploded.second);
+  EXPECT_EQ(0, exploded.millisecond);
+}
+
 TEST_F(TimeTest, LocalMidnight) {
   Time::Exploded exploded;
   Time::Now().LocalMidnight().LocalExplode(&exploded);

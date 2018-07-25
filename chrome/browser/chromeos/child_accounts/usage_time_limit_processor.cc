@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "usage_time_limit_processor.h"
+#include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
+
+#include <algorithm>
+#include <string>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 
@@ -40,22 +44,6 @@ bool ContainsTime(base::Time start, base::Time end, base::Time now) {
 // Returns true when a < b. When b is null, this returns false.
 bool IsBefore(base::Time a, base::Time b) {
   return b.is_null() || a < b;
-}
-
-// The UTC midnight for a timestamp.
-base::Time UTCMidnight(base::Time time) {
-  base::Time::Exploded exploded;
-  time.UTCExplode(&exploded);
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-  base::Time utc_midnight;
-  if (base::Time::FromUTCExploded(exploded, &utc_midnight))
-    return utc_midnight;
-
-  LOG(ERROR) << "Malformed exploded time.";
-  return time;
 }
 
 // Shifts the current weekday, if the value is positive shifts forward and if
@@ -754,12 +742,12 @@ base::Time UsageTimeLimitProcessor::ConvertPolicyTime(
 
 base::Time UsageTimeLimitProcessor::LocalMidnight(base::Time time) {
   base::TimeDelta time_zone_offset = GetTimeZoneOffset(time);
-  return UTCMidnight(time + time_zone_offset) - time_zone_offset;
+  return (time + time_zone_offset).UTCMidnight() - time_zone_offset;
 }
 
 Weekday UsageTimeLimitProcessor::GetCurrentWeekday() {
   base::TimeDelta time_zone_offset = GetTimeZoneOffset(current_time);
-  base::TimeDelta midnight_delta = current_time - UTCMidnight(current_time);
+  base::TimeDelta midnight_delta = current_time - current_time.UTCMidnight();
   // Shift in days due to the timezone.
   int time_zone_shift = 0;
   if (midnight_delta + time_zone_offset < base::TimeDelta::FromHours(0)) {

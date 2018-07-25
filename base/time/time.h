@@ -663,9 +663,10 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
     return Explode(true, exploded);
   }
 
-  // Rounds this time down to the nearest day in local time. It will represent
-  // midnight on that day.
-  Time LocalMidnight() const;
+  // The following two functions round down the time to the nearest day in
+  // either UTC or local time. It will represent midnight on that day.
+  Time UTCMidnight() const { return Midnight(false); }
+  Time LocalMidnight() const { return Midnight(true); }
 
   // Converts an integer value representing Time to a class. This may be used
   // when deserializing a |Time| structure, using a value known to be
@@ -692,6 +693,10 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   static bool FromExploded(bool is_local,
                            const Exploded& exploded,
                            Time* time) WARN_UNUSED_RESULT;
+
+  // Rounds down the time to the nearest day in either local time
+  // |is_local = true| or UTC |is_local = false|.
+  Time Midnight(bool is_local) const;
 
   // Converts a string representation of time to a Time object.
   // An example of a time string which is converted is as below:-
