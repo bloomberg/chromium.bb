@@ -49,6 +49,7 @@ TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
   diff.SetBackdropFilterChanged();
   diff.SetCSSClipChanged();
   diff.SetTextDecorationOrColorChanged();
+  diff.SetBlendModeChanged();
   string_stream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
@@ -56,7 +57,8 @@ TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
       "visualRectUpdate=0, "
       "propertySpecificDifferences=TransformChanged|OpacityChanged|"
       "ZIndexChanged|FilterChanged|BackdropFilterChanged|CSSClipChanged|"
-      "TextDecorationOrColorChanged, scrollAnchorDisablingPropertyChanged=0}",
+      "TextDecorationOrColorChanged|BlendModeChanged, "
+      "scrollAnchorDisablingPropertyChanged=0}",
       string_stream.str());
 }
 

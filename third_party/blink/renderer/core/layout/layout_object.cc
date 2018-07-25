@@ -2080,8 +2080,10 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
   // call SetNeedsRepaint to cause re-generation of PaintChunks.
   if (!IsText() && (diff.TransformChanged() || diff.OpacityChanged() ||
                     diff.ZIndexChanged() || diff.FilterChanged() ||
-                    diff.BackdropFilterChanged() || diff.CssClipChanged()))
+                    diff.BackdropFilterChanged() || diff.CssClipChanged() ||
+                    diff.BlendModeChanged())) {
     SetNeedsPaintPropertyUpdate();
+  }
 }
 
 void LayoutObject::StyleWillChange(StyleDifference diff,

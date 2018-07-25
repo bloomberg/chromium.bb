@@ -72,6 +72,9 @@ std::ostream& operator<<(std::ostream& out, const StyleDifference& diff) {
         case StyleDifference::kTextDecorationOrColorChanged:
           out << "TextDecorationOrColorChanged";
           break;
+        case StyleDifference::kBlendModeChanged:
+          out << "BlendModeChanged";
+          break;
         default:
           NOTREACHED();
           break;

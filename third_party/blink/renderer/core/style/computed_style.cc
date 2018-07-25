@@ -820,6 +820,9 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       (has_clip && Clip() != other.Clip()))
     diff.SetCSSClipChanged();
 
+  if (GetBlendMode() != other.GetBlendMode())
+    diff.SetBlendModeChanged();
+
   if (HasCurrentTransformAnimation() != other.HasCurrentTransformAnimation() ||
       HasCurrentOpacityAnimation() != other.HasCurrentOpacityAnimation() ||
       HasCurrentFilterAnimation() != other.HasCurrentFilterAnimation() ||
